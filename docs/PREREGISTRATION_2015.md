@@ -23,12 +23,23 @@ Frozen configuration — `Config.moonshot()`, unchanged:
 | trades per week | 5 (max 3 per day) |
 | entry | next open after `available_ts` |
 | cost | round-trip, ~66 bps modelled |
-| CV | purged, embargoed walk-forward, 5 folds, 10d purge / 3d embargo |
+| CV | purged, embargoed walk-forward, 5 folds, **12d purge** / 3d embargo |
 | calibration | isotonic, pooled out-of-fold only |
 | ranking | expected value from two models — P(target first), P(stop first) |
+| tradability floor | ADV ≥ $500k, price ≥ $1.50 (`cfg.features`) |
 
 Universe: `rolling_universe()` at 2,000 names per quarter, cut by trailing
-market cap and trailing 21-day dollar volume. Window 2015-01-01 to 2026-01-01.
+market cap ($50m–$10bn) and trailing 21-day dollar volume, with a $2.00 price
+floor and $500k ADV floor at the *screen* level. Window 2015-01-01 to
+2026-01-01.
+
+> **Correction, made before any result existed.** The table first said "10d
+> purge". `Config.moonshot()` sets `purge_days = 12`; the 10 was copied from a
+> different profile. The *code* is unchanged and was always 12 — this corrects
+> a wrong description of the frozen config, not the config itself. Recorded
+> here rather than silently edited because a pre-registration that can be
+> quietly amended is not one. Nothing from this window had been computed when
+> the correction was made; the price fetch was still running.
 
 ## Two errors in the last pre-registration, both corrected here
 
