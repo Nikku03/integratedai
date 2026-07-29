@@ -15,21 +15,26 @@ into named stages makes that structural rather than a footnote.
 
 Stages
 ------
-=============  ==================  ==========  ===================================
-stage          scales with         shardable   ~wall clock, 2,000 names, 2015-2026
-=============  ==================  ==========  ===================================
-``candidates``  quarters (46)       no          ~2 min
-``prices``      candidates (~6k)    **yes**     ~50 min / n_shards
-``screen``      local              no          ~1 min
-``events``      universe (~2k)      **yes**     ~8 min / n_shards
-``insiders``    quarters (46)       **no**      ~2 min
-``merge``       local              no          ~1 min
-=============  ==================  ==========  ===================================
+==============  ==================  ==========  ==================================
+stage           scales with         shardable   wall clock, 5,490 candidates,
+                                                2015-2026, one machine
+==============  ==================  ==========  ==================================
+``candidates``  quarters (44)       no          **15 s** (measured)
+``prices``      candidates (5,490)  **yes**     **~46 min** (measured, 2 req/s)
+``screen``      local               no          ~1 min
+``events``      universe (~2,000)   **yes**     ~8 min
+``insiders``    quarters (45)       **no**      **62 s** (measured, 481 MB)
+``merge``       local               no          ~1 min
+==============  ==================  ==========  ==================================
 
 One machine end to end is about an hour. Four machines is about twenty minutes,
 and the gain comes entirely from the two per-ticker stages -- running
 ``insiders`` on four machines would take exactly as long as running it on one
 and download four times as much.
+
+Note where the time now sits: prices are ~80% of what remains, and they are slow
+by choice rather than by limit. That is the honest reason to shard, and the only
+stage where more machines still buys much.
 
 Where the remaining time goes
 -----------------------------
@@ -81,6 +86,12 @@ Colab quickstart
     !python -m scripts.colab_fetch --stage events --shard 0 --n-shards 4 ...
     !python -m scripts.colab_fetch --stage insiders --out $OUT --user-agent "$UA"
     !python -m scripts.colab_fetch --stage merge --out $OUT --user-agent "$UA"
+
+``merge`` also derives the two sources that need no network -- flow anomalies
+from the price panel and press-release intensity from the 8-Ks already
+collected. ``fetch_smallmid`` builds those as part of its pipeline, and a staged
+run that skipped them would train on a strictly smaller feature set than the one
+the study was designed around, without failing.
 
 **Set a real ``--user-agent``.** The SEC requires a contact address and blocks
 anonymous scrapers outright. A blocked IP is a blocked Colab session.
@@ -301,13 +312,67 @@ def stage_insiders(args, out_dir: Path) -> int:
 
 
 def stage_merge(args, out_dir: Path) -> int:
-    out = merge_shards(out_dir, args.prefix)
+    out = merge_shards(out_dir, args.prefix, args=args)
     for k, v in out.items():
         print(f"{k}: {len(v):,} rows")
+    if "events" in out:
+        print("\nby source:")
+        print(out["events"]["source"].value_counts().to_string())
     return 0
 
 
-def merge_shards(out_dir: str | Path, prefix: str = "wide") -> dict[str, pd.DataFrame]:
+def _derive_free_sources(
+    prices: pd.DataFrame, events: pd.DataFrame, args
+) -> pd.DataFrame:
+    """Add the two sources that need no network, only the data already fetched.
+
+    ``fetch_smallmid`` builds these as part of its pipeline and the staged path
+    must match it, or the model sees a strictly smaller feature set than the
+    one the study was designed around:
+
+    * **Flow anomalies** -- volume surges and breakouts, computed from the price
+      panel.
+    * **Press-release intensity** -- derived from the 8-K events already
+      collected, not from any news vendor.
+
+    Both are free given the fetch, so there is no reason for the staged path to
+    omit them, and a silent omission would be hard to notice: the run would
+    complete, the model would train, and the answer would quietly be about a
+    different feature set than the one that was pre-registered.
+    """
+    from iai.core.types import events_to_frame, validate_events
+    from iai.sources.flow import FlowAnomalies
+    from iai.sources.news import FilingNews
+
+    cfg, client, full = _setup(args)
+    uni = full.subset(sorted(prices["ticker"].unique()))
+    lo = pd.Timestamp(args.start, tz="UTC")
+    hi = pd.Timestamp(args.end, tz="UTC")
+
+    extra = []
+    flow = FlowAnomalies(cfg, client, uni, prices=prices).fetch(lo, hi)
+    if flow:
+        extra.append(events_to_frame(flow))
+        log.info("derived %d flow events", len(flow))
+
+    news = FilingNews(cfg, client, uni, base_events=events).fetch(lo, hi)
+    if news:
+        extra.append(events_to_frame(news))
+        log.info("derived %d press-release events", len(news))
+
+    if not extra:
+        return events
+    return validate_events(
+        pd.concat([events, *extra], ignore_index=True)
+        .drop_duplicates(subset="uid")
+        .sort_values("available_ts")
+        .reset_index(drop=True)
+    )
+
+
+def merge_shards(
+    out_dir: str | Path, prefix: str = "wide", args=None
+) -> dict[str, pd.DataFrame]:
     """Combine stage outputs into the files the analysis scripts expect.
 
     Deduplicates on the event ``uid`` and on ``(date, ticker)`` for prices, so a
@@ -318,14 +383,19 @@ def merge_shards(out_dir: str | Path, prefix: str = "wide") -> dict[str, pd.Data
     result: dict[str, pd.DataFrame] = {}
 
     price_files = sorted(out_dir.glob("prices_shard*.parquet"))
+    prices = pd.DataFrame()
     if price_files:
         prices = pd.concat([pd.read_parquet(f) for f in price_files], ignore_index=True)
-        # Keep only names that survived the screen, if it has been run.
+        # Keep only names that survived the screen, if it has been run. This is
+        # the union across quarters, which bounds the file size; the per-date
+        # membership mask (members.parquet) is what makes it point-in-time and
+        # is applied by the analysis, not here.
         uni_path = out_dir / UNIVERSE
         if uni_path.exists():
             keep = set(_read_list(uni_path))
             prices = prices[prices["ticker"].isin(keep)]
         prices = prices.drop_duplicates(subset=["date", "ticker"]).sort_values(["ticker", "date"])
+        prices = prices.reset_index(drop=True)
         prices.to_parquet(out_dir / f"{prefix}_prices.parquet")
         result["prices"] = prices
 
@@ -340,6 +410,8 @@ def merge_shards(out_dir: str | Path, prefix: str = "wide") -> dict[str, pd.Data
     if frames:
         events = pd.concat(frames, ignore_index=True).drop_duplicates(subset="uid")
         events = events.sort_values("available_ts").reset_index(drop=True)
+        if args is not None and not prices.empty:
+            events = _derive_free_sources(prices, events, args)
         events.assign(payload=events["payload"].map(repr)).to_parquet(
             out_dir / f"{prefix}_events.parquet"
         )
