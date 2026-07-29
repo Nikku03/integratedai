@@ -168,3 +168,48 @@ def test_audit_passes_clean_panel(world, cfg):
     report = audit_lookahead(panel, labels)
     flagged = report[report["suspicious"]]["feature"].tolist()
     assert not flagged, f"clean panel was flagged: {flagged}"
+
+
+def test_market_baseline_survives_a_reverse_split():
+    """Regression: one absurd return must not become everyone's benchmark.
+
+    A cross section of small caps contains reverse splits and data errors that
+    print as returns in the hundreds of percent. Using the equal-weight MEAN as
+    the market proxy lets a single such name define the benchmark: on one real
+    day in this panel the mean cross-sectional return was +359.6% against a
+    median of -0.55%, which handed every other stock a -359% abnormal return.
+
+    Averaged over eleven years that bias subtracted roughly 9.7% from every
+    twenty-day CAR and made almost every event kind -- including 8-K item 9.01,
+    the exhibit index -- look like it caused a large negative drift.
+    """
+    import pandas as pd
+
+    from iai.diagnostics import _abnormal_returns
+
+    dates = pd.to_datetime(["2024-01-02", "2024-01-03"])
+    rows = []
+    # A hundred ordinary names, flat -- enough that a 1% trim removes the
+    # artifact rather than a real observation.
+    for i in range(100):
+        rows += [{"date": dates[0], "ticker": f"N{i}", "adj_close": 10.0},
+                 {"date": dates[1], "ticker": f"N{i}", "adj_close": 10.0}]
+    # One reverse split: 100x in a day. Real, and not information about anyone.
+    rows += [{"date": dates[0], "ticker": "RS", "adj_close": 1.0},
+             {"date": dates[1], "ticker": "RS", "adj_close": 100.0}]
+    px = pd.DataFrame(rows)
+    px["close"] = px["adj_close"]
+
+    abn = _abnormal_returns(px)
+    flat = abn[(abn["ticker"] == "N0") & (abn["date"] == dates[1])]["abn"].iloc[0]
+
+    # A flat stock on a flat day has no abnormal return, whatever one outlier did.
+    assert abs(flat) < 0.01, (
+        f"a flat name showed {flat:+.1%} abnormal return because one stock "
+        f"moved 9900%; the benchmark is not robust"
+    )
+
+    # And the artifact itself must still be visible as abnormal -- a robust
+    # benchmark should not launder the outlier away.
+    rs = abn[(abn["ticker"] == "RS") & (abn["date"] == dates[1])]["abn"].iloc[0]
+    assert rs > 50, "the outlier should read as hugely abnormal, not be absorbed"

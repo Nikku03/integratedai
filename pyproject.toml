@@ -34,6 +34,9 @@ filterwarnings = ["ignore::DeprecationWarning"]
 [tool.ruff]
 line-length = 100
 target-version = "py311"
+# Notebooks legitimately import mid-cell and group imports by what the cell
+# does rather than by PEP 8 -- linting them as modules fights the format.
+extend-exclude = ["notebooks"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
