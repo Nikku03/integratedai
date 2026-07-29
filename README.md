@@ -110,6 +110,36 @@ nothing except the tuning.
 
 ---
 
+## What moves the price, and in what order
+
+Full detail in [`docs/CASCADE.md`](docs/CASCADE.md). The question was whether
+the filing lands first and the crowd follows. Measured across 37,562 events:
+
+```
+SEC filing (t=0)  ->  media pickup (+8h)  ->  volume surge (+23h)  ->  breakout (+22h)
+```
+
+Earnings 8-Ks lead their volume surge 82% of the time by a median 23 hours. And
+the move is overwhelmingly *after* the bell you can trade at:
+
+| leg | median absolute move | tradable? |
+|---|---|---|
+| overnight gap (machines) | **0.89%** | no |
+| intraday + next 5 sessions (crowd) | **6.76%** | **yes** |
+| gap's share of the whole move | **11%** | |
+
+So ~89% of the movement is reachable. **The catch is direction**: median
+capturable return is ~0 for most event kinds and win rates sit at 51–54%. Only
+4 of 25 kinds survive an outlier-robust sign test with FDR correction, and the
+largest is *negative* — a `424B5` shelf takedown is followed by a further
+−2.50% median (39% positive).
+
+One exception matters: `8-K.1.01` (material agreements) is the single kind where
+volume arrives *before* the filing. Deals leak; that is the one hand where you
+are demonstrably last to know, and the right move is not to play it.
+
+---
+
 ## What happened when it was pointed at real data
 
 Full detail and reproduction steps in [`docs/FINDINGS.md`](docs/FINDINGS.md).
@@ -130,8 +160,11 @@ confounded.** But two results are genuinely worth knowing:
 The announcement move is large and real. It is also **entirely unavailable** to
 a next-open entry — the market prices Form 4s within the session they hit.
 
-**2. Your conjunction thesis is the best thing in the study, and it is
-underpowered.** A marginal event study is structurally blind to "insiders
+**2. Your conjunction thesis — promising on means, tail-driven on inspection.**
+(Superseded: see [`docs/CASCADE.md`](docs/CASCADE.md) §4. Dropping the 20 largest
+of 340 insider-buy outcomes takes t from 3.15 to 0.42; median is +0.21% at a
+51.5% win rate. A date-shuffled placebo came back at −0.20%, so it is not a
+methodological artifact — it is a lottery-ticket payoff, not a reliable one.) A marginal event study is structurally blind to "insiders
 moving *and* volume confirming", so `conditional_event_study()` tests it
 directly:
 

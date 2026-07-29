@@ -329,3 +329,125 @@ def test_normal_volatility_barriers_are_untouched():
     # Stops should sit a few percent below entry, nowhere near the 5% floor.
     ratio = labels["barrier_dn"] / entry_implied
     assert ratio.min() > 0.5, "the degenerate-case floor is binding on a calm name"
+
+
+# ------------------------------------------------------------------ cascade
+
+
+def _cascade_prices(n=200, seed=0, event_at=100, gap=0.05, intraday=0.03, tail=0.0):
+    """A stock with a planted overnight gap, then a planted same-session drift.
+
+    Built level-by-level so each leg is unambiguous:
+      open(event_at)  = close(event_at-1) * (1 + gap)     <- overnight
+      close(event_at) = open(event_at)    * (1 + intraday) <- same session
+    """
+    rng = np.random.default_rng(seed)
+    dates = pd.bdate_range("2022-01-03", periods=n)
+    close = 50 * np.exp(np.cumsum(rng.normal(0, 0.002, n)))
+    open_ = close.copy()
+    # Quiet baseline: open each day at the prior close.
+    open_[1:] = close[:-1]
+    # Plant the two legs on the event session, then carry the level forward.
+    open_[event_at] = close[event_at - 1] * (1 + gap)
+    close[event_at] = open_[event_at] * (1 + intraday)
+    for i in range(event_at + 1, n):
+        open_[i] = close[i - 1]
+        close[i] = open_[i] * (1 + tail)
+    subject = pd.DataFrame({
+        "date": dates, "ticker": "CASC",
+        "open": open_, "high": np.maximum(open_, close) * 1.001,
+        "low": np.minimum(open_, close) * 0.999, "close": close,
+        "volume": 1e6, "adj_factor": 1.0,
+    })
+    # Abnormal returns are measured against the cross-section, so a single
+    # ticker is its own benchmark and every leg comes out exactly zero. Add
+    # quiet peers so "abnormal" means something.
+    peers = []
+    for k in range(6):
+        flat = 30 + np.zeros(n)
+        peers.append(pd.DataFrame({
+            "date": dates, "ticker": f"PEER{k}",
+            "open": flat, "high": flat * 1.001, "low": flat * 0.999,
+            "close": flat, "volume": 1e6, "adj_factor": 1.0,
+        }))
+    return pd.concat([subject, *peers], ignore_index=True)
+
+
+def test_daily_cascade_separates_gap_from_intraday():
+    """The planted overnight gap and the planted intraday drift must not mix.
+
+    This is the whole point of the decomposition: the gap is unavailable to
+    anyone entering at the open, and conflating the two makes an uncapturable
+    move look tradable.
+    """
+    from iai.cascade import daily_cascade
+
+    px = _cascade_prices(gap=0.05, intraday=0.03, tail=0.0)
+    # One after-hours event on the session before the planted move.
+    ev_date = px["date"].iloc[99]
+    events = pd.DataFrame([{
+        "uid": "e1", "source": "edgar", "kind": "TEST", "ticker": "CASC",
+        "event_ts": pd.Timestamp(ev_date, tz="America/New_York").tz_convert("UTC"),
+        "available_ts": (pd.Timestamp(ev_date) + pd.Timedelta(hours=17))
+            .tz_localize("America/New_York").tz_convert("UTC"),
+        "weight": 1.0, "payload": {},
+    }])
+    out = daily_cascade(events, px, min_events=1, tail_days=3)
+    assert not out.empty
+    row = out.iloc[0]
+    # The gap leg should carry the planted overnight move, the intraday leg the
+    # planted same-session drift, and neither should absorb the other.
+    assert row["gap"] > 0.03, f"gap leg lost the overnight move: {row['gap']:.4f}"
+    assert row["day1_intraday"] > 0.015, f"intraday leg lost the drift: {row['day1_intraday']:.4f}"
+    assert row["gap"] > row["day1_intraday"]
+
+
+def test_daily_cascade_ignores_intraday_arrivals():
+    """Mid-session arrivals have no clean open boundary and must be excluded."""
+    from iai.cascade import daily_cascade
+
+    px = _cascade_prices()
+    ev_date = px["date"].iloc[99]
+    events = pd.DataFrame([{
+        "uid": "e1", "source": "edgar", "kind": "TEST", "ticker": "CASC",
+        "event_ts": pd.Timestamp(ev_date, tz="UTC"),
+        "available_ts": (pd.Timestamp(ev_date) + pd.Timedelta(hours=12))
+            .tz_localize("America/New_York").tz_convert("UTC"),  # 12:00 ET
+        "weight": 1.0, "payload": {},
+    }])
+    assert daily_cascade(events, px, min_events=1).empty
+
+
+def test_capturable_excludes_the_gap():
+    """capturable must never include the overnight leg."""
+    from iai.cascade import daily_cascade
+
+    px = _cascade_prices(gap=0.10, intraday=0.01, tail=0.0)
+    ev_date = px["date"].iloc[99]
+    events = pd.DataFrame([{
+        "uid": "e1", "source": "edgar", "kind": "TEST", "ticker": "CASC",
+        "event_ts": pd.Timestamp(ev_date, tz="UTC"),
+        "available_ts": (pd.Timestamp(ev_date) + pd.Timedelta(hours=17))
+            .tz_localize("America/New_York").tz_convert("UTC"),
+        "weight": 1.0, "payload": {},
+    }])
+    row = daily_cascade(events, px, min_events=1, tail_days=3).iloc[0]
+    assert row["capturable"] < row["gap"], "capturable absorbed the untradable gap"
+    assert abs(row["capturable"] - (row["day1_intraday"] + row["days_2_to_N"])) < 1e-9
+
+
+def test_lead_lag_identifies_the_leader():
+    """B planted consistently after A must report A as the leader."""
+    from iai.cascade import lead_lag
+
+    base = pd.Timestamp("2023-01-03 21:00", tz="UTC")
+    rows = []
+    for i in range(40):
+        t = base + pd.Timedelta(days=3 * i)
+        rows.append({"ticker": "AAA", "kind": "FIRST", "available_ts": t})
+        rows.append({"ticker": "AAA", "kind": "SECOND", "available_ts": t + pd.Timedelta(hours=20)})
+    out = lead_lag(pd.DataFrame(rows), pairs=[("FIRST", "SECOND")], window_hours=96)
+    assert not out.empty
+    assert out.iloc[0]["leader"] == "FIRST"
+    assert out.iloc[0]["pct_b_after_a"] > 0.9
+    assert out.iloc[0]["median_gap_h"] > 0

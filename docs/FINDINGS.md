@@ -1,7 +1,24 @@
 # Real-data findings
 
-Everything here comes from live data, not the synthetic world. Three studies,
-in order. The third one is the interesting one.
+Everything here comes from live data, not the synthetic world.
+
+**Start with [`CASCADE.md`](CASCADE.md)** — the propagation study (what moves
+first, by how much, and what is left) is the most decision-relevant result and
+supersedes several conclusions below.
+
+---
+
+## Headline results at a glance
+
+| question | answer |
+|---|---|
+| Does the filing come before the crowd? | **Yes.** filing → media +8h → volume +23h |
+| How much of the move is in the untradable overnight gap? | **11%** |
+| How much happens after the open, where you can act? | **89%** |
+| Can you predict the *direction* of that 89%? | **Mostly no.** 4 of 25 kinds survive |
+| Does the model beat costs? | **No.** +21bp gross vs ~48bp round trip |
+| Best robust single signal | `form.424B5` shelf takedown, **−2.50% median** |
+
 
 ---
 
@@ -57,6 +74,17 @@ contains the pre-move. `flow.accumulation` +13.4%, `flow.breakdown` −11.9%.
 The `pre_car` column caught this immediately, which is exactly why it exists.
 
 ---
+
+### CORRECTION (superseded by CASCADE.md)
+
+The conjunction result below, and the `insider.buy` numbers above, were computed
+on *means*. They do not survive an outlier check: dropping the 20 largest of 340
+insider-buy outcomes takes the effect from t = 3.15 to t = 0.42, and the median
+capturable return is +0.21% with a 51.5% win rate. A placebo (dates shuffled
+within ticker) came back at −0.20%, so the effect is not a methodological
+artifact — but it is tail-driven, not reliable. See
+[`CASCADE.md`](CASCADE.md) §4. The section below is kept because the *method*
+(always report the unconditional arm, always run the control) is the point.
 
 ### The conjunction: your actual hypothesis, tested properly
 

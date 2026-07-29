@@ -215,3 +215,32 @@ def test_effective_bets_detects_hidden_concentration():
 
     assert effective_bets(w, independent) == pytest.approx(20.0, rel=0.01)
     assert effective_bets(w, correlated) < 2.0
+
+
+def test_impact_broadcasts_scalar_order_against_many_advs(risk_cfg):
+    """Regression: a fixed clip size priced across a whole universe.
+
+    "What would $25k cost in each of these 50,000 names?" is the natural way to
+    ask the cost question, and it used to raise a broadcasting error because the
+    output buffer was allocated from the scalar order rather than the result
+    shape.
+    """
+    advs = np.linspace(1e5, 1e9, 5000)
+    out = impact_bps(25_000.0, advs, risk_cfg)
+    assert out.shape == advs.shape
+    assert np.isfinite(out).all()
+    # Thin names cost more than liquid ones.
+    assert out[0] > out[-1]
+
+
+def test_impact_broadcasts_both_directions(risk_cfg):
+    assert np.ndim(impact_bps(1e5, 1e8, risk_cfg)) == 0
+    assert impact_bps(np.array([1e5, 1e6]), 1e8, risk_cfg).shape == (2,)
+    assert impact_bps(1e5, np.array([1e8, 1e9]), risk_cfg).shape == (2,)
+    assert impact_bps(np.array([1e5, 1e6]), np.array([1e8, 1e9]), risk_cfg).shape == (2,)
+
+
+def test_impact_handles_zero_adv(risk_cfg):
+    """A name with no volume must not produce inf or NaN."""
+    out = impact_bps(1e5, np.array([0.0, 1e8]), risk_cfg)
+    assert np.isfinite(out).all()

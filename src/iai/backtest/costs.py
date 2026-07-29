@@ -39,11 +39,20 @@ def spread_cost_bps(cfg: Config, news_day: bool = False) -> float:
 
 
 def impact_bps(order_usd: np.ndarray | float, adv_usd: np.ndarray | float, cfg: Config) -> np.ndarray:
-    """Square-root market impact in basis points."""
-    order = np.asarray(order_usd, dtype="float64")
-    adv = np.asarray(adv_usd, dtype="float64")
+    """Square-root market impact in basis points.
+
+    Order size and ADV are broadcast against each other explicitly. Passing a
+    scalar order with a vector of ADVs -- "what would a fixed $25k clip cost
+    across every name?" -- is the natural way to ask the cost question, and the
+    previous version allocated its ``out`` buffer from the *order* alone, so
+    that call raised a broadcasting error instead of answering.
+    """
+    order, adv = np.broadcast_arrays(
+        np.asarray(order_usd, dtype="float64"),
+        np.asarray(adv_usd, dtype="float64"),
+    )
     participation = np.divide(
-        np.abs(order), adv, out=np.zeros_like(order, dtype="float64"), where=adv > 0
+        np.abs(order), adv, out=np.zeros(order.shape, dtype="float64"), where=adv > 0
     )
     return cfg.costs.impact_coef_bps * np.sqrt(np.clip(participation, 0.0, 1.0))
 
