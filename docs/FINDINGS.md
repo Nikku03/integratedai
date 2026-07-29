@@ -275,3 +275,47 @@ Notable from run 2, both of which drove code changes:
   `tradable drift -0.94%`, which was the tool committing the exact error it
   exists to prevent. Added Benjamini-Hochberg; `survives_fdr` is now the column
   the verdict reads.
+
+---
+
+## Insider selling is half noise; insider buying is not
+
+Raised as an objection to the Form 4 catalyst: a large share of Form 4s are
+pre-scheduled Rule 10b5-1 plan executions rather than opportunistic,
+informational trades. Measured across the bulk archives, using the
+`AFF10B5ONE` checkbox where it exists (added with the SEC's 2023 amendments)
+and footnote text before that:
+
+| quarter | source | buys | buy 10b5-1 | sells | sell 10b5-1 |
+|---|---|---|---|---|---|
+| 2015q1 | footnote | 7,598 | 3.4% | 23,800 | **43.1%** |
+| 2018q3 | footnote | 7,963 | 29.9% | 18,747 | **51.2%** |
+| 2021q2 | footnote | 5,818 | 5.1% | 32,961 | **59.0%** |
+| 2023q2 | checkbox | 8,035 | 3.3% | 15,567 | **39.2%** |
+| 2024q1 | checkbox | 5,543 | 8.8% | 26,811 | **52.9%** |
+| 2025q2 | checkbox | 6,261 | 11.9% | 16,984 | **57.9%** |
+
+The objection is right, and it lands almost entirely on one side. **Between 39%
+and 59% of open-market insider selling is scheduled**, consistently, for a
+decade. Roughly half the sell signal carries no information about what the
+insider thinks.
+
+Open-market **buying** is only 3–12% scheduled. The 2018q3 figure of 29.9% is
+footnote-matching noise, not a real spike — the checkbox era is the trustworthy
+read, and it never exceeds 12%.
+
+That asymmetry is economically sensible: executives schedule sales for
+diversification and tax, and buy when they believe the stock is cheap. A plan
+that commits you to buying on a fixed date is a strange instrument; a plan that
+commits you to selling is ordinary financial hygiene.
+
+**Consequence for this strategy.** It is long-only, hunting +10% spikes, and
+weights purchases above sales (`TRANSACTION_WEIGHTS["P"] > ["S"]`). So the
+contaminated half is the half it already leans on least. Filtering 10b5-1 is
+cheap — the flag ships in archives already downloaded — and worth doing, but it
+cleans the weaker signal and should not be expected to move the headline
+result.
+
+Recorded because it is the kind of objection that sounds decisive and turns out
+to be directional: right about the mechanism, wrong about which half of the
+data it destroys.
