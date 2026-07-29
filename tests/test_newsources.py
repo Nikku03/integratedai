@@ -591,3 +591,62 @@ def test_volatility_control_flags_a_pure_volatility_tilt():
     assert not ctrl.empty
     # Within each volatility bucket the tilt has no advantage.
     assert ctrl["lift"].between(0.7, 1.4).all(), ctrl.to_string()
+
+
+# ------------------------------------------------------------ shard fetching
+
+
+def _load_colab_fetch():
+    from importlib.machinery import SourceFileLoader
+    from pathlib import Path
+
+    path = Path(__file__).resolve().parents[1] / "scripts" / "colab_fetch.py"
+    return SourceFileLoader("colab_fetch", str(path)).load_module()
+
+
+def test_shards_are_disjoint_and_complete():
+    """Every ticker goes to exactly one shard. No gaps, no double-fetching."""
+    cf = _load_colab_fetch()
+    pool = [f"T{i:04d}" for i in range(997)]  # prime-ish, so sizes are uneven
+    for n in (1, 2, 3, 6, 12):
+        shards = [cf.shard_tickers(pool, i, n) for i in range(n)]
+        flat = [t for s in shards for t in s]
+        assert len(flat) == len(pool), f"n={n}: {len(flat)} != {len(pool)}"
+        assert set(flat) == set(pool), f"n={n}: coverage gap"
+        assert len(set(flat)) == len(flat), f"n={n}: a ticker landed in two shards"
+
+
+def test_shards_are_balanced():
+    """Sizes differ by at most one, so no shard runs hours longer than the rest."""
+    cf = _load_colab_fetch()
+    pool = [f"T{i:04d}" for i in range(1000)]
+    sizes = [len(cf.shard_tickers(pool, i, 7)) for i in range(7)]
+    assert max(sizes) - min(sizes) <= 1, sizes
+
+
+def test_shards_are_not_contiguous_alphabetical_blocks():
+    """Round-robin, not A-C / D-F.
+
+    Alphabetical blocks correlate with sector and listing venue, so a
+    contiguous split hands one shard the biotechs and another the banks -- and
+    their runtimes differ by hours.
+    """
+    cf = _load_colab_fetch()
+    pool = [f"T{i:04d}" for i in range(100)]
+    first = cf.shard_tickers(pool, 0, 4)
+    # A contiguous split would make shard 0 the first 25 entries.
+    assert first != sorted(pool)[:25]
+    assert first[0] == "T0000" and first[1] == "T0004"
+
+
+def test_shard_index_out_of_range_is_rejected():
+    cf = _load_colab_fetch()
+    rc = cf.main(["--shard", "5", "--n-shards", "3", "--user-agent", "a b@c.com"])
+    assert rc == 2
+
+
+def test_anonymous_user_agent_is_rejected():
+    """The SEC blocks anonymous scrapers, and the block hits the whole IP."""
+    cf = _load_colab_fetch()
+    assert cf.main(["--shard", "0", "--n-shards", "1", "--user-agent", ""]) == 2
+    assert cf.main(["--shard", "0", "--n-shards", "1", "--user-agent", "integratedai"]) == 2
