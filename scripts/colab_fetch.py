@@ -422,11 +422,31 @@ def _derive_free_sources(
     if not extra:
         return events
     return validate_events(
-        pd.concat([events, *extra], ignore_index=True)
+        _concat_events([events, *extra])
         .drop_duplicates(subset="uid")
         .sort_values("available_ts")
         .reset_index(drop=True)
     )
+
+
+def _concat_events(frames: list[pd.DataFrame]) -> pd.DataFrame:
+    """Concatenate event frames whose timestamps may differ in resolution.
+
+    pandas 3 infers datetime resolution from the source, so a frame read back
+    from parquet can be ``datetime64[ms, UTC]`` while one built in memory is
+    ``datetime64[us, UTC]``. Concatenating the two silently produces an object
+    column, which then fails ``validate_events`` with "must be tz-aware UTC" --
+    a lookahead error message for what is really a dtype mismatch.
+
+    Pinning both to microseconds before the concat keeps the validator
+    measuring what it is meant to measure. Microseconds, not nanoseconds: the
+    ns range tops out in 2262 and nothing here needs sub-microsecond precision.
+    """
+    for f in frames:
+        for col in ("event_ts", "available_ts"):
+            if col in f.columns:
+                f[col] = pd.to_datetime(f[col], utc=True).astype("datetime64[us, UTC]")
+    return pd.concat(frames, ignore_index=True)
 
 
 def merge_shards(
@@ -472,7 +492,7 @@ def merge_shards(
         df["payload"] = df["payload"].map(_load_payload)
         frames.append(df)
     if frames:
-        events = pd.concat(frames, ignore_index=True).drop_duplicates(subset="uid")
+        events = _concat_events(frames).drop_duplicates(subset="uid")
         events = events.sort_values("available_ts").reset_index(drop=True)
         if args is not None and not prices.empty:
             events = _derive_free_sources(prices, events, args)
