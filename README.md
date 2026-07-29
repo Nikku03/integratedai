@@ -112,7 +112,15 @@ nothing except the tuning.
 
 ## Moonshot profile: five trades a week, +10% targets
 
-Full detail in [`docs/MOONSHOT.md`](docs/MOONSHOT.md).
+> **The wide-universe replication FAILED.** Pre-registered at `f5c9880` before
+> the data was fetched; result in [`docs/RESULT_WIDE.md`](docs/RESULT_WIDE.md).
+> On 341 names the per-trade edge fell from +0.56% (t=1.73) to **+0.13%
+> (t=0.39)** and CAGR from +12.2% to **+0.9%**. The EV-vs-P(spike) ablation
+> *reversed*. Both results were noise. **Do not trade this.**
+
+Full detail on the original (106-name) run in
+[`docs/MOONSHOT.md`](docs/MOONSHOT.md), kept as the record of what was claimed
+before it was tested.
 
 ```bash
 python scripts/moonshot.py --trades-per-week 5
@@ -128,8 +136,11 @@ exactly 5.0/week, 50.9% win rate, +0.96 skew. It makes money in backtest and is
 **not statistically distinguishable from luck** — deflated Sharpe 0.108 after
 accounting for ~30 configurations tried.
 
-**The one finding worth keeping regardless:** rank on expected value, not on
-P(spike). A second model for the *downside* changes everything:
+**The finding I would have kept, and should not have:** rank on expected value,
+not on P(spike). On 106 names the ablation was decisive and the mechanism was
+easy to justify — of course you model the downside. On 341 names **the ordering
+flips** (P(spike) +0.48% vs EV +0.13%). A real mechanism does not flip. This is
+what the replication was for:
 
 | ranking | P(spike) | stop rate | net/trade |
 |---|---|---|---|
