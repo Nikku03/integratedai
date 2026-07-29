@@ -1,0 +1,75 @@
+18:40:20 universe: 10432 issuers from SEC
+18:40:28 2343 filings across 1573 names
+18:40:28 studying 1222 filings across 500 names
+18:41:18 25/500 names, 123 measured
+18:42:08 50/500 names, 212 measured
+18:42:58 75/500 names, 281 measured
+18:43:48 100/500 names, 352 measured
+18:44:38 125/500 names, 427 measured
+18:45:29 150/500 names, 502 measured
+18:46:19 175/500 names, 559 measured
+18:47:09 200/500 names, 608 measured
+18:47:59 225/500 names, 658 measured
+18:48:49 250/500 names, 708 measured
+18:49:39 275/500 names, 758 measured
+18:50:29 300/500 names, 806 measured
+18:51:20 325/500 names, 856 measured
+18:52:10 350/500 names, 905 measured
+18:53:00 375/500 names, 955 measured
+18:53:50 400/500 names, 1004 measured
+18:54:40 425/500 names, 1054 measured
+18:55:30 450/500 names, 1104 measured
+18:56:20 475/500 names, 1153 measured
+18:57:11 500/500 names, 1203 measured
+================================================================================================
+LATENCY STUDY  1,203 filings, 497 names
+================================================================================================
+
+CAN YOU EVEN FILL AT T+1min?
+------------------------------------------------------------------------------------------------
+           filings  share fillable
+session                           
+afterhours     718  59.7%     5.8%
+premarket      365  30.3%    15.9%
+rth             99   8.2%    93.9%
+closed          21   1.7%     9.5%
+
+overall fillable: 16.2% of 1,203 filings
+
+HOW MUCH MOVED BEFORE YOU COULD ACT  (fillable only, n=195)
+------------------------------------------------------------------------------------------------
+  median +0.0000   mean +0.0009   |move|>=2%: 25.1%
+
+RETURN AFTER ENTERING AT T+1min -- all fillable (n=195)
+ horizon      n     median       mean    win%       t | worst-case mean
+      5m    195    +0.0000    -0.0006  14.9%   -1.08 |         -0.0092
+     15m    195    +0.0000    -0.0022  21.0%   -0.76 |         -0.0109
+     30m    195    +0.0000    -0.0038  24.1%   -1.22 |         -0.0122
+     60m    195    +0.0000    -0.0042  29.7%   -1.28 |         -0.0116
+    120m    195    +0.0000    -0.0055  31.8%   -1.72 |         -0.0121
+
+RETURN AFTER ENTERING AT T+1min -- regular hours only -- the genuinely tradable subset (n=93)
+ horizon      n     median       mean    win%       t | worst-case mean
+      5m     93    +0.0000    -0.0008  29.0%   -0.78 |         -0.0055
+     15m     93    +0.0000    -0.0043  41.9%   -0.71 |         -0.0093
+     30m     93    +0.0000    -0.0072  44.1%   -1.12 |         -0.0121
+     60m     93    +0.0000    -0.0087  45.2%   -1.28 |         -0.0131
+    120m     93    +0.0005    -0.0084  50.5%   -1.30 |         -0.0126
+
+RETURN AFTER ENTERING AT T+1min -- already moved >=2% before entry -- was anything left? (n=49)
+ horizon      n     median       mean    win%       t | worst-case mean
+      5m     49    +0.0000    -0.0031   8.2%   -1.86 |         -0.0259
+     15m     49    +0.0000    -0.0093  12.2%   -0.81 |         -0.0330
+     30m     49    +0.0000    -0.0109  12.2%   -0.95 |         -0.0329
+     60m     49    +0.0000    -0.0118  28.6%   -1.03 |         -0.0311
+    120m     49    +0.0000    -0.0114  22.4%   -1.02 |         -0.0294
+
+HOW TO READ THE TWO COLUMNS
+  'mean' buys and sells at each minute's close -- optimistic, because a
+  market order pays the offer and minute bars carry no quotes at all.
+  'worst-case mean' buys at the entry minute's HIGH and sells at the exit
+  minute's LOW, which is the worst pair of prices actually printed. Any
+  real fill sits between them. A result that only survives the first
+  column is a result about the spread, not about the filing.
+
+wrote /root/.iai/store/latency_study.parquet
