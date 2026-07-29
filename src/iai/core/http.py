@@ -23,6 +23,18 @@ import requests
 
 log = logging.getLogger(__name__)
 
+#: Statuses that mean "you are not allowed", not "it is not there". These must
+#: never be cached as misses and must never be treated as definitive: the SEC
+#: blocks an abusive IP with 403 rather than 429, so caching a 403 as "nothing
+#: here" would poison every URL attempted during the block and let a fetch
+#: report success having collected nothing.
+BLOCKED_STATUSES = frozenset({401, 403, 407})
+
+#: Statuses that genuinely mean the resource is absent, and are safe to
+#: remember. 400 is here because Yahoo returns it for symbols it does not
+#: carry, which on a wide universe is thousands of delisted tickers.
+CACHEABLE_MISSES = frozenset({400, 404, 410})
+
 
 class RateLimiter:
     """Token-bucket limiter, safe across threads."""
@@ -126,6 +138,23 @@ class HttpClient:
                     time.sleep(min(retry_after, 60.0))
                     backoff *= 2
                     continue
+                if resp.status_code in BLOCKED_STATUSES:
+                    # NOT the same as "absent", and the difference is the
+                    # difference between a shorter run and a silently empty
+                    # one. The SEC answers rate-limit abuse with 403 on the
+                    # whole IP -- a block, not a throttle, and never a 429.
+                    # Treating that as a definitive miss would cache "nothing
+                    # here" for every URL attempted while blocked, and the
+                    # fetch would report success having collected nothing.
+                    # So: retry, never cache, and say so loudly.
+                    log.error(
+                        "%s -> %s ACCESS DENIED. This is a block, not a missing "
+                        "resource; the whole IP may be blocked. Not caching.",
+                        url, resp.status_code,
+                    )
+                    time.sleep(min(backoff, 60.0))
+                    backoff *= 2
+                    continue
                 if 400 <= resp.status_code < 500:
                     # A client error is an answer, not a failure: the symbol
                     # does not exist, the CIK never filed, the endpoint is
@@ -135,7 +164,7 @@ class HttpClient:
                     # pool contains thousands of them. Four attempts with
                     # backoff is fifteen seconds each; this is hours.
                     log.debug("%s -> %s (definitive)", url, resp.status_code)
-                    if use_cache:
+                    if use_cache and resp.status_code in CACHEABLE_MISSES:
                         self._remember_miss(path, url, resp.status_code)
                     return None
                 resp.raise_for_status()
@@ -177,6 +206,11 @@ class HttpClient:
                 resp = self.session.get(url, timeout=timeout or max(self.timeout, 180.0))
                 if resp.status_code == 429 or resp.status_code >= 500:
                     time.sleep(min(float(resp.headers.get("Retry-After", backoff)), 60.0))
+                    backoff *= 2
+                    continue
+                if resp.status_code in BLOCKED_STATUSES:
+                    log.error("%s -> %s ACCESS DENIED; the IP may be blocked", url, resp.status_code)
+                    time.sleep(min(backoff, 60.0))
                     backoff *= 2
                     continue
                 if 400 <= resp.status_code < 500:

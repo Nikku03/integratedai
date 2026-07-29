@@ -968,8 +968,43 @@ def test_client_errors_are_answers_not_failures(tmp_path):
         assert client.get("https://example.test/x") is None
         return len(calls)
 
-    for status in (400, 401, 403, 404, 422):
+    for status in (400, 404, 410, 422):
         assert _count_attempts(status) == 1, f"{status} was retried"
+
+
+def test_a_block_is_never_mistaken_for_an_absent_resource(tmp_path):
+    """403 means "you are not allowed", not "it is not there".
+
+    The distinction is the difference between a shorter run and a silently
+    empty one. The SEC blocks an abusive IP with 403 rather than 429 -- its own
+    docs say so, and the block covers the whole address. If 403 were treated as
+    a definitive miss and cached, every URL attempted during the block would be
+    remembered as "nothing here" and the fetch would report success having
+    collected nothing at all.
+    """
+    from iai.core.http import HttpClient
+
+    def _attempt_block(status: int) -> tuple[int, list]:
+        calls: list[str] = []
+
+        class _Blocked:
+            status_code = status
+            headers: dict = {}
+
+            def raise_for_status(self):
+                raise AssertionError("a block must not reach raise_for_status")
+
+        cache = tmp_path / f"blk{status}"
+        client = HttpClient(cache, "t b@c.com", rate_per_sec=0.0, max_retries=3)
+        client.session.get = lambda url, **kw: (calls.append(url), _Blocked())[1]
+        assert client.get("https://example.test/x") is None
+        return len(calls), list(cache.glob("*.json"))
+
+    for status in (401, 403, 407):
+        attempts, cached = _attempt_block(status)
+        assert attempts == 3, f"{status} must be retried, not accepted as an answer"
+        # And crucially: nothing may be written to the cache.
+        assert cached == [], f"{status} was cached as a miss: {cached}"
 
     # 429 and 5xx are the opposite case: transient, and worth retrying.
     calls = []
