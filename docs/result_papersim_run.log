@@ -1,0 +1,63 @@
+18:57:59 universe: 10432 issuers from SEC
+18:58:08 2605 filings across 1679 names
+18:58:08 checking which filings carry the press release as an exhibit
+19:03:39 bars 50/400
+19:05:47 bars 100/400
+19:07:52 bars 150/400
+19:09:57 bars 200/400
+19:12:02 bars 250/400
+19:14:07 bars 300/400
+19:16:13 bars 350/400
+19:18:18 bars 400/400
+==================================================================================================================================
+PAPER SIM  $80 start, 2 slots, +6%/-4%, last 30 days
+==================================================================================================================================
+
+TRADES
+ticker               items       filed_ET       PR    entry_ET entry_px already_moved     exit_ET  exit_px exit_reason held_min    ret   pnl balance_after
+  AVNS           7.01,9.01 07-02 10:10:31 attached 07-02 10:12   24.925        -0.02% 07-14 10:48   24.950        time    17316 +0.10% +0.04         58.86
+  SKYQ 1.01,1.02,2.03,9.01 07-02 14:25:17 no EX-99 07-02 14:27    2.527        -0.13% 07-06 05:54    2.426        stop     5247 -4.00% -0.80         39.20
+   ESI           7.01,9.01 07-06 09:13:10 attached 07-06 09:30   44.310        -1.20% 07-06 09:33   42.538        stop        3 -4.00% -0.78         38.42
+   SSB           7.01,9.01 07-06 09:39:50 attached 07-06 09:42  100.740        +0.15% 07-09 07:21   96.710        stop     4179 -4.00% -0.77         37.65
+  MAIN           2.02,9.01 07-09 09:38:49 no EX-99 07-09 09:40   51.130        -0.02% 07-15 11:35   53.600        time     8755 +4.83% +0.91         49.17
+  LKFN           7.01,9.01 07-14 14:16:22 no EX-99 07-14 14:26   60.635        +0.06% 07-28 09:54   64.273      target    19888 +6.00% +1.77         54.09
+  SRXH           7.01,9.01 07-15 15:45:14 attached 07-15 15:47    2.250        +0.00% 07-15 15:58    2.160        stop       11 -4.00% -0.98         48.18
+  MAIN           2.02,9.01 07-16 09:15:53 no EX-99 07-16 09:30   53.680        +0.43% 07-17 04:06   56.901      target     1116 +6.00% +1.45         49.63
+  CCRN           5.07,9.01 07-17 08:19:25 no EX-99 07-17 09:30   13.250        +0.00% 07-20 16:00   13.250        time     4710 +0.00% +0.00         49.63
+  MNSB                8.01 07-21 09:32:16 no EX-99 07-21 09:42   24.170        -0.94% 07-21 14:47   23.203        stop      305 -4.00% -0.99         48.63
+  JMSB           2.02,9.01 07-22 08:40:12 attached 07-22 09:30   22.890        +4.38% 07-22 09:32   21.974        stop        2 -4.00% -0.97         47.66
+  AROW 2.02,7.01,8.01,9.01 07-23 07:29:51 attached 07-23 09:30   40.235        -1.22% 07-24 09:30   38.626        stop     1440 -4.00% -0.95         46.71
+  ARCB           8.01,9.01 07-24 11:07:30 attached 07-24 11:09  153.320        +0.09% 07-27 10:19  147.187        stop     4270 -4.00% -0.93         45.77
+  CARE           7.01,9.01 07-27 11:24:16 no EX-99 07-27 11:26   34.330        -0.10% 07-29 15:04   34.550        time     3098 +0.64% +0.15         51.72
+  SRXH                3.02 07-28 09:57:16 no EX-99 07-28 09:59    1.470        +0.68% 07-28 10:43    1.558      target       44 +6.00% +1.62         55.71
+  AMIX                8.01 07-28 11:36:42 no EX-99 07-28 11:39    2.680        +3.08% 07-28 13:16    2.841      target       97 +6.00% +1.67         57.38
+  USCB           7.01,9.01 07-28 13:46:36 no EX-99 07-28 13:48   22.995        -0.02% 07-29 15:09   22.350        time     1522 -2.80% -0.80         79.61
+
+SUMMARY
+  trades              17   (17.0/month vs 20 targeted)
+  win rate            41.2%
+  mean return/trade   -0.31%   median -2.80%
+  median hold         1522 min (25.4h)
+  start -> end        $80.00 -> $79.61  (-0.5%)
+  exits               stop 8, time 5, target 4
+
+  press release attached to the filing: 41% of trades
+  (where it is attached, the filing IS the announcement -- there was
+   no gap between paperwork and news to trade)
+
+FILINGS SKIPPED (1,077 of 1,094)
+reason
+no free slot            667
+outside bar coverage    220
+no trade at T+1min      184
+sub-$1                    3
+illiquid name             1
+entry bar too thin        1
+already ran >50%          1
+
+FILL ASSUMPTION: bought at the entry minute's HIGH, sold at the exit
+minute's LOW -- the worst prices that actually printed. At $40 there is
+no market impact, so the spread is the whole cost, and taking the
+midpoint would be assuming away the only thing that matters here.
+
+wrote /root/.iai/store/paper_sim_trades.parquet

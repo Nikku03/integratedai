@@ -235,8 +235,14 @@ def simulate(filings: pd.DataFrame, bars_by: dict, cfg: dict) -> tuple[pd.DataFr
         for p in open_pos:
             if p["exit_t"] is not None and p["exit_t"] <= t:
                 cash += p["proceeds"]
-                trades.append(p["record"] | {"balance_after": cash})
-                equity_marks.append({"t": p["exit_t"], "balance": cash})
+                # Account equity: idle cash plus what is still deployed. The
+                # bare cash figure understates the account whenever another
+                # position is open, which is most of the time with two slots.
+                eq = cash + sum(q["cost"] for q in still) + sum(
+                    q["cost"] for q in open_pos[open_pos.index(p) + 1:]
+                    if q is not p)
+                trades.append(p["record"] | {"balance_after": eq, "cash_after": cash})
+                equity_marks.append({"t": p["exit_t"], "balance": eq})
             else:
                 still.append(p)
         open_pos = still
@@ -273,7 +279,13 @@ def simulate(filings: pd.DataFrame, bars_by: dict, cfg: dict) -> tuple[pd.DataFr
             skipped.append({**f, "reason": f"already moved {already:+.1%}"})
             continue
 
-        size = cash / slots
+        # Size off ACCOUNT EQUITY, not uninvested cash. Sizing off cash makes
+        # the second concurrent position half the size of the first (cash is
+        # already down by one position), and the third a quarter -- so "two
+        # $40 positions" silently became $40 and $20. Equity is cash plus the
+        # cost basis of what is already open.
+        equity = cash + sum(p["cost"] for p in open_pos)
+        size = equity / slots
         if size < 1.0:
             skipped.append({**f, "reason": "insufficient capital"})
             continue
@@ -306,7 +318,7 @@ def simulate(filings: pd.DataFrame, bars_by: dict, cfg: dict) -> tuple[pd.DataFr
         proceeds = shares * exit_px
         held = (exit_t - bars["t"].iloc[i_ent]).total_seconds() / 60.0
         open_pos.append({
-            "exit_t": exit_t, "proceeds": proceeds,
+            "exit_t": exit_t, "proceeds": proceeds, "cost": size,
             "record": {
                 "ticker": f["ticker"], "form": f["form"], "items": f["items"],
                 "filed_utc": t, "pr_attached": f.get("pr_attached"),
@@ -321,7 +333,7 @@ def simulate(filings: pd.DataFrame, bars_by: dict, cfg: dict) -> tuple[pd.DataFr
 
     for p in open_pos:                    # settle anything still open
         cash += p["proceeds"]
-        trades.append(p["record"] | {"balance_after": cash})
+        trades.append(p["record"] | {"balance_after": cash, "cash_after": cash})
 
     return pd.DataFrame(trades), pd.DataFrame(skipped)
 
