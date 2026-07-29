@@ -252,9 +252,19 @@ def measure(filing: dict, bars: pd.DataFrame) -> dict | None:
 
     gap_min = (bars["t_utc"].iloc[i_ent] - pd.Timestamp(t_naive)).total_seconds() / 60.0
 
+    # A market order does not fill at the bar's close, it pays the offer. The
+    # high of the entry minute is the worst price actually printed inside it,
+    # so [close, high] brackets any real fill without needing quote data. If a
+    # conclusion survives the pessimistic end it does not depend on the spread
+    # assumption, which is the only way to be honest here -- minute bars carry
+    # no quotes at all.
+    p_ent_worst = float(bars["high"].iloc[i_ent])
+    if not np.isfinite(p_ent_worst) or p_ent_worst <= 0:
+        p_ent_worst = p_ent
+
     out = {
         **{k: filing[k] for k in ("ticker", "form", "items", "session", "accepted")},
-        "p_pre": p_pre, "p_entry": p_ent,
+        "p_pre": p_pre, "p_entry": p_ent, "p_entry_worst": p_ent_worst,
         "entry_volume": v_ent,
         "entry_lag_min": gap_min,
         "fillable": v_ent > 0,
@@ -266,7 +276,14 @@ def measure(filing: dict, bars: pd.DataFrame) -> dict | None:
         j = int(np.searchsorted(tv, at, "left"))
         j = min(j, len(bars) - 1)
         pj = float(bars["close"].iloc[j])
-        out[f"captured_{h}m"] = pj / p_ent - 1.0 if np.isfinite(pj) and pj > 0 else np.nan
+        lo_j = float(bars["low"].iloc[j])
+        ok = np.isfinite(pj) and pj > 0
+        out[f"captured_{h}m"] = pj / p_ent - 1.0 if ok else np.nan
+        # Buy at the minute's high, sell at the exit minute's low.
+        out[f"captured_{h}m_worst"] = (
+            lo_j / p_ent_worst - 1.0
+            if np.isfinite(lo_j) and lo_j > 0 else np.nan
+        )
     return out
 
 
@@ -387,16 +404,19 @@ def report(df: pd.DataFrame) -> None:
 
     def _table(sub: pd.DataFrame, label: str, min_n: int = 10) -> None:
         print(f"\nRETURN AFTER ENTERING AT T+1min -- {label} (n={len(sub):,})")
-        print(f"{'horizon':>8} {'n':>6} {'median':>10} {'mean':>10} {'win%':>7} {'t':>7}")
+        print(f"{'horizon':>8} {'n':>6} {'median':>10} {'mean':>10} {'win%':>7} {'t':>7}"
+              f" | {'worst-case mean':>15}")
         for h in HORIZONS[1:]:
             r = sub[f"captured_{h}m"].dropna()
+            w = sub[f"captured_{h}m_worst"].dropna()
             if len(r) < min_n:
                 print(f"{h:>7}m {len(r):>6,}   too few to report")
                 continue
             sd = r.std(ddof=1)
             t = r.mean() / (sd / np.sqrt(len(r))) if sd > 0 else np.nan
+            wm = f"{w.mean():+.4f}" if len(w) >= min_n else "n/a"
             print(f"{h:>7}m {len(r):>6,} {r.median():>+10.4f} {r.mean():>+10.4f} "
-                  f"{(r > 0).mean():>6.1%} {t:>+7.2f}")
+                  f"{(r > 0).mean():>6.1%} {t:>+7.2f} | {wm:>15}")
 
     _table(ok, "all fillable")
     rth = ok[ok["session"] == "rth"]
@@ -407,10 +427,13 @@ def report(df: pd.DataFrame) -> None:
     if len(big) >= 10:
         _table(big, "already moved >=2% before entry -- was anything left?")
 
-    print("\nNOTE: minute bars carry no spread, so every figure above is an upper")
-    print("bound. Real entry pays the offer, which outside regular hours on a")
-    print("small cap is routinely 100-300 bps rather than the ~15 bps modelled")
-    print("for liquid RTH trading.")
+    print("\nHOW TO READ THE TWO COLUMNS")
+    print("  'mean' buys and sells at each minute's close -- optimistic, because a")
+    print("  market order pays the offer and minute bars carry no quotes at all.")
+    print("  'worst-case mean' buys at the entry minute's HIGH and sells at the exit")
+    print("  minute's LOW, which is the worst pair of prices actually printed. Any")
+    print("  real fill sits between them. A result that only survives the first")
+    print("  column is a result about the spread, not about the filing.")
 
 
 if __name__ == "__main__":
