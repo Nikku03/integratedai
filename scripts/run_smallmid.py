@@ -27,31 +27,15 @@ from iai.diagnostics import (  # noqa: E402
 )
 from iai.labels import build_labels  # noqa: E402
 from iai.pipeline import fetch_smallmid  # noqa: E402
-
-#: Seed list of liquid US small/mid caps across sectors where discrete
-#: catalysts plausibly move price. Screening the full 10k-name SEC universe
-#: would need ~10k price requests; this keeps the fetch tractable while staying
-#: sector-diverse. The point-in-time cap screen then runs on top of it.
-SEED = """
-ARWR SRPT IONS BLUE FOLD RARE AXSM HALO PTCT ACAD SAGE VKTX MDGL DVAX ARDX
-CRSP NTLA BEAM EDIT VCYT EXAS PACB TWST CDNA NVAX OCGN INO VXRT ATRA
-IRWD AMPH COLL SUPN HRMY ANIP PCRX EOLS EVH OMCL
-ON WOLF MPWR SLAB LSCC AMBA SITM ALGM POWI DIOD SMTC MTSI FORM ACLS UCTT
-COHU ONTO AEIS ICHR AOSL SGH PLAB VECO
-X CLF AA MP UEC CCJ DNN NXE SMR CDE HL AG EXK PAAS SSRM
-ENPH SEDG RUN NOVA ARRY SHLS CSIQ JKS MAXN AMRC
-PLUG BE FCEL BLDP CHPT BLNK EVGO WKHS RIDE GOEV NKLA HYLN
-CALX EXTR NTGR DGII INFN AAOI LITE VIAV
-SKYW ALGT JBLU SAVE MESA
-SM MTDR CIVI CRC BRY REPX AMPY VTLE
-CVI PARR DINO ALTO GEVO REX
-BGFV CATO SCVL DXLG ZUMZ CHUY PTLO NDLS
-UPWK FVRR CARG CARS QNST YELP EVER
-""".split()
+from iai.seeds import SMALLMID_CORE, SMALLMID_SEED  # noqa: E402
 
 
 def main() -> int:
     ap = argparse.ArgumentParser()
+    ap.add_argument("--wide", action="store_true",
+                    help="use the full ~480-name seed pool instead of the core list")
+    ap.add_argument("--prefix", default="sm",
+                    help="store filename prefix, so wide and core runs coexist")
     ap.add_argument("--start", default="2021-01-01")
     ap.add_argument("--end", default="2024-12-31")
     ap.add_argument("--max-names", type=int, default=120)
@@ -60,6 +44,7 @@ def main() -> int:
     ap.add_argument("--workers", type=int, default=8)
     ap.add_argument("--reuse", action="store_true", help="load from store instead of refetching")
     args = ap.parse_args()
+    seed = SMALLMID_SEED if args.wide else SMALLMID_CORE
 
     logging.basicConfig(
         level=logging.INFO, format="%(asctime)s %(levelname)-7s %(name)-24s %(message)s",
@@ -72,10 +57,10 @@ def main() -> int:
     cfg.ensure_dirs()
     store = cfg.data.store_dir
 
-    if args.reuse and (store / "sm_prices.parquet").exists():
-        prices = pd.read_parquet(store / "sm_prices.parquet")
-        events = pd.read_parquet(store / "sm_events.parquet")
-        caps = pd.read_parquet(store / "sm_caps.parquet")
+    if args.reuse and (store / f"{args.prefix}_prices.parquet").exists():
+        prices = pd.read_parquet(store / f"{args.prefix}_prices.parquet")
+        events = pd.read_parquet(store / f"{args.prefix}_events.parquet")
+        caps = pd.read_parquet(store / f"{args.prefix}_caps.parquet")
         events["payload"] = events["payload"].map(
             lambda s: __import__("ast").literal_eval(s) if isinstance(s, str) else s
         )
@@ -83,13 +68,13 @@ def main() -> int:
     else:
         prices, events, uni, caps = fetch_smallmid(
             cfg, args.start, args.end,
-            seed_tickers=SEED, max_names=args.max_names,
+            seed_tickers=seed, max_names=args.max_names,
             min_cap=args.min_cap, max_cap=args.max_cap,
             include_slow=False, workers=args.workers,
         )
-        prices.to_parquet(store / "sm_prices.parquet")
-        events.assign(payload=events["payload"].map(repr)).to_parquet(store / "sm_events.parquet")
-        caps.to_parquet(store / "sm_caps.parquet")
+        prices.to_parquet(store / f"{args.prefix}_prices.parquet")
+        events.assign(payload=events["payload"].map(repr)).to_parquet(store / f"{args.prefix}_events.parquet")
+        caps.to_parquet(store / f"{args.prefix}_caps.parquet")
 
     pd.set_option("display.width", 250)
     print("=" * 100)
@@ -128,7 +113,7 @@ def main() -> int:
         print("LABEL LIFT")
         print(lift.to_string(index=False))
 
-    out = Path(store) / "smallmid_study.csv"
+    out = Path(store) / f"{args.prefix}_study.csv"
     summ.to_csv(out, index=False)
     print(f"\nwrote {out}")
     return 0

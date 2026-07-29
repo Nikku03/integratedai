@@ -109,6 +109,8 @@ def main() -> int:
     ap.add_argument("--order-usd", type=float, default=25_000.0)
     ap.add_argument("--n-trials", type=int, default=30,
                     help="configurations tried, for the deflated Sharpe")
+    ap.add_argument("--prefix", default="sm",
+                    help="store filename prefix (sm = 106-name core, wide = full pool)")
     args = ap.parse_args()
 
     logging.basicConfig(level=logging.WARNING, stream=sys.stderr)
@@ -119,8 +121,8 @@ def main() -> int:
     cfg.ensure_dirs()
     store = cfg.data.store_dir
 
-    prices = pd.read_parquet(store / "sm_prices.parquet")
-    events = pd.read_parquet(store / "sm_events.parquet")
+    prices = pd.read_parquet(store / f"{args.prefix}_prices.parquet")
+    events = pd.read_parquet(store / f"{args.prefix}_events.parquet")
     events["payload"] = events["payload"].map(
         lambda s: ast.literal_eval(s) if isinstance(s, str) else s
     )
@@ -219,10 +221,42 @@ def main() -> int:
     print()
     print("  Sharpe SE is the number to read next to Sharpe. If the SE is comparable to")
     print("  the estimate, the strategy has not been measured, only observed.")
+    print()
 
-    oof.to_parquet(store / "moonshot_oof.parquet")
-    sel.to_parquet(store / "moonshot_selected.parquet")
-    print(f"\nwrote {store / 'moonshot_selected.parquet'}")
+    # ---- pre-registered criteria (docs/PREREGISTRATION.md) -----------------
+    rep = selection_report(sel, oof).iloc[0]
+    ctrl = volatility_control(sel, oof)
+    srt = sel.reindex((sel["ret"] - sel["cost_rt"]).abs().sort_values(ascending=False).index)
+    trimmed = srt.iloc[20:]
+    trimmed_net = float((trimmed["ret"] - trimmed["cost_rt"]).mean())
+    by_year = sel.groupby(sel["date"].dt.year).size()
+    max_year_share = float(by_year.max() / by_year.sum())
+    vol_ratio = float(sel["vol21"].median() / oof["vol21"].median())
+    buckets_ok = int((ctrl["lift"] > 1.0).sum()) if not ctrl.empty else 0
+
+    print("PRE-REGISTERED CRITERIA  (docs/PREREGISTRATION.md)")
+    print("-" * 100)
+    primary = rep["net_t"] > 2.0 and rep["net"] > 0
+    print(f"  PRIMARY   net/trade {rep['net']:+.4f} with t = {rep['net_t']:+.2f}   "
+          f"required t > 2.0   -> {'PASS' if primary else 'FAIL'}")
+    c1 = buckets_ok >= 3 and vol_ratio <= 1.2
+    print(f"  vol control     lift>1 in {buckets_ok}/5 buckets, selected vol {vol_ratio:.2f}x universe "
+          f"-> {'PASS' if c1 else 'FAIL'}")
+    c2 = trimmed_net > 0
+    print(f"  outlier robust  net after dropping 20 largest = {trimmed_net:+.4f} "
+          f"-> {'PASS' if c2 else 'FAIL'}")
+    c3 = max_year_share <= 0.50
+    print(f"  temporal spread largest year holds {max_year_share:.1%} of trades "
+          f"-> {'PASS' if c3 else 'FAIL'}")
+    print()
+    verdict = ("EDGE PROBABLY REAL - paper trade a quarter" if primary and c1 and c2 and c3
+               else "CONFOUNDED - investigate, do not trade" if primary
+               else "UNDERPOWERED OR NO EDGE - do not trade")
+    print(f"  VERDICT: {verdict}")
+
+    oof.to_parquet(store / f"{args.prefix}_moonshot_oof.parquet")
+    sel.to_parquet(store / f"{args.prefix}_moonshot_selected.parquet")
+    print(f"\nwrote {store}/{args.prefix}_moonshot_selected.parquet")
     return 0
 
 
