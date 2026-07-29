@@ -203,11 +203,15 @@ def family_importance(importance: pd.DataFrame, value_col: str = "gain") -> pd.D
                 ("docket", "legal"), ("spillover", "partner"),
                 ("flight", "flight"), ("trade", "trade"),
                 ("shipping", "trade"), ("portcall", "trade"),
+                ("insider", "insider"), ("stake", "instl"),
+                ("institutional", "instl"), ("flow", "flow"),
+                ("news", "news"),
             ):
                 if body.startswith(prefix):
                     return fam
             return "other"
-        for fam in ("edgar", "legal", "partner", "flight", "trade"):
+        for fam in ("edgar", "legal", "partner", "flight", "trade",
+                    "insider", "instl", "flow", "news"):
             if name.startswith(fam + "_"):
                 return fam
         if name.startswith("all_"):

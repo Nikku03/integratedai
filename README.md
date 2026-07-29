@@ -38,6 +38,32 @@ sources → point-in-time events → EVENT STUDY → features → triple-barrier
         → purged walk-forward → calibrated ensemble → capped Kelly sizing → backtest
 ```
 
+### Two profiles
+
+`Config()` is the default: 15-day horizon, symmetric-ish barriers, liquid names.
+
+`Config.short_horizon()` is the fast small/mid-cap profile — 8-session holds,
+**asymmetric 1.5σ up / 0.75σ down barriers** (lower hit rate, ~4:1 payoff,
+which is what "big reward on a short trade" means mechanically), 1–3 day
+feature decay half-lives, a $750k ADV floor so small caps actually qualify, and
+**tripled spread and impact assumptions** because that is what trading small
+caps on news days actually costs. The backtest gets worse and more honest at
+the same time.
+
+```python
+from iai.core.config import Config
+from iai.pipeline import fetch_smallmid, run_research
+
+cfg = Config.short_horizon()
+prices, events, uni, caps = fetch_smallmid(cfg, "2021-01-01", "2024-12-31", max_names=120)
+print(run_research(prices, events, cfg, extra_features=caps).report())
+```
+
+Universe selection uses **point-in-time market caps** from SEC XBRL shares
+outstanding × price, not today's snapshot. Screening on today's cap sorts on
+the future in two directions at once: survivorship (the zeros are gone) and
+migration (today's small caps are yesterday's mid caps that fell 60%).
+
 The **event study runs before the model**, and it is the most useful thing here.
 It decomposes abnormal returns around each event kind into:
 
@@ -86,33 +112,59 @@ nothing except the tuning.
 
 ## What happened when it was pointed at real data
 
-Full detail in [`docs/FINDINGS.md`](docs/FINDINGS.md). It was run twice:
+Full detail and reproduction steps in [`docs/FINDINGS.md`](docs/FINDINGS.md).
+The headline run: **106 small/mid caps, 2021–2024, 37,562 events across five
+sources** (volume/flow, EDGAR filings, Form 4 insiders, 13D/G stakes,
+press-release intensity), universe selected on **point-in-time** market caps.
 
-| Run | Universe | Events | Kinds surviving FDR |
+**Marginal event study: 1 of 31 event kinds survives FDR correction, and it is
+confounded.** But two results are genuinely worth knowing:
+
+**1. Insider buys move the stock ~2.5% — on the filing day, and then stop.**
+
+| kind | n | pre | **day 0** | drift +1..+13 | t |
+|---|---|---|---|---|---|
+| `insider.buy` | 391 | −2.10% | **+2.52%** | +0.81% | 1.21 |
+| `insider.cluster_buy` | 81 | −3.51% | **+1.89%** | +0.78% | 0.55 |
+
+The announcement move is large and real. It is also **entirely unavailable** to
+a next-open entry — the market prices Form 4s within the session they hit.
+
+**2. Your conjunction thesis is the best thing in the study, and it is
+underpowered.** A marginal event study is structurally blind to "insiders
+moving *and* volume confirming", so `conditional_event_study()` tests it
+directly:
+
+| arm | n | drift (13d) | t |
 |---|---|---|---|
-| 1 | 19 high-beta names, 2021–2024 | 3,218 | **0 of 15** |
-| 2 | 46 small/mid caps, 2019–2024 | 7,794 | **0 of 15** |
+| insider buy **with** volume confirmation | 87 | **+3.38%** | 2.28 |
+| insider buy without | 312 | +0.09% | 0.11 |
+| ↳ narrowed: also after a ≥5% drop | 36 | **+5.01%** | 1.81 |
+| **control: that drop + volume, no insider** | **1,061** | **+0.45%** | 1.22 |
 
-Two results worth knowing:
+The conjunction is ~40× the unconditional effect, and the control rules out
+short-term reversal — beaten-down-plus-volume alone gives +0.45%, adding the
+insider gives +5.01%. **But n = 36, and 0 of 11 conditional arms survive FDR.**
+Promising, economically sensible, and not yet evidence.
 
-- **`form.424B5` shows +8.0% *before* the filing.** Not a latency bug — the
-  EDGAR timestamp is accurate to the second. It is **endogeneity**: companies
-  do dilutive shelf takedowns *because* the stock ran up. "424B5 predicts
-  −2.35%" is confounded, and unlike a late timestamp it is not fixable by
-  buying faster data.
-- **Post-earnings drift measured t = −2.07, p = 0.039 — and it is not real.**
-  Fifteen hypotheses were tested at once, so you expect 0.75 false positives per
-  run. It does not survive Benjamini-Hochberg. The first version of this tool
-  reported it as `tradable drift -0.94%`; that was the tool committing the
-  exact error it exists to prevent, which is why `survives_fdr` is now the
-  column the verdict reads.
+**3. The model has real ranking power and still loses money, for an
+instructive reason.** AUC 0.606 out-of-sample, perfectly calibrated
+(mean p 0.163 vs realised 0.163), hit rate climbing monotonically 16% → 25%
+across prediction deciles. Backtest: **−4.6% CAGR, Sharpe −0.61.**
 
-**This does not prove there is no catalyst edge.** It tests one source
-marginally on a small universe — 46 names gives a ~1.2% standard error on a
-20-day CAR, so most "no detectable effect" rows are statements about statistical
-power, not about the world. It does mean the naive "8-K item type → drift"
-hypothesis is dead on arrival, and that the sources worth paying for are the
-ones not tested here.
+The best 1% of signals earns **+0.21% gross** over 8 days. Modelled round-trip
+cost on small caps is **~48bp**. The edge is real and about half the size of
+what it costs to harvest. Average gross exposure sits at 5% against a 150%
+limit because the edge gate is correctly refusing to deploy capital.
+
+And 73% of that AUC comes from *market-state* features predicting which names
+hit volatility-scaled barriers — barrier mechanics, not catalysts. Insider
+features contribute 0.6%; news, −0.0%.
+
+**None of this proves there is no edge.** 106 names over 4 years leaves 36
+events in the most interesting cell. That is a statement about statistical
+power, not about the world — which is why the top recommendation is a 10–20×
+wider universe, not more feature engineering.
 
 ---
 
@@ -195,21 +247,24 @@ survivor-only history is biased in exactly the direction that matters most.
 
 ```
 src/iai/
-  core/         Event type, PIT validation, NYSE calendar, identifier resolution
-  sources/      one adapter per feed + a synthetic world with known ground truth
-  diagnostics/  event study, label lift, coverage — run these first
-  features/     event intensity + market controls, and the lookahead audit
-  labels.py     triple barrier, overlap-aware sample weights
-  model/        purged walk-forward, seed ensemble, isotonic calibration
-  risk/         fractional Kelly, hard caps, drawdown kill switch
-  backtest/     next-open fills, sqrt impact, deflated Sharpe
-docs/           ARCHITECTURE.md · DATA_SOURCES.md · RISK.md
-tests/          82 tests, PIT correctness first
+  core/              Event type, PIT validation, NYSE calendar, identifier resolution
+  sources/           edgar · insiders (Form 4) · institutional (13F, 13D/G) ·
+                     flow (volume anomalies) · news · litigation · flights ·
+                     shipping · prices + a synthetic world with known ground truth
+  diagnostics.py     event study, CONDITIONAL event study, FDR correction — run first
+  universe_builder   point-in-time market caps from SEC XBRL
+  features/          event intensity + market controls, and the lookahead audit
+  labels.py          triple barrier, overlap-aware sample weights
+  model/             purged walk-forward, seed ensemble, isotonic calibration
+  risk/              fractional Kelly, hard caps, drawdown kill switch
+  backtest/          next-open fills, sqrt impact, deflated Sharpe
+docs/                ARCHITECTURE.md · DATA_SOURCES.md · RISK.md · FINDINGS.md
+scripts/             run_smallmid.py (fetch) · model_smallmid.py (train+backtest)
+tests/               111 tests, PIT correctness first
 ```
 
 ```bash
-pytest tests/ -q          # ~12 min; the model tests train real models
-pytest tests/ -q -m "not slow"
+pytest tests/ -q          # ~90s
 ```
 
 ---

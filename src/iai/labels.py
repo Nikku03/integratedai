@@ -43,6 +43,29 @@ from .core.config import Config
 
 log = logging.getLogger(__name__)
 
+#: Cap on the horizon-scaled volatility used to place barriers.
+#:
+#: After a 250% single-day move -- a biotech trial readout, a buyout, a short
+#: squeeze -- trailing daily vol can exceed 45%, and ``sigma * sqrt(horizon)``
+#: then exceeds 1.0. The lower barrier ``entry * (1 - 0.75 * sigma_h)`` goes
+#: **negative**: a stop below zero that can never trade, so every such sample is
+#: forced to a time-stop label. The upper barrier becomes a 4x target that is
+#: equally unreachable.
+#:
+#: It also corrupts everything downstream: :func:`estimate_payoffs` buckets on
+#: relative barrier width, and a width of -648 drags the quantile edges for the
+#: whole panel, so 41 bad rows out of 105,000 distort the payoff estimates used
+#: to size every trade.
+#:
+#: 0.60 means the barriers can be at most +/- 60% of entry over the horizon,
+#: which is already an extreme bet and comfortably wider than any barrier a
+#: sane configuration would want.
+MAX_SIGMA_HORIZON = 0.60
+
+#: Hard floor on the lower barrier as a fraction of entry price. A stop is a
+#: price you can actually trade at.
+MIN_BARRIER_FRACTION = 0.05
+
 LABEL_COLS = [
     "date",
     "ticker",
@@ -78,8 +101,12 @@ def build_labels(prices: pd.DataFrame, cfg: Config) -> pd.DataFrame:
         lambda s: s.rolling(lc.vol_window, min_periods=10).std()
     )
     # Horizon-scaled sigma. sqrt-time is wrong in the tails but it is the right
-    # first-order scaling and it keeps the barriers interpretable.
-    df["sigma_h"] = df["sigma_d"] * np.sqrt(lc.max_holding_days)
+    # first-order scaling and it keeps the barriers interpretable. Winsorised
+    # so a post-gap volatility estimate cannot push a barrier through zero --
+    # see MAX_SIGMA_HORIZON.
+    df["sigma_h"] = (df["sigma_d"] * np.sqrt(lc.max_holding_days)).clip(
+        upper=MAX_SIGMA_HORIZON
+    )
 
     out = []
     for _ticker, grp in df.groupby("ticker", observed=True, sort=False):
@@ -118,7 +145,11 @@ def _label_one(g: pd.DataFrame, lc) -> pd.DataFrame:
             continue
 
         up = entry_px * (1.0 + lc.upper_mult * sigma_h[i])
-        dn = entry_px * (1.0 - lc.lower_mult * sigma_h[i])
+        # Floor the stop: a barrier at or below zero is not a price.
+        dn = max(
+            entry_px * (1.0 - lc.lower_mult * sigma_h[i]),
+            entry_px * MIN_BARRIER_FRACTION,
+        )
         up_arr[i], dn_arr[i] = up, dn
         entry_idx[i] = e
 

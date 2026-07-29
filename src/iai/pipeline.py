@@ -26,7 +26,7 @@ from .backtest.engine import Backtester, BacktestResult
 from .backtest.metrics import monthly_table, trade_attribution
 from .core.config import Config
 from .core.http import HttpClient
-from .core.types import validate_events
+from .core.types import events_to_frame, validate_events
 from .core.universe import Universe
 from .diagnostics import coverage_report, event_study, event_study_summary, label_lift
 from .features.assembler import assemble, audit_lookahead
@@ -40,10 +40,15 @@ from .model.train import (
 )
 from .sources.base import SourceRegistry
 from .sources.edgar import EdgarFilings, EdgarFullText
+from .sources.flow import FlowAnomalies
+from .sources.insiders import InsiderTransactions
+from .sources.institutional import StakeDisclosures
 from .sources.litigation import CourtListenerDockets
+from .sources.news import FilingNews
 from .sources.prices import YahooPrices, add_derived
 from .sources.shipping import BillOfLading, ComtradeFlows, TradeExposure
 from .sources.synthetic import SyntheticWorld, synthetic_events_to_frame
+from .universe_builder import build_smallmid_universe, cap_features
 
 log = logging.getLogger(__name__)
 
@@ -170,15 +175,31 @@ def build_sources(
     *,
     trade_exposure: TradeExposure | None = None,
     bol_path: str | Path | None = None,
+    prices: pd.DataFrame | None = None,
+    include_slow: bool = True,
+    workers: int = 8,
 ) -> SourceRegistry:
-    """Wire up the sources that have what they need to run."""
-    sources = [
+    """Wire up the sources that have what they need to run.
+
+    ``include_slow`` controls the sources whose latency makes them unsuitable
+    for a short-horizon strategy (EDGAR full-text sweeps, Comtrade at 75 days).
+    Set it False for a fast catalyst run and the registry simply omits them
+    rather than contributing stale features.
+    """
+    sources: list = [
         EdgarFilings(cfg, client, universe),
-        EdgarFullText(cfg, client, universe),
-        CourtListenerDockets(cfg, client, universe),
-        ComtradeFlows(cfg, client, universe, exposure=trade_exposure),
-        BillOfLading(cfg, client, universe, path=bol_path),
+        InsiderTransactions(cfg, client, universe, workers=workers),
+        StakeDisclosures(cfg, client, universe),
     ]
+    if prices is not None and not prices.empty:
+        sources.append(FlowAnomalies(cfg, client, universe, prices=prices))
+    if include_slow:
+        sources += [
+            EdgarFullText(cfg, client, universe),
+            CourtListenerDockets(cfg, client, universe),
+            ComtradeFlows(cfg, client, universe, exposure=trade_exposure),
+            BillOfLading(cfg, client, universe, path=bol_path),
+        ]
     return SourceRegistry(sources)
 
 
@@ -220,6 +241,85 @@ def fetch_live(
     return prices, events, uni
 
 
+def fetch_smallmid(
+    cfg: Config,
+    start: str,
+    end: str,
+    *,
+    seed_tickers: list[str] | None = None,
+    max_names: int = 150,
+    min_cap: float = 50_000_000,
+    max_cap: float = 10_000_000_000,
+    include_slow: bool = False,
+    workers: int = 8,
+) -> tuple[pd.DataFrame, pd.DataFrame, Universe, pd.DataFrame]:
+    """Fetch a small/mid-cap universe and every fast source for it.
+
+    Returns ``(prices, events, universe, caps)``.
+
+    The order matters and is not arbitrary:
+
+    1. Resolve the SEC universe and pull prices for the candidate list.
+    2. Build the **point-in-time** market-cap panel and screen to the band.
+       Screening on today's cap would sort on the future -- see
+       :mod:`iai.universe_builder`.
+    3. Fetch event sources against the screened universe only, because Form 4
+       XML fetching is the expensive step and there is no point spending it on
+       names that were never in band.
+    4. Derive flow anomalies from the prices and press-release intensity from
+       the EDGAR events, both of which are free given steps 1 and 3.
+    """
+    cfg.ensure_dirs()
+    client = HttpClient(
+        cfg.data.cache_dir, cfg.data.user_agent, rate_per_sec=9.0, ttl_hours=cfg.data.cache_ttl_hours
+    )
+    full = Universe.from_sec(client)
+
+    candidates = seed_tickers or full.tickers
+    log.info("pricing %d candidate tickers", len(candidates))
+    prices = YahooPrices(cfg, client).fetch(candidates, pd.Timestamp(start), pd.Timestamp(end))
+    if prices.empty:
+        raise ValueError("no price data returned; check network and ticker list")
+    prices = add_derived(prices, cfg)
+
+    uni, cap_panel = build_smallmid_universe(
+        client, full, prices,
+        min_cap=min_cap, max_cap=max_cap,
+        min_adv_usd=cfg.features.min_adv_usd, min_price=cfg.features.min_price,
+    )
+    if len(uni.tickers) > max_names:
+        # Keep the most liquid, which is where a small-cap strategy can
+        # actually transact. Recorded rather than silent: this is a cap on
+        # coverage and it biases the sample toward tradability.
+        adv = (
+            prices.groupby("ticker", observed=True)["adv_usd"].median().sort_values(ascending=False)
+        )
+        keep = [t for t in adv.index if t in set(uni.tickers)][:max_names]
+        log.info("truncating universe %d -> %d most liquid names", len(uni.tickers), len(keep))
+        uni = uni.subset(keep)
+
+    prices = prices[prices["ticker"].isin(set(uni.tickers))].reset_index(drop=True)
+    caps = cap_features(cap_panel, prices)
+
+    registry = build_sources(
+        cfg, client, uni, prices=prices, include_slow=include_slow, workers=workers
+    )
+    log.info("source health:\n%s", registry.health().to_string(index=False))
+    events = registry.collect(pd.Timestamp(start, tz="UTC"), pd.Timestamp(end, tz="UTC"))
+
+    # Press-release intensity is derived from the EDGAR events just collected.
+    news = FilingNews(cfg, client, uni, base_events=events)
+    news_events = events_to_frame(news.fetch(pd.Timestamp(start, tz="UTC"), pd.Timestamp(end, tz="UTC")))
+    if not news_events.empty:
+        events = validate_events(
+            pd.concat([events, news_events], ignore_index=True)
+            .drop_duplicates(subset="uid")
+            .sort_values("available_ts")
+            .reset_index(drop=True)
+        )
+    return prices, events, uni, caps
+
+
 def run_research(
     prices: pd.DataFrame,
     events: pd.DataFrame,
@@ -228,10 +328,24 @@ def run_research(
     sectors: dict[str, str] | None = None,
     audit: bool = True,
     n_trials: int = 1,
+    extra_features: pd.DataFrame | None = None,
 ) -> ResearchResult:
-    """The full historical pass."""
+    """The full historical pass.
+
+    ``extra_features`` is joined on (date, ticker) after assembly -- used to
+    attach the point-in-time market-cap panel, so the model can learn that a
+    catalyst in a $200m name behaves differently from one in a $6bn name.
+    """
     log.info("assembling features")
     panel = assemble(prices, events, cfg)
+    if extra_features is not None and not extra_features.empty:
+        numeric = [
+            c for c in extra_features.columns
+            if c not in ("date", "ticker") and pd.api.types.is_numeric_dtype(extra_features[c])
+        ]
+        panel = panel.merge(
+            extra_features[["date", "ticker", *numeric]], on=["date", "ticker"], how="left"
+        )
     if panel.empty:
         raise ValueError("feature panel is empty; check that prices cover the event window")
 

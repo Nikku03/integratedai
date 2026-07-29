@@ -11,17 +11,144 @@ This document is deliberately blunt about the weak ones.
 
 ## Summary table
 
+Sorted by **latency**, which for a days-to-weeks trade is the property that
+matters most. A source that is 45 days stale cannot time a two-week bet no
+matter how good its content is.
+
 | Source | Cost | Coverage | Latency | Honest verdict |
 |---|---|---|---|---|
+| **Volume / flow anomalies** | free | universal | **0 days** | **Best free short-horizon source.** Cannot be suppressed. |
 | SEC EDGAR filings | free | ~100% of US issuers | ~15 min | **The backbone.** Best signal-per-dollar in public markets. |
-| EDGAR full-text search | free | 2001-present | ~15 min | **Strong.** Finds catalysts with no dedicated form type. |
-| Partner spillover (derived) | free | good where deals are disclosed | same as filing | **Underrated.** Genuinely differentiated, costs nothing but code. |
-| Litigation (CourtListener/RECAP) | free tier / ~$100s | federal only, patchy | hours to days | **Useful, one-sided.** A hit is informative; a miss means nothing. |
-| Price/volume | free (Yahoo) or paid | universal | EOD | Not alpha. Required as controls. |
-| Shipping — bills of lading | **$1k-10k+/yr** | ocean imports only | ~4 days | **The only trade tier with single-stock alpha.** |
+| EDGAR full-text search | free | 2001-present | ~15 min | Strong, but slow to sweep. Off in the fast profile. |
+| Press-release intensity (derived) | free | ~100% | ~15 min | The only free *backtestable* news proxy. |
+| **Form 4 insider trades** | free | ~100% | **~2 days** | **The real institutional signal.** Cluster buys especially. |
+| Partner spillover (derived) | free | where deals are disclosed | same as filing | Underrated. Costs only code. |
+| SC 13D (activist stake) | free | event-driven | ~10 days | Carries *intent*. Worth its weight. |
+| Litigation (CourtListener/RECAP) | free tier | federal only, patchy | hours to days | Useful, one-sided. A hit informs; a miss proves nothing. |
+| Shipping — bills of lading | **$1k-10k+/yr** | ocean imports only | ~4 days | The only trade tier with single-stock alpha. |
 | Private jet ADS-B | free-ish / $$ | biased, see below | ~2 h | **Weakest.** Real but small, badly biased, high effort. |
+| **13F institutional holdings** | free | quarterly | **45-135 days** | **Not a timing signal.** Off by default. See below. |
 | Shipping — UN Comtrade | free | country × commodity | **~75 days** | Macro tilt only. Not a stock signal. |
 | AIS vessel tracking | $$$ | global | ~6 h | Middle tier. Operationally annoying. |
+| Historical news (vendor) | $300+/mo | good | seconds-hours | Buy it if the strategy justifies it. No free option works. |
+
+---
+
+## Volume and flow anomalies — the best free short-horizon source
+
+`sources/flow.py`. Everything else tells you *what happened*; volume tells you
+*who is acting on it*, today rather than in two days or forty-five.
+
+An institution accumulating a small-cap position **cannot hide the print**.
+There is no filing delay, no coverage bias, no suppression programme, and no
+subscription. For a days-to-weeks small-cap strategy this is the source I would
+build first and cut last.
+
+Detected patterns:
+
+- **`flow.volume_surge`** — dollar volume z-scored against the name's *own*
+  trailing baseline, in logs. Not a fixed multiple: a stock that normally
+  trades $500k doing $3m is a far bigger event than a $200m name doing $600m.
+- **`flow.accumulation` / `flow.distribution`** — the institutional-footprint
+  shape. Several sessions of above-baseline volume with closes clustering near
+  the top (or bottom) of each day's range and net drift. That is a fund working
+  an order over days rather than a single print.
+- **`flow.breakout` / `flow.breakdown`** — a close through a trailing extreme,
+  **volume-confirmed**. An unconfirmed breakout is a tick.
+- **`flow.churn`** — heavy volume, small net move. Two large parties trading
+  with each other; resolution usually comes later.
+- **`flow.gap`** — volatility-scaled overnight gap.
+
+One implementation detail that is a real bug in most versions of this idea:
+the trailing standard deviation used for z-scoring must be **floored**. A name
+that traded near-identical volume for a quarter has a baseline std near zero,
+so the day it finally does 20x divides by ~0 and gets dropped as NaN — silently
+discarding the single highest-signal observation in the series for being too
+extreme. `MIN_LOG_STD` exists for that.
+
+---
+
+## Form 4 insider transactions — the institutional signal that is actually fast
+
+`sources/insiders.py`. Ranked by how quickly ownership information reaches you:
+
+| Filing | Deadline | Usable for a 2-week trade? |
+|---|---|---|
+| **Form 4** | **2 business days** | **Yes — this one** |
+| SC 13D | 10 days after crossing 5% | Yes, and it carries intent |
+| SC 13G | 45 days after year-end | Marginal |
+| **13F-HR** | **45 days after quarter end** | **No** |
+
+**Most Form 4s are noise, and that is why naive insider signals fail.** The
+transaction code is everything:
+
+- **`P` (open-market purchase)** — the signal. An officer spending their own
+  money at the market price is the only transaction here with unambiguous
+  information content.
+- `S` (sale) — weak and asymmetric. Insiders sell for diversification, tax
+  bills, and house purchases. A purchase is strong evidence; a sale is mild.
+- `A` (grant), `M` (option exercise), `F` (tax withholding) — **dropped
+  entirely**, not down-weighted. They are mechanical and they add variance to
+  the cluster counts.
+
+Two refinements, both well supported in the literature (Lakonishok–Lee,
+Jeng–Metrick–Zeckhauser, Cohen–Malloy–Pomorski) and both implemented:
+
+1. **Cluster buying dominates single buys.** Three *different* insiders buying
+   inside a fortnight beats one insider buying three times. `insider.cluster_buy`
+   fires on distinct-buyer counts, and its availability is the filing date of
+   the **last** purchase in the cluster — dating it to the first would be a
+   lookahead bug worth several points of fake return.
+2. **Role matters.** A CEO or CFO purchase carries more than a director's; a
+   10% owner's is often mechanical rebalancing.
+
+Verified against live SEC data during development: Cleveland-Cliffs (CLF) shows
+a genuine CEO + CFO + President + Director cluster buy across late April–early
+May 2023, with a 2.3-day median filing lag.
+
+---
+
+## 13F — why it is off by default
+
+A 13F filed 45 days after quarter end describes positions that are between 45
+and 135 days old. The fund has had a full quarter to finish accumulating or to
+leave entirely.
+
+For a two-week holding period **that is not a timing signal**, and
+`ThirteenF.health()` says so rather than quietly contributing a feature that
+will look fine in a backtest fitted on it. Pass `allow_stale=True` if you want
+it as slow *context* — "is this name already crowded?" is a legitimate
+conditioning variable — but never as a trigger.
+
+It also needs a CUSIP→ticker map, which is a genuine obstacle: CUSIP Global
+Services licenses those identifiers and they are not freely redistributable.
+
+---
+
+## News — the honest state of free historical data
+
+`sources/news.py`. The gap between "news data exists" and "news data you can
+backtest on" is wide and expensive.
+
+- **`FilingNews` (default)** — press-release intensity from 8-K Items 7.01,
+  8.01 and 2.02. This is *company news*, timestamped to the second, complete
+  for every US issuer back to 2001, and free. It is the only free historical
+  news source that is genuinely backtestable, which is why it is the default.
+- **`YahooNews`** — free and keyless, but returns ~10 recent items with no
+  date-range parameter. **Live only.** Fine as a last-mile check before sending
+  an order; useless for history.
+- **`GdeltNews`** — genuinely date-rangeable and free, 2015-present. Rate
+  limited to one request per five seconds, and **it blocks shared cloud egress
+  IPs outright** — it is blocked from the environment this was developed in.
+  From a residential or dedicated IP it works and it is the best free option.
+- **`CsvNews`** — point it at a vendor archive. Benzinga (~$300/mo, good
+  historical API), Marketaux, Alpha Vantage (cheap, thin), RavenPack
+  (institutional).
+
+**The signal is attention, not sentiment.** An abnormal article *count* against
+the name's own baseline is far more robust than a sentiment score. "Beats
+estimates, stock falls" is a headline every off-the-shelf classifier gets
+backwards, and the market's actual reaction is measured better by volume.
 
 ---
 

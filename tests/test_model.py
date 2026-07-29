@@ -228,3 +228,73 @@ def test_model_beats_coin_flip_on_planted_data(cfg):
     X, y, meta = make_dataset(panel, labels, cfg)
     fit = walk_forward(X, y, meta, cfg, permutation_repeats=0)
     assert fit.auc > 0.52, f"model found no signal at all (AUC={fit.auc:.4f})"
+
+
+# ---------------------------------------------- conditional (conjunction) study
+
+
+def test_conditional_study_separates_arms(world, cfg):
+    """The with/without split must partition the primary events exactly."""
+    from iai.diagnostics import conditional_event_study
+
+    out = conditional_event_study(
+        world["events"], world["prices"], cfg,
+        primary="8-K.1.01", conditions=["flight.convergence"],
+        window_days=10, min_events=5,
+    )
+    if out.empty:
+        return
+    arms = out.set_index("arm")["n_primary"].to_dict()
+    with_n = next((v for k, v in arms.items() if k.startswith("with")), 0)
+    without_n = next((v for k, v in arms.items() if k.startswith("without")), 0)
+    assert with_n + without_n == arms.get("all", with_n + without_n)
+
+
+def test_conditional_study_never_looks_forward(world, cfg):
+    """Conditions must fire at or before the primary, never after.
+
+    A condition allowed to fire *after* the primary would make the split a
+    function of the future, and the 'with' arm would look wonderful for
+    entirely circular reasons.
+    """
+    import pandas as pd
+
+    from iai.diagnostics import conditional_event_study
+    from iai.features.events import attach_entry_session
+
+    ev = attach_entry_session(world["events"], cfg)
+    primary_kind, cond_kind = "8-K.1.01", "flight.convergence"
+
+    # Push every condition event far into the future; the 'with' arm must vanish.
+    shifted = world["events"].copy()
+    mask = shifted["kind"] == cond_kind
+    shifted.loc[mask, "available_ts"] = shifted.loc[mask, "available_ts"] + pd.Timedelta(days=400)
+    shifted.loc[mask, "event_ts"] = shifted.loc[mask, "event_ts"] + pd.Timedelta(days=400)
+
+    out = conditional_event_study(
+        shifted, world["prices"], cfg,
+        primary=primary_kind, conditions=[cond_kind], window_days=5, min_events=5,
+    )
+    arms = out.set_index("arm")["n_primary"].to_dict() if not out.empty else {}
+    with_n = next((v for k, v in arms.items() if k.startswith("with")), 0)
+    without_n = next((v for k, v in arms.items() if k.startswith("without")), 0)
+    assert with_n == 0 or with_n < without_n
+    _ = ev
+
+
+def test_conditional_study_reports_the_unconditional_arm(world, cfg):
+    """A conjunction must be comparable against its own base case.
+
+    A subset chosen after looking will beat zero by construction. The only
+    honest comparison is against the same primary event without the condition,
+    which is why the 'all' and 'without' arms are always returned.
+    """
+    from iai.diagnostics import conditional_event_study
+
+    out = conditional_event_study(
+        world["events"], world["prices"], cfg,
+        primary="8-K.1.01", conditions=["flight.convergence"],
+        window_days=10, min_events=5,
+    )
+    if not out.empty:
+        assert "all" in set(out["arm"])

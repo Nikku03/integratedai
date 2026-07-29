@@ -200,3 +200,54 @@ class Config:
     def ensure_dirs(self) -> None:
         for d in (self.data.cache_dir, self.data.store_dir, self.data.model_dir):
             d.mkdir(parents=True, exist_ok=True)
+
+    @classmethod
+    def short_horizon(cls) -> Config:
+        """Preset for fast, asymmetric, small/mid-cap catalyst trades.
+
+        Differs from the default in four ways, each deliberate:
+
+        **Horizon 8 sessions, not 15.** The move you are trying to capture is
+        the reaction to a discrete event. Past a couple of weeks you are no
+        longer holding a catalyst, you are holding beta, and the ratio of
+        signal to noise falls the whole way.
+
+        **Asymmetric barriers (1.5 up / 0.75 down).** You asked for big reward
+        on a short trade. That means accepting a *lower* hit rate to get a
+        payoff ratio near 4:1 -- cut fast, let the winners run to a distant
+        target. This is the opposite of the symmetric barrier that maximises
+        label balance, and it is the right trade-off when the payoff is the
+        point.
+
+        **Faster decay half-lives.** A volume surge is stale in a week. The
+        default half-lives are tuned for filings that matter for a quarter.
+
+        **Wider participation and lower ADV floor**, because small caps are the
+        target and a $2m ADV floor screens most of them out. This raises real
+        execution cost, which the cost model then charges you for -- the
+        backtest gets worse and more honest at the same time.
+        """
+        cfg = cls()
+
+        cfg.labels.max_holding_days = 8
+        cfg.labels.upper_mult = 1.5
+        cfg.labels.lower_mult = 0.75
+        cfg.labels.vol_window = 21
+
+        cfg.features.halflives = (1, 3, 10, 21)
+        cfg.features.min_adv_usd = 750_000.0
+        cfg.features.min_price = 2.0
+
+        cfg.model.purge_days = 10  # must stay >= max_holding_days
+        cfg.model.embargo_days = 3
+
+        cfg.risk.max_holding_days = 8
+        cfg.risk.stop_loss_sigma = 1.0
+        cfg.risk.max_positions = 25
+        cfg.risk.max_weight_per_name = 0.05
+        cfg.risk.max_risk_per_trade = 0.0075
+        # Small caps on news days are expensive. Charge for it.
+        cfg.costs.half_spread_bps = 15.0
+        cfg.costs.impact_coef_bps = 45.0
+        cfg.costs.max_participation = 0.03
+        return cfg

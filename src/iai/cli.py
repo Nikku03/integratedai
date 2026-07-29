@@ -83,9 +83,30 @@ def cmd_demo(args: argparse.Namespace) -> int:
         if planted != 0.0 and (not survives or np.sign(row.drift_car) != np.sign(planted)):
             ok = False
     print()
-    print(f"  RECOVERY: {'PASS' if ok else 'FAIL'} -- planted effects found with correct sign and")
-    print("            surviving multiple-testing correction, controls correctly")
-    print("            null, no pre-event drift (no leakage).")
+    if ok:
+        print("  RECOVERY: PASS -- every planted effect recovered with the correct sign")
+        print("            and surviving multiple-testing correction; both controls")
+        print("            correctly null; no pre-event drift, so no leakage.")
+    else:
+        missed = [
+            r.kind for r in summ.itertuples(index=False)
+            if truth.get(r.kind) not in (None, 0.0) and not bool(r.survives_fdr)
+        ]
+        false_pos = [
+            r.kind for r in summ.itertuples(index=False)
+            if truth.get(r.kind) == 0.0 and bool(r.survives_fdr)
+        ]
+        print("  RECOVERY: FAIL")
+        if missed:
+            print(f"            not recovered: {', '.join(missed)}")
+        if false_pos:
+            print(f"            CONTROL FIRED (this one is serious): {', '.join(false_pos)}")
+        print()
+        print("            A missed effect on a SMALL world is usually statistical")
+        print("            power, not a bug -- rare kinds need events to clear FDR.")
+        print("            Re-run at the default size before concluding anything:")
+        print("              iai demo --fast")
+        print("            A control firing is different, and always a real problem.")
     print()
     print("  Reminder: good numbers here mean the plumbing works, not that the")
     print("  strategy does. Synthetic data contains alpha by construction, and the")

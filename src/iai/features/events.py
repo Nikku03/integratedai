@@ -41,6 +41,10 @@ FAMILIES = {
     "partner": ("partners",),
     "flight": ("flights",),
     "trade": ("trade", "shipping", "shipping_ais"),
+    "insider": ("insiders",),
+    "instl": ("institutional", "stakes"),
+    "flow": ("flow",),
+    "news": ("news", "news_live"),
 }
 
 

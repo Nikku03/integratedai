@@ -251,6 +251,110 @@ def _verdict(pre: float, day0: float, drift: float, drift_t: float, survives: bo
     return f"tradable drift {drift:+.2%}"
 
 
+def conditional_event_study(
+    events: pd.DataFrame,
+    prices: pd.DataFrame,
+    cfg: Config,
+    *,
+    primary: str,
+    conditions: list[str],
+    window_days: int = 5,
+    pre: int = 5,
+    post: int = 20,
+    min_events: int = 20,
+    require_all: bool = False,
+) -> pd.DataFrame:
+    """Drift after ``primary`` fires, split by whether ``conditions`` also fired.
+
+    Why this exists
+    ---------------
+    :func:`event_study` is a **marginal** test: it asks whether an event kind
+    moves price *on average, unconditionally*. That averages a microcap with no
+    analyst coverage together with a $9bn name where forty people read the
+    filing within a minute, and the average of a heterogeneous population is
+    the least informative summary of it.
+
+    The interesting hypothesis is almost always a **conjunction** -- an insider
+    cluster buy *and* a volume surge, a press release *and* a breakout. A
+    marginal study cannot see that, and its silence is not evidence against it.
+
+    This function measures the conditional drift directly and, critically,
+    reports the **unconditional** arm alongside it. A conjunction that beats its
+    own base case is interesting; a conjunction that merely beats zero has told
+    you nothing you did not already know, because it is a strict subset chosen
+    after looking.
+
+    Parameters
+    ----------
+    primary:
+        Event kind whose forward drift is being measured.
+    conditions:
+        Other kinds that must have fired on the same ticker within
+        ``window_days`` *before or on* the primary's known date. Never after --
+        that would be a lookahead.
+    require_all:
+        ``True`` demands every condition; ``False`` demands any.
+
+    Beware the multiplicity
+    ----------------------
+    Every (primary, condition) pair you try is another hypothesis. The p-values
+    here are raw. Count your attempts and put them through
+    :func:`benjamini_hochberg`, or you are mining.
+    """
+    if events.empty or prices.empty:
+        return pd.DataFrame()
+
+    ev = attach_entry_session(events, cfg)
+    prim = ev[ev["kind"] == primary]
+    if prim.empty:
+        return pd.DataFrame()
+
+    cond = ev[ev["kind"].isin(conditions)]
+    # ticker -> {kind -> sorted list of known_date}
+    by_ticker: dict[str, dict[str, list]] = {}
+    for row in cond.itertuples(index=False):
+        by_ticker.setdefault(row.ticker, {}).setdefault(row.kind, []).append(row.known_date)
+    for kinds in by_ticker.values():
+        for lst in kinds.values():
+            lst.sort()
+
+    window = pd.Timedelta(days=window_days)
+
+    def satisfied(ticker: str, when) -> bool:
+        kinds = by_ticker.get(ticker, {})
+        hits = []
+        for k in conditions:
+            dates = kinds.get(k, [])
+            # Strictly at or before `when`, within the window.
+            hit = any((when - window) <= d <= when for d in dates)
+            hits.append(hit)
+        return all(hits) if require_all else any(hits)
+
+    flags = [satisfied(r.ticker, r.known_date) for r in prim.itertuples(index=False)]
+    prim = prim.assign(_cond=flags)
+
+    label = "+".join(c.split(".")[-1] for c in conditions)
+    out = []
+    for arm, sub in (
+        ("with " + label, prim[prim["_cond"]]),
+        ("without " + label, prim[~prim["_cond"]]),
+        ("all", prim),
+    ):
+        if len(sub) < min_events:
+            continue
+        tagged = sub.assign(kind=f"{primary} [{arm}]")
+        study = event_study(
+            tagged.drop(columns=["_cond"]), prices, cfg,
+            pre=pre, post=post, min_events=min_events,
+        )
+        summary = event_study_summary(study, post=post)
+        if not summary.empty:
+            out.append(summary.assign(arm=arm, n_primary=len(sub)))
+    if not out:
+        return pd.DataFrame()
+    return pd.concat(out, ignore_index=True)
+
+
 def label_lift(
     events: pd.DataFrame, labels: pd.DataFrame, cfg: Config, *, min_events: int = 20
 ) -> pd.DataFrame:

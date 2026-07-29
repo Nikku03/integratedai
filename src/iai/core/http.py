@@ -14,6 +14,7 @@ import json
 import logging
 import threading
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any
 
@@ -96,7 +97,7 @@ class HttpClient:
                 path.unlink(missing_ok=True)
 
         backoff = 1.0
-        for attempt in range(self.max_retries):
+        for _attempt in range(self.max_retries):
             self.limiter.acquire()
             try:
                 resp = self.session.get(url, params=params, headers=headers, timeout=self.timeout)
@@ -114,8 +115,48 @@ class HttpClient:
                     path.write_text(json.dumps({"url": url, "body": body}))
                 return body
             except requests.RequestException as exc:
-                log.warning("%s attempt %d failed: %s", url, attempt + 1, exc)
+                log.warning("%s attempt %d failed: %s", url, _attempt + 1, exc)
                 time.sleep(backoff)
                 backoff *= 2
         log.error("giving up on %s after %d attempts", url, self.max_retries)
         return None
+
+    def get_many(
+        self,
+        urls: list[str],
+        *,
+        parse: str = "json",
+        workers: int = 8,
+        headers: dict | None = None,
+        progress_every: int = 500,
+    ) -> dict[str, object]:
+        """Fetch many URLs concurrently, returning ``{url: body}``.
+
+        The shared :class:`RateLimiter` still applies across threads, so the
+        aggregate request rate stays inside the source's published limit no
+        matter how many workers are used -- the concurrency hides latency, it
+        does not raise throughput past what the host allows. That distinction
+        matters: the SEC publishes a 10 req/s ceiling and enforces it with
+        blocks, not with 429s.
+
+        Failures return ``None`` for that URL rather than aborting the batch.
+        """
+        out: dict[str, object] = {}
+        if not urls:
+            return out
+        done = 0
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            futures = {
+                pool.submit(self.get, u, headers=headers, parse=parse): u for u in urls
+            }
+            for fut in as_completed(futures):
+                url = futures[fut]
+                try:
+                    out[url] = fut.result()
+                except Exception:  # noqa: BLE001 - one bad URL must not kill the batch
+                    log.exception("unhandled error fetching %s", url)
+                    out[url] = None
+                done += 1
+                if progress_every and done % progress_every == 0:
+                    log.info("fetched %d/%d", done, len(urls))
+        return out
