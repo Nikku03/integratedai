@@ -860,6 +860,82 @@ def test_bulk_cluster_needs_distinct_insiders():
     assert out[0].payload["n_insiders"] == 2
 
 
+def test_filer_typo_dates_do_not_crash_or_time_travel():
+    """Regression: a real 2016Q1 filing carries transaction date 0016-03-16.
+
+    Found by running the eleven-year fetch -- 563,414 transactions contain
+    typos that four years and 341 names did not. Year 16 is not merely wrong,
+    it is outside the range pandas can localise to New York, so it raised
+    partway through the run rather than quietly skewing a feature.
+
+    The repair falls back to the filing date, which can only move an event
+    LATER. That direction matters: it cannot manufacture lookahead.
+    """
+    from iai.core.config import Config
+    from iai.core.http import HttpClient
+    from iai.sources.insiders_bulk import BulkInsiderTransactions
+
+    cfg = Config.moonshot()
+    src = BulkInsiderTransactions(cfg, HttpClient(cfg.data.cache_dir, "t"), Universe())
+    filed = pd.Timestamp("2016-03-18")
+    avail = src._available(filed)
+
+    bad = src._event_time(pd.Timestamp("0016-03-16"), filed, avail)
+    assert bad <= avail, "a repaired date must not post-date availability"
+    assert bad.year == 2016
+    assert src._repaired == 1, "repairs must be counted, not silent"
+
+    # A plausible date is left exactly as it was.
+    good = src._event_time(pd.Timestamp("2016-03-16"), filed, avail)
+    assert good.tz_convert("America/New_York").date() == pd.Timestamp("2016-03-16").date()
+    assert src._repaired == 1, "a valid date must not be counted as a repair"
+
+    # Missing dates fall back too, and are not counted as typos.
+    assert src._event_time(pd.NaT, filed, avail) <= avail
+    assert src._repaired == 1
+
+
+def test_events_survive_a_daylight_saving_gap():
+    """Half a million filer-typed dates will eventually land in the DST gap.
+
+    tz_localize raises on a nonexistent wall-clock time by default. Shifting
+    forward is the conservative direction -- it can only make an event later.
+    """
+    from iai.sources.insiders_bulk import _et
+
+    for day in ("2016-03-13", "2021-03-14", "2024-03-10"):  # spring forward
+        assert _et(pd.Timestamp(day), 9, 30) is not None
+    for day in ("2016-11-06", "2024-11-03"):  # fall back, ambiguous
+        assert _et(pd.Timestamp(day), 9, 30) is not None
+
+
+def test_typo_dates_pass_pit_validation_end_to_end():
+    """The validator is the backstop; the repair must satisfy it."""
+    from iai.core.config import Config
+    from iai.core.http import HttpClient
+    from iai.sources.insiders_bulk import BulkInsiderTransactions
+
+    cfg = Config.moonshot()
+    src = BulkInsiderTransactions(cfg, HttpClient(cfg.data.cache_dir, "t"), Universe())
+    trades = pd.DataFrame([{
+        "ticker": "AAA", "cik": "1", "accession": "a1", "owner": "Jane",
+        "owner_cik": "9", "role": "ceo", "code": "P", "shares": 1000.0,
+        "price": 50.0, "value_usd": 50_000.0,
+        "transaction_date": pd.Timestamp("0016-03-16"),   # the typo
+        "filing_date": pd.Timestamp("2016-03-18"),
+    }, {
+        "ticker": "BBB", "cik": "2", "accession": "a2", "owner": "Bob",
+        "owner_cik": "8", "role": "director", "code": "P", "shares": 1000.0,
+        "price": 50.0, "value_usd": 50_000.0,
+        "transaction_date": pd.Timestamp("2016-03-16"),   # fine
+        "filing_date": pd.Timestamp("2016-03-18"),
+    }])
+    events = src._to_events(trades, pd.Timestamp("2016-01-01", tz="UTC"),
+                            pd.Timestamp("2017-01-01", tz="UTC"))
+    assert len(events) == 2
+    validate_events(events_to_frame(events))
+
+
 # ------------------------------------------------- bulk archives: cache, cores
 
 

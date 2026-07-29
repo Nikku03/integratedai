@@ -77,6 +77,29 @@ BULK_URL = (
 #: director, officer, tenpercent, other.
 _REL_FIELDS = ("director", "officer", "tenpercent", "other")
 
+#: How far before its filing date a transaction date may plausibly sit. Form 4
+#: is due within two business days; late filings happen and Form 5 sweeps up a
+#: year's worth, so this is generous. Beyond it the date is a filer typo, not a
+#: late filing -- the 2016Q1 archive contains a real transaction dated
+#: ``0016-03-16``, which is not merely wrong but outside the range pandas can
+#: localise, so it raised rather than quietly skewing a feature.
+MAX_REPORTING_LAG = pd.Timedelta(days=5 * 365)
+
+
+def _et(day: pd.Timestamp, hour: int, minute: int) -> pd.Timestamp:
+    """A wall-clock time on ``day`` in New York, as UTC.
+
+    ``nonexistent``/``ambiguous`` are set because a corpus of half a million
+    filer-typed dates will eventually land inside a daylight-saving gap, and
+    the default is to raise. Shifting forward is the conservative direction:
+    it can only make an event later.
+    """
+    return to_utc(
+        pd.Timestamp(day).normalize().tz_localize(
+            "America/New_York", nonexistent="shift_forward", ambiguous=True
+        ).replace(hour=hour, minute=minute)
+    )
+
 
 def quarters(start: str, end: str) -> list[tuple[int, int]]:
     """(year, quarter) pairs covering ``[start, end]``."""
@@ -286,6 +309,9 @@ class BulkInsiderTransactions(EventSource):
         self.min_cluster = min_cluster
         self.min_value_usd = min_value_usd
         self.processes = processes
+        #: Transaction dates repaired because they were implausible for their
+        #: own filing. Reported, never silent.
+        self._repaired = 0
 
     def fetch(self, start: pd.Timestamp, end: pd.Timestamp) -> list[Event]:
         start, end = to_utc(start), to_utc(end)
@@ -299,6 +325,12 @@ class BulkInsiderTransactions(EventSource):
 
         events = self._to_events(trades, start, end)
         events.extend(self._clusters(trades, start, end))
+        if self._repaired:
+            log.warning(
+                "%d of %d transaction dates were implausible for their filing and "
+                "fell back to the filing date (filer typos, e.g. year 0016)",
+                self._repaired, len(trades),
+            )
         return events
 
     # ---------------------------------------------------------------- events
@@ -310,9 +342,28 @@ class BulkInsiderTransactions(EventSource):
         Without an acceptance time, assume the filing landed after the bell.
         The calendar layer then rolls it to the next session's open.
         """
-        return to_utc(
-            pd.Timestamp(filing_date).tz_localize("America/New_York").replace(hour=17, minute=30)
-        )
+        return _et(pd.Timestamp(filing_date), 17, 30)
+
+    def _event_time(self, txn, filing_date, available: pd.Timestamp) -> pd.Timestamp:
+        """When the trade happened, as far as it can be trusted.
+
+        Form 4 transaction dates are typed by filers and a corpus this size
+        contains typos: a real filing in the 2016Q1 archive carries a
+        transaction date of ``0016-03-16``. Anything outside a plausible window
+        around the filing date is treated as unusable and falls back to the
+        filing date, which is conservative -- it can only move the event later,
+        never earlier, so it cannot manufacture lookahead.
+
+        Silent repair would be worse than the crash it replaces, so the count
+        is logged.
+        """
+        ts = pd.Timestamp(txn) if pd.notna(txn) else pd.NaT
+        filed = pd.Timestamp(filing_date)
+        if pd.isna(ts) or not (filed - MAX_REPORTING_LAG <= ts <= filed + pd.Timedelta(days=1)):
+            if pd.notna(ts):
+                self._repaired += 1
+            ts = filed
+        return min(_et(ts, 9, 30), available)
 
     def _to_events(self, trades: pd.DataFrame, start, end) -> list[Event]:
         out: list[Event] = []
@@ -328,11 +379,8 @@ class BulkInsiderTransactions(EventSource):
             if pd.notna(value) and value > 0:
                 weight *= min(1.0 + (value / 1_000_000.0) ** 0.5, 3.0)
 
+            event_ts = self._event_time(r.transaction_date, r.filing_date, available)
             txn = r.transaction_date if pd.notna(r.transaction_date) else r.filing_date
-            event_ts = min(
-                to_utc(pd.Timestamp(txn).tz_localize("America/New_York").replace(hour=9, minute=30)),
-                available,
-            )
             out.append(Event(
                 source=self.name,
                 kind="insider.buy" if r.code == "P" else "insider.sell",
@@ -372,18 +420,21 @@ class BulkInsiderTransactions(EventSource):
                 if not (start <= available < end):
                     continue
                 total = float(sum(x.value_usd or 0 for x in members))
-                last_txn = max(
-                    (x.transaction_date for x in members if pd.notna(x.transaction_date)),
-                    default=anchor.filing_date,
-                )
+                # Same typo exposure as _to_events: take the latest transaction
+                # date that is actually plausible for its own filing, and fall
+                # back to the anchor's filing date if none is.
+                plausible = [
+                    x.transaction_date for x in members
+                    if pd.notna(x.transaction_date)
+                    and x.filing_date - MAX_REPORTING_LAG <= x.transaction_date
+                    <= x.filing_date + pd.Timedelta(days=1)
+                ]
+                last_txn = max(plausible, default=anchor.filing_date)
                 out.append(Event(
                     source=self.name,
                     kind="insider.cluster_buy",
                     ticker=ticker,
-                    event_ts=min(
-                        to_utc(pd.Timestamp(last_txn).tz_localize("America/New_York").replace(hour=9, minute=30)),
-                        available,
-                    ),
+                    event_ts=min(_et(last_txn, 9, 30), available),
                     available_ts=available,
                     payload={
                         "id": f"cluster:{ticker}:{anchor.filing_date:%Y%m%d}:{len(distinct)}",
