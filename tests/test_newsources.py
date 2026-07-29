@@ -1404,6 +1404,29 @@ def test_moonshot_script_warns_when_membership_is_not_applied():
     assert "WARNING: no --members" in src, "the unsafe path must announce itself"
 
 
+def test_membership_restricts_candidates_not_price_history():
+    """Membership decides what may be entered, not what data exists.
+
+    Filtering the price frame truncates the forward path of every trade opened
+    near a membership boundary: a ten-session label computed three days before
+    a name leaves the universe would resolve as a time-stop on a four-bar path,
+    inventing losses that never happened. The mask must land on the candidate
+    panel instead, after labels are built on the full series.
+    """
+    from pathlib import Path
+
+    src = (Path(__file__).resolve().parents[1] / "scripts" / "moonshot.py").read_text()
+    body = src[src.index("def main("):]
+
+    # Labels must be built before the mask is applied...
+    assert body.index("build_spike_labels(prices") < body.index("panel.merge(mask"), (
+        "labels must be built on the unfiltered price series"
+    )
+    # ...and the price frame itself must never be subset by the mask.
+    assert 'prices[prices["in_universe"]' not in body
+    assert "prices = prices.merge(mask" not in body
+
+
 def test_candidate_pool_applies_no_outcome_based_ranking():
     """The pre-price filter must not be computed over the whole window.
 

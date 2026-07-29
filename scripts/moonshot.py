@@ -141,25 +141,30 @@ def main() -> int:
     # a union filter, and the only reason it is in the file at all is a fact
     # from 2019. Applying membership per date is what makes the universe
     # point-in-time rather than merely small.
+    #
+    # The mask is applied to the CANDIDATE PANEL, not to the price frame.
+    # Membership decides what may be *entered* on a date; it must not decide
+    # what price history exists. Filtering the prices instead truncates the
+    # forward path of every trade opened near a membership boundary, so a
+    # ten-session label computed three days before a name leaves the universe
+    # would silently resolve as a time-stop on a four-bar path. Labels and the
+    # portfolio simulation both need the full series.
+    mask = None
     if args.members:
         from iai.universe_builder import membership_mask
 
-        members = pd.read_parquet(args.members)
-        before = len(prices)
-        mask = membership_mask(members, prices)
-        prices = prices.merge(mask, on=["date", "ticker"], how="left")
-        prices = prices[prices["in_universe"].fillna(False)].drop(columns=["in_universe"])
-        prices = prices.reset_index(drop=True)
-        keep = set(map(tuple, prices[["date", "ticker"]].to_numpy()))
-        print(f"PIT universe: {len(prices):,} of {before:,} bars in-universe "
-              f"({prices['ticker'].nunique():,} names ever, "
-              f"{len(keep) // max(prices['date'].nunique(), 1):,} avg per day)")
-        if prices.empty:
+        mask = membership_mask(pd.read_parquet(args.members), prices)
+        mask = mask[mask["in_universe"]][["date", "ticker"]]
+        print(f"PIT universe: {len(mask):,} of {len(prices):,} bars enterable "
+              f"({mask['ticker'].nunique():,} names ever, "
+              f"{len(mask) // max(prices['date'].nunique(), 1):,} avg per day)")
+        if mask.empty:
             print("no in-universe bars; check --members matches this price file")
             return 1
     else:
-        print("WARNING: no --members given. Using every name in the price file for "
-              "every date, which includes names that only qualified later.")
+        print("WARNING: no --members given. Every name in the price file is "
+              "treated as enterable on every date, including names that only "
+              "qualified later.")
 
     pd.set_option("display.width", 240)
     print("=" * 100)
@@ -167,9 +172,16 @@ def main() -> int:
           f"/ {args.trades_per_week:.0f} trades per week")
     print("=" * 100)
 
+    # Features and labels are built on the full price history; only the
+    # candidate rows are restricted to the point-in-time universe.
     panel = assemble(prices, events, cfg)
     labels = build_spike_labels(prices, cfg, target=args.target, stop=args.stop,
                                 horizon=args.horizon)
+    if mask is not None:
+        before = len(panel)
+        panel = panel.merge(mask, on=["date", "ticker"], how="inner")
+        print(f"panel: {len(panel):,} of {before:,} candidate rows in-universe")
+
     fit = train_moonshot(panel, labels, cfg)
     oof = fit.oof
 
