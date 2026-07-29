@@ -115,6 +115,10 @@ def main() -> int:
                     help="which pre-registration the criteria are being read from")
     ap.add_argument("--max-year-share", type=float, default=0.35,
                     help="temporal-spread cap; 0.35 over eleven years, 0.50 over four")
+    ap.add_argument("--members", default=None,
+                    help="members.parquet from the screen stage. Restricts every date to "
+                         "the names that qualified AS OF that date. Without it the run "
+                         "uses the union of all quarters, which is lookahead.")
     args = ap.parse_args()
 
     logging.basicConfig(level=logging.WARNING, stream=sys.stderr)
@@ -130,6 +134,32 @@ def main() -> int:
     events["payload"] = events["payload"].map(
         lambda s: ast.literal_eval(s) if isinstance(s, str) else s
     )
+
+    # ---- point-in-time universe membership ---------------------------------
+    # Restricting to the *union* of every quarter's members is not enough. A
+    # name that first qualified in 2019 would still be tradable in 2015 under
+    # a union filter, and the only reason it is in the file at all is a fact
+    # from 2019. Applying membership per date is what makes the universe
+    # point-in-time rather than merely small.
+    if args.members:
+        from iai.universe_builder import membership_mask
+
+        members = pd.read_parquet(args.members)
+        before = len(prices)
+        mask = membership_mask(members, prices)
+        prices = prices.merge(mask, on=["date", "ticker"], how="left")
+        prices = prices[prices["in_universe"].fillna(False)].drop(columns=["in_universe"])
+        prices = prices.reset_index(drop=True)
+        keep = set(map(tuple, prices[["date", "ticker"]].to_numpy()))
+        print(f"PIT universe: {len(prices):,} of {before:,} bars in-universe "
+              f"({prices['ticker'].nunique():,} names ever, "
+              f"{len(keep) // max(prices['date'].nunique(), 1):,} avg per day)")
+        if prices.empty:
+            print("no in-universe bars; check --members matches this price file")
+            return 1
+    else:
+        print("WARNING: no --members given. Using every name in the price file for "
+              "every date, which includes names that only qualified later.")
 
     pd.set_option("display.width", 240)
     print("=" * 100)

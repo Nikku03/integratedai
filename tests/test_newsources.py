@@ -1175,6 +1175,48 @@ def test_membership_lapses_when_a_name_stops_qualifying():
     assert not mask[pd.Timestamp("2021-06-01")], "membership must expire"
 
 
+def test_union_filtering_is_not_the_same_as_membership_and_is_lookahead():
+    """The trap the --members flag exists to close.
+
+    Filtering the price panel to "every name that was ever in the universe" is
+    the natural thing to write and it is lookahead: a name that first qualified
+    in 2020Q2 is present in the file *because of* a 2020Q2 fact, so trading it
+    in 2020Q1 uses information from the future. The per-date mask is what makes
+    the universe point-in-time rather than merely small.
+    """
+    from iai.universe_builder import membership_mask, rolling_universe
+
+    members = rolling_universe(_cap_panel(), max_names=2)
+    union = set(members["ticker"])
+    assert "CCC" in union, "CCC qualifies in 2020Q2, so a union filter keeps it"
+
+    prices = pd.DataFrame({
+        "date": pd.to_datetime(["2020-02-03", "2020-07-01"]),
+        "ticker": ["CCC", "CCC"],
+    })
+    # A union filter would keep both rows.
+    union_kept = prices[prices["ticker"].isin(union)]
+    assert len(union_kept) == 2
+
+    # The per-date mask keeps only the one that was knowable.
+    mask = membership_mask(members, prices)
+    pit_kept = prices.merge(mask, on=["date", "ticker"])
+    pit_kept = pit_kept[pit_kept["in_universe"]]
+    assert len(pit_kept) == 1
+    assert pit_kept["date"].iloc[0] == pd.Timestamp("2020-07-01")
+
+
+def test_moonshot_script_warns_when_membership_is_not_applied():
+    """Running without --members must say so, not fail silently."""
+    from pathlib import Path
+
+    path = Path(__file__).resolve().parents[1] / "scripts" / "moonshot.py"
+    src = path.read_text()
+    assert "--members" in src
+    assert "membership_mask" in src
+    assert "WARNING: no --members" in src, "the unsafe path must announce itself"
+
+
 def test_candidate_pool_applies_no_outcome_based_ranking():
     """The pre-price filter must not be computed over the whole window.
 
