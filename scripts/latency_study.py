@@ -106,9 +106,10 @@ def recent_filings(client, uni: Universe, days: int, forms: set[str]) -> pd.Data
             if ts < cut:
                 continue
             rows.append({
-                "ticker": t, "form": form, "accepted": ts,
+                "ticker": t, "form": form, "accepted": ts, "cik": cik,
                 "items": ",".join(parse_items(rec.get("items", [""] * len(f_list))[i] or "")),
                 "accession": rec.get("accessionNumber", [""] * len(f_list))[i],
+                "primary_doc": rec.get("primaryDocument", [""] * len(f_list))[i],
             })
     df = pd.DataFrame(rows)
     if df.empty:
@@ -116,6 +117,55 @@ def recent_filings(client, uni: Universe, days: int, forms: set[str]) -> pd.Data
     et = df["accepted"].dt.tz_convert("America/New_York")
     df["session"] = [session_of(x) for x in et]
     return df.sort_values("accepted").reset_index(drop=True)
+
+
+def keep_form4_buys(client, filings: pd.DataFrame, workers: int = 8) -> pd.DataFrame:
+    """Reduce Form 4 filings to those containing an open-market purchase.
+
+    Form 4 is the strongest case for the latency thesis, because the filer is
+    the *insider*, not the company: nobody issues a press release announcing
+    that an officer bought stock, so there is no simultaneous announcement to
+    collapse the window the way an 8-K's Exhibit 99.1 does.
+
+    But most Form 4s are not purchases. Awards, tax-withholding sales and
+    option exercises are compensation mechanics, and treating them as signal
+    would bury the ~15% that are real conviction buys. The submissions API does
+    not expose transaction codes, so the documents have to be read -- which is
+    affordable here only because the window is short.
+    """
+    from iai.sources.insiders import parse_form4
+
+    urls, meta = [], []
+    for r in filings.to_dict("records"):
+        doc = (r.get("primary_doc") or "").split("/")[-1]
+        if not doc or not r.get("cik"):
+            continue
+        urls.append(
+            f"https://www.sec.gov/Archives/edgar/data/{int(r['cik'])}/"
+            f"{r['accession'].replace('-', '')}/{doc}"
+        )
+        meta.append(r)
+
+    log.info("classifying %d Form 4 documents", len(urls))
+    bodies = client.get_many(urls, parse="text", workers=workers, progress_every=250)
+
+    kept = []
+    for url, r in zip(urls, meta, strict=True):
+        body = bodies.get(url)
+        if not body:
+            continue
+        try:
+            trades = parse_form4(body, r["accepted"], r["accession"])
+        except Exception:  # noqa: BLE001 - one malformed filing must not stop the study
+            continue
+        buys = [t for t in trades if t.code == "P"]
+        if not buys:
+            continue
+        kept.append({**r, "buy_value_usd": float(sum(t.value_usd or 0 for t in buys)),
+                     "role": buys[0].role})
+    out = pd.DataFrame(kept)
+    log.info("%d of %d Form 4s contain an open-market purchase", len(out), len(urls))
+    return out
 
 
 def minute_bars(client, ticker: str, days: int) -> pd.DataFrame:
@@ -232,6 +282,13 @@ def main(argv=None) -> int:
     ap.add_argument("--universe", default="/root/.iai/wide2015/universe.txt")
     ap.add_argument("--out", default="/root/.iai/store/latency_study.parquet")
     ap.add_argument("--user-agent", default="")
+    ap.add_argument("--buys-only", action="store_true",
+                    help="Form 4 only: read each document and keep open-market "
+                         "purchases (code P). Awards and tax-withholding sales "
+                         "are compensation mechanics, not signal.")
+    ap.add_argument("--rth-only", action="store_true",
+                    help="keep only filings accepted during regular hours -- the "
+                         "subset where a fill at T+1min is actually possible")
     args = ap.parse_args(argv)
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s",
@@ -256,6 +313,15 @@ def main(argv=None) -> int:
         print("no filings in window")
         return 1
     log.info("%d filings across %d names", len(fil), fil["ticker"].nunique())
+
+    if args.rth_only:
+        fil = fil[fil["session"] == "rth"].reset_index(drop=True)
+        log.info("regular hours only: %d filings", len(fil))
+    if args.buys_only:
+        fil = keep_form4_buys(sec, fil)
+        if fil.empty:
+            print("no open-market purchases in window")
+            return 1
 
     # Minute data is the expensive half (4 requests per ticker), so spend it on
     # the names with the most filings rather than an arbitrary slice.
