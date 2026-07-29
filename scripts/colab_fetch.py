@@ -119,7 +119,7 @@ def run_shard(args) -> int:
     from iai.core.universe import Universe
     from iai.seeds import SMALLMID_CORE, SMALLMID_SEED
     from iai.sources.edgar import EdgarFilings
-    from iai.sources.insiders import InsiderTransactions
+    from iai.sources.insiders_bulk import BulkInsiderTransactions
     from iai.sources.prices import YahooPrices, add_derived
 
     out_dir = Path(args.out)
@@ -180,7 +180,7 @@ def run_shard(args) -> int:
     log.info("%s: edgar %d events (%.1f min)", tag, len(ev), (time.time() - t0) / 60)
 
     # ---- Form 4 ------------------------------------------------------------
-    src = InsiderTransactions(cfg, client, live, workers=args.workers)
+    src = BulkInsiderTransactions(cfg, client, live)
     insider_events = src.fetch(
         pd.Timestamp(args.start, tz="UTC"), pd.Timestamp(args.end, tz="UTC")
     )

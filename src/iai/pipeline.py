@@ -42,6 +42,7 @@ from .sources.base import SourceRegistry
 from .sources.edgar import EdgarFilings, EdgarFullText
 from .sources.flow import FlowAnomalies
 from .sources.insiders import InsiderTransactions
+from .sources.insiders_bulk import BulkInsiderTransactions
 from .sources.institutional import StakeDisclosures
 from .sources.litigation import CourtListenerDockets
 from .sources.news import FilingNews
@@ -178,6 +179,7 @@ def build_sources(
     prices: pd.DataFrame | None = None,
     include_slow: bool = True,
     workers: int = 8,
+    bulk_insiders: bool = True,
 ) -> SourceRegistry:
     """Wire up the sources that have what they need to run.
 
@@ -186,9 +188,16 @@ def build_sources(
     Set it False for a fast catalyst run and the registry simply omits them
     rather than contributing stale features.
     """
+    # Bulk insiders by default: 48 quarterly archives instead of ~900,000
+    # per-document fetches. Validated against the per-document path at 99%
+    # agreement on insider-buy ticker-months. See iai.sources.insiders_bulk.
+    insiders = (
+        BulkInsiderTransactions(cfg, client, universe) if bulk_insiders
+        else InsiderTransactions(cfg, client, universe, workers=workers)
+    )
     sources: list = [
         EdgarFilings(cfg, client, universe),
-        InsiderTransactions(cfg, client, universe, workers=workers),
+        insiders,
         StakeDisclosures(cfg, client, universe),
     ]
     if prices is not None and not prices.empty:
@@ -252,6 +261,7 @@ def fetch_smallmid(
     max_cap: float = 10_000_000_000,
     include_slow: bool = False,
     workers: int = 8,
+    bulk_insiders: bool = True,
 ) -> tuple[pd.DataFrame, pd.DataFrame, Universe, pd.DataFrame]:
     """Fetch a small/mid-cap universe and every fast source for it.
 
@@ -302,7 +312,8 @@ def fetch_smallmid(
     caps = cap_features(cap_panel, prices)
 
     registry = build_sources(
-        cfg, client, uni, prices=prices, include_slow=include_slow, workers=workers
+        cfg, client, uni, prices=prices, include_slow=include_slow,
+        workers=workers, bulk_insiders=bulk_insiders,
     )
     log.info("source health:\n%s", registry.health().to_string(index=False))
     events = registry.collect(pd.Timestamp(start, tz="UTC"), pd.Timestamp(end, tz="UTC"))

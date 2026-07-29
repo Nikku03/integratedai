@@ -650,3 +650,121 @@ def test_anonymous_user_agent_is_rejected():
     cf = _load_colab_fetch()
     assert cf.main(["--shard", "0", "--n-shards", "1", "--user-agent", ""]) == 2
     assert cf.main(["--shard", "0", "--n-shards", "1", "--user-agent", "integratedai"]) == 2
+
+
+# ------------------------------------------------------- bulk insider loader
+
+
+def test_quarters_covers_the_range():
+    from iai.sources.insiders_bulk import quarters
+
+    qs = quarters("2015-01-01", "2026-12-31")
+    assert qs[0] == (2015, 1)
+    assert qs[-1] == (2026, 4)
+    assert len(qs) == 48
+    # Eleven years of Form 4s in 48 requests instead of ~900,000.
+    assert len(quarters("2021-01-01", "2024-12-31")) == 16
+
+
+def test_relationship_flags_unpack_in_order():
+    """RPTOWNER_RELATIONSHIP packs director,officer,tenpercent,other."""
+    from iai.sources.insiders_bulk import _parse_relationship
+
+    assert _parse_relationship("0,1,0,0") == (True, False, False)    # officer
+    assert _parse_relationship("1,0,0,0") == (False, True, False)    # director
+    assert _parse_relationship("0,0,1,0") == (False, False, True)    # 10% owner
+    assert _parse_relationship("1,1,1,0") == (True, True, True)
+    assert _parse_relationship(None) == (False, False, False)
+    assert _parse_relationship("") == (False, False, False)
+
+
+def test_bulk_availability_is_pessimistic():
+    """No acceptance time in the bulk data, so assume it landed after the bell.
+
+    Reversing this to gain back half a session is exactly the trade that turns
+    a backtest into fiction.
+    """
+    from iai.sources.insiders_bulk import BulkInsiderTransactions
+
+    avail = BulkInsiderTransactions._available(pd.Timestamp("2024-03-05"))
+    et = avail.tz_convert("America/New_York")
+    assert (et.hour, et.minute) >= (16, 0), "availability must be after the close"
+    assert et.date() == pd.Timestamp("2024-03-05").date()
+
+
+def test_bulk_events_pass_pit_validation():
+    """Transaction date must never post-date availability."""
+    from iai.core.http import HttpClient
+    from iai.sources.insiders_bulk import BulkInsiderTransactions
+
+    cfg = Config.moonshot()
+    src = BulkInsiderTransactions(cfg, HttpClient(cfg.data.cache_dir, "t"), Universe())
+    trades = pd.DataFrame([
+        # Filed the same day as the trade -- the case that broke the XML path.
+        {"ticker": "AAA", "cik": "1", "accession": "acc-1", "owner": "Jane",
+         "owner_cik": "9", "role": "ceo", "code": "P", "shares": 10000.0,
+         "price": 12.5, "value_usd": 125000.0,
+         "transaction_date": pd.Timestamp("2024-03-05"),
+         "filing_date": pd.Timestamp("2024-03-05")},
+        {"ticker": "BBB", "cik": "2", "accession": "acc-2", "owner": "Bob",
+         "owner_cik": "8", "role": "director", "code": "S", "shares": 5000.0,
+         "price": 20.0, "value_usd": 100000.0,
+         "transaction_date": pd.Timestamp("2024-03-01"),
+         "filing_date": pd.Timestamp("2024-03-04")},
+    ])
+    events = src._to_events(trades, pd.Timestamp("2024-01-01", tz="UTC"),
+                            pd.Timestamp("2025-01-01", tz="UTC"))
+    assert len(events) == 2
+    validate_events(events_to_frame(events))
+    assert {e.kind for e in events} == {"insider.buy", "insider.sell"}
+
+
+def test_bulk_applies_the_same_weights_as_the_xml_path():
+    """A CEO open-market buy must weigh the same however it was loaded."""
+    from iai.core.http import HttpClient
+    from iai.sources.insiders import ROLE_WEIGHTS, TRANSACTION_WEIGHTS
+    from iai.sources.insiders_bulk import BulkInsiderTransactions
+
+    cfg = Config.moonshot()
+    src = BulkInsiderTransactions(cfg, HttpClient(cfg.data.cache_dir, "t"), Universe())
+    trades = pd.DataFrame([{
+        "ticker": "AAA", "cik": "1", "accession": "a", "owner": "J", "owner_cik": "9",
+        "role": "ceo", "code": "P", "shares": 1000.0, "price": 10.0, "value_usd": 10_000_000.0,
+        "transaction_date": pd.Timestamp("2024-03-05"),
+        "filing_date": pd.Timestamp("2024-03-07"),
+    }])
+    ev = src._to_events(trades, pd.Timestamp("2024-01-01", tz="UTC"),
+                        pd.Timestamp("2025-01-01", tz="UTC"))[0]
+    base = TRANSACTION_WEIGHTS["P"] * ROLE_WEIGHTS["ceo"]
+    assert ev.weight == pytest.approx(base * 3.0)  # size multiplier saturates at 3x
+
+
+def test_bulk_cluster_needs_distinct_insiders():
+    from iai.core.http import HttpClient
+    from iai.sources.insiders_bulk import BulkInsiderTransactions
+
+    cfg = Config.moonshot()
+    src = BulkInsiderTransactions(cfg, HttpClient(cfg.data.cache_dir, "t"), Universe())
+    base = {"ticker": "AAA", "cik": "1", "role": "ceo", "code": "P", "shares": 1000.0,
+            "price": 100.0, "value_usd": 100_000.0,
+            "transaction_date": pd.Timestamp("2024-03-05")}
+    # Same owner buying three times is not a cluster.
+    same = pd.DataFrame([
+        {**base, "accession": f"a{i}", "owner": "Jane", "owner_cik": "9",
+         "filing_date": pd.Timestamp("2024-03-05") + pd.Timedelta(days=i)}
+        for i in range(3)
+    ])
+    assert src._clusters(same, pd.Timestamp("2024-01-01", tz="UTC"),
+                         pd.Timestamp("2025-01-01", tz="UTC")) == []
+
+    # Two different owners is.
+    diff = pd.DataFrame([
+        {**base, "accession": "a1", "owner": "Jane", "owner_cik": "9",
+         "filing_date": pd.Timestamp("2024-03-05")},
+        {**base, "accession": "a2", "owner": "Bob", "owner_cik": "8",
+         "filing_date": pd.Timestamp("2024-03-06")},
+    ])
+    out = src._clusters(diff, pd.Timestamp("2024-01-01", tz="UTC"),
+                        pd.Timestamp("2025-01-01", tz="UTC"))
+    assert len(out) == 1
+    assert out[0].payload["n_insiders"] == 2
