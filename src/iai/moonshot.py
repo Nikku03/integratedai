@@ -223,17 +223,62 @@ def select_per_week(
     return picked.drop(columns=["_week"]).sort_values(date_col).reset_index(drop=True)
 
 
+def clustered_se(values: pd.Series, groups: pd.Series) -> float:
+    """Standard error of the mean, robust to correlation within ``groups``.
+
+    Five trades taken in the same week are not five independent observations.
+    They share a market regime, their holding periods overlap, and on a bad week
+    they lose together. Dividing the per-trade standard deviation by sqrt(n)
+    assumes that away and overstates the t-statistic by whatever the within-week
+    correlation happens to be -- which, for a strategy that deliberately takes
+    five a week, is not small.
+
+    The cluster-robust estimator treats each week's *total* as the unit of
+    observation, which is what the sampling actually is. If trades really are
+    independent within a week the two estimators agree, so this is a tightening
+    that costs nothing when it is not needed.
+
+    Implementation is the standard one-way cluster sandwich for a mean:
+    ``Var(x_bar) = sum_g (sum_{i in g} (x_i - x_bar))^2 / n^2``.
+    """
+    x = pd.Series(values).astype(float).reset_index(drop=True)
+    g = pd.Series(groups).reset_index(drop=True)
+    n = len(x)
+    if n < 2:
+        return float("nan")
+    n_clusters = g.nunique()
+    if n_clusters < 2:
+        return float("nan")
+    dev = x - x.mean()
+    meat = float((dev.groupby(g, observed=True).sum() ** 2).sum())
+    # Small-sample correction; without it few clusters give a badly optimistic SE.
+    correction = n_clusters / max(n_clusters - 1, 1)
+    return float(np.sqrt(correction * meat / n**2))
+
+
 def selection_report(
-    selected: pd.DataFrame, universe: pd.DataFrame, cost_col: str = "cost_rt"
+    selected: pd.DataFrame,
+    universe: pd.DataFrame,
+    cost_col: str = "cost_rt",
+    date_col: str = "date",
 ) -> pd.DataFrame:
-    """Per-trade economics of a selection, against the universe base rate."""
+    """Per-trade economics of a selection, against the universe base rate.
+
+    Reports both the naive and the week-clustered t-statistic. The clustered
+    one is the honest number; the naive one is kept beside it so the size of the
+    dependence is visible rather than assumed.
+    """
     if selected.empty:
         return pd.DataFrame()
     cost = selected[cost_col] if cost_col in selected.columns else 0.0
     net = selected["ret"] - cost
     se = float(net.std(ddof=1) / np.sqrt(len(net))) if len(net) > 1 else np.nan
+
+    weeks = pd.to_datetime(selected[date_col]).dt.to_period("W")
+    se_w = clustered_se(net, weeks)
     return pd.DataFrame([{
         "n": len(selected),
+        "n_weeks": int(weeks.nunique()),
         "P_spike": float(selected["spike"].mean()),
         "universe_P": float(universe["spike"].mean()),
         "lift": float(selected["spike"].mean() / universe["spike"].mean())
@@ -243,6 +288,7 @@ def selection_report(
         "cost": float(np.mean(cost)) if np.ndim(cost) else float(cost),
         "net": float(net.mean()),
         "net_t": float(net.mean() / se) if se and se > 0 else np.nan,
+        "net_t_clustered": float(net.mean() / se_w) if se_w and se_w > 0 else np.nan,
         "pct_stop": float(selected["exit_reason"].isin(STOP_REASONS).mean()),
         "pct_target": float((selected["exit_reason"] == "target").mean()),
     }])

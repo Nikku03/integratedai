@@ -579,6 +579,68 @@ def test_select_per_week_respects_the_daily_cap():
     assert picked.groupby("date").size().max() <= 3
 
 
+def test_clustered_se_exceeds_the_naive_one_when_trades_move_together():
+    """The whole reason the primary criterion uses it.
+
+    A strategy that takes five trades a week is taking five bets on the same
+    week's tape. Dividing by sqrt(n) prices them as five independent draws and
+    inflates t by whatever the within-week correlation is. With a strong common
+    weekly shock the naive t here clears 2.0 on pure noise; the clustered one
+    does not.
+    """
+    from iai.moonshot import clustered_se
+
+    rng = np.random.default_rng(7)
+    n_weeks, per_week = 200, 5
+    weeks = np.repeat(np.arange(n_weeks), per_week)
+    # Each week gets a common shock; individual trades add little on top.
+    common = rng.normal(0.004, 0.05, n_weeks)
+    x = pd.Series(np.repeat(common, per_week) + rng.normal(0, 0.005, n_weeks * per_week))
+
+    naive = x.std(ddof=1) / np.sqrt(len(x))
+    clu = clustered_se(x, pd.Series(weeks))
+    assert clu > naive * 1.5, "clustering must widen the SE when weeks move together"
+    assert abs(x.mean() / clu) < abs(x.mean() / naive)
+
+
+def test_clustered_se_matches_the_naive_one_when_trades_are_independent():
+    """A tightening that costs nothing when it is not needed."""
+    from iai.moonshot import clustered_se
+
+    rng = np.random.default_rng(11)
+    x = pd.Series(rng.normal(0.001, 0.06, 1500))
+    weeks = pd.Series(np.repeat(np.arange(300), 5))
+    naive = x.std(ddof=1) / np.sqrt(len(x))
+    assert clustered_se(x, weeks) == pytest.approx(naive, rel=0.15)
+
+
+def test_clustered_se_needs_more_than_one_cluster():
+    from iai.moonshot import clustered_se
+
+    x = pd.Series([0.01, -0.02, 0.03])
+    assert np.isnan(clustered_se(x, pd.Series(["w1"] * 3)))
+    assert np.isnan(clustered_se(pd.Series([0.01]), pd.Series(["w1"])))
+
+
+def test_selection_report_carries_both_t_statistics():
+    """The naive t stays visible so the dependence is shown, not assumed."""
+    from iai.moonshot import selection_report
+
+    rng = np.random.default_rng(3)
+    n = 500
+    dates = pd.to_datetime(np.repeat(pd.bdate_range("2022-01-03", periods=100), 5))
+    sel = pd.DataFrame({
+        "date": dates, "ret": rng.normal(0.01, 0.07, n), "cost_rt": 0.0066,
+        "spike": rng.random(n) < 0.33,
+        "exit_reason": rng.choice(["target", "stop", "time"], n),
+    })
+    uni = sel.assign(spike=rng.random(n) < 0.24)
+    rep = selection_report(sel, uni).iloc[0]
+    assert {"net_t", "net_t_clustered", "n_weeks"} <= set(rep.index)
+    assert rep["n_weeks"] > 1
+    assert np.isfinite(rep["net_t_clustered"])
+
+
 def test_volatility_control_flags_a_pure_volatility_tilt():
     """A selector that only picks volatile names must show lift ~1 in-bucket."""
     from iai.moonshot import volatility_control

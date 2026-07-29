@@ -111,6 +111,10 @@ def main() -> int:
                     help="configurations tried, for the deflated Sharpe")
     ap.add_argument("--prefix", default="sm",
                     help="store filename prefix (sm = 106-name core, wide = full pool)")
+    ap.add_argument("--prereg", default="docs/PREREGISTRATION_2015.md",
+                    help="which pre-registration the criteria are being read from")
+    ap.add_argument("--max-year-share", type=float, default=0.35,
+                    help="temporal-spread cap; 0.35 over eleven years, 0.50 over four")
     args = ap.parse_args()
 
     logging.basicConfig(level=logging.WARNING, stream=sys.stderr)
@@ -158,11 +162,16 @@ def main() -> int:
     # ---- the ablation that matters ----------------------------------------
     print("ABLATION -- ranking by P(spike) vs by expected value")
     print("-" * 100)
+    ablation = {}
     for name, col in [("P(spike) only", "p"), ("expected value", "ev")]:
         s = select_per_week(oof, per_week=args.trades_per_week, rank_col=col)
         rep = selection_report(s, oof).iloc[0]
+        ablation[col] = float(rep["net"])
         print(f"  {name:<16} n={rep['n']:>4.0f}  P={rep['P_spike']:.4f}  stop%={rep['pct_stop']:.3f}  "
-              f"net={rep['net']:+.4f}  t={rep['net_t']:+.2f}")
+              f"net={rep['net']:+.4f}  t={rep['net_t']:+.2f}  t_clu={rep['net_t_clustered']:+.2f}")
+    print()
+    print("  106 names said EV > P(spike). 341 names said the reverse. A real")
+    print("  mechanism does not flip; see docs/PREREGISTRATION_2015.md criterion 4.")
     print()
 
     # ---- selection ladder --------------------------------------------------
@@ -234,25 +243,46 @@ def main() -> int:
     vol_ratio = float(sel["vol21"].median() / oof["vol21"].median())
     buckets_ok = int((ctrl["lift"] > 1.0).sum()) if not ctrl.empty else 0
 
-    print("PRE-REGISTERED CRITERIA  (docs/PREREGISTRATION.md)")
+    print(f"PRE-REGISTERED CRITERIA  ({args.prereg})")
     print("-" * 100)
-    primary = rep["net_t"] > 2.0 and rep["net"] > 0
-    print(f"  PRIMARY   net/trade {rep['net']:+.4f} with t = {rep['net_t']:+.2f}   "
-          f"required t > 2.0   -> {'PASS' if primary else 'FAIL'}")
+    # Primary is the WEEK-CLUSTERED t. Five trades in one week are not five
+    # independent observations -- they share a regime and lose together -- so
+    # the naive SE overstates t by whatever the within-week correlation is.
+    t_clu = rep["net_t_clustered"]
+    primary = t_clu > 2.0 and rep["net"] > 0
+    print(f"  PRIMARY   net/trade {rep['net']:+.4f}  t_clustered = {t_clu:+.2f}  "
+          f"(naive t = {rep['net_t']:+.2f} over {rep['n_weeks']:.0f} weeks)")
+    print(f"            required clustered t > 2.0   -> {'PASS' if primary else 'FAIL'}")
     c1 = buckets_ok >= 3 and vol_ratio <= 1.2
     print(f"  vol control     lift>1 in {buckets_ok}/5 buckets, selected vol {vol_ratio:.2f}x universe "
           f"-> {'PASS' if c1 else 'FAIL'}")
     c2 = trimmed_net > 0
     print(f"  outlier robust  net after dropping 20 largest = {trimmed_net:+.4f} "
           f"-> {'PASS' if c2 else 'FAIL'}")
-    c3 = max_year_share <= 0.50
+    c3 = max_year_share <= args.max_year_share
     print(f"  temporal spread largest year holds {max_year_share:.1%} of trades "
-          f"-> {'PASS' if c3 else 'FAIL'}")
+          f"(cap {args.max_year_share:.0%}) -> {'PASS' if c3 else 'FAIL'}")
+    # Criterion 4: the ablation flipped between the two prior samples. Landing
+    # a third way means the mechanism is noise whatever the primary says.
+    ev_wins = ablation.get("ev", 0.0) > ablation.get("p", 0.0)
+    c4 = ev_wins  # 106 names said EV wins; 341 said otherwise. Agreeing with one is the bar.
+    print(f"  ablation        EV {ablation.get('ev', float('nan')):+.4f} vs "
+          f"P(spike) {ablation.get('p', float('nan')):+.4f} "
+          f"-> {'PASS (agrees with the 106-name run)' if c4 else 'FAIL (agrees with the 341-name run)'}")
     print()
-    verdict = ("EDGE PROBABLY REAL - paper trade a quarter" if primary and c1 and c2 and c3
-               else "CONFOUNDED - investigate, do not trade" if primary
-               else "UNDERPOWERED OR NO EDGE - do not trade")
+    n_secondary = sum([c1, c2, c3, c4])
+    verdict = (
+        f"EDGE SURVIVED - {n_secondary}/4 secondaries - paper trade at fractional size"
+        if primary and n_secondary >= 3
+        else "SIGNIFICANT BUT CONFOUNDED - report, do not trade" if primary
+        else "NO EDGE - stop. Three samples, this one powered. See the decision rule."
+    )
     print(f"  VERDICT: {verdict}")
+    if not primary:
+        print()
+        print("  The pre-registered stopping rule applies: no fourth test. The only")
+        print("  moves left would be changing the target, horizon or universe, and")
+        print("  searching over those is how a wanted result gets manufactured.")
 
     oof.to_parquet(store / f"{args.prefix}_moonshot_oof.parquet")
     sel.to_parquet(store / f"{args.prefix}_moonshot_selected.parquet")
