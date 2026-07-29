@@ -10,6 +10,7 @@ cost -- plus the volatility control that decides whether any of it is skill.
 from __future__ import annotations
 
 import argparse
+import gc
 import logging
 import sys
 import warnings
@@ -186,6 +187,14 @@ def main() -> int:
         before = len(panel)
         panel = panel.merge(mask, on=["date", "ticker"], how="inner")
         print(f"panel: {len(panel):,} of {before:,} candidate rows in-universe")
+
+    # The event frame is 2.5M rows and is not needed again -- features are built,
+    # and nothing downstream reads events. Holding it through training is
+    # gigabytes that the eleven-year panel needs more.
+    del events
+    gc.collect()
+    print(f"panel: {panel.memory_usage(deep=True).sum()/2**30:.1f} GB, "
+          f"{len(panel.columns)} columns")
 
     fit = train_moonshot(panel, labels, cfg)
     oof = fit.oof

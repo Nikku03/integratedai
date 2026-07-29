@@ -31,6 +31,7 @@ a correlation of a few percent and a leaked one has a correlation of thirty.
 
 from __future__ import annotations
 
+import gc
 import logging
 
 import numpy as np
@@ -44,6 +45,33 @@ from .market import build_market_features
 log = logging.getLogger(__name__)
 
 ID_COLS = ["date", "ticker"]
+
+
+def _to_float32(df: pd.DataFrame) -> pd.DataFrame:
+    """Downcast float columns in place. Memory, not modelling.
+
+    An eleven-year panel is ~8 million rows and the merges here materialise
+    several copies; at float64 that is tens of gigabytes and the process is
+    OOM-killed partway through feature assembly. Halving the width is what
+    makes the wide study runnable at all.
+
+    It is worth being explicit that this does not change the model. LightGBM
+    does not consume raw floats -- it bins each feature into at most
+    ``max_bin`` buckets (255 by default) and splits on bin edges. Float32
+    carries ~7 significant decimal digits, which is finer than any bin
+    boundary by many orders of magnitude, so the binning, the splits and the
+    predictions are identical. The one thing float32 would threaten is a
+    feature whose *information* lives beyond the 7th significant digit, and
+    there is none here: these are returns, volatilities, decayed counts and
+    dollar volumes.
+
+    Integer and boolean columns are left alone -- downcasting a count changes
+    what it can represent.
+    """
+    cols = df.select_dtypes(include=["float64"]).columns
+    if len(cols):
+        df[cols] = df[cols].astype("float32")
+    return df
 
 
 def assemble(
@@ -63,14 +91,20 @@ def assemble(
     market = build_market_features(prices, cfg)
     if market.empty:
         return pd.DataFrame(columns=ID_COLS)
+    market = _to_float32(market)
+    # (see _to_float32 for why this is a memory change and not a modelling one)
 
     ev = build_event_features(events, cfg, calendar=pd.DatetimeIndex(sorted(market["date"].unique())))
-    panel = market.merge(ev, on=ID_COLS, how="left") if not ev.empty else market
+    panel = market.merge(_to_float32(ev), on=ID_COLS, how="left") if not ev.empty else market
+    del market, ev
+    gc.collect()
 
     if include_kinds and not events.empty:
         kinds = kind_features(events, cfg, top_k=kind_top_k)
         if not kinds.empty:
-            panel = panel.merge(kinds, on=ID_COLS, how="left")
+            panel = panel.merge(_to_float32(kinds), on=ID_COLS, how="left")
+        del kinds
+        gc.collect()
 
     feature_cols = [c for c in panel.columns if c not in ID_COLS]
     # Event features are genuinely zero where no event occurred; market

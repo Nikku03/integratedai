@@ -94,7 +94,11 @@ def train_moonshot(
         raise ValueError("no rows after joining panel to spike labels")
 
     feats = [c for c in panel.columns if c not in ("date", "ticker")]
-    X = df[feats].astype("float64")
+    # float32, for the same reason the assembler downcasts: LightGBM bins to at
+    # most 255 buckets, so the extra mantissa is discarded before a single split
+    # is chosen, and at eight million rows the wider copy is the difference
+    # between running and being OOM-killed.
+    X = df[feats].astype("float32")
     y_up = df["spike"].astype(int)
     y_dn = df["exit_reason"].isin(STOP_REASONS).astype(int)
 
