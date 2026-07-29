@@ -198,6 +198,137 @@ def _label_one(g: pd.DataFrame, lc) -> pd.DataFrame:
     )
 
 
+def build_spike_labels(
+    prices: pd.DataFrame,
+    cfg: Config,
+    *,
+    target: float = 0.10,
+    stop: float = 0.07,
+    horizon: int = 10,
+    entry_lag_days: int = 1,
+) -> pd.DataFrame:
+    """Absolute-barrier "moonshot" labels: did it spike ``target`` before ``stop``?
+
+    Different question from :func:`build_labels`, and deliberately so.
+
+    The volatility-scaled triple barrier asks "did this name beat its own
+    typical move". That is the right question for a diversified book of many
+    small bets, and it is the wrong question for a strategy that wants a few
+    large ones, because it re-scales the target down for exactly the quiet
+    names where a 10% move would be remarkable and up for the volatile ones
+    where it is Tuesday.
+
+    An **absolute** barrier asks the question the trader actually has: *will
+    this thing pop 10%?* The consequence is that the label is no longer
+    balanced across the universe -- a 90%-vol biotech clears +10% far more
+    often than a 25%-vol industrial -- and that imbalance is not a defect to be
+    normalised away. It is the strategy. The model must still beat the *rate
+    implied by volatility alone*, which is what the volatility-bucket
+    diagnostic in :func:`spike_summary` checks.
+
+    Payoff asymmetry is the point: the target is larger than the stop, so this
+    can be profitable at a hit rate well under half. Break-even at 10%/7% with
+    a ~27% time-stop bucket is roughly a 41% conditional win rate among decided
+    outcomes.
+    """
+    if prices.empty:
+        return pd.DataFrame(columns=SPIKE_COLS)
+
+    df = prices.sort_values(["ticker", "date"]).copy()
+    out = []
+    for _ticker, g in df.groupby("ticker", observed=True, sort=False):
+        out.append(_spike_one(g.reset_index(drop=True), target, stop, horizon, entry_lag_days))
+    result = pd.concat(out, ignore_index=True) if out else pd.DataFrame(columns=SPIKE_COLS)
+    return result.dropna(subset=["spike"]).reset_index(drop=True)
+
+
+SPIKE_COLS = [
+    "date", "ticker", "entry_date", "exit_date", "spike", "ret",
+    "holding_days", "exit_reason", "entry_price", "target_price", "stop_price",
+]
+
+
+def _spike_one(g, target, stop, horizon, lag):
+    n = len(g)
+    dates = g["date"].to_numpy()
+    o = g["open"].to_numpy(dtype="float64")
+    hi = g["high"].to_numpy(dtype="float64")
+    lo = g["low"].to_numpy(dtype="float64")
+    c = g["close"].to_numpy(dtype="float64")
+
+    spike = np.full(n, np.nan)
+    rets = np.full(n, np.nan)
+    hold = np.full(n, np.nan)
+    reason = np.array([""] * n, dtype=object)
+    entry_p = np.full(n, np.nan)
+    tgt = np.full(n, np.nan)
+    stp = np.full(n, np.nan)
+    e_idx = np.full(n, -1, dtype=int)
+    x_idx = np.full(n, -1, dtype=int)
+
+    for i in range(n):
+        e = i + lag
+        if e >= n or e + horizon >= n:
+            continue
+        px = o[e]
+        if not np.isfinite(px) or px <= 0:
+            continue
+        U, D = px * (1 + target), px * (1 - stop)
+        entry_p[i], tgt[i], stp[i], e_idx[i] = px, U, D, e
+
+        last = min(e + horizon - 1, n - 1)
+        hit_i, lab, r, why = last, 0.0, np.nan, "time"
+        for j in range(e, last + 1):
+            up_touch, dn_touch = hi[j] >= U, lo[j] <= D
+            if up_touch and dn_touch:
+                # Both inside one bar: assume the stop. Daily data cannot
+                # resolve the order, and the optimistic read flatters exactly
+                # the most volatile names, which is the whole universe here.
+                hit_i, lab, r, why = j, 0.0, -stop, "both"
+                break
+            if up_touch:
+                hit_i, lab, r, why = j, 1.0, target, "target"
+                break
+            if dn_touch:
+                hit_i, lab, r, why = j, 0.0, -stop, "stop"
+                break
+        if why == "time":
+            r = c[last] / px - 1.0
+        spike[i], rets[i], hold[i], reason[i], x_idx[i] = lab, r, hit_i - e + 1, why, hit_i
+
+    valid = e_idx >= 0
+    return pd.DataFrame({
+        "date": dates,
+        "ticker": g["ticker"].to_numpy(),
+        "entry_date": np.where(valid, dates[np.clip(e_idx, 0, n - 1)], np.datetime64("NaT")),
+        "exit_date": np.where(valid, dates[np.clip(x_idx, 0, n - 1)], np.datetime64("NaT")),
+        "spike": spike, "ret": rets, "holding_days": hold, "exit_reason": reason,
+        "entry_price": entry_p, "target_price": tgt, "stop_price": stp,
+    })
+
+
+def spike_summary(labels: pd.DataFrame, prices: pd.DataFrame | None = None) -> pd.DataFrame:
+    """Base rate, payoff and the volatility-bucket check.
+
+    The volatility split is the honest control: if P(spike) rises monotonically
+    with trailing volatility and the model's selections are simply the
+    highest-volatility names, then there is no catalyst edge -- only a
+    volatility tilt, which is available for free and does not need any of this.
+    """
+    if labels.empty:
+        return pd.DataFrame()
+    rows = [{
+        "n": len(labels),
+        "P_spike": float(labels["spike"].mean()),
+        "mean_ret": float(labels["ret"].mean()),
+        "pct_target": float((labels["exit_reason"] == "target").mean()),
+        "pct_stop": float((labels["exit_reason"].isin(["stop", "both"])).mean()),
+        "pct_time": float((labels["exit_reason"] == "time").mean()),
+        "median_hold": float(labels["holding_days"].median()),
+    }]
+    return pd.DataFrame(rows)
+
+
 def label_summary(labels: pd.DataFrame) -> pd.DataFrame:
     """Base rate, payoff and holding period -- check this before trusting a model."""
     if labels.empty:

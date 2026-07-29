@@ -89,6 +89,28 @@ class LabelConfig:
 
 
 @dataclass
+class SpikeConfig:
+    """Absolute-barrier "moonshot" parameters.
+
+    These are prices, not volatility multiples. ``target`` and ``stop`` apply
+    identically to a 25%-vol industrial and a 120%-vol biotech, which is the
+    point: the trader's question is "will it pop 10%", not "will it beat its
+    own sigma".
+    """
+
+    target: float = 0.10
+    stop: float = 0.07
+    horizon: int = 10
+    #: Desired entries per week. Converted to a selection percentile against
+    #: the number of tradable name-days, so it adapts to universe size.
+    trades_per_week: float = 5.0
+    #: Never take more than this many entries on one day, however good the
+    #: signals look. Five in a week is a pace; five in one morning is a
+    #: correlated bet on that morning.
+    max_per_day: int = 3
+
+
+@dataclass
 class ModelConfig:
     n_seeds: int = 5
     learning_rate: float = 0.03
@@ -164,6 +186,7 @@ class Config:
     model: ModelConfig = field(default_factory=ModelConfig)
     risk: RiskConfig = field(default_factory=RiskConfig)
     costs: CostConfig = field(default_factory=CostConfig)
+    spike: SpikeConfig = field(default_factory=SpikeConfig)
 
     @classmethod
     def load(cls, path: str | Path | None = None) -> Config:
@@ -200,6 +223,77 @@ class Config:
     def ensure_dirs(self) -> None:
         for d in (self.data.cache_dir, self.data.store_dir, self.data.model_dir):
             d.mkdir(parents=True, exist_ok=True)
+
+    @classmethod
+    def moonshot(cls) -> Config:
+        """Few trades, large targets. ~5 entries a week hunting +10% moves.
+
+        This is a different *shape* of strategy, not a tuning of the last one,
+        and three things change together.
+
+        **Absolute barriers, not volatility-scaled.** The target is +10% and the
+        stop is -7%, in price, for every name. Volatility-scaled barriers ask
+        "did this beat its own typical move"; a moonshot asks "did it pop", and
+        those are different questions with different answers.
+
+        **The cost problem dissolves.** The previous configuration chased a
+        ~21bp edge against ~48bp of round-trip cost, which was hopeless
+        arithmetic. Against a 1000bp target the same 48bp is under 5% of the
+        payoff. This is the single biggest reason the shape change is worth
+        making: it moves execution cost from being the binding constraint to
+        being a rounding error.
+
+        **Selectivity replaces breadth.** Roughly 5 entries a week out of a
+        26,000-name-day year means taking the top ~1% of signals. Position
+        count falls, so each position can be larger, but the hit rate is
+        expected *below half* -- break-even at 10%/7% is around a 41% win rate
+        among decided outcomes -- and a run of eight losers is unremarkable.
+        The drawdown limit is therefore looser, deliberately, because a tight
+        one would stop the strategy out of its own normal behaviour.
+
+        What this configuration is **not** is safer. It concentrates the book
+        into fewer, larger, lower-probability bets. That is what was asked for,
+        and it is the opposite end of the risk spectrum from ``Config()``.
+        """
+        cfg = cls()
+
+        # Absolute barriers live in SpikeConfig; these mirror them so the
+        # backtest's exit rule and the label agree.
+        cfg.labels.max_holding_days = 10
+        cfg.labels.entry_lag_days = 1
+        cfg.labels.vol_window = 21
+
+        cfg.spike.target = 0.10
+        cfg.spike.stop = 0.07
+        cfg.spike.horizon = 10
+        cfg.spike.trades_per_week = 5.0
+
+        cfg.features.halflives = (1, 3, 10, 21)
+        cfg.features.min_adv_usd = 500_000.0
+        cfg.features.min_price = 1.5
+
+        cfg.model.purge_days = 12
+        cfg.model.embargo_days = 3
+        cfg.model.n_splits = 5
+
+        cfg.risk.max_holding_days = 10
+        cfg.risk.max_positions = 12
+        cfg.risk.max_weight_per_name = 0.10
+        # Risk per trade is the stop distance times the weight; at a 7% stop and
+        # a 10% weight that is 0.7% of capital per name.
+        cfg.risk.max_risk_per_trade = 0.010
+        cfg.risk.max_gross_exposure = 1.0
+        cfg.risk.max_sector_weight = 0.40
+        cfg.risk.stop_loss_sigma = 0.0  # unused: the stop is absolute here
+        cfg.risk.min_edge = 0.005
+        # A low-hit-rate strategy spends a lot of time underwater by design.
+        # A 20% kill switch would fire on ordinary variance.
+        cfg.risk.max_drawdown = 0.35
+
+        cfg.costs.half_spread_bps = 15.0
+        cfg.costs.impact_coef_bps = 45.0
+        cfg.costs.max_participation = 0.03
+        return cfg
 
     @classmethod
     def short_horizon(cls) -> Config:

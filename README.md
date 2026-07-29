@@ -110,6 +110,39 @@ nothing except the tuning.
 
 ---
 
+## Moonshot profile: five trades a week, +10% targets
+
+Full detail in [`docs/MOONSHOT.md`](docs/MOONSHOT.md).
+
+```bash
+python scripts/moonshot.py --trades-per-week 5
+```
+
+Fewer, larger, lower-probability bets with an **absolute** +10% target and −7%
+stop rather than many small volatility-scaled ones. The shape change fixes the
+arithmetic that killed the previous version: a +21bp edge against 48bp of cost
+is hopeless, a +122bp edge against the same 48bp is not.
+
+**+12.2% CAGR, Sharpe 0.58 ± 0.70** over two out-of-sample years, 515 trades at
+exactly 5.0/week, 50.9% win rate, +0.96 skew. It makes money in backtest and is
+**not statistically distinguishable from luck** — deflated Sharpe 0.108 after
+accounting for ~30 configurations tried.
+
+**The one finding worth keeping regardless:** rank on expected value, not on
+P(spike). A second model for the *downside* changes everything:
+
+| ranking | P(spike) | stop rate | net/trade |
+|---|---|---|---|
+| P(spike) only | 38.8% | 53.6% | **−0.44%** |
+| **expected value** | 33.0% | **36.1%** | **+0.56%** |
+
+Picking the names most likely to jump 10% picks the names most likely to *move*,
+which are the same names most likely to drop 7%. It passes the volatility
+control too — selected names have 0.76× the universe median volatility, with
+lift inside every volatility bucket.
+
+---
+
 ## What moves the price, and in what order
 
 Full detail in [`docs/CASCADE.md`](docs/CASCADE.md). The question was whether

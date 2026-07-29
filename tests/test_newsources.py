@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
+import pytest
 
 from iai.core.config import Config
 from iai.core.http import HttpClient
@@ -451,3 +452,142 @@ def test_lead_lag_identifies_the_leader():
     assert out.iloc[0]["leader"] == "FIRST"
     assert out.iloc[0]["pct_b_after_a"] > 0.9
     assert out.iloc[0]["median_gap_h"] > 0
+
+
+# ----------------------------------------------------------------- moonshot
+
+
+def _spike_prices(n=400, seed=0):
+    """Two names: one that pops often, one that grinds."""
+    rng = np.random.default_rng(seed)
+    dates = pd.bdate_range("2021-01-04", periods=n)
+    frames = []
+    for tkr, vol in [("POPPY", 0.05), ("QUIET", 0.008)]:
+        c = 20 * np.exp(np.cumsum(rng.normal(0.0002, vol, n)))
+        frames.append(pd.DataFrame({
+            "date": dates, "ticker": tkr,
+            "open": c * (1 + rng.normal(0, 0.001, n)),
+            "high": c * 1.02, "low": c * 0.98, "close": c,
+            "volume": 1e6, "adj_factor": 1.0,
+        }))
+    return pd.concat(frames, ignore_index=True)
+
+
+def test_spike_label_uses_absolute_barriers():
+    """+10% means +10%, not 10% of sigma."""
+    from iai.labels import build_spike_labels
+
+    cfg = Config.moonshot()
+    px = _spike_prices()
+    lab = build_spike_labels(px, cfg, target=0.10, stop=0.07, horizon=10)
+    assert not lab.empty
+    ok = lab.dropna(subset=["entry_price"])
+    assert np.allclose(ok["target_price"], ok["entry_price"] * 1.10)
+    assert np.allclose(ok["stop_price"], ok["entry_price"] * 0.93)
+
+
+def test_spike_rate_is_higher_for_the_volatile_name():
+    """The label is deliberately unbalanced across the universe.
+
+    An absolute barrier is mechanically easier for a volatile name. That is not
+    a defect to normalise away -- it is why volatility_control() exists.
+    """
+    from iai.labels import build_spike_labels
+
+    cfg = Config.moonshot()
+    lab = build_spike_labels(_spike_prices(), cfg, target=0.10, stop=0.07, horizon=10)
+    rates = lab.groupby("ticker")["spike"].mean()
+    assert rates["POPPY"] > rates["QUIET"]
+
+
+def test_spike_label_entry_is_the_next_open():
+    from iai.labels import build_spike_labels
+
+    cfg = Config.moonshot()
+    px = _spike_prices()
+    lab = build_spike_labels(px, cfg).dropna(subset=["entry_price"])
+    assert (lab["entry_date"] > lab["date"]).all()
+    merged = lab.merge(
+        px[["date", "ticker", "open"]].rename(columns={"date": "entry_date"}),
+        on=["entry_date", "ticker"], how="left",
+    )
+    assert np.allclose(merged["entry_price"], merged["open"], equal_nan=True)
+
+
+def test_expected_value_penalises_the_downside():
+    """A high spike probability with a high stop probability is a bad trade."""
+    from iai.moonshot import expected_value
+
+    good = expected_value(np.array([0.35]), np.array([0.30]), 0.10, 0.07)
+    bad = expected_value(np.array([0.40]), np.array([0.50]), 0.10, 0.07)
+    assert good[0] > bad[0], "EV ignored the downside leg"
+    # And the naive ranking would get this backwards.
+    assert 0.40 > 0.35
+
+
+def test_expected_value_matches_the_arithmetic():
+    from iai.moonshot import expected_value
+
+    ev = expected_value(np.array([0.4]), np.array([0.3]), 0.10, 0.07, r_time=0.01)
+    assert ev[0] == pytest.approx(0.4 * 0.10 - 0.3 * 0.07 + 0.3 * 0.01)
+
+
+def test_expected_value_clips_a_negative_residual():
+    """Two independently calibrated models can sum past 1."""
+    from iai.moonshot import expected_value
+
+    ev = expected_value(np.array([0.7]), np.array([0.6]), 0.10, 0.07, r_time=0.05)
+    assert np.isfinite(ev).all()
+    assert ev[0] == pytest.approx(0.7 * 0.10 - 0.6 * 0.07)
+
+
+def test_select_per_week_spreads_entries_across_time():
+    """Regression: global top-N put 490 of 492 trades in one year."""
+    from iai.moonshot import select_per_week
+
+    rng = np.random.default_rng(0)
+    dates = pd.bdate_range("2022-01-03", periods=260)
+    df = pd.DataFrame({
+        "date": np.repeat(dates, 20),
+        "ticker": np.tile([f"T{i}" for i in range(20)], len(dates)),
+    })
+    # Scores drift upward over time, so a global top-N would take only the tail.
+    df["ev"] = np.linspace(0, 1, len(df)) + rng.normal(0, 0.01, len(df))
+
+    picked = select_per_week(df, per_week=5)
+    per_week = picked.groupby(picked["date"].dt.to_period("W")).size()
+    assert per_week.max() <= 5
+    # Every week should be represented, not just the last few.
+    assert picked["date"].dt.year.nunique() == df["date"].dt.year.nunique()
+    assert per_week.min() >= 1
+
+
+def test_select_per_week_respects_the_daily_cap():
+    from iai.moonshot import select_per_week
+
+    dates = pd.to_datetime(["2022-01-03"] * 20 + ["2022-01-04"] * 20)
+    df = pd.DataFrame({
+        "date": dates, "ticker": [f"T{i}" for i in range(40)],
+        "ev": np.arange(40, dtype="float64"),
+    })
+    picked = select_per_week(df, per_week=10, max_per_day=3)
+    assert picked.groupby("date").size().max() <= 3
+
+
+def test_volatility_control_flags_a_pure_volatility_tilt():
+    """A selector that only picks volatile names must show lift ~1 in-bucket."""
+    from iai.moonshot import volatility_control
+
+    rng = np.random.default_rng(1)
+    n = 4000
+    vol = rng.uniform(0.01, 0.08, n)
+    # Spike probability is a pure function of volatility: no skill available.
+    spike = (rng.random(n) < (vol * 8)).astype(int)
+    uni = pd.DataFrame({"vol21": vol, "spike": spike, "ret": 0.0,
+                        "exit_reason": "time"})
+    # "Model" = take the most volatile names.
+    sel = uni.nlargest(400, "vol21")
+    ctrl = volatility_control(sel, uni)
+    assert not ctrl.empty
+    # Within each volatility bucket the tilt has no advantage.
+    assert ctrl["lift"].between(0.7, 1.4).all(), ctrl.to_string()
