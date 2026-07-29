@@ -25,6 +25,7 @@ Two adapters ship here:
 from __future__ import annotations
 
 import logging
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 import numpy as np
@@ -55,19 +56,43 @@ def _empty_prices() -> pd.DataFrame:
     )
 
 
+#: Yahoo rejects the default python-requests agent from shared egress IPs.
+BROWSER_UA = (
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+    "AppleWebKit/605.1.15 Safari/605.1.15"
+)
+
+
 class YahooPrices:
     """Daily bars from Yahoo's public chart endpoint."""
 
-    def __init__(self, cfg: Config, client: HttpClient) -> None:
+    def __init__(self, cfg: Config, client: HttpClient, workers: int = 6) -> None:
         self.cfg = cfg
         self.client = client
+        self.workers = workers
 
     def fetch(self, tickers: list[str], start: pd.Timestamp, end: pd.Timestamp) -> pd.DataFrame:
+        """One request per ticker, issued concurrently.
+
+        Yahoo's undocumented limit is stricter than the SEC's and it answers
+        with 429s and outright blocks, so the client's rate limiter -- not the
+        worker count -- is what keeps this polite. The threads exist to stop
+        each request's round trip from being dead time; 2,000 tickers at 2 req/s
+        is 17 minutes of transfer and would otherwise be 30 minutes of waiting.
+        """
         frames = []
-        for tkr in tickers:
-            df = self._one(tkr, start, end)
-            if df is not None and not df.empty:
-                frames.append(df)
+        with ThreadPoolExecutor(max_workers=self.workers) as pool:
+            futures = {pool.submit(self._one, t, start, end): t for t in tickers}
+            for done, fut in enumerate(as_completed(futures), 1):
+                try:
+                    df = fut.result()
+                except Exception:  # noqa: BLE001 - one bad symbol must not kill the batch
+                    log.exception("price fetch failed for %s", futures[fut])
+                    continue
+                if df is not None and not df.empty:
+                    frames.append(df)
+                if done % 250 == 0:
+                    log.info("prices %d/%d tickers", done, len(futures))
         if not frames:
             return _empty_prices()
         return pd.concat(frames, ignore_index=True).sort_values(["ticker", "date"]).reset_index(drop=True)
@@ -80,11 +105,10 @@ class YahooPrices:
             "events": "div,splits",
             "includeAdjustedClose": "true",
         }
-        # Yahoo rejects the default python-requests agent from shared egress IPs.
         blob = self.client.get(
             YAHOO_CHART.format(symbol=ticker),
             params=params,
-            headers={"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 Safari/605.1.15"},
+            headers={"User-Agent": BROWSER_UA},
         )
         if not blob:
             return None

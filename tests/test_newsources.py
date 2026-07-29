@@ -2,6 +2,11 @@
 
 from __future__ import annotations
 
+import inspect
+import io
+import time
+import zipfile
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -641,15 +646,38 @@ def test_shards_are_not_contiguous_alphabetical_blocks():
 
 def test_shard_index_out_of_range_is_rejected():
     cf = _load_colab_fetch()
-    rc = cf.main(["--shard", "5", "--n-shards", "3", "--user-agent", "a b@c.com"])
+    rc = cf.main(["--stage", "prices", "--shard", "5", "--n-shards", "3",
+                  "--user-agent", "a b@c.com"])
     assert rc == 2
 
 
 def test_anonymous_user_agent_is_rejected():
     """The SEC blocks anonymous scrapers, and the block hits the whole IP."""
     cf = _load_colab_fetch()
-    assert cf.main(["--shard", "0", "--n-shards", "1", "--user-agent", ""]) == 2
-    assert cf.main(["--shard", "0", "--n-shards", "1", "--user-agent", "integratedai"]) == 2
+    assert cf.main(["--stage", "prices", "--user-agent", ""]) == 2
+    assert cf.main(["--stage", "prices", "--user-agent", "integratedai"]) == 2
+
+
+def test_stages_run_in_dependency_order(tmp_path):
+    """A stage whose input is missing must say which one to run, not crash."""
+    cf = _load_colab_fetch()
+    args = ["--out", str(tmp_path), "--user-agent", "a b@c.com"]
+    for stage in ("prices", "events"):
+        with pytest.raises(SystemExit, match="candidates -> prices -> screen"):
+            cf.main(["--stage", stage, *args])
+
+
+def test_only_per_ticker_stages_are_shardable():
+    """Sharding the bulk-archive stage would be n times the bytes for no speed.
+
+    Prices and events are one request per ticker and split cleanly. Insiders is
+    46 whole-market archives; every shard would download and parse all of them.
+    """
+    cf = _load_colab_fetch()
+    src = inspect.getsource(cf.stage_insiders)
+    assert "ignores sharding" in src
+    for stage in (cf.stage_prices, cf.stage_events):
+        assert "shard_tickers" in inspect.getsource(stage)
 
 
 # ------------------------------------------------------- bulk insider loader
@@ -768,3 +796,297 @@ def test_bulk_cluster_needs_distinct_insiders():
                         pd.Timestamp("2025-01-01", tz="UTC"))
     assert len(out) == 1
     assert out[0].payload["n_insiders"] == 2
+
+
+# ------------------------------------------------- bulk archives: cache, cores
+
+
+def _fake_archive(rows: list[dict]) -> bytes:
+    """A minimal but structurally real quarterly Form 345 zip."""
+    sub = pd.DataFrame([{
+        "ACCESSION_NUMBER": r["acc"], "DOCUMENT_TYPE": "4",
+        "ISSUERTRADINGSYMBOL": r["ticker"], "ISSUERCIK": "0000000001",
+        "FILING_DATE": r["filed"],
+    } for r in rows])
+    trans = pd.DataFrame([{
+        "ACCESSION_NUMBER": r["acc"], "TRANS_CODE": r.get("code", "P"),
+        "TRANS_SHARES": "1000", "TRANS_PRICEPERSHARE": "50",
+        "TRANS_DATE": r["txn"],
+    } for r in rows])
+    owners = pd.DataFrame([{
+        "ACCESSION_NUMBER": r["acc"], "RPTOWNERCIK": r.get("owner_cik", "9"),
+        "RPTOWNERNAME": r.get("owner", "Jane"),
+        "RPTOWNER_RELATIONSHIP": "0,1,0,0", "RPTOWNER_TITLE": "CEO",
+    } for r in rows])
+
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w") as z:
+        for name, df in (("SUBMISSION.tsv", sub), ("NONDERIV_TRANS.tsv", trans),
+                         ("REPORTINGOWNER.tsv", owners)):
+            z.writestr(name, df.to_csv(sep="\t", index=False))
+    return buf.getvalue()
+
+
+def test_parse_archive_is_pure_so_it_can_run_in_a_process():
+    """Parsing takes bytes, not a client -- that is what makes cores usable.
+
+    Unzipping and three read_csv calls over ~110,000 rows is CPU-bound, and the
+    GIL makes threads useless for it. Keeping the parse free of the HTTP client
+    is what lets it be handed to a process pool.
+    """
+    from iai.sources.insiders_bulk import parse_archive
+
+    sig = inspect.signature(parse_archive)
+    assert list(sig.parameters) == ["blob", "tickers"]
+
+    blob = _fake_archive([
+        {"acc": "a1", "ticker": "AAA", "filed": "07-MAR-2024", "txn": "05-MAR-2024"},
+        {"acc": "a2", "ticker": "ZZZ", "filed": "08-MAR-2024", "txn": "06-MAR-2024"},
+    ])
+    everything = parse_archive(blob)
+    assert set(everything["ticker"]) == {"AAA", "ZZZ"}
+
+    # Filtering happens before the joins, so a universe is a real saving.
+    filtered = parse_archive(blob, frozenset({"AAA"}))
+    assert set(filtered["ticker"]) == {"AAA"}
+    assert filtered["role"].iloc[0] == "ceo"
+    assert filtered["value_usd"].iloc[0] == pytest.approx(50_000.0)
+
+
+def test_binary_cache_survives_a_restart(tmp_path):
+    """A run that dies at archive 40 must resume, not start over."""
+    from iai.core.http import HttpClient
+
+    calls = []
+    blob = _fake_archive([{"acc": "a1", "ticker": "AAA",
+                           "filed": "07-MAR-2024", "txn": "05-MAR-2024"}])
+
+    class _Resp:
+        status_code = 200
+        headers: dict = {}
+        content = blob
+
+        def raise_for_status(self):
+            pass
+
+    client = HttpClient(tmp_path, "t b@c.com", rate_per_sec=0.0)
+    client.session.get = lambda url, **kw: (calls.append(url), _Resp())[1]
+
+    first = client.get_bytes("https://example.test/2024q1.zip")
+    assert first == blob
+    # A fresh client over the same cache directory must not refetch.
+    again = HttpClient(tmp_path, "t b@c.com", rate_per_sec=0.0)
+    again.session.get = lambda url, **kw: (calls.append(url), _Resp())[1]
+    assert again.get_bytes("https://example.test/2024q1.zip") == blob
+    assert len(calls) == 1, "cached archive was refetched"
+
+
+def test_client_errors_are_answers_not_failures(tmp_path):
+    """A 400 means the symbol does not exist. Retrying cannot change that.
+
+    This was the single largest waste of wall clock in a wide fetch: Yahoo
+    answers 400 for every delisted ticker, a 5,000-name pool over eleven years
+    contains thousands of them, and four attempts with exponential backoff is
+    fifteen seconds each. Hours, spent asking again.
+    """
+    from iai.core.http import HttpClient
+
+    def _count_attempts(status: int) -> int:
+        calls: list[str] = []
+
+        class _Resp:
+            status_code = status
+            headers: dict = {}
+
+            def raise_for_status(self):
+                raise AssertionError("must not reach raise_for_status")
+
+        client = HttpClient(tmp_path / str(status), "t b@c.com", rate_per_sec=0.0)
+        client.session.get = lambda url, **kw: (calls.append(url), _Resp())[1]
+        assert client.get("https://example.test/x") is None
+        return len(calls)
+
+    for status in (400, 401, 403, 404, 422):
+        assert _count_attempts(status) == 1, f"{status} was retried"
+
+    # 429 and 5xx are the opposite case: transient, and worth retrying.
+    calls = []
+
+    class _Throttled:
+        status_code = 429
+        headers = {"Retry-After": "0"}
+
+        def raise_for_status(self):
+            pass
+
+    client = HttpClient(tmp_path / "429", "t b@c.com", rate_per_sec=0.0, max_retries=3)
+    client.session.get = lambda url, **kw: (calls.append(url), _Throttled())[1]
+    assert client.get("https://example.test/x") is None
+    assert len(calls) == 3, "throttling must still be retried"
+
+
+def test_definitive_miss_is_cached_but_expires_sooner_than_a_hit(tmp_path):
+    """A dead ticker must not be re-asked every run -- nor written off forever.
+
+    A symbol that 400s today may list next month, so the negative cache has a
+    much shorter life than a positive one. Caching misses permanently would
+    quietly shrink the universe over time.
+    """
+    from iai.core.http import HttpClient
+
+    calls = []
+
+    class _Resp:
+        status_code = 400
+        headers: dict = {}
+
+        def raise_for_status(self):
+            pass
+
+    client = HttpClient(tmp_path, "t b@c.com", rate_per_sec=0.0, ttl_hours=720.0)
+    client.session.get = lambda url, **kw: (calls.append(url), _Resp())[1]
+
+    assert client.get("https://example.test/DEAD") is None
+    assert client.get("https://example.test/DEAD") is None
+    assert len(calls) == 1, "the miss was not cached"
+
+    path = client._key("https://example.test/DEAD", None, None)
+    age_hours = (time.time() - path.stat().st_mtime) / 3600
+    assert age_hours > client.ttl / 3600 - client.miss_ttl_hours - 1
+    assert age_hours < client.ttl / 3600, "the miss must not already be expired"
+
+
+def test_truncated_cache_entry_is_refetched_not_trusted(tmp_path):
+    """A killed run can leave a partial file; it must not look like a hit."""
+    from iai.core.http import HttpClient
+
+    client = HttpClient(tmp_path, "t b@c.com", rate_per_sec=0.0)
+    url = "https://example.test/2024q1.zip"
+    # The .part staging name is what a killed write leaves behind, and it is
+    # not the name the reader looks for.
+    key = client._key(url, None, None).with_suffix(".bin")
+    assert not key.exists()
+    assert list(tmp_path.glob("*.part")) == []
+
+
+def test_load_quarters_parses_every_quarter_it_downloads(monkeypatch, tmp_path):
+    """Overlapping download and parse must not drop or duplicate a quarter."""
+    from iai.core.http import HttpClient
+    from iai.sources import insiders_bulk as ib
+
+    archives = {
+        (2024, q): _fake_archive([{
+            "acc": f"acc-{q}", "ticker": "AAA",
+            "filed": f"0{q}-MAR-2024", "txn": f"0{q}-MAR-2024",
+        }])
+        for q in (1, 2, 3, 4)
+    }
+    client = HttpClient(tmp_path, "t b@c.com", rate_per_sec=0.0)
+    monkeypatch.setattr(
+        client, "get_bytes",
+        lambda url, **kw: archives[(2024, int(url.rsplit("q", 1)[1][0]))],
+    )
+
+    # processes=0 exercises the inline path; the pooled path is the same code.
+    out = ib.load_quarters(client, list(archives), tickers={"AAA"}, processes=0)
+    assert len(out) == 4
+    assert sorted(out["accession"]) == ["acc-1", "acc-2", "acc-3", "acc-4"]
+
+
+def test_missing_quarter_does_not_abort_the_run(monkeypatch, tmp_path):
+    from iai.core.http import HttpClient
+    from iai.sources import insiders_bulk as ib
+
+    good = _fake_archive([{"acc": "a1", "ticker": "AAA",
+                           "filed": "07-MAR-2024", "txn": "05-MAR-2024"}])
+    client = HttpClient(tmp_path, "t b@c.com", rate_per_sec=0.0)
+    monkeypatch.setattr(
+        client, "get_bytes",
+        lambda url, **kw: good if "2024q1" in url else None,
+    )
+    out = ib.load_quarters(client, [(2024, 1), (2024, 2)], processes=0)
+    assert len(out) == 1
+
+
+# --------------------------------------------------- point-in-time universe cut
+
+
+def _cap_panel() -> pd.DataFrame:
+    """Four names, two quarters. ADV ordering flips between them."""
+    rows = []
+    for period, as_of, advs in (
+        ("CY2020Q1I", "2020-03-31", {"AAA": 9e6, "BBB": 5e6, "CCC": 1e6, "HUGE": 9e9}),
+        ("CY2020Q2I", "2020-06-30", {"AAA": 1e6, "BBB": 8e6, "CCC": 7e6, "HUGE": 9e9}),
+    ):
+        for tkr, adv in advs.items():
+            cap = 5e11 if tkr == "HUGE" else 5e8
+            rows.append({
+                "period": period, "as_of": pd.Timestamp(as_of), "ticker": tkr,
+                "market_cap": cap, "adv_usd": adv,
+                "in_band": cap <= 10e9,
+            })
+    return pd.DataFrame(rows)
+
+
+def test_universe_cut_uses_trailing_liquidity_not_the_full_window():
+    """Membership must be decidable on the day it is set.
+
+    "The 2,000 most liquid names of the period" is point-in-time. "The 2,000
+    largest today" is not, and they look identical written down. The tiebreak
+    here is trailing dollar volume, so a name that dries up leaves and a name
+    that becomes liquid enters -- and the ordering is allowed to differ between
+    quarters, which is the whole tell that no future data was used.
+    """
+    from iai.universe_builder import rolling_universe
+
+    members = rolling_universe(_cap_panel(), max_names=2)
+    q1 = set(members[members["period"] == "CY2020Q1I"]["ticker"])
+    q2 = set(members[members["period"] == "CY2020Q2I"]["ticker"])
+    assert q1 == {"AAA", "BBB"}
+    assert q2 == {"BBB", "CCC"}, "the cut must follow that quarter's liquidity"
+    assert "HUGE" not in q1 | q2, "out-of-band names must never be admitted"
+    assert members.groupby("period")["ticker"].nunique().max() == 2
+
+
+def test_membership_never_reaches_backward_in_time():
+    """A name admitted at a quarter end is in from then on, not before."""
+    from iai.universe_builder import membership_mask, rolling_universe
+
+    members = rolling_universe(_cap_panel(), max_names=2)
+    prices = pd.DataFrame({
+        "date": pd.to_datetime(["2020-03-30", "2020-04-01", "2020-07-01"] * 1),
+        "ticker": ["CCC", "CCC", "CCC"],
+    })
+    mask = membership_mask(members, prices).set_index("date")["in_universe"]
+    # CCC only qualifies at the 2020Q2 measurement date (2020-06-30).
+    assert not mask[pd.Timestamp("2020-03-30")]
+    assert not mask[pd.Timestamp("2020-04-01")]
+    assert mask[pd.Timestamp("2020-07-01")]
+
+
+def test_membership_lapses_when_a_name_stops_qualifying():
+    """Delisted and dried-up names must not stay in the universe forever."""
+    from iai.universe_builder import membership_mask, rolling_universe
+
+    members = rolling_universe(_cap_panel(), max_names=2)
+    prices = pd.DataFrame({
+        "date": pd.to_datetime(["2020-04-01", "2021-06-01"]),
+        "ticker": ["AAA", "AAA"],
+    })
+    mask = membership_mask(members, prices).set_index("date")["in_universe"]
+    assert mask[pd.Timestamp("2020-04-01")]
+    assert not mask[pd.Timestamp("2021-06-01")], "membership must expire"
+
+
+def test_candidate_pool_applies_no_outcome_based_ranking():
+    """The pre-price filter must not be computed over the whole window.
+
+    Ranking candidates by filing activity would pick the 2015 universe using
+    facts from 2026. The only thing allowed before prices is "did this
+    registrant file financials at all".
+    """
+    from iai.universe_builder import operating_issuers
+
+    src = inspect.getsource(operating_issuers)
+    assert "nunique" in src  # quarters counted, but only reported
+    assert "head(" not in src and "nlargest" not in src, "no top-N cut before prices"

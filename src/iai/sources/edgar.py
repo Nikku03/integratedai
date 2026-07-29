@@ -135,33 +135,64 @@ class EdgarFilings(EventSource):
     name = "edgar"
     default_latency = DISSEMINATION_LAG
 
-    def __init__(self, *args, forms: set[str] | None = None, **kwargs) -> None:
+    def __init__(self, *args, forms: set[str] | None = None, workers: int = 8, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.forms = forms or set(FORM_WEIGHTS)
+        self.workers = workers
 
     def fetch(self, start: pd.Timestamp, end: pd.Timestamp) -> list[Event]:
         start, end = to_utc(start), to_utc(end)
-        events: list[Event] = []
-        for ticker in self.universe.tickers:
-            cik = self.universe.cik(ticker)
-            if not cik:
+        by_cik = {
+            self.universe.cik(t): t for t in self.universe.tickers if self.universe.cik(t)
+        }
+        if not by_cik:
+            return []
+
+        # Fetch every issuer's index concurrently. The shared rate limiter still
+        # holds the aggregate at the SEC's ceiling, so this hides round-trip
+        # latency rather than raising throughput -- worth roughly 2x, because a
+        # serial loop spends most of each request waiting rather than sending.
+        urls = {SUBMISSIONS_URL.format(cik=c): c for c in by_cik}
+        blobs = self.client.get_many(list(urls), workers=self.workers, progress_every=250)
+
+        # Long filing histories page older records into separate files. Collect
+        # every page needed across all issuers, then fetch that second wave
+        # concurrently too, rather than one issuer at a time.
+        pages: dict[str, str] = {}
+        for url, blob in blobs.items():
+            if not blob:
                 continue
-            events.extend(self._one_issuer(ticker, cik, start, end))
+            for extra in blob.get("filings", {}).get("files", []):
+                pages[f"https://data.sec.gov/submissions/{extra['name']}"] = urls[url]
+        older = (
+            self.client.get_many(list(pages), workers=self.workers, progress_every=250)
+            if pages else {}
+        )
+        extra_by_cik: dict[str, list[dict]] = {}
+        for url, blob in older.items():
+            if blob:
+                extra_by_cik.setdefault(pages[url], []).append(blob)
+
+        events: list[Event] = []
+        for url, cik in urls.items():
+            blob = blobs.get(url)
+            if blob:
+                events.extend(
+                    self._one_issuer(by_cik[cik], cik, blob, extra_by_cik.get(cik, []), start, end)
+                )
         return events
 
     def _one_issuer(
-        self, ticker: str, cik: str, start: pd.Timestamp, end: pd.Timestamp
+        self,
+        ticker: str,
+        cik: str,
+        blob: dict,
+        older: list[dict],
+        start: pd.Timestamp,
+        end: pd.Timestamp,
     ) -> list[Event]:
-        blob = self.client.get(SUBMISSIONS_URL.format(cik=cik))
-        if not blob:
-            return []
         out: list[Event] = []
-        chunks = [blob.get("filings", {}).get("recent", {})]
-        # Issuers with long histories page older filings into separate files.
-        for extra in blob.get("filings", {}).get("files", []):
-            older = self.client.get(f"https://data.sec.gov/submissions/{extra['name']}")
-            if older:
-                chunks.append(older)
+        chunks = [blob.get("filings", {}).get("recent", {}), *older]
 
         sic = str(blob.get("sic", ""))
         sic_desc = blob.get("sicDescription", "")

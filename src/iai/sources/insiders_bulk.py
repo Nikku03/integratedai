@@ -52,8 +52,10 @@ from __future__ import annotations
 
 import io
 import logging
+import os
 import zipfile
 from collections import defaultdict
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
 
 import pandas as pd
 
@@ -96,35 +98,25 @@ def _parse_relationship(raw: str) -> tuple[bool, bool, bool]:
     )
 
 
-def load_quarter(
-    client: HttpClient, year: int, quarter: int, *, tickers: set[str] | None = None
-) -> pd.DataFrame:
-    """Download one quarterly archive and return joined non-derivative trades.
+def parse_archive(blob: bytes, tickers: frozenset[str] | None = None) -> pd.DataFrame:
+    """Turn one quarterly archive's bytes into joined non-derivative trades.
+
+    Split out from the download so it can run in a worker *process*. Unzipping
+    and three ``read_csv`` calls over ~110,000 rows is genuinely CPU-bound, and
+    the GIL makes threads useless for it; the download half is pure I/O and
+    wants threads. See :func:`load_quarters`, which runs both halves at once.
 
     Filtering to ``tickers`` happens before the joins, which matters: an
     unfiltered quarter is ~111,000 transaction rows and the join against
     reporting owners is the expensive step.
     """
-    url = BULK_URL.format(year=year, quarter=quarter)
-    # The archive is binary, so it bypasses the JSON/text cache and is fetched
-    # directly. It is ~14 MB and the SEC serves it quickly.
-    try:
-        resp = client.session.get(url, timeout=180)
-        if resp.status_code != 200:
-            log.warning("bulk %sq%s -> HTTP %s", year, quarter, resp.status_code)
-            return pd.DataFrame()
-        blob = resp.content
-    except Exception:  # noqa: BLE001 - a missing quarter must not abort the run
-        log.exception("bulk %sq%s failed", year, quarter)
-        return pd.DataFrame()
-
     try:
         z = zipfile.ZipFile(io.BytesIO(blob))
         sub = pd.read_csv(z.open("SUBMISSION.tsv"), sep="\t", dtype=str)
         trans = pd.read_csv(z.open("NONDERIV_TRANS.tsv"), sep="\t", dtype=str)
         owners = pd.read_csv(z.open("REPORTINGOWNER.tsv"), sep="\t", dtype=str)
     except Exception:  # noqa: BLE001 - corrupt archive
-        log.exception("bulk %sq%s could not be read", year, quarter)
+        log.exception("bulk archive could not be read")
         return pd.DataFrame()
 
     sub = sub[sub["DOCUMENT_TYPE"] == "4"]
@@ -176,6 +168,91 @@ def load_quarter(
     ]]
 
 
+def load_quarter(
+    client: HttpClient, year: int, quarter: int, *, tickers: set[str] | None = None
+) -> pd.DataFrame:
+    """Download and parse one quarterly archive."""
+    blob = client.get_bytes(BULK_URL.format(year=year, quarter=quarter))
+    if not blob:
+        log.warning("bulk %sq%s unavailable", year, quarter)
+        return pd.DataFrame()
+    return parse_archive(blob, frozenset(tickers) if tickers else None)
+
+
+def load_quarters(
+    client: HttpClient,
+    qs: list[tuple[int, int]],
+    *,
+    tickers: set[str] | None = None,
+    download_workers: int = 4,
+    processes: int | None = None,
+) -> pd.DataFrame:
+    """Fetch and parse many quarters, overlapping I/O with CPU.
+
+    Downloads run in threads (4 is plenty -- these are 14 MB transfers, not
+    latency-bound API calls) and parsing runs in a process pool, so quarter *n*
+    is being parsed on one core while quarter *n+1* is still on the wire.
+    Eleven years drops from roughly five minutes serial to about one.
+
+    ``processes=0`` disables the pool and parses inline. Use that when the
+    caller is already inside a worker process -- nested pools deadlock on some
+    platforms -- or when memory is tight, since each worker holds a decompressed
+    quarter.
+    """
+    if not qs:
+        return pd.DataFrame()
+    want = frozenset(tickers) if tickers else None
+    if processes is None:
+        processes = min(len(qs), max(1, (os.cpu_count() or 2) - 1))
+
+    urls = {(y, q): BULK_URL.format(year=y, quarter=q) for y, q in qs}
+    frames: list[pd.DataFrame] = []
+
+    def _download(key):
+        return key, client.get_bytes(urls[key])
+
+    with ThreadPoolExecutor(max_workers=download_workers) as net:
+        downloads = as_completed([net.submit(_download, k) for k in qs])
+        if processes and processes > 1:
+            try:
+                with ProcessPoolExecutor(max_workers=processes) as cpu:
+                    pending = {}
+                    for fut in downloads:
+                        key, blob = fut.result()
+                        if blob:
+                            pending[cpu.submit(parse_archive, blob, want)] = key
+                        else:
+                            log.warning("bulk %sq%s unavailable", *key)
+                    for fut in as_completed(pending):
+                        year, quarter = pending[fut]
+                        df = fut.result()
+                        log.info("bulk %sq%s: %d qualifying transactions", year, quarter, len(df))
+                        if not df.empty:
+                            frames.append(df)
+                return _concat(frames)
+            except (OSError, RuntimeError, ImportError) as exc:
+                # Sandboxes and nested pools can refuse to fork. Falling back
+                # costs wall clock, not correctness.
+                log.warning("process pool unavailable (%s); parsing inline", exc)
+                frames.clear()
+                downloads = as_completed([net.submit(_download, k) for k in qs])
+
+        for fut in downloads:
+            (year, quarter), blob = fut.result()
+            if not blob:
+                log.warning("bulk %sq%s unavailable", year, quarter)
+                continue
+            df = parse_archive(blob, want)
+            log.info("bulk %sq%s: %d qualifying transactions", year, quarter, len(df))
+            if not df.empty:
+                frames.append(df)
+    return _concat(frames)
+
+
+def _concat(frames: list[pd.DataFrame]) -> pd.DataFrame:
+    return pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
+
+
 class BulkInsiderTransactions(EventSource):
     """Form 4 events from quarterly bulk archives.
 
@@ -201,27 +278,23 @@ class BulkInsiderTransactions(EventSource):
         cluster_days: int = 14,
         min_cluster: int = 2,
         min_value_usd: float = 25_000.0,
+        processes: int | None = None,
         **kwargs,
     ) -> None:
         super().__init__(cfg, client, universe, **kwargs)
         self.cluster_days = cluster_days
         self.min_cluster = min_cluster
         self.min_value_usd = min_value_usd
+        self.processes = processes
 
     def fetch(self, start: pd.Timestamp, end: pd.Timestamp) -> list[Event]:
         start, end = to_utc(start), to_utc(end)
         tickers = set(self.universe.tickers) or None
 
-        frames = []
         qs = quarters(str(start.date()), str(end.date()))
-        for year, quarter in qs:
-            df = load_quarter(self.client, year, quarter, tickers=tickers)
-            if not df.empty:
-                frames.append(df)
-            log.info("bulk %sq%s: %d qualifying transactions", year, quarter, len(df))
-        if not frames:
+        trades = load_quarters(self.client, qs, tickers=tickers, processes=self.processes)
+        if trades.empty:
             return []
-        trades = pd.concat(frames, ignore_index=True)
         log.info("bulk insiders: %d transactions over %d quarters", len(trades), len(qs))
 
         events = self._to_events(trades, start, end)

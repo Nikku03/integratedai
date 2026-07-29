@@ -12,6 +12,7 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
+import os
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -74,6 +75,22 @@ class HttpClient:
         )
         return self.cache_dir / f"{hashlib.sha256(raw.encode()).hexdigest()[:32]}.json"
 
+    #: Definitive misses expire faster than hits. A ticker that 400s today may
+    #: be listed next month, so a month-long negative cache would quietly shrink
+    #: the universe; a day is long enough to save a re-run and short enough that
+    #: it cannot become a permanent hole in the data.
+    miss_ttl_hours = 24.0
+
+    def _remember_miss(self, path: Path, url: str, status: int) -> None:
+        """Record that a URL definitively has nothing, so a re-run skips it."""
+        try:
+            path.write_text(json.dumps({"url": url, "miss": status, "body": None}))
+            stale = time.time() - (self.ttl - self.miss_ttl_hours * 3600)
+            if stale < time.time():
+                os.utime(path, (stale, stale))
+        except OSError:  # a cache we cannot write is not a reason to fail
+            log.debug("could not cache miss for %s", url)
+
     def get(
         self,
         url: str,
@@ -92,6 +109,8 @@ class HttpClient:
         if use_cache and path.exists() and (time.time() - path.stat().st_mtime) < self.ttl:
             try:
                 blob = json.loads(path.read_text())
+                if blob.get("miss"):
+                    return None
                 return blob["body"] if parse != "json" else blob["body"]
             except Exception:  # noqa: BLE001 - corrupt cache entry, just refetch
                 path.unlink(missing_ok=True)
@@ -107,7 +126,17 @@ class HttpClient:
                     time.sleep(min(retry_after, 60.0))
                     backoff *= 2
                     continue
-                if resp.status_code == 404:
+                if 400 <= resp.status_code < 500:
+                    # A client error is an answer, not a failure: the symbol
+                    # does not exist, the CIK never filed, the endpoint is
+                    # gone. Retrying cannot change it, and on a wide universe
+                    # it is the single largest waste of wall clock -- Yahoo
+                    # returns 400 for every delisted ticker, and a 5,000-name
+                    # pool contains thousands of them. Four attempts with
+                    # backoff is fifteen seconds each; this is hours.
+                    log.debug("%s -> %s (definitive)", url, resp.status_code)
+                    if use_cache:
+                        self._remember_miss(path, url, resp.status_code)
                     return None
                 resp.raise_for_status()
                 body = resp.json() if parse == "json" else resp.text
@@ -116,6 +145,54 @@ class HttpClient:
                 return body
             except requests.RequestException as exc:
                 log.warning("%s attempt %d failed: %s", url, _attempt + 1, exc)
+                time.sleep(backoff)
+                backoff *= 2
+        log.error("giving up on %s after %d attempts", url, self.max_retries)
+        return None
+
+    def get_bytes(self, url: str, *, use_cache: bool = True, timeout: float | None = None) -> bytes | None:
+        """GET a binary payload, cached to disk verbatim.
+
+        The JSON cache in :meth:`get` round-trips the body through
+        ``json.dumps``, which cannot hold arbitrary bytes. Bulk archives -- the
+        SEC's quarterly Form 345 zips, ~14 MB each -- need a separate path.
+
+        Caching these matters more than caching anything else in the codebase.
+        An eleven-year fetch is 46 archives; if the run dies at archive 40, the
+        difference between a warm cache and a cold one is the difference between
+        resuming in seconds and starting over. It also routes through the shared
+        rate limiter, which the previous direct-``session.get`` call did not.
+        """
+        path = self._key(url, None, None).with_suffix(".bin")
+        if use_cache and path.exists() and (time.time() - path.stat().st_mtime) < self.ttl:
+            try:
+                return path.read_bytes()
+            except OSError:  # truncated by a killed run; refetch
+                path.unlink(missing_ok=True)
+
+        backoff = 1.0
+        for attempt in range(self.max_retries):
+            self.limiter.acquire()
+            try:
+                resp = self.session.get(url, timeout=timeout or max(self.timeout, 180.0))
+                if resp.status_code == 429 or resp.status_code >= 500:
+                    time.sleep(min(float(resp.headers.get("Retry-After", backoff)), 60.0))
+                    backoff *= 2
+                    continue
+                if 400 <= resp.status_code < 500:
+                    log.warning("%s -> %s (definitive)", url, resp.status_code)
+                    return None
+                resp.raise_for_status()
+                body = resp.content
+                if use_cache:
+                    # Write-then-rename so an interrupted write cannot leave a
+                    # half-archive that later looks like a cache hit.
+                    tmp = path.with_suffix(".part")
+                    tmp.write_bytes(body)
+                    tmp.replace(path)
+                return body
+            except requests.RequestException as exc:
+                log.warning("%s attempt %d failed: %s", url, attempt + 1, exc)
                 time.sleep(backoff)
                 backoff *= 2
         log.error("giving up on %s after %d attempts", url, self.max_retries)

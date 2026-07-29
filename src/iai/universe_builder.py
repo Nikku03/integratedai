@@ -196,6 +196,117 @@ def build_smallmid_universe(
     return uni, panel
 
 
+def operating_issuers(
+    client: HttpClient, full_universe: Universe, periods: list[str]
+) -> pd.DataFrame:
+    """Tickers that filed a cover-page share count in the window.
+
+    The candidate pool, and the *only* filter applied before prices are
+    fetched. It is deliberately weak: it removes closed-end funds, trusts,
+    and registrants that never filed financials, and nothing else.
+
+    It is worth being explicit about why it is not stronger. The tempting move
+    is to rank candidates by something -- insider-filing volume, filing count,
+    anything -- and keep the top N, because the price fetch is the expensive
+    step and a smaller pool is a shorter fetch. Every such ranking is computed
+    over the whole window, which means the 2015 universe is chosen using facts
+    from 2026. The cap-and-liquidity screen in :func:`rolling_universe` is
+    computed from trailing data only, so it can do the cutting instead. Paying
+    for a few thousand extra price series is the cost of not making that
+    mistake.
+    """
+    shares = fetch_shares_outstanding(client, periods)
+    if shares.empty:
+        return pd.DataFrame(columns=["ticker", "cik", "quarters"])
+    shares["ticker"] = shares["cik"].map(lambda c: full_universe.ticker_for_cik(c))
+    shares = shares.dropna(subset=["ticker"])
+    shares = shares[shares["shares"] > 0]
+    out = (
+        shares.groupby("ticker", observed=True)
+        .agg(cik=("cik", "first"), quarters=("period", "nunique"))
+        .reset_index()
+        .sort_values("ticker")
+    )
+    log.info("candidate pool: %d issuers filed share counts across %d quarters",
+             len(out), len(periods))
+    return out
+
+
+def rolling_universe(
+    panel: pd.DataFrame,
+    *,
+    max_names: int = 2000,
+    min_cap: float = MICRO_CAP,
+    max_cap: float = MID_CAP_MAX,
+) -> pd.DataFrame:
+    """Per-quarter membership, capped at ``max_names``, decided point-in-time.
+
+    Once a cap band and a liquidity floor have been applied there are usually
+    more eligible names than a study wants to carry. Something has to break the
+    tie, and the choice of tiebreak is a place where lookahead gets in through
+    the back door -- "the 2,000 most liquid names *of the period*" is fine,
+    "the 2,000 largest *today*" is not, and they look similar written down.
+
+    The tiebreak here is **trailing 21-day dollar volume as of the quarter
+    end**, which is knowable on the day membership is set. Membership is
+    therefore a rolling thing: a name that becomes liquid enters, a name that
+    dries up leaves, and neither transition needs the future. Delisted names
+    stay in the quarters where they qualified.
+
+    Returns one row per (period, ticker) with the rank that admitted it.
+    """
+    if panel.empty:
+        return pd.DataFrame(columns=["period", "as_of", "ticker", "market_cap", "adv_usd", "rank"])
+
+    eligible = panel[
+        panel["in_band"]
+        & panel["market_cap"].between(min_cap, max_cap)
+        & panel["adv_usd"].notna()
+    ].copy()
+    if eligible.empty:
+        return pd.DataFrame(columns=["period", "as_of", "ticker", "market_cap", "adv_usd", "rank"])
+
+    eligible = eligible.sort_values(["period", "adv_usd"], ascending=[True, False])
+    eligible["rank"] = eligible.groupby("period", observed=True).cumcount() + 1
+    members = eligible[eligible["rank"] <= max_names]
+    cols = ["period", "as_of", "ticker", "market_cap", "adv_usd", "rank"]
+    members = members[cols].reset_index(drop=True)
+
+    per_q = members.groupby("period", observed=True)["ticker"].nunique()
+    log.info(
+        "rolling universe: %d distinct names, %d-%d per quarter (median %d), %d quarters",
+        members["ticker"].nunique(), per_q.min(), per_q.max(), int(per_q.median()), len(per_q),
+    )
+    return members
+
+
+def membership_mask(members: pd.DataFrame, prices: pd.DataFrame) -> pd.DataFrame:
+    """Daily ``in_universe`` flag from quarterly membership.
+
+    Forward-filled from the last quarter a name was admitted, never backward:
+    a name admitted in 2019Q2 is in the universe from that quarter end onward,
+    not for the quarter that produced the numbers.
+    """
+    if members.empty or prices.empty:
+        return prices.assign(in_universe=False)[["date", "ticker", "in_universe"]]
+
+    m = members[["as_of", "ticker"]].copy()
+    m["as_of"] = m["as_of"].astype("datetime64[ns]")
+    m["in_universe"] = True
+    m = m.sort_values("as_of")
+    px = prices[["date", "ticker"]].copy()
+    px["date"] = px["date"].astype("datetime64[ns]")
+    px = px.sort_values("date")
+    out = pd.merge_asof(
+        px, m, left_on="date", right_on="as_of", by="ticker", direction="backward",
+        # Membership set at a quarter end stands until the next one is
+        # published; beyond two quarters the name stopped qualifying.
+        tolerance=pd.Timedelta(days=200),
+    )
+    out["in_universe"] = out["in_universe"].fillna(False).astype(bool)
+    return out[["date", "ticker", "in_universe"]]
+
+
 def cap_band(market_cap: float) -> str:
     if market_cap < MICRO_CAP:
         return "nano"

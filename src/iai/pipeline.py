@@ -169,6 +169,23 @@ class ResearchResult:
         return "\n".join(lines)
 
 
+#: Yahoo's limit is undocumented, stricter than the SEC's published 10 req/s,
+#: and enforced with outright blocks rather than 429s. Keep prices on their own
+#: client so a polite SEC rate is not silently applied to a host that will not
+#: tolerate it -- the price fetch is now concurrent, so it actually reaches
+#: whatever rate it is given, where the old serial loop fell short of it.
+YAHOO_RATE_LIMIT = 2.0
+
+
+def _price_client(cfg: Config) -> HttpClient:
+    return HttpClient(
+        cfg.data.cache_dir,
+        cfg.data.user_agent,
+        rate_per_sec=YAHOO_RATE_LIMIT,
+        ttl_hours=cfg.data.cache_ttl_hours,
+    )
+
+
 def build_sources(
     cfg: Config,
     client: HttpClient,
@@ -196,7 +213,7 @@ def build_sources(
         else InsiderTransactions(cfg, client, universe, workers=workers)
     )
     sources: list = [
-        EdgarFilings(cfg, client, universe),
+        EdgarFilings(cfg, client, universe, workers=workers),
         insiders,
         StakeDisclosures(cfg, client, universe),
     ]
@@ -241,7 +258,9 @@ def fetch_live(
         universe = Universe.from_sec(client)
     uni = universe.subset(tickers) if tickers else universe
 
-    prices = YahooPrices(cfg, client).fetch(uni.tickers, pd.Timestamp(start), pd.Timestamp(end))
+    prices = YahooPrices(cfg, _price_client(cfg)).fetch(
+        uni.tickers, pd.Timestamp(start), pd.Timestamp(end)
+    )
     prices = add_derived(prices, cfg)
 
     registry = build_sources(cfg, client, uni, trade_exposure=trade_exposure, bol_path=bol_path)
@@ -287,7 +306,9 @@ def fetch_smallmid(
 
     candidates = seed_tickers or full.tickers
     log.info("pricing %d candidate tickers", len(candidates))
-    prices = YahooPrices(cfg, client).fetch(candidates, pd.Timestamp(start), pd.Timestamp(end))
+    prices = YahooPrices(cfg, _price_client(cfg)).fetch(
+        candidates, pd.Timestamp(start), pd.Timestamp(end)
+    )
     if prices.empty:
         raise ValueError("no price data returned; check network and ticker list")
     prices = add_derived(prices, cfg)
