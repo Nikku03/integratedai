@@ -174,8 +174,15 @@ def minute_bars(client, ticker: str, days: int) -> pd.DataFrame:
     Yahoo caps a single 1-minute request at roughly seven days, so the window is
     paged backwards a week at a time. Beyond about 30 days it returns nothing at
     any offset, which is the hard ceiling on how far back this study can look.
+
+    The window edges are snapped to midnight UTC, which is not cosmetic: the
+    HTTP cache keys on the full URL, so a window derived from ``now`` to the
+    second gives every run a fresh key and the cache never hits. Snapping makes
+    repeated runs -- a different form, a re-run after a crash, the Form 4
+    follow-up -- reuse the same requests instead of re-fetching thousands of
+    series that are already on disk.
     """
-    now = pd.Timestamp.now(tz="UTC")
+    now = pd.Timestamp.now(tz="UTC").normalize() + pd.Timedelta(days=1)
     frames = []
     for wk in range(int(np.ceil(days / 7))):
         hi = now - pd.Timedelta(days=7 * wk)
