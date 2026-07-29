@@ -10,7 +10,6 @@ cost -- plus the volatility control that decides whether any of it is skill.
 from __future__ import annotations
 
 import argparse
-import ast
 import logging
 import sys
 import warnings
@@ -130,9 +129,15 @@ def main() -> int:
     store = cfg.data.store_dir
 
     prices = pd.read_parquet(store / f"{args.prefix}_prices.parquet")
-    events = pd.read_parquet(store / f"{args.prefix}_events.parquet")
-    events["payload"] = events["payload"].map(
-        lambda s: ast.literal_eval(s) if isinstance(s, str) else s
+    # The payload column is deliberately left as text. Nothing in the feature
+    # layer, the labeller or the backtest reads it -- features are built from
+    # source, kind, ticker, available_ts and weight alone -- and parsing 2.5
+    # million dicts costs minutes of CPU and gigabytes of resident memory that
+    # this run does not have to spare. Read it with ast.literal_eval when
+    # inspecting individual events by hand.
+    events = pd.read_parquet(
+        store / f"{args.prefix}_events.parquet",
+        columns=["uid", "source", "kind", "ticker", "event_ts", "available_ts", "weight"],
     )
 
     # ---- point-in-time universe membership ---------------------------------
