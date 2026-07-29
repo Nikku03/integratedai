@@ -194,7 +194,8 @@ def main() -> int:
     print("-" * 100)
     ablation = {}
     for name, col in [("P(spike) only", "p"), ("expected value", "ev")]:
-        s = select_per_week(oof, per_week=args.trades_per_week, rank_col=col)
+        s = select_per_week(oof, per_week=args.trades_per_week, rank_col=col,
+                            max_per_day=cfg.spike.max_per_day)
         rep = selection_report(s, oof).iloc[0]
         ablation[col] = float(rep["net"])
         print(f"  {name:<16} n={rep['n']:>4.0f}  P={rep['P_spike']:.4f}  stop%={rep['pct_stop']:.3f}  "
@@ -209,7 +210,8 @@ def main() -> int:
     print("-" * 100)
     print(f"{'trades/wk':>9} {'n':>6} {'P(spike)':>9} {'lift':>6} {'gross':>9} {'cost':>7} {'net':>9} {'t':>7}")
     for tpw in [20.0, 10.0, 5.0, 3.0, 2.0, 1.0]:
-        s = select_per_week(oof, per_week=tpw, rank_col="ev")
+        s = select_per_week(oof, per_week=tpw, rank_col="ev",
+                             max_per_day=cfg.spike.max_per_day)
         if len(s) < 30:
             continue
         r = selection_report(s, oof).iloc[0]
@@ -217,7 +219,11 @@ def main() -> int:
               f"{r['gross']:>+9.4f} {r['cost']:>7.4f} {r['net']:>+9.4f} {r['net_t']:>+7.2f}")
     print()
 
-    sel = select_per_week(oof, per_week=args.trades_per_week, rank_col="ev")
+    # max_per_day is part of the frozen config and the pre-registration:
+    # "5 (max 3 per day)". Five trades in a week is a pace; five on one
+    # morning is a single correlated bet on that morning's tape.
+    sel = select_per_week(oof, per_week=args.trades_per_week, rank_col="ev",
+                          max_per_day=cfg.spike.max_per_day)
 
     print("VOLATILITY CONTROL -- skill, or just a volatility tilt?")
     print("-" * 100)

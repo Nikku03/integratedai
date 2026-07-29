@@ -117,11 +117,24 @@ All three carry over unchanged, plus one new one.
    With eleven years and a per-week selection cap this should be near 9%;
    anything above 35% means the edge lives in one regime. *(Failed on 341
    names, at 50.5%.)*
-4. **NEW — the ablation must not flip again.** On 106 names, EV ranking beat
-   P(spike) ranking (+56 vs −44 bps). On 341 names the ordering reversed
-   (+13 vs +48 bps). A real mechanism does not flip. Whichever way it lands
-   here, if it disagrees with *both* prior runs the mechanism is noise
-   regardless of what the primary criterion says.
+4. **NEW — the ablation.** **EV ranking must beat P(spike) ranking on net
+   return per trade.** On 106 names it did (+56 vs −44 bps); on 341 names the
+   ordering reversed (+13 vs +48 bps). The entire `iai.moonshot` module is
+   built on the claim that modelling the downside separately is what makes the
+   strategy work, so this is the mechanism's own test, and it is a coin-flip
+   this run has to win rather than a formality.
+
+   > **Correction, made before any result existed.** This criterion first read
+   > "fails only if the result disagrees with *both* prior runs". That is
+   > logically incapable of failing: the comparison is binary and the two
+   > priors are opposite in sign, so every possible outcome agrees with exactly
+   > one of them. A criterion that cannot fail is not a criterion. It is
+   > restated above as the substantive version — the one the code already
+   > implemented — and the flaw is recorded rather than quietly rewritten,
+   > because the whole value of the document is that it cannot be quietly
+   > rewritten. Found by an adversarial review of the analysis code, run
+   > deliberately *before* the single permitted run; no result from this window
+   > existed.
 
 ## Decision rule, fixed now
 

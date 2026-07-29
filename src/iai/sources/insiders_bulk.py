@@ -121,7 +121,9 @@ def _parse_relationship(raw: str) -> tuple[bool, bool, bool]:
     )
 
 
-def parse_archive(blob: bytes, tickers: frozenset[str] | None = None) -> pd.DataFrame:
+def parse_archive(
+    blob: bytes, cik_to_ticker: dict[str, str] | None = None
+) -> pd.DataFrame:
     """Turn one quarterly archive's bytes into joined non-derivative trades.
 
     Split out from the download so it can run in a worker *process*. Unzipping
@@ -129,9 +131,33 @@ def parse_archive(blob: bytes, tickers: frozenset[str] | None = None) -> pd.Data
     the GIL makes threads useless for it; the download half is pure I/O and
     wants threads. See :func:`load_quarters`, which runs both halves at once.
 
-    Filtering to ``tickers`` happens before the joins, which matters: an
-    unfiltered quarter is ~111,000 transaction rows and the join against
-    reporting owners is the expensive step.
+    Issuers are resolved by **CIK**, never by the filer's symbol
+    -------------------------------------------------------------
+    ``ISSUERTRADINGSYMBOL`` is free text typed by the filer, and matching it
+    against a universe built from *today's* symbol map silently destroys data:
+
+    * A company that traded as ABC until 2020 and as XYZ today appears in the
+      universe as XYZ, while every archive from 2015-2020 carries ABC. Its
+      entire insider history for those years vanishes -- not thinned, zeroed.
+    * Filers type ``'BIO, BIOB'``, ``'JWA/JWB'``, ``'NYSE: KRC'``, ``'NONE'``,
+      ``'-'``, or nothing at all. Share classes are ``BRK.B`` here and ``BRK-B``
+      in ``company_tickers.json``.
+    * A symbol freed by a delisting and reassigned to a current member
+      attributes the *dead* company's filings to the *live* one.
+
+    Measured against real archives, symbol matching lost 12-13% of all
+    transactions and up to **19.5% of open-market purchases**, and 12-18% of
+    filing issuers lost *100%* of their Form 4s. That is not noise: the loss
+    lands precisely on names that had corporate actions, and because
+    :class:`~iai.sources.edgar.EdgarFilings` resolves by CIK, those same names
+    keep their full 8-K history beside an insider feature family that is
+    identically zero. A fabricated signal, correlated with renames.
+
+    The per-document path this replaced already knew: it overwrote the filer's
+    symbol with the universe's, commenting that the field "is frequently stale
+    or blank on small caps". Dropping that was a regression, and the four-year
+    341-name validation could not see it because renames are rarest exactly
+    there.
     """
     try:
         z = zipfile.ZipFile(io.BytesIO(blob))
@@ -143,9 +169,17 @@ def parse_archive(blob: bytes, tickers: frozenset[str] | None = None) -> pd.Data
         return pd.DataFrame()
 
     sub = sub[sub["DOCUMENT_TYPE"] == "4"]
-    sub["ticker"] = sub["ISSUERTRADINGSYMBOL"].str.upper().str.strip()
-    if tickers:
-        sub = sub[sub["ticker"].isin(tickers)]
+    sub["cik"] = sub["ISSUERCIK"].str.strip().str.zfill(10)
+    if cik_to_ticker is not None:
+        sub = sub[sub["cik"].isin(cik_to_ticker)]
+        if sub.empty:
+            return pd.DataFrame()
+        sub["ticker"] = sub["cik"].map(cik_to_ticker)
+    else:
+        # No universe supplied: keep the filer's symbol as a last resort, which
+        # is only correct for exploratory use.
+        sub["ticker"] = sub["ISSUERTRADINGSYMBOL"].str.upper().str.strip()
+    sub = sub.dropna(subset=["ticker"])
     if sub.empty:
         return pd.DataFrame()
 
@@ -162,7 +196,7 @@ def parse_archive(blob: bytes, tickers: frozenset[str] | None = None) -> pd.Data
     )
 
     df = trans.merge(
-        sub[["ACCESSION_NUMBER", "ticker", "ISSUERCIK", "FILING_DATE"]],
+        sub[["ACCESSION_NUMBER", "ticker", "cik", "FILING_DATE"]],
         on="ACCESSION_NUMBER", how="left",
     ).merge(
         owners[["ACCESSION_NUMBER", "RPTOWNERCIK", "RPTOWNERNAME",
@@ -182,9 +216,17 @@ def parse_archive(blob: bytes, tickers: frozenset[str] | None = None) -> pd.Data
         for title, flags in zip(df["RPTOWNER_TITLE"], rel, strict=False)
     ]
     df["value_usd"] = df["shares"] * df["price"]
+    # Missing owner names arrive as NaN, and a payload carrying a bare NaN
+    # cannot survive the repr()/literal_eval round trip the event store uses --
+    # 147 of 563,414 filings have no RPTOWNERNAME and they broke the merge.
+    # astype(object) first: a column that is entirely missing comes back as
+    # float64, and None assigned into a float column silently becomes NaN
+    # again -- which is the whole failure being fixed.
+    for col in ("RPTOWNERNAME", "RPTOWNERCIK"):
+        df[col] = df[col].astype(object).where(df[col].notna(), None)
     return df.rename(columns={
         "ACCESSION_NUMBER": "accession", "TRANS_CODE": "code",
-        "RPTOWNERCIK": "owner_cik", "RPTOWNERNAME": "owner", "ISSUERCIK": "cik",
+        "RPTOWNERCIK": "owner_cik", "RPTOWNERNAME": "owner",
     })[[
         "ticker", "cik", "accession", "owner", "owner_cik", "role", "code",
         "shares", "price", "value_usd", "transaction_date", "filing_date",
@@ -192,21 +234,22 @@ def parse_archive(blob: bytes, tickers: frozenset[str] | None = None) -> pd.Data
 
 
 def load_quarter(
-    client: HttpClient, year: int, quarter: int, *, tickers: set[str] | None = None
+    client: HttpClient, year: int, quarter: int, *,
+    cik_to_ticker: dict[str, str] | None = None,
 ) -> pd.DataFrame:
     """Download and parse one quarterly archive."""
     blob = client.get_bytes(BULK_URL.format(year=year, quarter=quarter))
     if not blob:
         log.warning("bulk %sq%s unavailable", year, quarter)
         return pd.DataFrame()
-    return parse_archive(blob, frozenset(tickers) if tickers else None)
+    return parse_archive(blob, cik_to_ticker)
 
 
 def load_quarters(
     client: HttpClient,
     qs: list[tuple[int, int]],
     *,
-    tickers: set[str] | None = None,
+    cik_to_ticker: dict[str, str] | None = None,
     download_workers: int = 4,
     processes: int | None = None,
 ) -> pd.DataFrame:
@@ -224,7 +267,7 @@ def load_quarters(
     """
     if not qs:
         return pd.DataFrame()
-    want = frozenset(tickers) if tickers else None
+    want = cik_to_ticker
     if processes is None:
         processes = min(len(qs), max(1, (os.cpu_count() or 2) - 1))
 
@@ -315,10 +358,21 @@ class BulkInsiderTransactions(EventSource):
 
     def fetch(self, start: pd.Timestamp, end: pd.Timestamp) -> list[Event]:
         start, end = to_utc(start), to_utc(end)
-        tickers = set(self.universe.tickers) or None
+
+        # Resolve by CIK, which is stable across renames, delistings and the
+        # filer's free-text symbol field. See parse_archive's docstring for
+        # what matching on the symbol costs.
+        cik_map = {
+            cik: t for t in self.universe.tickers
+            if (cik := self.universe.cik(t))
+        } or None
+        if cik_map is None:
+            log.warning("no universe CIKs; keeping every issuer in the archives")
 
         qs = quarters(str(start.date()), str(end.date()))
-        trades = load_quarters(self.client, qs, tickers=tickers, processes=self.processes)
+        trades = load_quarters(
+            self.client, qs, cik_to_ticker=cik_map, processes=self.processes
+        )
         if trades.empty:
             return []
         log.info("bulk insiders: %d transactions over %d quarters", len(trades), len(qs))

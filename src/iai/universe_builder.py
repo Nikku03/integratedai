@@ -47,6 +47,22 @@ log = logging.getLogger(__name__)
 
 FRAMES_URL = "https://data.sec.gov/api/xbrl/frames/dei/EntityCommonStockSharesOutstanding/shares/{period}.json"
 
+#: Days added to an XBRL fact instant before the fact is treated as knowable.
+#:
+#: The frames API dates each share count by ``end`` -- the *fiscal* instant the
+#: fact describes -- and carries an accession but no filing date. A share count
+#: for the quarter ending 2020-03-31 is not public on 2020-03-31; it appears in
+#: a 10-Q due 40-45 days later, or a 10-K due 60-90 days after a year end.
+#: Using the raw instant lets the universe know a share count, and therefore a
+#: market cap, up to three months before anyone could have.
+#:
+#: 90 days covers the slowest statutory deadline. It is deliberately the
+#: conservative direction: a name enters the universe later than it might have,
+#: never earlier. Recovering the true filing date would need one submissions
+#: lookup per (issuer, quarter) -- ~165,000 requests -- to buy back at most a
+#: few weeks of eligibility on a slow-moving quantity.
+FILING_LAG = pd.Timedelta(days=90)
+
 #: Market-cap bands in USD. "Small and mid cap" as used here.
 MICRO_CAP = 50_000_000
 SMALL_CAP_MAX = 2_000_000_000
@@ -78,16 +94,25 @@ def fetch_shares_outstanding(client: HttpClient, periods: list[str]) -> pd.DataF
                     # Pin the resolution: pandas 3.0 infers second precision
                     # from bare date strings and then refuses to merge_asof
                     # against a microsecond-resolution price index.
-                    "as_of": pd.to_datetime(
+                    # `end` is the fiscal instant the fact describes; the fact
+                    # itself is not public until the filing carrying it is.
+                    # See FILING_LAG.
+                    "fact_instant": pd.to_datetime(
                         [r.get("end") for r in rows], errors="coerce"
                     ).astype("datetime64[ns]"),
+                    "as_of": pd.to_datetime(
+                        [r.get("end") for r in rows], errors="coerce"
+                    ).astype("datetime64[ns]") + FILING_LAG,
+                    "accession": [r.get("accn", "") for r in rows],
                     "period": period,
                 }
             )
         )
         log.info("frame %s: %d companies", period, len(rows))
     if not frames:
-        return pd.DataFrame(columns=["cik", "entity", "shares", "as_of", "period"])
+        return pd.DataFrame(
+            columns=["cik", "entity", "shares", "fact_instant", "as_of", "accession", "period"]
+        )
     return pd.concat(frames, ignore_index=True)
 
 

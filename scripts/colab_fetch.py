@@ -103,6 +103,7 @@ import argparse
 import ast
 import logging
 import os
+import re
 import sys
 import time
 from pathlib import Path
@@ -150,6 +151,63 @@ def _setup(args):
         rate_per_sec=SEC_RATE_LIMIT, ttl_hours=args.cache_hours, max_retries=6,
     )
     return cfg, client, Universe.from_sec(client)
+
+
+def _load_payload(s):
+    """Parse a repr()-serialised payload, tolerating non-literal values.
+
+    Payloads are stored via ``repr`` and read back with ``ast.literal_eval``,
+    which cannot parse a bare ``nan`` -- ``float('nan')`` reprs as a *name*,
+    not a literal. 147 of 563,414 Form 4s have no reporting-owner name, and
+    each one aborted the whole merge. Sources should not emit NaN into a
+    payload at all, and no longer do; this is the belt to that braces, because
+    losing an eleven-year merge to one missing owner name is a bad trade.
+    """
+    if not isinstance(s, str):
+        return s
+    try:
+        return ast.literal_eval(s)
+    except (ValueError, SyntaxError):
+        try:
+            return ast.literal_eval(re.sub(r"(?<![\w.'\"])nan(?![\w'\"])", "None", s))
+        except (ValueError, SyntaxError):
+            log.warning("unparseable payload, keeping as text: %.120s", s)
+            return {"raw": s}
+
+
+def _require_all_shards(files: list[Path], kind: str) -> None:
+    """Refuse to proceed on a partial shard set.
+
+    The filenames encode the expected count -- ``prices_shard02of06.parquet``
+    says there should be six -- so a missing shard is detectable rather than
+    something to discover afterwards. It has to be an error and not a warning:
+    with five of six shards the screen still produces a plausible universe,
+    just a different one, and nothing downstream would ever reveal that the
+    study ran on five sixths of the candidates.
+    """
+    seen: dict[int, set[int]] = {}
+    for f in files:
+        stem = f.stem.rsplit("_shard", 1)[-1]
+        try:
+            idx, total = (int(x) for x in stem.split("of"))
+        except ValueError:
+            log.warning("unrecognised shard filename %s; not counting it", f.name)
+            continue
+        seen.setdefault(total, set()).add(idx)
+
+    if len(seen) > 1:
+        raise SystemExit(
+            f"ERROR: {kind} shards were written with inconsistent --n-shards "
+            f"({sorted(seen)}). Delete the stale ones and re-run that stage."
+        )
+    for total, got in seen.items():
+        missing = sorted(set(range(total)) - got)
+        if missing:
+            raise SystemExit(
+                f"ERROR: {kind} is missing shard(s) {missing} of {total}. "
+                f"Proceeding would silently build the study on a subset of the "
+                f"candidates. Re-run: --stage {kind} --shard <i> --n-shards {total}"
+            )
 
 
 def _read_list(path: Path) -> list[str]:
@@ -228,6 +286,7 @@ def stage_screen(args, out_dir: Path) -> int:
     price_files = sorted(out_dir.glob("prices_shard*.parquet"))
     if not price_files:
         raise SystemExit("ERROR: no prices_shard*.parquet found; run --stage prices first.")
+    _require_all_shards(price_files, "prices")
     prices = pd.concat([pd.read_parquet(f) for f in price_files], ignore_index=True)
     prices = prices.drop_duplicates(subset=["date", "ticker"])
     log.info("screening %d tickers, %d bars", prices["ticker"].nunique(), len(prices))
@@ -385,6 +444,7 @@ def merge_shards(
     price_files = sorted(out_dir.glob("prices_shard*.parquet"))
     prices = pd.DataFrame()
     if price_files:
+        _require_all_shards(price_files, "prices")
         prices = pd.concat([pd.read_parquet(f) for f in price_files], ignore_index=True)
         # Keep only names that survived the screen, if it has been run. This is
         # the union across quarters, which bounds the file size; the per-date
@@ -399,14 +459,18 @@ def merge_shards(
         prices.to_parquet(out_dir / f"{prefix}_prices.parquet")
         result["prices"] = prices
 
+    edgar_files = sorted(out_dir.glob("edgar_shard*.parquet"))
+    if edgar_files:
+        _require_all_shards(edgar_files, "events")
+
     frames = []
-    for pattern in ("edgar_shard*.parquet", "insiders_bulk.parquet", "insiders_shard*.parquet"):
-        for f in sorted(out_dir.glob(pattern)):
-            df = pd.read_parquet(f)
-            df["payload"] = df["payload"].map(
-                lambda s: ast.literal_eval(s) if isinstance(s, str) else s
-            )
-            frames.append(df)
+    # No insiders_shard*.parquet here: only the pre-staging fetcher wrote those,
+    # and its uid scheme differs from the bulk path's, so a directory holding
+    # both would double-count rather than dedupe.
+    for f in [*edgar_files, *sorted(out_dir.glob("insiders_bulk.parquet"))]:
+        df = pd.read_parquet(f)
+        df["payload"] = df["payload"].map(_load_payload)
+        frames.append(df)
     if frames:
         events = pd.concat(frames, ignore_index=True).drop_duplicates(subset="uid")
         events = events.sort_values("available_ts").reset_index(drop=True)

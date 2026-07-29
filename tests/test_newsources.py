@@ -943,7 +943,8 @@ def _fake_archive(rows: list[dict]) -> bytes:
     """A minimal but structurally real quarterly Form 345 zip."""
     sub = pd.DataFrame([{
         "ACCESSION_NUMBER": r["acc"], "DOCUMENT_TYPE": "4",
-        "ISSUERTRADINGSYMBOL": r["ticker"], "ISSUERCIK": "0000000001",
+        "ISSUERTRADINGSYMBOL": r.get("symbol", r["ticker"]),
+        "ISSUERCIK": r.get("cik", "0000000001"),
         "FILING_DATE": r["filed"],
     } for r in rows])
     trans = pd.DataFrame([{
@@ -952,8 +953,9 @@ def _fake_archive(rows: list[dict]) -> bytes:
         "TRANS_DATE": r["txn"],
     } for r in rows])
     owners = pd.DataFrame([{
-        "ACCESSION_NUMBER": r["acc"], "RPTOWNERCIK": r.get("owner_cik", "9"),
-        "RPTOWNERNAME": r.get("owner", "Jane"),
+        "ACCESSION_NUMBER": r["acc"],
+        "RPTOWNERCIK": r["owner_cik"] if "owner_cik" in r else "9",
+        "RPTOWNERNAME": r["owner"] if "owner" in r else "Jane",
         "RPTOWNER_RELATIONSHIP": "0,1,0,0", "RPTOWNER_TITLE": "CEO",
     } for r in rows])
 
@@ -975,20 +977,128 @@ def test_parse_archive_is_pure_so_it_can_run_in_a_process():
     from iai.sources.insiders_bulk import parse_archive
 
     sig = inspect.signature(parse_archive)
-    assert list(sig.parameters) == ["blob", "tickers"]
+    assert list(sig.parameters) == ["blob", "cik_to_ticker"]
 
     blob = _fake_archive([
-        {"acc": "a1", "ticker": "AAA", "filed": "07-MAR-2024", "txn": "05-MAR-2024"},
-        {"acc": "a2", "ticker": "ZZZ", "filed": "08-MAR-2024", "txn": "06-MAR-2024"},
+        {"acc": "a1", "ticker": "AAA", "cik": "0000000011",
+         "filed": "07-MAR-2024", "txn": "05-MAR-2024"},
+        {"acc": "a2", "ticker": "ZZZ", "cik": "0000000022",
+         "filed": "08-MAR-2024", "txn": "06-MAR-2024"},
     ])
     everything = parse_archive(blob)
     assert set(everything["ticker"]) == {"AAA", "ZZZ"}
 
     # Filtering happens before the joins, so a universe is a real saving.
-    filtered = parse_archive(blob, frozenset({"AAA"}))
+    filtered = parse_archive(blob, {"0000000011": "AAA"})
     assert set(filtered["ticker"]) == {"AAA"}
     assert filtered["role"].iloc[0] == "ceo"
     assert filtered["value_usd"].iloc[0] == pytest.approx(50_000.0)
+
+
+def test_issuers_resolve_by_cik_not_by_the_filers_symbol():
+    """Regression: symbol matching lost 18-30% of open-market insider buys.
+
+    ISSUERTRADINGSYMBOL is free text. Matched against a universe built from
+    *today's* symbol map it silently zeroes the entire insider history of any
+    name that was renamed, and misattributes a delisted company's filings to
+    whoever holds its old symbol now. Measured on the real pre-registered
+    universe and real archives: 2015q1 lost 18.9% of open-market buys, 2018q3
+    29.6%, 2021q2 18.1% -- concentrated on names with corporate actions, while
+    EDGAR (which keys on CIK) kept their full 8-K history beside a structurally
+    zero insider feature.
+    """
+    from iai.sources.insiders_bulk import parse_archive
+
+    blob = _fake_archive([
+        # Renamed: files under its old symbol, universe knows it as NEWCO.
+        {"acc": "a1", "ticker": "OLDCO", "cik": "0000000011",
+         "filed": "07-MAR-2024", "txn": "05-MAR-2024"},
+        # Punctuation mismatch: filers type '.', company_tickers.json uses '-'.
+        {"acc": "a2", "ticker": "BRK.B", "cik": "0000000022",
+         "filed": "07-MAR-2024", "txn": "05-MAR-2024"},
+        # Blank/placeholder symbols are common on small caps.
+        {"acc": "a3", "ticker": "NONE", "cik": "0000000033",
+         "filed": "07-MAR-2024", "txn": "05-MAR-2024"},
+    ])
+    cik_map = {"0000000011": "NEWCO", "0000000022": "BRK-B", "0000000033": "TINY"}
+    out = parse_archive(blob, cik_map)
+
+    assert set(out["ticker"]) == {"NEWCO", "BRK-B", "TINY"}, (
+        "every filing must be kept and relabelled with the universe's ticker"
+    )
+    # Symbol matching would have kept none of them.
+    symbols = {"NEWCO", "BRK-B", "TINY"}
+    assert not ({"OLDCO", "BRK.B", "NONE"} & symbols)
+
+
+def test_a_reassigned_symbol_is_not_attributed_to_the_new_owner():
+    """A delisted company's filings must not land on whoever holds the symbol now."""
+    from iai.sources.insiders_bulk import parse_archive
+
+    blob = _fake_archive([
+        # Dead company that used to trade as PRE.
+        {"acc": "a1", "ticker": "PRE", "cik": "0000911421",
+         "filed": "07-MAR-2015", "txn": "05-MAR-2015"},
+    ])
+    # The universe's PRE today is a different CIK entirely.
+    out = parse_archive(blob, {"0001876431": "PRE"})
+    assert out.empty, "the dead issuer's filings must not be relabelled as the live one"
+
+
+def test_payloads_never_carry_nan():
+    """A bare NaN cannot survive repr()/literal_eval and aborted the merge.
+
+    147 of 563,414 Form 4s have no RPTOWNERNAME. Each one produced
+    ``{'owner': nan, ...}``, which reprs as a *name* rather than a literal.
+    """
+    import ast
+
+    from iai.sources.insiders_bulk import parse_archive
+
+    blob = _fake_archive([
+        {"acc": "a1", "ticker": "AAA", "cik": "0000000011",
+         "filed": "07-MAR-2024", "txn": "05-MAR-2024", "owner": None,
+         "owner_cik": None},
+    ])
+    out = parse_archive(blob, {"0000000011": "AAA"})
+    assert out["owner"].iloc[0] is None, "a missing owner must be None, not NaN"
+    assert out["owner_cik"].iloc[0] is None
+
+    # The round trip the event store actually performs, which a bare NaN breaks.
+    payload = {"owner": out["owner"].iloc[0], "owner_cik": out["owner_cik"].iloc[0],
+               "role": out["role"].iloc[0]}
+    assert ast.literal_eval(repr(payload)) == payload
+
+
+def test_screen_refuses_a_partial_shard_set():
+    """Five of six shards makes a plausible universe -- a different one."""
+    cf = _load_colab_fetch()
+    from pathlib import Path
+
+    complete = [Path(f"prices_shard{i:02d}of03.parquet") for i in range(3)]
+    cf._require_all_shards(complete, "prices")  # must not raise
+
+    partial = [Path("prices_shard00of03.parquet"), Path("prices_shard02of03.parquet")]
+    with pytest.raises(SystemExit, match="missing shard"):
+        cf._require_all_shards(partial, "prices")
+
+    mixed = [Path("prices_shard00of03.parquet"), Path("prices_shard00of06.parquet")]
+    with pytest.raises(SystemExit, match="inconsistent"):
+        cf._require_all_shards(mixed, "prices")
+
+
+def test_share_counts_are_not_known_before_they_were_filed():
+    """The XBRL fact instant is a fiscal date, not a publication date.
+
+    A share count for the quarter ending 2020-03-31 arrives in a 10-Q due
+    40-45 days later. Dating it 2020-03-31 lets the universe compute a market
+    cap up to three months before anyone could have.
+    """
+    from iai.universe_builder import FILING_LAG
+
+    assert FILING_LAG >= pd.Timedelta(days=90), (
+        "the lag must cover the slowest statutory deadline (10-K at 90 days)"
+    )
 
 
 def test_binary_cache_survives_a_restart(tmp_path):
@@ -996,7 +1106,7 @@ def test_binary_cache_survives_a_restart(tmp_path):
     from iai.core.http import HttpClient
 
     calls = []
-    blob = _fake_archive([{"acc": "a1", "ticker": "AAA",
+    blob = _fake_archive([{"acc": "a1", "ticker": "AAA", "cik": "0000000011",
                            "filed": "07-MAR-2024", "txn": "05-MAR-2024"}])
 
     class _Resp:
@@ -1149,7 +1259,7 @@ def test_load_quarters_parses_every_quarter_it_downloads(monkeypatch, tmp_path):
 
     archives = {
         (2024, q): _fake_archive([{
-            "acc": f"acc-{q}", "ticker": "AAA",
+            "acc": f"acc-{q}", "ticker": "AAA", "cik": "0000000011",
             "filed": f"0{q}-MAR-2024", "txn": f"0{q}-MAR-2024",
         }])
         for q in (1, 2, 3, 4)
@@ -1161,7 +1271,8 @@ def test_load_quarters_parses_every_quarter_it_downloads(monkeypatch, tmp_path):
     )
 
     # processes=0 exercises the inline path; the pooled path is the same code.
-    out = ib.load_quarters(client, list(archives), tickers={"AAA"}, processes=0)
+    out = ib.load_quarters(client, list(archives),
+                           cik_to_ticker={"0000000011": "AAA"}, processes=0)
     assert len(out) == 4
     assert sorted(out["accession"]) == ["acc-1", "acc-2", "acc-3", "acc-4"]
 
@@ -1170,7 +1281,7 @@ def test_missing_quarter_does_not_abort_the_run(monkeypatch, tmp_path):
     from iai.core.http import HttpClient
     from iai.sources import insiders_bulk as ib
 
-    good = _fake_archive([{"acc": "a1", "ticker": "AAA",
+    good = _fake_archive([{"acc": "a1", "ticker": "AAA", "cik": "0000000011",
                            "filed": "07-MAR-2024", "txn": "05-MAR-2024"}])
     client = HttpClient(tmp_path, "t b@c.com", rate_per_sec=0.0)
     monkeypatch.setattr(
