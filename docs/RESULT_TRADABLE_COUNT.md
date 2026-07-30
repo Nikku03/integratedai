@@ -165,3 +165,87 @@ repository should be believed**, including the ones in the addenda above.
 | does the model pick better than random? | **Yes: +0.485pp, paired t=+2.35, p=0.020** |
 | does it make money? | **No: −0.081%/trade, clustered t=−0.34** |
 | is that number reliable? | **No — 100% survivor panel makes it optimistic** |
+
+---
+
+# The actual portfolio: start, end, and one month
+
+$80, two $40 slots, the model's signal stream walked in date order, net of the
+run's own cost model. Slot contention resolved by the calendar; same-day ties
+broken on expected value, which is knowable at that moment.
+
+The stream is the pre-registered selection: **1,386 trades, 2020-08 to 2025-12.**
+Two slots absorb **420 of them (30%)**; 966 are skipped for no free slot. That is
+**6.6 trades a month.**
+
+## Full period
+
+| | |
+|---|---|
+| start | **$80.00** |
+| end | **$28.67** |
+| total | **−64.16%** over 64 months (5.3 years) |
+| CAGR | **−17.50%** |
+| max drawdown | **−79.8%** |
+| months up | 25 of 64 (39%) |
+| monthly sd | 10.17% |
+| best / worst month | +20.95% / −31.23% |
+| t on mean monthly return | −0.84 → indistinguishable from zero |
+
+## One month, which is what was asked
+
+Bootstrapped from the same 420 trades — 7 trades, $80 start, two slots,
+compounding at equity/2 — over 20,000 paths:
+
+| percentile | end balance | return |
+|---|---|---|
+| p5 | $67.83 | −15.2% |
+| p25 | $73.71 | −7.9% |
+| **p50 (median)** | **$78.47** | **−1.9%** |
+| p75 | $83.76 | +4.7% |
+| p95 | $91.83 | +14.8% |
+| **mean** | **$78.95** | **−1.32%** |
+
+**42% of months end up.** A typical month on $80 takes about seven trades and
+ends around **$78.50**.
+
+## The realised path was not unlucky
+
+Resampling the same 420 trades over 20,000 compounded paths:
+
+| percentile | final balance |
+|---|---|
+| p5 | $9.52 |
+| p25 | $18.69 |
+| p50 | $30.32 |
+| p75 | $48.96 |
+| p95 | $98.64 |
+| mean | $39.15 |
+
+**The realised $28.67 sits at the 47th percentile.** It is a median outcome, not
+bad luck. **91% of paths end below $80; 65% end below $40; 1% end above $160.**
+
+## Two things worth being precise about
+
+**Sequence, not edge, produced the −64%.** The first 18 months lost **$53.49** on
+121 trades at −1.666% each, while positions were still $40. The remaining 46
+months *made* **+$2.16** on 299 trades at +0.189% each — but by then positions
+were $10, so recovering was arithmetically impossible. With two slots on $80 the
+outcome is dominated by path, and this path front-loaded the losses.
+
+**The per-trade figure to quote is −0.154%, not the −0.081% above.** That −0.081%
+came from re-selecting k=5 on the OOF frame myself; the pre-registered run applied
+further filters (`min_ev`, `max_per_day`) and its stream averages **−0.154%**,
+matching the −0.15% in `RESULT_2015.md`. The pre-registered number is the one that
+counts.
+
+The 420 taken trades average −0.345%, worse than the −0.154% stream, but that gap
+is **0.6 standard errors** (SE 0.339% on n=420, sd 6.95%). Slot contention is not
+selecting bad trades; it is selecting an arbitrary 30% of them, and this draw came
+in slightly below average.
+
+## And it is still an optimistic bound
+
+Every number on this page comes from a panel in which 5,394 of 5,395 tickers were
+still listed at the end. Correcting for the roughly half of names that should have
+delisted makes all of it worse.
