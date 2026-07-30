@@ -44,55 +44,69 @@ from .features.events import attach_entry_session
 log = logging.getLogger(__name__)
 
 
-#: Fraction trimmed from each tail of the daily cross section before averaging.
-TRIM = 0.01
+#: Daily returns outside this band are not returns, they are data errors, and
+#: they are clipped before anything is computed from them. A -95% session is
+#: possible; this panel also contains -742%, which is arithmetically impossible.
+#: A +300% session is possible; +1,319,900% (CFOR) and +416,567% (ABVC) are
+#: reverse splits that ``adj_factor`` failed to undo.
+#:
+#: The band is deliberately wide. It clips **372 of 8,039,239 rows (0.0046%)**,
+#: which is the point: a tighter screen -- daily 1%/99% winsorizing, say --
+#: would clip 37 names a session and quietly shrink exactly the genuine +30%
+#: news reactions an event study exists to measure.
+RETURN_SANITY = (-0.95, 3.0)
 
 
 def _abnormal_returns(prices: pd.DataFrame) -> pd.DataFrame:
-    """Per-name daily return in excess of a **trimmed-mean** universe return.
+    """Per-name daily return in excess of the cleaned universe mean.
 
-    The choice of centre matters more than it looks, and two obvious answers
-    are both wrong. Measured on this panel, as the bias each leaves in a
-    twenty-day CAR:
+    The invariant that makes this correct
+    ------------------------------------
+    **The mean abnormal return across the panel must be zero.** That is what
+    "abnormal" means. Subtracting the cross-sectional mean of the cleaned
+    returns satisfies it *exactly*, per date, by construction -- not by choosing
+    an estimator that happens to look unbiased.
 
-    ======================  ==============  ==============
-    estimator               20-day bias     worst day
-    ======================  ==============  ==============
-    plain mean              **+9.25%**      +359.63%
-    median                  -0.50%          +8.51%
-    **1% trimmed mean**     **-0.06%**      +8.90%
-    ======================  ==============  ==============
+    Getting there took three wrong answers, each of which looked reasonable:
 
-    **The plain mean is destroyed by data artifacts.** A cross section of small
-    caps contains reverse splits that print as returns in the thousands of
-    percent -- CFOR at +1,319,900%, ABVC at +416,567%, 182 such rows here. One
-    of them sets the benchmark for the whole day: on 2025-11-03 the mean
-    cross-sectional return was +359.6% against a median of -0.55%, handing
-    every other stock a -359% "abnormal" return. Over the panel that subtracted
-    roughly 9% from every twenty-day CAR and made almost every event kind look
+    ================================  ====================
+    approach                          bias left in a 20-day CAR
+    ================================  ====================
+    mean of raw returns               **+9.52%**
+    median of raw returns             -0.50%
+    1% trimmed mean of raw returns    -0.06% *per-day estimator, but*
+                                      **+9.52% in mean(abn)**
+    **clip to sanity band, then mean**  **0.0000%**
+    ================================  ====================
+
+    The first is destroyed by artifacts: on 2025-11-03 the mean cross-sectional
+    return was +359.6% against a median of -0.55%, so every other stock was
+    handed a -359% abnormal return that day. Over eleven years that subtracted
+    about 9% from every twenty-day CAR and made nearly every event kind look
     like it caused a large negative drift -- including 8-K item 9.01, the
     exhibit index, which cannot move a stock. When a bookkeeping filing and a
     bankruptcy show the same effect, the effect belongs to the baseline.
 
-    **The median over-corrects.** Return distributions are right-skewed, so the
-    median sits below the mean and subtracting it leaves a systematic positive
-    residual in the opposite direction. It looks robust and quietly biases
-    everything upward.
+    The second over-corrects: returns are right-skewed, so the median sits below
+    the mean and subtracting it biases everything upward instead.
 
-    The trimmed mean is the centre of the distribution with the artifacts
-    removed: robust to however extreme the tails get, and still an estimate of
-    the mean rather than of the median.
+    The third was the subtle one, and it is why the invariant matters. Trimming
+    fixed the *benchmark* while leaving the artifacts in the *numerator*, so the
+    daily estimator looked unbiased (-0.06%) while ``mean(abn)`` was still
+    +9.52%. An event study built on it showed every ticker-day earning +7.11%
+    abnormal over twenty days, which is self-evidently impossible and is the
+    only reason the error was caught.
+
+    Clean the data, then use the correct statistic. Not: leave the data dirty
+    and hunt for a statistic that survives it.
     """
     df = prices.sort_values(["ticker", "date"]).copy()
     if "adj_close" not in df.columns:
         df["adj_close"] = df["close"] * df.get("adj_factor", 1.0)
-    df["ret"] = df.groupby("ticker", observed=True)["adj_close"].pct_change()
+    raw = df.groupby("ticker", observed=True)["adj_close"].pct_change()
 
-    g = df.groupby("date", observed=True)["ret"]
-    lo = g.transform(lambda s: s.quantile(TRIM))
-    hi = g.transform(lambda s: s.quantile(1 - TRIM))
-    inner = df["ret"].where(df["ret"].between(lo, hi))
-    mkt = inner.groupby(df["date"], observed=True).transform("mean")
+    df["ret"] = raw.clip(*RETURN_SANITY)
+    mkt = df.groupby("date", observed=True)["ret"].transform("mean")
     df["abn"] = df["ret"] - mkt
     return df[["date", "ticker", "ret", "abn"]]
 

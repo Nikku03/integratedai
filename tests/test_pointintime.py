@@ -203,13 +203,62 @@ def test_market_baseline_survives_a_reverse_split():
     abn = _abnormal_returns(px)
     flat = abn[(abn["ticker"] == "N0") & (abn["date"] == dates[1])]["abn"].iloc[0]
 
-    # A flat stock on a flat day has no abnormal return, whatever one outlier did.
-    assert abs(flat) < 0.01, (
-        f"a flat name showed {flat:+.1%} abnormal return because one stock "
-        f"moved 9900%; the benchmark is not robust"
+    # An equal-weight benchmark is legitimately moved by a real mover, so the
+    # test is not "zero" -- it is how much of the artifact leaks through. With
+    # 101 names an unclipped 9900% print shifts the mean by 98 percentage
+    # points; clipped to the sanity band it shifts it by 3, and in the real
+    # 3,662-name panel by 0.08. Assert the leak is bounded by the band, not by
+    # the artifact.
+    n_names = px["ticker"].nunique()
+    worst_unclipped = 99.0 / n_names          # what the raw print would do
+    leak = 3.0 / n_names                       # what the clipped value does
+    assert abs(flat) <= leak * 1.05, (
+        f"a flat name showed {flat:+.1%}; expected at most {leak:+.1%} once the "
+        f"artifact is clipped to the sanity band"
+    )
+    assert abs(flat) < worst_unclipped / 10, (
+        "clipping did not materially reduce the contamination"
     )
 
-    # And the artifact itself must still be visible as abnormal -- a robust
-    # benchmark should not launder the outlier away.
-    rs = abn[(abn["ticker"] == "RS") & (abn["date"] == dates[1])]["abn"].iloc[0]
-    assert rs > 50, "the outlier should read as hugely abnormal, not be absorbed"
+    # And the artifact must be clipped rather than propagated: a 9900% print is
+    # a reverse split, not a return, and letting it through would put it back
+    # into the benchmark the next time anything averages these numbers.
+    rs = abn[(abn["ticker"] == "RS") & (abn["date"] == dates[1])]["ret"].iloc[0]
+    assert rs <= 3.0, f"impossible return {rs:.1f} was not clipped to the sanity band"
+
+
+def test_abnormal_returns_average_to_zero():
+    """The invariant. "Abnormal" means zero on average, or it means nothing.
+
+    Two earlier versions of this function failed here while looking fine by
+    other measures. Trimming the benchmark left the artifacts in the numerator,
+    so the daily estimator looked unbiased at -0.06% while mean(abn) was still
+    +9.52% -- which showed up downstream as every ticker-day earning +7.11%
+    abnormal return over twenty days. Checking the invariant directly is what
+    catches that; inspecting the estimator is not.
+    """
+    import numpy as np
+    import pandas as pd
+
+    from iai.diagnostics import _abnormal_returns
+
+    rng = np.random.default_rng(0)
+    dates = pd.bdate_range("2024-01-02", periods=60)
+    rows = []
+    for i in range(80):
+        # Lognormal-ish, so the cross section is right-skewed like the real one.
+        r = rng.normal(0.001, 0.04, len(dates))
+        px = 10 * np.exp(np.cumsum(r))
+        rows.append(pd.DataFrame({"date": dates, "ticker": f"T{i}", "adj_close": px}))
+    # Plus one reverse-split artifact, the case that broke this twice.
+    bad = np.full(len(dates), 1.0)
+    bad[30:] = 500.0
+    rows.append(pd.DataFrame({"date": dates, "ticker": "SPLIT", "adj_close": bad}))
+    px = pd.concat(rows, ignore_index=True)
+    px["close"] = px["adj_close"]
+
+    abn = _abnormal_returns(px)["abn"].dropna()
+    assert abs(abn.mean()) < 1e-12, (
+        f"mean abnormal return is {abn.mean():+.6f}, not zero -- the benchmark "
+        f"is biased and every CAR built on it inherits the bias"
+    )
