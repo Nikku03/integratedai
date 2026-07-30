@@ -249,3 +249,100 @@ in slightly below average.
 Every number on this page comes from a panel in which 5,394 of 5,395 tickers were
 still listed at the end. Correcting for the roughly half of names that should have
 delisted makes all of it worse.
+
+---
+
+# Why a "winning" model loses 64%
+
+Two separate failures, stacked. One is fatal and unfixable, the other is
+self-inflicted and fixable — and conflating them is how a losing strategy gets
+mistaken for a sizing problem.
+
+## It was never winning in absolute terms
+
+The win was **relative**. Against random selection from the identical weekly pool:
+
+| | net/trade |
+|---|---|
+| random 5 per week | −0.560% |
+| **model** 5 per week | **−0.154%** |
+| advantage | **+0.41pp**, paired t=+2.35 |
+
+Beating random by 41bp in a universe that loses 56bp lands you at −15bp. **That
+is skill without profit.** The model genuinely forecasts — AUC 0.7056 on 2.5m
+out-of-fold rows, calibrated to four decimals — and forecasting accuracy is simply
+a different quantity from profitability.
+
+Where the alpha goes:
+
+| | per trade |
+|---|---|
+| model gross alpha | **+0.524%** |
+| round-trip cost | **−0.678%** |
+| **net** | **−0.154%** |
+
+**It finds 52bp of gross alpha and pays 68bp to collect it.** The cost is 129% of
+the edge. No amount of position sizing, slot count or trade selection changes
+that ratio — it is a property of trading small caps at all.
+
+## Then variance drag turns −15bp into −62%
+
+Two slots means each position is **50% of equity**. Per-trade volatility is
+**6.95%**. Geometric growth is not the arithmetic mean:
+
+    E[log(1 + f·r)] ≈ f·μ − (f·σ)²/2
+
+The second term is the drag, and at f=0.5 it is **(0.5 × 6.95%)² / 2 = 6.0bp per
+trade** — nearly half the size of the mean itself.
+
+Decomposing the realised −0.978 log growth over 420 trades:
+
+| source | log | share of the loss |
+|---|---|---|
+| negative mean | −0.7259 | **74%** |
+| **variance drag** | **−0.2522** | **26%** |
+| total | −0.9781 | → $80 × 0.376 = **$30.08** |
+
+The predicted drag, 420 × 6.0bp = 0.2535, matches the realised 0.2522.
+
+## Even at zero edge, two slots would have cost 22%
+
+Setting the mean to exactly zero and keeping the same 420 return *shapes*:
+
+| sizing | end balance | loss from drag alone |
+|---|---|---|
+| **2 slots (50%/position)** | **$62.22** | **−22.2%** |
+| 4 slots (25%) | $75.11 | −6.1% |
+| 8 slots (12.5%) | $78.75 | −1.6% |
+| 20 slots (5%) | $79.80 | −0.3% |
+
+**Concentration is a cost, charged whether or not you have an edge.** At 50% per
+position it costs 22% over 420 trades on a coin flip.
+
+## Sizing fixes the drag and not the edge
+
+With the real (negative) mean, at each sizing:
+
+| sizing | end balance | total |
+|---|---|---|
+| 2 slots (50%) | $30.08 | −62.4% |
+| 4 slots (25%) | $52.25 | −34.7% |
+| 8 slots (12.5%) | $65.69 | −17.9% |
+| 20 slots (5%) | $74.21 | **−7.2%** |
+
+Going from 2 slots to 20 recovers 55 percentage points — all of it drag. But the
+line never crosses zero, because **smaller positions lose more slowly; they cannot
+turn a negative mean positive.** The limit as size → 0 is 420 × f × (−0.154%),
+which is still below zero.
+
+## The answer in one paragraph
+
+The model is a good ranker: it beats random selection with p=0.020 and forecasts
+spikes at AUC 0.71. It finds 52bp of gross alpha per trade. Trading small caps
+costs 68bp round-trip, so the net is −15bp — a genuinely skilful forecast attached
+to an unprofitable trade. Sizing each position at half the account then adds 6bp
+per trade of volatility drag, which over 420 trades converts that small negative
+into −62%. Fix the sizing and it becomes −7%; fix the sizing and it is still a
+loss. **The strategy does not lose because it was traded badly. It loses because
+the cost of trading this universe is larger than the alpha available in it, and
+the sizing merely decided how fast.**
