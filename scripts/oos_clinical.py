@@ -126,7 +126,7 @@ def text_of(client, r: dict) -> str:
     return txt
 
 
-def walk_daily(o, h, l, entry, *, arm=0.08, trail=0.08, init_stop=0.15,
+def walk_daily(h, l, entry, *, arm=0.08, trail=0.08, init_stop=0.15,
                stall=8) -> tuple[float, str, int]:
     """Same rule as the minute version, evaluated on daily bars."""
     hw, armed, since = entry, False, 0
