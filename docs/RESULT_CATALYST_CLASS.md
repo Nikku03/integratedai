@@ -516,3 +516,62 @@ features, not chosen after the fact, but it *was* promoted after seeing the
 comparison.
 
 **Still one month, still 80 filings, still needs a second window.**
+
+---
+
+# Summary: every configuration, all post-fix
+
+30-day window (2 July – 29 July 2026), 83 tradable 8-Ks from small/micro/mid
+caps. Entry at the high of the bar one minute after EDGAR acceptance. All
+figures below are after the zero-volume-bar fix and the accession-join fix.
+
+## On the $80 account as specified
+
+| config | trades | start | end | **ROI** | mean | median | win | best | worst | maxDD | PF | t |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| **2 slots, 6% tgt, 240 bars** (original spec) | 15 | $80 | **$90.83** | **+13.54%** | +1.77% | +1.43% | 53% | +6.0% | −4.6% | −3.5% | 2.85 | +1.69 |
+| 3 slots, 6% tgt, 240 bars | 19 | $80 | $88.31 | +10.39% | +1.62% | +1.43% | 58% | +6.0% | −4.6% | −2.0% | 2.83 | +1.89 |
+| 4 slots, 6% tgt, 240 bars | 20 | $80 | $86.38 | +7.98% | +1.58% | +1.22% | 60% | +6.0% | −4.6% | −1.5% | 2.89 | +1.94 |
+| **4 slots, 6% tgt, 120 bars** (the 20-trade ask) | 20 | $80 | **$84.83** | **+6.03%** | +1.19% | +0.44% | 65% | +6.0% | −3.9% | −1.2% | 3.56 | +1.94 |
+| no target, 3 slots, trail 20%, top 30% | 6 | $80 | $84.96 | +6.19% | +3.34% | +5.82% | 67% | +22.7% | −16.6% | −7.1% | 1.63 | +0.53 |
+| no target, 12 slots, trail 20%, no select | 17 | $80 | $83.93 | +4.91% | +3.46% | +3.06% | 71% | +22.7% | −16.6% | −1.4% | 2.72 | +1.50 |
+| no target, 8 slots, trail 20%, top 30% | 12 | $80 | $83.08 | +3.86% | +2.70% | +5.45% | 67% | +22.7% | −16.6% | −4.4% | 1.57 | +0.71 |
+| no target, 16 slots, trail 20%, top 30% | 21 | $80 | $82.48 | +3.10% | +2.45% | +4.27% | 71% | +22.7% | −16.6% | −2.7% | 1.67 | +1.03 |
+
+**Not one configuration reaches t = 2.** The highest is +1.94. Every ROI in that
+table is statistically indistinguishable from zero over 30 days.
+
+And the ranking runs *inverse to trade count* — the fewest trades produced the
+highest ROI. That is the signature of noise, not edge: fewer draws, wider spread,
+and the top of the list is whichever configuration happened to catch the good
+ones.
+
+## With enough capital that slots stop binding
+
+The no-target rule needs 21 concurrent positions to never refuse a moonshot:
+
+| config | trades | start | end | **ROI** | mean | win | best | maxDD | PF | t |
+|---|---|---|---|---|---|---|---|---|---|---|
+| $840, 21 slots ($40 each), top 30% | 26 | $840 | **$900.48** | **+7.20%** | +5.95% | 69% | **+113.1%** | −2.1% | 2.78 | +1.26 |
+| $840, 21 slots, no selection | 29 | $840 | $874.31 | +4.08% | +2.97% | 69% | +22.7% | −1.4% | 2.25 | +1.72 |
+| $2,360, 59 slots, everything | 68 | $2,360 | $2,445.88 | +3.64% | +3.18% | 62% | +113.1% | −0.8% | 2.44 | +1.68 |
+
+At $840 the strategy finally catches AMIX: **+113.1% on a $39.17 position =
++$44.28**. That single trade is +5.3pp of the +7.20% ROI. Strip it out and the
+other 25 trades return roughly +1.9%.
+
+So the honest reading of the best-looking number in this whole study is: one
+trade, in one month, on a filing that a reader correctly flagged as a dilution
+trap and that the strategy bought anyway.
+
+## What is actually significant
+
+None of the ROIs. Two cross-sectional results are:
+
+| result | effect | p |
+|---|---|---|
+| positive-graded filings beat neutral-graded | +1.93pp per trade | **0.012** (0.0066 by within-day permutation) |
+| tail selection by `pre_vol` beats random | 60–65% hit ≥10% vs 29% base | **0.0001–0.0008** |
+
+Both are statements about *relative* cross-sections measured on 79–80 filings in
+one month. Neither is a P&L, and neither has been replicated on a second window.

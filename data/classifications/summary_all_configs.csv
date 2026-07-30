@@ -1,0 +1,9 @@
+config,trades,start,end,ROI %,mean %,median %,win %,best %,worst %,maxDD %,PF,t,held med h,note
+"ORIGINAL SPEC: 2 slots, 6% tgt, 240 bars",15,80.0,90.83,13.54,1.77,1.43,53.0,6.0,-4.6,-3.5,2.85,1.69,24.8,positives only
+"AS ASKED: 4 slots, 6% tgt, 120 bars",20,80.0,84.83,6.03,1.19,0.44,65.0,6.0,-3.9,-1.2,3.56,1.94,11.5,positives only
+"3 slots, 6% tgt, 240 bars",19,80.0,88.31,10.39,1.62,1.43,58.0,6.0,-4.6,-2.0,2.83,1.89,24.8,positives only
+"4 slots, 6% tgt, 240 bars",20,80.0,86.38,7.98,1.58,1.22,60.0,6.0,-4.6,-1.5,2.89,1.94,27.0,positives only
+"NO TARGET+select: 3 slots, trail20, p70",6,80.0,84.96,6.19,3.34,5.82,67.0,22.7,-16.6,-7.1,1.63,0.53,243.9,all verdicts incl traps
+"NO TARGET+select: 8 slots, trail20, p70",12,80.0,83.08,3.86,2.7,5.45,67.0,22.7,-16.6,-4.4,1.57,0.71,328.6,all verdicts incl traps
+"NO TARGET+select: 16 slots, trail20, p70",21,80.0,82.48,3.1,2.45,4.27,71.0,22.7,-16.6,-2.7,1.67,1.03,196.4,all verdicts incl traps
+"NO TARGET, no select: 12 slots, trail20",17,80.0,83.93,4.91,3.46,3.06,71.0,22.7,-16.6,-1.4,2.72,1.5,343.4,all verdicts incl traps
