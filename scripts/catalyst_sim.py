@@ -151,6 +151,14 @@ def simulate(cands: pd.DataFrame, bars_by: dict, capital: float, slots: int,
             last = min(last, max(i_ent, int(np.searchsorted(tv, deadline, "right")) - 1))
         exit_i, exit_px, reason = None, None, None
         for j in range(i_ent + 1, last + 1):
+            # A bar in which nothing traded cannot fill an order. Nearly a
+            # quarter of minute bars here report zero volume, and thousands of
+            # those still carry ranges wide enough to trip a barrier -- stale
+            # quotes in thin sessions. Honouring them stops winners out on
+            # trades that never happened, and only ever in the losing
+            # direction, since a phantom high is not a fill either.
+            if not (float(bars["volume"].iloc[j]) > 0):
+                continue
             hi, lo = float(bars["high"].iloc[j]), float(bars["low"].iloc[j])
             if not (np.isfinite(hi) and np.isfinite(lo)):
                 continue
@@ -165,6 +173,8 @@ def simulate(cands: pd.DataFrame, bars_by: dict, capital: float, slots: int,
                 break
         if exit_i is None:
             exit_i = last
+            while exit_i > i_ent and not (float(bars["volume"].iloc[exit_i]) > 0):
+                exit_i -= 1                            # last bar that traded
             exit_px = float(bars["low"].iloc[exit_i])  # sell into the bid
             reason = "time"
 

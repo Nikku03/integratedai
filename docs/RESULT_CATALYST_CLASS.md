@@ -8,6 +8,11 @@ runs the survivors through the $80 / two-slot simulator.
 Nothing in the grading pass saw a price. `saw_price_outcome` is recorded per
 filing and is `false` for all 83.
 
+> **The portfolio numbers in the two sections below are superseded.** A bug
+> found later — zero-volume bars triggering stops — inflated them. See the
+> addendum at the end for the fix and the corrected figures. The classification
+> tables are unaffected; the grid and cohort results are restated there.
+
 ## The funnel
 
 | stage | count | share |
@@ -271,3 +276,110 @@ magnitude as the entire measured edge.
 **The one durable result is the trap screen.** 67 caught on item code, 4 more
 caught only by reading, 3 of those 4 dilution disguised as something else. That
 part is mechanical, verifiable, and does not depend on any return being real.
+
+---
+
+# Addendum: were there 10%+ moves, and why did we catch none?
+
+## A bug found while asking, which changes numbers above
+
+`trail 20%` on AMIX returned +2.6% on a name whose ceiling was +170% and whose
+worst drawdown was −1.5%. That is arithmetically impossible, and the cause was
+real: **bar 2084 reports `high=3.70, low=2.75, volume=0`** — a 35% range in a
+minute during which nothing traded. The stop was triggered by a print that did
+not exist.
+
+**495,992 of 2,096,525 minute bars in the cache (23.7%) have zero volume, and
+22,180 of those carry a high-low range wider than 2% of price** — stale quotes
+in thin pre- and post-market sessions, ranging up to 84%. Entry already required
+`volume > 0`; exits did not. The asymmetry is what makes it damaging: a phantom
+*low* stops a winner out, while a phantom *high* is never honoured as a fill, so
+the error only ever runs one way.
+
+Fixed in `catalyst_sim.py`, `moonshot_scan.py` and `latency_trade.py`: a bar
+with no volume cannot trigger a barrier or serve as an exit price, and a time
+exit walks back to the last bar that traded.
+
+What it changed:
+
+| | before | after |
+|---|---|---|
+| grid cells clearing t > 2 | 3 of 18 | **0 of 18** |
+| cohort spread | +1.76pp, p = 0.021 | **+1.93pp, p = 0.012** |
+| within-day permutation | p = 0.0214 | **p = 0.0066** |
+| AMIX under `trail 20%` | +2.6% | **+113.1%** |
+| moonshot peaks in untradably thin minutes | 8 of 24 | **0 of 23** |
+
+The portfolio return loses its last significance — it was partly phantom stops.
+The cohort test gets stronger, because the phantom stops were adding noise to
+both cohorts.
+
+## Yes. 23 of 83 filings (28%) had a 10%+ move available
+
+Hindsight ceiling — the highest price that actually printed after the entry bar.
+Not achievable, but it bounds what any exit rule could have taken.
+
+| | n | share with ≥10% available | median ceiling | median trough |
+|---|---|---|---|---|
+| trap | 4 | **75%** | **+26.7%** | −7.3% |
+| positive | 26 | 31% | +3.9% | −1.8% |
+| neutral | 53 | 23% | +4.2% | −6.0% |
+
+Biggest: **AMIX +170.5%**, IPW +37.2%, KLRS +30.1%, SLNG +28.5%, FNWD +21.4%.
+
+## We caught none of them, for two independent reasons
+
+**One: a 6% target caps every winner at exactly 6%.** That is arithmetic about
+the rule, not a fact about the market. Fifteen of the 23 moonshots were entered
+and exited at +6.0% while the price kept going.
+
+**Two: the two biggest were classified as traps and deliberately skipped.**
+AMIX was the warrant-inducement disclosure. IPW was the $30m OID convertible
+bundled with a customerless AI subsidiary. Both were flagged from the filing
+text, both were skipped, and they ran +170% and +37%.
+
+**The moonshots concentrate in exactly the cohort the screen exists to remove.**
+Avoiding dilution and catching spikes are the same decision made in opposite
+directions — the promotional microcap that dilutes is the one that squeezes.
+The screen is not free, and this is its price.
+
+AMIX was genuinely takeable: the entry minute traded $6,384 against a $40 order,
+and the peak minute traded **$12,990,756**. That top was exitable. Declining it
+was a real, costly, defensible choice — the trap cohort's median trough is −7.3%
+and IPW drew down −46.7% before recovering.
+
+## Dropping the profit cap helps, modestly and robustly
+
+Per filing, no portfolio:
+
+| rule | positive | t | neutral | spread | p | ≥10% caught |
+|---|---|---|---|---|---|---|
+| 6% target / 10% stop | +1.30% | +1.32 | −0.05% | +1.35pp | 0.296 | **0** |
+| no target / 10% stop | **+2.84%** | +1.96 | −0.33% | +3.17pp | 0.072 | 7 |
+| trail 10% | +2.01% | +1.64 | −1.71% | **+3.72pp** | **0.014** | 4 |
+| trail 15% | +2.62% | +1.71 | −0.03% | +2.65pp | 0.153 | 9 |
+| trail 20% | +2.59% | +1.67 | +0.45% | +2.14pp | 0.264 | 8 |
+| trail 25% | +2.59% | +1.67 | +0.52% | +2.07pp | 0.275 | 8 |
+
+**All five no-target variants beat the 6% target on the positive cohort**, which
+is what makes this more than a lucky cell. Paired per filing, dropping the
+target outright is **+1.54pp, t = +2.08, p = 0.048** — better on 7 of 26 filings
+and worse on only 2. The asymmetry is the whole point: a target costs you
+nothing on the 17 that go nowhere and everything on the few that run.
+
+## What this does not license
+
+**The trap cohort's trailing returns are one name.** `trail 15%` shows +35.76%
+mean on traps; that is AMIX at +128.0% inside n = 4. LASE returns −11.5%. Four
+observations, one of which is 85% of the mean, is an anecdote.
+
+**None of the positive-cohort t-statistics clear 2.** +2.84% at t = +1.96 on
+n = 26 in one month is a direction, not a measurement. The paired test clears
+p = 0.05 only because pairing removes the between-filing variance — it says the
+*rule change* is an improvement, not that the underlying return is real.
+
+**Chasing the moonshots means inverting the trap screen**, and the eleven-year
+panel plus the latency study both say that filings which have already moved are
+where the losses concentrate (−2.59% to −3.30% for filings up ≥2% before entry).
+One AMIX does not overturn that; it explains why the tail is worth measuring
+separately rather than trading.

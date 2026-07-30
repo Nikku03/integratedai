@@ -104,6 +104,11 @@ def simulate_latency_trade(
     exit_i, exit_px, reason = None, None, None
     for j in range(i_ent + 1, last + 1):
         bar = minute_bars.iloc[j]
+        # Zero volume is not a fill on the way out either. The entry side
+        # already refuses these; letting them trigger an exit stops trades out
+        # on prints that never happened, and only ever against us.
+        if not (bar["volume"] > 0):
+            continue
         hi, lo = float(bar["high"]), float(bar["low"])
         if not (np.isfinite(hi) and np.isfinite(lo)):
             continue
@@ -126,7 +131,9 @@ def simulate_latency_trade(
 
     if exit_i is None:
         exit_i = last
-        exit_px = float(minute_bars.iloc[exit_i]["low"])   # sell into the bid
+        while exit_i > i_ent and not (minute_bars.iloc[exit_i]["volume"] > 0):
+            exit_i -= 1                                    # last bar that traded
+        exit_px = float(minute_bars.iloc[exit_i]["low"])    # sell into the bid
         reason = "time"
 
     exit_px *= 1 - exit_slippage
