@@ -125,19 +125,125 @@ $80 → $91.92, **+14.90%** over 30 days. Mean +2.23%, median +3.10%, win 62%,
 | small | 4 | +1.86% | +$3.19 |
 | mid | 5 | +0.07% | +$0.16 |
 
+## Rerun at 4 slots and a shorter hold
+
+Asked for, and it does reach 20 trades — at 4 slots and a 120-bar hold: $80 →
+$85.03, **+6.29%**, mean +1.24%, win 65%, t = +2.06. Note the position size is
+now $20, not $40, because four slots split the same $80.
+
+But both knobs were turned *after* seeing a result, so the honest presentation
+is the whole surface, not that cell. `--grid` sweeps it:
+
+| hold | 2 slots | 3 slots | 4 slots |
+|---|---|---|---|
+| 30 bars | −0.30% (20t) | −0.18% (20t) | −0.18% (20t) |
+| 60 bars | +0.28% (20t) | +0.39% (20t) | +0.32% (20t) |
+| 120 bars | +0.69% (17t) | +0.61% (19t) | **+1.24% (20t)** |
+| 240 bars | **+2.23% (13t)** | +1.90% (17t) | +1.50% (19t) |
+| 240b, same day | −0.38% (20t) | −0.37% (20t) | −0.37% (20t) |
+| 240b, ≤24h | +0.57% (20t) | +0.45% (20t) | +0.22% (20t) |
+
+Mean return per trade, trades in brackets. Across 18 cells: mean +0.48%, range
+−0.38% to +2.23%, 67% positive, t from −0.80 to +2.24, **3 of 18 cells clear
+t > 2** — about what noise delivers at this many looks.
+
+**"20 trades" and "shorter hold" are the same knob, and it is the knob that
+kills the return.** The only cells that reach 20 trades are the short-hold ones,
+and those cluster at zero. The +14.90% came from *not* taking 20 trades.
+
+### Which exposes what was actually being paid for
+
+| | same session | crossed overnight |
+|---|---|---|
+| 4 slots / 120 bars | −0.01% (n=10) | **+2.49%** (n=10) |
+| 2 slots / 240 bars | −0.62% (n=4) | **+3.49%** (n=9) |
+
+Every dollar came from holding overnight. The two `same day` rows in the grid
+are negative at every slot count. **There is no tradable intraday reaction to
+the filing** — which is the same conclusion the latency study reached, arrived
+at from the other direction.
+
+## The one result that survives: the labels separate returns
+
+An overnight hold being where the money is invites the obvious control — is
+overnight simply positive for these names? Trade all 83 filings at a fixed $40
+with enough slots that nothing is refused one, so every cohort faces an
+identical rule and the portfolio parameters drop out:
+
+| cohort | n | mean | median | win |
+|---|---|---|---|---|
+| positive | 26 | **+0.95%** | +0.44% | 62% |
+| neutral | 53 | **−0.81%** | −0.39% | 43% |
+| trap | 4 | **−4.79%** | −5.37% | 50% |
+
+Overnight is *not* generically positive: neutrals held overnight lose 1.21% and
+traps lose 14.44%. Only the positives gain.
+
+**positive − neutral = +1.76pp per trade, Welch t = +2.37, p = 0.021**,
+Mann-Whitney p = 0.015.
+
+This is a better test than any portfolio number, because both cohorts are drawn
+from the same 30 days and the same cap bands — so a July that was kind to small
+caps lifts both and cancels. Three confounds, all addressed:
+
+| control | result |
+|---|---|
+| within micro | pos +2.16% vs neu −2.23%, spread **+4.40pp**, t = +2.80 |
+| within small | +0.70% vs −0.20%, +0.90pp, t = +0.77 |
+| within mid | +0.29% vs −0.51%, +0.81pp, t = +0.77 |
+| band-demeaned (composition can't explain it) | +1.79pp, t = +2.38, p = 0.021 |
+| one observation per ticker (14 vs 35 names) | t = **+2.93**, p = 0.006 |
+| labels permuted *within calendar day*, 20k draws | **p = 0.0214**, null sd 0.70pp |
+
+The spread is positive in all three bands, strongest where information is
+scarcest, and survives collapsing 79 trades to 49 independent names.
+
+### It is still an overnight effect, and it is monotone in hold
+
+| hold | positive | neutral | trap | spread | Welch t | p | per-ticker t |
+|---|---|---|---|---|---|---|---|
+| 30 bars | −0.51% | −0.81% | −2.29% | +0.30pp | +0.54 | 0.588 | +1.90 |
+| 60 bars | +0.09% | −0.91% | −2.19% | +1.00pp | +1.32 | 0.192 | +2.38 |
+| 120 bars | +0.95% | −0.81% | −4.79% | +1.76pp | +2.37 | 0.021 | +2.93 |
+| 240 bars | +1.45% | −0.91% | −5.94% | **+2.36pp** | +2.54 | 0.013 | +3.17 |
+| 120b, same day | −0.09% | −0.48% | −1.43% | +0.39pp | +0.62 | 0.538 | +1.02 |
+| 240b, same day | −0.08% | −0.49% | −1.88% | +0.42pp | +0.69 | 0.495 | +0.82 |
+| 240b, ≤24h | +0.37% | −0.80% | −1.72% | +1.17pp | +1.72 | 0.091 | +1.88 |
+
+Unlike the portfolio return, **the sign never flips** — all seven hold rules
+give a positive spread and a positive per-ticker t. What changes is magnitude,
+and it grows with hold length while the same-day variants collapse to nothing.
+
+That makes this post-event *drift*, not a latency or reaction effect. The market
+prices the filing's content over the following sessions, not in the next two
+hours. It is the same shape as the +0.82% CAR+20 the eleven-year panel showed on
+micro caps, which is mildly reassuring about both.
+
+**The trap column is the cleanest thing here.** −2.29% → −5.94%, monotone
+worsening with hold length, on filings a reader flagged from text alone with no
+price visible. Dilution gets punished more the longer you hold it, which is
+exactly what it should do. n = 4, so it is a direction, not a measurement.
+
 ## What to believe and what not to
 
-**13 trades, not 20.** Thirteen candidates were skipped for `no free slot`.
-Candidate supply was not the constraint; hold time was. Five of the thirteen
-trades ran past a full session because 240 *bars* is four trading hours, which
-spans overnight and, for FNWD, fourteen calendar days. Getting to twenty trades
-would take three or four slots or a shorter hold — a change that must be made
-before seeing results, not after.
-
-**t = +2.16 on n = 13 is not significant** at any bar this project has been
-holding itself to. It is one month, and the pre-registered 2015–2026 test on
+**No portfolio number here is evidence.** 3 of 18 grid cells clear t > 2 and the
+sign flips between neighbouring cells, which is the signature of a parameter
+doing the work rather than the catalysts. The pre-registered 2015–2026 test on
 the same machinery came out at −0.15% per trade. Thirty days cannot overturn
 eleven years; it can only fail to.
+
+**The cohort spread is the exception, and it needs one thing before it counts:
+a second month.** p = 0.021 on 79 trades in 59 names over 30 days, with labels
+produced by a specific set of readers on a specific month's filings. The test is
+cheap to repeat — `--cohorts` on any other 30-day window — and until it has
+been, the honest status is "one encouraging month", not a finding.
+
+**Only the spread is measured, and the spread is not the trade.** Long positives
+is +0.95% *gross of transaction cost* on names priced at $4.60. Harvesting it
+long-only means paying a cost minute bars cannot see; harvesting it long/short
+means shorting micro caps at $20 a side, which no retail account does. The
++1.76pp separation is real in the sense that it is not composition, day effects
+or repeated names. It is not yet a strategy.
 
 **Two trades returned exactly 0.00%** (AVNS, CCRN) because the exit bar's low
 equalled the entry bar's high — nothing printed in between and the price

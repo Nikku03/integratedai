@@ -48,9 +48,17 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-#: Position exit levels, unchanged from the paper simulation so the two are
-#: comparable: take 6%, cut at 10%, and let go after four hours of bars.
-TARGET, STOP, MAX_HOLD_MIN = 0.06, 0.10, 240
+#: Position exit levels: take 6%, cut at 10%.
+TARGET, STOP = 0.06, 0.10
+
+#: Two separate caps on how long a position is held, because they are not the
+#: same thing and conflating them was a real defect. ``bars`` counts *rows of
+#: the bar series*, which only advance while the tape is running -- 240 of them
+#: is four trading hours but spans nights, weekends and holidays, and on one
+#: thin name it ran fourteen calendar days. ``wall`` caps elapsed clock time
+#: from entry, so an overnight hold can be forbidden outright. Whichever binds
+#: first ends the trade; ``wall=0`` means no clock cap.
+MAX_HOLD_BARS, MAX_HOLD_WALL_MIN = 240, 0
 
 #: An ambiguous bar -- one whose range spans both barriers -- is booked as the
 #: stop. Intra-minute ordering is unknowable without tick data, so the only
@@ -74,7 +82,9 @@ def load_candidates(root: Path, grades: set[str]) -> pd.DataFrame:
 
 
 def simulate(cands: pd.DataFrame, bars_by: dict, capital: float, slots: int,
-             max_trades: int) -> tuple[pd.DataFrame, pd.DataFrame]:
+             max_trades: int, max_bars: int = MAX_HOLD_BARS,
+             max_wall_min: int = MAX_HOLD_WALL_MIN,
+             ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Walk the filings in time order, holding at most ``slots`` positions.
 
     A slot frees only when its exit bar is actually reached, so slot contention
@@ -132,7 +142,13 @@ def simulate(cands: pd.DataFrame, bars_by: dict, capital: float, slots: int,
         shares = size / entry
 
         up, dn = entry * (1 + TARGET), entry * (1 - STOP)
-        last = min(i_ent + MAX_HOLD_MIN, len(bars) - 1)
+        last = min(i_ent + max_bars, len(bars) - 1)
+        if max_wall_min > 0:
+            # Clip to the last bar within the clock window. searchsorted on the
+            # naive twin, because a tz-aware Series gives an object array that
+            # will not compare against datetime64.
+            deadline = tv[i_ent] + np.timedelta64(int(max_wall_min), "m")
+            last = min(last, max(i_ent, int(np.searchsorted(tv, deadline, "right")) - 1))
         exit_i, exit_px, reason = None, None, None
         for j in range(i_ent + 1, last + 1):
             hi, lo = float(bars["high"].iloc[j]), float(bars["low"].iloc[j])
@@ -244,6 +260,145 @@ def report(tr: pd.DataFrame, sk: pd.DataFrame, capital: float, label: str) -> No
         print("\nnot taken:", sk["skip_reason"].value_counts().to_dict())
 
 
+#: Hold rules swept by ``--grid``, as (label, bars, wall_minutes).
+HOLD_RULES = [
+    ("30 bars",          30, 0),
+    ("60 bars",          60, 0),
+    ("120 bars",        120, 0),
+    ("240 bars",        240, 0),
+    ("240b, same day",  240, 390),
+    ("240b, <=24h",     240, 1440),
+]
+
+
+def grid(cands: pd.DataFrame, bars_by: dict, args) -> None:
+    """Sweep slots x hold and print every cell.
+
+    Both knobs were changed *after* seeing a result, which means the cell that
+    looks best is selected on the same data it is measured on and its return is
+    not evidence of anything. The whole surface is the only honest way to show
+    it: if the sign flips across neighbouring cells, the parameter is doing the
+    work rather than the catalysts, and that is worth more than any single
+    number the sweep produces.
+    """
+    print(f"\n{'=' * 96}")
+    print("PARAMETER SWEEP -- both knobs chosen after seeing a result. Read the "
+          "spread, not the best cell.")
+    print(f"{'=' * 96}")
+    print(f"{'hold rule':16s} {'slots':>5s} {'trades':>6s} {'skipped':>7s} "
+          f"{'end $':>7s} {'total':>8s} {'mean':>7s} {'median':>7s} "
+          f"{'win':>4s} {'t':>6s} {'held med':>9s}")
+    rows = []
+    for label, bars_cap, wall_cap in HOLD_RULES:
+        for slots in (2, 3, 4):
+            tr, sk = simulate(cands, bars_by, args.capital, slots,
+                              args.max_trades, bars_cap, wall_cap)
+            if tr.empty:
+                continue
+            n = len(tr)
+            se = tr["ret"].std(ddof=1) / np.sqrt(n) if n > 1 else np.nan
+            t = tr["ret"].mean() / se if se and se == se and se > 0 else np.nan
+            end = float(tr["balance_after"].iloc[-1])
+            rows.append({"hold": label, "slots": slots, "n": n,
+                         "end": end, "total": end / args.capital - 1,
+                         "mean": tr["ret"].mean(), "t": t})
+            print(f"{label:16s} {slots:5d} {n:6d} {len(sk):7d} "
+                  f"{end:7.2f} {end / args.capital - 1:+7.2%} "
+                  f"{tr['ret'].mean():+6.2%} {tr['ret'].median():+6.2%} "
+                  f"{(tr['ret'] > 0).mean():4.0%} "
+                  f"{t:+6.2f} {tr['held_min'].median():8.0f}m")
+
+    g = pd.DataFrame(rows)
+    print(f"\n{len(g)} cells. mean return across cells {g['mean'].mean():+.2%}, "
+          f"range {g['mean'].min():+.2%} to {g['mean'].max():+.2%}, "
+          f"{(g['mean'] > 0).mean():.0%} positive.")
+    print(f"t ranges {g['t'].min():+.2f} to {g['t'].max():+.2f}; "
+          f"{(g['t'] > 2).sum()} of {len(g)} cells clear t>2, which is what "
+          "you would expect from noise at this many looks.")
+
+
+def cohorts(all83: pd.DataFrame, bars_by: dict, args, n_perm: int = 20000) -> None:
+    """Do the grader's labels separate returns? The test that needs no portfolio.
+
+    Every one of the 83 filings is traded at a fixed $40 with enough slots that
+    nothing is ever refused one, so all three cohorts face an identical rule and
+    the only thing varying is the label a reader assigned from the filing text.
+    That removes the portfolio parameters from the question entirely -- slots,
+    compounding and the trade cap cannot flatter or punish one cohort over
+    another when none of them binds.
+
+    It is also implicitly market-neutral: positives and neutrals are drawn from
+    the same 30 days and the same cap bands, so a July that was simply kind to
+    small caps lifts both and cancels in the spread.
+
+    Three confounds are addressed rather than assumed away: cap-band composition
+    (by demeaning within band), repeated tickers (by collapsing to one
+    observation per name), and good-or-bad days (by permuting labels *within*
+    calendar day, so the null preserves the day's realised return).
+    """
+    from scipy import stats
+
+    slots = max(8, len(all83))
+    tr = simulate(all83.sort_values("filed_utc").reset_index(drop=True), bars_by,
+                  40.0 * slots, slots, 10 ** 6, args.max_bars, args.max_wall_min)[0]
+    key = all83[["ticker", "filed_et", "final_verdict"]].copy()
+    key["paperwork_public_et"] = pd.to_datetime(key["filed_et"])
+    r = tr.merge(key[["ticker", "paperwork_public_et", "final_verdict"]],
+                 on=["ticker", "paperwork_public_et"], how="left")
+
+    print(f"\n{'=' * 78}\nCOHORT TEST -- {len(r)} filings, $40 each, no slot "
+          f"contention, {args.max_bars}-bar hold\n{'=' * 78}")
+    print(r.groupby("final_verdict")["ret"].agg(
+        n="size", mean="mean", median="median",
+        win=lambda s: (s > 0).mean()).round(4).to_string())
+
+    sub = r[r["final_verdict"].isin(["positive", "neutral"])].copy()
+    sub["pos"] = (sub["final_verdict"] == "positive").astype(float)
+    p, n = sub.loc[sub.pos == 1, "ret"], sub.loc[sub.pos == 0, "ret"]
+    obs = p.mean() - n.mean()
+    t, pv = stats.ttest_ind(p, n, equal_var=False)
+    print(f"\npositive - neutral = {obs * 100:+.2f}pp   Welch t={t:+.2f} p={pv:.3f}"
+          f"   (n={len(p)} vs {len(n)}, {sub.ticker.nunique()} names)")
+    print(f"Mann-Whitney one-sided p="
+          f"{stats.mannwhitneyu(p, n, alternative='greater').pvalue:.3f}")
+
+    print("\nwithin cap band (composition cannot explain it):")
+    for b in ("micro", "small", "mid"):
+        g = sub[sub.band == b]
+        gp, gn = g.loc[g.pos == 1, "ret"], g.loc[g.pos == 0, "ret"]
+        if len(gp) > 1 and len(gn) > 1:
+            bt, _ = stats.ttest_ind(gp, gn, equal_var=False)
+            print(f"  {b:6s} pos n={len(gp):2d} {gp.mean() * 100:+.2f}%   "
+                  f"neu n={len(gn):2d} {gn.mean() * 100:+.2f}%   "
+                  f"spread {(gp.mean() - gn.mean()) * 100:+.2f}pp  t={bt:+.2f}")
+
+    sub["ret_dm"] = sub["ret"] - sub.groupby("band")["ret"].transform("mean")
+    dt, dp = stats.ttest_ind(sub.loc[sub.pos == 1, "ret_dm"],
+                             sub.loc[sub.pos == 0, "ret_dm"], equal_var=False)
+    print(f"band-demeaned spread  t={dt:+.2f}  p={dp:.3f}")
+
+    g = sub.groupby("ticker").agg(pos=("pos", "mean"), ret=("ret", "mean"))
+    g = g[g.pos.isin([0.0, 1.0])]      # names that sit wholly in one cohort
+    ct, cp = stats.ttest_ind(g.loc[g.pos == 1, "ret"], g.loc[g.pos == 0, "ret"],
+                             equal_var=False)
+    print(f"one obs per ticker    t={ct:+.2f}  p={cp:.3f}  "
+          f"({int((g.pos == 1).sum())} vs {int((g.pos == 0).sum())} names)")
+
+    rng = np.random.default_rng(11)
+    sub["d"] = pd.to_datetime(sub.entry_t, utc=True).dt.tz_convert(
+        "America/New_York").dt.date
+    null = []
+    for _ in range(n_perm):
+        s = sub.groupby("d")["pos"].transform(
+            lambda x: pd.Series(rng.permutation(x.values), index=x.index))
+        if s.sum() in (0, len(s)):
+            continue
+        null.append(sub.ret[s == 1].mean() - sub.ret[s == 0].mean())
+    null = np.array(null)
+    print(f"within-day label permutation ({len(null)} draws): p="
+          f"{(null >= obs).mean():.4f}, null sd {null.std() * 100:.2f}pp")
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -253,6 +408,14 @@ def main(argv=None) -> int:
     ap.add_argument("--capital", type=float, default=80.0)
     ap.add_argument("--slots", type=int, default=2)
     ap.add_argument("--max-trades", type=int, default=20)
+    ap.add_argument("--max-bars", type=int, default=MAX_HOLD_BARS,
+                    help="hold cap in bars (trading minutes)")
+    ap.add_argument("--max-wall-min", type=int, default=MAX_HOLD_WALL_MIN,
+                    help="hold cap in elapsed clock minutes; 0 = unlimited")
+    ap.add_argument("--grid", action="store_true",
+                    help="sweep slots x hold instead of running one config")
+    ap.add_argument("--cohorts", action="store_true",
+                    help="test whether the grader's labels separate returns")
     ap.add_argument("--out", default=None)
     args = ap.parse_args(argv)
 
@@ -269,10 +432,26 @@ def main(argv=None) -> int:
         if p.exists():
             bars_by[tkr] = pd.read_parquet(p)
 
-    tr, sk = simulate(cands, bars_by, args.capital, args.slots, args.max_trades)
+    if args.cohorts:
+        all83 = pd.read_parquet(root / "classified_final.parquet")
+        all83["filed_utc"] = pd.to_datetime(all83["filed_et"], utc=True)
+        for tkr in all83["ticker"].unique():
+            p = bars_dir / f"{tkr}.parquet"
+            if tkr not in bars_by and p.exists():
+                bars_by[tkr] = pd.read_parquet(p)
+        cohorts(all83, bars_by, args)
+        return 0
+
+    if args.grid:
+        grid(cands, bars_by, args)
+        return 0
+
+    tr, sk = simulate(cands, bars_by, args.capital, args.slots, args.max_trades,
+                      args.max_bars, args.max_wall_min)
     report(tr, sk, args.capital,
            f"grades={','.join(sorted(grades, key=lambda g: GRADE_ORDER[g]))}  "
-           f"candidates={len(cands)}")
+           f"candidates={len(cands)}  slots={args.slots}  "
+           f"hold={args.max_bars}bars/{args.max_wall_min or '-'}wall")
 
     if args.out and not tr.empty:
         tr.to_parquet(args.out)
