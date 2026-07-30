@@ -383,3 +383,136 @@ panel plus the latency study both say that filings which have already moved are
 where the losses concentrate (−2.59% to −3.30% for filings up ≥2% before entry).
 One AMIX does not overturn that; it explains why the tail is worth measuring
 separately rather than trading.
+
+---
+
+# Addendum 2: selecting for the tail, then letting winners run
+
+Removing the profit target only pays if the filings it is applied to can
+actually produce a tail. So: rank filings by ex-ante moonshot propensity, take
+the top slice, exit with a trailing stop and no target.
+
+## Features fixed before measuring, and one of them was wrong
+
+Picking predictors after seeing which filings ran is how you fit noise on 83
+observations. Four features, chosen on mechanical grounds and stated in
+`moonshot_select.py` before any of this was run:
+
+| feature | reason it should predict tail size |
+|---|---|
+| `pre_vol` | Realised vol of the stock's own minute returns over the prior 5 sessions. A name that moves 0.4%/day does not produce 20% because a release was good. This is the scale parameter of the whole distribution. |
+| `illiq` | Prior-session dollar volume, inverted. Depth absorbs demand; thin books make tails. |
+| `cheap` | Reciprocal price. A $2 stock moves in ticks that are whole percents. |
+| `binary` | Step change (merger, FDA, contract, financing, going concern) vs recurring disclosure (earnings, dividends, officer changes). Assigned from item codes and filing text, never from the return. |
+
+Equal-weight rank average, no fitted coefficients.
+
+**`binary` — the catalyst-type feature — carries no tail information at all.**
+
+| selector | median ceiling | ≥10% hit rate | p vs random |
+|---|---|---|---|
+| `pre_vol` alone | +5.95% | **65%** | **0.0001** |
+| `cheapness` alone | +4.17% | 65% | **0.0000** |
+| `illiquidity` alone | +3.76% | 50% | 0.0185 |
+| **`binary` alone** | +0.80% | **25%** | **0.7588** |
+| composite (all four) | +3.52% | 60% | 0.0008 |
+| composite without `binary` | +4.17% | 60% | 0.0008 |
+| *(base rate, whole pool)* | +1.50% | *29%* | — |
+
+A binary catalyst hits ≥10% **less often than the base rate**. Splitting the
+pool on it gives +4.33% median ceiling for step changes against +4.35% for
+routine disclosure — no separation whatsoever. Dropping it from the score makes
+the median-based test go from p = 0.079 to p = 0.033.
+
+**The stock predicts the tail. The catalyst does not.** That is the opposite of
+the hypothesis, and it is the most useful thing in this addendum: what a filing
+*is about* tells you much less about how far the price can travel than how far
+that particular stock normally travels.
+
+## Cross-sectionally the selection works
+
+Top 20 of 80 by composite score, exit `trail 20%`, no target:
+
+| | n | mean | median | win | ≥10% ceiling | best |
+|---|---|---|---|---|---|---|
+| **selected** | 20 | **+11.10%** | +3.52% | 75% | **60%** | +113.1% |
+| not selected | 60 | +0.02% | +0.87% | 57% | 18% | +12.5% |
+| whole pool | 80 | +2.79% | +1.50% | 61% | 29% | +113.1% |
+
+Against 20,000 random picks of 20 from the same pool: **p = 0.0006** on the
+mean, **p = 0.0008** on the ≥10% hit rate.
+
+The mean is fragile and the hit rate is not:
+
+| variant | mean | p | ≥10% | p |
+|---|---|---|---|---|
+| all 80, top 20 | +11.10% | 0.0006 | 60% | 0.0008 |
+| AMIX removed | +5.88% | 0.0016 | 60% | **0.0004** |
+| traps excluded | +4.72% | 0.0118 | 55% | **0.0014** |
+
+AMIX alone is +5.66pp of the +11.10%. The *return* estimate is one name; the
+*hit rate* survives removing it, excluding traps, and a median-based test on the
+no-`binary` score.
+
+## But it does not survive an $80 account
+
+Removing the target roughly doubles how long positions are held:
+
+| exit rule | median hold | 75th pct | stops | targets | time exits |
+|---|---|---|---|---|---|
+| 6% target / 10% stop | 125.5h | 277.5h | 14 | 28 | 41 |
+| trail 20% | **196.3h** | 360.5h | 8 | 0 | **75** |
+
+The trailing stop almost never fires — 75 of 83 exits are the 10-session cap.
+"Trail 20%" is in practice "hold ten sessions". At a 196-hour median hold you
+get about **3.7 trades per slot per month**.
+
+Running it chronologically with causal selection — each filing ranked against
+only the `pre_vol` of filings already seen, never the month's distribution:
+
+| slots | size | pctile | trades | end $ | total | mean | t | caught AMIX? |
+|---|---|---|---|---|---|---|---|---|
+| 3 | $26.67 | 0.70 | 6 | 84.96 | +6.19% | +3.34% | +0.53 | no |
+| 6 | $13.33 | 0.70 | 9 | 83.52 | +4.41% | +3.02% | +0.67 | no |
+| 8 | $10.00 | 0.70 | 12 | 83.08 | +3.86% | +2.70% | +0.71 | no |
+| 12 | $6.67 | 0.00 | 17 | 83.93 | +4.91% | +3.46% | +1.50 | no |
+| 16 | $5.00 | 0.70 | 21 | 82.48 | +3.10% | +2.45% | +1.03 | **no** |
+
+**AMIX never trades in any configuration.** At 16 slots, 47 of 80 filings are
+refused a slot, and the refusals include AMIX (+113%), IPW, and both FATNs. The
+moonshots arrive when the book is already full.
+
+The capacity this actually needs:
+
+| pool | max concurrent positions | capital at $40/position | slot size on $80 |
+|---|---|---|---|
+| take everything | 59 | $2,360 | $1.36 |
+| top 30% by `pre_vol` | **21** | **$840** | $3.81 |
+
+**That is the finding.** The cross-sectional edge is real and the exit rule is
+right, but harvesting it needs roughly $840, not $80. At $80 the choice is
+between few slots that miss the moonshots and many slots holding $5 positions —
+four shares of IPW at $1.05, where a one-cent spread is a full percent and any
+commission is fatal.
+
+## What this changes
+
+**The target is not the binding constraint. Capacity is.** Removing the 6%
+target was correct — it beat the target on every variant — but it converts a
+throughput problem into a capital problem, and the second is harder on $80.
+
+**Two bugs were fixed getting here**, both of which had moved numbers:
+`portfolio()` joined filings on ticker alone, so a name with two filings in the
+window cartesian-joined and the surviving row carried the other filing's
+timestamp, silently moving the entry. And `pre_event_features` drops
+zero-volume bars before estimating volatility — leaving them in understates vol
+through long runs of unchanged prints and overstates depth.
+
+**`pre_vol` alone is the honest selector**, not the four-feature composite. It
+is stronger on every robust measure (65% hit rate, p = 0.0001; median +5.95%,
+p = 0.0032), and it needs no judgement about what a filing means. Reported here
+as the post-hoc simplification it is — it was one of four pre-specified
+features, not chosen after the fact, but it *was* promoted after seeing the
+comparison.
+
+**Still one month, still 80 filings, still needs a second window.**
