@@ -103,16 +103,50 @@ with nature.
   reported only speed.
 - **PINNs** have not beaten classical solvers on accuracy *or* solution time in
   controlled comparison (Grossmann et al. 2024).
-- **MLIPs** reach near-DFT accuracy in-distribution — MACE-OFF23-large at
-  0.5–1.0 meV/atom — but degrade ~4× out-of-distribution (45 → 176 meV/Å) via
-  systematic potential-energy-surface softening. On rMD17 aspirin, force-component
-  std is 1273.24 meV/Å, so MACE/NequIP's 2.1–2.3 meV/Å **is** ~0.17%, clearing
-  <1% by ~6×.
+- **MLIPs** reach near-DFT accuracy in-distribution but degrade ~4× out-of-distribution
+  (45 → 176 meV/Å) via systematic potential-energy-surface softening. On rMD17
+  aspirin at the field-standard 1,000-config split, against an independently
+  re-measured force-component std of 1272.9–1273.2 meV/Å: **MACE 6.6 meV/Å =
+  0.518%**, Allegro 7.3 = 0.573%, NequIP 8.2 = 0.644%. So the margin over the 1%
+  bar is **1.4–1.9×, not 6×** — the 2.1–2.3 meV/Å figures often quoted are other
+  molecules. Non-equivariant SchNet at 14.3 meV/Å = 1.12% **fails** the bar.
 - **On CPU, MACE runs slower than this repo's own classical force field.**
   Measured here: MACE-MP-0-medium on aspirin (21 atoms) = 3.47 s/call.
 - Every family listed is trained on the output of the classical simulation that
   was rejected. MPtrj = 1.58M DFT structures; OMat24 = ~110M calcs at >400M
   core-hours.
+
+### What "<1%" turns out to mean (adversarial verification)
+
+A dedicated refutation pass decomposed the claim. It survives in three places and
+is **refuted in four**:
+
+| claim | status |
+|---|---|
+| latency in seconds | **established**, ~5 orders of margin |
+| <1% rel-L2 on a *fixed-coefficient*, smooth, dissipative 1–2D PDE, in-distribution | **established** |
+| <1% force-component MAE for one molecule vs *its own* DFT reference | **established**, margin 1.4–1.9× |
+| <1% vs **nature** or any gold standard | **refuted — nowhere, in any domain** |
+| <1% on any **derived/integrated** observable | **refuted** |
+| <1% with **physical parameters varying** | **refuted** |
+| <1% **out of distribution**, turbulent, or oscillatory | **refuted** |
+
+The sharpest single datapoint: the original MD17 and revised rMD17 labels **for
+identical aspirin geometries** differ by 133.41 meV/Å — 10.48% of the force std,
+with a systematic 4.3% scale factor — which is **20× larger than MACE's headline
+error**. And PBE/def2-SVP itself gets ethanol's gauche–trans conformer ordering
+*qualitatively* wrong (CCSD(T) +45 vs PBE −129 cm⁻¹). Sub-1% describes agreement
+with a specific solver or a specific DFT input file, never with the world.
+
+On derived quantities: phonon vibrational free energy 2.19 meV/atom at 300 K
+rising to 9.30 at 1000 K with documented systematic bias; thermal conductivity
+best κ-SRME 9.3–11.9%, with eqV2-M at 177% while ranking near the top on
+stability; vorticity 36.1%; coarse-grained free energies 58× chemical accuracy.
+**The quantity that clears 1% is not a quantity anyone wants.**
+
+On varying parameters: 1.5% best case *even when handed the true parameter*,
+3.6–18% when inferred. A 20% viscosity shift took an FNO from 0.0999% to
+**9.9165%**.
 
 ### Speed was never the problem
 
@@ -120,6 +154,65 @@ Inference is over-satisfied by ~5 orders of magnitude: 404,875 configurations/s
 for a 474k-param energy surrogate, i.e. 2.5 µs per prediction. **"In seconds" is
 free. "<1% error" is the whole difficulty**, and it holds only inside the
 training distribution.
+
+---
+
+## Part 2b — the result that actually answers "just like equations"
+
+Three competing proposals were scored by two independent judges. The
+**equation-discovery** proposal won on every axis (physics realism 9/9,
+feasibility 10/10, meets-goal 9/8, honesty 9/10), and — unlike the others — its
+headline **reproduced independently**: one judge reran it unmodified and got
+0.0209% against a claimed 0.0208% in 2.2 s; the other wrote their own 60-line
+STLSQ from scratch against P11's generator, fit in **0.53 s**, and recovered the
+equation.
+
+Sparse regression (SINDy / PDE-FIND) on the same Fisher-KPP problem where the
+neural surrogate reaches 0.89%:
+
+| | measured |
+|---|---:|
+| coefficient recovery, D and r, 20 trajectories | **0.07–0.27%** in 0.23 s |
+| hidden per-trajectory r from a *single* 41-frame trajectory | 0.070% mean |
+| 30-step rollout, in-distribution | **0.0208%** |
+| 30-step rollout, **out of distribution** | **0.0172%** |
+| at 100× the training horizon | 0.1762% |
+| reaction rate pushed 2–3.3× outside the fitted range | 0.0658–0.1020% |
+| transferred across 32×32 / 64×64 / 96×96 grids | 0.0208–0.0213% |
+| cost to evaluate the recovered equation | ~10 µs; 30-step rollout ~0.3 ms |
+
+Two things here are decisive. It is **~40× more accurate** than the neural
+surrogate on the identical problem. And it is *no worse out of distribution than
+in* — 0.0172% vs 0.0208% — because what it returns **is an equation**. That is
+the property the whole request was reaching for, and no interpolating surrogate
+has it: a 20% viscosity shift takes an FNO from 0.0999% to 9.9165%, a 99×
+degradation, while the recovered equation extrapolates 2–3.3× in its parameter
+and stays under 0.11%.
+
+**The measured failure modes, which are severe and mostly silent:**
+
+- **Library misspecification is silent and confident.** With a `sin(4u)` term
+  absent from the candidate library, STLSQ returned a 6-term equation at
+  **R² = 0.99976** — passing every check while being wrong. This is the same
+  hazard as M1/M2 in the pilot, and it is the dominant risk.
+- **It needs clean data.** ~0.13% coefficients at 0.1–1% noise, 1.438% at 3%
+  (already missing the bar), total support collapse to 11.777% at 5%.
+- **Sparsity selection is not automatic.** BIC over-selected at *every* noise
+  level tested, retaining spurious terms even on noiseless data.
+- **It does not scale in variable count.** AI Feynman's 9-variable gravitation
+  case needed 10⁶ points and 5,975 s. No credible path to high dimensions.
+- **On realistic sampling ranges** (SRSD) the best methods get 50–60% Easy,
+  17.5–30% Medium, **4% Hard**.
+- Everything is still measured against a numerical solver, not nature —
+  recovering P11's coefficients to 0.1% recovers *explicit Euler's* law.
+
+**A falsification worth recording.** The ADRN-maximalist proposal's one apparent
+win — a hidden-parameter conditioning loop cutting rollout error 10.49% → 3.64% —
+**did not survive reseeding**. `armC_matched.py` hardcodes `torch.manual_seed(0)`;
+both judges reran at seeds 1/2/3 and got 10.65% / 12.80% / 16.87%. The effect was
+a seed artifact. Separately, even the *oracle* arm handed the true hidden
+parameter for free reached only 1.53% — so for neural surrogates with varying
+physical parameters, perfect system identification may still not clear 1%.
 
 ---
 
@@ -347,6 +440,18 @@ alone confers nothing.
 
 ## Part 5 — what I would actually do
 
+0. **Run the equation-discovery test first.** It is the cheapest and most
+   goal-aligned thing here: PDE-FIND on P13's 2-D Schrödinger data — the repo's
+   *worst* neural result (43.31% at step 30) and the only ground truth in the
+   repo accurate to machine precision, so the label-quality objection does not
+   apply. Reuse P13's split-step Fourier generator unchanged but save at
+   dt=0.005 rather than 0.05 so the central-difference estimate of ψ_t does not
+   alias. Library `[lap(ψ), V·ψ, ψ, |ψ|²ψ]`; truth is
+   ψ_t = (i/2)∇²ψ − iVψ. **Pre-registered pass:** both coefficients within 1%
+   *and* 30-step rollout on a held-out wavepacket <1% rel-L2. **Then immediately
+   re-run with `V·ψ` deleted from the library** — if that still returns a
+   confident fit, the silent-misspecification failure is live and gates
+   everything downstream. Cost: 3–8 minutes.
 1. **Read `derivationmap.net/other_projects` and Falkenhainer & Forbus 1991,
    "Compositional Modeling: Finding the Right Model for the Job"** before writing
    more design. The proposal is a rediscovery of compositional modelling; that
