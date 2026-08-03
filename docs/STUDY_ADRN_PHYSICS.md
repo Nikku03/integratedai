@@ -68,7 +68,36 @@ times gives three different answers, because `_plastic_update` mutates `W_f`,
 
 Also: the neurons never interact. `S` is never fed back as `s_in` — `L318` re-feeds
 the encoder output every one of the T steps. ADRN as run is a bank of independent
-LIF units, not a recurrent workspace.
+LIF units, not a recurrent workspace. The eligibility trace ADRN is *named for*
+has **exactly zero effect on the forward output** — corrupting it by a factor of
+1e3 changes the output by 0.000000e+00 — while consuming 90.8–99.8% of state
+memory. It is the memory bind and it contributes nothing. Adaptive halting never
+fires (8/8 steps).
+
+### Three of those arguments are weaker than stated
+
+An adversarial pass tried six ways to refute the conclusion and could not — but
+it corrected the reasoning, and the corrections matter:
+
+- **"No amount of training removes the staircase" is measurably false.** Median
+  nonzero jump falls from 5.85% of range untrained at N=32 to **0.507%** after
+  training. Scale and training do smooth it substantially.
+- **The surrogate gradient is a biased-but-functional estimator, not a
+  fabrication.** It is standard practice for spiking nets, and it did train ADRN
+  to 2.03% on a real task.
+- **Non-determinism applies only with plasticity enabled.** With `m_vec=None`
+  ADRN is exactly deterministic (0.000e+00 drift).
+
+**What survives is one exact objection and one head-to-head.** The exact one:
+ADRN's true input-derivative is identically zero (finite differences
+0.000000e+00 for ε = 1e-8 through 1e-3, at both N=32 and N=256), so F = −∇E is
+unreachable by construction, at any scale. The decisive one: on Lennard-Jones
+pair energy — one scalar in, one scalar out, the task *most* favourable to ADRN
+because no symmetry is required — an 8,513-param MLP reached **0.186%** MAE/std
+in 5.3 s, while ADRN with 21,401 params reached **2.030%** after 600 s and 7,682
+optimizer steps. **10.9× worse, at 2.5× the parameters and 113× the wall clock.**
+No mechanism was found that is both useful for physics and unavailable to an
+equivariant GNN.
 
 ---
 
@@ -181,13 +210,40 @@ neural surrogate reaches 0.89%:
 | transferred across 32×32 / 64×64 / 96×96 grids | 0.0208–0.0213% |
 | cost to evaluate the recovered equation | ~10 µs; 30-step rollout ~0.3 ms |
 
-Two things here are decisive. It is **~40× more accurate** than the neural
-surrogate on the identical problem. And it is *no worse out of distribution than
-in* — 0.0172% vs 0.0208% — because what it returns **is an equation**. That is
-the property the whole request was reaching for, and no interpolating surrogate
-has it: a 20% viscosity shift takes an FNO from 0.0999% to 9.9165%, a 99×
-degradation, while the recovered equation extrapolates 2–3.3× in its parameter
-and stays under 0.11%.
+It is **~40× more accurate** than the neural surrogate on the identical problem,
+and *no worse out of distribution than in* — 0.0172% vs 0.0208%.
+
+**But the reason is not "symbolic extrapolates, neural interpolates."** That
+framing was checked adversarially and refuted. Above ~100 dimensions
+interpolation *almost surely never happens* — every test point lies outside the
+training convex hull (Balestriero, Pesenti & LeCun, arXiv:2110.09485) — and the
+objects here are 63 DOF (rMD17 aspirin) to 1024+ (a 32×32 field). These models
+extrapolate constantly and it usually works.
+
+What actually predicts success is **whether the hypothesis class encodes the true
+structure along the axis being shifted.** Both sides of the supposed dichotomy
+cut both ways:
+
+- Neural surrogates extrapolate **exactly, provably, and without degradation**
+  along any axis the architecture hard-codes. An E(3)-equivariant potential is
+  exactly right on every rotation it never saw — by construction, not
+  approximation. Locality plus extensivity carry a fit on ~10²-atom cells to
+  44–126M atoms. MLIPs trained on butane–octane predict unseen longer alkanes at
+  3–6 meV/Å.
+- Symbolic regression with a **misspecified library extrapolates confidently
+  wrong**: measured R² = 0.99976 in-range and **407.51% error just outside**.
+
+What breaks, in either paradigm, is any axis learned purely from data: a physical
+parameter (FNO 0.0999% → 9.9165% on a 20% viscosity shift), a chemistry outside
+training (MACE-MP-0 zero-shot on aspirin 213.6 meV/Å = 16.8% of force std vs
+2.1 in-domain), or an unobserved intensity regime — FourCastNet with Cat 3–5
+cyclones removed *globally* bottoms out at ~980 hPa against <970 observed, 100%
+false negatives, yet forecasts them correctly when they were removed from only
+one basin, because it saw that intensity elsewhere.
+
+So the honest statement is: sparse regression wins here because the true equation
+is **in its library span**, which is a structural assumption that can be wrong
+silently — not because being symbolic confers extrapolation.
 
 **The measured failure modes, which are severe and mostly silent:**
 
@@ -440,18 +496,34 @@ alone confers nothing.
 
 ## Part 5 — what I would actually do
 
-0. **Run the equation-discovery test first.** It is the cheapest and most
-   goal-aligned thing here: PDE-FIND on P13's 2-D Schrödinger data — the repo's
-   *worst* neural result (43.31% at step 30) and the only ground truth in the
-   repo accurate to machine precision, so the label-quality objection does not
-   apply. Reuse P13's split-step Fourier generator unchanged but save at
-   dt=0.005 rather than 0.05 so the central-difference estimate of ψ_t does not
-   alias. Library `[lap(ψ), V·ψ, ψ, |ψ|²ψ]`; truth is
-   ψ_t = (i/2)∇²ψ − iVψ. **Pre-registered pass:** both coefficients within 1%
-   *and* 30-step rollout on a held-out wavepacket <1% rel-L2. **Then immediately
-   re-run with `V·ψ` deleted from the library** — if that still returns a
-   confident fit, the silent-misspecification failure is live and gates
-   everything downstream. Cost: 3–8 minutes.
+0. **Do not run the Schrödinger PDE-FIND test as first designed.** A verifier
+   built and ran it rather than arguing about it, and it does not test what it
+   claims. Three findings:
+   - **Runtime was wrong by 100–400×.** Whole experiment including a three-dt
+     sweep: **1.22 s wall**, not 3–8 minutes. Data generation is 0.077 s; the
+     least-squares solve is 0.31 s — the fit dominates, not the generation.
+   - **The result is a predetermined numerical-analysis outcome, not an
+     empirical finding.** The true equation lies exactly in the library span, the
+     data was generated by that exact equation on that exact grid, the spectral
+     Laplacian is exact, and V is supplied as a known column — so least squares
+     *must* recover the coefficients up to O(dt²) truncation, which is precisely
+     what happens: 6.53% → 0.429% → 0.113% for dt = 0.05/0.01/0.005 (ratio 3.81
+     against a predicted 4.00). The three "independent" pre-registered criteria
+     are one criterion reported three ways; they flip together as a function of
+     dt alone. The kill criterion can only fire from a numerical-differentiation
+     blunder.
+   - **The comparison against P13 is invalid.** P13's networks are never given V
+     — `NetUnitary` must infer V(x) from the data — while PDE-FIND is handed V as
+     a known column. Quoting 0.11% against P13's 43.31% is not a contest.
+
+   Credit where due: at P13's shipped dt=0.05 all three gates *do* fail (6.53%,
+   6.32%, 12.10%), so the dt reduction was a real and correctly identified fix.
+
+   **What to run instead** is the half that is actually informative: the
+   **misspecification control**. Delete `V·ψ` from the library and see whether it
+   still returns a confident fit — the measured hazard is R² = 0.99976 in-range
+   with 407.51% error just outside. And if a comparison against P13 is wanted, V
+   must be withheld from both arms. Cost is seconds either way.
 1. **Read `derivationmap.net/other_projects` and Falkenhainer & Forbus 1991,
    "Compositional Modeling: Finding the Right Model for the Job"** before writing
    more design. The proposal is a rediscovery of compositional modelling; that
