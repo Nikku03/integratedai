@@ -73,7 +73,41 @@ def main(argv=None) -> int:
     daily["n_filings"] = (t.groupby(["ticker", "date"]).size()
                           .reset_index(drop=True).to_numpy())
 
+    # "First trading day at or after" needs a forward search, not an equality
+    # join. Joining on the exact date silently drops any filing whose
+    # availability date is not itself a session for that ticker -- holidays,
+    # dates outside the ticker's price history, days it did not trade -- which
+    # was 197 of 7,601 filings, 2.6%. Snap each filing forward to the next
+    # panel row for its ticker first, then the equality join is correct.
     keys["_row"] = np.arange(len(keys))
+    ks = keys.sort_values(["ticker", "date"])
+    panel_dates = {t: g["date"].to_numpy() for t, g in ks.groupby("ticker", sort=False)}
+    snapped, drop = [], 0
+    for tk, d in zip(daily["ticker"].to_numpy(), daily["date"].to_numpy()):
+        pd_ = panel_dates.get(tk)
+        if pd_ is None:
+            snapped.append(np.datetime64("NaT"))
+            drop += 1
+            continue
+        j = np.searchsorted(pd_, d, side="left")
+        if j >= len(pd_):
+            snapped.append(np.datetime64("NaT"))
+            drop += 1
+        else:
+            snapped.append(pd_[j])
+    daily["date"] = snapped
+    moved = int((pd.notna(daily["date"])).sum())
+    print(f"  snapped {moved:,} filing-days onto the next session "
+          f"({drop:,} past the end of their ticker's history)")
+    # Snapping can collide two filing-days onto one session -- a Saturday and
+    # the following Monday both land on Monday. Collapse them the same way
+    # same-day filings were collapsed above: max for the flags and magnitudes,
+    # but a sum for the count, because two filings did arrive.
+    daily = daily.dropna(subset=["date"])
+    how = {c: "max" for c in daily.columns if c not in ("ticker", "date")}
+    how["n_filings"] = "sum"
+    daily = daily.groupby(["ticker", "date"], as_index=False).agg(how)
+
     m = keys.merge(daily, on=["ticker", "date"], how="left")
     m = m.sort_values(["ticker", "date"]).reset_index(drop=True)
     covered = m.ticker.isin(set(t.ticker.unique()))
