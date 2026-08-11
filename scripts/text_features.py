@@ -163,6 +163,10 @@ def main(argv=None) -> int:
     ap.add_argument("--user-agent", required=True)
     ap.add_argument("--workers", type=int, default=8)
     ap.add_argument("--limit", type=int, default=0, help="0 = all")
+    ap.add_argument("--ticker-frac", type=float, default=0.0,
+                    help="sample this fraction of TICKERS and keep all of their "
+                         "filings; 0 = every ticker")
+    ap.add_argument("--seed", type=int, default=7)
     ap.add_argument("--all-sic", action="store_true",
                     help="do not restrict to biotech (18h, not 2h)")
     args = ap.parse_args(argv)
@@ -197,6 +201,23 @@ def main(argv=None) -> int:
     if not args.all_sic:
         g = g[g.sic.isin(BIO_SIC)]
     g = g[g.url.notna()].reset_index(drop=True)
+
+    # Subsampling by TICKER, never by filing.
+    #
+    # Taking a random 10% of filings would corrupt every derived feature: the
+    # trailing 5/20/60-session counts and days-since-last-filing are computed
+    # from whatever filings are present, so a company that filed weekly would
+    # look like one that filed rarely, and the error would be largest for
+    # exactly the busiest names. Keeping every filing for a subset of tickers
+    # costs universe breadth instead, which is honest and recoverable.
+    if args.ticker_frac and 0 < args.ticker_frac < 1:
+        names = np.sort(g.ticker.unique())
+        rng = np.random.default_rng(args.seed)
+        keep = rng.choice(names, max(1, int(round(len(names) * args.ticker_frac))),
+                          replace=False)
+        g = g[g.ticker.isin(set(keep))].reset_index(drop=True)
+        print(f"  sampled {len(keep)} of {len(names)} tickers "
+              f"(seed {args.seed}), keeping every filing for each", flush=True)
     if args.limit:
         g = g.head(args.limit)
     print(f"  {len(g):,} filings, {g.ticker.nunique()} tickers", flush=True)
