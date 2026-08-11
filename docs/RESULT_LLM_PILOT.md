@@ -1,11 +1,18 @@
 # Reading the filings with a model instead of a regex
 
 The regex arm is closed. Twenty-seven hand-written patterns per filing moved the
-walk-forward ranking by **−0.217pp** with a confidence interval from −0.838 to
-+0.412, and a text-only model reached **0.5366** separability against **0.5365**
+walk-forward ranking by **−0.333pp** with a confidence interval from −0.840 to
++0.212, and a text-only model reached **0.5379** separability against **0.5365**
 for price alone — the same number, meaning the two carried the *same*
 information rather than complementary information. The patterns recovered what
 kind of filing it was. The panel already knew that from the 8-K item codes.
+
+(Those are the figures after the merge defect described at the end of this
+document was fixed. Before it, the same test read −0.217pp and 0.5366 against
+0.5365. Recovering the 197 dropped filings moved nothing, which is the outcome a
+verification run wants: the fix is in and the conclusion never depended on it.
+The text-only arm is worse than redundant on its own — **−0.634% per trade,
+positive in 5 of 14 blocks, IR −0.58**.)
 
 So the question became whether a reader gets more out of the same documents. The
 full corpus is 7,601 filings and reading it costs real money, so the cheap test
@@ -159,12 +166,13 @@ resumes free, and emits the same table shape as `text_features.py` so
 
 ## Known imperfections
 
-* **2.6% of filings never reach the panel.** `merge_text_panel.py` joins on an
-  exact ticker-date, so 197 of 7,601 filings whose availability date is not a
-  trading day for that ticker are silently dropped. `llm_pilot.py` uses a
-  forward search instead and does not lose them. The share is too small to
-  explain the regex arm's null, but the merge should adopt the forward search
-  before the full LLM arm is scored.
+* **2.6% of filings never reached the panel — fixed, and it changed nothing.**
+  `merge_text_panel.py` joined on an exact ticker-date while documenting "first
+  trading day at or after", silently dropping 197 of 7,601 filings whose
+  availability date was not a session for that ticker. It now snaps each filing
+  forward to the next session, collapsing collisions and summing rather than
+  maxing the filing count. Re-running the whole evaluation on the corrected
+  panel left the verdict where it was.
 * **The reader here was in-context, not an API call.** Same model family and the
   same documents, but a production run is not bit-identical to this pilot.
 * **64 filings.** Every interval in this document is wide and says so.

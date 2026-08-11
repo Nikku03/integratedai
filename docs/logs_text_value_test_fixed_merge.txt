@@ -1,0 +1,24 @@
+108 price/filing features, 96 text features
+covered eligible rows 79,439 on 70 tickers
+26,480 samples after stride 3
+26,478 with a realised return
+
+================================================================================================
+1. RANKING -- walk-forward, daily top pick, same rows for every arm
+================================================================================================
+  price only   ret/trade  +1.053%   excess  +1.061%   blocks 10/14   IR  0.83
+  + text       ret/trade  +0.720%   excess  +0.728%   blocks 11/14   IR  0.55
+  text only    ret/trade  -0.634%   excess  -0.626%   blocks 5/14   IR -0.58
+
+  text minus no-text, per block: -0.333pp   95% CI [-0.840, +0.212]   P(<=0) = 0.8921
+
+================================================================================================
+2. SEPARABILITY -- can winners be told from losers? (0.5302 was the no-text number)
+================================================================================================
+  price only   out-of-sample AUC 0.5365
+  + text       out-of-sample AUC 0.5407
+  text only    out-of-sample AUC 0.5379
+
+  (this arm uses all eligible covered rows, not only picks, so it is
+   not numerically identical to the 0.5302 -- the comparison that
+   matters is price-only against +text on these same rows)
