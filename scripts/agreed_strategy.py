@@ -160,9 +160,18 @@ def main(argv=None) -> int:
     ap.add_argument("--stride", type=int, default=10)
     ap.add_argument("--quantile", type=float, default=QUANTILE)
     ap.add_argument("--ks", default="1,2,3,5")
+    ap.add_argument("--horizon", type=int, default=HORIZON,
+                    help="sessions held; 10 is the project default, 21 is a month")
     args = ap.parse_args(argv)
     root = Path(args.root)
     ks = [int(x) for x in args.ks.split(",")]
+    H = args.horizon
+    # A label runs H sessions forward, so the embargo has to cover it in
+    # calendar time or training rows leak into the test block. Five sessions is
+    # seven days, and the max() keeps the ten-session case at the fourteen days
+    # every earlier result used, so those stay comparable.
+    embargo = max(14, int(np.ceil(H * 7 / 5)))
+    print(f"horizon {H} sessions, embargo {embargo} calendar days", flush=True)
 
     from sklearn.ensemble import HistGradientBoostingRegressor
 
@@ -174,7 +183,7 @@ def main(argv=None) -> int:
     prices = prices.sort_values(["ticker", "date"]).reset_index(drop=True)
 
     print("computing daily paths for every candidate", flush=True)
-    paths_all = daily_paths(prices, idx)
+    paths_all = daily_paths(prices, idx, H)
     ret_all = np.nanprod(1.0 + np.nan_to_num(paths_all, nan=0.0), axis=1) - 1.0
     alive = np.isfinite(paths_all[:, 0])
     ret_all = np.where(alive & (np.abs(ret_all) <= 3.0), ret_all, np.nan)
@@ -193,7 +202,7 @@ def main(argv=None) -> int:
     chk = np.random.default_rng(0).choice(len(idx), 3000, replace=False)
     gap = []
     for a in chk:
-        r, _, _ = _walk(_o, _h, _l, _c, _v, _t, int(idx[a]) + 1, HORIZON,
+        r, _, _ = _walk(_o, _h, _l, _c, _v, _t, int(idx[a]) + 1, H,
                         None, None, None, None, None)
         if np.isfinite(r) and abs(r) <= 3.0 and np.isfinite(ret_all[a]):
             gap.append(abs(r - ret_all[a]))
@@ -223,7 +232,7 @@ def main(argv=None) -> int:
     preds = np.full(len(tab), np.nan)
     y = tab.ret.to_numpy()
     for b0, b1 in blocks(tab.date.max()):
-        tr = np.flatnonzero(tab.date < b0 - pd.Timedelta(days=14))
+        tr = np.flatnonzero(tab.date < b0 - pd.Timedelta(days=embargo))
         te = np.flatnonzero((tab.date >= b0) & (tab.date < b1))
         if len(tr) < 40_000 or len(te) < 500:
             continue
@@ -253,7 +262,7 @@ def main(argv=None) -> int:
                        .groupby("date").head(k).sort_values("date"))
             p = paths_all[sel.index.to_numpy()]
             s = sel.reset_index(drop=True)
-            eq = equity_curve(s, p, all_dates, k)
+            eq = equity_curve(s, p, all_dates, k, H)
             lab = f"k={k} {'3.02 veto' if veto else 'no veto '}"
             r = summarise(eq, s, lab)
             r["per_trade"] = float(s.ret.mean()) - 2 * SIDE_COST
@@ -340,11 +349,12 @@ def main(argv=None) -> int:
     print("\n" + "=" * 108)
     print("SURVIVORSHIP -- how many hidden total losses would it take?")
     print("=" * 108)
-    print("  Not one of 3,662 tickers in this panel delisted in eleven years, and")
-    print("  EDGAR carries 8,297 real deaths over the same span. The names that")
-    print("  went to zero are absent, and this strategy buys exactly that")
-    print("  population. So: mix in a fraction f of trades that actually went to")
-    print("  -100% and find where the edge disappears.")
+    print("  Not one of 3,662 tickers in this panel delisted in eleven years.")
+    print("  RESULT_SURVIVORSHIP.md counts the real rate from the Form 25 filings:")
+    print("  871 involuntary common-stock delistings in eleven years, 79 a year,")
+    print("  which at the measured 6.07x pick concentration is a hazard of about")
+    print(f"  {0.0047 * H / 10 * 100:.2f}% over a {H}-session hold. Mix in a fraction f of")
+    print("  trades that went to -100% and find where the edge disappears.")
     for r in rows:
         if not r["book"].endswith("3.02 veto"):
             continue
@@ -363,13 +373,53 @@ def main(argv=None) -> int:
     print("=" * 108)
     for _, t in log.tail(12).iterrows():
         print(f"  buy {t.date:%Y-%m-%d} open   {t.ticker:6s}   "
-              f"sell 10 sessions later   {t.net * 100:+8.2f}%")
+              f"sell {H} sessions later   {t.net * 100:+8.2f}%")
     print("\n  the ten that carried it:")
     for _, t in log.sort_values("net", ascending=False).head(10).iterrows():
         print(f"  buy {t.date:%Y-%m-%d} open   {t.ticker:6s}   {t.net * 100:+8.2f}%")
     print("\n  the ten worst:")
     for _, t in log.sort_values("net").head(10).iterrows():
         print(f"  buy {t.date:%Y-%m-%d} open   {t.ticker:6s}   {t.net * 100:+8.2f}%")
+
+    # ---- a month, both senses -------------------------------------------
+    print("\n" + "=" * 108)
+    print("MONTH BY MONTH -- how a single month behaves")
+    print("=" * 108)
+    for r in rows:
+        if not r["book"].endswith("3.02 veto"):
+            continue
+        c2 = curves[r["book"]]
+        st = pd.Series(np.r_[c2.iloc[0] - 1.0, c2.pct_change().dropna().to_numpy()],
+                       index=c2.index)
+        mo = (1 + st).resample("ME").prod() - 1
+        print(f"  {r['book']:20s} months {len(mo):>3d}   "
+              f"positive {int((mo > 0).sum())}/{len(mo)} ({(mo > 0).mean() * 100:.0f}%)   "
+              f"median {mo.median() * 100:+6.2f}%   mean {mo.mean() * 100:+6.2f}%   "
+              f"best {mo.max() * 100:+7.1f}%   worst {mo.min() * 100:+7.1f}%")
+    c2 = curves[base["book"]]
+    st = pd.Series(np.r_[c2.iloc[0] - 1.0, c2.pct_change().dropna().to_numpy()],
+                   index=c2.index)
+    mo = (1 + st).resample("ME").prod() - 1
+    print(f"\n  {base['book']} by month, last 24:")
+    for ts, v in mo.tail(24).items():
+        n = int(((log.date.dt.year == ts.year) & (log.date.dt.month == ts.month)).sum())
+        bar = ("+" if v >= 0 else "-") * min(40, int(abs(v) * 200))
+        print(f"    {ts:%Y-%m}  {v * 100:+7.2f}%  ({n:>3d} trades)  {bar}")
+
+    print("\n" + "=" * 108)
+    print("ONE MONTH IN FULL -- every trade of the last complete month")
+    print("=" * 108)
+    last = log.date.max().to_period("M") - 1
+    m1 = log[log.date.dt.to_period("M") == last]
+    if len(m1):
+        for _, t in m1.iterrows():
+            bar = ("+" if t.net >= 0 else "-") * min(30, int(abs(t.net) * 100))
+            print(f"  {t.date:%Y-%m-%d}  {t.ticker:6s} {t.net * 100:+8.2f}%  {bar}")
+        print(f"\n  {len(m1)} trades, mean {m1.net.mean() * 100:+.2f}%, "
+              f"{int((m1.net > 0).sum())} winners, "
+              f"best {m1.net.max() * 100:+.1f}%, worst {m1.net.min() * 100:+.1f}%")
+        v = float(mo.get(pd.Timestamp(last.end_time.date()), float("nan")))
+        print(f"  the book returned {v * 100:+.2f}% that month")
 
     print("\n" + "=" * 108)
     print("YEAR BY YEAR -- the primary book")
