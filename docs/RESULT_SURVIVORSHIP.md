@@ -112,8 +112,8 @@ Breakeven is **1.10%**. At the measured 6.07× the hazard is 0.28–0.47% —
 **two to four times below the level that would erase the edge**, and the
 measured denominator sits at the safer end.
 
-Turned around, the book breaks only if the picks carry **14× to 19×** the
-average delisting rate at a total loss, or **17× to 32×** at a 60–80% loss.
+Turned around, the book breaks only if the picks carry **14× to 23×** the
+average delisting rate at a total loss, or **17× to 39×** at a 60–80% loss.
 Measured, they carry 6.07×.
 
 ## The corrected book
@@ -122,23 +122,24 @@ Corrected mean per trade (measured +1.115%):
 
 | universe | m | hazard | loss 60% | loss 80% | loss 100% |
 |---|---|---|---|---|---|
-| 4,000 | 6 | 0.471% | +0.827% | +0.733% | **+0.638%** |
-| 4,000 | 10 | 0.786% | +0.635% | +0.478% | +0.321% |
-| 5,500 | 6 | 0.343% | +0.906% | +0.837% | **+0.768%** |
-| 5,500 | 10 | 0.571% | +0.766% | +0.652% | +0.537% |
+| 4,000 (floor) | 6 | 0.471% | +0.827% | +0.733% | **+0.638%** |
+| 4,000 (floor) | 10 | 0.786% | +0.635% | +0.478% | +0.321% |
+| **6,644 (measured)** | 6 | 0.284% | +0.942% | +0.885% | **+0.828%** |
+| **6,644 (measured)** | 10 | 0.473% | +0.826% | +0.731% | +0.637% |
 
 Scaling the measured +292.7% total by the ratio of corrected to measured
 per-trade mean:
 
 | universe | m | loss 60% | loss 80% | loss 100% |
 |---|---|---|---|---|
-| 4,000 | 6 | +175.8% | +145.7% | **+118.8%** |
-| 4,000 | 10 | +117.9% | +79.7% | +48.2% |
-| 5,500 | 6 | +203.7% | +179.2% | **+156.7%** |
-| 5,500 | 10 | +155.9% | +122.4% | +93.3% |
+| 4,000 (floor) | 6 | +175.8% | +145.7% | **+118.8%** |
+| 4,000 (floor) | 10 | +117.9% | +79.7% | +48.2% |
+| **6,644 (measured)** | 6 | +217.4% | +196.1% | **+176.2%** |
+| **6,644 (measured)** | 10 | +175.5% | +145.3% | +118.4% |
 
-**The seven-year return survives at roughly +120% to +200% instead of +293%** —
-a haircut of a third to a half, not an annihilation.
+**The seven-year return survives at roughly +120% to +220% instead of +293%** —
+a haircut of a quarter to a half, not an annihilation. On the measured
+denominator it is +176% even if every delisting is a total loss.
 
 ## The bias runs both ways
 
@@ -158,9 +159,10 @@ population — but it is not the one-sided catastrophe I described.
 * **The prices are still gone.** This is a rate correction, not a rebuilt panel.
   A name that fell 95% before being struck contributed nothing to the measured
   results either. Only a vendor extract fixes that.
-* **The denominator is an external anchor.** 4,000–5,500 listed US common stocks
-  is not derivable from EDGAR — 10-K filers include bond-only and unlisted
-  registrants — so it enters as a range and every figure is shown at both ends.
+* ~~The denominator is an external anchor.~~ **Fixed.** It is now counted from
+  Tiingo's keyless bulk ticker file — mean 6,644 US-listed common stocks across
+  the window. The old 4,000 is retained only as a conservative floor, and the
+  measured value makes the strategy safer, not riskier.
 * **m = 6.07 assumes hazard is uniform inside the sub-$5 band.** Deaths cluster
   below $1, and the picks are 0.0% sub-$1, which argues m is if anything
   overstated. But sub-$1 names heading to zero are themselves partly missing
