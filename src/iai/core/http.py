@@ -179,6 +179,65 @@ class HttpClient:
         log.error("giving up on %s after %d attempts", url, self.max_retries)
         return None
 
+    def post_text(
+        self,
+        url: str,
+        payload: dict,
+        headers: dict | None = None,
+        *,
+        use_cache: bool = True,
+    ) -> str | None:
+        """POST a JSON body and return the response as text, cached to disk.
+
+        FINRA's query API is the reason this exists: it is a read-only data
+        service that happens to take its filters in a POST body, and it answers
+        ``text/plain`` CSV rather than JSON despite the JSON request. Treating
+        it as a GET-equivalent is correct — the same body always returns the
+        same rows — so the cache key covers the body as well as the URL and a
+        re-run of a fetch is free.
+
+        Shares the rate limiter, the retry policy and the block-versus-miss
+        distinction with :meth:`get`, so no caller has to reimplement them.
+        """
+        path = self._key(url, {"__post__": json.dumps(payload, sort_keys=True)}, headers)
+        if use_cache and path.exists() and (time.time() - path.stat().st_mtime) < self.ttl:
+            try:
+                blob = json.loads(path.read_text())
+                return None if blob.get("miss") else blob["body"]
+            except Exception:  # noqa: BLE001 - corrupt entry, refetch
+                path.unlink(missing_ok=True)
+
+        backoff = 1.0
+        for _attempt in range(self.max_retries):
+            self.limiter.acquire()
+            try:
+                resp = self.session.post(url, json=payload, headers=headers,
+                                         timeout=self.timeout)
+                if resp.status_code == 429 or resp.status_code >= 500:
+                    time.sleep(min(float(resp.headers.get("Retry-After", backoff)), 60.0))
+                    backoff *= 2
+                    continue
+                if resp.status_code in BLOCKED_STATUSES:
+                    log.error("%s -> %s ACCESS DENIED, not caching", url, resp.status_code)
+                    time.sleep(min(backoff, 60.0))
+                    backoff *= 2
+                    continue
+                if 400 <= resp.status_code < 500:
+                    log.debug("%s -> %s (definitive)", url, resp.status_code)
+                    if use_cache and resp.status_code in CACHEABLE_MISSES:
+                        self._remember_miss(path, url, resp.status_code)
+                    return None
+                resp.raise_for_status()
+                if use_cache:
+                    path.write_text(json.dumps({"url": url, "body": resp.text}))
+                return resp.text
+            except requests.RequestException as exc:
+                log.warning("%s attempt %d failed: %s", url, _attempt + 1, exc)
+                time.sleep(backoff)
+                backoff *= 2
+        log.error("giving up on %s after %d attempts", url, self.max_retries)
+        return None
+
     def get_bytes(self, url: str, *, use_cache: bool = True, timeout: float | None = None) -> bytes | None:
         """GET a binary payload, cached to disk verbatim.
 

@@ -31,10 +31,12 @@ Three quantities, each measured rather than assumed
    trading over the counter at a fraction of its last price. Reported across a
    range rather than picked.
 
-The denominator is the weak link and is treated as one. The count of US-listed
-common stocks is not derivable from EDGAR alone — 10-K filers include bond-only
-and non-listed registrants — so it enters as a stated range and every result is
-shown across it.
+The denominator used to be the weak link. It is now measured: Tiingo publishes a
+keyless file giving the first and last date price data exists for every symbol,
+so the number of US-listed common stocks on any date can be counted rather than
+assumed. It averages 6,644 across 2015-2025 — higher than the 4,000-5,500 that
+was previously borrowed from published listing counts, which means every earlier
+hazard figure in this repo was overstated.
 """
 
 from __future__ import annotations
@@ -46,11 +48,18 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-#: Independently published counts of US exchange-listed domestic common stocks
-#: hover in this band across 2015-2025. It is an external anchor, not a
-#: measurement, so it is carried as a range and every number is shown at both
-#: ends rather than at a point.
-UNIVERSE = (4000, 5500)
+#: The denominator, no longer assumed. `iai.sources.universe` reads Tiingo's
+#: keyless supported-ticker file, which carries a first and last price date for
+#: every symbol, and counting the symbols live on each month-end gives 5,541
+#: US-listed common stocks in January 2015 rising to 7,615 in December 2025,
+#: mean 6,644. That is measured, and it is well above the 4,000-5,500 band this
+#: script previously borrowed from published listing counts -- which means the
+#: earlier hazard estimates were too high, not too low. The low end is kept as a
+#: deliberately conservative floor so the sensitivity still brackets the old
+#: assumption.
+#:
+#: Run `python3 scripts/api_check.py` to re-measure.
+UNIVERSE = (4000, 6644)
 
 #: Realised loss on an involuntary delisting. A struck stock is not
 #: automatically worthless -- it moves to the over-the-counter market, usually

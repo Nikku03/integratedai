@@ -83,8 +83,18 @@ total losses. The question is whether the real hazard clears that.
 
 Two inputs, both measured:
 
-**The rate.** 79 involuntary common-stock delistings a year against a US listed
-universe of 4,000–5,500 gives λ = **1.44% to 1.98% a year**.
+**The rate.** 79 involuntary common-stock delistings a year against the listed
+universe. That denominator was originally borrowed from published listing counts
+at 4,000–5,500, giving λ = 1.44–1.98% a year. **It is now measured** — Tiingo's
+keyless bulk ticker file carries a first and last price date for every symbol, so
+the count of live US-listed common stocks is countable: **5,541 in January 2015
+rising to 7,615 in December 2025, mean 6,644** (`scripts/api_check.py`). The
+denominator was too small, so the hazard was overstated: λ = **1.19% a year**.
+
+The same file also sizes the hole directly. The panel's 3,662 tickers are
+**60.4%** of the 6,058 US-listed stocks at the midpoint of the window, and of
+the 5,818 US-listed names with at least a year of history whose last bar falls
+in 2015–2025, **5,692 are absent from the panel**.
 
 **The over-exposure.** The picks are not a random draw — median pick price
 **$6.39** against **$30.59** for the pool, sitting in sub-$5 names **6.07×** as
@@ -95,11 +105,12 @@ Probability a given ten-session position is in a name about to be struck:
 
 | universe | λ/yr | m=1 | m=3 | **m=6** | m=10 |
 |---|---|---|---|---|---|
-| 4,000 | 1.98% | 0.079% | 0.236% | **0.471%** | 0.786% |
-| 5,500 | 1.44% | 0.057% | 0.171% | **0.343%** | 0.571% |
+| 4,000 (old assumption, kept as a floor) | 1.98% | 0.079% | 0.236% | **0.471%** | 0.786% |
+| **6,644 (measured)** | **1.19%** | 0.047% | 0.142% | **0.284%** | 0.473% |
 
-Breakeven is **1.10%**. At the measured 6.07× the hazard is 0.34–0.47% —
-**two to three times below the level that would erase the edge.**
+Breakeven is **1.10%**. At the measured 6.07× the hazard is 0.28–0.47% —
+**two to four times below the level that would erase the edge**, and the
+measured denominator sits at the safer end.
 
 Turned around, the book breaks only if the picks carry **14× to 19×** the
 average delisting rate at a total loss, or **17× to 32×** at a 60–80% loss.
