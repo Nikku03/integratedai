@@ -82,9 +82,17 @@ against the gate's +4.04%, on one or two lucky names.
 
 That k=1/k=5 disagreement is the same instability as the REM live test, and it
 means the same thing: **fifteen sessions cannot resolve an effect of this size.**
-What the window does show is that the live structure matches the historical
-structure — basket bad, ranked-inside-gate good — which is weak corroboration
-rather than confirmation.
+
+> **Correction, added after `RESULT_WEEKLY_BUDGET.md`.** I originally wrote that
+> the live window "matches the historical structure — basket bad,
+> ranked-inside-gate good". That was wrong. The +2.197% came from ranking on the
+> panel's 108 features; this live test could only rank on the REM and surge
+> blocks, because the panel's fundamentals, insider and government columns do not
+> exist for 2026. Running *that* feature set historically over thirteen blocks
+> gives −1.3pp at k=3 and −1.7pp at k=1 — it loses to the universe. So the live
+> +2.11pp was noise on a configuration that historically loses, and the
+> gate-plus-ranking result depends on the panel's non-price information rather
+> than on the gate.
 
 Gated picks, five a session:
 
