@@ -81,6 +81,51 @@ Arm B's fifteen picks:
 Real listed names with $1.3m–$118m of daily volume. The pipeline runs end to end
 on live data and the picks are plausible — which was the point of the exercise.
 
+## Five picks a session
+
+Same window, same model, `--k 5`. Seventy-five scorable trades instead of fifteen.
+
+| arm | n | mean | median | win | vs universe | 95% CI (day-clustered) | P(≤universe) |
+|---|---|---|---|---|---|---|---|
+| A REM only | 75 | +4.48% | +1.22% | 61.3% | +2.00pp | [−2.69, +7.91] | 0.251 |
+| **B REM + residual** | 75 | **+4.62%** | +1.71% | 58.7% | **+2.14pp** | [−3.04, +8.04] | 0.238 |
+| C direct MLP | 75 | **+5.51%** | +4.97% | 62.7% | **+3.03pp** | [−0.67, +6.90] | **0.055** |
+| the universe | 4,118 | +2.48% | | | | | |
+
+Now **all three beat the pool** on the point estimate, by two to three percentage
+points. And **none of them clears significance.** Every interval contains zero;
+C comes closest at P = 0.055.
+
+The intervals are clustered by session, which is not a technicality. Five picks
+taken on the same morning share that day's market move, so this is **fifteen
+independent observations, not seventy-five**. Treating them as seventy-five
+would shrink the interval by more than half and manufacture a result that is not
+there.
+
+### The k=1 to k=5 flip is the whole lesson
+
+At one pick a session, arm B returned **−1.94%**. At five picks a session, over
+**the identical window with the identical model**, it returns **+4.62%**. Nothing
+changed except how many names were taken each day.
+
+A six-and-a-half point swing from that alone is the clearest possible statement
+that fifteen sessions cannot evaluate anything. Neither number is informative
+about the model; both are draws from a distribution wide enough to contain them
+comfortably.
+
+There is a smaller caution underneath it: re-running the identical script gave
+arm B a mean of +3.92% on one pass and +4.62% on the next, because multi-threaded
+CPU reductions are not bit-reproducible. That is half a point of pure
+implementation noise sitting under every figure in this table.
+
+### What survives all of it
+
+Arm A — the closed-form solver with **no network at all** — beats the universe by
++2.00pp, against B's +2.14pp. Whatever separated the pool from the picks over
+these fifteen sessions, the neural correction contributed almost none of it. That
+is consistent with `RESULT_REM.md`, where B trailed the incumbent on the traded
+metric across fourteen walk-forward blocks.
+
 ## What fifteen trades can say
 
 ```

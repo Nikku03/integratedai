@@ -232,7 +232,42 @@ def main(argv=None) -> int:
               f"ADV ${r.adv/1e6:>6.1f}m  predicted {r.B * 100:+6.2f}%")
 
     print("\n" + "=" * 96)
-    print("WHAT FIFTEEN TRADES CAN AND CANNOT SAY")
+    print("SIGNIFICANCE -- clustered by session, because picks share a day")
+    print("=" * 96)
+    uni_t = None
+    m_all = dates.isin(scored_win).to_numpy()
+    uni_t = pd.DataFrame({"date": dates[m_all].to_numpy(), "ret": ret[m_all],
+                          "full": full[m_all]})
+    uni_t = uni_t[uni_t["full"] & uni_t.ret.notna()]
+    uni_day = uni_t.groupby("date").ret.mean()
+    print(f"  {len(scored_win)} sessions, {args.k} picks each -> "
+          f"{len(scored_win)} independent day-clusters, not "
+          f"{len(scored_win) * args.k} trades")
+    print(f"\n  {'arm':6s} {'n':>4s} {'mean':>8s} {'day mean':>9s} "
+          f"{'vs universe':>12s} {'95% CI (day bootstrap)':>26s} {'P(<=uni)':>9s}")
+    rng = np.random.default_rng(21)
+    for arm in ("A", "B", "C"):
+        g = picks[arm]
+        g = g[g["full"] & g.ret.notna()]
+        if len(g) < 3:
+            continue
+        day = g.groupby("date").ret.mean()
+        common = day.index.intersection(uni_day.index)
+        d_excess = (day.loc[common] - uni_day.loc[common]).to_numpy()
+        bs = np.array([rng.choice(d_excess, len(d_excess), True).mean()
+                       for _ in range(20000)])
+        lo, hi = np.percentile(bs, [2.5, 97.5])
+        print(f"  {arm:6s} {len(g):>4d} {g.ret.mean() * 100:>7.2f}% "
+              f"{day.mean() * 100:>8.2f}% {d_excess.mean() * 100:>+11.2f}pp "
+              f"  [{lo * 100:>+6.2f}, {hi * 100:>+6.2f}]pp {(bs <= 0).mean():>9.3f}")
+    print(f"\n  universe day-mean {uni_day.mean() * 100:+.2f}%")
+    print("  A CI straddling zero means the window cannot separate the arm from")
+    print("  simply owning the pool, whatever the point estimate looks like.")
+    g = picks["B"][picks["B"]["full"] & picks["B"].ret.notna()]
+    g.to_parquet(Path(args.root) / f"rem_live_picks_k{args.k}.parquet")
+
+    print("\n" + "=" * 96)
+    print("WHAT FIFTEEN SESSIONS CAN AND CANNOT SAY")
     print("=" * 96)
     g = picks["B"]
     g = g[g["full"] & g.ret.notna()]
