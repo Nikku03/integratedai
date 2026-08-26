@@ -63,7 +63,6 @@ import company_context as cc  # noqa: E402
 from agreed_strategy import daily_paths  # noqa: E402
 from catalyst_pipeline import surge_features  # noqa: E402
 from gate_live_test import UA, cik_map, since_matrix  # noqa: E402
-from moonshot_tail import scale_fit  # noqa: E402
 from rem_solver import _roll_count, _roll_sum, compile_shared, infer  # noqa: E402
 
 HORIZON = 10
@@ -119,6 +118,24 @@ def submission_text(raw: str, limit: int) -> str:
             parts.append(f"[{typ}] {txt}")
     head = ("ITEMS REPORTED: " + "; ".join(items)) if items else ""
     return (head + "\n\n" + "\n\n".join(parts)).strip()[:limit]
+
+
+def scale_fit(Xtr):
+    """Robust centre and scale, tolerant of missing values.
+
+    `moonshot_tail.scale_fit` uses ``np.median``/``np.percentile``, which return
+    NaN for any column containing one. That was fine while the features were
+    REM and surge, both guaranteed finite by the eligibility mask. The context
+    block is not -- a name without 60 sessions of history has no 60-day
+    momentum -- so a single missing value turned the whole column NaN and
+    sklearn's histogram binner failed with "window shape cannot be larger than
+    input array shape". Trees handle NaN natively; the scaler has to let them.
+    """
+    med = np.nanmedian(Xtr, axis=0)
+    q1, q3 = np.nanpercentile(Xtr, [25, 75], axis=0)
+    med = np.where(np.isfinite(med), med, 0.0)
+    sc = np.where(np.isfinite(q3 - q1) & ((q3 - q1) > 1e-8), (q3 - q1) / 1.349, 1.0)
+    return med, sc
 
 
 def eightks_with_acc(client, y0: int, y1: int) -> pd.DataFrame:
@@ -182,6 +199,14 @@ def build(args) -> int:
     mu, sig = compile_shared(px)
     yrem, Frem, _ = infer(mu, sig, HORIZON)
     SG, _ = surge_features(px, since)
+    # the company-context block, for the ranker as well as the reader. Only the
+    # tape half can go here: fundamentals would mean a company-facts download
+    # per training issuer, and training on features the test cannot have is the
+    # broken comparison `gate_live_test.py` exists to avoid.
+    PF = cc.panel_features(px, since)
+    print(f"  context features: {PF.shape[1]} columns, "
+          f"{np.isfinite(PF).all(axis=1).mean() * 100:.1f}% of rows complete",
+          flush=True)
     elig = np.isfinite(sig) & (adv >= args.min_adv) & (c_all >= args.min_price)
 
     idx = np.flatnonzero(elig)[:: args.stride]
@@ -191,7 +216,10 @@ def build(args) -> int:
     ret = np.where(np.isfinite(paths[:, 0]) & (np.abs(ret) <= 3.0), ret, np.nan)
     dates = pd.Series(pd.to_datetime(px["date"].to_numpy()[idx]))
     tick = px["ticker"].to_numpy()[idx]
-    A = np.column_stack([Frem[idx], yrem[idx].reshape(-1, 1), SG[idx]]).astype(np.float32)
+    blocks = [Frem[idx], yrem[idx].reshape(-1, 1), SG[idx]]
+    if not args.no_context:
+        blocks.append(PF[idx])
+    A = np.column_stack(blocks).astype(np.float32)
     gated = (since[idx] >= 1) & (since[idx] <= args.gate_days)
     usable = np.isfinite(ret) & full & gated
 
@@ -251,7 +279,10 @@ def build(args) -> int:
         if j is None:
             ctxs.append("")
             continue
-        c = cc.price_context(c_all, v_all, j - 1, j0 if j0 is not None else j - 1)
+        first = j
+        while first > 0 and t_all[first - 1] == r.ticker:
+            first -= 1
+        c = cc.price_context(c_all, v_all, j - 1, j0, first)
         cik = int(row.cik)
         if cik not in seen:
             seen[cik] = cc.fetch(cl, cik)
@@ -264,7 +295,6 @@ def build(args) -> int:
                 "cash": cc.stock(fa, "us-gaap",
                                  "CashAndCashEquivalentsAtCarryingValue", r.date),
                 "assets": cc.stock(fa, "us-gaap", "Assets", r.date),
-                "float": cc.stock(fa, "dei", "EntityPublicFloat", r.date),
                 "mktcap": sh * c["price"] if np.isfinite(sh) else float("nan"),
                 "turnover": (c["adv20"] / c["price"] / sh
                              if np.isfinite(sh) and sh > 0 and c["price"] > 0
@@ -392,6 +422,15 @@ def score(args) -> int:
             print(f"  judged negative: {len(neg)} filings, "
                   f"mean {neg.mean() * 100:+.2f}%")
             print(f"  spread {(pos.mean() - neg.mean()) * 100:+.2f}pp")
+    # The pre-registered arm. `docs/PREREG_LLM_GATE_W3.md`, committed before
+    # window C was built, names this as the primary hypothesis: the -1 bucket
+    # was the best in windows A and B, so rejecting everything negative throws
+    # away winners. Only the strong-negative call is supposed to carry.
+    print()
+    strong = (m[m.judge.fillna(0) >= -1].sort_values(["date", "rank"])
+                .groupby("date").head(1))
+    show("veto -2 only (PREREG)", strong)
+
     print("\n" + "=" * 96)
     print("WHERE THE VETO ACTUALLY BITES")
     print("=" * 96)
@@ -443,6 +482,9 @@ def main(argv=None) -> int:
     ap.add_argument("--min-price", type=float, default=1.0)
     ap.add_argument("--build", action="store_true")
     ap.add_argument("--score", metavar="LABELS.json")
+    ap.add_argument("--no-context", action="store_true",
+                    help="rank on REM and surge alone, as the first two "
+                         "windows did, for a like-for-like comparison")
     ap.add_argument("--clean", action="store_true",
                     help="score only the sessions whose outcomes were not "
                          "already published in a RESULT_*.md")
