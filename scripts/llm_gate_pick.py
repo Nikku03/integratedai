@@ -22,17 +22,27 @@ appears in the command history if it happens early.
 
 What is being measured
 ----------------------
-Three selections over the same fifteen sessions:
+Selections over the same fifteen sessions:
 
 * **model k=1** — the top-scoring gated name. The control.
 * **reader k=1** — the shortlist name the reader rates highest.
 * **reader veto** — the model's top name, unless the reader judges the filing
   negative, in which case the next acceptable one down.
 
-If reading the document is worth anything, the second and third beat the first.
-Fifteen trades cannot establish that, and the report says so rather than
-implying otherwise; what it can show is whether the reader's judgement points the
-same way as the outcome at all.
+Each judgement carries a **direction** (-2..+2) and, once ``company_context``
+was added, a **materiality** (0..3): not "is this good" but "how much does it
+move the company", which is unanswerable from an 8-K alone because the document
+never says how big the issuer is. That funds three further arms -- veto plus
+most-material, ranking by direction x materiality, and positive-and-material.
+
+If reading the document is worth anything, these beat the control. Fifteen
+trades cannot establish that, and the report says so rather than implying
+otherwise; what it can show is whether the judgement points the same way as the
+outcome at all.
+
+``--offset`` shifts the window back so a second, non-overlapping block can be
+run. That is the test that matters: see ``docs/RESULT_LLM_GATE.md``, where the
+two blocks disagree and the pooled effect is nil.
 """
 
 from __future__ import annotations
@@ -49,6 +59,7 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
+import company_context as cc  # noqa: E402
 from agreed_strategy import daily_paths  # noqa: E402
 from catalyst_pipeline import surge_features  # noqa: E402
 from gate_live_test import UA, cik_map, since_matrix  # noqa: E402
@@ -185,8 +196,12 @@ def build(args) -> int:
     usable = np.isfinite(ret) & full & gated
 
     sess = pd.DatetimeIndex(sorted(px.date.unique()))
-    win = sess[sess <= sess[-(HORIZON + 1)]][-args.days:]
+    scor = sess[sess <= sess[-(HORIZON + 1)]]
+    end = len(scor) - args.offset
+    win = scor[max(0, end - args.days):end]
     cutoff = win[0] - pd.Timedelta(days=HORIZON * 2 + 14)
+    print(f"window: {win[0]:%Y-%m-%d} -> {win[-1]:%Y-%m-%d} "
+          f"({len(win)} sessions, offset {args.offset})", flush=True)
     tr = np.flatnonzero((dates < cutoff).to_numpy() & usable)
     if len(tr) > 250_000:
         tr = tr[np.linspace(0, len(tr) - 1, 250_000).astype(int)]
@@ -208,13 +223,17 @@ def build(args) -> int:
     print(f"\nshortlist: {len(short)} candidates over {short.date.nunique()} "
           f"sessions (top {args.top} each)", flush=True)
 
-    # attach the filing that triggered the gate, and fetch it
+    # attach the filing that triggered the gate, fetch it, and assemble the
+    # point-in-time company context that makes materiality answerable
     f = f.sort_values("filed")
-    texts, accs = [], []
+    date_all = pd.to_datetime(px["date"].to_numpy())
+    rowix = {(t, d): i for i, (t, d) in enumerate(zip(t_all, date_all))}
+    texts, accs, ctxs = [], [], []
+    seen: dict[int, dict | None] = {}
     for _, r in short.iterrows():
         cand = f[(f.ticker == r.ticker) & (f.filed <= r.date)]
         if cand.empty:
-            texts.append(""), accs.append("")
+            texts.append(""), accs.append(""), ctxs.append("")
             continue
         row = cand.iloc[-1]
         url = (f"https://www.sec.gov/Archives/edgar/data/{int(row.cik)}/"
@@ -223,14 +242,43 @@ def build(args) -> int:
         if not b:
             b = cl.get_bytes(f"https://www.sec.gov/Archives/edgar/data/"
                              f"{int(row.cik)}/{row.acc}.txt")
-        txt = submission_text(b.decode("utf-8", errors="ignore"),
-                              args.chars) if b else ""
-        texts.append(txt)
+        texts.append(submission_text(b.decode("utf-8", errors="ignore"),
+                                     args.chars) if b else "")
         accs.append(row.acc)
+
+        j = rowix.get((r.ticker, r.date))
+        j0 = rowix.get((r.ticker, row.filed))
+        if j is None:
+            ctxs.append("")
+            continue
+        c = cc.price_context(c_all, v_all, j - 1, j0 if j0 is not None else j - 1)
+        cik = int(row.cik)
+        if cik not in seen:
+            seen[cik] = cc.fetch(cl, cik)
+        fa = seen[cik]
+        if fa:
+            sh = cc.stock(fa, "dei", "EntityCommonStockSharesOutstanding", r.date)
+            c |= {
+                "revenue": cc.flow(fa, cc.REVENUE_TAGS, r.date),
+                "net_income": cc.flow(fa, "NetIncomeLoss", r.date),
+                "cash": cc.stock(fa, "us-gaap",
+                                 "CashAndCashEquivalentsAtCarryingValue", r.date),
+                "assets": cc.stock(fa, "us-gaap", "Assets", r.date),
+                "float": cc.stock(fa, "dei", "EntityPublicFloat", r.date),
+                "mktcap": sh * c["price"] if np.isfinite(sh) else float("nan"),
+                "turnover": (c["adv20"] / c["price"] / sh
+                             if np.isfinite(sh) and sh > 0 and c["price"] > 0
+                             else float("nan")),
+            }
+        c["n8k"] = int(((f.ticker == r.ticker)
+                        & (f.filed <= r.date)
+                        & (f.filed > r.date - pd.Timedelta(days=90))).sum())
+        ctxs.append(cc.describe(c))
     short["acc"] = accs
     short["chars"] = [len(x) for x in texts]
     print(f"  fetched {sum(1 for x in texts if x):,} filings, "
-          f"mean {np.mean([len(x) for x in texts]):.0f} chars", flush=True)
+          f"mean {np.mean([len(x) for x in texts]):.0f} chars; "
+          f"context for {sum(1 for x in ctxs if x):,}", flush=True)
 
     short.to_parquet(out / "shortlist.parquet")
     nb = 0
@@ -240,9 +288,14 @@ def build(args) -> int:
         lines = [f"# Shortlist bundle {nb}", "",
                  "Each entry is a candidate the model ranked highly on that",
                  "session, with the 8-K that put it in the gate. No outcomes.", ""]
-        for (_, r), tx in zip(chunk.iterrows(), texts[b0:b0 + args.per_bundle]):
+        for (_, r), tx, cx in zip(chunk.iterrows(),
+                                  texts[b0:b0 + args.per_bundle],
+                                  ctxs[b0:b0 + args.per_bundle]):
             lines += [f"## {r.date:%Y-%m-%d} | {r.ticker} | model rank {r['rank']}",
                       "", f"*filed {int(r['since'])} session(s) before entry*", "",
+                      "### the company, as of the session before entry", "",
+                      "```", cx if cx else "(context unavailable)", "```", "",
+                      "### the filing", "",
                       "```", tx if tx else "(filing text unavailable)", "```", ""]
         (out / f"bundle_{nb}.md").write_text("\n".join(lines))
     print(f"wrote {nb} bundles and shortlist.parquet to {out}")
@@ -300,6 +353,25 @@ def score(args) -> int:
     veto = (m[okmask].sort_values(["date", "rank"]).groupby("date").head(1))
     show("reader veto", veto)
     show("shortlist average", m)
+
+    # Materiality is a second, independent reading: not "is this good" but "how
+    # much does it move the company", which is only answerable with the size
+    # and revenue context the bundle now carries. It is a magnitude, so it is
+    # used to break ties among names the direction call has already cleared,
+    # and — signed — as a ranking of its own.
+    if "mat" in m.columns and m.mat.notna().any():
+        print()
+        big = (m[okmask].sort_values(["date", "mat", "rank"],
+                                     ascending=[True, False, True])
+                 .groupby("date").head(1))
+        show("veto + most material", big)
+        m["impact"] = m.judge * m.mat
+        imp = (m.sort_values(["date", "impact", "p"], ascending=[True, False, False])
+                 .groupby("date").head(1))
+        show("rank by judge x mat", imp)
+        conf = m[(m.judge > 0) & (m.mat >= 2)]
+        show("positive AND material", conf.sort_values(["date", "rank"])
+                                          .groupby("date").head(1))
 
     print("\n" + "=" * 96)
     print("IS THE JUDGEMENT POINTING THE RIGHT WAY?")
@@ -359,6 +431,10 @@ def main(argv=None) -> int:
     ap.add_argument("--from-year", type=int, default=2018)
     ap.add_argument("--gate-days", type=int, default=3)
     ap.add_argument("--days", type=int, default=15)
+    ap.add_argument("--offset", type=int, default=0,
+                    help="shift the scored window back this many "
+                         "sessions; 15 gives the block before the "
+                         "one already tested")
     ap.add_argument("--top", type=int, default=3)
     ap.add_argument("--stride", type=int, default=3)
     ap.add_argument("--chars", type=int, default=2600)
