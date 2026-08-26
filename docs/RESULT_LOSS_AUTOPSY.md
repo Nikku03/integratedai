@@ -67,8 +67,11 @@ winners were indistinguishable at entry:
 | the 17 losers | −21.9% | −56.7% | −74.4% | 123% |
 | the 21 winners | −28.7% | −52.5% | −74.6% | 109% |
 
-PENG was an anecdote and I generalised from it. `RESULT_LLM_GATE.md` has been
-corrected.
+PENG was an anecdote and I generalised from it in conversation. The claim never
+reached `RESULT_LLM_GATE.md` in its current form — it was dropped when that
+document was rewritten for three windows — so there is nothing to retract there;
+it is recorded here because it was said, and because the panel shows the
+selection runs the other way.
 
 **The reader's judgement.** Of the 17 control losers, 4 were judged negative. Of
 the 21 winners, **6** were. Rejecting negatives drops more winners than losers.
