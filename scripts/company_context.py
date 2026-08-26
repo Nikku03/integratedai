@@ -391,3 +391,75 @@ def panel_features(px: pd.DataFrame, since: np.ndarray) -> np.ndarray:
     # binner as NaN and sklearn fails with "window shape cannot be larger than
     # input array shape". Infinities are missing data here, so say so.
     return np.where(np.isfinite(A), A, np.nan).astype(np.float32)
+
+
+#: Column order for :func:`prefiling_features`.
+PREFILE_COLS = ("pre_run20", "pre_run5", "pre_volratio", "gap_prev", "filing_day_ret")
+
+
+def prefiling_features(px: pd.DataFrame, since: np.ndarray) -> np.ndarray:
+    """What the price did **before the disclosure existed**, and whether anything
+    had been announced that could explain it.
+
+    `panel_features` measures momentum up to the day before *entry*, which on a
+    D+1 gate already contains the filing day and its reaction. That conflates
+    two different things: the market reacting to news it can see, and the market
+    moving on news it should not yet have.
+
+    This separates them. For a row whose gating filing landed at ``j0``:
+
+    ``pre_run20``      return over the twenty sessions ending the day **before**
+                       the filing -- a run-up with no public document behind it.
+    ``pre_run5``       the same over five sessions, for a sharper leak window.
+    ``pre_volratio``   average volume in that run-up against the sixty sessions
+                       before it. Quiet drift and loud accumulation are not the
+                       same thing.
+    ``gap_prev``       sessions between this filing and the issuer's previous
+                       8-K. Large means nothing was announced during the run-up,
+                       so the move has no disclosed cause.
+    ``filing_day_ret`` the move on the filing session itself, i.e. what the
+                       disclosure was actually worth once it was public.
+
+    A large ``pre_run20`` with a large ``gap_prev`` is the case of interest: the
+    price moved, and no announcement explains it.
+    """
+    t = px["ticker"].to_numpy()
+    c = px["close"].to_numpy(float)
+    v = np.nan_to_num(px["volume"].to_numpy(float), nan=0.0)
+    n = len(px)
+    pos = px.groupby("ticker", sort=False).cumcount().to_numpy()
+    first = np.arange(n) - pos
+
+    s = np.where(np.isfinite(since), since, -1).astype(np.int64)
+    i = np.arange(n)
+    j0 = i - s
+    ok = (s >= 0) & (j0 >= first) & (j0 < n)
+
+    def at(arr, k, valid):
+        out = np.full(n, np.nan)
+        good = valid & (k >= first) & (k < n)
+        out[good] = arr[k[good]]
+        return out
+
+    pre = j0 - 1
+    c_pre = at(c, pre, ok)
+    out = {
+        "pre_run20": c_pre / at(c, pre - 20, ok) - 1.0,
+        "pre_run5": c_pre / at(c, pre - 5, ok) - 1.0,
+        "filing_day_ret": at(c, j0, ok) / c_pre - 1.0,
+    }
+    # average volume in the run-up against the sixty sessions before it
+    cv = np.concatenate([[0.0], np.cumsum(v)])
+    def wmean(hi, lo, valid):
+        res = np.full(n, np.nan)
+        g = valid & (lo >= first) & (hi >= lo) & (hi < n)
+        res[g] = (cv[hi[g] + 1] - cv[lo[g]]) / np.maximum(hi[g] - lo[g] + 1, 1)
+        return res
+    run = wmean(pre, pre - 20, ok)
+    base = wmean(pre - 21, pre - 81, ok)
+    out["pre_volratio"] = np.where(base > 0, run / base, np.nan)
+    # sessions since the issuer's previous 8-K, measured at the day before this one
+    out["gap_prev"] = at(np.where(np.isfinite(since), since, np.nan), pre, ok) + 1.0
+
+    A = np.column_stack([out[k] for k in PREFILE_COLS]).astype(np.float32)
+    return np.where(np.isfinite(A), A, np.nan).astype(np.float32)

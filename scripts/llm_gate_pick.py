@@ -204,7 +204,8 @@ def build(args) -> int:
     # per training issuer, and training on features the test cannot have is the
     # broken comparison `gate_live_test.py` exists to avoid.
     PF = cc.panel_features(px, since)
-    print(f"  context features: {PF.shape[1]} columns, "
+    QF = cc.prefiling_features(px, since)
+    print(f"  context features: {PF.shape[1]} + {QF.shape[1]} columns, "
           f"{np.isfinite(PF).all(axis=1).mean() * 100:.1f}% of rows complete",
           flush=True)
     elig = np.isfinite(sig) & (adv >= args.min_adv) & (c_all >= args.min_price)
@@ -219,8 +220,26 @@ def build(args) -> int:
     blocks = [Frem[idx], yrem[idx].reshape(-1, 1), SG[idx]]
     if not args.no_context:
         blocks.append(PF[idx])
+        blocks.append(QF[idx])
     A = np.column_stack(blocks).astype(np.float32)
     gated = (since[idx] >= 1) & (since[idx] <= args.gate_days)
+
+    # A filing is informative exactly when it is unanticipated. Restricting the
+    # gate to names that had NOT run up before the filing and had announced
+    # nothing during that window is worth +0.36pp per row over 160,920 rows,
+    # 95% CI [+0.19, +0.53] -- see docs/RESULT_PREFILING_RUNUP.md. Both halves
+    # matter and the veto form of the same idea does not work.
+    if args.surprise_only:
+        pr = pd.DataFrame({"date": dates, "run": QF[idx][:, 0],
+                           "gap": QF[idx][:, 3]})
+        hi = pr.groupby("date")["run"].transform(lambda x: x.quantile(0.80))
+        keep = ((pr["run"].to_numpy() < hi.to_numpy())
+                & (pr["gap"].to_numpy() > args.quiet_gap))
+        keep = np.where(np.isfinite(QF[idx][:, 0]) & np.isfinite(QF[idx][:, 3]),
+                        keep, False)
+        print(f"  surprise filter keeps {keep.mean() * 100:.1f}% of eligible rows",
+              flush=True)
+        gated = gated & keep
     usable = np.isfinite(ret) & full & gated
 
     sess = pd.DatetimeIndex(sorted(px.date.unique()))
@@ -482,6 +501,13 @@ def main(argv=None) -> int:
     ap.add_argument("--min-price", type=float, default=1.0)
     ap.add_argument("--build", action="store_true")
     ap.add_argument("--score", metavar="LABELS.json")
+    ap.add_argument("--surprise-only", action="store_true",
+                    help="restrict the gate to filings the market had not "
+                         "anticipated: no pre-filing run-up and no other 8-K "
+                         "during the run-up window")
+    ap.add_argument("--quiet-gap", type=int, default=20,
+                    help="sessions since the previous 8-K for a filing to count "
+                         "as unannounced")
     ap.add_argument("--no-context", action="store_true",
                     help="rank on REM and surge alone, as the first two "
                          "windows did, for a like-for-like comparison")
