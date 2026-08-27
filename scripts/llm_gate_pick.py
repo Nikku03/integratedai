@@ -253,16 +253,47 @@ def build(args) -> int:
     if len(tr) > 250_000:
         tr = tr[np.linspace(0, len(tr) - 1, 250_000).astype(int)]
     med, sc = scale_fit(A[tr])
-    mo = HistGradientBoostingRegressor(loss="quantile", quantile=0.75,
-                                       max_iter=250, learning_rate=0.05,
-                                       max_depth=6, random_state=0)
-    mo.fit(np.clip((A[tr] - med) / sc, -5, 5), ret[tr])
-    print(f"trained on {len(tr):,} gated rows before {cutoff:%Y-%m-%d}", flush=True)
+    # `RESULT_LOSS_AUTOPSY.md`: a q75 quantile of r targets the upper tail, which
+    # is the part that does not compound. Training the same features on log(1+r)
+    # doubles the arithmetic mean (+0.75% -> +1.53%) and halves the compounding
+    # drag (-1.77% -> -0.82%) over fifteen walk-forward blocks.
+    if args.objective == "log":
+        mo = HistGradientBoostingRegressor(loss="squared_error", max_iter=250,
+                                           learning_rate=0.05, max_depth=6,
+                                           random_state=0)
+        y = np.log1p(np.clip(ret, -0.99, None))
+    else:
+        mo = HistGradientBoostingRegressor(loss="quantile", quantile=0.75,
+                                           max_iter=250, learning_rate=0.05,
+                                           max_depth=6, random_state=0)
+        y = ret
+    mo.fit(np.clip((A[tr] - med) / sc, -5, 5), y[tr])
+    print(f"trained on {len(tr):,} gated rows before {cutoff:%Y-%m-%d} "
+          f"(objective: {args.objective})", flush=True)
 
     inwin = dates.isin(win).to_numpy() & usable
+    vcol = list(cc.PANEL_COLS).index("ctx_vol20")
     t = pd.DataFrame({"date": dates[inwin].to_numpy(), "ticker": tick[inwin],
                       "ret": ret[inwin], "since": since[idx][inwin],
+                      "vol": PF[idx][inwin][:, vcol],
                       "p": mo.predict(np.clip((A[inwin] - med) / sc, -5, 5))})
+    # `RESULT_LOSS_AUTOPSY.md`: volatility sorts realised |return| 4.9x and mean
+    # return not at all, so the widest names add dispersion without direction.
+    # Dropping the top quintile before ranking halved the drag again and took
+    # the standard deviation from 23.1% to 14.3%.
+    if args.calm:
+        cut = t.groupby("date")["vol"].transform(lambda x: x.quantile(0.80))
+        keep = t.vol <= cut
+        print(f"  calm screen keeps {keep.mean() * 100:.1f}% of the scored window",
+              flush=True)
+        t = t[keep].reset_index(drop=True)
+    # The book arms need no reading, so they are saved at full width even though
+    # only the top `--top` are bundled for the reader.
+    book = (t.sort_values("p", ascending=False).groupby("date").head(5)
+             .sort_values(["date", "p"], ascending=[True, False])
+             .reset_index(drop=True))
+    book["rank"] = book.groupby("date").cumcount() + 1
+    book.to_parquet(out / "book.parquet")
     short = (t.sort_values("p", ascending=False).groupby("date")
               .head(args.top).sort_values(["date", "p"], ascending=[True, False])
               .reset_index(drop=True))
@@ -501,6 +532,12 @@ def main(argv=None) -> int:
     ap.add_argument("--min-price", type=float, default=1.0)
     ap.add_argument("--build", action="store_true")
     ap.add_argument("--score", metavar="LABELS.json")
+    ap.add_argument("--objective", choices=("q75", "log"), default="q75",
+                    help="q75 quantile of the return (incumbent), or the mean "
+                         "of log(1+r), which is what actually compounds")
+    ap.add_argument("--calm", action="store_true",
+                    help="drop the top volatility quintile of each session "
+                         "before ranking")
     ap.add_argument("--surprise-only", action="store_true",
                     help="restrict the gate to filings the market had not "
                          "anticipated: no pre-filing run-up and no other 8-K "
