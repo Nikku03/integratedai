@@ -128,3 +128,54 @@ address. `iai.core.http.HttpClient` enforces the throttle, caches to disk, and
 deliberately refuses to cache 401/403/407 as misses — the SEC answers abuse with
 a 403 on the whole IP, and caching that as "nothing here" would poison every URL
 attempted during the block.
+
+## Stocklake (MCP connector, evaluated 2026-08)
+
+Tried as a replacement for the lost price panel. **Rejected: the daily bars are
+not usable for this work**, on three independent grounds.
+
+**1. The volume series degrades to a thin single-venue feed, at a different date
+for every symbol, and interleaves with the real tape.**
+
+```
+RCAT   2026-01-22   16,030,391   real consolidated tape
+       2026-01-23          218   collapses
+       2026-02-19   12,739,500   real again for one day
+       2026-02-20        2,017   thin again
+       2026-03-18   31,541,988   real       close 17.000
+       2026-03-19        1,109   thin       close 14.255
+       2026-03-20        3,611   thin       close 13.250
+       2026-03-23   19,322,453   real       close 15.150
+
+AAPL breaks 2026-05-19 (42,000,000 -> 31,253)
+MSFT breaks 2026-07-21 (27,915,800 -> 335,169)
+```
+
+Bars from 2026-08-12 carry an explicit `"source":"ibkr"` tag, so the feed is a
+single broker's prints rather than the consolidated tape.
+
+This is fatal here rather than merely inconvenient. The eligibility screen is
+`ADV >= $1M/day` computed as close x volume, so understating volume by 50-1000x
+empties the universe and biases it toward whichever symbols degraded latest. The
+whole `surge_features` block, `ctx_logadv`, `ctx_turn`, `ctx_volratio` and
+`pre_volratio` are volume-derived, and a 1000x single-day drop registers as the
+most extreme surge in the panel's history -- an artifact the model would happily
+learn.
+
+**2. The closes on thin days are not reliable either.** RCAT prints 17.00 on
+31.5M shares, then 14.255 on 1,109 shares, then 15.15 on 19.3M. A -16% and +6%
+round trip on odd-lot prints. Forward returns, ATR and realised volatility are
+all computed from these closes, so the labels are corrupted, not just the
+features.
+
+**3. Structural limits, independent of the above.** `get_stock_history` caps at
+**365 trading days**, against a training set that needs 2018 onward; it serves
+**one symbol per call** against a ~3,500-name universe; and coverage is current
+listings only, which reintroduces exactly the survivorship bias
+`RESULT_SURVIVORSHIP.md` measured and corrected.
+
+There is no clean sub-window to retreat to: RCAT is already degraded in January
+2026, and the 365-day cap prevents going back to an era before the transition.
+
+| verdict | Unusable for backtesting. Possibly fine for a current quote or a fundamentals lookup, which is what the other endpoints do. |
+|---|---|
