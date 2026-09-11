@@ -15,7 +15,11 @@ repository rather than invented for this test:
     top four deciles. The mean says nothing; the median says a great deal.
 
 ``gap_prev``
-    Sessions since the issuer's previous 8-K. Combined with a flat run-up this
+    Days since the issuer's previous 8-K, read from that issuer's full SEC
+    submissions history. Deriving it from the three indexed sessions alone --
+    the obvious shortcut -- makes every issuer that did not file twice inside
+    the window look like it had been silent forever, which is how "quiet" ends
+    up meaning nothing at all. Combined with a flat run-up this
     is the "flat and quiet" cell — no move, nothing announced, then a filing —
     which returned **+0.36pp against the rest, 95% CI [+0.19, +0.53],
     P = 0.000** over 160,920 rows. It is the strongest pool filter in this work.
@@ -61,29 +65,73 @@ def load_px(work: Path) -> pd.DataFrame:
     return px.sort_values(["ticker", "date"]).reset_index(drop=True)
 
 
-def features(J: pd.DataFrame, px: pd.DataFrame, eightk: list[dict]) -> pd.DataFrame:
+def acceptance(ts) -> pd.Timestamp:
+    """The filing's acceptance moment in Eastern Time.
+
+    EDGAR stamps ``acceptanceDateTime`` in UTC despite the trailing Z. Read as
+    Eastern it puts the two 8-K clusters at 11:00-13:00 and 20:00-22:00 local,
+    which is nobody's filing pattern; converted from UTC it puts them at
+    07:00-09:00 and 16:00-18:00, which is exactly the pattern.
+    """
+    return pd.Timestamp(ts).tz_convert("America/New_York")
+
+
+def last_close_before(sessions, et: pd.Timestamp) -> str | None:
+    """The last session whose 16:00 bell rang before the filing was accepted.
+
+    This is the boundary every pre-filing measurement has to respect, and it is
+    not the day the filing appears in EDGAR's index. Biohaven's partial clinical
+    hold was accepted at 21:55 on 09-09 and indexed under 09-10; keying off the
+    index date put 09-10 -- a session that had already traded on the news --
+    inside its "pre-filing" run-up, and reported a 5-day run of -18.5% that was
+    mostly the reaction itself.
+    """
+    d = et.date().isoformat()
+    cut = d if (et.hour * 60 + et.minute) > 960 else None
+    ok = [s for s in sessions if s < d] + ([cut] if cut and cut in sessions else [])
+    return max(ok) if ok else None
+
+
+def first_open_after(sessions, et: pd.Timestamp) -> str | None:
+    """The first session whose 09:30 open came after the filing was accepted."""
+    d = et.date().isoformat()
+    if (et.hour * 60 + et.minute) < 570 and d in sessions:
+        return d
+    later = [s for s in sessions if s > d]
+    return min(later) if later else None
+
+
+def prior_8k(cache: Path, cik: int, before: str) -> int:
+    """Days since this issuer's previous 8-K, from its whole filing history."""
+    p = cache / f"subs_{cik}.json"
+    if not p.exists():
+        return 999
+    t = p.read_text()
+    if not t.strip():
+        return 999
+    rec = json.loads(t)["filings"]["recent"]
+    past = [d for f, d in zip(rec["form"], rec["filingDate"])
+            if f == "8-K" and d < before]
+    if not past:
+        return 999
+    return int((pd.Timestamp(before) - pd.Timestamp(max(past))).days)
+
+
+def features(J: pd.DataFrame, px: pd.DataFrame, cache: Path) -> pd.DataFrame:
     sessions = sorted(px.date.unique())
     by = {t: g.reset_index(drop=True) for t, g in px.groupby("ticker")}
-
-    prior: dict[tuple[str, str], list[str]] = {}
-    for f in eightk:
-        d = f"{f['date'][:4]}-{f['date'][4:6]}-{f['date'][6:]}"
-        prior.setdefault(f["cik"], []).append(d)
 
     out = []
     for _, r in J.iterrows():
         g = by.get(r.ticker)
         if g is None:
             continue
-        # the last session that had closed before the filing was accepted
-        et = pd.Timestamp(r.accepted).tz_convert("America/New_York")
-        same_day_tradeable = et.hour * 60 + et.minute < 960      # before 16:00 ET
-        last = r.date if not same_day_tradeable else None
-        cut = [s for s in sessions if s < r.date] if same_day_tradeable else \
-              [s for s in sessions if s <= r.date]
-        if not cut:
+        et = acceptance(r.accepted)
+        last_pre = last_close_before(sessions, et)
+        entry = first_open_after(sessions, et)
+        if last_pre is None:
             continue
-        j = g.index[g.date == cut[-1]]
+        j = g.index[g.date == last_pre]
         if not len(j):
             continue
         j = int(j[0])
@@ -100,12 +148,10 @@ def features(J: pd.DataFrame, px: pd.DataFrame, eightk: list[dict]) -> pd.DataFr
         vr = (float(v[j] / np.median(v[max(0, j - 20):j]))
               if j >= 5 and np.median(v[max(0, j - 20):j]) > 0 else np.nan)
 
-        past = sorted(d for d in prior.get(r.cik, []) if d < r.date)
-        gap = ((pd.Timestamp(r.date) - pd.Timestamp(past[-1])).days
-               if past else 999)
+        gap = prior_8k(cache, int(r.cik), r.date)
 
-        out.append(dict(r, entry_session=None, last_pre=cut[-1],
-                        same_day=same_day_tradeable,
+        out.append(dict(r, entry_session=entry, last_pre=last_pre,
+                        acc_et=et.isoformat(),
                         pre_run20=run(20), pre_run5=run(5), pre_run1=run(1),
                         vol20=vol20, pre_volratio=vr, gap_prev=gap))
     return pd.DataFrame(out)
@@ -154,8 +200,7 @@ def main(argv=None) -> int:
 
     J = pd.read_parquet(work / "shortlist.parquet")
     px = load_px(work)
-    eightk = json.load(open(work / "eightk.json"))
-    F = features(J, px, eightk)
+    F = features(J, px, work / "cache")
     print(f"  {len(F)} screened name-days with tape context, "
           f"{px.date.nunique()} sessions loaded")
 
