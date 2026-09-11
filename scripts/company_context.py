@@ -39,6 +39,16 @@ volume, giving a $0.8M market cap on $9.2M of daily turnover — 1,161% of the
 company changing hands per day. Nothing checked. `_plausible` now suppresses a
 market cap that implies impossible turnover rather than printing it.
 
+**A tag a filer has abandoned still answers.** ``flow`` searched every fact a
+company had ever published and returned the best-fitting twelve months, with no
+requirement that those months be recent. IonQ stopped tagging ``Revenues``
+after FY2022 and the function happily returned that year as if it were trailing
+revenue -- a figure both four years stale and, in IonQ's own filings, tagged at
+$1.235 **billion** against a real top line near $11M. ``max_age_days`` now
+discards facts whose period ended too long before ``when``; eighteen months
+keeps a foreign private issuer's annual report alive without admitting a
+four-year-old one.
+
 **Public float is up to eighteen months stale.** ``EntityPublicFloat`` is
 measured on the last business day of the most recently completed second fiscal
 quarter, at that day's price. Printing it beside a current market cap produced
@@ -78,6 +88,10 @@ ANNUAL = (340, 400)
 #: A US common stock turning over more than this fraction of itself per day for
 #: twenty straight sessions is not a real measurement, it is a split mismatch.
 MAX_TURNOVER = 1.00
+#: A period ending more than this long before the date in question is not
+#: trailing anything. Eighteen months, so a 20-F filer's annual report survives
+#: until the next one lands.
+MAX_FACT_AGE = 550
 
 
 def fetch(client, cik: int) -> dict | None:
@@ -154,7 +168,8 @@ def _contiguous(picked: list[dict]) -> bool:
     return True
 
 
-def flow(facts: dict, tags, when: pd.Timestamp) -> float:
+def flow(facts: dict, tags, when: pd.Timestamp,
+         max_age_days: int = MAX_FACT_AGE) -> float:
     """Trailing-twelve-month value of a flow item, as known at ``when``.
 
     Three routes, in order of preference:
@@ -167,8 +182,18 @@ def flow(facts: dict, tags, when: pd.Timestamp) -> float:
        company with $5.4B of assets.
     3. The last full year on its own.
 
+    ``max_age_days`` constrains where the trailing window **ends**, not which
+    facts are visible: a twelve-month total ending four years ago is not a
+    trailing figure however well its quarters line up, but route 2 subtracts
+    quarters from a year earlier, which are old by construction. Filtering the
+    fact pool rather than the result silently disabled the year-roll and
+    reported BitMine's $61.1M of trailing revenue as the $6.1M of its last
+    completed fiscal year.
+
     NaN if none apply.
     """
+    horizon = ((when.date() if isinstance(when, pd.Timestamp) else when)
+               - timedelta(days=max_age_days)).isoformat()
     if isinstance(tags, str):
         tags = (tags,)
     for tag in tags:
@@ -179,7 +204,7 @@ def flow(facts: dict, tags, when: pd.Timestamp) -> float:
         anns = _latest_per_period(rows, *ANNUAL)
 
         picked = sorted(qs.values(), key=lambda r: r["end"], reverse=True)[:4]
-        if len(picked) == 4 and _contiguous(picked):
+        if len(picked) == 4 and _contiguous(picked) and picked[0]["end"] >= horizon:
             return float(sum(r["val"] for r in picked))
         if not anns:
             continue
@@ -187,6 +212,8 @@ def flow(facts: dict, tags, when: pd.Timestamp) -> float:
         fy = max(anns.values(), key=lambda r: r["end"])
         after = [r for r in sorted(qs.values(), key=lambda r: r["end"])
                  if r["end"] > fy["end"]]
+        if (after[-1]["end"] if after else fy["end"]) < horizon:
+            continue
         if not after:
             return float(fy["val"])
         prior = [_nearest(qs, _shift_end(r["end"], -365)) for r in after]
