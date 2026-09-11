@@ -9,6 +9,11 @@ every name costs nothing extra once the chain has been pulled:
   trade the design says to actually take.
 * **second only** -- the diversification leg, reported separately so H1 can be
   answered rather than asserted.
+* **executable only** -- the trades whose contract actually traded enough to
+  be taken. This turns out to be the arm that matters: four of the six selected
+  names had an at-the-money chain that printed between zero and thirty-nine
+  contracts on the day, and a backtest that fills those is describing a trade
+  nobody could have made.
 * **straddle** -- one call and one put at the same strike. This is the arm the
   repository's evidence supports, because the measurement that has held up
   across 160,920 rows is that this gate concentrates dispersion and predicts
@@ -22,11 +27,53 @@ a different failure from one that loses money on a stock that went the wrong way
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
+
+
+#: Contracts traded in the at-the-money strike on the entry session, below which
+#: the fill is not a trade anyone could have taken. One contract is 100 shares,
+#: so this is 10,000 shares of exposure -- a deliberately low bar that four of
+#: the six selected names still fail.
+MIN_CONTRACTS = 100
+
+
+def liquidity(T: pd.DataFrame, cache: Path) -> pd.DataFrame:
+    """Attach how much each contract actually traded, and when the fill printed."""
+    for leg in ("call", "put"):
+        vols, times = [], []
+        for _, r in T.iterrows():
+            occ = r[f"{leg}_occ"]
+            d = cache / f"day_{occ}.json"
+            res = json.loads(d.read_text()).get("results") or [] if d.exists() else []
+            vols.append(float(res[0]["v"]) if res else 0.0)
+            m = cache / f"min_{occ}_{r.entry}.json"
+            rows = json.loads(m.read_text()).get("results") or [] if m.exists() else []
+            t = pd.to_datetime([x["t"] for x in rows], unit="ms", utc=True) \
+                  .tz_convert("America/New_York") if rows else []
+            mins = [x.hour * 60 + x.minute for x in t]
+            at = [x for x in t if x.hour * 60 + x.minute >= 575]
+            times.append((at[0] if at else (t[0] if len(t) else pd.NaT)))
+        T[f"{leg}_vol"] = vols
+        T[f"{leg}_filltime"] = times
+    return T
+
+
+def why(r, v) -> str:
+    if r.exec_ok:
+        return "YES"
+    if v == 0:
+        return "no -- never traded"
+    bits = []
+    if v < MIN_CONTRACTS:
+        bits.append(f"{int(v)} contracts all session")
+    if r.fill_min == r.fill_min and r.fill_min > 630:
+        bits.append("only fill was at the bell")
+    return "no -- " + ", ".join(bits)
 
 
 def compound(rets, stake=40.0):
@@ -55,7 +102,20 @@ def main(argv=None) -> int:
     ap.add_argument("--work", default="/tmp/claude-0/opt")
     ap.add_argument("--stake", type=float, default=40.0)
     args = ap.parse_args(argv)
-    T = pd.read_parquet(Path(args.work) / "trades.parquet")
+    work = Path(args.work)
+    T = pd.read_parquet(work / "trades.parquet")
+    sess, bars = {}, {}
+    for f in sorted(work.glob("grouped_*.json")):
+        rows = json.loads(f.read_text()).get("results") or []
+        if rows:
+            bars[f.stem.split("_")[-1]] = {x["T"]: x for x in rows}
+    days = sorted(bars)
+    px_prev = {}
+    for _, r in T.iterrows():
+        before = [d for d in days if d < r.entry]
+        if before and r.ticker in bars[before[-1]]:
+            px_prev[(r.date, r.ticker)] = bars[before[-1]][r.ticker]["c"]
+    T = liquidity(T, work / "opt_cache")
 
     T["under_ret"] = T.spot_exit / T.spot_open - 1
     T["dir_ret"] = np.where(T.side == "call", T.call_ret, T.put_ret)
@@ -64,17 +124,38 @@ def main(argv=None) -> int:
     T["straddle_entry"] = T.call_entry + T.put_entry
     T["straddle_exit"] = T.call_exit + T.put_exit
     T["straddle_ret"] = T.straddle_exit / T.straddle_entry - 1
+    T["dir_vol"] = np.where(T.side == "call", T.call_vol, T.put_vol)
+    T["dir_filltime"] = np.where(T.side == "call", T.call_filltime, T.put_filltime)
+    # Executable means two things, and the volume of the leg you did NOT trade
+    # is neither of them. Tyra's put printed 2,024 contracts while its call --
+    # the leg the positive reading called for -- printed nine, and the only one
+    # of those after 09:35 was at 15:59. A fill struck near the closing bell is
+    # not an entry on the morning of the news.
+    ft = pd.to_datetime(T.dir_filltime)
+    T["fill_min"] = ft.dt.hour * 60 + ft.dt.minute
+    T["exec_ok"] = (T.dir_vol >= MIN_CONTRACTS) & (T.fill_min <= 630)
+    T["straddle_ok"] = ((T[["call_vol", "put_vol"]].min(axis=1) >= MIN_CONTRACTS)
+                        & (T.fill_min <= 630))
     T["rank"] = T.groupby("date").cumcount() + 1
 
     print("\n" + "=" * 100)
     print("EVERY TRADE")
     print("=" * 100)
-    print(f"  {'date':11s}{'tkr':6s}{'rk':>3s}{'judge':>6s}{'side':>6s}{'K':>8s}"
-          f"{'entry':>8s}{'exit':>8s}{'option':>10s}{'stock':>9s}  thesis")
+    print(f"  {'date':11s}{'tkr':6s}{'rk':>3s}{'judge':>6s}{'side':>6s}{'K':>7s}"
+          f"{'entry':>7s}{'exit':>7s}{'option':>9s}{'stock':>8s}"
+          f"{'contracts':>11s}{'fill at':>9s}  tradeable?")
     for _, r in T.iterrows():
+        v, ft = r.dir_vol, pd.Timestamp(r.dir_filltime)
+        ret = "     n/a" if r.dir_ret != r.dir_ret else f"{r.dir_ret * 100:>+8.1f}%"
+        ep = "    n/a" if r.dir_entry != r.dir_entry else f"{r.dir_entry:>7.2f}"
+        xp = "    n/a" if r.dir_exit != r.dir_exit else f"{r.dir_exit:>7.2f}"
         print(f"  {r.date:11s}{r.ticker:6s}{r['rank']:>3d}{r.judge:>+6d}{r.side:>6s}"
-              f"{r.strike:>8.1f}{r.dir_entry:>8.2f}{r.dir_exit:>8.2f}"
-              f"{r.dir_ret * 100:>+9.1f}%{r.under_ret * 100:>+8.1f}%  {r.thesis[:38]}")
+              f"{r.strike:>7.1f}{ep}{xp}{ret}{r.under_ret * 100:>+7.1f}%"
+              f"{v:>11,.0f}{(ft.strftime('%H:%M') if ft == ft else '  --  '):>9s}"
+              f"  {why(r, v)}")
+    print(f"\n  Contract counts are the whole session's volume in that strike. One")
+    print(f"  contract is 100 shares. {int((~T.exec_ok).sum())} of {len(T)} selected names "
+          f"traded fewer than {MIN_CONTRACTS} contracts.")
 
     print("\n" + "=" * 100)
     print(f"ARMS  (${args.stake:.0f} compounded trade by trade, in date order)")
@@ -86,6 +167,9 @@ def main(argv=None) -> int:
     arm(S, S[S["rank"] == 1].dir_ret, "best only", args.stake)
     arm(S, S[S["rank"] == 2].dir_ret, "second only", args.stake)
     arm(S, S.straddle_ret, "straddle, both", args.stake)
+    arm(S[S.exec_ok], S[S.exec_ok].dir_ret, "EXECUTABLE only", args.stake)
+    arm(S[S.straddle_ok], S[S.straddle_ok].straddle_ret,
+        "EXECUTABLE straddle", args.stake)
     arm(S, S.call_ret, "always the call", args.stake)
     arm(S, S.put_ret, "always the put", args.stake)
     arm(S, S.under_ret, "the stock itself", args.stake)
@@ -108,6 +192,24 @@ def main(argv=None) -> int:
     print(f"  H4  straddle {S.straddle_ret.mean() * 100:+.1f}% vs "
           f"directional {S.dir_ret.mean() * 100:+.1f}%  ->  "
           f"{'PASS' if S.straddle_ret.mean() > S.dir_ret.mean() else 'FAIL'}")
+
+    print("\n" + "=" * 100)
+    print("WHERE THE REACTION ACTUALLY HAPPENED")
+    print("=" * 100)
+    print("  A filing released before the bell is priced into the opening print. An")
+    print("  entry at that open buys the stock after the news, not before it. The gap")
+    print("  is what the market did with the filing; the hold is all the strategy can")
+    print("  reach.\n")
+    print(f"  {'tkr':6s}{'judge':>6s}{'prev close':>12s}{'entry open':>12s}"
+          f"{'the gap':>10s}{'the hold':>10s}{'both':>9s}")
+    for _, r in S.iterrows():
+        prev = px_prev.get((r.date, r.ticker))
+        if prev is None:
+            continue
+        gap = r.spot_open / prev - 1
+        print(f"  {r.ticker:6s}{r.judge:>+6d}{prev:>12.2f}{r.spot_open:>12.2f}"
+              f"{gap * 100:>+9.1f}%{r.under_ret * 100:>+9.1f}%"
+              f"{((1 + gap) * (1 + r.under_ret) - 1) * 100:>+8.1f}%")
 
     print("\n" + "=" * 100)
     print("WHAT THE OPTION COST THAT THE STOCK DID NOT")
