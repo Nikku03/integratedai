@@ -72,7 +72,11 @@ def why(r, v) -> str:
     if v < MIN_CONTRACTS:
         bits.append(f"{int(v)} contracts all session")
     if r.fill_min == r.fill_min and r.fill_min > 630:
-        bits.append("only fill was at the bell")
+        bits.append("entry print at the bell")
+    if r.exit_min != r.exit_min:
+        bits.append("no exit print")
+    elif r.exit_min < 930:
+        bits.append(f"exit mark {int(960 - r.exit_min)} min stale")
     return "no -- " + ", ".join(bits)
 
 
@@ -126,6 +130,7 @@ def main(argv=None) -> int:
     T["straddle_ret"] = T.straddle_exit / T.straddle_entry - 1
     T["dir_vol"] = np.where(T.side == "call", T.call_vol, T.put_vol)
     T["dir_filltime"] = np.where(T.side == "call", T.call_filltime, T.put_filltime)
+    T["dir_exittime"] = np.where(T.side == "call", T.call_exittime, T.put_exittime)
     # Executable means two things, and the volume of the leg you did NOT trade
     # is neither of them. Tyra's put printed 2,024 contracts while its call --
     # the leg the positive reading called for -- printed nine, and the only one
@@ -133,9 +138,15 @@ def main(argv=None) -> int:
     # not an entry on the morning of the news.
     ft = pd.to_datetime(T.dir_filltime)
     T["fill_min"] = ft.dt.hour * 60 + ft.dt.minute
-    T["exec_ok"] = (T.dir_vol >= MIN_CONTRACTS) & (T.fill_min <= 630)
+    xt = pd.to_datetime(T.dir_exittime)
+    T["exit_min"] = xt.dt.hour * 60 + xt.dt.minute
+    # A mark is only a mark if something traded near it. Core Scientific's call
+    # last printed at 12:45 -- one contract, stock near its high -- and treating
+    # that as a 16:00 close credited a 30% gain on a day the stock fell 1.4%.
+    T["exec_ok"] = ((T.dir_vol >= MIN_CONTRACTS) & (T.fill_min <= 630)
+                    & (T.exit_min >= 930))
     T["straddle_ok"] = ((T[["call_vol", "put_vol"]].min(axis=1) >= MIN_CONTRACTS)
-                        & (T.fill_min <= 630))
+                        & (T.fill_min <= 630) & (T.exit_min >= 930))
     T["rank"] = T.groupby("date").cumcount() + 1
 
     print("\n" + "=" * 100)
@@ -143,7 +154,7 @@ def main(argv=None) -> int:
     print("=" * 100)
     print(f"  {'date':11s}{'tkr':6s}{'rk':>3s}{'judge':>6s}{'side':>6s}{'K':>7s}"
           f"{'entry':>7s}{'exit':>7s}{'option':>9s}{'stock':>8s}"
-          f"{'contracts':>11s}{'fill at':>9s}  tradeable?")
+          f"{'contracts':>11s}{'in at':>7s}{'out at':>8s}  tradeable?")
     for _, r in T.iterrows():
         v, ft = r.dir_vol, pd.Timestamp(r.dir_filltime)
         ret = "     n/a" if r.dir_ret != r.dir_ret else f"{r.dir_ret * 100:>+8.1f}%"
@@ -151,11 +162,35 @@ def main(argv=None) -> int:
         xp = "    n/a" if r.dir_exit != r.dir_exit else f"{r.dir_exit:>7.2f}"
         print(f"  {r.date:11s}{r.ticker:6s}{r['rank']:>3d}{r.judge:>+6d}{r.side:>6s}"
               f"{r.strike:>7.1f}{ep}{xp}{ret}{r.under_ret * 100:>+7.1f}%"
-              f"{v:>11,.0f}{(ft.strftime('%H:%M') if ft == ft else '  --  '):>9s}"
+              f"{v:>11,.0f}{(ft.strftime('%H:%M') if ft == ft else '  --  '):>7s}"
+              f"{(pd.Timestamp(r.dir_exittime).strftime('%H:%M') if r.dir_exittime == r.dir_exittime else '  --  '):>8s}"
               f"  {why(r, v)}")
-    print(f"\n  Contract counts are the whole session's volume in that strike. One")
-    print(f"  contract is 100 shares. {int((~T.exec_ok).sum())} of {len(T)} selected names "
-          f"traded fewer than {MIN_CONTRACTS} contracts.")
+    thin = int((T.dir_vol < MIN_CONTRACTS).sum())
+    stale = int(((T.dir_vol >= MIN_CONTRACTS) & ~T.exec_ok).sum())
+    print(f"\n  Contract counts are the whole session's volume in that strike; one")
+    print(f"  contract is 100 shares. Of {len(T)} selected names, {thin} traded fewer")
+    print(f"  than {MIN_CONTRACTS} contracts and a further {stale} traded enough but had no")
+    print(f"  print near one end of the hold, so the mark is not a price anyone")
+    print(f"  could have transacted at. {int(T.exec_ok.sum())} survive both tests.")
+
+    liq = Path(args.work) / "optliq.parquet"
+    if liq.exists():
+        L = {(str(r.date), str(r.ticker)): r
+             for _, r in pd.read_parquet(liq).iterrows()}
+        print("\n" + "=" * 100)
+        print("WHAT THE LIQUIDITY GATE CLEARED, AND WHAT WAS ACTUALLY TRADED")
+        print("=" * 100)
+        print("  The gate is measured before the filing, on the strike nearest the")
+        print("  pre-filing close. A gap moves the money to a different strike, and the")
+        print("  liquidity does not necessarily follow it.\n")
+        print(f"  {'tkr':6s}{'gate strike':>13s}{'pre-filing vol':>16s}"
+              f"{'traded strike':>15s}{'entry-day vol':>15s}")
+        for _, r in T.iterrows():
+            row = L.get((str(r.date), str(r.ticker)))
+            if row is None or "strike" not in row:
+                continue
+            print(f"  {r.ticker:6s}{row.strike:>13g}{row.pre_vol:>16,.0f}"
+                  f"{r.strike:>15g}{r.dir_vol:>15,.0f}")
 
     print("\n" + "=" * 100)
     print(f"ARMS  (${args.stake:.0f} compounded trade by trade, in date order)")

@@ -17,6 +17,14 @@ nothing extra and makes the straddle arm of the pre-registration measurable.
 
 Fills
 -----
+Entry **and exit** are both taken from minute bars, because a daily bar's close
+is the last *trade*, not the last quote, and on a thin contract that can be
+hours old. Core Scientific's call last printed at 12:45 -- one contract, with
+the stock near its high -- and carrying that forward as a 16:00 exit credited
+the position a 30% gain on a day the stock fell. The exit is therefore the last
+print at or before 16:00 **and its timestamp is recorded**, so a stale mark can
+be excluded rather than believed.
+
 The key available here is not entitled to Polygon's NBBO feed, so there are no
 bid-ask quotes and **no spread is modelled**. Entry is the first minute bar's
 close at or after 09:35 ET, five minutes into the session, chosen so the fill
@@ -114,12 +122,24 @@ def entry_price(cache: Path, occ: str, day: str) -> tuple[float, int, str]:
 
 
 def exit_price(cache: Path, occ: str, a: str, b: str):
+    """Last print at or before the closing bell on the exit session."""
     d = api(f"/v2/aggs/ticker/{occ}/range/1/day/{a}/{b}", cache,
             f"day_{occ}", adjusted="true", limit=50, sort="asc")
     rows = (d or {}).get("results") or []
+    m = api(f"/v2/aggs/ticker/{occ}/range/1/minute/{b}/{b}", cache,
+            f"min_{occ}_{b}", adjusted="true", limit=5000, sort="asc")
+    mr = (m or {}).get("results") or []
+    if mr:
+        t = pd.to_datetime([x["t"] for x in mr], unit="ms", utc=True) \
+              .tz_convert("America/New_York")
+        keep = [(x, ts) for x, ts in zip(mr, t)
+                if ts.hour * 60 + ts.minute <= 960]
+        if keep:
+            last, ts = keep[-1]
+            return float(last["c"]), rows, ts
     if not rows:
-        return float("nan"), []
-    return float(rows[-1]["c"]), rows
+        return float("nan"), [], pd.NaT
+    return float(rows[-1]["c"]), rows, pd.NaT
 
 
 def main(argv=None) -> int:
@@ -167,12 +187,13 @@ def main(argv=None) -> int:
         for leg, c in (("call", call), ("put", put)):
             occ = c["ticker"]
             ep, nm, how = entry_price(cache, occ, entry)
-            xp, days = exit_price(cache, occ, entry, EXIT_DAY)
+            xp, days, xt = exit_price(cache, occ, entry, EXIT_DAY)
             rec[f"{leg}_occ"] = occ
             rec[f"{leg}_entry"] = ep
             rec[f"{leg}_exit"] = xp
             rec[f"{leg}_minbars"] = nm
             rec[f"{leg}_fill"] = how
+            rec[f"{leg}_exittime"] = xt
             rec[f"{leg}_daybars"] = len(days)
             rec[f"{leg}_ret"] = (xp / ep - 1) if ep == ep and ep > 0 else float("nan")
         out.append(rec)

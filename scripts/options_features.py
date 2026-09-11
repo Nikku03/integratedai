@@ -32,6 +32,14 @@ repository rather than invented for this test:
     what a long straddle is for, and it is why the same measurement that had
     to be screened out of the equity book is screened *in* here.
 
+A fifth term, added after the first run: the name must have had an **option
+market before the filing existed**. The first run selected six names and only
+afterwards discovered that four had no tradeable at-the-money contract -- one of
+them never traded a single one. `options_liquidity.py` measures that over the
+five sessions ending before the filing, and it enters here as a hard gate rather
+than a weight, because an option that does not trade is not a worse trade, it is
+not a trade.
+
 The user's own rule -- if a name jumped before the disclosure and nothing was
 announced, the information is already out -- is implemented as ``already_out``.
 It is applied as a **down-weight, not a veto**, because tested as a veto on
@@ -157,7 +165,7 @@ def features(J: pd.DataFrame, px: pd.DataFrame, cache: Path) -> pd.DataFrame:
     return pd.DataFrame(out)
 
 
-def select(F: pd.DataFrame, judge: dict) -> pd.DataFrame:
+def select(F: pd.DataFrame, judge: dict, liq: pd.DataFrame | None = None) -> pd.DataFrame:
     """Score every screened name on a rule fixed before any outcome is known."""
     F = F.copy()
     F["judge"] = [judge.get(f"{r.date}:{r.ticker}", {}).get("judge", 0)
@@ -182,11 +190,22 @@ def select(F: pd.DataFrame, judge: dict) -> pd.DataFrame:
     med_vol = F.groupby("date")["vol20"].transform("median")
     F["dispersion"] = F.vol20 / med_vol
 
+    if liq is not None and len(liq):
+        key = liq.set_index(["date", "ticker"])
+        F["opt_prevol"] = [float(key.pre_vol.get((r.date, r.ticker), 0.0))
+                           for _, r in F.iterrows()]
+        F["opt_ok"] = [bool(key.eligible.get((r.date, r.ticker), False))
+                       for _, r in F.iterrows()]
+    else:
+        F["opt_prevol"] = np.nan
+        F["opt_ok"] = True
+
     F["score"] = (conv
                   * np.where(quiet, 1.0, 0.6)
                   * np.where(F.already_out, 0.5, 1.0)
                   * np.clip(F.dispersion, 0.5, 2.0)
-                  * np.where(F.dvol >= MIN_DOLLAR_VOL, 1.0, 0.0))
+                  * np.where(F.dvol >= MIN_DOLLAR_VOL, 1.0, 0.0)
+                  * np.where(F.opt_ok, 1.0, 0.0))
     return F.sort_values(["date", "score"], ascending=[True, False])
 
 
@@ -195,6 +214,9 @@ def main(argv=None) -> int:
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--work", default="/tmp/claude-0/opt")
     ap.add_argument("--judge", default="data/options_w1_labels.json")
+    ap.add_argument("--no-gate", action="store_true",
+                    help="score without the option-liquidity gate, to build the "
+                         "candidate list the gate is then measured on")
     args = ap.parse_args(argv)
     work = Path(args.work)
 
@@ -206,19 +228,26 @@ def main(argv=None) -> int:
 
     jp = Path(args.judge)
     judge = json.loads(jp.read_text()) if jp.exists() else {}
-    S = select(F, judge)
+    lp = work / "optliq.parquet"
+    liq = pd.read_parquet(lp) if lp.exists() and not args.no_gate else None
+    if liq is None:
+        print("  ** no option-liquidity file: the gate is NOT applied **")
+    S = select(F, judge, liq)
     S.to_parquet(work / "selected.parquet")
 
     for day, g in S.groupby("date"):
         print(f"\n=== {day} ===")
         print(f"  {'tkr':7s}{'judge':>6s}{'run20':>8s}{'run5':>7s}{'vol':>7s}"
-              f"{'gap':>5s}{'$vol':>7s}{'quiet':>7s}{'out':>5s}{'score':>7s}  thesis")
+              f"{'gap':>5s}{'$vol':>7s}{'quiet':>7s}{'out':>5s}{'optvol':>7s}"
+              f"{'score':>7s}  thesis")
         for _, r in g.iterrows():
+            ov = ("   --" if r.opt_prevol != r.opt_prevol
+                  else f"{r.opt_prevol:>5,.0f}")
             print(f"  {r.ticker:7s}{r.judge:>+6d}{r.pre_run20 * 100:>+7.1f}%"
                   f"{r.pre_run5 * 100:>+6.1f}%{r.vol20 * 100:>6.0f}%"
                   f"{min(r.gap_prev, 999):>5.0f}{r.dvol / 1e6:>6.0f}M"
                   f"{str(r.flat_and_quiet):>7s}{str(r.already_out):>5s}"
-                  f"{r.score:>7.2f}  {r.thesis[:44]}")
+                  f"{ov:>7s}{r.score:>7.2f}  {r.thesis[:34]}")
     return 0
 
 
