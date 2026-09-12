@@ -100,3 +100,119 @@ python3 scripts/window_prefile.py --events .../q1_screened.parquet
 POLYGON_API_KEY=... python3 scripts/window_options.py --events .../q1_prefile.parquet
 POLYGON_API_KEY=... python3 scripts/q1_price.py
 ```
+
+---
+
+# The option half
+
+The signal was established on the underlying. These are the trades once a
+premium had to be paid. Only the leg the rule buys was priced — 45 most-liquid
+events, one contract each — so the momentum arm appears by its direction
+accuracy alone and its P&L is not measured.
+
+**Twelve of 45 had no weekly expiry** (LSCC 11 days, AXSM 14, NTLA 15, FORM 16,
+ESS/IONS/OHI 17, RMBS 18, VICR 25, DGXX 35, MANE no chain). The capacity limit
+registered as H4 held again.
+
+## The result
+
+| arm | n | mean | median | win | $40 → |
+|---|---|---|---|---|---|
+| reversal, all priced | 31 | −4.7% | −21.3% | 32% | **$0.00** |
+| reversal, tradeable contract | 12 | **+6.8%** | −12.7% | 25% | **$8.70** |
+| where direction was right | 8 | +34.3% | −3.1% | 38% | $171.19 |
+| where direction was wrong | 4 | −48.2% | −54.6% | 0% | $2.03 |
+| *the underlying, same bets* | 12 | −0.8% | +1.9% | 67% | $33.24 |
+
+Direction accuracy held up — **66.7%** on the twelve priced trades, against
+61.9% on the 118-event underlying sample. **The money still went backwards.**
+
+## Why a real edge still lost
+
+**First: the premium is exactly the favourable move.**
+
+| among the 8 trades where the direction was RIGHT | |
+|---|---|
+| mean gap in your favour | **5.7%** |
+| mean premium paid | **5.7%** |
+| still lost money | **5 of 8** |
+
+The market prices the gap correctly. Being right on direction buys you a
+break-even, not a profit. Rigetti gapped the right way and the put lost 21%;
+Onto gapped 5.7% the right way and returned 0%; D-Wave 6.7% the right way, −3%.
+
+**Second: the rule wins small and loses big.**
+
+| | mean \|gap\| | median | max |
+|---|---|---|---|
+| when RIGHT (18) | **6.0%** | 6.2% | 13.8% |
+| when WRONG (13) | **13.6%** | 12.3% | 34.0% |
+
+**It is wrong by 2.3× as much as it is right by.** The rule fades stocks that
+rallied into their report. Usually the rally fizzles and the fade earns a
+little. Occasionally the rally was the market being early, the report confirms
+it, and the stock runs:
+
+```
+SITM  ran +18.2% in, gapped +34.0%  ->  put -96%
+HUT   ran +11.6% in, gapped +26.2%  ->  put -96%
+DOCN  ran +10.0% in, gapped +19.7%  ->  put -99%
+QUBT  ran  +7.2% in, gapped +24.8%  ->  put -68%
+EOSE  ran +30.0% in, gapped +23.1%  ->  put -68%
+```
+
+That skew is why a 66.7% hit rate compounds downward:
+
+```
+all priced          arithmetic mean  -4.7%   geometric  -43.8%
+tradeable contract  arithmetic mean  +6.8%   geometric  -11.9%
+```
+
+**Positive average, negative compounding** — the same shape this entire body of
+work opened with. A −96% is not undone by a +50%.
+
+## Against the pre-registration
+
+**H1 — half refuted, and that is the useful half.** I registered that both tape
+arms would land near 50%. Reversal reached **61.9%** with a day-clustered
+interval of [53.2, 69.7] that excludes 50% and survives the Bonferroni
+adjustment for having registered both mirrors. **The direction signal is real.**
+
+**H2 — consistent.** The winning arm is 95 puts against 23 calls, and only 47%
+of all screened events gapped up.
+
+**H3 — CONFIRMED, and it is the finding.** Every arm lost money despite the
+signal. Break-even accuracy on the actual prices was **58.4%** and the rule
+delivered **66.7%** — it cleared the bar on accuracy and still lost, because
+break-even accuracy assumes symmetric payoffs and these are not: right by 6.0%,
+wrong by 13.6%.
+
+**H4 — confirmed.** 12 of 45 had no weekly contract.
+
+## What this actually means
+
+**A real directional edge is not sufficient.** That is the whole lesson, and it
+took a genuine signal to demonstrate it — every earlier attempt failed on
+accuracy, so the pricing objection was never tested. Here accuracy was not the
+problem and the trade lost anyway, for two reasons that compound:
+
+1. the option is priced at the move it delivers when you are right, so a correct
+   call is worth roughly zero before costs;
+2. the errors are 2.3× the size of the wins, so the distribution is
+   left-skewed and the geometric mean sits far below the arithmetic one.
+
+To make money from this signal you would need the payoff fixed, not the
+accuracy. Concretely: a **spread** rather than a naked long option, which caps
+the −96% tail at the cost of capping the upside — which is the one structure
+this work has repeatedly pointed at and never tested.
+
+## Limitations
+
+* 31 priced trades, 12 with a tradeable contract. The direction result rests on
+  118 underlying events; the P&L result does not and should not be quoted with
+  the same confidence.
+* One window, one regime, and a rising tape.
+* No bid-ask. The arithmetic mean of +6.8% on the tradeable subset would not
+  survive four crossed spreads.
+* Only the reversal leg was priced, to keep the request count inside a
+  five-per-minute key.
