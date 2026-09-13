@@ -115,3 +115,100 @@ a working strategy — but it is the first one here that survived its own test.
 POLYGON_API_KEY=... python3 scripts/credit_spread.py
 python3 scripts/condor_report.py
 ```
+
+---
+
+# Settled: the edge lives in illiquidity and cannot be harvested
+
+The result above was gross of transaction costs, and for a four-legged structure
+that was the open question. It is now closed.
+
+## Estimating the spread failed, twice, and that is itself the finding
+
+There are no quotes on this key. Two standard recoveries from trade prints were
+tried and both broke:
+
+* **Corwin-Schultz**, which separates spread from volatility using consecutive
+  high-low ranges, returned a **0.00% spread for the thinnest contracts** and a
+  wider one for the busiest — exactly inverted. A contract that prints once in a
+  bar has high equal to low, so the estimator sees no range and reports no
+  spread. It degenerates precisely where the cost is largest.
+* **Price clustering** would work if a contract traded all session between a
+  fixed bid and ask. It does not: AAOI's put printed **51 distinct prices in 70
+  trades**, because the underlying moves all day. A day's interquartile range
+  mixes spread with drift and is an upper bound, not a measurement.
+
+So the spread is not estimated. The question is inverted instead, which requires
+no estimate and cannot be wrong.
+
+## How much cost the edge can absorb
+
+A round trip on four legs pays **eight half-spreads — four full spreads**.
+
+| spread per leg | cost per share | mean on margin | win rate |
+|---|---|---|---|
+| $0.00 | — | **+24.3%** | 77% |
+| $0.01 | $0.04 | +20.4% | 73% |
+| $0.03 | $0.12 | +12.7% | 68% |
+| **$0.05** | $0.20 | **+4.9%** | 64% |
+| $0.075 | $0.30 | −4.7% | 55% |
+| $0.10 | $0.40 | **−14.4%** | 50% |
+
+**Break-even spread: $0.063 per leg.**
+
+US options quote in $0.01 increments below $3 and **$0.05 above**. So on most of
+these legs the *tightest market that can exist* is a nickel, which leaves
++4.9% — inside the noise of a 22-trade sample.
+
+## The liquidity filter makes it worse, not better
+
+The obvious rescue is to trade only butterflies whose legs are busy enough to be
+quoted tightly. It fails, and the way it fails is the whole answer:
+
+| thinnest leg traded | n | **gross** | at $0.05 | break-even spread |
+|---|---|---|---|---|
+| any | 22 | +24.3% | +4.9% | $0.063 |
+| ≥100 | 17 | +27.4% | +4.1% | $0.059 |
+| ≥250 | 13 | +29.3% | +2.3% | $0.054 |
+| **≥500** | 8 | **+1.0%** | −32.9% | **$0.001** |
+| **≥1000** | 4 | **+2.0%** | −42.4% | **$0.002** |
+
+**In the most liquid names the gross edge is +1.0% — there is no edge there at
+all.** The +24.3% is concentrated in contracts whose legs trade a few dozen
+times a session, which are exactly the ones no one quotes a nickel wide.
+
+Where the spread is tight enough to trade, the edge is absent. Where the edge
+exists, the spread consumes it. That is not a problem to be engineered around;
+it is what an efficiently-priced illiquidity premium looks like from the inside.
+
+For scale: a nickel on four legs is $0.20 against a mean margin of $1.39 in the
+liquid tier — **14% of the capital at risk, paid on every trade before the
+market moves at all.**
+
+## Verdict
+
+The structure was the right deduction from every prior measurement, and it does
+what it was designed to do: it caps the tail, cuts the worst trade from −17.5%
+to −5.3% of spot, and cuts volatility by 3.3×. **The overpricing it harvests is
+real.** It is simply not larger than the cost of reaching it.
+
+The second earnings season, named earlier as the other half of settling this,
+was not run — and the cost result makes it moot. A second season confirming
++24% gross would still net to roughly zero at a nickel, and to less than that on
+the thin legs that carry the gross figure.
+
+**This closes the line of enquiry.** Buying scheduled-event options loses to
+overpricing; selling them naked carries a −387%-of-margin tail; selling them
+with defined risk harvests a real premium that is smaller than the eight
+spreads required to collect it.
+
+## What is left, honestly
+
+Two things would change the arithmetic rather than argue with it:
+
+1. **Fewer legs.** A two-legged vertical crosses four spreads instead of eight,
+   halving the cost — but it is directional, and direction was measured at 61.9%
+   accuracy with a payoff so skewed it still lost.
+2. **Real quotes.** Every number in this repository is gross of the spread
+   because the data has no bid or ask in it. That is the single most valuable
+   upgrade available, and it would re-open every result here, not just this one.
