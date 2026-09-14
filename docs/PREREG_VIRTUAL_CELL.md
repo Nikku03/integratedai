@@ -211,3 +211,92 @@ to explain the score away. Gate 2 in particular is designed to take the result
 back: if a shell rule built from the input channels does as well, then nothing
 was inferred, and the honest report is that the reference channels already
 contained the structure.
+
+---
+
+# Addendum, committed before any real-cell metric
+
+Added after running the synthetic positive control in `vcell demo`, and before
+the protocol was pointed at a single real image. The reason it exists is worth
+stating exactly, because a pre-registration amended after seeing results is
+worth nothing: **the amendment is driven by a diagnostic on synthetic cells,
+where the ground truth is something I wrote, and by an argument that can be
+checked without any images at all.**
+
+## What the positive control found
+
+On the synthetic world the protocol behaves as it should on structures it has
+trained on -- the model reaches Dice 0.88 on the synthetic nuclear envelope
+against 0.52 for the pooled atlas, and shuffling the identity vector collapses
+it to 0.11, so the conditioning is doing real work. The leave-one-out fold
+collapses completely: Dice 0.002, worse than every baseline including the
+pooled atlas at 0.234.
+
+That is not a tuning problem. It follows from the design, and the argument needs
+no images:
+
+> The knowledge vector's compartment block is effectively one-hot per cell line
+> at this scale. Hold out LMNB1 and the `nuclear_envelope` input is **identically
+> zero in every training cell**. An input that never varies receives no gradient,
+> so the weights reading it stay at their initialisation. At query time the model
+> is handed a vector whose one informative dimension is a coordinate it was never
+> able to learn anything about.
+
+Checked against the registered five structures, this holds in **all five folds**:
+`actin_cytoskeleton`, `microtubule`, `endoplasmic_reticulum`, `mitochondrion`
+and `nuclear_envelope` each appear in exactly one of the six lines. So H2 as
+registered does not ask "can the model generalise to an unseen protein". It asks
+"can the model generalise along an axis of its input that was constant
+throughout training", and the answer to that is no for arithmetic reasons.
+
+**H2 is left exactly as registered and will be reported in full.** A registered
+hypothesis that turns out to be unanswerable is a result, not an embarrassment,
+and deleting it after the fact would be the actual dishonesty. What follows is an
+addition, not a replacement.
+
+## H6 -- the unseen protein, with its compartment covered
+
+The answerable version of the same question. Hold out a protein entirely while a
+**different** protein annotated to the same compartment stays in training, so the
+compartment dimension is observed and the held-out *protein* is not.
+
+Searching the 25-line annotation table for pairs sharing a dominant compartment
+gives exactly three, and the search was over annotation only:
+
+| fold | held out | partner kept in training | shared compartment |
+|---|---|---|---|
+| `covered_SEC61B` | SEC61B (Sec61 beta) | **ATP2A2** (SERCA2) | endoplasmic reticulum |
+| `covered_LMNB1` | LMNB1 (lamin B1) | **NUP153** (nucleoporin 153) | nuclear envelope |
+| `covered_ACTB` | ACTB (beta-actin) | **ACTN1** (alpha-actinin-1) | actin cytoskeleton |
+
+Two of the five registered structures have **no** such partner anywhere in the
+collection and are therefore reported only under H2:
+
+* **TUBA1B** -- `microtubule` appears in one line out of 25.
+* **TOMM20** -- `mitochondrion` appears in one line out of 25. Mitochondria
+  cannot be held out with their compartment covered at *any* scale this dataset
+  supports, which is a fact about the dataset worth recording.
+
+Three new lines are added for this -- ATP2A2, NUP153, ACTN1 -- at the same 80
+interphase and 20 mitotic cells each, the same QC filter, the same frame, the
+same seed. Everything else is unchanged. Note what a partner is and is not: a
+protein in the same compartment, **not** the same structure. Alpha-actinin marks
+actin bundles where beta-actin marks filaments; a nucleoporin marks pores set in
+the envelope that lamin B1 lines. A model that scores well here has transferred
+across a real gap, and one that scores well only because bundles resemble
+filaments is doing something less than it appears -- which is why the shuffled
+identity control and the geometric rules are reported for these folds too.
+
+**H6 prediction, on the record before the run:** the covered folds beat the
+pooled atlas, and beat their own H2 counterparts, and still fall short of the
+same structure's score in the `seen` fold. If they instead match `seen`, the
+partner was too similar and the fold was easier than advertised. If they match
+H2, then covering the compartment changed nothing and the conditioning carries
+less than this design assumes.
+
+## One registered parameter restated, not changed
+
+The five H2 folds run on the six registered lines exactly as specified. The three
+H6 folds run on all nine. The `seen` fold stays on the six registered lines so
+that H1 is comparable with H2. No epoch count, learning rate, grid, split rule or
+metric changes.
