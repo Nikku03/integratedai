@@ -102,6 +102,8 @@ def main() -> int:
     parser.add_argument("--out", default=None)
     parser.add_argument("--seed", type=int, default=20260914)
     parser.add_argument("--threads", type=int, default=4)
+    parser.add_argument("--folds", default=None,
+                        help="comma-separated subset of folds to recompute")
     args = parser.parse_args()
 
     torch.set_num_threads(args.threads)
@@ -109,8 +111,11 @@ def main() -> int:
     results = Path(args.results or (data_dir / "results"))
     out_path = Path(args.out or (results / "controls.json"))
 
+    wanted = set(args.folds.split(",")) if args.folds else None
     rows = []
     for fold, frames, test_idx, trained, checkpoint in fold_specs(data_dir, args.seed):
+        if wanted is not None and fold not in wanted:
+            continue
         path = results / checkpoint
         if not path.exists():
             print(f"[{fold}] no checkpoint at {path}; skipped")
@@ -150,6 +155,16 @@ def main() -> int:
                 values = [v for vs in bucket.values() for v in vs if np.isfinite(v)]
                 return float(np.mean(values)) if values else float("nan")
 
+            def per_line(bucket: dict[str, list[float]]) -> dict[str, float]:
+                # Pooling every same-compartment line together dilutes the one
+                # comparison that matters in an H6 fold -- the partner -- with
+                # lines that merely share a cytosolic pool. Keep them separate.
+                return {
+                    line: float(np.mean([v for v in vs if np.isfinite(v)]))
+                    for line, vs in bucket.items()
+                    if any(np.isfinite(v) for v in vs)
+                }
+
             rows.append({
                 "fold": fold,
                 "gene": gene,
@@ -164,6 +179,7 @@ def main() -> int:
                 "swap_same_compartment_lines": same,
                 "swap_diff_compartment": pooled(swap_diff),
                 "swap_diff_compartment_lines": diff,
+                "swap_per_line": {**per_line(swap_same), **per_line(swap_diff)},
             })
             print(
                 f"[{fold}/{gene}] n={rows_for_gene.size} chance={chance_mean:.3f} "
