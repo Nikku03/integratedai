@@ -1,0 +1,442 @@
+[
+ {
+  "fold": "seen",
+  "gene": "AAVS1",
+  "n_cells": 16,
+  "chance_dice": 0.18475751392167603,
+  "dice": 0.43491662617577465,
+  "dice_lo": 0.41340769562244223,
+  "dice_hi": 0.4588653275920547,
+  "lift": 2.3539861353630696,
+  "pearson_r": 0.8688731751125554,
+  "swap_same_compartment": 0.2536466976590517,
+  "swap_same_compartment_lines": [
+   "ACTB",
+   "TUBA1B"
+  ],
+  "swap_diff_compartment": 0.07817482144745873,
+  "swap_diff_compartment_lines": [
+   "LMNB1",
+   "SEC61B",
+   "TOMM20"
+  ]
+ },
+ {
+  "fold": "seen",
+  "gene": "ACTB",
+  "n_cells": 16,
+  "chance_dice": 0.03373223934732428,
+  "dice": 0.19274496343343636,
+  "dice_lo": 0.16047650756519447,
+  "dice_hi": 0.22564967169408673,
+  "lift": 5.713968807372564,
+  "pearson_r": 0.8218469833786912,
+  "swap_same_compartment": 0.12820621214800748,
+  "swap_same_compartment_lines": [
+   "AAVS1",
+   "TUBA1B"
+  ],
+  "swap_diff_compartment": 0.00691690981256151,
+  "swap_diff_compartment_lines": [
+   "LMNB1",
+   "SEC61B",
+   "TOMM20"
+  ]
+ },
+ {
+  "fold": "seen",
+  "gene": "LMNB1",
+  "n_cells": 16,
+  "chance_dice": 0.09292871358312328,
+  "dice": 0.48215473674404086,
+  "dice_lo": 0.45774954230675685,
+  "dice_hi": 0.5082302172875606,
+  "lift": 5.188436578461413,
+  "pearson_r": 0.9172159688257158,
+  "swap_same_compartment": NaN,
+  "swap_same_compartment_lines": [],
+  "swap_diff_compartment": 0.030571155069839696,
+  "swap_diff_compartment_lines": [
+   "AAVS1",
+   "ACTB",
+   "SEC61B",
+   "TOMM20",
+   "TUBA1B"
+  ]
+ },
+ {
+  "fold": "seen",
+  "gene": "SEC61B",
+  "n_cells": 16,
+  "chance_dice": 0.12722839647776424,
+  "dice": 0.34352586584982275,
+  "dice_lo": 0.32629025249705307,
+  "dice_hi": 0.362410095484752,
+  "lift": 2.7000722744301893,
+  "pearson_r": 0.6656882757159007,
+  "swap_same_compartment": NaN,
+  "swap_same_compartment_lines": [],
+  "swap_diff_compartment": 0.18731543250920682,
+  "swap_diff_compartment_lines": [
+   "AAVS1",
+   "ACTB",
+   "LMNB1",
+   "TOMM20",
+   "TUBA1B"
+  ]
+ },
+ {
+  "fold": "seen",
+  "gene": "TOMM20",
+  "n_cells": 16,
+  "chance_dice": 0.08485188066940251,
+  "dice": 0.2234767797946921,
+  "dice_lo": 0.19290700775712732,
+  "dice_hi": 0.2531907029657159,
+  "lift": 2.6337280686257976,
+  "pearson_r": 0.42785063574219095,
+  "swap_same_compartment": NaN,
+  "swap_same_compartment_lines": [],
+  "swap_diff_compartment": 0.10496699465160927,
+  "swap_diff_compartment_lines": [
+   "AAVS1",
+   "ACTB",
+   "LMNB1",
+   "SEC61B",
+   "TUBA1B"
+  ]
+ },
+ {
+  "fold": "seen",
+  "gene": "TUBA1B",
+  "n_cells": 16,
+  "chance_dice": 0.12537423236355885,
+  "dice": 0.15665676267401132,
+  "dice_lo": 0.14640107325506846,
+  "dice_hi": 0.1677047927532669,
+  "lift": 1.249513235062048,
+  "pearson_r": 0.8309779014111026,
+  "swap_same_compartment": 0.183920776938595,
+  "swap_same_compartment_lines": [
+   "AAVS1",
+   "ACTB"
+  ],
+  "swap_diff_compartment": 0.1303209980906208,
+  "swap_diff_compartment_lines": [
+   "LMNB1",
+   "SEC61B",
+   "TOMM20"
+  ]
+ },
+ {
+  "fold": "mitotic",
+  "gene": "AAVS1",
+  "n_cells": 20,
+  "chance_dice": 0.11866076365573039,
+  "dice": 0.3891582126486485,
+  "dice_lo": 0.37010848638477,
+  "dice_hi": 0.40963730692327605,
+  "lift": 3.279586281592713,
+  "pearson_r": 0.8441426028479249,
+  "swap_same_compartment": 0.19880629396759342,
+  "swap_same_compartment_lines": [
+   "ACTB",
+   "TUBA1B"
+  ],
+  "swap_diff_compartment": 0.026874334861019544,
+  "swap_diff_compartment_lines": [
+   "LMNB1",
+   "SEC61B",
+   "TOMM20"
+  ]
+ },
+ {
+  "fold": "mitotic",
+  "gene": "ACTB",
+  "n_cells": 20,
+  "chance_dice": 0.03057466165212175,
+  "dice": 0.20292615184972682,
+  "dice_lo": 0.17658717579052496,
+  "dice_hi": 0.23058989342341937,
+  "lift": 6.637069419070566,
+  "pearson_r": 0.6815031802738403,
+  "swap_same_compartment": 0.12408385257277214,
+  "swap_same_compartment_lines": [
+   "AAVS1",
+   "TUBA1B"
+  ],
+  "swap_diff_compartment": 0.0025077347013858302,
+  "swap_diff_compartment_lines": [
+   "LMNB1",
+   "SEC61B",
+   "TOMM20"
+  ]
+ },
+ {
+  "fold": "mitotic",
+  "gene": "LMNB1",
+  "n_cells": 20,
+  "chance_dice": 0.07878749712007019,
+  "dice": 0.17393149430600097,
+  "dice_lo": 0.09625146358518395,
+  "dice_hi": 0.25184489567637847,
+  "lift": 2.20760273728373,
+  "pearson_r": 0.22935852255129632,
+  "swap_same_compartment": NaN,
+  "swap_same_compartment_lines": [],
+  "swap_diff_compartment": 0.06105265649447011,
+  "swap_diff_compartment_lines": [
+   "AAVS1",
+   "ACTB",
+   "SEC61B",
+   "TOMM20",
+   "TUBA1B"
+  ]
+ },
+ {
+  "fold": "mitotic",
+  "gene": "SEC61B",
+  "n_cells": 20,
+  "chance_dice": 0.11093098613894278,
+  "dice": 0.18349001002587717,
+  "dice_lo": 0.13653746091518865,
+  "dice_hi": 0.2299121589268359,
+  "lift": 1.6540915790296238,
+  "pearson_r": 0.3812422703521908,
+  "swap_same_compartment": NaN,
+  "swap_same_compartment_lines": [],
+  "swap_diff_compartment": 0.13318912912959527,
+  "swap_diff_compartment_lines": [
+   "AAVS1",
+   "ACTB",
+   "LMNB1",
+   "TOMM20",
+   "TUBA1B"
+  ]
+ },
+ {
+  "fold": "mitotic",
+  "gene": "TOMM20",
+  "n_cells": 20,
+  "chance_dice": 0.08748866644137822,
+  "dice": 0.1689212341472714,
+  "dice_lo": 0.13169810882632502,
+  "dice_hi": 0.20516930243291867,
+  "lift": 1.930778477009443,
+  "pearson_r": 0.3103832161065863,
+  "swap_same_compartment": NaN,
+  "swap_same_compartment_lines": [],
+  "swap_diff_compartment": 0.08309399344896683,
+  "swap_diff_compartment_lines": [
+   "AAVS1",
+   "ACTB",
+   "LMNB1",
+   "SEC61B",
+   "TUBA1B"
+  ]
+ },
+ {
+  "fold": "mitotic",
+  "gene": "TUBA1B",
+  "n_cells": 20,
+  "chance_dice": 0.06556988952460296,
+  "dice": 0.06273010541884425,
+  "dice_lo": 0.041542825366107955,
+  "dice_hi": 0.08477283007688588,
+  "lift": 0.9566907291388194,
+  "pearson_r": 0.12686092834955956,
+  "swap_same_compartment": 0.1033285758522449,
+  "swap_same_compartment_lines": [
+   "AAVS1",
+   "ACTB"
+  ],
+  "swap_diff_compartment": 0.09614493688468219,
+  "swap_diff_compartment_lines": [
+   "LMNB1",
+   "SEC61B",
+   "TOMM20"
+  ]
+ },
+ {
+  "fold": "loso_ACTB",
+  "gene": "ACTB",
+  "n_cells": 80,
+  "chance_dice": 0.0336721822371379,
+  "dice": 0.016859908705110598,
+  "dice_lo": 0.013444741060488062,
+  "dice_hi": 0.020774166897911856,
+  "lift": 0.5007073371833732,
+  "pearson_r": 0.6536093501560816,
+  "swap_same_compartment": 0.15243984000600447,
+  "swap_same_compartment_lines": [
+   "AAVS1",
+   "TUBA1B"
+  ],
+  "swap_diff_compartment": 0.005969672032915957,
+  "swap_diff_compartment_lines": [
+   "LMNB1",
+   "SEC61B",
+   "TOMM20"
+  ]
+ },
+ {
+  "fold": "loso_TUBA1B",
+  "gene": "TUBA1B",
+  "n_cells": 80,
+  "chance_dice": 0.12191633575996112,
+  "dice": 0.13597284988351238,
+  "dice_lo": 0.12765643465274756,
+  "dice_hi": 0.14498744321222903,
+  "lift": 1.1152963959745876,
+  "pearson_r": 0.7266306383486659,
+  "swap_same_compartment": 0.17459110357166216,
+  "swap_same_compartment_lines": [
+   "AAVS1",
+   "ACTB"
+  ],
+  "swap_diff_compartment": 0.1365467079999174,
+  "swap_diff_compartment_lines": [
+   "LMNB1",
+   "SEC61B",
+   "TOMM20"
+  ]
+ },
+ {
+  "fold": "loso_SEC61B",
+  "gene": "SEC61B",
+  "n_cells": 80,
+  "chance_dice": 0.11941760532478023,
+  "dice": 0.23623114562195263,
+  "dice_lo": 0.2215914201635316,
+  "dice_hi": 0.2479253441477611,
+  "lift": 1.9781936254664834,
+  "pearson_r": 0.4761282212577231,
+  "swap_same_compartment": NaN,
+  "swap_same_compartment_lines": [],
+  "swap_diff_compartment": 0.1784174738895973,
+  "swap_diff_compartment_lines": [
+   "AAVS1",
+   "ACTB",
+   "LMNB1",
+   "TOMM20",
+   "TUBA1B"
+  ]
+ },
+ {
+  "fold": "loso_TOMM20",
+  "gene": "TOMM20",
+  "n_cells": 80,
+  "chance_dice": 0.08453709161899663,
+  "dice": 0.16974579149489477,
+  "dice_lo": 0.15991705024716554,
+  "dice_hi": 0.17898233988928053,
+  "lift": 2.007944539420973,
+  "pearson_r": 0.3158332723213066,
+  "swap_same_compartment": NaN,
+  "swap_same_compartment_lines": [],
+  "swap_diff_compartment": 0.10544126629543708,
+  "swap_diff_compartment_lines": [
+   "AAVS1",
+   "ACTB",
+   "LMNB1",
+   "SEC61B",
+   "TUBA1B"
+  ]
+ },
+ {
+  "fold": "loso_LMNB1",
+  "gene": "LMNB1",
+  "n_cells": 80,
+  "chance_dice": 0.09337303817051275,
+  "dice": 0.0018538460473858092,
+  "dice_lo": 0.000982924799804334,
+  "dice_hi": 0.0030011595864330486,
+  "lift": 0.019854190071446714,
+  "pearson_r": -0.26165192260197057,
+  "swap_same_compartment": NaN,
+  "swap_same_compartment_lines": [],
+  "swap_diff_compartment": 0.037565253270356404,
+  "swap_diff_compartment_lines": [
+   "AAVS1",
+   "ACTB",
+   "SEC61B",
+   "TOMM20",
+   "TUBA1B"
+  ]
+ },
+ {
+  "fold": "covered_SEC61B",
+  "gene": "SEC61B",
+  "n_cells": 80,
+  "chance_dice": 0.11941760532478023,
+  "dice": 0.30922043433962443,
+  "dice_lo": 0.2998946656073658,
+  "dice_hi": 0.3183007401598437,
+  "lift": 2.5894040790605137,
+  "pearson_r": 0.6342329665080826,
+  "swap_same_compartment": 0.31292604109842226,
+  "swap_same_compartment_lines": [
+   "ATP2A2"
+  ],
+  "swap_diff_compartment": 0.1704762018900904,
+  "swap_diff_compartment_lines": [
+   "AAVS1",
+   "ACTB",
+   "ACTN1",
+   "LMNB1",
+   "NUP153",
+   "TOMM20",
+   "TUBA1B"
+  ]
+ },
+ {
+  "fold": "covered_LMNB1",
+  "gene": "LMNB1",
+  "n_cells": 80,
+  "chance_dice": 0.09337303817051275,
+  "dice": 0.524151579871491,
+  "dice_lo": 0.5111087489765435,
+  "dice_hi": 0.5371075168836587,
+  "lift": 5.613521741836374,
+  "pearson_r": 0.8888947096865838,
+  "swap_same_compartment": 0.5385147154753364,
+  "swap_same_compartment_lines": [
+   "NUP153"
+  ],
+  "swap_diff_compartment": 0.05353214211815252,
+  "swap_diff_compartment_lines": [
+   "AAVS1",
+   "ACTB",
+   "ACTN1",
+   "ATP2A2",
+   "SEC61B",
+   "TOMM20",
+   "TUBA1B"
+  ]
+ },
+ {
+  "fold": "covered_ACTB",
+  "gene": "ACTB",
+  "n_cells": 80,
+  "chance_dice": 0.0336721822371379,
+  "dice": 0.2159153344903876,
+  "dice_lo": 0.20196370992275806,
+  "dice_hi": 0.23066095168000592,
+  "lift": 6.41227625135175,
+  "pearson_r": 0.8300626512757103,
+  "swap_same_compartment": 0.12329454153490242,
+  "swap_same_compartment_lines": [
+   "AAVS1",
+   "ACTN1",
+   "NUP153",
+   "TUBA1B"
+  ],
+  "swap_diff_compartment": 0.005564740939602559,
+  "swap_diff_compartment_lines": [
+   "ATP2A2",
+   "LMNB1",
+   "SEC61B",
+   "TOMM20"
+  ]
+ }
+]

@@ -1,0 +1,107 @@
+[
+ {
+  "fold": "covered_SEC61B",
+  "gene": "SEC61B",
+  "n_cells": 80,
+  "chance_dice": 0.11941760532478023,
+  "dice": 0.30922043433962443,
+  "dice_lo": 0.2998946656073658,
+  "dice_hi": 0.3183007401598437,
+  "lift": 2.5894040790605137,
+  "pearson_r": 0.6342329665080826,
+  "swap_same_compartment": 0.31292604109842226,
+  "swap_same_compartment_lines": [
+   "ATP2A2"
+  ],
+  "swap_diff_compartment": 0.1704762018900904,
+  "swap_diff_compartment_lines": [
+   "AAVS1",
+   "ACTB",
+   "ACTN1",
+   "LMNB1",
+   "NUP153",
+   "TOMM20",
+   "TUBA1B"
+  ],
+  "swap_per_line": {
+   "ATP2A2": 0.31292604109842226,
+   "AAVS1": 0.1011401901935737,
+   "ACTB": 0.0986214106176524,
+   "ACTN1": 0.0952206946330634,
+   "LMNB1": 0.2599197958010985,
+   "NUP153": 0.2527360786784493,
+   "TOMM20": 0.22461390560840355,
+   "TUBA1B": 0.16108133769839209
+  }
+ },
+ {
+  "fold": "covered_LMNB1",
+  "gene": "LMNB1",
+  "n_cells": 80,
+  "chance_dice": 0.09337303817051275,
+  "dice": 0.524151579871491,
+  "dice_lo": 0.5111087489765435,
+  "dice_hi": 0.5371075168836587,
+  "lift": 5.613521741836374,
+  "pearson_r": 0.8888947096865838,
+  "swap_same_compartment": 0.5385147154753364,
+  "swap_same_compartment_lines": [
+   "NUP153"
+  ],
+  "swap_diff_compartment": 0.05353214211815252,
+  "swap_diff_compartment_lines": [
+   "AAVS1",
+   "ACTB",
+   "ACTN1",
+   "ATP2A2",
+   "SEC61B",
+   "TOMM20",
+   "TUBA1B"
+  ],
+  "swap_per_line": {
+   "NUP153": 0.5385147154753364,
+   "AAVS1": 0.012664167323857783,
+   "ACTB": 0.0007166983598781666,
+   "ACTN1": 0.0012119455673451531,
+   "ATP2A2": 0.12586479985727778,
+   "SEC61B": 0.221437055651644,
+   "TOMM20": 0.009051728532929109,
+   "TUBA1B": 0.0037785995341356564
+  }
+ },
+ {
+  "fold": "covered_ACTB",
+  "gene": "ACTB",
+  "n_cells": 80,
+  "chance_dice": 0.0336721822371379,
+  "dice": 0.2159153344903876,
+  "dice_lo": 0.20196370992275806,
+  "dice_hi": 0.23066095168000592,
+  "lift": 6.41227625135175,
+  "pearson_r": 0.8300626512757103,
+  "swap_same_compartment": 0.12329454153490242,
+  "swap_same_compartment_lines": [
+   "AAVS1",
+   "ACTN1",
+   "NUP153",
+   "TUBA1B"
+  ],
+  "swap_diff_compartment": 0.005564740939602559,
+  "swap_diff_compartment_lines": [
+   "ATP2A2",
+   "LMNB1",
+   "SEC61B",
+   "TOMM20"
+  ],
+  "swap_per_line": {
+   "AAVS1": 0.22398147279552036,
+   "ACTN1": 0.20910127581316082,
+   "NUP153": 0.0029333924758475583,
+   "TUBA1B": 0.057162025055080966,
+   "ATP2A2": 0.00868237853076807,
+   "LMNB1": 0.002714102629418355,
+   "SEC61B": 0.006847433127474385,
+   "TOMM20": 0.004015049470749429
+  }
+ }
+]
