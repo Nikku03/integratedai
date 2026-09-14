@@ -337,7 +337,7 @@ src/iai/
   backtest/          next-open fills, sqrt impact, deflated Sharpe
 docs/                ARCHITECTURE.md · DATA_SOURCES.md · RISK.md · FINDINGS.md
 scripts/             run_smallmid.py (fetch) · model_smallmid.py (train+backtest)
-tests/               201 tests, PIT correctness first
+tests/               226 tests, PIT correctness first
 ```
 
 ```bash
@@ -403,11 +403,32 @@ untagged control line's annotation and, for actin, the score goes up. The
 registered gates caught this; four of the seven registered hypotheses fail for a
 majority of structures, including one the pre-registration named in advance.
 
-The registered design, its amendment, and what came back:
+**The follow-up, on OpenCell.** The Allen result had a structural limit: with one
+cell line per compartment, "which protein" and "which compartment" were the same
+question. OpenCell has 1,310 tagged proteins and seven compartments with 24+
+each, so the protein can be held out while its compartment stays represented.
+Scored as retrieval against a chance of 1/8.
 
-- [`docs/PREREG_VIRTUAL_CELL.md`](docs/PREREG_VIRTUAL_CELL.md)
-- [`docs/RESULT_VIRTUAL_CELL.md`](docs/RESULT_VIRTUAL_CELL.md)
-- [`data/vcell/`](data/vcell/) — the 900 cells by Allen CellId, and every score cited
+A fixed image descriptor — no learning, no annotation — picks the right protein
+76% of the time in vesicles, 60% in nucleoplasm. The model, given that protein's
+abundance, family and measured interactome, picks it at chance. So does a ridge
+regression from the same annotation to the same descriptor, which has an easier
+job by three orders of magnitude. **The signal is in the pixels and it is not in
+the annotation.**
+
+    vcell prepare --data-dir .vcell        # Allen: 24 GB in, 102 MB of frames out
+    python scripts/vcell_opencell.py --data-dir .vcell/oc --blocks noncircular
+
+Both studies, registered before any metric, with what came back:
+
+- [`docs/PREREG_VIRTUAL_CELL.md`](docs/PREREG_VIRTUAL_CELL.md) → [`docs/RESULT_VIRTUAL_CELL.md`](docs/RESULT_VIRTUAL_CELL.md)
+- [`docs/PREREG_OPENCELL.md`](docs/PREREG_OPENCELL.md) → [`docs/RESULT_OPENCELL.md`](docs/RESULT_OPENCELL.md)
+- [`data/vcell/`](data/vcell/) — the 900 Allen cells by CellId, the 168 OpenCell
+  targets, and every score cited in either document
+
+Each study's registered gates took most of its own result away, and in the
+second case one of them caught a flaw in the study that was gating it. Both are
+reported whole.
 
 ---
 

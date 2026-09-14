@@ -20,14 +20,16 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from vcell.opencell import COMPARTMENTS  # noqa: E402
 from vcell.retrieval import protein_clustered_bootstrap  # noqa: E402
 
-BLOCK_ORDER = ("compartment", "compartment+abundance", "compartment+protein",
-               "compartment+interactome", "all")
+BLOCK_ORDER = ("dominant", "compartment", "compartment+abundance",
+               "compartment+protein", "compartment+interactome", "all", "noncircular")
 BLOCK_LABEL = {
-    "compartment": "compartment only (the null)",
+    "dominant": "dominant compartment only (the true null)",
+    "compartment": "graded compartment only (not a null)",
     "compartment+abundance": "+ abundance",
     "compartment+protein": "+ protein properties",
     "compartment+interactome": "+ interactome",
-    "all": "all four blocks",
+    "all": "all four blocks, graded compartment",
+    "noncircular": "all four blocks, dominant compartment (non-circular)",
 }
 
 
@@ -139,8 +141,10 @@ def main() -> int:
 
     print("## Gate 1 — is a protein identifiable from its own pixels?\n")
     print(gate1_table(gate1))
-    print("\n## H1 — the registered question, full knowledge vector\n")
+    print("\n## H1 — the registered question, full knowledge vector (graded compartment)\n")
     print(headline_table(runs, gate1, "all"))
+    print("\n## H1, non-circular — nothing image-derived can separate the candidates\n")
+    print(headline_table(runs, gate1, "noncircular"))
     print("\n## H3 — which block carries it\n")
     print(ablation_table(runs))
     print("\n## Pooled\n")
