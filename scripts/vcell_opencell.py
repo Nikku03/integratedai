@@ -33,12 +33,21 @@ from vcell.oc_train import (  # noqa: E402
 )
 from vcell.opencell import COMPARTMENTS, KNOWLEDGE_BLOCKS, load_sample  # noqa: E402
 
+# (blocks kept, compartment form). The "dominant" form one-hots only the sole
+# highest-grade compartment, which is identical for every candidate in a fold.
+# The "graded" form also encodes secondary annotations, which differ between
+# candidates and are image-derived -- so a "compartment-only" run in the graded
+# form is NOT a null, which is what the first pass of this study got wrong.
 BLOCK_SETS = {
-    "all": KNOWLEDGE_BLOCKS,
-    "compartment": ("compartment",),
-    "compartment+abundance": ("compartment", "abundance"),
-    "compartment+protein": ("compartment", "protein"),
-    "compartment+interactome": ("compartment", "interactome"),
+    "all": (KNOWLEDGE_BLOCKS, "graded"),
+    "compartment": (("compartment",), "graded"),
+    "compartment+abundance": (("compartment", "abundance"), "graded"),
+    "compartment+protein": (("compartment", "protein"), "graded"),
+    "compartment+interactome": (("compartment", "interactome"), "graded"),
+    # The true null: every candidate gets a byte-identical vector.
+    "dominant": (("compartment",), "dominant"),
+    # The non-circular H1: nothing image-derived can distinguish the candidates.
+    "noncircular": (KNOWLEDGE_BLOCKS, "dominant"),
 }
 
 
@@ -57,8 +66,12 @@ def main() -> int:
     tiles = load_tiles(D / "tiles.npz")
     sample = load_sample(D / "sample.json")
     families = training_families(sample)
-    blocks = BLOCK_SETS[args.blocks]
-    vectors = build_vectors(sample, families, blocks=blocks)
+    blocks, compartment_form = BLOCK_SETS[args.blocks]
+    vectors = build_vectors(sample, families, blocks=blocks,
+                            compartment_form=compartment_form)
+    distinct = len({tuple(np.round(v, 5)) for v in vectors.values()})
+    print(f"compartment form: {compartment_form}; "
+          f"{distinct} distinct vectors over {len(vectors)} proteins")
     cond_dim = len(next(iter(vectors.values())))
 
     present = set(tiles["gene"].tolist())
@@ -109,7 +122,8 @@ def main() -> int:
               f"{s['mrr']:6.3f} {ms['top1']:15.3f} "
               f"{(rs.get('top1', float('nan'))):11.3f}")
 
-    save_json({"blocks": list(blocks), "cond_dim": cond_dim,
+    save_json({"blocks": list(blocks), "compartment_form": compartment_form,
+               "cond_dim": cond_dim,
                "n_train_tiles": int(train_rows.size), "results": results},
               out_dir / f"retrieval_{args.blocks}.json")
     print(f"\nwrote {out_dir/f'retrieval_{args.blocks}.json'}")

@@ -280,3 +280,50 @@ def test_rank_never_exceeds_candidate_count(n):
     scores = {f"g{i}": float(i) for i in range(n)}
     rank, total = rank_of_truth(scores, "g0")
     assert 1 <= rank <= total == n
+
+
+def test_dominant_compartment_form_is_a_true_null_graded_is_not():
+    """The pre-registration's immunity argument holds only for the dominant form.
+
+    The graded form writes every annotation a protein carries, so secondary
+    localisations -- which OpenCell read off its own microscopy -- differ
+    between candidates in a compartment and are available to a ranking. That
+    makes a "compartment-only" run in the graded form not a null, and
+    reintroduces exactly the circularity the design claimed to avoid.
+    """
+    fams: list[str] = []
+    candidates = [
+        _target("A", grades={"er": 3}),
+        _target("B", grades={"er": 3, "vesicles": 1}),
+        _target("C", grades={"er": 3, "golgi": 2}),
+    ]
+    graded = {tuple(np.round(knowledge_blocks(t, fams)["compartment"], 5))
+              for t in candidates}
+    dominant = {tuple(np.round(
+        knowledge_blocks(t, fams, compartment_form="dominant")["compartment"], 5))
+        for t in candidates}
+    assert len(graded) == 3, "graded form must differ between candidates"
+    assert len(dominant) == 1, "dominant form must be identical between candidates"
+
+
+def test_dominant_form_makes_whole_vectors_identical_under_the_null():
+    fams = ["ARF"]
+    candidates = [
+        _target("A", grades={"er": 3}, family="ARF", protein_copy_number=1e5,
+                interactors=["ENSG1"]),
+        _target("B", grades={"er": 3, "golgi": 2}, family=None,
+                protein_copy_number=9e6, interactors=["ENSG2", "ENSG3"]),
+    ]
+    vs = [knowledge_vector(t, fams, blocks=("compartment",),
+                           compartment_form="dominant") for t in candidates]
+    # Under the true null every candidate is byte-identical, so a retrieval
+    # cannot do better than chance however the model behaves.
+    assert np.allclose(vs[0], vs[1])
+    # And the full vector must still separate them, or nothing can be learned.
+    full = [knowledge_vector(t, fams, compartment_form="dominant") for t in candidates]
+    assert not np.allclose(full[0], full[1])
+
+
+def test_unknown_compartment_form_raises():
+    with pytest.raises(ValueError, match="compartment_form"):
+        knowledge_blocks(_target(), [], compartment_form="nonsense")

@@ -197,12 +197,16 @@ def summarise_with_interval(ranks, genes, seed: int = 0) -> dict:
     return s
 
 
-def build_vectors(sample, families, blocks=KNOWLEDGE_BLOCKS) -> dict[str, np.ndarray]:
+def build_vectors(
+    sample, families, blocks=KNOWLEDGE_BLOCKS, compartment_form: str = "graded"
+) -> dict[str, np.ndarray]:
     out = {}
     for d in sample.values():
         for group in d.values():
             for t in group:
-                out[t.gene] = knowledge_vector(t, families, blocks=blocks)
+                out[t.gene] = knowledge_vector(
+                    t, families, blocks=blocks, compartment_form=compartment_form
+                )
     return out
 
 

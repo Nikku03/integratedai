@@ -274,12 +274,27 @@ def _interactome_hash(partners: list[str], n: int = N_INTERACTOME_HASH) -> np.nd
     return out / np.sqrt(max(len(partners), 1))
 
 
-def knowledge_blocks(target: Target, families: list[str]) -> dict[str, np.ndarray]:
-    """The four blocks, so ablations can drop whole blocks rather than columns."""
+def knowledge_blocks(
+    target: Target, families: list[str], compartment_form: str = "graded"
+) -> dict[str, np.ndarray]:
+    """The four blocks, so ablations can drop whole blocks rather than columns.
+
+    `compartment_form="dominant"` keeps only the sole highest-grade compartment,
+    which is identical for every candidate in a fold. `"graded"` keeps every
+    annotation including secondary ones, which is **not** identical and is
+    image-derived -- see the module docstring.
+    """
     comp = np.zeros(len(ALL_COMPARTMENTS), dtype=np.float32)
-    for name, grade in target.grades.items():
-        if name in ALL_COMPARTMENTS:
-            comp[ALL_COMPARTMENTS.index(name)] = grade / 3.0
+    if compartment_form == "dominant":
+        if target.compartment in ALL_COMPARTMENTS:
+            comp[ALL_COMPARTMENTS.index(target.compartment)] = 1.0
+    elif compartment_form == "graded":
+        for name, grade in target.grades.items():
+            if name in ALL_COMPARTMENTS:
+                comp[ALL_COMPARTMENTS.index(name)] = grade / 3.0
+    else:
+        raise ValueError(f"compartment_form must be 'graded' or 'dominant', "
+                         f"got {compartment_form!r}")
 
     def log10(x, default=0.0):
         return float(np.log10(x)) if x and x > 0 else default
@@ -315,7 +330,10 @@ def knowledge_blocks(target: Target, families: list[str]) -> dict[str, np.ndarra
 
 
 def knowledge_vector(
-    target: Target, families: list[str], blocks: tuple[str, ...] = KNOWLEDGE_BLOCKS
+    target: Target,
+    families: list[str],
+    blocks: tuple[str, ...] = KNOWLEDGE_BLOCKS,
+    compartment_form: str = "graded",
 ) -> np.ndarray:
     """Concatenate the requested blocks; dropped blocks are zeroed, not removed.
 
@@ -323,7 +341,7 @@ def knowledge_vector(
     across ablations, so an ablation changes what the model can know and
     nothing else.
     """
-    parts = knowledge_blocks(target, families)
+    parts = knowledge_blocks(target, families, compartment_form=compartment_form)
     return np.concatenate([
         parts[name] if name in blocks else np.zeros_like(parts[name])
         for name in KNOWLEDGE_BLOCKS
