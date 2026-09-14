@@ -331,7 +331,15 @@ def knowledge_vector(
 
 
 def knowledge_dim(families: list[str]) -> int:
-    return (len(ALL_COMPARTMENTS) + 3 + len(families) + 1 + 3 + N_INTERACTOME_HASH)
+    """Length of the vector `knowledge_vector` returns, derived block by block.
+
+    Computed from the blocks themselves rather than re-added by hand: the
+    hand-added version silently lost the tagging-terminus column and reported
+    one less than the vector actually had.
+    """
+    probe = Target(gene="_", ensg="_", cell_line_id=0, compartment=COMPARTMENTS[0],
+                   grades={COMPARTMENTS[0]: 3})
+    return int(sum(v.size for v in knowledge_blocks(probe, families).values()))
 
 
 def choose_sample(
