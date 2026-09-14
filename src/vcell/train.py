@@ -26,6 +26,7 @@ from vcell.baselines import (
     geometric_rule,
 )
 from vcell.dataset import CellFrameDataset, load_frames, split_by_fov, unit_mass
+from vcell.joint import joint_consistency
 from vcell.knowledge import KNOWLEDGE_DIM, POC_STRUCTURES, knowledge_vector
 from vcell.metrics import (
     METRIC_NAMES,
@@ -271,6 +272,19 @@ def run_protocol(
         records += evaluate_fold("seen", frames, train_idx, test_idx, model, ablated,
                                  set(all_genes))
         torch.save(model.state_dict(), out_dir / "model_seen.pt")
+
+        # --- H4: the joint virtual cell, a consistency check ------------------
+        joint = joint_consistency(
+            lambda ref, know, mask: _predict(model, ref, know, mask),
+            frames,
+            train_idx,
+            test_idx,
+            [g for g in POC_STRUCTURES],
+        )
+        (out_dir / "joint.json").write_text(json.dumps(joint, indent=1))
+        print(f"[joint] {joint['n_virtual_cells']} virtual cells: pairwise "
+              f"arrangement correlation {joint['pairwise_correlation']:.3f}, "
+              f"mean abs error {joint['pairwise_mean_abs_error_micron']:.3f} micron")
 
         # --- H5: mitotic cells, never trained on, scored with the same model --
         if mitotic is not None:

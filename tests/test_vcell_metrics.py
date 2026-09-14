@@ -150,3 +150,30 @@ def test_atlas_and_nearest_cell_shapes():
     )
     out = nearest.predict(frames["reference"][0].astype(np.float32), "LMNB1")
     assert out.shape == frames["target"].shape[1:]
+
+
+def test_joint_profile_and_matrix():
+    from vcell.joint import (
+        DISTANCE_RANGE,
+        N_BINS,
+        distance_profile,
+        profile_distance_matrix,
+    )
+
+    cell, nuc, truth, voxel = _toy()
+    d = signed_nuclear_distance(nuc, voxel)
+    profile = distance_profile(truth.astype(np.float32), d, cell)
+    assert profile.shape == (N_BINS,)
+    assert abs(profile.sum() - 1.0) < 1e-6
+
+    # A structure at the nuclear surface and one at the cortex must be far
+    # apart on the radial axis, and each zero distance from itself.
+    from vcell.baselines import geometric_rule
+
+    shell = distance_profile(geometric_rule("nuclear_shell", nuc, cell, voxel), d, cell)
+    cortex = distance_profile(geometric_rule("cell_shell", nuc, cell, voxel), d, cell)
+    names, matrix = profile_distance_matrix({"shell": shell, "cortex": cortex})
+    assert names == ["cortex", "shell"]
+    assert np.allclose(np.diag(matrix), 0.0)
+    assert matrix[0, 1] == matrix[1, 0] > 0.0
+    assert matrix[0, 1] < (DISTANCE_RANGE[1] - DISTANCE_RANGE[0])

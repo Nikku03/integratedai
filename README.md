@@ -337,12 +337,68 @@ src/iai/
   backtest/          next-open fills, sqrt impact, deflated Sharpe
 docs/                ARCHITECTURE.md · DATA_SOURCES.md · RISK.md · FINDINGS.md
 scripts/             run_smallmid.py (fetch) · model_smallmid.py (train+backtest)
-tests/               111 tests, PIT correctness first
+tests/               201 tests, PIT correctness first
 ```
 
 ```bash
-pytest tests/ -q          # ~90s
+pytest tests/ -q          # ~3 min
 ```
+
+---
+
+## A second experiment, in a different domain: the virtual cell
+
+`src/vcell/` is not part of the equity stack and shares no code with it. It is
+here because it is the same method -- pre-register, build the baselines that can
+take the result away, report the folds whole -- pointed at a question in cell
+biology. It installs separately and the equity stack never imports torch.
+
+**The question.** The Allen Institute's hiPSC single-cell image dataset is
+215,081 3D images of WTC-11 cells. Every cell carries the same two reference
+channels, DNA and cell membrane, plus **exactly one** tagged structure. So the
+collection is 215,081 observations of
+
+```
+f(this cell's geometry, which protein you are asking about) -> that protein's 3D density field
+```
+
+with measured ground truth on the right. Can a model produce the field for a
+protein whose images it has never seen?
+
+```bash
+pip install -e ".[cell]"
+
+vcell demo                                # synthetic cells, known ground truth, no network
+vcell prepare --data-dir .vcell           # 24 GB of crops in, 102 MB of frames out
+vcell train   --data-dir .vcell           # the registered protocol, ~3 h on 4 CPU cores
+```
+
+**One constraint reframed the whole thing.** The original design was
+`DNA + membrane + ER -> mitochondria`, scored against the real TOM20 image of
+the same cell. That comparison does not exist in any public dataset at this
+scale: it needs a line tagged for two structures at once, and the collection is
+one tag per line. What survives is conditioning on the shared geometry plus
+public annotation about the protein, with a structure held out entirely.
+
+**Protein identity is a fixed annotation vector, never a learned embedding.**
+Seventeen coarse GO compartments, transmembrane passes, whether the protein
+polymerises, order-of-magnitude abundance, mass. Not elegance -- necessity. An
+embedding table indexed by cell line has no row for a line that was never
+trained on, so a model built around one cannot be *asked* the hold-out question.
+
+**What the baselines are for.** A conditional generator asked for "mitochondria
+in a cell" produces something that looks like mitochondria in a cell, and there
+is no way to be wrong. So the model is scored against a per-structure atlas, the
+nearest training cell by reference channels, its own prediction with the
+identity shuffled, and six parameter-free geometric rules built from the input
+masks. The nuclear envelope is roughly the boundary of the DNA channel; if a
+shell rule matches the network there, nothing was inferred and the answer was
+handed over in the input.
+
+The registered design, its amendment, and what came back:
+
+- [`docs/PREREG_VIRTUAL_CELL.md`](docs/PREREG_VIRTUAL_CELL.md)
+- [`docs/RESULT_VIRTUAL_CELL.md`](docs/RESULT_VIRTUAL_CELL.md)
 
 ---
 
