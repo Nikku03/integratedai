@@ -20,9 +20,13 @@ dependencies = [
 [project.optional-dependencies]
 data = ["yfinance>=0.2.40", "pyarrow>=14"]
 dev = ["pytest>=7.4", "ruff>=0.4"]
+# The virtual-cell proof of concept. Kept out of the base dependencies on
+# purpose: the equity stack must stay installable without pulling in torch.
+cell = ["torch>=2.2", "tifffile>=2024.1"]
 
 [project.scripts]
 iai = "iai.cli:main"
+vcell = "vcell.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
