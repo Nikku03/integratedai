@@ -1,0 +1,7643 @@
+{
+ "registered_verdicts": [
+  {
+   "fold": "covered_ACTB",
+   "gene": "ACTB",
+   "beaten_by": [],
+   "beats": [
+    {
+     "baseline": "atlas_pooled",
+     "diff": 0.16969576118105026,
+     "lo": 0.15547107723315254,
+     "hi": 0.18370650328071667
+    },
+    {
+     "baseline": "rule_annotation",
+     "diff": 0.10752592047532847,
+     "lo": 0.0903590701288671,
+     "hi": 0.1242788637956874
+    }
+   ],
+   "not_separated": [],
+   "n_cells": 80,
+   "passes_registered": true
+  },
+  {
+   "fold": "covered_LMNB1",
+   "gene": "LMNB1",
+   "beaten_by": [],
+   "beats": [
+    {
+     "baseline": "atlas_pooled",
+     "diff": 0.30925046194967903,
+     "lo": 0.29302383809134847,
+     "hi": 0.3256232149779463
+    }
+   ],
+   "not_separated": [
+    {
+     "baseline": "rule_annotation",
+     "diff": -0.01422165277243464,
+     "lo": -0.03205644563944533,
+     "hi": 0.0031556618331612996
+    }
+   ],
+   "n_cells": 80,
+   "passes_registered": false
+  },
+  {
+   "fold": "covered_SEC61B",
+   "gene": "SEC61B",
+   "beaten_by": [],
+   "beats": [
+    {
+     "baseline": "atlas_pooled",
+     "diff": 0.18680946114614816,
+     "lo": 0.17777199523536236,
+     "hi": 0.19599598622929792
+    },
+    {
+     "baseline": "rule_annotation",
+     "diff": 0.04435861067184588,
+     "lo": 0.035793826086267064,
+     "hi": 0.052635976018357164
+    }
+   ],
+   "not_separated": [],
+   "n_cells": 80,
+   "passes_registered": true
+  },
+  {
+   "fold": "loso_ACTB",
+   "gene": "ACTB",
+   "beaten_by": [
+    {
+     "baseline": "atlas_pooled",
+     "diff": -0.020104058015683317,
+     "lo": -0.026936837114091245,
+     "hi": -0.01353282995460351
+    },
+    {
+     "baseline": "rule_annotation",
+     "diff": -0.09152950530994858,
+     "lo": -0.10478820581660282,
+     "hi": -0.0787052656428472
+    }
+   ],
+   "beats": [],
+   "not_separated": [],
+   "n_cells": 80,
+   "passes_registered": false
+  },
+  {
+   "fold": "loso_LMNB1",
+   "gene": "LMNB1",
+   "beaten_by": [
+    {
+     "baseline": "atlas_pooled",
+     "diff": -0.14502246694811466,
+     "lo": -0.1607239522841346,
+     "hi": -0.1290889084911594
+    },
+    {
+     "baseline": "rule_annotation",
+     "diff": -0.5365193865965399,
+     "lo": -0.5543058366674151,
+     "hi": -0.5195208844760072
+    }
+   ],
+   "beats": [],
+   "not_separated": [],
+   "n_cells": 80,
+   "passes_registered": false
+  },
+  {
+   "fold": "loso_SEC61B",
+   "gene": "SEC61B",
+   "beaten_by": [
+    {
+     "baseline": "rule_annotation",
+     "diff": -0.028630678045825884,
+     "lo": -0.040321005446707185,
+     "hi": -0.017671718275591778
+    }
+   ],
+   "beats": [
+    {
+     "baseline": "atlas_pooled",
+     "diff": 0.11055454864338124,
+     "lo": 0.10008266737485835,
+     "hi": 0.12095522879728768
+    }
+   ],
+   "not_separated": [],
+   "n_cells": 80,
+   "passes_registered": false
+  },
+  {
+   "fold": "loso_TOMM20",
+   "gene": "TOMM20",
+   "beaten_by": [],
+   "beats": [
+    {
+     "baseline": "atlas_pooled",
+     "diff": 0.0957743448523263,
+     "lo": 0.08414263717887406,
+     "hi": 0.10732991393210849
+    },
+    {
+     "baseline": "rule_annotation",
+     "diff": 0.03745639053435028,
+     "lo": 0.021860483615189732,
+     "hi": 0.05289327041182474
+    }
+   ],
+   "not_separated": [],
+   "n_cells": 80,
+   "passes_registered": true
+  },
+  {
+   "fold": "loso_TUBA1B",
+   "gene": "TUBA1B",
+   "beaten_by": [
+    {
+     "baseline": "rule_annotation",
+     "diff": -0.02059438793126329,
+     "lo": -0.0294808255670451,
+     "hi": -0.011644613455001248
+    }
+   ],
+   "beats": [
+    {
+     "baseline": "atlas_pooled",
+     "diff": 0.014033651338614428,
+     "lo": 0.005265245112257844,
+     "hi": 0.0229856076664446
+    }
+   ],
+   "not_separated": [],
+   "n_cells": 80,
+   "passes_registered": false
+  },
+  {
+   "fold": "mitotic",
+   "gene": "AAVS1",
+   "beaten_by": [],
+   "beats": [
+    {
+     "baseline": "atlas_own_structure",
+     "diff": 0.1307998807778524,
+     "lo": 0.11374876850579471,
+     "hi": 0.1491746241866525
+    },
+    {
+     "baseline": "atlas_pooled",
+     "diff": 0.2912497073833792,
+     "lo": 0.26798602787246284,
+     "hi": 0.314737219551236
+    },
+    {
+     "baseline": "rule_annotation",
+     "diff": 0.3448981690124624,
+     "lo": 0.32622985482956296,
+     "hi": 0.363694264775813
+    },
+    {
+     "baseline": "reference_only",
+     "diff": 0.15415899100042296,
+     "lo": 0.12462025569962384,
+     "hi": 0.18383718753292289
+    }
+   ],
+   "not_separated": [],
+   "n_cells": 20,
+   "passes_registered": true
+  },
+  {
+   "fold": "mitotic",
+   "gene": "ACTB",
+   "beaten_by": [],
+   "beats": [
+    {
+     "baseline": "atlas_own_structure",
+     "diff": 0.14491662989131063,
+     "lo": 0.11650241845997952,
+     "hi": 0.17449909959751964
+    },
+    {
+     "baseline": "atlas_pooled",
+     "diff": 0.16577497025048377,
+     "lo": 0.1377687862770219,
+     "hi": 0.19453893167849762
+    },
+    {
+     "baseline": "rule_annotation",
+     "diff": 0.06723450423321317,
+     "lo": 0.03764194380096871,
+     "hi": 0.09636206941695173
+    },
+    {
+     "baseline": "reference_only",
+     "diff": 0.04350902087330971,
+     "lo": 0.030560331189046903,
+     "hi": 0.05728154970827913
+    }
+   ],
+   "not_separated": [],
+   "n_cells": 20,
+   "passes_registered": true
+  },
+  {
+   "fold": "mitotic",
+   "gene": "LMNB1",
+   "beaten_by": [],
+   "beats": [
+    {
+     "baseline": "reference_only",
+     "diff": 0.07666293167623331,
+     "lo": 0.012938179942309176,
+     "hi": 0.14632503514082096
+    }
+   ],
+   "not_separated": [
+    {
+     "baseline": "atlas_own_structure",
+     "diff": 0.028055375711138076,
+     "lo": -0.02261060578887019,
+     "hi": 0.08305794788725383
+    },
+    {
+     "baseline": "atlas_pooled",
+     "diff": 0.03233168100467783,
+     "lo": -0.026596134933595257,
+     "hi": 0.09897420594892585
+    },
+    {
+     "baseline": "rule_annotation",
+     "diff": -0.02359691308045529,
+     "lo": -0.06923992543080842,
+     "hi": 0.02191985391817487
+    }
+   ],
+   "n_cells": 20,
+   "passes_registered": false
+  },
+  {
+   "fold": "mitotic",
+   "gene": "SEC61B",
+   "beaten_by": [],
+   "beats": [
+    {
+     "baseline": "atlas_own_structure",
+     "diff": 0.03880673400975439,
+     "lo": 0.0026595667870928873,
+     "hi": 0.07522706236205536
+    },
+    {
+     "baseline": "atlas_pooled",
+     "diff": 0.055668112192919186,
+     "lo": 0.01528970604118135,
+     "hi": 0.09670242508699642
+    },
+    {
+     "baseline": "rule_annotation",
+     "diff": 0.05085579569692168,
+     "lo": 0.026608125346963486,
+     "hi": 0.0750449996702673
+    }
+   ],
+   "not_separated": [
+    {
+     "baseline": "reference_only",
+     "diff": 0.00921998279031101,
+     "lo": -0.014836485977671779,
+     "hi": 0.034796802620086976
+    }
+   ],
+   "n_cells": 20,
+   "passes_registered": false
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TOMM20",
+   "beaten_by": [],
+   "beats": [
+    {
+     "baseline": "atlas_pooled",
+     "diff": 0.07132726211617038,
+     "lo": 0.029916025939846345,
+     "hi": 0.11558705960913435
+    },
+    {
+     "baseline": "rule_annotation",
+     "diff": 0.04492229769383646,
+     "lo": 0.01375113194765072,
+     "hi": 0.07570723012231592
+    },
+    {
+     "baseline": "reference_only",
+     "diff": 0.08847038380039454,
+     "lo": 0.055010861679782426,
+     "hi": 0.12201569590376467
+    }
+   ],
+   "not_separated": [
+    {
+     "baseline": "atlas_own_structure",
+     "diff": 0.03727124055566098,
+     "lo": -0.0007150963261065112,
+     "hi": 0.07883860540755669
+    }
+   ],
+   "n_cells": 20,
+   "passes_registered": false
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TUBA1B",
+   "beaten_by": [
+    {
+     "baseline": "reference_only",
+     "diff": -0.027530106227809565,
+     "lo": -0.0429941856533311,
+     "hi": -0.01240252711343079
+    }
+   ],
+   "beats": [],
+   "not_separated": [
+    {
+     "baseline": "atlas_own_structure",
+     "diff": 0.011656887288000956,
+     "lo": -0.00629255859966576,
+     "hi": 0.02970922824451506
+    },
+    {
+     "baseline": "atlas_pooled",
+     "diff": -0.01535792639413491,
+     "lo": -0.033832744545274136,
+     "hi": 0.0017249841667384346
+    },
+    {
+     "baseline": "rule_annotation",
+     "diff": -0.009633652062265205,
+     "lo": -0.02718152716227608,
+     "hi": 0.007399439223822511
+    }
+   ],
+   "n_cells": 20,
+   "passes_registered": false
+  },
+  {
+   "fold": "seen",
+   "gene": "AAVS1",
+   "beaten_by": [],
+   "beats": [
+    {
+     "baseline": "atlas_own_structure",
+     "diff": 0.14631872374051294,
+     "lo": 0.11829354789471655,
+     "hi": 0.17495737657346308
+    },
+    {
+     "baseline": "atlas_pooled",
+     "diff": 0.30611913659389256,
+     "lo": 0.27889530858026074,
+     "hi": 0.3336857463948041
+    },
+    {
+     "baseline": "rule_annotation",
+     "diff": 0.18399380038728252,
+     "lo": 0.09573092868156677,
+     "hi": 0.2608767839334455
+    },
+    {
+     "baseline": "reference_only",
+     "diff": 0.19476387427507402,
+     "lo": 0.1748127474161609,
+     "hi": 0.21378629614897
+    }
+   ],
+   "not_separated": [],
+   "n_cells": 16,
+   "passes_registered": true
+  },
+  {
+   "fold": "seen",
+   "gene": "ACTB",
+   "beaten_by": [],
+   "beats": [
+    {
+     "baseline": "atlas_own_structure",
+     "diff": 0.1333535471271024,
+     "lo": 0.10355829968800691,
+     "hi": 0.16070955378914292
+    },
+    {
+     "baseline": "atlas_pooled",
+     "diff": 0.153623114616005,
+     "lo": 0.12099548780680185,
+     "hi": 0.18282241489651704
+    },
+    {
+     "baseline": "rule_annotation",
+     "diff": 0.0716801535895671,
+     "lo": 0.025517766488992392,
+     "hi": 0.11515277032974643
+    },
+    {
+     "baseline": "reference_only",
+     "diff": 0.0689200755608086,
+     "lo": 0.0497704312632547,
+     "hi": 0.09279518244707655
+    }
+   ],
+   "not_separated": [],
+   "n_cells": 16,
+   "passes_registered": true
+  },
+  {
+   "fold": "seen",
+   "gene": "LMNB1",
+   "beaten_by": [
+    {
+     "baseline": "rule_annotation",
+     "diff": -0.04306728499264235,
+     "lo": -0.07678297286820712,
+     "hi": -0.0026432187162254784
+    }
+   ],
+   "beats": [
+    {
+     "baseline": "atlas_own_structure",
+     "diff": 0.23069060735471608,
+     "lo": 0.20009672559776254,
+     "hi": 0.2604440302607464
+    },
+    {
+     "baseline": "atlas_pooled",
+     "diff": 0.26482567332078577,
+     "lo": 0.2356297690431667,
+     "hi": 0.29566044038546496
+    },
+    {
+     "baseline": "reference_only",
+     "diff": 0.33668485165190815,
+     "lo": 0.31128331238190954,
+     "hi": 0.3628404019529792
+    }
+   ],
+   "not_separated": [],
+   "n_cells": 16,
+   "passes_registered": false
+  },
+  {
+   "fold": "seen",
+   "gene": "SEC61B",
+   "beaten_by": [],
+   "beats": [
+    {
+     "baseline": "atlas_own_structure",
+     "diff": 0.17200145240308634,
+     "lo": 0.14395328943264235,
+     "hi": 0.19922961454006355
+    },
+    {
+     "baseline": "atlas_pooled",
+     "diff": 0.19338339894178952,
+     "lo": 0.16669628586661395,
+     "hi": 0.2190921997093611
+    },
+    {
+     "baseline": "rule_annotation",
+     "diff": 0.06783738087210517,
+     "lo": 0.04908639721312335,
+     "hi": 0.08769453913607857
+    },
+    {
+     "baseline": "reference_only",
+     "diff": 0.06725010124091313,
+     "lo": 0.04309904999615227,
+     "hi": 0.09151677248978132
+    }
+   ],
+   "not_separated": [],
+   "n_cells": 16,
+   "passes_registered": true
+  },
+  {
+   "fold": "seen",
+   "gene": "TOMM20",
+   "beaten_by": [],
+   "beats": [
+    {
+     "baseline": "atlas_own_structure",
+     "diff": 0.10743907872213287,
+     "lo": 0.06827269431621713,
+     "hi": 0.14413339473303008
+    },
+    {
+     "baseline": "atlas_pooled",
+     "diff": 0.13683344984853904,
+     "lo": 0.09925142578727997,
+     "hi": 0.17391702170516551
+    },
+    {
+     "baseline": "rule_annotation",
+     "diff": 0.07698118560484755,
+     "lo": 0.03838957712333077,
+     "hi": 0.11729216896051571
+    },
+    {
+     "baseline": "reference_only",
+     "diff": 0.12946873636918388,
+     "lo": 0.092600437822519,
+     "hi": 0.16350479133920365
+    }
+   ],
+   "not_separated": [],
+   "n_cells": 16,
+   "passes_registered": true
+  },
+  {
+   "fold": "seen",
+   "gene": "TUBA1B",
+   "beaten_by": [
+    {
+     "baseline": "reference_only",
+     "diff": -0.024166193878453424,
+     "lo": -0.04188720499947512,
+     "hi": -0.005407443070788207
+    }
+   ],
+   "beats": [
+    {
+     "baseline": "atlas_own_structure",
+     "diff": 0.018043093088467417,
+     "lo": 0.0007205299529088072,
+     "hi": 0.03772863272069207
+    },
+    {
+     "baseline": "atlas_pooled",
+     "diff": 0.025021621143411638,
+     "lo": 0.004369550018469917,
+     "hi": 0.04784927997916743
+    }
+   ],
+   "not_separated": [
+    {
+     "baseline": "rule_annotation",
+     "diff": -0.013409976488950622,
+     "lo": -0.03674876372720176,
+     "hi": 0.008359787113882943
+    }
+   ],
+   "n_cells": 16,
+   "passes_registered": false
+  }
+ ],
+ "paired": [
+  {
+   "fold": "covered_ACTB",
+   "gene": "ACTB",
+   "baseline": "atlas_pooled",
+   "metric": "pearson_r",
+   "model_better_by": 1.1055120529582958,
+   "lo": 1.064327550212759,
+   "hi": 1.1468333553268677,
+   "n_cells": 80,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "covered_ACTB",
+   "gene": "ACTB",
+   "baseline": "atlas_pooled",
+   "metric": "dice",
+   "model_better_by": 0.16969576118105026,
+   "lo": 0.15547107723315254,
+   "hi": 0.18370650328071667,
+   "n_cells": 80,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "covered_ACTB",
+   "gene": "ACTB",
+   "baseline": "atlas_pooled",
+   "metric": "com_radius",
+   "model_better_by": 0.07044294605869775,
+   "lo": 0.04769762682643729,
+   "hi": 0.09428368152154518,
+   "n_cells": 80,
+   "share_cells_model_better": 0.675
+  },
+  {
+   "fold": "covered_ACTB",
+   "gene": "ACTB",
+   "baseline": "atlas_pooled",
+   "metric": "w1_micron",
+   "model_better_by": 1.3187661145979217,
+   "lo": 1.2255802301065906,
+   "hi": 1.4126057078233256,
+   "n_cells": 80,
+   "share_cells_model_better": 0.9875
+  },
+  {
+   "fold": "covered_ACTB",
+   "gene": "ACTB",
+   "baseline": "atlas_pooled",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.22267993502187614,
+   "lo": 0.21036823752107855,
+   "hi": 0.23437519805304835,
+   "n_cells": 80,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "covered_ACTB",
+   "gene": "ACTB",
+   "baseline": "model_shuffled_identity",
+   "metric": "pearson_r",
+   "model_better_by": -0.0014866256549072698,
+   "lo": -0.0037789983642123465,
+   "hi": 0.0008221451386536485,
+   "n_cells": 80,
+   "share_cells_model_better": 0.425
+  },
+  {
+   "fold": "covered_ACTB",
+   "gene": "ACTB",
+   "baseline": "model_shuffled_identity",
+   "metric": "dice",
+   "model_better_by": 0.006814058677226814,
+   "lo": 0.004891143590437014,
+   "hi": 0.008841646224999214,
+   "n_cells": 80,
+   "share_cells_model_better": 0.6875
+  },
+  {
+   "fold": "covered_ACTB",
+   "gene": "ACTB",
+   "baseline": "model_shuffled_identity",
+   "metric": "com_radius",
+   "model_better_by": -0.0004801685823463751,
+   "lo": -0.0031530990893892967,
+   "hi": 0.0021791402384809103,
+   "n_cells": 80,
+   "share_cells_model_better": 0.4375
+  },
+  {
+   "fold": "covered_ACTB",
+   "gene": "ACTB",
+   "baseline": "model_shuffled_identity",
+   "metric": "w1_micron",
+   "model_better_by": 0.0025127587737932087,
+   "lo": -0.006778197687333533,
+   "hi": 0.011722295802322837,
+   "n_cells": 80,
+   "share_cells_model_better": 0.575
+  },
+  {
+   "fold": "covered_ACTB",
+   "gene": "ACTB",
+   "baseline": "model_shuffled_identity",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.0020471767679459325,
+   "lo": 0.0005082183530449183,
+   "hi": 0.0035393023741360223,
+   "n_cells": 80,
+   "share_cells_model_better": 0.5875
+  },
+  {
+   "fold": "covered_ACTB",
+   "gene": "ACTB",
+   "baseline": "nearest_train_cell",
+   "metric": "pearson_r",
+   "model_better_by": 0.8467916425713529,
+   "lo": 0.8026372710168816,
+   "hi": 0.89103805897393,
+   "n_cells": 80,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "covered_ACTB",
+   "gene": "ACTB",
+   "baseline": "nearest_train_cell",
+   "metric": "dice",
+   "model_better_by": 0.1839613809745147,
+   "lo": 0.16977942844271943,
+   "hi": 0.19740130001158077,
+   "n_cells": 80,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "covered_ACTB",
+   "gene": "ACTB",
+   "baseline": "nearest_train_cell",
+   "metric": "com_radius",
+   "model_better_by": 0.12895065848012163,
+   "lo": 0.09964531993986558,
+   "hi": 0.16001815969939354,
+   "n_cells": 80,
+   "share_cells_model_better": 0.8875
+  },
+  {
+   "fold": "covered_ACTB",
+   "gene": "ACTB",
+   "baseline": "nearest_train_cell",
+   "metric": "w1_micron",
+   "model_better_by": 1.1261130074572478,
+   "lo": 0.9642279627342264,
+   "hi": 1.298943366832578,
+   "n_cells": 80,
+   "share_cells_model_better": 0.9875
+  },
+  {
+   "fold": "covered_ACTB",
+   "gene": "ACTB",
+   "baseline": "nearest_train_cell",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.17881941698700804,
+   "lo": 0.1516734936685914,
+   "hi": 0.20783295711894598,
+   "n_cells": 80,
+   "share_cells_model_better": 0.95
+  },
+  {
+   "fold": "covered_ACTB",
+   "gene": "ACTB",
+   "baseline": "rule_annotation",
+   "metric": "pearson_r",
+   "model_better_by": 0.41779339608942695,
+   "lo": 0.3947805034197778,
+   "hi": 0.4399580418420356,
+   "n_cells": 80,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "covered_ACTB",
+   "gene": "ACTB",
+   "baseline": "rule_annotation",
+   "metric": "dice",
+   "model_better_by": 0.10752592047532847,
+   "lo": 0.0903590701288671,
+   "hi": 0.1242788637956874,
+   "n_cells": 80,
+   "share_cells_model_better": 0.9125
+  },
+  {
+   "fold": "covered_ACTB",
+   "gene": "ACTB",
+   "baseline": "rule_annotation",
+   "metric": "com_radius",
+   "model_better_by": 0.10541427000026227,
+   "lo": 0.0849471972207841,
+   "hi": 0.12558939216751652,
+   "n_cells": 80,
+   "share_cells_model_better": 0.875
+  },
+  {
+   "fold": "covered_ACTB",
+   "gene": "ACTB",
+   "baseline": "rule_annotation",
+   "metric": "w1_micron",
+   "model_better_by": 0.4426022559478354,
+   "lo": 0.3860983589475277,
+   "hi": 0.4992653811541582,
+   "n_cells": 80,
+   "share_cells_model_better": 0.95
+  },
+  {
+   "fold": "covered_ACTB",
+   "gene": "ACTB",
+   "baseline": "rule_annotation",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.06236029411338082,
+   "lo": 0.05734568543591794,
+   "hi": 0.06725099981290097,
+   "n_cells": 80,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "covered_LMNB1",
+   "gene": "LMNB1",
+   "baseline": "atlas_pooled",
+   "metric": "pearson_r",
+   "model_better_by": 0.6130203132310783,
+   "lo": 0.586330481402524,
+   "hi": 0.6405764318605685,
+   "n_cells": 80,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "covered_LMNB1",
+   "gene": "LMNB1",
+   "baseline": "atlas_pooled",
+   "metric": "dice",
+   "model_better_by": 0.30925046194967903,
+   "lo": 0.29302383809134847,
+   "hi": 0.3256232149779463,
+   "n_cells": 80,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "covered_LMNB1",
+   "gene": "LMNB1",
+   "baseline": "atlas_pooled",
+   "metric": "com_radius",
+   "model_better_by": 0.12200023319284492,
+   "lo": 0.10165617383931311,
+   "hi": 0.14338585305978963,
+   "n_cells": 80,
+   "share_cells_model_better": 0.975
+  },
+  {
+   "fold": "covered_LMNB1",
+   "gene": "LMNB1",
+   "baseline": "atlas_pooled",
+   "metric": "w1_micron",
+   "model_better_by": 0.3987266627049531,
+   "lo": 0.34184423944394743,
+   "hi": 0.4620769326471416,
+   "n_cells": 80,
+   "share_cells_model_better": 0.9875
+  },
+  {
+   "fold": "covered_LMNB1",
+   "gene": "LMNB1",
+   "baseline": "atlas_pooled",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.05628213922928007,
+   "lo": 0.05017140412737925,
+   "hi": 0.0619361351398049,
+   "n_cells": 80,
+   "share_cells_model_better": 0.95
+  },
+  {
+   "fold": "covered_LMNB1",
+   "gene": "LMNB1",
+   "baseline": "model_shuffled_identity",
+   "metric": "pearson_r",
+   "model_better_by": -0.005410081711024061,
+   "lo": -0.008881730133037556,
+   "hi": -0.0019023607435934304,
+   "n_cells": 80,
+   "share_cells_model_better": 0.35
+  },
+  {
+   "fold": "covered_LMNB1",
+   "gene": "LMNB1",
+   "baseline": "model_shuffled_identity",
+   "metric": "dice",
+   "model_better_by": -0.01436313560384539,
+   "lo": -0.019361632966610736,
+   "hi": -0.009448259606944252,
+   "n_cells": 80,
+   "share_cells_model_better": 0.2375
+  },
+  {
+   "fold": "covered_LMNB1",
+   "gene": "LMNB1",
+   "baseline": "model_shuffled_identity",
+   "metric": "com_radius",
+   "model_better_by": -0.04930267322534436,
+   "lo": -0.05918812693035738,
+   "hi": -0.03947100908494188,
+   "n_cells": 80,
+   "share_cells_model_better": 0.1625
+  },
+  {
+   "fold": "covered_LMNB1",
+   "gene": "LMNB1",
+   "baseline": "model_shuffled_identity",
+   "metric": "w1_micron",
+   "model_better_by": -0.24910964939256902,
+   "lo": -0.2838160084925015,
+   "hi": -0.21565378953951903,
+   "n_cells": 80,
+   "share_cells_model_better": 0.025
+  },
+  {
+   "fold": "covered_LMNB1",
+   "gene": "LMNB1",
+   "baseline": "model_shuffled_identity",
+   "metric": "nuc_fraction_err",
+   "model_better_by": -0.021086769004759667,
+   "lo": -0.031333994165960645,
+   "hi": -0.010774737344651845,
+   "n_cells": 80,
+   "share_cells_model_better": 0.325
+  },
+  {
+   "fold": "covered_LMNB1",
+   "gene": "LMNB1",
+   "baseline": "nearest_train_cell",
+   "metric": "pearson_r",
+   "model_better_by": 0.7807373921593258,
+   "lo": 0.7493246482009929,
+   "hi": 0.8115898105228664,
+   "n_cells": 80,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "covered_LMNB1",
+   "gene": "LMNB1",
+   "baseline": "nearest_train_cell",
+   "metric": "dice",
+   "model_better_by": 0.4240124078020985,
+   "lo": 0.40596042934353743,
+   "hi": 0.4412855786603717,
+   "n_cells": 80,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "covered_LMNB1",
+   "gene": "LMNB1",
+   "baseline": "nearest_train_cell",
+   "metric": "com_radius",
+   "model_better_by": 0.17896066517076442,
+   "lo": 0.1450885386734692,
+   "hi": 0.214240787287125,
+   "n_cells": 80,
+   "share_cells_model_better": 0.9125
+  },
+  {
+   "fold": "covered_LMNB1",
+   "gene": "LMNB1",
+   "baseline": "nearest_train_cell",
+   "metric": "w1_micron",
+   "model_better_by": 0.6092526600988942,
+   "lo": 0.49991914170097757,
+   "hi": 0.7222821093356757,
+   "n_cells": 80,
+   "share_cells_model_better": 0.9
+  },
+  {
+   "fold": "covered_LMNB1",
+   "gene": "LMNB1",
+   "baseline": "nearest_train_cell",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.1340417879601664,
+   "lo": 0.11743115794249762,
+   "hi": 0.14984846353219963,
+   "n_cells": 80,
+   "share_cells_model_better": 0.9125
+  },
+  {
+   "fold": "covered_LMNB1",
+   "gene": "LMNB1",
+   "baseline": "rule_annotation",
+   "metric": "pearson_r",
+   "model_better_by": 0.24387729766028804,
+   "lo": 0.2309488595563085,
+   "hi": 0.2576930173013471,
+   "n_cells": 80,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "covered_LMNB1",
+   "gene": "LMNB1",
+   "baseline": "rule_annotation",
+   "metric": "dice",
+   "model_better_by": -0.01422165277243464,
+   "lo": -0.03205644563944533,
+   "hi": 0.0031556618331612996,
+   "n_cells": 80,
+   "share_cells_model_better": 0.4
+  },
+  {
+   "fold": "covered_LMNB1",
+   "gene": "LMNB1",
+   "baseline": "rule_annotation",
+   "metric": "com_radius",
+   "model_better_by": -0.016059905917908547,
+   "lo": -0.03297679610079365,
+   "hi": 0.0008651811813532808,
+   "n_cells": 80,
+   "share_cells_model_better": 0.4
+  },
+  {
+   "fold": "covered_LMNB1",
+   "gene": "LMNB1",
+   "baseline": "rule_annotation",
+   "metric": "w1_micron",
+   "model_better_by": 0.3370829984568483,
+   "lo": 0.2689826183276596,
+   "hi": 0.40514067362643136,
+   "n_cells": 80,
+   "share_cells_model_better": 0.8625
+  },
+  {
+   "fold": "covered_LMNB1",
+   "gene": "LMNB1",
+   "baseline": "rule_annotation",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.00804550278668315,
+   "lo": -0.004160813902148265,
+   "hi": 0.02005431139086551,
+   "n_cells": 80,
+   "share_cells_model_better": 0.5
+  },
+  {
+   "fold": "covered_SEC61B",
+   "gene": "SEC61B",
+   "baseline": "atlas_pooled",
+   "metric": "pearson_r",
+   "model_better_by": 0.4504219479213649,
+   "lo": 0.4134650220956309,
+   "hi": 0.48693763524624434,
+   "n_cells": 80,
+   "share_cells_model_better": 0.9875
+  },
+  {
+   "fold": "covered_SEC61B",
+   "gene": "SEC61B",
+   "baseline": "atlas_pooled",
+   "metric": "dice",
+   "model_better_by": 0.18680946114614816,
+   "lo": 0.17777199523536236,
+   "hi": 0.19599598622929792,
+   "n_cells": 80,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "covered_SEC61B",
+   "gene": "SEC61B",
+   "baseline": "atlas_pooled",
+   "metric": "com_radius",
+   "model_better_by": 0.03831854404102387,
+   "lo": 0.021095668750971335,
+   "hi": 0.05642580712965499,
+   "n_cells": 80,
+   "share_cells_model_better": 0.7375
+  },
+  {
+   "fold": "covered_SEC61B",
+   "gene": "SEC61B",
+   "baseline": "atlas_pooled",
+   "metric": "w1_micron",
+   "model_better_by": 0.44674432065487013,
+   "lo": 0.3717726727108222,
+   "hi": 0.5288276354488182,
+   "n_cells": 80,
+   "share_cells_model_better": 0.9
+  },
+  {
+   "fold": "covered_SEC61B",
+   "gene": "SEC61B",
+   "baseline": "atlas_pooled",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.12704639616712693,
+   "lo": 0.11854819941329503,
+   "hi": 0.13528420126792448,
+   "n_cells": 80,
+   "share_cells_model_better": 0.9875
+  },
+  {
+   "fold": "covered_SEC61B",
+   "gene": "SEC61B",
+   "baseline": "model_shuffled_identity",
+   "metric": "pearson_r",
+   "model_better_by": 0.21177943011513448,
+   "lo": 0.1949838894353639,
+   "hi": 0.2284932609225147,
+   "n_cells": 80,
+   "share_cells_model_better": 0.9875
+  },
+  {
+   "fold": "covered_SEC61B",
+   "gene": "SEC61B",
+   "baseline": "model_shuffled_identity",
+   "metric": "dice",
+   "model_better_by": 0.0846065287312208,
+   "lo": 0.07505710649232665,
+   "hi": 0.0945956652951328,
+   "n_cells": 80,
+   "share_cells_model_better": 0.975
+  },
+  {
+   "fold": "covered_SEC61B",
+   "gene": "SEC61B",
+   "baseline": "model_shuffled_identity",
+   "metric": "com_radius",
+   "model_better_by": 0.06944500010482624,
+   "lo": 0.051713232370116505,
+   "hi": 0.0872944034718145,
+   "n_cells": 80,
+   "share_cells_model_better": 0.7875
+  },
+  {
+   "fold": "covered_SEC61B",
+   "gene": "SEC61B",
+   "baseline": "model_shuffled_identity",
+   "metric": "w1_micron",
+   "model_better_by": 0.23671194821241004,
+   "lo": 0.20328134496872297,
+   "hi": 0.2753412359386152,
+   "n_cells": 80,
+   "share_cells_model_better": 0.975
+  },
+  {
+   "fold": "covered_SEC61B",
+   "gene": "SEC61B",
+   "baseline": "model_shuffled_identity",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.02954250625553727,
+   "lo": 0.02704942947451384,
+   "hi": 0.03185080832573707,
+   "n_cells": 80,
+   "share_cells_model_better": 0.975
+  },
+  {
+   "fold": "covered_SEC61B",
+   "gene": "SEC61B",
+   "baseline": "nearest_train_cell",
+   "metric": "pearson_r",
+   "model_better_by": 0.5001189543428793,
+   "lo": 0.47180412559995366,
+   "hi": 0.5279004032974236,
+   "n_cells": 80,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "covered_SEC61B",
+   "gene": "SEC61B",
+   "baseline": "nearest_train_cell",
+   "metric": "dice",
+   "model_better_by": 0.16005218448727562,
+   "lo": 0.1506632054718097,
+   "hi": 0.16950433344182989,
+   "n_cells": 80,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "covered_SEC61B",
+   "gene": "SEC61B",
+   "baseline": "nearest_train_cell",
+   "metric": "com_radius",
+   "model_better_by": 0.12467732482874108,
+   "lo": 0.0889515218888191,
+   "hi": 0.16753893556493166,
+   "n_cells": 80,
+   "share_cells_model_better": 0.825
+  },
+  {
+   "fold": "covered_SEC61B",
+   "gene": "SEC61B",
+   "baseline": "nearest_train_cell",
+   "metric": "w1_micron",
+   "model_better_by": 0.6143347206116359,
+   "lo": 0.43969290540659084,
+   "hi": 0.8312761060302339,
+   "n_cells": 80,
+   "share_cells_model_better": 0.925
+  },
+  {
+   "fold": "covered_SEC61B",
+   "gene": "SEC61B",
+   "baseline": "nearest_train_cell",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.10419033905125501,
+   "lo": 0.08005970720000494,
+   "hi": 0.13005807216206014,
+   "n_cells": 80,
+   "share_cells_model_better": 0.875
+  },
+  {
+   "fold": "covered_SEC61B",
+   "gene": "SEC61B",
+   "baseline": "rule_annotation",
+   "metric": "pearson_r",
+   "model_better_by": 0.22688056971763051,
+   "lo": 0.20634112180152742,
+   "hi": 0.24748137270707188,
+   "n_cells": 80,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "covered_SEC61B",
+   "gene": "SEC61B",
+   "baseline": "rule_annotation",
+   "metric": "dice",
+   "model_better_by": 0.04435861067184588,
+   "lo": 0.035793826086267064,
+   "hi": 0.052635976018357164,
+   "n_cells": 80,
+   "share_cells_model_better": 0.9
+  },
+  {
+   "fold": "covered_SEC61B",
+   "gene": "SEC61B",
+   "baseline": "rule_annotation",
+   "metric": "com_radius",
+   "model_better_by": 0.1172696115602218,
+   "lo": 0.0821830391822166,
+   "hi": 0.15941136558235428,
+   "n_cells": 80,
+   "share_cells_model_better": 0.8625
+  },
+  {
+   "fold": "covered_SEC61B",
+   "gene": "SEC61B",
+   "baseline": "rule_annotation",
+   "metric": "w1_micron",
+   "model_better_by": 0.7415568165993142,
+   "lo": 0.6097599226182144,
+   "hi": 0.9184115586840793,
+   "n_cells": 80,
+   "share_cells_model_better": 0.9875
+  },
+  {
+   "fold": "covered_SEC61B",
+   "gene": "SEC61B",
+   "baseline": "rule_annotation",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.1539770831055106,
+   "lo": 0.14926824232931393,
+   "hi": 0.15846122178615418,
+   "n_cells": 80,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "loso_ACTB",
+   "gene": "ACTB",
+   "baseline": "atlas_pooled",
+   "metric": "pearson_r",
+   "model_better_by": 0.9144273767879749,
+   "lo": 0.8686143403427408,
+   "hi": 0.9603202924056767,
+   "n_cells": 80,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "loso_ACTB",
+   "gene": "ACTB",
+   "baseline": "atlas_pooled",
+   "metric": "dice",
+   "model_better_by": -0.020104058015683317,
+   "lo": -0.026936837114091245,
+   "hi": -0.01353282995460351,
+   "n_cells": 80,
+   "share_cells_model_better": 0.2625
+  },
+  {
+   "fold": "loso_ACTB",
+   "gene": "ACTB",
+   "baseline": "atlas_pooled",
+   "metric": "com_radius",
+   "model_better_by": 0.038002383875819654,
+   "lo": 0.018044381338963356,
+   "hi": 0.0584208590457509,
+   "n_cells": 80,
+   "share_cells_model_better": 0.6625
+  },
+  {
+   "fold": "loso_ACTB",
+   "gene": "ACTB",
+   "baseline": "atlas_pooled",
+   "metric": "w1_micron",
+   "model_better_by": 1.1114272060614796,
+   "lo": 1.0430278162980104,
+   "hi": 1.1805336642962159,
+   "n_cells": 80,
+   "share_cells_model_better": 0.9875
+  },
+  {
+   "fold": "loso_ACTB",
+   "gene": "ACTB",
+   "baseline": "atlas_pooled",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.202772242263176,
+   "lo": 0.19348784507884154,
+   "hi": 0.21152780642336552,
+   "n_cells": 80,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "loso_ACTB",
+   "gene": "ACTB",
+   "baseline": "model_shuffled_identity",
+   "metric": "pearson_r",
+   "model_better_by": 0.8876243150414023,
+   "lo": 0.8507863938127754,
+   "hi": 0.9225310200004672,
+   "n_cells": 80,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "loso_ACTB",
+   "gene": "ACTB",
+   "baseline": "model_shuffled_identity",
+   "metric": "dice",
+   "model_better_by": 0.012845638233917567,
+   "lo": 0.009847876433218283,
+   "hi": 0.016036472812664647,
+   "n_cells": 80,
+   "share_cells_model_better": 0.775
+  },
+  {
+   "fold": "loso_ACTB",
+   "gene": "ACTB",
+   "baseline": "model_shuffled_identity",
+   "metric": "com_radius",
+   "model_better_by": 0.13692245156114619,
+   "lo": 0.10362304353140908,
+   "hi": 0.17355785119831865,
+   "n_cells": 80,
+   "share_cells_model_better": 0.8375
+  },
+  {
+   "fold": "loso_ACTB",
+   "gene": "ACTB",
+   "baseline": "model_shuffled_identity",
+   "metric": "w1_micron",
+   "model_better_by": 1.580125508928712,
+   "lo": 1.4806442219067144,
+   "hi": 1.6913499437883008,
+   "n_cells": 80,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "loso_ACTB",
+   "gene": "ACTB",
+   "baseline": "model_shuffled_identity",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.2636261326308412,
+   "lo": 0.25468031107167666,
+   "hi": 0.27241229855638144,
+   "n_cells": 80,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "loso_ACTB",
+   "gene": "ACTB",
+   "baseline": "nearest_train_cell",
+   "metric": "pearson_r",
+   "model_better_by": 0.701413647624838,
+   "lo": 0.6563897592628982,
+   "hi": 0.7470190747102736,
+   "n_cells": 80,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "loso_ACTB",
+   "gene": "ACTB",
+   "baseline": "nearest_train_cell",
+   "metric": "dice",
+   "model_better_by": -0.006766028971707404,
+   "lo": -0.013165416346985943,
+   "hi": -0.0013436264131640725,
+   "n_cells": 80,
+   "share_cells_model_better": 0.325
+  },
+  {
+   "fold": "loso_ACTB",
+   "gene": "ACTB",
+   "baseline": "nearest_train_cell",
+   "metric": "com_radius",
+   "model_better_by": 0.12689570381725718,
+   "lo": 0.09666060932337078,
+   "hi": 0.15959722801431364,
+   "n_cells": 80,
+   "share_cells_model_better": 0.9
+  },
+  {
+   "fold": "loso_ACTB",
+   "gene": "ACTB",
+   "baseline": "nearest_train_cell",
+   "metric": "w1_micron",
+   "model_better_by": 1.0005731255513737,
+   "lo": 0.8473367113891397,
+   "hi": 1.1678863992162407,
+   "n_cells": 80,
+   "share_cells_model_better": 0.9625
+  },
+  {
+   "fold": "loso_ACTB",
+   "gene": "ACTB",
+   "baseline": "nearest_train_cell",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.16713538143885046,
+   "lo": 0.1409084091779465,
+   "hi": 0.19458917374812937,
+   "n_cells": 80,
+   "share_cells_model_better": 0.95
+  },
+  {
+   "fold": "loso_ACTB",
+   "gene": "ACTB",
+   "baseline": "rule_annotation",
+   "metric": "pearson_r",
+   "model_better_by": 0.24134009557490405,
+   "lo": 0.21042637316066515,
+   "hi": 0.271127701011057,
+   "n_cells": 80,
+   "share_cells_model_better": 0.9375
+  },
+  {
+   "fold": "loso_ACTB",
+   "gene": "ACTB",
+   "baseline": "rule_annotation",
+   "metric": "dice",
+   "model_better_by": -0.09152950530994858,
+   "lo": -0.10478820581660282,
+   "hi": -0.0787052656428472,
+   "n_cells": 80,
+   "share_cells_model_better": 0.025
+  },
+  {
+   "fold": "loso_ACTB",
+   "gene": "ACTB",
+   "baseline": "rule_annotation",
+   "metric": "com_radius",
+   "model_better_by": 0.07884840687058779,
+   "lo": 0.06621194771246086,
+   "hi": 0.09154397657193343,
+   "n_cells": 80,
+   "share_cells_model_better": 0.925
+  },
+  {
+   "fold": "loso_ACTB",
+   "gene": "ACTB",
+   "baseline": "rule_annotation",
+   "metric": "w1_micron",
+   "model_better_by": 0.26112342045230286,
+   "lo": 0.1765368234457101,
+   "hi": 0.34362676895315036,
+   "n_cells": 80,
+   "share_cells_model_better": 0.6875
+  },
+  {
+   "fold": "loso_ACTB",
+   "gene": "ACTB",
+   "baseline": "rule_annotation",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.04498912881284706,
+   "lo": 0.0375679556799937,
+   "hi": 0.05206289432266278,
+   "n_cells": 80,
+   "share_cells_model_better": 0.8875
+  },
+  {
+   "fold": "loso_LMNB1",
+   "gene": "LMNB1",
+   "baseline": "atlas_pooled",
+   "metric": "pearson_r",
+   "model_better_by": -0.45808405059802393,
+   "lo": -0.4908915455977173,
+   "hi": -0.4264823361712912,
+   "n_cells": 80,
+   "share_cells_model_better": 0.0
+  },
+  {
+   "fold": "loso_LMNB1",
+   "gene": "LMNB1",
+   "baseline": "atlas_pooled",
+   "metric": "dice",
+   "model_better_by": -0.14502246694811466,
+   "lo": -0.1607239522841346,
+   "hi": -0.1290889084911594,
+   "n_cells": 80,
+   "share_cells_model_better": 0.0125
+  },
+  {
+   "fold": "loso_LMNB1",
+   "gene": "LMNB1",
+   "baseline": "atlas_pooled",
+   "metric": "com_radius",
+   "model_better_by": -0.16707914824422626,
+   "lo": -0.20269547914943356,
+   "hi": -0.13329258656442786,
+   "n_cells": 80,
+   "share_cells_model_better": 0.125
+  },
+  {
+   "fold": "loso_LMNB1",
+   "gene": "LMNB1",
+   "baseline": "atlas_pooled",
+   "metric": "w1_micron",
+   "model_better_by": -1.1077787316449585,
+   "lo": -1.2231976056646805,
+   "hi": -1.0076485772485713,
+   "n_cells": 80,
+   "share_cells_model_better": 0.0
+  },
+  {
+   "fold": "loso_LMNB1",
+   "gene": "LMNB1",
+   "baseline": "atlas_pooled",
+   "metric": "nuc_fraction_err",
+   "model_better_by": -0.19441385460398677,
+   "lo": -0.20104605500469885,
+   "hi": -0.1877084437042501,
+   "n_cells": 80,
+   "share_cells_model_better": 0.0
+  },
+  {
+   "fold": "loso_LMNB1",
+   "gene": "LMNB1",
+   "baseline": "model_shuffled_identity",
+   "metric": "pearson_r",
+   "model_better_by": -0.5693283591781885,
+   "lo": -0.5827706258039922,
+   "hi": -0.5566535798545155,
+   "n_cells": 80,
+   "share_cells_model_better": 0.0
+  },
+  {
+   "fold": "loso_LMNB1",
+   "gene": "LMNB1",
+   "baseline": "model_shuffled_identity",
+   "metric": "dice",
+   "model_better_by": -0.1583091102776953,
+   "lo": -0.1683620929151412,
+   "hi": -0.14808361751611293,
+   "n_cells": 80,
+   "share_cells_model_better": 0.0
+  },
+  {
+   "fold": "loso_LMNB1",
+   "gene": "LMNB1",
+   "baseline": "model_shuffled_identity",
+   "metric": "com_radius",
+   "model_better_by": -0.1373739359080103,
+   "lo": -0.15857013342565004,
+   "hi": -0.11763978827846248,
+   "n_cells": 80,
+   "share_cells_model_better": 0.0125
+  },
+  {
+   "fold": "loso_LMNB1",
+   "gene": "LMNB1",
+   "baseline": "model_shuffled_identity",
+   "metric": "w1_micron",
+   "model_better_by": -0.7008335750955346,
+   "lo": -0.7783880499048064,
+   "hi": -0.6349202049397401,
+   "n_cells": 80,
+   "share_cells_model_better": 0.0
+  },
+  {
+   "fold": "loso_LMNB1",
+   "gene": "LMNB1",
+   "baseline": "model_shuffled_identity",
+   "metric": "nuc_fraction_err",
+   "model_better_by": -0.08263372832706337,
+   "lo": -0.08557913091527436,
+   "hi": -0.07959040397702428,
+   "n_cells": 80,
+   "share_cells_model_better": 0.0
+  },
+  {
+   "fold": "loso_LMNB1",
+   "gene": "LMNB1",
+   "baseline": "nearest_train_cell",
+   "metric": "pearson_r",
+   "model_better_by": -0.3700359343800489,
+   "lo": -0.4060739439763267,
+   "hi": -0.3341429314588484,
+   "n_cells": 80,
+   "share_cells_model_better": 0.0
+  },
+  {
+   "fold": "loso_LMNB1",
+   "gene": "LMNB1",
+   "baseline": "nearest_train_cell",
+   "metric": "dice",
+   "model_better_by": -0.10109389883562318,
+   "lo": -0.11240102074091339,
+   "hi": -0.09035669227823495,
+   "n_cells": 80,
+   "share_cells_model_better": 0.0
+  },
+  {
+   "fold": "loso_LMNB1",
+   "gene": "LMNB1",
+   "baseline": "nearest_train_cell",
+   "metric": "com_radius",
+   "model_better_by": -0.16317633261584302,
+   "lo": -0.22034818831705597,
+   "hi": -0.11085423545206918,
+   "n_cells": 80,
+   "share_cells_model_better": 0.2875
+  },
+  {
+   "fold": "loso_LMNB1",
+   "gene": "LMNB1",
+   "baseline": "nearest_train_cell",
+   "metric": "w1_micron",
+   "model_better_by": -1.0376557064289258,
+   "lo": -1.210777355699925,
+   "hi": -0.8836898801337625,
+   "n_cells": 80,
+   "share_cells_model_better": 0.025
+  },
+  {
+   "fold": "loso_LMNB1",
+   "gene": "LMNB1",
+   "baseline": "nearest_train_cell",
+   "metric": "nuc_fraction_err",
+   "model_better_by": -0.14200562938828828,
+   "lo": -0.15642670487067237,
+   "hi": -0.12752077718015944,
+   "n_cells": 80,
+   "share_cells_model_better": 0.0125
+  },
+  {
+   "fold": "loso_LMNB1",
+   "gene": "LMNB1",
+   "baseline": "rule_annotation",
+   "metric": "pearson_r",
+   "model_better_by": -0.9066693347184434,
+   "lo": -0.9284819777558603,
+   "hi": -0.8850233755448877,
+   "n_cells": 80,
+   "share_cells_model_better": 0.0
+  },
+  {
+   "fold": "loso_LMNB1",
+   "gene": "LMNB1",
+   "baseline": "rule_annotation",
+   "metric": "dice",
+   "model_better_by": -0.5365193865965399,
+   "lo": -0.5543058366674151,
+   "hi": -0.5195208844760072,
+   "n_cells": 80,
+   "share_cells_model_better": 0.0
+  },
+  {
+   "fold": "loso_LMNB1",
+   "gene": "LMNB1",
+   "baseline": "rule_annotation",
+   "metric": "com_radius",
+   "model_better_by": -0.33659656957333856,
+   "lo": -0.3900274812414601,
+   "hi": -0.28527919855505945,
+   "n_cells": 80,
+   "share_cells_model_better": 0.025
+  },
+  {
+   "fold": "loso_LMNB1",
+   "gene": "LMNB1",
+   "baseline": "rule_annotation",
+   "metric": "w1_micron",
+   "model_better_by": -1.2747778033865085,
+   "lo": -1.4577315513459772,
+   "hi": -1.1037925447072572,
+   "n_cells": 80,
+   "share_cells_model_better": 0.0
+  },
+  {
+   "fold": "loso_LMNB1",
+   "gene": "LMNB1",
+   "baseline": "rule_annotation",
+   "metric": "nuc_fraction_err",
+   "model_better_by": -0.2610695794768738,
+   "lo": -0.27610489604165905,
+   "hi": -0.24539309761490208,
+   "n_cells": 80,
+   "share_cells_model_better": 0.0
+  },
+  {
+   "fold": "loso_SEC61B",
+   "gene": "SEC61B",
+   "baseline": "atlas_pooled",
+   "metric": "pearson_r",
+   "model_better_by": 0.2813347131626064,
+   "lo": 0.2399517293459258,
+   "hi": 0.3222161414758409,
+   "n_cells": 80,
+   "share_cells_model_better": 0.9625
+  },
+  {
+   "fold": "loso_SEC61B",
+   "gene": "SEC61B",
+   "baseline": "atlas_pooled",
+   "metric": "dice",
+   "model_better_by": 0.11055454864338124,
+   "lo": 0.10008266737485835,
+   "hi": 0.12095522879728768,
+   "n_cells": 80,
+   "share_cells_model_better": 0.9875
+  },
+  {
+   "fold": "loso_SEC61B",
+   "gene": "SEC61B",
+   "baseline": "atlas_pooled",
+   "metric": "com_radius",
+   "model_better_by": -0.01626747769033906,
+   "lo": -0.041776555324796724,
+   "hi": 0.008668540313303809,
+   "n_cells": 80,
+   "share_cells_model_better": 0.425
+  },
+  {
+   "fold": "loso_SEC61B",
+   "gene": "SEC61B",
+   "baseline": "atlas_pooled",
+   "metric": "w1_micron",
+   "model_better_by": 0.13741907813175575,
+   "lo": 0.05742114044560011,
+   "hi": 0.21817569968634162,
+   "n_cells": 80,
+   "share_cells_model_better": 0.6
+  },
+  {
+   "fold": "loso_SEC61B",
+   "gene": "SEC61B",
+   "baseline": "atlas_pooled",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.08415501749720855,
+   "lo": 0.07483222193457009,
+   "hi": 0.09318214508324288,
+   "n_cells": 80,
+   "share_cells_model_better": 0.9875
+  },
+  {
+   "fold": "loso_SEC61B",
+   "gene": "SEC61B",
+   "baseline": "model_shuffled_identity",
+   "metric": "pearson_r",
+   "model_better_by": 0.04693836689446003,
+   "lo": 0.041027167947165634,
+   "hi": 0.05278483519478184,
+   "n_cells": 80,
+   "share_cells_model_better": 0.9875
+  },
+  {
+   "fold": "loso_SEC61B",
+   "gene": "SEC61B",
+   "baseline": "model_shuffled_identity",
+   "metric": "dice",
+   "model_better_by": 0.013254006168402731,
+   "lo": 0.009825346292124119,
+   "hi": 0.016894849728774513,
+   "n_cells": 80,
+   "share_cells_model_better": 0.8625
+  },
+  {
+   "fold": "loso_SEC61B",
+   "gene": "SEC61B",
+   "baseline": "model_shuffled_identity",
+   "metric": "com_radius",
+   "model_better_by": 0.0057724383318566025,
+   "lo": 2.267794046379116e-06,
+   "hi": 0.011882569482443657,
+   "n_cells": 80,
+   "share_cells_model_better": 0.5875
+  },
+  {
+   "fold": "loso_SEC61B",
+   "gene": "SEC61B",
+   "baseline": "model_shuffled_identity",
+   "metric": "w1_micron",
+   "model_better_by": 0.07394597491800363,
+   "lo": 0.06422165628580781,
+   "hi": 0.08347565965580893,
+   "n_cells": 80,
+   "share_cells_model_better": 0.95
+  },
+  {
+   "fold": "loso_SEC61B",
+   "gene": "SEC61B",
+   "baseline": "model_shuffled_identity",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.0038948396252264797,
+   "lo": 0.0032186692905299494,
+   "hi": 0.004564698489310766,
+   "n_cells": 80,
+   "share_cells_model_better": 0.925
+  },
+  {
+   "fold": "loso_SEC61B",
+   "gene": "SEC61B",
+   "baseline": "nearest_train_cell",
+   "metric": "pearson_r",
+   "model_better_by": 0.33204682638283767,
+   "lo": 0.2994412258920147,
+   "hi": 0.3645052819299417,
+   "n_cells": 80,
+   "share_cells_model_better": 0.9875
+  },
+  {
+   "fold": "loso_SEC61B",
+   "gene": "SEC61B",
+   "baseline": "nearest_train_cell",
+   "metric": "dice",
+   "model_better_by": 0.0857241737628119,
+   "lo": 0.07563720369944736,
+   "hi": 0.09513599970111042,
+   "n_cells": 80,
+   "share_cells_model_better": 0.9625
+  },
+  {
+   "fold": "loso_SEC61B",
+   "gene": "SEC61B",
+   "baseline": "nearest_train_cell",
+   "metric": "com_radius",
+   "model_better_by": 0.07301241046004378,
+   "lo": 0.03639754939224256,
+   "hi": 0.11414452868964832,
+   "n_cells": 80,
+   "share_cells_model_better": 0.7
+  },
+  {
+   "fold": "loso_SEC61B",
+   "gene": "SEC61B",
+   "baseline": "nearest_train_cell",
+   "metric": "w1_micron",
+   "model_better_by": 0.28561903771067215,
+   "lo": 0.12725846859818912,
+   "hi": 0.4769850032104085,
+   "n_cells": 80,
+   "share_cells_model_better": 0.5875
+  },
+  {
+   "fold": "loso_SEC61B",
+   "gene": "SEC61B",
+   "baseline": "nearest_train_cell",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.05014968874589702,
+   "lo": 0.027927923171306,
+   "hi": 0.07434192659369641,
+   "n_cells": 80,
+   "share_cells_model_better": 0.525
+  },
+  {
+   "fold": "loso_SEC61B",
+   "gene": "SEC61B",
+   "baseline": "rule_annotation",
+   "metric": "pearson_r",
+   "model_better_by": 0.06877582471643137,
+   "lo": 0.039816608528208494,
+   "hi": 0.09639671521500955,
+   "n_cells": 80,
+   "share_cells_model_better": 0.6875
+  },
+  {
+   "fold": "loso_SEC61B",
+   "gene": "SEC61B",
+   "baseline": "rule_annotation",
+   "metric": "dice",
+   "model_better_by": -0.028630678045825884,
+   "lo": -0.040321005446707185,
+   "hi": -0.017671718275591778,
+   "n_cells": 80,
+   "share_cells_model_better": 0.275
+  },
+  {
+   "fold": "loso_SEC61B",
+   "gene": "SEC61B",
+   "baseline": "rule_annotation",
+   "metric": "com_radius",
+   "model_better_by": 0.06723854459523716,
+   "lo": 0.03260928162558448,
+   "hi": 0.10657047551909153,
+   "n_cells": 80,
+   "share_cells_model_better": 0.6
+  },
+  {
+   "fold": "loso_SEC61B",
+   "gene": "SEC61B",
+   "baseline": "rule_annotation",
+   "metric": "w1_micron",
+   "model_better_by": 0.4894288034788115,
+   "lo": 0.3669868287969321,
+   "hi": 0.6432473125779814,
+   "n_cells": 80,
+   "share_cells_model_better": 0.875
+  },
+  {
+   "fold": "loso_SEC61B",
+   "gene": "SEC61B",
+   "baseline": "rule_annotation",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.11861881993300678,
+   "lo": 0.11473054893911891,
+   "hi": 0.12254183919207716,
+   "n_cells": 80,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "loso_TOMM20",
+   "gene": "TOMM20",
+   "baseline": "atlas_pooled",
+   "metric": "pearson_r",
+   "model_better_by": 0.3399842925428815,
+   "lo": 0.31230340446537247,
+   "hi": 0.36657428014249055,
+   "n_cells": 80,
+   "share_cells_model_better": 0.9875
+  },
+  {
+   "fold": "loso_TOMM20",
+   "gene": "TOMM20",
+   "baseline": "atlas_pooled",
+   "metric": "dice",
+   "model_better_by": 0.0957743448523263,
+   "lo": 0.08414263717887406,
+   "hi": 0.10732991393210849,
+   "n_cells": 80,
+   "share_cells_model_better": 0.9625
+  },
+  {
+   "fold": "loso_TOMM20",
+   "gene": "TOMM20",
+   "baseline": "atlas_pooled",
+   "metric": "com_radius",
+   "model_better_by": 0.08666541415071062,
+   "lo": 0.06947645292844266,
+   "hi": 0.10487166552355623,
+   "n_cells": 80,
+   "share_cells_model_better": 0.875
+  },
+  {
+   "fold": "loso_TOMM20",
+   "gene": "TOMM20",
+   "baseline": "atlas_pooled",
+   "metric": "w1_micron",
+   "model_better_by": 0.5947670809369724,
+   "lo": 0.5426123627816207,
+   "hi": 0.6558027293046357,
+   "n_cells": 80,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "loso_TOMM20",
+   "gene": "TOMM20",
+   "baseline": "atlas_pooled",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.14245152784455697,
+   "lo": 0.13753962871433423,
+   "hi": 0.14729323582979637,
+   "n_cells": 80,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "loso_TOMM20",
+   "gene": "TOMM20",
+   "baseline": "model_shuffled_identity",
+   "metric": "pearson_r",
+   "model_better_by": -0.040768594992326844,
+   "lo": -0.05839735599525385,
+   "hi": -0.02327510806015256,
+   "n_cells": 80,
+   "share_cells_model_better": 0.2875
+  },
+  {
+   "fold": "loso_TOMM20",
+   "gene": "TOMM20",
+   "baseline": "model_shuffled_identity",
+   "metric": "dice",
+   "model_better_by": 0.015625093747981426,
+   "lo": 0.005007889881016095,
+   "hi": 0.026016081084544212,
+   "n_cells": 80,
+   "share_cells_model_better": 0.65
+  },
+  {
+   "fold": "loso_TOMM20",
+   "gene": "TOMM20",
+   "baseline": "model_shuffled_identity",
+   "metric": "com_radius",
+   "model_better_by": 0.00406428114440875,
+   "lo": -0.019138229539494164,
+   "hi": 0.027028210849444463,
+   "n_cells": 80,
+   "share_cells_model_better": 0.5625
+  },
+  {
+   "fold": "loso_TOMM20",
+   "gene": "TOMM20",
+   "baseline": "model_shuffled_identity",
+   "metric": "w1_micron",
+   "model_better_by": -0.31639569471285534,
+   "lo": -0.38442703865996525,
+   "hi": -0.24471808288990382,
+   "n_cells": 80,
+   "share_cells_model_better": 0.2
+  },
+  {
+   "fold": "loso_TOMM20",
+   "gene": "TOMM20",
+   "baseline": "model_shuffled_identity",
+   "metric": "nuc_fraction_err",
+   "model_better_by": -0.059876126374849424,
+   "lo": -0.06790855278688548,
+   "hi": -0.05147076195295425,
+   "n_cells": 80,
+   "share_cells_model_better": 0.075
+  },
+  {
+   "fold": "loso_TOMM20",
+   "gene": "TOMM20",
+   "baseline": "nearest_train_cell",
+   "metric": "pearson_r",
+   "model_better_by": 0.28209743857185327,
+   "lo": 0.24916119381935103,
+   "hi": 0.31536909337368246,
+   "n_cells": 80,
+   "share_cells_model_better": 0.975
+  },
+  {
+   "fold": "loso_TOMM20",
+   "gene": "TOMM20",
+   "baseline": "nearest_train_cell",
+   "metric": "dice",
+   "model_better_by": 0.07292640914318642,
+   "lo": 0.0628027403399942,
+   "hi": 0.08313820796983895,
+   "n_cells": 80,
+   "share_cells_model_better": 0.9375
+  },
+  {
+   "fold": "loso_TOMM20",
+   "gene": "TOMM20",
+   "baseline": "nearest_train_cell",
+   "metric": "com_radius",
+   "model_better_by": 0.14743951878065545,
+   "lo": 0.09928560313802821,
+   "hi": 0.20411654979483704,
+   "n_cells": 80,
+   "share_cells_model_better": 0.8125
+  },
+  {
+   "fold": "loso_TOMM20",
+   "gene": "TOMM20",
+   "baseline": "nearest_train_cell",
+   "metric": "w1_micron",
+   "model_better_by": 0.6467699182056973,
+   "lo": 0.4573138438285522,
+   "hi": 0.890114190127128,
+   "n_cells": 80,
+   "share_cells_model_better": 0.8125
+  },
+  {
+   "fold": "loso_TOMM20",
+   "gene": "TOMM20",
+   "baseline": "nearest_train_cell",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.11382267335189349,
+   "lo": 0.0869142717342836,
+   "hi": 0.14281583830947164,
+   "n_cells": 80,
+   "share_cells_model_better": 0.8125
+  },
+  {
+   "fold": "loso_TOMM20",
+   "gene": "TOMM20",
+   "baseline": "rule_annotation",
+   "metric": "pearson_r",
+   "model_better_by": 0.018630030209531655,
+   "lo": 0.0011267190988500857,
+   "hi": 0.035468736645012426,
+   "n_cells": 80,
+   "share_cells_model_better": 0.6125
+  },
+  {
+   "fold": "loso_TOMM20",
+   "gene": "TOMM20",
+   "baseline": "rule_annotation",
+   "metric": "dice",
+   "model_better_by": 0.03745639053435028,
+   "lo": 0.021860483615189732,
+   "hi": 0.05289327041182474,
+   "n_cells": 80,
+   "share_cells_model_better": 0.7125
+  },
+  {
+   "fold": "loso_TOMM20",
+   "gene": "TOMM20",
+   "baseline": "rule_annotation",
+   "metric": "com_radius",
+   "model_better_by": -0.012272883775349342,
+   "lo": -0.0311707773710707,
+   "hi": 0.0060257991535158035,
+   "n_cells": 80,
+   "share_cells_model_better": 0.525
+  },
+  {
+   "fold": "loso_TOMM20",
+   "gene": "TOMM20",
+   "baseline": "rule_annotation",
+   "metric": "w1_micron",
+   "model_better_by": -0.13708660929129596,
+   "lo": -0.21620999944209662,
+   "hi": -0.05313215352206578,
+   "n_cells": 80,
+   "share_cells_model_better": 0.3375
+  },
+  {
+   "fold": "loso_TOMM20",
+   "gene": "TOMM20",
+   "baseline": "rule_annotation",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.04105620585473544,
+   "lo": 0.030919922094185558,
+   "hi": 0.05111307657317986,
+   "n_cells": 80,
+   "share_cells_model_better": 0.7875
+  },
+  {
+   "fold": "loso_TUBA1B",
+   "gene": "TUBA1B",
+   "baseline": "atlas_pooled",
+   "metric": "pearson_r",
+   "model_better_by": 0.9036143320636446,
+   "lo": 0.8696909777545327,
+   "hi": 0.9378824145330596,
+   "n_cells": 80,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "loso_TUBA1B",
+   "gene": "TUBA1B",
+   "baseline": "atlas_pooled",
+   "metric": "dice",
+   "model_better_by": 0.014033651338614428,
+   "lo": 0.005265245112257844,
+   "hi": 0.0229856076664446,
+   "n_cells": 80,
+   "share_cells_model_better": 0.6125
+  },
+  {
+   "fold": "loso_TUBA1B",
+   "gene": "TUBA1B",
+   "baseline": "atlas_pooled",
+   "metric": "com_radius",
+   "model_better_by": 0.04589997703565203,
+   "lo": 0.025234462545238933,
+   "hi": 0.0667069463395649,
+   "n_cells": 80,
+   "share_cells_model_better": 0.7375
+  },
+  {
+   "fold": "loso_TUBA1B",
+   "gene": "TUBA1B",
+   "baseline": "atlas_pooled",
+   "metric": "w1_micron",
+   "model_better_by": 1.132462462657421,
+   "lo": 1.0710159522190439,
+   "hi": 1.1944114757378665,
+   "n_cells": 80,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "loso_TUBA1B",
+   "gene": "TUBA1B",
+   "baseline": "atlas_pooled",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.22356532483380862,
+   "lo": 0.21682036234575122,
+   "hi": 0.23054950257359813,
+   "n_cells": 80,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "loso_TUBA1B",
+   "gene": "TUBA1B",
+   "baseline": "model_shuffled_identity",
+   "metric": "pearson_r",
+   "model_better_by": 0.2918272647861556,
+   "lo": 0.2671467810122438,
+   "hi": 0.31654588295039404,
+   "n_cells": 80,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "loso_TUBA1B",
+   "gene": "TUBA1B",
+   "baseline": "model_shuffled_identity",
+   "metric": "dice",
+   "model_better_by": -0.03904539262749686,
+   "lo": -0.04744198471449667,
+   "hi": -0.030484275756685723,
+   "n_cells": 80,
+   "share_cells_model_better": 0.1375
+  },
+  {
+   "fold": "loso_TUBA1B",
+   "gene": "TUBA1B",
+   "baseline": "model_shuffled_identity",
+   "metric": "com_radius",
+   "model_better_by": 0.046622460964169214,
+   "lo": 0.02718741566602718,
+   "hi": 0.06565832051763351,
+   "n_cells": 80,
+   "share_cells_model_better": 0.7375
+  },
+  {
+   "fold": "loso_TUBA1B",
+   "gene": "TUBA1B",
+   "baseline": "model_shuffled_identity",
+   "metric": "w1_micron",
+   "model_better_by": 0.10025938593285244,
+   "lo": 0.06231798991022663,
+   "hi": 0.13989103818994347,
+   "n_cells": 80,
+   "share_cells_model_better": 0.7125
+  },
+  {
+   "fold": "loso_TUBA1B",
+   "gene": "TUBA1B",
+   "baseline": "model_shuffled_identity",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.004955572438426395,
+   "lo": 0.0016756711718574674,
+   "hi": 0.008135086038100101,
+   "n_cells": 80,
+   "share_cells_model_better": 0.5875
+  },
+  {
+   "fold": "loso_TUBA1B",
+   "gene": "TUBA1B",
+   "baseline": "nearest_train_cell",
+   "metric": "pearson_r",
+   "model_better_by": 0.7134850702306028,
+   "lo": 0.6717239125303626,
+   "hi": 0.7559735836102883,
+   "n_cells": 80,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "loso_TUBA1B",
+   "gene": "TUBA1B",
+   "baseline": "nearest_train_cell",
+   "metric": "dice",
+   "model_better_by": 0.002053738883683316,
+   "lo": -0.005814021102547884,
+   "hi": 0.010386100959552084,
+   "n_cells": 80,
+   "share_cells_model_better": 0.4625
+  },
+  {
+   "fold": "loso_TUBA1B",
+   "gene": "TUBA1B",
+   "baseline": "nearest_train_cell",
+   "metric": "com_radius",
+   "model_better_by": 0.1455618873441734,
+   "lo": 0.11190833785035509,
+   "hi": 0.18018288216307166,
+   "n_cells": 80,
+   "share_cells_model_better": 0.8625
+  },
+  {
+   "fold": "loso_TUBA1B",
+   "gene": "TUBA1B",
+   "baseline": "nearest_train_cell",
+   "metric": "w1_micron",
+   "model_better_by": 1.0387159501650227,
+   "lo": 0.8951701895029776,
+   "hi": 1.193024434489584,
+   "n_cells": 80,
+   "share_cells_model_better": 0.975
+  },
+  {
+   "fold": "loso_TUBA1B",
+   "gene": "TUBA1B",
+   "baseline": "nearest_train_cell",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.17563663329530987,
+   "lo": 0.14966649378506874,
+   "hi": 0.20287226751298543,
+   "n_cells": 80,
+   "share_cells_model_better": 0.9875
+  },
+  {
+   "fold": "loso_TUBA1B",
+   "gene": "TUBA1B",
+   "baseline": "rule_annotation",
+   "metric": "pearson_r",
+   "model_better_by": 0.026688946542456383,
+   "lo": 0.014290357988347782,
+   "hi": 0.038812192422587544,
+   "n_cells": 80,
+   "share_cells_model_better": 0.7
+  },
+  {
+   "fold": "loso_TUBA1B",
+   "gene": "TUBA1B",
+   "baseline": "rule_annotation",
+   "metric": "dice",
+   "model_better_by": -0.02059438793126329,
+   "lo": -0.0294808255670451,
+   "hi": -0.011644613455001248,
+   "n_cells": 80,
+   "share_cells_model_better": 0.275
+  },
+  {
+   "fold": "loso_TUBA1B",
+   "gene": "TUBA1B",
+   "baseline": "rule_annotation",
+   "metric": "com_radius",
+   "model_better_by": -0.013685524724484675,
+   "lo": -0.02470263062117617,
+   "hi": -0.002435872867164645,
+   "n_cells": 80,
+   "share_cells_model_better": 0.425
+  },
+  {
+   "fold": "loso_TUBA1B",
+   "gene": "TUBA1B",
+   "baseline": "rule_annotation",
+   "metric": "w1_micron",
+   "model_better_by": 0.14815590901296433,
+   "lo": 0.10536475986925944,
+   "hi": 0.19062892372630064,
+   "n_cells": 80,
+   "share_cells_model_better": 0.7875
+  },
+  {
+   "fold": "loso_TUBA1B",
+   "gene": "TUBA1B",
+   "baseline": "rule_annotation",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.08558905184569483,
+   "lo": 0.07826438070838858,
+   "hi": 0.0947087569520835,
+   "n_cells": 80,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "mitotic",
+   "gene": "AAVS1",
+   "baseline": "atlas_own_structure",
+   "metric": "pearson_r",
+   "model_better_by": 0.7486320698053961,
+   "lo": 0.6989199858181098,
+   "hi": 0.7983988049213814,
+   "n_cells": 20,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "mitotic",
+   "gene": "AAVS1",
+   "baseline": "atlas_own_structure",
+   "metric": "dice",
+   "model_better_by": 0.1307998807778524,
+   "lo": 0.11374876850579471,
+   "hi": 0.1491746241866525,
+   "n_cells": 20,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "mitotic",
+   "gene": "AAVS1",
+   "baseline": "atlas_own_structure",
+   "metric": "com_radius",
+   "model_better_by": 0.049580586212995846,
+   "lo": 0.029549804808357862,
+   "hi": 0.07415462043461293,
+   "n_cells": 20,
+   "share_cells_model_better": 0.9
+  },
+  {
+   "fold": "mitotic",
+   "gene": "AAVS1",
+   "baseline": "atlas_own_structure",
+   "metric": "w1_micron",
+   "model_better_by": 1.0358488851642724,
+   "lo": 0.893732721473841,
+   "hi": 1.1846729421318898,
+   "n_cells": 20,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "mitotic",
+   "gene": "AAVS1",
+   "baseline": "atlas_own_structure",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.05156120123011657,
+   "lo": 0.04160657159916853,
+   "hi": 0.06394820519273245,
+   "n_cells": 20,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "mitotic",
+   "gene": "AAVS1",
+   "baseline": "atlas_pooled",
+   "metric": "pearson_r",
+   "model_better_by": 1.0806099664564996,
+   "lo": 1.0266685610961568,
+   "hi": 1.1312320174006392,
+   "n_cells": 20,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "mitotic",
+   "gene": "AAVS1",
+   "baseline": "atlas_pooled",
+   "metric": "dice",
+   "model_better_by": 0.2912497073833792,
+   "lo": 0.26798602787246284,
+   "hi": 0.314737219551236,
+   "n_cells": 20,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "mitotic",
+   "gene": "AAVS1",
+   "baseline": "atlas_pooled",
+   "metric": "com_radius",
+   "model_better_by": 0.07106682761007203,
+   "lo": 0.04804423571084724,
+   "hi": 0.09993361702931437,
+   "n_cells": 20,
+   "share_cells_model_better": 0.95
+  },
+  {
+   "fold": "mitotic",
+   "gene": "AAVS1",
+   "baseline": "atlas_pooled",
+   "metric": "w1_micron",
+   "model_better_by": 1.2109002311726993,
+   "lo": 1.0655589147574576,
+   "hi": 1.371053998126267,
+   "n_cells": 20,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "mitotic",
+   "gene": "AAVS1",
+   "baseline": "atlas_pooled",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.06174412130792158,
+   "lo": 0.04973489621385476,
+   "hi": 0.07719293085604415,
+   "n_cells": 20,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "mitotic",
+   "gene": "AAVS1",
+   "baseline": "model_shuffled_identity",
+   "metric": "pearson_r",
+   "model_better_by": 0.13513913207633704,
+   "lo": 0.11394034323447966,
+   "hi": 0.15669009326781919,
+   "n_cells": 20,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "mitotic",
+   "gene": "AAVS1",
+   "baseline": "model_shuffled_identity",
+   "metric": "dice",
+   "model_better_by": 0.06552574809322137,
+   "lo": 0.046951604951173315,
+   "hi": 0.08577166613745679,
+   "n_cells": 20,
+   "share_cells_model_better": 0.95
+  },
+  {
+   "fold": "mitotic",
+   "gene": "AAVS1",
+   "baseline": "model_shuffled_identity",
+   "metric": "com_radius",
+   "model_better_by": 0.009766624051643821,
+   "lo": -0.003912032807304219,
+   "hi": 0.022508512167055045,
+   "n_cells": 20,
+   "share_cells_model_better": 0.65
+  },
+  {
+   "fold": "mitotic",
+   "gene": "AAVS1",
+   "baseline": "model_shuffled_identity",
+   "metric": "w1_micron",
+   "model_better_by": 0.10733720696137569,
+   "lo": 0.05309587350861612,
+   "hi": 0.16880184184234026,
+   "n_cells": 20,
+   "share_cells_model_better": 0.8
+  },
+  {
+   "fold": "mitotic",
+   "gene": "AAVS1",
+   "baseline": "model_shuffled_identity",
+   "metric": "nuc_fraction_err",
+   "model_better_by": -0.0032414399329769687,
+   "lo": -0.005962597183465505,
+   "hi": -0.001354006461274578,
+   "n_cells": 20,
+   "share_cells_model_better": 0.15
+  },
+  {
+   "fold": "mitotic",
+   "gene": "AAVS1",
+   "baseline": "nearest_train_cell",
+   "metric": "pearson_r",
+   "model_better_by": 0.8068684383167393,
+   "lo": 0.7754253576323887,
+   "hi": 0.8367431052610952,
+   "n_cells": 20,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "mitotic",
+   "gene": "AAVS1",
+   "baseline": "nearest_train_cell",
+   "metric": "dice",
+   "model_better_by": 0.22640471365955359,
+   "lo": 0.20118399630583422,
+   "hi": 0.25232250842588566,
+   "n_cells": 20,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "mitotic",
+   "gene": "AAVS1",
+   "baseline": "nearest_train_cell",
+   "metric": "com_radius",
+   "model_better_by": 0.1341486879156282,
+   "lo": 0.09798117971191173,
+   "hi": 0.17503668633099734,
+   "n_cells": 20,
+   "share_cells_model_better": 0.95
+  },
+  {
+   "fold": "mitotic",
+   "gene": "AAVS1",
+   "baseline": "nearest_train_cell",
+   "metric": "w1_micron",
+   "model_better_by": 1.3728331335452846,
+   "lo": 1.1601445373193273,
+   "hi": 1.5978165064740948,
+   "n_cells": 20,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "mitotic",
+   "gene": "AAVS1",
+   "baseline": "nearest_train_cell",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.05317560340628471,
+   "lo": 0.04004715216023544,
+   "hi": 0.07003727434714545,
+   "n_cells": 20,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "mitotic",
+   "gene": "AAVS1",
+   "baseline": "reference_only",
+   "metric": "pearson_r",
+   "model_better_by": 0.3438520016766179,
+   "lo": 0.32105584798229425,
+   "hi": 0.3679162340736721,
+   "n_cells": 20,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "mitotic",
+   "gene": "AAVS1",
+   "baseline": "reference_only",
+   "metric": "dice",
+   "model_better_by": 0.15415899100042296,
+   "lo": 0.12462025569962384,
+   "hi": 0.18383718753292289,
+   "n_cells": 20,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "mitotic",
+   "gene": "AAVS1",
+   "baseline": "reference_only",
+   "metric": "com_radius",
+   "model_better_by": 0.03573680364633126,
+   "lo": 0.020366380196729487,
+   "hi": 0.05064011412994087,
+   "n_cells": 20,
+   "share_cells_model_better": 0.9
+  },
+  {
+   "fold": "mitotic",
+   "gene": "AAVS1",
+   "baseline": "reference_only",
+   "metric": "w1_micron",
+   "model_better_by": 0.5617910230768798,
+   "lo": 0.473188260128915,
+   "hi": 0.6541254979600979,
+   "n_cells": 20,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "mitotic",
+   "gene": "AAVS1",
+   "baseline": "reference_only",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.017630281068529617,
+   "lo": 0.013866500826786579,
+   "hi": 0.022368667240578094,
+   "n_cells": 20,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "mitotic",
+   "gene": "AAVS1",
+   "baseline": "rule_annotation",
+   "metric": "pearson_r",
+   "model_better_by": 0.6444750967238905,
+   "lo": 0.6090315197064832,
+   "hi": 0.6776953862422556,
+   "n_cells": 20,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "mitotic",
+   "gene": "AAVS1",
+   "baseline": "rule_annotation",
+   "metric": "dice",
+   "model_better_by": 0.3448981690124624,
+   "lo": 0.32622985482956296,
+   "hi": 0.363694264775813,
+   "n_cells": 20,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "mitotic",
+   "gene": "AAVS1",
+   "baseline": "rule_annotation",
+   "metric": "com_radius",
+   "model_better_by": 0.06679653109952301,
+   "lo": 0.0471504359023183,
+   "hi": 0.08656970949239427,
+   "n_cells": 20,
+   "share_cells_model_better": 0.9
+  },
+  {
+   "fold": "mitotic",
+   "gene": "AAVS1",
+   "baseline": "rule_annotation",
+   "metric": "w1_micron",
+   "model_better_by": 0.4821303967530535,
+   "lo": 0.3947569370120063,
+   "hi": 0.5777351183284573,
+   "n_cells": 20,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "mitotic",
+   "gene": "AAVS1",
+   "baseline": "rule_annotation",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.01601924097888651,
+   "lo": 0.008573995463762788,
+   "hi": 0.025709884784308402,
+   "n_cells": 20,
+   "share_cells_model_better": 0.95
+  },
+  {
+   "fold": "mitotic",
+   "gene": "AAVS1",
+   "baseline": "rule_best_on_train",
+   "metric": "pearson_r",
+   "model_better_by": 0.33762808799737404,
+   "lo": 0.30436104583273416,
+   "hi": 0.3664671546406721,
+   "n_cells": 20,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "mitotic",
+   "gene": "AAVS1",
+   "baseline": "rule_best_on_train",
+   "metric": "dice",
+   "model_better_by": -0.10421212434261926,
+   "lo": -0.14362967287705772,
+   "hi": -0.06151291156356836,
+   "n_cells": 20,
+   "share_cells_model_better": 0.15
+  },
+  {
+   "fold": "mitotic",
+   "gene": "AAVS1",
+   "baseline": "rule_best_on_train",
+   "metric": "com_radius",
+   "model_better_by": 0.1241410541611206,
+   "lo": 0.10076077454894111,
+   "hi": 0.14894920675055384,
+   "n_cells": 20,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "mitotic",
+   "gene": "AAVS1",
+   "baseline": "rule_best_on_train",
+   "metric": "w1_micron",
+   "model_better_by": 0.29049990225705513,
+   "lo": 0.12073106341653393,
+   "hi": 0.45621052819273944,
+   "n_cells": 20,
+   "share_cells_model_better": 0.75
+  },
+  {
+   "fold": "mitotic",
+   "gene": "AAVS1",
+   "baseline": "rule_best_on_train",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.01087569745137723,
+   "lo": 0.0037073613782285858,
+   "hi": 0.020300939304562417,
+   "n_cells": 20,
+   "share_cells_model_better": 0.75
+  },
+  {
+   "fold": "mitotic",
+   "gene": "ACTB",
+   "baseline": "atlas_own_structure",
+   "metric": "pearson_r",
+   "model_better_by": 0.7283207443417898,
+   "lo": 0.6588128334486185,
+   "hi": 0.7939143516819371,
+   "n_cells": 20,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "mitotic",
+   "gene": "ACTB",
+   "baseline": "atlas_own_structure",
+   "metric": "dice",
+   "model_better_by": 0.14491662989131063,
+   "lo": 0.11650241845997952,
+   "hi": 0.17449909959751964,
+   "n_cells": 20,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "mitotic",
+   "gene": "ACTB",
+   "baseline": "atlas_own_structure",
+   "metric": "com_radius",
+   "model_better_by": 0.014835658974433013,
+   "lo": -0.007719836610483845,
+   "hi": 0.03796560605219017,
+   "n_cells": 20,
+   "share_cells_model_better": 0.65
+  },
+  {
+   "fold": "mitotic",
+   "gene": "ACTB",
+   "baseline": "atlas_own_structure",
+   "metric": "w1_micron",
+   "model_better_by": 0.5717568179070581,
+   "lo": 0.4340318554543401,
+   "hi": 0.7043963176282452,
+   "n_cells": 20,
+   "share_cells_model_better": 0.95
+  },
+  {
+   "fold": "mitotic",
+   "gene": "ACTB",
+   "baseline": "atlas_own_structure",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.05233836267542426,
+   "lo": 0.03463540755715628,
+   "hi": 0.07455765479640214,
+   "n_cells": 20,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "mitotic",
+   "gene": "ACTB",
+   "baseline": "atlas_pooled",
+   "metric": "pearson_r",
+   "model_better_by": 0.9138058944946541,
+   "lo": 0.8210117767968064,
+   "hi": 1.0025670337554122,
+   "n_cells": 20,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "mitotic",
+   "gene": "ACTB",
+   "baseline": "atlas_pooled",
+   "metric": "dice",
+   "model_better_by": 0.16577497025048377,
+   "lo": 0.1377687862770219,
+   "hi": 0.19453893167849762,
+   "n_cells": 20,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "mitotic",
+   "gene": "ACTB",
+   "baseline": "atlas_pooled",
+   "metric": "com_radius",
+   "model_better_by": 0.017583546416975192,
+   "lo": -0.015130482273018577,
+   "hi": 0.04643028701310145,
+   "n_cells": 20,
+   "share_cells_model_better": 0.65
+  },
+  {
+   "fold": "mitotic",
+   "gene": "ACTB",
+   "baseline": "atlas_pooled",
+   "metric": "w1_micron",
+   "model_better_by": 0.8647159065436376,
+   "lo": 0.7276525276982173,
+   "hi": 1.005023539914312,
+   "n_cells": 20,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "mitotic",
+   "gene": "ACTB",
+   "baseline": "atlas_pooled",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.06995220357511164,
+   "lo": 0.04918666002206341,
+   "hi": 0.0952610098674001,
+   "n_cells": 20,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "mitotic",
+   "gene": "ACTB",
+   "baseline": "model_shuffled_identity",
+   "metric": "pearson_r",
+   "model_better_by": 0.9109196921932583,
+   "lo": 0.8352494951028633,
+   "hi": 0.982079324955468,
+   "n_cells": 20,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "mitotic",
+   "gene": "ACTB",
+   "baseline": "model_shuffled_identity",
+   "metric": "dice",
+   "model_better_by": 0.20202331245638536,
+   "lo": 0.1729980482638925,
+   "hi": 0.2301565330505954,
+   "n_cells": 20,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "mitotic",
+   "gene": "ACTB",
+   "baseline": "model_shuffled_identity",
+   "metric": "com_radius",
+   "model_better_by": 0.052378971079432214,
+   "lo": -0.0009422327364593963,
+   "hi": 0.10796709092631514,
+   "n_cells": 20,
+   "share_cells_model_better": 0.75
+  },
+  {
+   "fold": "mitotic",
+   "gene": "ACTB",
+   "baseline": "model_shuffled_identity",
+   "metric": "w1_micron",
+   "model_better_by": 1.8065364694571773,
+   "lo": 1.5990178650113827,
+   "hi": 2.014521170769522,
+   "n_cells": 20,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "mitotic",
+   "gene": "ACTB",
+   "baseline": "model_shuffled_identity",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.17963308394697267,
+   "lo": 0.1511729077078101,
+   "hi": 0.21179061441676222,
+   "n_cells": 20,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "mitotic",
+   "gene": "ACTB",
+   "baseline": "nearest_train_cell",
+   "metric": "pearson_r",
+   "model_better_by": 0.6975657752947247,
+   "lo": 0.6338918295136337,
+   "hi": 0.756599340361149,
+   "n_cells": 20,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "mitotic",
+   "gene": "ACTB",
+   "baseline": "nearest_train_cell",
+   "metric": "dice",
+   "model_better_by": 0.1678148678056988,
+   "lo": 0.13775749493005118,
+   "hi": 0.19588535573731303,
+   "n_cells": 20,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "mitotic",
+   "gene": "ACTB",
+   "baseline": "nearest_train_cell",
+   "metric": "com_radius",
+   "model_better_by": 0.03993939819916812,
+   "lo": -0.0015024179614123467,
+   "hi": 0.07774743710609332,
+   "n_cells": 20,
+   "share_cells_model_better": 0.75
+  },
+  {
+   "fold": "mitotic",
+   "gene": "ACTB",
+   "baseline": "nearest_train_cell",
+   "metric": "w1_micron",
+   "model_better_by": 1.122175418497488,
+   "lo": 0.889773588868604,
+   "hi": 1.4061313569456246,
+   "n_cells": 20,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "mitotic",
+   "gene": "ACTB",
+   "baseline": "nearest_train_cell",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.058853519906248396,
+   "lo": 0.037922259834658016,
+   "hi": 0.08915468046754214,
+   "n_cells": 20,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "mitotic",
+   "gene": "ACTB",
+   "baseline": "reference_only",
+   "metric": "pearson_r",
+   "model_better_by": 0.15084179539036047,
+   "lo": 0.10908151610848264,
+   "hi": 0.18891647841365777,
+   "n_cells": 20,
+   "share_cells_model_better": 0.95
+  },
+  {
+   "fold": "mitotic",
+   "gene": "ACTB",
+   "baseline": "reference_only",
+   "metric": "dice",
+   "model_better_by": 0.04350902087330971,
+   "lo": 0.030560331189046903,
+   "hi": 0.05728154970827913,
+   "n_cells": 20,
+   "share_cells_model_better": 0.95
+  },
+  {
+   "fold": "mitotic",
+   "gene": "ACTB",
+   "baseline": "reference_only",
+   "metric": "com_radius",
+   "model_better_by": -0.013831987668374826,
+   "lo": -0.039293932467313525,
+   "hi": 0.009468314899214363,
+   "n_cells": 20,
+   "share_cells_model_better": 0.45
+  },
+  {
+   "fold": "mitotic",
+   "gene": "ACTB",
+   "baseline": "reference_only",
+   "metric": "w1_micron",
+   "model_better_by": 0.2589173631160703,
+   "lo": 0.14572328996572712,
+   "hi": 0.3565072449224726,
+   "n_cells": 20,
+   "share_cells_model_better": 0.9
+  },
+  {
+   "fold": "mitotic",
+   "gene": "ACTB",
+   "baseline": "reference_only",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.020518038246215942,
+   "lo": 0.01426923102409928,
+   "hi": 0.028296995860576265,
+   "n_cells": 20,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "mitotic",
+   "gene": "ACTB",
+   "baseline": "rule_annotation",
+   "metric": "pearson_r",
+   "model_better_by": 0.24740257062037202,
+   "lo": 0.1938589145557685,
+   "hi": 0.2996037925263414,
+   "n_cells": 20,
+   "share_cells_model_better": 0.95
+  },
+  {
+   "fold": "mitotic",
+   "gene": "ACTB",
+   "baseline": "rule_annotation",
+   "metric": "dice",
+   "model_better_by": 0.06723450423321317,
+   "lo": 0.03764194380096871,
+   "hi": 0.09636206941695173,
+   "n_cells": 20,
+   "share_cells_model_better": 0.75
+  },
+  {
+   "fold": "mitotic",
+   "gene": "ACTB",
+   "baseline": "rule_annotation",
+   "metric": "com_radius",
+   "model_better_by": 0.04858921398081657,
+   "lo": 0.00224670057171904,
+   "hi": 0.08835673965104972,
+   "n_cells": 20,
+   "share_cells_model_better": 0.85
+  },
+  {
+   "fold": "mitotic",
+   "gene": "ACTB",
+   "baseline": "rule_annotation",
+   "metric": "w1_micron",
+   "model_better_by": 0.7124161787733438,
+   "lo": 0.581114286751392,
+   "hi": 0.846534526066785,
+   "n_cells": 20,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "mitotic",
+   "gene": "ACTB",
+   "baseline": "rule_annotation",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.019789483741756923,
+   "lo": 0.012554357368537465,
+   "hi": 0.02903274869290462,
+   "n_cells": 20,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "mitotic",
+   "gene": "ACTB",
+   "baseline": "rule_best_on_train",
+   "metric": "pearson_r",
+   "model_better_by": 0.24740257062037202,
+   "lo": 0.1938589145557685,
+   "hi": 0.2996037925263414,
+   "n_cells": 20,
+   "share_cells_model_better": 0.95
+  },
+  {
+   "fold": "mitotic",
+   "gene": "ACTB",
+   "baseline": "rule_best_on_train",
+   "metric": "dice",
+   "model_better_by": 0.06723450423321317,
+   "lo": 0.03764194380096871,
+   "hi": 0.09636206941695173,
+   "n_cells": 20,
+   "share_cells_model_better": 0.75
+  },
+  {
+   "fold": "mitotic",
+   "gene": "ACTB",
+   "baseline": "rule_best_on_train",
+   "metric": "com_radius",
+   "model_better_by": 0.04858921398081657,
+   "lo": 0.00224670057171904,
+   "hi": 0.08835673965104972,
+   "n_cells": 20,
+   "share_cells_model_better": 0.85
+  },
+  {
+   "fold": "mitotic",
+   "gene": "ACTB",
+   "baseline": "rule_best_on_train",
+   "metric": "w1_micron",
+   "model_better_by": 0.7124161787733438,
+   "lo": 0.581114286751392,
+   "hi": 0.846534526066785,
+   "n_cells": 20,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "mitotic",
+   "gene": "ACTB",
+   "baseline": "rule_best_on_train",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.019789483741756923,
+   "lo": 0.012554357368537465,
+   "hi": 0.02903274869290462,
+   "n_cells": 20,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "mitotic",
+   "gene": "LMNB1",
+   "baseline": "atlas_own_structure",
+   "metric": "pearson_r",
+   "model_better_by": 0.006172694824692496,
+   "lo": -0.125649910618842,
+   "hi": 0.14370555741741398,
+   "n_cells": 20,
+   "share_cells_model_better": 0.4
+  },
+  {
+   "fold": "mitotic",
+   "gene": "LMNB1",
+   "baseline": "atlas_own_structure",
+   "metric": "dice",
+   "model_better_by": 0.028055375711138076,
+   "lo": -0.02261060578887019,
+   "hi": 0.08305794788725383,
+   "n_cells": 20,
+   "share_cells_model_better": 0.35
+  },
+  {
+   "fold": "mitotic",
+   "gene": "LMNB1",
+   "baseline": "atlas_own_structure",
+   "metric": "com_radius",
+   "model_better_by": 0.08323332524486063,
+   "lo": 0.041255550346296244,
+   "hi": 0.13434825360572414,
+   "n_cells": 20,
+   "share_cells_model_better": 0.8
+  },
+  {
+   "fold": "mitotic",
+   "gene": "LMNB1",
+   "baseline": "atlas_own_structure",
+   "metric": "w1_micron",
+   "model_better_by": -0.07680150897044083,
+   "lo": -0.19779781119055154,
+   "hi": 0.053758149487712924,
+   "n_cells": 20,
+   "share_cells_model_better": 0.4
+  },
+  {
+   "fold": "mitotic",
+   "gene": "LMNB1",
+   "baseline": "atlas_own_structure",
+   "metric": "nuc_fraction_err",
+   "model_better_by": -0.058879179385116054,
+   "lo": -0.0866131834756541,
+   "hi": -0.02991537708419443,
+   "n_cells": 20,
+   "share_cells_model_better": 0.2
+  },
+  {
+   "fold": "mitotic",
+   "gene": "LMNB1",
+   "baseline": "atlas_pooled",
+   "metric": "pearson_r",
+   "model_better_by": 0.017426680117439922,
+   "lo": -0.17870465607936267,
+   "hi": 0.22493193160153002,
+   "n_cells": 20,
+   "share_cells_model_better": 0.5
+  },
+  {
+   "fold": "mitotic",
+   "gene": "LMNB1",
+   "baseline": "atlas_pooled",
+   "metric": "dice",
+   "model_better_by": 0.03233168100467783,
+   "lo": -0.026596134933595257,
+   "hi": 0.09897420594892585,
+   "n_cells": 20,
+   "share_cells_model_better": 0.35
+  },
+  {
+   "fold": "mitotic",
+   "gene": "LMNB1",
+   "baseline": "atlas_pooled",
+   "metric": "com_radius",
+   "model_better_by": 0.07976602157356993,
+   "lo": 0.027348253056448536,
+   "hi": 0.13367521732025212,
+   "n_cells": 20,
+   "share_cells_model_better": 0.75
+  },
+  {
+   "fold": "mitotic",
+   "gene": "LMNB1",
+   "baseline": "atlas_pooled",
+   "metric": "w1_micron",
+   "model_better_by": -0.09077866842316605,
+   "lo": -0.46879695529609156,
+   "hi": 0.2930793179127502,
+   "n_cells": 20,
+   "share_cells_model_better": 0.55
+  },
+  {
+   "fold": "mitotic",
+   "gene": "LMNB1",
+   "baseline": "atlas_pooled",
+   "metric": "nuc_fraction_err",
+   "model_better_by": -0.06082044115284661,
+   "lo": -0.11024478847096676,
+   "hi": -0.008305057484773688,
+   "n_cells": 20,
+   "share_cells_model_better": 0.35
+  },
+  {
+   "fold": "mitotic",
+   "gene": "LMNB1",
+   "baseline": "model_shuffled_identity",
+   "metric": "pearson_r",
+   "model_better_by": 0.08011430011719968,
+   "lo": -0.1036978014710063,
+   "hi": 0.2761198717393227,
+   "n_cells": 20,
+   "share_cells_model_better": 0.5
+  },
+  {
+   "fold": "mitotic",
+   "gene": "LMNB1",
+   "baseline": "model_shuffled_identity",
+   "metric": "dice",
+   "model_better_by": 0.0747834720553905,
+   "lo": 0.014872436691512978,
+   "hi": 0.14367897595904613,
+   "n_cells": 20,
+   "share_cells_model_better": 0.5
+  },
+  {
+   "fold": "mitotic",
+   "gene": "LMNB1",
+   "baseline": "model_shuffled_identity",
+   "metric": "com_radius",
+   "model_better_by": 0.13500302257064217,
+   "lo": 0.06975511442020961,
+   "hi": 0.1992106947048599,
+   "n_cells": 20,
+   "share_cells_model_better": 0.85
+  },
+  {
+   "fold": "mitotic",
+   "gene": "LMNB1",
+   "baseline": "model_shuffled_identity",
+   "metric": "w1_micron",
+   "model_better_by": 0.09697668560234825,
+   "lo": -0.3988388532723471,
+   "hi": 0.6096646759209448,
+   "n_cells": 20,
+   "share_cells_model_better": 0.55
+  },
+  {
+   "fold": "mitotic",
+   "gene": "LMNB1",
+   "baseline": "model_shuffled_identity",
+   "metric": "nuc_fraction_err",
+   "model_better_by": -0.03914159151802244,
+   "lo": -0.10880418840562868,
+   "hi": 0.03720926874882492,
+   "n_cells": 20,
+   "share_cells_model_better": 0.35
+  },
+  {
+   "fold": "mitotic",
+   "gene": "LMNB1",
+   "baseline": "nearest_train_cell",
+   "metric": "pearson_r",
+   "model_better_by": 0.09649694103698975,
+   "lo": -0.04913774288709987,
+   "hi": 0.2513271154038297,
+   "n_cells": 20,
+   "share_cells_model_better": 0.5
+  },
+  {
+   "fold": "mitotic",
+   "gene": "LMNB1",
+   "baseline": "nearest_train_cell",
+   "metric": "dice",
+   "model_better_by": 0.05248442745957751,
+   "lo": -0.011953823989579816,
+   "hi": 0.1253845222630922,
+   "n_cells": 20,
+   "share_cells_model_better": 0.4
+  },
+  {
+   "fold": "mitotic",
+   "gene": "LMNB1",
+   "baseline": "nearest_train_cell",
+   "metric": "com_radius",
+   "model_better_by": 0.19913034683409067,
+   "lo": 0.140542036163619,
+   "hi": 0.25956655430240216,
+   "n_cells": 20,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "mitotic",
+   "gene": "LMNB1",
+   "baseline": "nearest_train_cell",
+   "metric": "w1_micron",
+   "model_better_by": -0.002425227051249737,
+   "lo": -0.16839537957850245,
+   "hi": 0.1687777652769178,
+   "n_cells": 20,
+   "share_cells_model_better": 0.4
+  },
+  {
+   "fold": "mitotic",
+   "gene": "LMNB1",
+   "baseline": "nearest_train_cell",
+   "metric": "nuc_fraction_err",
+   "model_better_by": -0.04510667845002756,
+   "lo": -0.0744998099886074,
+   "hi": -0.014802888380786416,
+   "n_cells": 20,
+   "share_cells_model_better": 0.2
+  },
+  {
+   "fold": "mitotic",
+   "gene": "LMNB1",
+   "baseline": "reference_only",
+   "metric": "pearson_r",
+   "model_better_by": 0.09478579050303802,
+   "lo": -0.18167546387025757,
+   "hi": 0.36801228002914627,
+   "n_cells": 20,
+   "share_cells_model_better": 0.6
+  },
+  {
+   "fold": "mitotic",
+   "gene": "LMNB1",
+   "baseline": "reference_only",
+   "metric": "dice",
+   "model_better_by": 0.07666293167623331,
+   "lo": 0.012938179942309176,
+   "hi": 0.14632503514082096,
+   "n_cells": 20,
+   "share_cells_model_better": 0.65
+  },
+  {
+   "fold": "mitotic",
+   "gene": "LMNB1",
+   "baseline": "reference_only",
+   "metric": "com_radius",
+   "model_better_by": 0.08611468529750235,
+   "lo": 0.032760393443042414,
+   "hi": 0.137228592749359,
+   "n_cells": 20,
+   "share_cells_model_better": 0.8
+  },
+  {
+   "fold": "mitotic",
+   "gene": "LMNB1",
+   "baseline": "reference_only",
+   "metric": "w1_micron",
+   "model_better_by": 0.17275078513996103,
+   "lo": -0.4881325867216985,
+   "hi": 0.8194062077445212,
+   "n_cells": 20,
+   "share_cells_model_better": 0.65
+  },
+  {
+   "fold": "mitotic",
+   "gene": "LMNB1",
+   "baseline": "reference_only",
+   "metric": "nuc_fraction_err",
+   "model_better_by": -0.03883699577076642,
+   "lo": -0.11499737536411105,
+   "hi": 0.0432373054974436,
+   "n_cells": 20,
+   "share_cells_model_better": 0.35
+  },
+  {
+   "fold": "mitotic",
+   "gene": "LMNB1",
+   "baseline": "rule_annotation",
+   "metric": "pearson_r",
+   "model_better_by": 0.10297218418930984,
+   "lo": 0.022507020360359436,
+   "hi": 0.18229144308125922,
+   "n_cells": 20,
+   "share_cells_model_better": 0.65
+  },
+  {
+   "fold": "mitotic",
+   "gene": "LMNB1",
+   "baseline": "rule_annotation",
+   "metric": "dice",
+   "model_better_by": -0.02359691308045529,
+   "lo": -0.06923992543080842,
+   "hi": 0.02191985391817487,
+   "n_cells": 20,
+   "share_cells_model_better": 0.25
+  },
+  {
+   "fold": "mitotic",
+   "gene": "LMNB1",
+   "baseline": "rule_annotation",
+   "metric": "com_radius",
+   "model_better_by": 0.052153008213137994,
+   "lo": 0.01590383352948271,
+   "hi": 0.09059942655761345,
+   "n_cells": 20,
+   "share_cells_model_better": 0.85
+  },
+  {
+   "fold": "mitotic",
+   "gene": "LMNB1",
+   "baseline": "rule_annotation",
+   "metric": "w1_micron",
+   "model_better_by": 1.3956619987264516,
+   "lo": 1.0611875690780357,
+   "hi": 1.7433867054432726,
+   "n_cells": 20,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "mitotic",
+   "gene": "LMNB1",
+   "baseline": "rule_annotation",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.190799103701341,
+   "lo": 0.14689591518386197,
+   "hi": 0.23116888220398796,
+   "n_cells": 20,
+   "share_cells_model_better": 0.9
+  },
+  {
+   "fold": "mitotic",
+   "gene": "LMNB1",
+   "baseline": "rule_best_on_train",
+   "metric": "pearson_r",
+   "model_better_by": 0.10297218418930984,
+   "lo": 0.022507020360359436,
+   "hi": 0.18229144308125922,
+   "n_cells": 20,
+   "share_cells_model_better": 0.65
+  },
+  {
+   "fold": "mitotic",
+   "gene": "LMNB1",
+   "baseline": "rule_best_on_train",
+   "metric": "dice",
+   "model_better_by": -0.02359691308045529,
+   "lo": -0.06923992543080842,
+   "hi": 0.02191985391817487,
+   "n_cells": 20,
+   "share_cells_model_better": 0.25
+  },
+  {
+   "fold": "mitotic",
+   "gene": "LMNB1",
+   "baseline": "rule_best_on_train",
+   "metric": "com_radius",
+   "model_better_by": 0.052153008213137994,
+   "lo": 0.01590383352948271,
+   "hi": 0.09059942655761345,
+   "n_cells": 20,
+   "share_cells_model_better": 0.85
+  },
+  {
+   "fold": "mitotic",
+   "gene": "LMNB1",
+   "baseline": "rule_best_on_train",
+   "metric": "w1_micron",
+   "model_better_by": 1.3956619987264516,
+   "lo": 1.0611875690780357,
+   "hi": 1.7433867054432726,
+   "n_cells": 20,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "mitotic",
+   "gene": "LMNB1",
+   "baseline": "rule_best_on_train",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.190799103701341,
+   "lo": 0.14689591518386197,
+   "hi": 0.23116888220398796,
+   "n_cells": 20,
+   "share_cells_model_better": 0.9
+  },
+  {
+   "fold": "mitotic",
+   "gene": "SEC61B",
+   "baseline": "atlas_own_structure",
+   "metric": "pearson_r",
+   "model_better_by": 0.2502992926388773,
+   "lo": 0.15465553621715564,
+   "hi": 0.3445085359626238,
+   "n_cells": 20,
+   "share_cells_model_better": 0.75
+  },
+  {
+   "fold": "mitotic",
+   "gene": "SEC61B",
+   "baseline": "atlas_own_structure",
+   "metric": "dice",
+   "model_better_by": 0.03880673400975439,
+   "lo": 0.0026595667870928873,
+   "hi": 0.07522706236205536,
+   "n_cells": 20,
+   "share_cells_model_better": 0.6
+  },
+  {
+   "fold": "mitotic",
+   "gene": "SEC61B",
+   "baseline": "atlas_own_structure",
+   "metric": "com_radius",
+   "model_better_by": 0.03640637694362326,
+   "lo": 0.013904372380580347,
+   "hi": 0.05803976429962264,
+   "n_cells": 20,
+   "share_cells_model_better": 0.75
+  },
+  {
+   "fold": "mitotic",
+   "gene": "SEC61B",
+   "baseline": "atlas_own_structure",
+   "metric": "w1_micron",
+   "model_better_by": 0.3510220910581666,
+   "lo": 0.23024973270384028,
+   "hi": 0.4837825518937513,
+   "n_cells": 20,
+   "share_cells_model_better": 0.9
+  },
+  {
+   "fold": "mitotic",
+   "gene": "SEC61B",
+   "baseline": "atlas_own_structure",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.055101184874012166,
+   "lo": 0.03809505886817955,
+   "hi": 0.07336562015109538,
+   "n_cells": 20,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "mitotic",
+   "gene": "SEC61B",
+   "baseline": "atlas_pooled",
+   "metric": "pearson_r",
+   "model_better_by": 0.25220658017313996,
+   "lo": 0.14710159983457013,
+   "hi": 0.3540282806778625,
+   "n_cells": 20,
+   "share_cells_model_better": 0.7
+  },
+  {
+   "fold": "mitotic",
+   "gene": "SEC61B",
+   "baseline": "atlas_pooled",
+   "metric": "dice",
+   "model_better_by": 0.055668112192919186,
+   "lo": 0.01528970604118135,
+   "hi": 0.09670242508699642,
+   "n_cells": 20,
+   "share_cells_model_better": 0.65
+  },
+  {
+   "fold": "mitotic",
+   "gene": "SEC61B",
+   "baseline": "atlas_pooled",
+   "metric": "com_radius",
+   "model_better_by": 0.030529212975530073,
+   "lo": 0.007663218097195739,
+   "hi": 0.052508488491449505,
+   "n_cells": 20,
+   "share_cells_model_better": 0.7
+  },
+  {
+   "fold": "mitotic",
+   "gene": "SEC61B",
+   "baseline": "atlas_pooled",
+   "metric": "w1_micron",
+   "model_better_by": 0.22283457877589335,
+   "lo": 0.12127353297971633,
+   "hi": 0.34046516146867295,
+   "n_cells": 20,
+   "share_cells_model_better": 0.85
+  },
+  {
+   "fold": "mitotic",
+   "gene": "SEC61B",
+   "baseline": "atlas_pooled",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.04826361297063184,
+   "lo": 0.03306713475868076,
+   "hi": 0.06448848127552645,
+   "n_cells": 20,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "mitotic",
+   "gene": "SEC61B",
+   "baseline": "model_shuffled_identity",
+   "metric": "pearson_r",
+   "model_better_by": 0.0795304222080099,
+   "lo": 0.0022255469681063,
+   "hi": 0.15589608968841645,
+   "n_cells": 20,
+   "share_cells_model_better": 0.6
+  },
+  {
+   "fold": "mitotic",
+   "gene": "SEC61B",
+   "baseline": "model_shuffled_identity",
+   "metric": "dice",
+   "model_better_by": 0.02783686991425155,
+   "lo": -0.004964050471385123,
+   "hi": 0.0625345577142655,
+   "n_cells": 20,
+   "share_cells_model_better": 0.55
+  },
+  {
+   "fold": "mitotic",
+   "gene": "SEC61B",
+   "baseline": "model_shuffled_identity",
+   "metric": "com_radius",
+   "model_better_by": 0.04512242859801921,
+   "lo": 0.01912219073385413,
+   "hi": 0.07201190679878426,
+   "n_cells": 20,
+   "share_cells_model_better": 0.65
+  },
+  {
+   "fold": "mitotic",
+   "gene": "SEC61B",
+   "baseline": "model_shuffled_identity",
+   "metric": "w1_micron",
+   "model_better_by": 0.013436342578803512,
+   "lo": -0.16139950084304297,
+   "hi": 0.1852974344969717,
+   "n_cells": 20,
+   "share_cells_model_better": 0.5
+  },
+  {
+   "fold": "mitotic",
+   "gene": "SEC61B",
+   "baseline": "model_shuffled_identity",
+   "metric": "nuc_fraction_err",
+   "model_better_by": -0.004086616980379378,
+   "lo": -0.019236873607933958,
+   "hi": 0.012636139021316592,
+   "n_cells": 20,
+   "share_cells_model_better": 0.4
+  },
+  {
+   "fold": "mitotic",
+   "gene": "SEC61B",
+   "baseline": "nearest_train_cell",
+   "metric": "pearson_r",
+   "model_better_by": 0.22781021521124875,
+   "lo": 0.1293913273395795,
+   "hi": 0.32230344773898206,
+   "n_cells": 20,
+   "share_cells_model_better": 0.8
+  },
+  {
+   "fold": "mitotic",
+   "gene": "SEC61B",
+   "baseline": "nearest_train_cell",
+   "metric": "dice",
+   "model_better_by": 0.0312637097348062,
+   "lo": -0.008396148233117613,
+   "hi": 0.07028430180377257,
+   "n_cells": 20,
+   "share_cells_model_better": 0.6
+  },
+  {
+   "fold": "mitotic",
+   "gene": "SEC61B",
+   "baseline": "nearest_train_cell",
+   "metric": "com_radius",
+   "model_better_by": 0.05447729138966575,
+   "lo": 0.011275251591883759,
+   "hi": 0.09667805689777201,
+   "n_cells": 20,
+   "share_cells_model_better": 0.8
+  },
+  {
+   "fold": "mitotic",
+   "gene": "SEC61B",
+   "baseline": "nearest_train_cell",
+   "metric": "w1_micron",
+   "model_better_by": 0.2720034875861096,
+   "lo": 0.11767599860875616,
+   "hi": 0.4360865398093888,
+   "n_cells": 20,
+   "share_cells_model_better": 0.65
+  },
+  {
+   "fold": "mitotic",
+   "gene": "SEC61B",
+   "baseline": "nearest_train_cell",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.03170113615203031,
+   "lo": 0.017539181944603015,
+   "hi": 0.04822208806312193,
+   "n_cells": 20,
+   "share_cells_model_better": 0.95
+  },
+  {
+   "fold": "mitotic",
+   "gene": "SEC61B",
+   "baseline": "reference_only",
+   "metric": "pearson_r",
+   "model_better_by": -0.10210994032452372,
+   "lo": -0.18868012524475192,
+   "hi": -0.01988025232996043,
+   "n_cells": 20,
+   "share_cells_model_better": 0.35
+  },
+  {
+   "fold": "mitotic",
+   "gene": "SEC61B",
+   "baseline": "reference_only",
+   "metric": "dice",
+   "model_better_by": 0.00921998279031101,
+   "lo": -0.014836485977671779,
+   "hi": 0.034796802620086976,
+   "n_cells": 20,
+   "share_cells_model_better": 0.5
+  },
+  {
+   "fold": "mitotic",
+   "gene": "SEC61B",
+   "baseline": "reference_only",
+   "metric": "com_radius",
+   "model_better_by": -0.003852808858004973,
+   "lo": -0.022680682390335556,
+   "hi": 0.01680186764609077,
+   "n_cells": 20,
+   "share_cells_model_better": 0.45
+  },
+  {
+   "fold": "mitotic",
+   "gene": "SEC61B",
+   "baseline": "reference_only",
+   "metric": "w1_micron",
+   "model_better_by": -0.1439524566951938,
+   "lo": -0.29917439424687636,
+   "hi": 0.0013716166874893794,
+   "n_cells": 20,
+   "share_cells_model_better": 0.4
+  },
+  {
+   "fold": "mitotic",
+   "gene": "SEC61B",
+   "baseline": "reference_only",
+   "metric": "nuc_fraction_err",
+   "model_better_by": -0.009347119712549378,
+   "lo": -0.015595347527684284,
+   "hi": -0.0027916152494289344,
+   "n_cells": 20,
+   "share_cells_model_better": 0.25
+  },
+  {
+   "fold": "mitotic",
+   "gene": "SEC61B",
+   "baseline": "rule_annotation",
+   "metric": "pearson_r",
+   "model_better_by": 0.3009117631773492,
+   "lo": 0.21099826292025967,
+   "hi": 0.4019919304260517,
+   "n_cells": 20,
+   "share_cells_model_better": 0.95
+  },
+  {
+   "fold": "mitotic",
+   "gene": "SEC61B",
+   "baseline": "rule_annotation",
+   "metric": "dice",
+   "model_better_by": 0.05085579569692168,
+   "lo": 0.026608125346963486,
+   "hi": 0.0750449996702673,
+   "n_cells": 20,
+   "share_cells_model_better": 0.8
+  },
+  {
+   "fold": "mitotic",
+   "gene": "SEC61B",
+   "baseline": "rule_annotation",
+   "metric": "com_radius",
+   "model_better_by": 0.13938265121083634,
+   "lo": 0.08213187561828586,
+   "hi": 0.19638907560506189,
+   "n_cells": 20,
+   "share_cells_model_better": 0.85
+  },
+  {
+   "fold": "mitotic",
+   "gene": "SEC61B",
+   "baseline": "rule_annotation",
+   "metric": "w1_micron",
+   "model_better_by": 1.2082225764325796,
+   "lo": 0.9746976782071843,
+   "hi": 1.4760995714013052,
+   "n_cells": 20,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "mitotic",
+   "gene": "SEC61B",
+   "baseline": "rule_annotation",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.0435813110268166,
+   "lo": 0.01468584386132428,
+   "hi": 0.07474435802786077,
+   "n_cells": 20,
+   "share_cells_model_better": 0.6
+  },
+  {
+   "fold": "mitotic",
+   "gene": "SEC61B",
+   "baseline": "rule_best_on_train",
+   "metric": "pearson_r",
+   "model_better_by": 0.3009117631773492,
+   "lo": 0.21099826292025967,
+   "hi": 0.4019919304260517,
+   "n_cells": 20,
+   "share_cells_model_better": 0.95
+  },
+  {
+   "fold": "mitotic",
+   "gene": "SEC61B",
+   "baseline": "rule_best_on_train",
+   "metric": "dice",
+   "model_better_by": 0.05085579569692168,
+   "lo": 0.026608125346963486,
+   "hi": 0.0750449996702673,
+   "n_cells": 20,
+   "share_cells_model_better": 0.8
+  },
+  {
+   "fold": "mitotic",
+   "gene": "SEC61B",
+   "baseline": "rule_best_on_train",
+   "metric": "com_radius",
+   "model_better_by": 0.13938265121083634,
+   "lo": 0.08213187561828586,
+   "hi": 0.19638907560506189,
+   "n_cells": 20,
+   "share_cells_model_better": 0.85
+  },
+  {
+   "fold": "mitotic",
+   "gene": "SEC61B",
+   "baseline": "rule_best_on_train",
+   "metric": "w1_micron",
+   "model_better_by": 1.2082225764325796,
+   "lo": 0.9746976782071843,
+   "hi": 1.4760995714013052,
+   "n_cells": 20,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "mitotic",
+   "gene": "SEC61B",
+   "baseline": "rule_best_on_train",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.0435813110268166,
+   "lo": 0.01468584386132428,
+   "hi": 0.07474435802786077,
+   "n_cells": 20,
+   "share_cells_model_better": 0.6
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TOMM20",
+   "baseline": "atlas_own_structure",
+   "metric": "pearson_r",
+   "model_better_by": 0.15791402122653592,
+   "lo": 0.07534674710084784,
+   "hi": 0.2464843443022123,
+   "n_cells": 20,
+   "share_cells_model_better": 0.75
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TOMM20",
+   "baseline": "atlas_own_structure",
+   "metric": "dice",
+   "model_better_by": 0.03727124055566098,
+   "lo": -0.0007150963261065112,
+   "hi": 0.07883860540755669,
+   "n_cells": 20,
+   "share_cells_model_better": 0.5
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TOMM20",
+   "baseline": "atlas_own_structure",
+   "metric": "com_radius",
+   "model_better_by": 0.01862562125315313,
+   "lo": -0.028191617613604284,
+   "hi": 0.06403204892208592,
+   "n_cells": 20,
+   "share_cells_model_better": 0.6
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TOMM20",
+   "baseline": "atlas_own_structure",
+   "metric": "w1_micron",
+   "model_better_by": 0.2968217996383275,
+   "lo": 0.14017403734858405,
+   "hi": 0.46700759098603994,
+   "n_cells": 20,
+   "share_cells_model_better": 0.8
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TOMM20",
+   "baseline": "atlas_own_structure",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.08644579715674086,
+   "lo": 0.06082651521688204,
+   "hi": 0.11284936969492307,
+   "n_cells": 20,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TOMM20",
+   "baseline": "atlas_pooled",
+   "metric": "pearson_r",
+   "model_better_by": 0.2607728862369694,
+   "lo": 0.1703244680417943,
+   "hi": 0.3559228887514589,
+   "n_cells": 20,
+   "share_cells_model_better": 0.95
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TOMM20",
+   "baseline": "atlas_pooled",
+   "metric": "dice",
+   "model_better_by": 0.07132726211617038,
+   "lo": 0.029916025939846345,
+   "hi": 0.11558705960913435,
+   "n_cells": 20,
+   "share_cells_model_better": 0.65
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TOMM20",
+   "baseline": "atlas_pooled",
+   "metric": "com_radius",
+   "model_better_by": 0.04530690743442424,
+   "lo": -0.0013393540932152925,
+   "hi": 0.09088711854878409,
+   "n_cells": 20,
+   "share_cells_model_better": 0.6
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TOMM20",
+   "baseline": "atlas_pooled",
+   "metric": "w1_micron",
+   "model_better_by": 0.48965552517613364,
+   "lo": 0.3302243529063927,
+   "hi": 0.6597824390921653,
+   "n_cells": 20,
+   "share_cells_model_better": 0.9
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TOMM20",
+   "baseline": "atlas_pooled",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.10811173393563629,
+   "lo": 0.07665652773865114,
+   "hi": 0.1400748840222953,
+   "n_cells": 20,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TOMM20",
+   "baseline": "model_shuffled_identity",
+   "metric": "pearson_r",
+   "model_better_by": 0.014548717115920564,
+   "lo": -0.047345922125215,
+   "hi": 0.07788526229495725,
+   "n_cells": 20,
+   "share_cells_model_better": 0.6
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TOMM20",
+   "baseline": "model_shuffled_identity",
+   "metric": "dice",
+   "model_better_by": 0.03217543209367584,
+   "lo": 0.001087616736490844,
+   "hi": 0.0652360151882178,
+   "n_cells": 20,
+   "share_cells_model_better": 0.6
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TOMM20",
+   "baseline": "model_shuffled_identity",
+   "metric": "com_radius",
+   "model_better_by": 0.02893538173665111,
+   "lo": 0.0028795940262632664,
+   "hi": 0.056075351457777894,
+   "n_cells": 20,
+   "share_cells_model_better": 0.7
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TOMM20",
+   "baseline": "model_shuffled_identity",
+   "metric": "w1_micron",
+   "model_better_by": -0.061301765864994404,
+   "lo": -0.18562523653265342,
+   "hi": 0.06279220881311168,
+   "n_cells": 20,
+   "share_cells_model_better": 0.4
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TOMM20",
+   "baseline": "model_shuffled_identity",
+   "metric": "nuc_fraction_err",
+   "model_better_by": -0.0017821119377436898,
+   "lo": -0.007096600220741623,
+   "hi": 0.0033131552956814792,
+   "n_cells": 20,
+   "share_cells_model_better": 0.3
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TOMM20",
+   "baseline": "nearest_train_cell",
+   "metric": "pearson_r",
+   "model_better_by": 0.25108348878035774,
+   "lo": 0.1633074158242196,
+   "hi": 0.3387214166083138,
+   "n_cells": 20,
+   "share_cells_model_better": 0.85
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TOMM20",
+   "baseline": "nearest_train_cell",
+   "metric": "dice",
+   "model_better_by": 0.05030307930504093,
+   "lo": 0.01404881917173501,
+   "hi": 0.08907805780090726,
+   "n_cells": 20,
+   "share_cells_model_better": 0.7
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TOMM20",
+   "baseline": "nearest_train_cell",
+   "metric": "com_radius",
+   "model_better_by": 0.12994826260413553,
+   "lo": 0.06696670785060585,
+   "hi": 0.19630140392646675,
+   "n_cells": 20,
+   "share_cells_model_better": 0.75
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TOMM20",
+   "baseline": "nearest_train_cell",
+   "metric": "w1_micron",
+   "model_better_by": 0.6056953500998425,
+   "lo": 0.3425521413810964,
+   "hi": 0.8995003507131922,
+   "n_cells": 20,
+   "share_cells_model_better": 0.85
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TOMM20",
+   "baseline": "nearest_train_cell",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.08614715501184704,
+   "lo": 0.05350772641999303,
+   "hi": 0.12350022056949235,
+   "n_cells": 20,
+   "share_cells_model_better": 0.95
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TOMM20",
+   "baseline": "reference_only",
+   "metric": "pearson_r",
+   "model_better_by": 0.1056619540915881,
+   "lo": 0.036262730861951316,
+   "hi": 0.1731711951526941,
+   "n_cells": 20,
+   "share_cells_model_better": 0.65
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TOMM20",
+   "baseline": "reference_only",
+   "metric": "dice",
+   "model_better_by": 0.08847038380039454,
+   "lo": 0.055010861679782426,
+   "hi": 0.12201569590376467,
+   "n_cells": 20,
+   "share_cells_model_better": 0.85
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TOMM20",
+   "baseline": "reference_only",
+   "metric": "com_radius",
+   "model_better_by": 0.02482616660585339,
+   "lo": -0.011682303076084677,
+   "hi": 0.060829276627548744,
+   "n_cells": 20,
+   "share_cells_model_better": 0.6
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TOMM20",
+   "baseline": "reference_only",
+   "metric": "w1_micron",
+   "model_better_by": -0.03410542178232752,
+   "lo": -0.141322136903262,
+   "hi": 0.07105009354186899,
+   "n_cells": 20,
+   "share_cells_model_better": 0.45
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TOMM20",
+   "baseline": "reference_only",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.026320931329968378,
+   "lo": 0.017750068639962664,
+   "hi": 0.03518132201457999,
+   "n_cells": 20,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TOMM20",
+   "baseline": "rule_annotation",
+   "metric": "pearson_r",
+   "model_better_by": 0.09316416110566164,
+   "lo": 0.022238460280276286,
+   "hi": 0.1620310831363151,
+   "n_cells": 20,
+   "share_cells_model_better": 0.65
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TOMM20",
+   "baseline": "rule_annotation",
+   "metric": "dice",
+   "model_better_by": 0.04492229769383646,
+   "lo": 0.01375113194765072,
+   "hi": 0.07570723012231592,
+   "n_cells": 20,
+   "share_cells_model_better": 0.65
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TOMM20",
+   "baseline": "rule_annotation",
+   "metric": "com_radius",
+   "model_better_by": 0.0242699948194076,
+   "lo": -0.006372227080295258,
+   "hi": 0.05369241457308126,
+   "n_cells": 20,
+   "share_cells_model_better": 0.7
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TOMM20",
+   "baseline": "rule_annotation",
+   "metric": "w1_micron",
+   "model_better_by": 0.0648805518914588,
+   "lo": -0.1063715793333375,
+   "hi": 0.23409407890776304,
+   "n_cells": 20,
+   "share_cells_model_better": 0.55
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TOMM20",
+   "baseline": "rule_annotation",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.048291789556895684,
+   "lo": 0.028880205570366354,
+   "hi": 0.06836698286949802,
+   "n_cells": 20,
+   "share_cells_model_better": 0.95
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TOMM20",
+   "baseline": "rule_best_on_train",
+   "metric": "pearson_r",
+   "model_better_by": 0.09316416110566164,
+   "lo": 0.022238460280276286,
+   "hi": 0.1620310831363151,
+   "n_cells": 20,
+   "share_cells_model_better": 0.65
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TOMM20",
+   "baseline": "rule_best_on_train",
+   "metric": "dice",
+   "model_better_by": 0.04492229769383646,
+   "lo": 0.01375113194765072,
+   "hi": 0.07570723012231592,
+   "n_cells": 20,
+   "share_cells_model_better": 0.65
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TOMM20",
+   "baseline": "rule_best_on_train",
+   "metric": "com_radius",
+   "model_better_by": 0.0242699948194076,
+   "lo": -0.006372227080295258,
+   "hi": 0.05369241457308126,
+   "n_cells": 20,
+   "share_cells_model_better": 0.7
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TOMM20",
+   "baseline": "rule_best_on_train",
+   "metric": "w1_micron",
+   "model_better_by": 0.0648805518914588,
+   "lo": -0.1063715793333375,
+   "hi": 0.23409407890776304,
+   "n_cells": 20,
+   "share_cells_model_better": 0.55
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TOMM20",
+   "baseline": "rule_best_on_train",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.048291789556895684,
+   "lo": 0.028880205570366354,
+   "hi": 0.06836698286949802,
+   "n_cells": 20,
+   "share_cells_model_better": 0.95
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TUBA1B",
+   "baseline": "atlas_own_structure",
+   "metric": "pearson_r",
+   "model_better_by": 0.0998344888175727,
+   "lo": -0.03579575768500417,
+   "hi": 0.24739649729999075,
+   "n_cells": 20,
+   "share_cells_model_better": 0.55
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TUBA1B",
+   "baseline": "atlas_own_structure",
+   "metric": "dice",
+   "model_better_by": 0.011656887288000956,
+   "lo": -0.00629255859966576,
+   "hi": 0.02970922824451506,
+   "n_cells": 20,
+   "share_cells_model_better": 0.65
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TUBA1B",
+   "baseline": "atlas_own_structure",
+   "metric": "com_radius",
+   "model_better_by": 0.02909703106194326,
+   "lo": 0.008188874914832446,
+   "hi": 0.051469766958290815,
+   "n_cells": 20,
+   "share_cells_model_better": 0.8
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TUBA1B",
+   "baseline": "atlas_own_structure",
+   "metric": "w1_micron",
+   "model_better_by": -0.12057189789067597,
+   "lo": -0.34329238079578345,
+   "hi": 0.13405452153300393,
+   "n_cells": 20,
+   "share_cells_model_better": 0.3
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TUBA1B",
+   "baseline": "atlas_own_structure",
+   "metric": "nuc_fraction_err",
+   "model_better_by": -0.003087557915486208,
+   "lo": -0.028333065002741,
+   "hi": 0.0258628401987906,
+   "n_cells": 20,
+   "share_cells_model_better": 0.3
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TUBA1B",
+   "baseline": "atlas_pooled",
+   "metric": "pearson_r",
+   "model_better_by": 0.030046926256299112,
+   "lo": -0.1755960895109134,
+   "hi": 0.2565385626496675,
+   "n_cells": 20,
+   "share_cells_model_better": 0.3
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TUBA1B",
+   "baseline": "atlas_pooled",
+   "metric": "dice",
+   "model_better_by": -0.01535792639413491,
+   "lo": -0.033832744545274136,
+   "hi": 0.0017249841667384346,
+   "n_cells": 20,
+   "share_cells_model_better": 0.35
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TUBA1B",
+   "baseline": "atlas_pooled",
+   "metric": "com_radius",
+   "model_better_by": 0.009562893811033576,
+   "lo": -0.019767176776193267,
+   "hi": 0.04023542837650821,
+   "n_cells": 20,
+   "share_cells_model_better": 0.5
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TUBA1B",
+   "baseline": "atlas_pooled",
+   "metric": "w1_micron",
+   "model_better_by": -0.15639950302758324,
+   "lo": -0.4920476918815735,
+   "hi": 0.21591212974914528,
+   "n_cells": 20,
+   "share_cells_model_better": 0.3
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TUBA1B",
+   "baseline": "atlas_pooled",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.0023334471880075147,
+   "lo": -0.031363429857216484,
+   "hi": 0.042002343296282045,
+   "n_cells": 20,
+   "share_cells_model_better": 0.3
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TUBA1B",
+   "baseline": "model_shuffled_identity",
+   "metric": "pearson_r",
+   "model_better_by": 0.12635533607609717,
+   "lo": 0.025447082998890754,
+   "hi": 0.23624673319744913,
+   "n_cells": 20,
+   "share_cells_model_better": 0.6
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TUBA1B",
+   "baseline": "model_shuffled_identity",
+   "metric": "dice",
+   "model_better_by": -0.04869970400763048,
+   "lo": -0.06834499482845058,
+   "hi": -0.029520894188064972,
+   "n_cells": 20,
+   "share_cells_model_better": 0.2
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TUBA1B",
+   "baseline": "model_shuffled_identity",
+   "metric": "com_radius",
+   "model_better_by": 0.05584783960699048,
+   "lo": 0.03461837534562443,
+   "hi": 0.07689855098586285,
+   "n_cells": 20,
+   "share_cells_model_better": 0.9
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TUBA1B",
+   "baseline": "model_shuffled_identity",
+   "metric": "w1_micron",
+   "model_better_by": 0.3117415781754255,
+   "lo": 0.23820382773764406,
+   "hi": 0.3903670325508354,
+   "n_cells": 20,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TUBA1B",
+   "baseline": "model_shuffled_identity",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.00289034593454215,
+   "lo": -0.000111596481912766,
+   "hi": 0.006245080420265419,
+   "n_cells": 20,
+   "share_cells_model_better": 0.65
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TUBA1B",
+   "baseline": "nearest_train_cell",
+   "metric": "pearson_r",
+   "model_better_by": 0.11666386871926052,
+   "lo": -0.039086130194356423,
+   "hi": 0.2901101827817671,
+   "n_cells": 20,
+   "share_cells_model_better": 0.55
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TUBA1B",
+   "baseline": "nearest_train_cell",
+   "metric": "dice",
+   "model_better_by": 0.010964330412129098,
+   "lo": -0.003090371890342289,
+   "hi": 0.026411249833645113,
+   "n_cells": 20,
+   "share_cells_model_better": 0.55
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TUBA1B",
+   "baseline": "nearest_train_cell",
+   "metric": "com_radius",
+   "model_better_by": 0.01711559506318007,
+   "lo": -0.02052164328676951,
+   "hi": 0.054988622185344116,
+   "n_cells": 20,
+   "share_cells_model_better": 0.5
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TUBA1B",
+   "baseline": "nearest_train_cell",
+   "metric": "w1_micron",
+   "model_better_by": -0.06891100060294794,
+   "lo": -0.40797499490812456,
+   "hi": 0.3140003125981836,
+   "n_cells": 20,
+   "share_cells_model_better": 0.25
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TUBA1B",
+   "baseline": "nearest_train_cell",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.002003096284265719,
+   "lo": -0.02735197282800215,
+   "hi": 0.03785554940275525,
+   "n_cells": 20,
+   "share_cells_model_better": 0.25
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TUBA1B",
+   "baseline": "reference_only",
+   "metric": "pearson_r",
+   "model_better_by": 0.08589982407091881,
+   "lo": 0.028666707775886018,
+   "hi": 0.14495460408866467,
+   "n_cells": 20,
+   "share_cells_model_better": 0.75
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TUBA1B",
+   "baseline": "reference_only",
+   "metric": "dice",
+   "model_better_by": -0.027530106227809565,
+   "lo": -0.0429941856533311,
+   "hi": -0.01240252711343079,
+   "n_cells": 20,
+   "share_cells_model_better": 0.3
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TUBA1B",
+   "baseline": "reference_only",
+   "metric": "com_radius",
+   "model_better_by": -0.0020654659779854277,
+   "lo": -0.018416092950611338,
+   "hi": 0.018372762101879686,
+   "n_cells": 20,
+   "share_cells_model_better": 0.45
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TUBA1B",
+   "baseline": "reference_only",
+   "metric": "w1_micron",
+   "model_better_by": -0.03551606839679765,
+   "lo": -0.12746255500389447,
+   "hi": 0.0753980097248781,
+   "n_cells": 20,
+   "share_cells_model_better": 0.25
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TUBA1B",
+   "baseline": "reference_only",
+   "metric": "nuc_fraction_err",
+   "model_better_by": -0.0012035104597978518,
+   "lo": -0.011932695235476874,
+   "hi": 0.011344780428230682,
+   "n_cells": 20,
+   "share_cells_model_better": 0.25
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TUBA1B",
+   "baseline": "rule_annotation",
+   "metric": "pearson_r",
+   "model_better_by": 0.032156535528994834,
+   "lo": -0.03845142509283865,
+   "hi": 0.1101048413069738,
+   "n_cells": 20,
+   "share_cells_model_better": 0.6
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TUBA1B",
+   "baseline": "rule_annotation",
+   "metric": "dice",
+   "model_better_by": -0.009633652062265205,
+   "lo": -0.02718152716227608,
+   "hi": 0.007399439223822511,
+   "n_cells": 20,
+   "share_cells_model_better": 0.45
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TUBA1B",
+   "baseline": "rule_annotation",
+   "metric": "com_radius",
+   "model_better_by": -0.0019456404172557215,
+   "lo": -0.016307697601954087,
+   "hi": 0.012213832595865462,
+   "n_cells": 20,
+   "share_cells_model_better": 0.45
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TUBA1B",
+   "baseline": "rule_annotation",
+   "metric": "w1_micron",
+   "model_better_by": 0.040687464341055,
+   "lo": -0.022824577458350814,
+   "hi": 0.11737608128164238,
+   "n_cells": 20,
+   "share_cells_model_better": 0.5
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TUBA1B",
+   "baseline": "rule_annotation",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.03537127689789609,
+   "lo": 0.028219168278845245,
+   "hi": 0.044313541510458014,
+   "n_cells": 20,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TUBA1B",
+   "baseline": "rule_best_on_train",
+   "metric": "pearson_r",
+   "model_better_by": -0.0830246066062452,
+   "lo": -0.29066929366190325,
+   "hi": 0.14568035847923938,
+   "n_cells": 20,
+   "share_cells_model_better": 0.25
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TUBA1B",
+   "baseline": "rule_best_on_train",
+   "metric": "dice",
+   "model_better_by": -0.04497459332472091,
+   "lo": -0.06927732846952307,
+   "hi": -0.01828697852265905,
+   "n_cells": 20,
+   "share_cells_model_better": 0.2
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TUBA1B",
+   "baseline": "rule_best_on_train",
+   "metric": "com_radius",
+   "model_better_by": 0.0414031713363649,
+   "lo": -0.030240756706841412,
+   "hi": 0.1250017379171236,
+   "n_cells": 20,
+   "share_cells_model_better": 0.35
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TUBA1B",
+   "baseline": "rule_best_on_train",
+   "metric": "w1_micron",
+   "model_better_by": 0.3161618153669674,
+   "lo": -0.11645140658862545,
+   "hi": 0.7904259096714189,
+   "n_cells": 20,
+   "share_cells_model_better": 0.45
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TUBA1B",
+   "baseline": "rule_best_on_train",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.03537127689789609,
+   "lo": 0.028219168278845245,
+   "hi": 0.044313541510458014,
+   "n_cells": 20,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "AAVS1",
+   "baseline": "atlas_own_structure",
+   "metric": "pearson_r",
+   "model_better_by": 0.7727206286117906,
+   "lo": 0.6954981475686944,
+   "hi": 0.850121351515957,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "AAVS1",
+   "baseline": "atlas_own_structure",
+   "metric": "dice",
+   "model_better_by": 0.14631872374051294,
+   "lo": 0.11829354789471655,
+   "hi": 0.17495737657346308,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "AAVS1",
+   "baseline": "atlas_own_structure",
+   "metric": "com_radius",
+   "model_better_by": 0.07592784747870523,
+   "lo": 0.028284532641351643,
+   "hi": 0.12304334054717868,
+   "n_cells": 16,
+   "share_cells_model_better": 0.75
+  },
+  {
+   "fold": "seen",
+   "gene": "AAVS1",
+   "baseline": "atlas_own_structure",
+   "metric": "w1_micron",
+   "model_better_by": 1.1213585767537635,
+   "lo": 0.9336002357009264,
+   "hi": 1.3300347263231538,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "AAVS1",
+   "baseline": "atlas_own_structure",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.1646086930134928,
+   "lo": 0.1473689915909282,
+   "hi": 0.1817097940044992,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "AAVS1",
+   "baseline": "atlas_pooled",
+   "metric": "pearson_r",
+   "model_better_by": 1.0413393769901473,
+   "lo": 0.9732259756644471,
+   "hi": 1.1101637397098039,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "AAVS1",
+   "baseline": "atlas_pooled",
+   "metric": "dice",
+   "model_better_by": 0.30611913659389256,
+   "lo": 0.27889530858026074,
+   "hi": 0.3336857463948041,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "AAVS1",
+   "baseline": "atlas_pooled",
+   "metric": "com_radius",
+   "model_better_by": 0.07252772493989804,
+   "lo": 0.025476463487501995,
+   "hi": 0.12214692772103787,
+   "n_cells": 16,
+   "share_cells_model_better": 0.75
+  },
+  {
+   "fold": "seen",
+   "gene": "AAVS1",
+   "baseline": "atlas_pooled",
+   "metric": "w1_micron",
+   "model_better_by": 1.4170287347902843,
+   "lo": 1.193929444968366,
+   "hi": 1.6717778145061963,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "AAVS1",
+   "baseline": "atlas_pooled",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.22340889765560445,
+   "lo": 0.2043508315382109,
+   "hi": 0.24139184830033947,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "AAVS1",
+   "baseline": "model_shuffled_identity",
+   "metric": "pearson_r",
+   "model_better_by": 0.12412921635020463,
+   "lo": 0.09489105869590019,
+   "hi": 0.14915653562253747,
+   "n_cells": 16,
+   "share_cells_model_better": 0.9375
+  },
+  {
+   "fold": "seen",
+   "gene": "AAVS1",
+   "baseline": "model_shuffled_identity",
+   "metric": "dice",
+   "model_better_by": 0.09521546557491758,
+   "lo": 0.07541054777149134,
+   "hi": 0.11591489859278481,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "AAVS1",
+   "baseline": "model_shuffled_identity",
+   "metric": "com_radius",
+   "model_better_by": 0.01700700264018523,
+   "lo": -0.011748793773240894,
+   "hi": 0.0516318830083581,
+   "n_cells": 16,
+   "share_cells_model_better": 0.625
+  },
+  {
+   "fold": "seen",
+   "gene": "AAVS1",
+   "baseline": "model_shuffled_identity",
+   "metric": "w1_micron",
+   "model_better_by": 0.02737232175748597,
+   "lo": -0.023889751326025683,
+   "hi": 0.08785241185731925,
+   "n_cells": 16,
+   "share_cells_model_better": 0.5625
+  },
+  {
+   "fold": "seen",
+   "gene": "AAVS1",
+   "baseline": "model_shuffled_identity",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.005041318946633122,
+   "lo": -0.0004366849072989006,
+   "hi": 0.011035905087541745,
+   "n_cells": 16,
+   "share_cells_model_better": 0.75
+  },
+  {
+   "fold": "seen",
+   "gene": "AAVS1",
+   "baseline": "nearest_train_cell",
+   "metric": "pearson_r",
+   "model_better_by": 0.8041334688265297,
+   "lo": 0.7581818360315787,
+   "hi": 0.8430334043106901,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "AAVS1",
+   "baseline": "nearest_train_cell",
+   "metric": "dice",
+   "model_better_by": 0.18350677459696135,
+   "lo": 0.15583617991134616,
+   "hi": 0.20988209872021285,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "AAVS1",
+   "baseline": "nearest_train_cell",
+   "metric": "com_radius",
+   "model_better_by": 0.13763327396481867,
+   "lo": 0.06870797911727018,
+   "hi": 0.20408846698738914,
+   "n_cells": 16,
+   "share_cells_model_better": 0.8125
+  },
+  {
+   "fold": "seen",
+   "gene": "AAVS1",
+   "baseline": "nearest_train_cell",
+   "metric": "w1_micron",
+   "model_better_by": 1.0052407082512484,
+   "lo": 0.7429132835852156,
+   "hi": 1.3141013397390857,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "AAVS1",
+   "baseline": "nearest_train_cell",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.11425417841685134,
+   "lo": 0.08788509709995121,
+   "hi": 0.1427556079028204,
+   "n_cells": 16,
+   "share_cells_model_better": 0.9375
+  },
+  {
+   "fold": "seen",
+   "gene": "AAVS1",
+   "baseline": "reference_only",
+   "metric": "pearson_r",
+   "model_better_by": 0.278380899781679,
+   "lo": 0.24718341752798,
+   "hi": 0.30274696800351364,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "AAVS1",
+   "baseline": "reference_only",
+   "metric": "dice",
+   "model_better_by": 0.19476387427507402,
+   "lo": 0.1748127474161609,
+   "hi": 0.21378629614897,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "AAVS1",
+   "baseline": "reference_only",
+   "metric": "com_radius",
+   "model_better_by": 0.02887090179458495,
+   "lo": -0.0033448557995407815,
+   "hi": 0.06255031507629112,
+   "n_cells": 16,
+   "share_cells_model_better": 0.625
+  },
+  {
+   "fold": "seen",
+   "gene": "AAVS1",
+   "baseline": "reference_only",
+   "metric": "w1_micron",
+   "model_better_by": 0.38811120944458977,
+   "lo": 0.28771764578571085,
+   "hi": 0.4990827718605213,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "AAVS1",
+   "baseline": "reference_only",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.05593629430523199,
+   "lo": 0.04330251262281999,
+   "hi": 0.0675222816942974,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "AAVS1",
+   "baseline": "rule_annotation",
+   "metric": "pearson_r",
+   "model_better_by": 0.4074590552812456,
+   "lo": 0.36165633738982805,
+   "hi": 0.4525286232145794,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "AAVS1",
+   "baseline": "rule_annotation",
+   "metric": "dice",
+   "model_better_by": 0.18399380038728252,
+   "lo": 0.09573092868156677,
+   "hi": 0.2608767839334455,
+   "n_cells": 16,
+   "share_cells_model_better": 0.8125
+  },
+  {
+   "fold": "seen",
+   "gene": "AAVS1",
+   "baseline": "rule_annotation",
+   "metric": "com_radius",
+   "model_better_by": 0.056311565903837596,
+   "lo": 0.004852171142684258,
+   "hi": 0.11226942346574662,
+   "n_cells": 16,
+   "share_cells_model_better": 0.625
+  },
+  {
+   "fold": "seen",
+   "gene": "AAVS1",
+   "baseline": "rule_annotation",
+   "metric": "w1_micron",
+   "model_better_by": 0.24756541123701892,
+   "lo": 0.17129481062934243,
+   "hi": 0.32320365821842917,
+   "n_cells": 16,
+   "share_cells_model_better": 0.875
+  },
+  {
+   "fold": "seen",
+   "gene": "AAVS1",
+   "baseline": "rule_annotation",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.10290460663020512,
+   "lo": 0.08835644597384759,
+   "hi": 0.11695425414475241,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "AAVS1",
+   "baseline": "rule_best_on_train",
+   "metric": "pearson_r",
+   "model_better_by": 0.39505583266450145,
+   "lo": 0.3421845337972581,
+   "hi": 0.4421780906883919,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "AAVS1",
+   "baseline": "rule_best_on_train",
+   "metric": "dice",
+   "model_better_by": -0.0740836504809498,
+   "lo": -0.10642254660024356,
+   "hi": -0.039316936178173216,
+   "n_cells": 16,
+   "share_cells_model_better": 0.125
+  },
+  {
+   "fold": "seen",
+   "gene": "AAVS1",
+   "baseline": "rule_best_on_train",
+   "metric": "com_radius",
+   "model_better_by": 0.11496294589169456,
+   "lo": 0.058611247320377584,
+   "hi": 0.1685419901429834,
+   "n_cells": 16,
+   "share_cells_model_better": 0.875
+  },
+  {
+   "fold": "seen",
+   "gene": "AAVS1",
+   "baseline": "rule_best_on_train",
+   "metric": "w1_micron",
+   "model_better_by": 0.510066461659533,
+   "lo": 0.29816575192395484,
+   "hi": 0.6950842579062897,
+   "n_cells": 16,
+   "share_cells_model_better": 0.9375
+  },
+  {
+   "fold": "seen",
+   "gene": "AAVS1",
+   "baseline": "rule_best_on_train",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.08184654760198018,
+   "lo": 0.06493709672331849,
+   "hi": 0.09766069984837994,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "ACTB",
+   "baseline": "atlas_own_structure",
+   "metric": "pearson_r",
+   "model_better_by": 0.7279773742222144,
+   "lo": 0.672866769529426,
+   "hi": 0.7779818547145357,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "ACTB",
+   "baseline": "atlas_own_structure",
+   "metric": "dice",
+   "model_better_by": 0.1333535471271024,
+   "lo": 0.10355829968800691,
+   "hi": 0.16070955378914292,
+   "n_cells": 16,
+   "share_cells_model_better": 0.9375
+  },
+  {
+   "fold": "seen",
+   "gene": "ACTB",
+   "baseline": "atlas_own_structure",
+   "metric": "com_radius",
+   "model_better_by": 0.017270750558524374,
+   "lo": -0.007867316943547482,
+   "hi": 0.04096506749382937,
+   "n_cells": 16,
+   "share_cells_model_better": 0.6875
+  },
+  {
+   "fold": "seen",
+   "gene": "ACTB",
+   "baseline": "atlas_own_structure",
+   "metric": "w1_micron",
+   "model_better_by": 0.8100937391302279,
+   "lo": 0.712445999157615,
+   "hi": 0.9110302202357093,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "ACTB",
+   "baseline": "atlas_own_structure",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.14976869803261456,
+   "lo": 0.1328952508037005,
+   "hi": 0.1671771948800946,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "ACTB",
+   "baseline": "atlas_pooled",
+   "metric": "pearson_r",
+   "model_better_by": 0.9810410900454978,
+   "lo": 0.9059284879781068,
+   "hi": 1.0570138519346317,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "ACTB",
+   "baseline": "atlas_pooled",
+   "metric": "dice",
+   "model_better_by": 0.153623114616005,
+   "lo": 0.12099548780680185,
+   "hi": 0.18282241489651704,
+   "n_cells": 16,
+   "share_cells_model_better": 0.9375
+  },
+  {
+   "fold": "seen",
+   "gene": "ACTB",
+   "baseline": "atlas_pooled",
+   "metric": "com_radius",
+   "model_better_by": 0.03000853248169548,
+   "lo": -0.0015401194618610203,
+   "hi": 0.06423384223412024,
+   "n_cells": 16,
+   "share_cells_model_better": 0.75
+  },
+  {
+   "fold": "seen",
+   "gene": "ACTB",
+   "baseline": "atlas_pooled",
+   "metric": "w1_micron",
+   "model_better_by": 1.1495496278408326,
+   "lo": 0.9959398153287363,
+   "hi": 1.3136296248752652,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "ACTB",
+   "baseline": "atlas_pooled",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.19292030458398196,
+   "lo": 0.17908403206012097,
+   "hi": 0.20599149311402543,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "ACTB",
+   "baseline": "model_shuffled_identity",
+   "metric": "pearson_r",
+   "model_better_by": 1.0572349297031618,
+   "lo": 0.9922264000043332,
+   "hi": 1.1228735408347115,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "ACTB",
+   "baseline": "model_shuffled_identity",
+   "metric": "dice",
+   "model_better_by": 0.18750817224708277,
+   "lo": 0.15627212218323158,
+   "hi": 0.21864637804586792,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "ACTB",
+   "baseline": "model_shuffled_identity",
+   "metric": "com_radius",
+   "model_better_by": 0.1254331848018131,
+   "lo": 0.06928229767049171,
+   "hi": 0.18972267471116278,
+   "n_cells": 16,
+   "share_cells_model_better": 0.8125
+  },
+  {
+   "fold": "seen",
+   "gene": "ACTB",
+   "baseline": "model_shuffled_identity",
+   "metric": "w1_micron",
+   "model_better_by": 1.6613133427115665,
+   "lo": 1.4381574388770604,
+   "hi": 1.9461485158725,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "ACTB",
+   "baseline": "model_shuffled_identity",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.27852918295558327,
+   "lo": 0.2575177132811465,
+   "hi": 0.2996866437276154,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "ACTB",
+   "baseline": "nearest_train_cell",
+   "metric": "pearson_r",
+   "model_better_by": 0.695587209767373,
+   "lo": 0.6202110339394542,
+   "hi": 0.768272008622502,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "ACTB",
+   "baseline": "nearest_train_cell",
+   "metric": "dice",
+   "model_better_by": 0.14137503009043956,
+   "lo": 0.11345241647024774,
+   "hi": 0.16853622354559133,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "ACTB",
+   "baseline": "nearest_train_cell",
+   "metric": "com_radius",
+   "model_better_by": 0.11595333852714959,
+   "lo": 0.0685028191372365,
+   "hi": 0.16479895163437697,
+   "n_cells": 16,
+   "share_cells_model_better": 0.875
+  },
+  {
+   "fold": "seen",
+   "gene": "ACTB",
+   "baseline": "nearest_train_cell",
+   "metric": "w1_micron",
+   "model_better_by": 0.8263233012724046,
+   "lo": 0.5347031899374683,
+   "hi": 1.1720499307663361,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "ACTB",
+   "baseline": "nearest_train_cell",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.10990478788505363,
+   "lo": 0.08307753396112118,
+   "hi": 0.13767608338372847,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "ACTB",
+   "baseline": "reference_only",
+   "metric": "pearson_r",
+   "model_better_by": 0.13978622400355967,
+   "lo": 0.10827933215938258,
+   "hi": 0.16971500330324896,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "ACTB",
+   "baseline": "reference_only",
+   "metric": "dice",
+   "model_better_by": 0.0689200755608086,
+   "lo": 0.0497704312632547,
+   "hi": 0.09279518244707655,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "ACTB",
+   "baseline": "reference_only",
+   "metric": "com_radius",
+   "model_better_by": 0.014317017012473614,
+   "lo": -0.014648467470080905,
+   "hi": 0.040979977283712,
+   "n_cells": 16,
+   "share_cells_model_better": 0.625
+  },
+  {
+   "fold": "seen",
+   "gene": "ACTB",
+   "baseline": "reference_only",
+   "metric": "w1_micron",
+   "model_better_by": 0.3017609403838891,
+   "lo": 0.18559032905737244,
+   "hi": 0.41667735974003683,
+   "n_cells": 16,
+   "share_cells_model_better": 0.875
+  },
+  {
+   "fold": "seen",
+   "gene": "ACTB",
+   "baseline": "reference_only",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.04490358760960386,
+   "lo": 0.0311322947930902,
+   "hi": 0.056055015556227425,
+   "n_cells": 16,
+   "share_cells_model_better": 0.875
+  },
+  {
+   "fold": "seen",
+   "gene": "ACTB",
+   "baseline": "rule_annotation",
+   "metric": "pearson_r",
+   "model_better_by": 0.39588346775464067,
+   "lo": 0.3542440560609549,
+   "hi": 0.43307332590504716,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "ACTB",
+   "baseline": "rule_annotation",
+   "metric": "dice",
+   "model_better_by": 0.0716801535895671,
+   "lo": 0.025517766488992392,
+   "hi": 0.11515277032974643,
+   "n_cells": 16,
+   "share_cells_model_better": 0.8125
+  },
+  {
+   "fold": "seen",
+   "gene": "ACTB",
+   "baseline": "rule_annotation",
+   "metric": "com_radius",
+   "model_better_by": 0.09832284078063497,
+   "lo": 0.05611740805599566,
+   "hi": 0.13717912958972556,
+   "n_cells": 16,
+   "share_cells_model_better": 0.875
+  },
+  {
+   "fold": "seen",
+   "gene": "ACTB",
+   "baseline": "rule_annotation",
+   "metric": "w1_micron",
+   "model_better_by": 0.41318190519204434,
+   "lo": 0.26042820118904375,
+   "hi": 0.557510410936894,
+   "n_cells": 16,
+   "share_cells_model_better": 0.875
+  },
+  {
+   "fold": "seen",
+   "gene": "ACTB",
+   "baseline": "rule_annotation",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.06491858953423556,
+   "lo": 0.05130695921920968,
+   "hi": 0.07849821311807283,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "ACTB",
+   "baseline": "rule_best_on_train",
+   "metric": "pearson_r",
+   "model_better_by": 0.39588346775464067,
+   "lo": 0.3542440560609549,
+   "hi": 0.43307332590504716,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "ACTB",
+   "baseline": "rule_best_on_train",
+   "metric": "dice",
+   "model_better_by": 0.0716801535895671,
+   "lo": 0.025517766488992392,
+   "hi": 0.11515277032974643,
+   "n_cells": 16,
+   "share_cells_model_better": 0.8125
+  },
+  {
+   "fold": "seen",
+   "gene": "ACTB",
+   "baseline": "rule_best_on_train",
+   "metric": "com_radius",
+   "model_better_by": 0.09832284078063497,
+   "lo": 0.05611740805599566,
+   "hi": 0.13717912958972556,
+   "n_cells": 16,
+   "share_cells_model_better": 0.875
+  },
+  {
+   "fold": "seen",
+   "gene": "ACTB",
+   "baseline": "rule_best_on_train",
+   "metric": "w1_micron",
+   "model_better_by": 0.41318190519204434,
+   "lo": 0.26042820118904375,
+   "hi": 0.557510410936894,
+   "n_cells": 16,
+   "share_cells_model_better": 0.875
+  },
+  {
+   "fold": "seen",
+   "gene": "ACTB",
+   "baseline": "rule_best_on_train",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.06491858953423556,
+   "lo": 0.05130695921920968,
+   "hi": 0.07849821311807283,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "LMNB1",
+   "baseline": "atlas_own_structure",
+   "metric": "pearson_r",
+   "model_better_by": 0.49921797645986055,
+   "lo": 0.45960792485515595,
+   "hi": 0.5421116256897434,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "LMNB1",
+   "baseline": "atlas_own_structure",
+   "metric": "dice",
+   "model_better_by": 0.23069060735471608,
+   "lo": 0.20009672559776254,
+   "hi": 0.2604440302607464,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "LMNB1",
+   "baseline": "atlas_own_structure",
+   "metric": "com_radius",
+   "model_better_by": 0.11879951796182402,
+   "lo": 0.06703646975360952,
+   "hi": 0.17773044103337968,
+   "n_cells": 16,
+   "share_cells_model_better": 0.9375
+  },
+  {
+   "fold": "seen",
+   "gene": "LMNB1",
+   "baseline": "atlas_own_structure",
+   "metric": "w1_micron",
+   "model_better_by": 0.2200542574279945,
+   "lo": 0.14302918572754536,
+   "hi": 0.30042752404633183,
+   "n_cells": 16,
+   "share_cells_model_better": 0.9375
+  },
+  {
+   "fold": "seen",
+   "gene": "LMNB1",
+   "baseline": "atlas_own_structure",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.01590828292302713,
+   "lo": -0.010530412963869983,
+   "hi": 0.041533504227648184,
+   "n_cells": 16,
+   "share_cells_model_better": 0.625
+  },
+  {
+   "fold": "seen",
+   "gene": "LMNB1",
+   "baseline": "atlas_pooled",
+   "metric": "pearson_r",
+   "model_better_by": 0.6265270596719317,
+   "lo": 0.5761810929093122,
+   "hi": 0.6792763156906151,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "LMNB1",
+   "baseline": "atlas_pooled",
+   "metric": "dice",
+   "model_better_by": 0.26482567332078577,
+   "lo": 0.2356297690431667,
+   "hi": 0.29566044038546496,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "LMNB1",
+   "baseline": "atlas_pooled",
+   "metric": "com_radius",
+   "model_better_by": 0.19820616541633568,
+   "lo": 0.13527515764588757,
+   "hi": 0.260856574857535,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "LMNB1",
+   "baseline": "atlas_pooled",
+   "metric": "w1_micron",
+   "model_better_by": 0.7014879827693425,
+   "lo": 0.5290532445830409,
+   "hi": 0.8865582793552823,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "LMNB1",
+   "baseline": "atlas_pooled",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.06951489640499792,
+   "lo": 0.05345451550012521,
+   "hi": 0.08465212032004178,
+   "n_cells": 16,
+   "share_cells_model_better": 0.9375
+  },
+  {
+   "fold": "seen",
+   "gene": "LMNB1",
+   "baseline": "model_shuffled_identity",
+   "metric": "pearson_r",
+   "model_better_by": 0.6773524942797802,
+   "lo": 0.6248744962968515,
+   "hi": 0.7339305159499386,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "LMNB1",
+   "baseline": "model_shuffled_identity",
+   "metric": "dice",
+   "model_better_by": 0.34587395522985276,
+   "lo": 0.3179884334146379,
+   "hi": 0.3724252801891002,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "LMNB1",
+   "baseline": "model_shuffled_identity",
+   "metric": "com_radius",
+   "model_better_by": 0.33034416372167774,
+   "lo": 0.23744547111345762,
+   "hi": 0.4305820704755257,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "LMNB1",
+   "baseline": "model_shuffled_identity",
+   "metric": "w1_micron",
+   "model_better_by": 1.479430047538587,
+   "lo": 1.1409703099578157,
+   "hi": 1.8761213302927675,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "LMNB1",
+   "baseline": "model_shuffled_identity",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.21651399557512588,
+   "lo": 0.20148681997336101,
+   "hi": 0.2304508369859282,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "LMNB1",
+   "baseline": "nearest_train_cell",
+   "metric": "pearson_r",
+   "model_better_by": 0.5436406105725173,
+   "lo": 0.4968932229230462,
+   "hi": 0.5911514107414416,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "LMNB1",
+   "baseline": "nearest_train_cell",
+   "metric": "dice",
+   "model_better_by": 0.26341428891080937,
+   "lo": 0.23538209715729655,
+   "hi": 0.29473845170863533,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "LMNB1",
+   "baseline": "nearest_train_cell",
+   "metric": "com_radius",
+   "model_better_by": 0.08159752588776184,
+   "lo": 0.04163055284207912,
+   "hi": 0.1291905178441174,
+   "n_cells": 16,
+   "share_cells_model_better": 0.875
+  },
+  {
+   "fold": "seen",
+   "gene": "LMNB1",
+   "baseline": "nearest_train_cell",
+   "metric": "w1_micron",
+   "model_better_by": 0.22285146086335855,
+   "lo": 0.11756373185077655,
+   "hi": 0.3325800883659895,
+   "n_cells": 16,
+   "share_cells_model_better": 0.8125
+  },
+  {
+   "fold": "seen",
+   "gene": "LMNB1",
+   "baseline": "nearest_train_cell",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.05460500285831893,
+   "lo": 0.016932770071897918,
+   "hi": 0.0912692897339161,
+   "n_cells": 16,
+   "share_cells_model_better": 0.6875
+  },
+  {
+   "fold": "seen",
+   "gene": "LMNB1",
+   "baseline": "reference_only",
+   "metric": "pearson_r",
+   "model_better_by": 0.7594103644644992,
+   "lo": 0.7233525605717217,
+   "hi": 0.7966920426543241,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "LMNB1",
+   "baseline": "reference_only",
+   "metric": "dice",
+   "model_better_by": 0.33668485165190815,
+   "lo": 0.31128331238190954,
+   "hi": 0.3628404019529792,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "LMNB1",
+   "baseline": "reference_only",
+   "metric": "com_radius",
+   "model_better_by": 0.2489682653452258,
+   "lo": 0.16521084540014475,
+   "hi": 0.3394513304363216,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "LMNB1",
+   "baseline": "reference_only",
+   "metric": "w1_micron",
+   "model_better_by": 1.622865920569438,
+   "lo": 1.2929005112234544,
+   "hi": 1.9911581654601327,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "LMNB1",
+   "baseline": "reference_only",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.23024773812724353,
+   "lo": 0.21610953205468858,
+   "hi": 0.24260783547090897,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "LMNB1",
+   "baseline": "rule_annotation",
+   "metric": "pearson_r",
+   "model_better_by": 0.2542869597506177,
+   "lo": 0.2326669568265977,
+   "hi": 0.2743985492983302,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "LMNB1",
+   "baseline": "rule_annotation",
+   "metric": "dice",
+   "model_better_by": -0.04306728499264235,
+   "lo": -0.07678297286820712,
+   "hi": -0.0026432187162254784,
+   "n_cells": 16,
+   "share_cells_model_better": 0.1875
+  },
+  {
+   "fold": "seen",
+   "gene": "LMNB1",
+   "baseline": "rule_annotation",
+   "metric": "com_radius",
+   "model_better_by": 0.03572493054360101,
+   "lo": 0.0048110529406781045,
+   "hi": 0.06787033931335626,
+   "n_cells": 16,
+   "share_cells_model_better": 0.6875
+  },
+  {
+   "fold": "seen",
+   "gene": "LMNB1",
+   "baseline": "rule_annotation",
+   "metric": "w1_micron",
+   "model_better_by": 0.5724775976914618,
+   "lo": 0.4511791312687943,
+   "hi": 0.6885803263057065,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "LMNB1",
+   "baseline": "rule_annotation",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.009736737757839516,
+   "lo": -0.01222369404722778,
+   "hi": 0.03141384137823457,
+   "n_cells": 16,
+   "share_cells_model_better": 0.6875
+  },
+  {
+   "fold": "seen",
+   "gene": "LMNB1",
+   "baseline": "rule_best_on_train",
+   "metric": "pearson_r",
+   "model_better_by": 0.2542869597506177,
+   "lo": 0.2326669568265977,
+   "hi": 0.2743985492983302,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "LMNB1",
+   "baseline": "rule_best_on_train",
+   "metric": "dice",
+   "model_better_by": -0.04306728499264235,
+   "lo": -0.07678297286820712,
+   "hi": -0.0026432187162254784,
+   "n_cells": 16,
+   "share_cells_model_better": 0.1875
+  },
+  {
+   "fold": "seen",
+   "gene": "LMNB1",
+   "baseline": "rule_best_on_train",
+   "metric": "com_radius",
+   "model_better_by": 0.03572493054360101,
+   "lo": 0.0048110529406781045,
+   "hi": 0.06787033931335626,
+   "n_cells": 16,
+   "share_cells_model_better": 0.6875
+  },
+  {
+   "fold": "seen",
+   "gene": "LMNB1",
+   "baseline": "rule_best_on_train",
+   "metric": "w1_micron",
+   "model_better_by": 0.5724775976914618,
+   "lo": 0.4511791312687943,
+   "hi": 0.6885803263057065,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "LMNB1",
+   "baseline": "rule_best_on_train",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.009736737757839516,
+   "lo": -0.01222369404722778,
+   "hi": 0.03141384137823457,
+   "n_cells": 16,
+   "share_cells_model_better": 0.6875
+  },
+  {
+   "fold": "seen",
+   "gene": "SEC61B",
+   "baseline": "atlas_own_structure",
+   "metric": "pearson_r",
+   "model_better_by": 0.47500485407663856,
+   "lo": 0.3948744295598191,
+   "hi": 0.5613836061740738,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "SEC61B",
+   "baseline": "atlas_own_structure",
+   "metric": "dice",
+   "model_better_by": 0.17200145240308634,
+   "lo": 0.14395328943264235,
+   "hi": 0.19922961454006355,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "SEC61B",
+   "baseline": "atlas_own_structure",
+   "metric": "com_radius",
+   "model_better_by": 0.03897715046499308,
+   "lo": 0.01675125187955588,
+   "hi": 0.06158518087742215,
+   "n_cells": 16,
+   "share_cells_model_better": 0.8125
+  },
+  {
+   "fold": "seen",
+   "gene": "SEC61B",
+   "baseline": "atlas_own_structure",
+   "metric": "w1_micron",
+   "model_better_by": 0.5099233104131634,
+   "lo": 0.3832972134610367,
+   "hi": 0.6396943765812453,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "SEC61B",
+   "baseline": "atlas_own_structure",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.13977203398748975,
+   "lo": 0.1264034975600893,
+   "hi": 0.15323519973644795,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "SEC61B",
+   "baseline": "atlas_pooled",
+   "metric": "pearson_r",
+   "model_better_by": 0.4801124044848475,
+   "lo": 0.4042327877412502,
+   "hi": 0.5631443123000016,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "SEC61B",
+   "baseline": "atlas_pooled",
+   "metric": "dice",
+   "model_better_by": 0.19338339894178952,
+   "lo": 0.16669628586661395,
+   "hi": 0.2190921997093611,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "SEC61B",
+   "baseline": "atlas_pooled",
+   "metric": "com_radius",
+   "model_better_by": 0.04393834054416478,
+   "lo": 0.023845868830204002,
+   "hi": 0.06476709790471101,
+   "n_cells": 16,
+   "share_cells_model_better": 0.875
+  },
+  {
+   "fold": "seen",
+   "gene": "SEC61B",
+   "baseline": "atlas_pooled",
+   "metric": "w1_micron",
+   "model_better_by": 0.3924063388861929,
+   "lo": 0.2783434509326092,
+   "hi": 0.5065376550763774,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "SEC61B",
+   "baseline": "atlas_pooled",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.12307198071085494,
+   "lo": 0.11167365296977712,
+   "hi": 0.13457967426434764,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "SEC61B",
+   "baseline": "model_shuffled_identity",
+   "metric": "pearson_r",
+   "model_better_by": 0.28944192201927293,
+   "lo": 0.24415506580254343,
+   "hi": 0.33267242100204075,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "SEC61B",
+   "baseline": "model_shuffled_identity",
+   "metric": "dice",
+   "model_better_by": 0.12457724575474746,
+   "lo": 0.10127678775133611,
+   "hi": 0.14803005277873596,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "SEC61B",
+   "baseline": "model_shuffled_identity",
+   "metric": "com_radius",
+   "model_better_by": 0.07216538454920152,
+   "lo": 0.033652779748384536,
+   "hi": 0.10983186793207876,
+   "n_cells": 16,
+   "share_cells_model_better": 0.6875
+  },
+  {
+   "fold": "seen",
+   "gene": "SEC61B",
+   "baseline": "model_shuffled_identity",
+   "metric": "w1_micron",
+   "model_better_by": 0.41390704526606537,
+   "lo": 0.3376847483924474,
+   "hi": 0.4891001037525702,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "SEC61B",
+   "baseline": "model_shuffled_identity",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.05043927284075036,
+   "lo": 0.04081169115196652,
+   "hi": 0.05860863736242703,
+   "n_cells": 16,
+   "share_cells_model_better": 0.9375
+  },
+  {
+   "fold": "seen",
+   "gene": "SEC61B",
+   "baseline": "nearest_train_cell",
+   "metric": "pearson_r",
+   "model_better_by": 0.43711377133201046,
+   "lo": 0.38684156140303155,
+   "hi": 0.48627656776317474,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "SEC61B",
+   "baseline": "nearest_train_cell",
+   "metric": "dice",
+   "model_better_by": 0.15424316099187443,
+   "lo": 0.1370254644378032,
+   "hi": 0.17117641003830641,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "SEC61B",
+   "baseline": "nearest_train_cell",
+   "metric": "com_radius",
+   "model_better_by": 0.05625814691735875,
+   "lo": 0.011839427254042542,
+   "hi": 0.10293092052873076,
+   "n_cells": 16,
+   "share_cells_model_better": 0.625
+  },
+  {
+   "fold": "seen",
+   "gene": "SEC61B",
+   "baseline": "nearest_train_cell",
+   "metric": "w1_micron",
+   "model_better_by": 0.333742484710688,
+   "lo": 0.176294281323691,
+   "hi": 0.515774327785825,
+   "n_cells": 16,
+   "share_cells_model_better": 0.875
+  },
+  {
+   "fold": "seen",
+   "gene": "SEC61B",
+   "baseline": "nearest_train_cell",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.07471627658987881,
+   "lo": 0.05417507275418748,
+   "hi": 0.09419962889944465,
+   "n_cells": 16,
+   "share_cells_model_better": 0.9375
+  },
+  {
+   "fold": "seen",
+   "gene": "SEC61B",
+   "baseline": "reference_only",
+   "metric": "pearson_r",
+   "model_better_by": 0.12486446188032957,
+   "lo": 0.07981132602380583,
+   "hi": 0.16847774578128247,
+   "n_cells": 16,
+   "share_cells_model_better": 0.875
+  },
+  {
+   "fold": "seen",
+   "gene": "SEC61B",
+   "baseline": "reference_only",
+   "metric": "dice",
+   "model_better_by": 0.06725010124091313,
+   "lo": 0.04309904999615227,
+   "hi": 0.09151677248978132,
+   "n_cells": 16,
+   "share_cells_model_better": 0.875
+  },
+  {
+   "fold": "seen",
+   "gene": "SEC61B",
+   "baseline": "reference_only",
+   "metric": "com_radius",
+   "model_better_by": 0.011223540538960531,
+   "lo": -0.010312208342920995,
+   "hi": 0.03300198544106064,
+   "n_cells": 16,
+   "share_cells_model_better": 0.5625
+  },
+  {
+   "fold": "seen",
+   "gene": "SEC61B",
+   "baseline": "reference_only",
+   "metric": "w1_micron",
+   "model_better_by": 0.13479037403683203,
+   "lo": 0.06299944858116553,
+   "hi": 0.1948852234704832,
+   "n_cells": 16,
+   "share_cells_model_better": 0.875
+  },
+  {
+   "fold": "seen",
+   "gene": "SEC61B",
+   "baseline": "reference_only",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.0010113054880426329,
+   "lo": -0.0064026603304536646,
+   "hi": 0.008566450051098542,
+   "n_cells": 16,
+   "share_cells_model_better": 0.5625
+  },
+  {
+   "fold": "seen",
+   "gene": "SEC61B",
+   "baseline": "rule_annotation",
+   "metric": "pearson_r",
+   "model_better_by": 0.2406353183319992,
+   "lo": 0.19229735829794967,
+   "hi": 0.2832592627474438,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "SEC61B",
+   "baseline": "rule_annotation",
+   "metric": "dice",
+   "model_better_by": 0.06783738087210517,
+   "lo": 0.04908639721312335,
+   "hi": 0.08769453913607857,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "SEC61B",
+   "baseline": "rule_annotation",
+   "metric": "com_radius",
+   "model_better_by": 0.061608995408336295,
+   "lo": 0.007447388617983773,
+   "hi": 0.10863279099577783,
+   "n_cells": 16,
+   "share_cells_model_better": 0.75
+  },
+  {
+   "fold": "seen",
+   "gene": "SEC61B",
+   "baseline": "rule_annotation",
+   "metric": "w1_micron",
+   "model_better_by": 0.6178605088303701,
+   "lo": 0.515501510506718,
+   "hi": 0.7252186187140773,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "SEC61B",
+   "baseline": "rule_annotation",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.15980060874602647,
+   "lo": 0.15067213186528575,
+   "hi": 0.16828344252288863,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "SEC61B",
+   "baseline": "rule_best_on_train",
+   "metric": "pearson_r",
+   "model_better_by": 0.2406353183319992,
+   "lo": 0.19229735829794967,
+   "hi": 0.2832592627474438,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "SEC61B",
+   "baseline": "rule_best_on_train",
+   "metric": "dice",
+   "model_better_by": 0.06783738087210517,
+   "lo": 0.04908639721312335,
+   "hi": 0.08769453913607857,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "SEC61B",
+   "baseline": "rule_best_on_train",
+   "metric": "com_radius",
+   "model_better_by": 0.061608995408336295,
+   "lo": 0.007447388617983773,
+   "hi": 0.10863279099577783,
+   "n_cells": 16,
+   "share_cells_model_better": 0.75
+  },
+  {
+   "fold": "seen",
+   "gene": "SEC61B",
+   "baseline": "rule_best_on_train",
+   "metric": "w1_micron",
+   "model_better_by": 0.6178605088303701,
+   "lo": 0.515501510506718,
+   "hi": 0.7252186187140773,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "SEC61B",
+   "baseline": "rule_best_on_train",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.15980060874602647,
+   "lo": 0.15067213186528575,
+   "hi": 0.16828344252288863,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "TOMM20",
+   "baseline": "atlas_own_structure",
+   "metric": "pearson_r",
+   "model_better_by": 0.31316369982268555,
+   "lo": 0.23888233735659453,
+   "hi": 0.37886373409971896,
+   "n_cells": 16,
+   "share_cells_model_better": 0.9375
+  },
+  {
+   "fold": "seen",
+   "gene": "TOMM20",
+   "baseline": "atlas_own_structure",
+   "metric": "dice",
+   "model_better_by": 0.10743907872213287,
+   "lo": 0.06827269431621713,
+   "hi": 0.14413339473303008,
+   "n_cells": 16,
+   "share_cells_model_better": 0.9375
+  },
+  {
+   "fold": "seen",
+   "gene": "TOMM20",
+   "baseline": "atlas_own_structure",
+   "metric": "com_radius",
+   "model_better_by": -0.020110001020969805,
+   "lo": -0.0751981663681671,
+   "hi": 0.03907679558263813,
+   "n_cells": 16,
+   "share_cells_model_better": 0.375
+  },
+  {
+   "fold": "seen",
+   "gene": "TOMM20",
+   "baseline": "atlas_own_structure",
+   "metric": "w1_micron",
+   "model_better_by": 0.5913109375629562,
+   "lo": 0.39180341342874975,
+   "hi": 0.7933990561232411,
+   "n_cells": 16,
+   "share_cells_model_better": 0.9375
+  },
+  {
+   "fold": "seen",
+   "gene": "TOMM20",
+   "baseline": "atlas_own_structure",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.14204113144263075,
+   "lo": 0.11259839437864017,
+   "hi": 0.1752273837695904,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "TOMM20",
+   "baseline": "atlas_pooled",
+   "metric": "pearson_r",
+   "model_better_by": 0.4457732281228127,
+   "lo": 0.383368244568547,
+   "hi": 0.5038287907226567,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "TOMM20",
+   "baseline": "atlas_pooled",
+   "metric": "dice",
+   "model_better_by": 0.13683344984853904,
+   "lo": 0.09925142578727997,
+   "hi": 0.17391702170516551,
+   "n_cells": 16,
+   "share_cells_model_better": 0.9375
+  },
+  {
+   "fold": "seen",
+   "gene": "TOMM20",
+   "baseline": "atlas_pooled",
+   "metric": "com_radius",
+   "model_better_by": 0.030585870516652326,
+   "lo": -0.031285806936629475,
+   "hi": 0.09163806998881087,
+   "n_cells": 16,
+   "share_cells_model_better": 0.625
+  },
+  {
+   "fold": "seen",
+   "gene": "TOMM20",
+   "baseline": "atlas_pooled",
+   "metric": "w1_micron",
+   "model_better_by": 0.7888869774300682,
+   "lo": 0.5400873061707183,
+   "hi": 1.0172192815207808,
+   "n_cells": 16,
+   "share_cells_model_better": 0.9375
+  },
+  {
+   "fold": "seen",
+   "gene": "TOMM20",
+   "baseline": "atlas_pooled",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.1727521458107607,
+   "lo": 0.14676188215610408,
+   "hi": 0.2005058298733408,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "TOMM20",
+   "baseline": "model_shuffled_identity",
+   "metric": "pearson_r",
+   "model_better_by": 0.08449433849155269,
+   "lo": 0.044171197734673685,
+   "hi": 0.12387998903297857,
+   "n_cells": 16,
+   "share_cells_model_better": 0.875
+  },
+  {
+   "fold": "seen",
+   "gene": "TOMM20",
+   "baseline": "model_shuffled_identity",
+   "metric": "dice",
+   "model_better_by": 0.06467374476373983,
+   "lo": 0.02648613685213283,
+   "hi": 0.10414661269100015,
+   "n_cells": 16,
+   "share_cells_model_better": 0.8125
+  },
+  {
+   "fold": "seen",
+   "gene": "TOMM20",
+   "baseline": "model_shuffled_identity",
+   "metric": "com_radius",
+   "model_better_by": -0.005487939979480667,
+   "lo": -0.06644282042133424,
+   "hi": 0.056022673621314203,
+   "n_cells": 16,
+   "share_cells_model_better": 0.5
+  },
+  {
+   "fold": "seen",
+   "gene": "TOMM20",
+   "baseline": "model_shuffled_identity",
+   "metric": "w1_micron",
+   "model_better_by": 0.04233421147400271,
+   "lo": -0.010925780497144296,
+   "hi": 0.09859127648162283,
+   "n_cells": 16,
+   "share_cells_model_better": 0.5625
+  },
+  {
+   "fold": "seen",
+   "gene": "TOMM20",
+   "baseline": "model_shuffled_identity",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.00026408251560088025,
+   "lo": -0.004678600624322956,
+   "hi": 0.004766416088874745,
+   "n_cells": 16,
+   "share_cells_model_better": 0.5
+  },
+  {
+   "fold": "seen",
+   "gene": "TOMM20",
+   "baseline": "nearest_train_cell",
+   "metric": "pearson_r",
+   "model_better_by": 0.326895265033421,
+   "lo": 0.2687162794692708,
+   "hi": 0.3845352349644839,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "TOMM20",
+   "baseline": "nearest_train_cell",
+   "metric": "dice",
+   "model_better_by": 0.09681784932850586,
+   "lo": 0.0644532673711009,
+   "hi": 0.12748739216815888,
+   "n_cells": 16,
+   "share_cells_model_better": 0.875
+  },
+  {
+   "fold": "seen",
+   "gene": "TOMM20",
+   "baseline": "nearest_train_cell",
+   "metric": "com_radius",
+   "model_better_by": 0.09707914690880631,
+   "lo": -0.045898353285830557,
+   "hi": 0.240645973167265,
+   "n_cells": 16,
+   "share_cells_model_better": 0.5625
+  },
+  {
+   "fold": "seen",
+   "gene": "TOMM20",
+   "baseline": "nearest_train_cell",
+   "metric": "w1_micron",
+   "model_better_by": 0.41176368374182903,
+   "lo": 0.20455098488105278,
+   "hi": 0.6405441524908188,
+   "n_cells": 16,
+   "share_cells_model_better": 0.875
+  },
+  {
+   "fold": "seen",
+   "gene": "TOMM20",
+   "baseline": "nearest_train_cell",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.07642413008809065,
+   "lo": 0.039581991896756784,
+   "hi": 0.11469328170007681,
+   "n_cells": 16,
+   "share_cells_model_better": 0.875
+  },
+  {
+   "fold": "seen",
+   "gene": "TOMM20",
+   "baseline": "reference_only",
+   "metric": "pearson_r",
+   "model_better_by": 0.1798640071997189,
+   "lo": 0.1278115140684874,
+   "hi": 0.22728513516153082,
+   "n_cells": 16,
+   "share_cells_model_better": 0.9375
+  },
+  {
+   "fold": "seen",
+   "gene": "TOMM20",
+   "baseline": "reference_only",
+   "metric": "dice",
+   "model_better_by": 0.12946873636918388,
+   "lo": 0.092600437822519,
+   "hi": 0.16350479133920365,
+   "n_cells": 16,
+   "share_cells_model_better": 0.9375
+  },
+  {
+   "fold": "seen",
+   "gene": "TOMM20",
+   "baseline": "reference_only",
+   "metric": "com_radius",
+   "model_better_by": 0.012436632972415304,
+   "lo": -0.053611221013788825,
+   "hi": 0.07606876940306459,
+   "n_cells": 16,
+   "share_cells_model_better": 0.625
+  },
+  {
+   "fold": "seen",
+   "gene": "TOMM20",
+   "baseline": "reference_only",
+   "metric": "w1_micron",
+   "model_better_by": 0.1201711205640538,
+   "lo": -0.004020606764672452,
+   "hi": 0.2385603232796861,
+   "n_cells": 16,
+   "share_cells_model_better": 0.75
+  },
+  {
+   "fold": "seen",
+   "gene": "TOMM20",
+   "baseline": "reference_only",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.01964967842681492,
+   "lo": -0.0005099426855225464,
+   "hi": 0.0392812299471033,
+   "n_cells": 16,
+   "share_cells_model_better": 0.625
+  },
+  {
+   "fold": "seen",
+   "gene": "TOMM20",
+   "baseline": "rule_annotation",
+   "metric": "pearson_r",
+   "model_better_by": 0.13929440598309162,
+   "lo": 0.0943145912385219,
+   "hi": 0.17962562038994523,
+   "n_cells": 16,
+   "share_cells_model_better": 0.9375
+  },
+  {
+   "fold": "seen",
+   "gene": "TOMM20",
+   "baseline": "rule_annotation",
+   "metric": "dice",
+   "model_better_by": 0.07698118560484755,
+   "lo": 0.03838957712333077,
+   "hi": 0.11729216896051571,
+   "n_cells": 16,
+   "share_cells_model_better": 0.8125
+  },
+  {
+   "fold": "seen",
+   "gene": "TOMM20",
+   "baseline": "rule_annotation",
+   "metric": "com_radius",
+   "model_better_by": -0.02197179584494522,
+   "lo": -0.08781515543268248,
+   "hi": 0.045230155429770554,
+   "n_cells": 16,
+   "share_cells_model_better": 0.375
+  },
+  {
+   "fold": "seen",
+   "gene": "TOMM20",
+   "baseline": "rule_annotation",
+   "metric": "w1_micron",
+   "model_better_by": 0.23398841544121246,
+   "lo": 0.16392179591170059,
+   "hi": 0.30620459948544787,
+   "n_cells": 16,
+   "share_cells_model_better": 0.9375
+  },
+  {
+   "fold": "seen",
+   "gene": "TOMM20",
+   "baseline": "rule_annotation",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.10718399385503634,
+   "lo": 0.09855894310986121,
+   "hi": 0.11502051111201715,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "TOMM20",
+   "baseline": "rule_best_on_train",
+   "metric": "pearson_r",
+   "model_better_by": 0.13929440598309162,
+   "lo": 0.0943145912385219,
+   "hi": 0.17962562038994523,
+   "n_cells": 16,
+   "share_cells_model_better": 0.9375
+  },
+  {
+   "fold": "seen",
+   "gene": "TOMM20",
+   "baseline": "rule_best_on_train",
+   "metric": "dice",
+   "model_better_by": 0.07698118560484755,
+   "lo": 0.03838957712333077,
+   "hi": 0.11729216896051571,
+   "n_cells": 16,
+   "share_cells_model_better": 0.8125
+  },
+  {
+   "fold": "seen",
+   "gene": "TOMM20",
+   "baseline": "rule_best_on_train",
+   "metric": "com_radius",
+   "model_better_by": -0.02197179584494522,
+   "lo": -0.08781515543268248,
+   "hi": 0.045230155429770554,
+   "n_cells": 16,
+   "share_cells_model_better": 0.375
+  },
+  {
+   "fold": "seen",
+   "gene": "TOMM20",
+   "baseline": "rule_best_on_train",
+   "metric": "w1_micron",
+   "model_better_by": 0.23398841544121246,
+   "lo": 0.16392179591170059,
+   "hi": 0.30620459948544787,
+   "n_cells": 16,
+   "share_cells_model_better": 0.9375
+  },
+  {
+   "fold": "seen",
+   "gene": "TOMM20",
+   "baseline": "rule_best_on_train",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.10718399385503634,
+   "lo": 0.09855894310986121,
+   "hi": 0.11502051111201715,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "TUBA1B",
+   "baseline": "atlas_own_structure",
+   "metric": "pearson_r",
+   "model_better_by": 0.7016392016112796,
+   "lo": 0.621769096572597,
+   "hi": 0.7841059655902793,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "TUBA1B",
+   "baseline": "atlas_own_structure",
+   "metric": "dice",
+   "model_better_by": 0.018043093088467417,
+   "lo": 0.0007205299529088072,
+   "hi": 0.03772863272069207,
+   "n_cells": 16,
+   "share_cells_model_better": 0.6875
+  },
+  {
+   "fold": "seen",
+   "gene": "TUBA1B",
+   "baseline": "atlas_own_structure",
+   "metric": "com_radius",
+   "model_better_by": 0.03016028763493817,
+   "lo": 0.007816497599243157,
+   "hi": 0.051723962556854484,
+   "n_cells": 16,
+   "share_cells_model_better": 0.8125
+  },
+  {
+   "fold": "seen",
+   "gene": "TUBA1B",
+   "baseline": "atlas_own_structure",
+   "metric": "w1_micron",
+   "model_better_by": 0.7811955950182194,
+   "lo": 0.6517508881297751,
+   "hi": 0.9037797978375877,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "TUBA1B",
+   "baseline": "atlas_own_structure",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.1755695043148539,
+   "lo": 0.15654579377371228,
+   "hi": 0.19458520921887493,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "TUBA1B",
+   "baseline": "atlas_pooled",
+   "metric": "pearson_r",
+   "model_better_by": 0.9339652165728767,
+   "lo": 0.8421042656472892,
+   "hi": 1.0253932132050803,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "TUBA1B",
+   "baseline": "atlas_pooled",
+   "metric": "dice",
+   "model_better_by": 0.025021621143411638,
+   "lo": 0.004369550018469917,
+   "hi": 0.04784927997916743,
+   "n_cells": 16,
+   "share_cells_model_better": 0.75
+  },
+  {
+   "fold": "seen",
+   "gene": "TUBA1B",
+   "baseline": "atlas_pooled",
+   "metric": "com_radius",
+   "model_better_by": 0.056658777080349894,
+   "lo": 0.02074152849375922,
+   "hi": 0.09285519997599222,
+   "n_cells": 16,
+   "share_cells_model_better": 0.6875
+  },
+  {
+   "fold": "seen",
+   "gene": "TUBA1B",
+   "baseline": "atlas_pooled",
+   "metric": "w1_micron",
+   "model_better_by": 1.0829379503527017,
+   "lo": 0.9660123588841822,
+   "hi": 1.189046310096403,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "TUBA1B",
+   "baseline": "atlas_pooled",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.2202354858096669,
+   "lo": 0.2019783659282537,
+   "hi": 0.23792072038540782,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "TUBA1B",
+   "baseline": "model_shuffled_identity",
+   "metric": "pearson_r",
+   "model_better_by": 0.3924888492718319,
+   "lo": 0.3470823350887328,
+   "hi": 0.44105051712595206,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "TUBA1B",
+   "baseline": "model_shuffled_identity",
+   "metric": "dice",
+   "model_better_by": -0.02802765481047407,
+   "lo": -0.04569611104537307,
+   "hi": -0.009473743349190256,
+   "n_cells": 16,
+   "share_cells_model_better": 0.0625
+  },
+  {
+   "fold": "seen",
+   "gene": "TUBA1B",
+   "baseline": "model_shuffled_identity",
+   "metric": "com_radius",
+   "model_better_by": 0.10550007632464242,
+   "lo": 0.07619010106291593,
+   "hi": 0.1359219802909807,
+   "n_cells": 16,
+   "share_cells_model_better": 0.9375
+  },
+  {
+   "fold": "seen",
+   "gene": "TUBA1B",
+   "baseline": "model_shuffled_identity",
+   "metric": "w1_micron",
+   "model_better_by": 0.1999515963833202,
+   "lo": 0.15349520093444882,
+   "hi": 0.239926219904904,
+   "n_cells": 16,
+   "share_cells_model_better": 0.9375
+  },
+  {
+   "fold": "seen",
+   "gene": "TUBA1B",
+   "baseline": "model_shuffled_identity",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.01338467295739686,
+   "lo": 0.005969775829223393,
+   "hi": 0.020761699894636897,
+   "n_cells": 16,
+   "share_cells_model_better": 0.75
+  },
+  {
+   "fold": "seen",
+   "gene": "TUBA1B",
+   "baseline": "nearest_train_cell",
+   "metric": "pearson_r",
+   "model_better_by": 0.6876951686053392,
+   "lo": 0.602712562234246,
+   "hi": 0.7662217539162279,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "TUBA1B",
+   "baseline": "nearest_train_cell",
+   "metric": "dice",
+   "model_better_by": 0.016569545591113604,
+   "lo": 0.0002962256930214631,
+   "hi": 0.03382986281771,
+   "n_cells": 16,
+   "share_cells_model_better": 0.625
+  },
+  {
+   "fold": "seen",
+   "gene": "TUBA1B",
+   "baseline": "nearest_train_cell",
+   "metric": "com_radius",
+   "model_better_by": 0.11018908930363999,
+   "lo": 0.06690409074734331,
+   "hi": 0.15931452996122214,
+   "n_cells": 16,
+   "share_cells_model_better": 0.875
+  },
+  {
+   "fold": "seen",
+   "gene": "TUBA1B",
+   "baseline": "nearest_train_cell",
+   "metric": "w1_micron",
+   "model_better_by": 0.6654219805211108,
+   "lo": 0.45980362461979596,
+   "hi": 0.8793034542932032,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "TUBA1B",
+   "baseline": "nearest_train_cell",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.1307737380083967,
+   "lo": 0.10014450327841884,
+   "hi": 0.16172110251800553,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "TUBA1B",
+   "baseline": "reference_only",
+   "metric": "pearson_r",
+   "model_better_by": 0.13920101026348575,
+   "lo": 0.11207338626428796,
+   "hi": 0.17104773648405738,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "TUBA1B",
+   "baseline": "reference_only",
+   "metric": "dice",
+   "model_better_by": -0.024166193878453424,
+   "lo": -0.04188720499947512,
+   "hi": -0.005407443070788207,
+   "n_cells": 16,
+   "share_cells_model_better": 0.1875
+  },
+  {
+   "fold": "seen",
+   "gene": "TUBA1B",
+   "baseline": "reference_only",
+   "metric": "com_radius",
+   "model_better_by": 0.03677084714327392,
+   "lo": 0.006639422273488422,
+   "hi": 0.06693434515753159,
+   "n_cells": 16,
+   "share_cells_model_better": 0.6875
+  },
+  {
+   "fold": "seen",
+   "gene": "TUBA1B",
+   "baseline": "reference_only",
+   "metric": "w1_micron",
+   "model_better_by": 0.2986472596374239,
+   "lo": 0.23688822473640297,
+   "hi": 0.3604590896067201,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "TUBA1B",
+   "baseline": "reference_only",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.06483723183842696,
+   "lo": 0.057639298336559674,
+   "hi": 0.07199864489188047,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "TUBA1B",
+   "baseline": "rule_annotation",
+   "metric": "pearson_r",
+   "model_better_by": 0.1187426051257939,
+   "lo": 0.1014332668941199,
+   "hi": 0.13646465713210423,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "TUBA1B",
+   "baseline": "rule_annotation",
+   "metric": "dice",
+   "model_better_by": -0.013409976488950622,
+   "lo": -0.03674876372720176,
+   "hi": 0.008359787113882943,
+   "n_cells": 16,
+   "share_cells_model_better": 0.4375
+  },
+  {
+   "fold": "seen",
+   "gene": "TUBA1B",
+   "baseline": "rule_annotation",
+   "metric": "com_radius",
+   "model_better_by": 0.0010320732027605225,
+   "lo": -0.02165816757304365,
+   "hi": 0.02196393896624185,
+   "n_cells": 16,
+   "share_cells_model_better": 0.5625
+  },
+  {
+   "fold": "seen",
+   "gene": "TUBA1B",
+   "baseline": "rule_annotation",
+   "metric": "w1_micron",
+   "model_better_by": 0.17830901475236238,
+   "lo": 0.11256680702035424,
+   "hi": 0.24989883884700226,
+   "n_cells": 16,
+   "share_cells_model_better": 0.9375
+  },
+  {
+   "fold": "seen",
+   "gene": "TUBA1B",
+   "baseline": "rule_annotation",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.08630413252631357,
+   "lo": 0.07488350378872068,
+   "hi": 0.09811483541876186,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "TUBA1B",
+   "baseline": "rule_best_on_train",
+   "metric": "pearson_r",
+   "model_better_by": 0.4609880710132116,
+   "lo": 0.4124550446110206,
+   "hi": 0.5097863771902417,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "TUBA1B",
+   "baseline": "rule_best_on_train",
+   "metric": "dice",
+   "model_better_by": -0.03986720390658903,
+   "lo": -0.0651881829682388,
+   "hi": -0.013381924797906149,
+   "n_cells": 16,
+   "share_cells_model_better": 0.1875
+  },
+  {
+   "fold": "seen",
+   "gene": "TUBA1B",
+   "baseline": "rule_best_on_train",
+   "metric": "com_radius",
+   "model_better_by": 0.1938909668751888,
+   "lo": 0.1307552912250986,
+   "hi": 0.25766999174784944,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "TUBA1B",
+   "baseline": "rule_best_on_train",
+   "metric": "w1_micron",
+   "model_better_by": 1.202733345377736,
+   "lo": 0.9808836190555976,
+   "hi": 1.438958049971267,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  },
+  {
+   "fold": "seen",
+   "gene": "TUBA1B",
+   "baseline": "rule_best_on_train",
+   "metric": "nuc_fraction_err",
+   "model_better_by": 0.08630413252631357,
+   "lo": 0.07488350378872068,
+   "hi": 0.09811483541876186,
+   "n_cells": 16,
+   "share_cells_model_better": 1.0
+  }
+ ],
+ "normalisations": [
+  {
+   "fold": "seen",
+   "gene": "AAVS1",
+   "chance": 0.18475751392167603,
+   "dice": 0.43491662617577465,
+   "lift": 2.3539861353630696,
+   "lift_ceiling": 5.4124997613029615,
+   "share_of_ceiling": 0.43491662617577465,
+   "excess": 0.30685239855134916
+  },
+  {
+   "fold": "seen",
+   "gene": "ACTB",
+   "chance": 0.03373223934732428,
+   "dice": 0.19274496343343636,
+   "lift": 5.713968807372564,
+   "lift_ceiling": 29.645230181829668,
+   "share_of_ceiling": 0.1927449634334364,
+   "excess": 0.16456383060809693
+  },
+  {
+   "fold": "seen",
+   "gene": "LMNB1",
+   "chance": 0.09292871358312328,
+   "dice": 0.48215473674404086,
+   "lift": 5.188436578461413,
+   "lift_ceiling": 10.760936651786485,
+   "share_of_ceiling": 0.48215473674404086,
+   "excess": 0.4291019118226558
+  },
+  {
+   "fold": "seen",
+   "gene": "SEC61B",
+   "chance": 0.12722839647776424,
+   "dice": 0.34352586584982275,
+   "lift": 2.7000722744301893,
+   "lift_ceiling": 7.859880558777383,
+   "share_of_ceiling": 0.34352586584982275,
+   "excess": 0.2478282617114821
+  },
+  {
+   "fold": "seen",
+   "gene": "TOMM20",
+   "chance": 0.08485188066940251,
+   "dice": 0.2234767797946921,
+   "lift": 2.6337280686257976,
+   "lift_ceiling": 11.785242614670754,
+   "share_of_ceiling": 0.2234767797946921,
+   "excess": 0.1514781008638136
+  },
+  {
+   "fold": "seen",
+   "gene": "TUBA1B",
+   "chance": 0.12537423236355885,
+   "dice": 0.15665676267401132,
+   "lift": 1.249513235062048,
+   "lift_ceiling": 7.976120620226098,
+   "share_of_ceiling": 0.15665676267401132,
+   "excess": 0.035766760445429494
+  },
+  {
+   "fold": "mitotic",
+   "gene": "AAVS1",
+   "chance": 0.11866076365573039,
+   "dice": 0.3891582126486485,
+   "lift": 3.279586281592713,
+   "lift_ceiling": 8.427385507995657,
+   "share_of_ceiling": 0.3891582126486485,
+   "excess": 0.30691638115979236
+  },
+  {
+   "fold": "mitotic",
+   "gene": "ACTB",
+   "chance": 0.03057466165212175,
+   "dice": 0.20292615184972682,
+   "lift": 6.637069419070566,
+   "lift_ceiling": 32.70682146471454,
+   "share_of_ceiling": 0.20292615184972682,
+   "excess": 0.1777872760075895
+  },
+  {
+   "fold": "mitotic",
+   "gene": "LMNB1",
+   "chance": 0.07878749712007019,
+   "dice": 0.17393149430600097,
+   "lift": 2.20760273728373,
+   "lift_ceiling": 12.692369177256955,
+   "share_of_ceiling": 0.17393149430600097,
+   "excess": 0.10328126994421805
+  },
+  {
+   "fold": "mitotic",
+   "gene": "SEC61B",
+   "chance": 0.11093098613894278,
+   "dice": 0.18349001002587717,
+   "lift": 1.6540915790296238,
+   "lift_ceiling": 9.014613813560482,
+   "share_of_ceiling": 0.1834900100258772,
+   "excess": 0.08161236389492912
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TOMM20",
+   "chance": 0.08748866644137822,
+   "dice": 0.1689212341472714,
+   "lift": 1.930778477009443,
+   "lift_ceiling": 11.430051921868646,
+   "share_of_ceiling": 0.1689212341472714,
+   "excess": 0.0892400616969014
+  },
+  {
+   "fold": "mitotic",
+   "gene": "TUBA1B",
+   "chance": 0.06556988952460296,
+   "dice": 0.06273010541884425,
+   "lift": 0.9566907291388194,
+   "lift_ceiling": 15.250902620855912,
+   "share_of_ceiling": 0.06273010541884425,
+   "excess": -0.0030390545787463566
+  },
+  {
+   "fold": "loso_ACTB",
+   "gene": "ACTB",
+   "chance": 0.0336721822371379,
+   "dice": 0.016859908705110598,
+   "lift": 0.5007073371833732,
+   "lift_ceiling": 29.69810489137454,
+   "share_of_ceiling": 0.016859908705110598,
+   "excess": -0.017398105718356805
+  },
+  {
+   "fold": "loso_TUBA1B",
+   "gene": "TUBA1B",
+   "chance": 0.12191633575996112,
+   "dice": 0.13597284988351238,
+   "lift": 1.1152963959745876,
+   "lift_ceiling": 8.20234625463877,
+   "share_of_ceiling": 0.13597284988351238,
+   "excess": 0.016008171767683262
+  },
+  {
+   "fold": "loso_SEC61B",
+   "gene": "SEC61B",
+   "chance": 0.11941760532478023,
+   "dice": 0.23623114562195263,
+   "lift": 1.9781936254664834,
+   "lift_ceiling": 8.3739746520649,
+   "share_of_ceiling": 0.2362311456219526,
+   "excess": 0.13265486682851077
+  },
+  {
+   "fold": "loso_TOMM20",
+   "gene": "TOMM20",
+   "chance": 0.08453709161899663,
+   "dice": 0.16974579149489477,
+   "lift": 2.007944539420973,
+   "lift_ceiling": 11.8291270831381,
+   "share_of_ceiling": 0.1697457914948948,
+   "excess": 0.09307717341229015
+  },
+  {
+   "fold": "loso_LMNB1",
+   "gene": "LMNB1",
+   "chance": 0.09337303817051275,
+   "dice": 0.0018538460473858092,
+   "lift": 0.019854190071446714,
+   "lift_ceiling": 10.709729699207758,
+   "share_of_ceiling": 0.0018538460473858092,
+   "excess": -0.10094470601056237
+  },
+  {
+   "fold": "covered_SEC61B",
+   "gene": "SEC61B",
+   "chance": 0.11941760532478023,
+   "dice": 0.30922043433962443,
+   "lift": 2.5894040790605137,
+   "lift_ceiling": 8.3739746520649,
+   "share_of_ceiling": 0.30922043433962443,
+   "excess": 0.21554238440668358
+  },
+  {
+   "fold": "covered_LMNB1",
+   "gene": "LMNB1",
+   "chance": 0.09337303817051275,
+   "dice": 0.524151579871491,
+   "lift": 5.613521741836374,
+   "lift_ceiling": 10.709729699207758,
+   "share_of_ceiling": 0.524151579871491,
+   "excess": 0.475144199144164
+  },
+  {
+   "fold": "covered_ACTB",
+   "gene": "ACTB",
+   "chance": 0.0336721822371379,
+   "dice": 0.2159153344903876,
+   "lift": 6.41227625135175,
+   "lift_ceiling": 29.69810489137454,
+   "share_of_ceiling": 0.2159153344903876,
+   "excess": 0.18859350719630466
+  }
+ ],
+ "split": {
+  "n_cells": 480,
+  "n_fovs": 480,
+  "max_cells_per_fov": 1,
+  "fov_split_is_a_cell_split": true,
+  "n_train": 384,
+  "n_test": 96,
+  "n_plates_total": 171,
+  "n_plates_train": 119,
+  "n_plates_test": 70,
+  "n_plates_shared": 63,
+  "plates_test_only": 7
+ },
+ "mitotic_by_stage": [
+  {
+   "gene": "AAVS1",
+   "cell_stage": "M1M2",
+   "predictor": "model",
+   "n_cells": 2,
+   "pearson_r": 0.8587218009080444,
+   "dice": 0.4270629430807349,
+   "com_radius": 0.06259255069885172,
+   "w1_micron": 0.3663526365526659,
+   "nuc_fraction_err": 0.017870469793479636
+  },
+  {
+   "gene": "AAVS1",
+   "cell_stage": "M1M2",
+   "predictor": "rule_annotation",
+   "n_cells": 2,
+   "pearson_r": 0.3264647287043604,
+   "dice": 0.08096874207891694,
+   "com_radius": 0.12176993743578851,
+   "w1_micron": 0.7334010750076518,
+   "nuc_fraction_err": 0.0886017419397831
+  },
+  {
+   "gene": "AAVS1",
+   "cell_stage": "M3",
+   "predictor": "model",
+   "n_cells": 4,
+   "pearson_r": 0.868193818618236,
+   "dice": 0.3966183986038412,
+   "com_radius": 0.06828165108623163,
+   "w1_micron": 0.266031185827335,
+   "nuc_fraction_err": 0.007731333293223891
+  },
+  {
+   "gene": "AAVS1",
+   "cell_stage": "M3",
+   "predictor": "rule_annotation",
+   "n_cells": 4,
+   "pearson_r": 0.15015097633433863,
+   "dice": 0.03781531012792113,
+   "com_radius": 0.1536322470704692,
+   "w1_micron": 0.5956804200777832,
+   "nuc_fraction_err": 0.01828878978267312
+  },
+  {
+   "gene": "AAVS1",
+   "cell_stage": "M4M5",
+   "predictor": "model",
+   "n_cells": 14,
+   "pearson_r": 0.8351880843235746,
+   "dice": 0.38161176945686687,
+   "com_radius": 0.07217754933947959,
+   "w1_micron": 0.31071637927677503,
+   "nuc_fraction_err": 0.007780614278726338
+  },
+  {
+   "gene": "AAVS1",
+   "cell_stage": "M4M5",
+   "predictor": "rule_annotation",
+   "n_cells": 14,
+   "pearson_r": 0.19570119711394232,
+   "dice": 0.04085729628958596,
+   "com_radius": 0.134761368238025,
+   "w1_micron": 0.8528531022160112,
+   "nuc_fraction_err": 0.017544360659249653
+  },
+  {
+   "gene": "ACTB",
+   "cell_stage": "M1M2",
+   "predictor": "model",
+   "n_cells": 6,
+   "pearson_r": 0.7625978901775717,
+   "dice": 0.1757193870858785,
+   "com_radius": 0.13520824433562073,
+   "w1_micron": 0.2151301971945275,
+   "nuc_fraction_err": 0.00933561267048724
+  },
+  {
+   "gene": "ACTB",
+   "cell_stage": "M1M2",
+   "predictor": "rule_annotation",
+   "n_cells": 6,
+   "pearson_r": 0.43789547889332275,
+   "dice": 0.12670718217020271,
+   "com_radius": 0.16817978486725207,
+   "w1_micron": 0.8265495977896813,
+   "nuc_fraction_err": 0.04830454553436989
+  },
+  {
+   "gene": "ACTB",
+   "cell_stage": "M3",
+   "predictor": "model",
+   "n_cells": 5,
+   "pearson_r": 0.6838047593826639,
+   "dice": 0.23242731682835388,
+   "com_radius": 0.06334241946310785,
+   "w1_micron": 0.12196860889991638,
+   "nuc_fraction_err": 0.00472692921757698
+  },
+  {
+   "gene": "ACTB",
+   "cell_stage": "M3",
+   "predictor": "rule_annotation",
+   "n_cells": 5,
+   "pearson_r": 0.43652715282797566,
+   "dice": 0.16231030429276788,
+   "com_radius": 0.1780508151492916,
+   "w1_micron": 0.9189191612815459,
+   "nuc_fraction_err": 0.018202308320906014
+  },
+  {
+   "gene": "ACTB",
+   "cell_stage": "M4M5",
+   "predictor": "model",
+   "n_cells": 9,
+   "pearson_r": 0.6261613850281189,
+   "dice": 0.20467445892638844,
+   "com_radius": 0.12304799593473842,
+   "w1_micron": 0.2027971225789517,
+   "nuc_fraction_err": 0.004663128988511374
+  },
+  {
+   "gene": "ACTB",
+   "cell_stage": "M4M5",
+   "predictor": "rule_annotation",
+   "n_cells": 9,
+   "pearson_r": 0.4302226170360629,
+   "dice": 0.12689314864946857,
+   "com_radius": 0.1453161134898078,
+   "w1_micron": 0.9355809459109303,
+   "nuc_fraction_err": 0.015174149225755527
+  },
+  {
+   "gene": "LMNB1",
+   "cell_stage": "M1M2",
+   "predictor": "model",
+   "n_cells": 6,
+   "pearson_r": 0.806678272412572,
+   "dice": 0.3822914230867542,
+   "com_radius": 0.059960269138417184,
+   "w1_micron": 0.20553513337336313,
+   "nuc_fraction_err": 0.0201276259421847
+  },
+  {
+   "gene": "LMNB1",
+   "cell_stage": "M1M2",
+   "predictor": "rule_annotation",
+   "n_cells": 6,
+   "pearson_r": 0.5320337181659057,
+   "dice": 0.48300165441400805,
+   "com_radius": 0.054752391773527566,
+   "w1_micron": 0.7374367548469215,
+   "nuc_fraction_err": 0.09421541043975405
+  },
+  {
+   "gene": "LMNB1",
+   "cell_stage": "M3",
+   "predictor": "model",
+   "n_cells": 5,
+   "pearson_r": 0.2948326226491741,
+   "dice": 0.1421285017514905,
+   "com_radius": 0.0683407000611009,
+   "w1_micron": 0.580693584909272,
+   "nuc_fraction_err": 0.10654074594091525
+  },
+  {
+   "gene": "LMNB1",
+   "cell_stage": "M3",
+   "predictor": "rule_annotation",
+   "n_cells": 5,
+   "pearson_r": 0.10527615906254909,
+   "dice": 0.11377157163180825,
+   "com_radius": 0.12742478317705327,
+   "w1_micron": 2.0127608459690465,
+   "nuc_fraction_err": 0.38026008077719886
+  },
+  {
+   "gene": "LMNB1",
+   "cell_stage": "M4M5",
+   "predictor": "model",
+   "n_cells": 9,
+   "pearson_r": -0.19189581063730565,
+   "dice": 0.05269320431578237,
+   "com_radius": 0.1340492436827517,
+   "w1_micron": 1.8251280003541386,
+   "nuc_fraction_err": 0.21386727651426593
+  },
+  {
+   "gene": "LMNB1",
+   "cell_stage": "M4M5",
+   "predictor": "rule_annotation",
+   "n_cells": 9,
+   "pearson_r": -0.13231737067875826,
+   "dice": 0.05374448478733726,
+   "com_radius": 0.22059224511301123,
+   "w1_micron": 3.7764051048417837,
+   "nuc_fraction_err": 0.43640713127648656
+  },
+  {
+   "gene": "SEC61B",
+   "cell_stage": "M1M2",
+   "predictor": "model",
+   "n_cells": 11,
+   "pearson_r": 0.5830337042757106,
+   "dice": 0.2637682970085028,
+   "com_radius": 0.14260187925164017,
+   "w1_micron": 0.30926203668683966,
+   "nuc_fraction_err": 0.015862427366976625
+  },
+  {
+   "gene": "SEC61B",
+   "cell_stage": "M1M2",
+   "predictor": "rule_annotation",
+   "n_cells": 11,
+   "pearson_r": 0.2173057485413232,
+   "dice": 0.1920885519186876,
+   "com_radius": 0.29025581205232504,
+   "w1_micron": 1.2886101762298092,
+   "nuc_fraction_err": 0.1103162985096148
+  },
+  {
+   "gene": "SEC61B",
+   "cell_stage": "M3",
+   "predictor": "model",
+   "n_cells": 1,
+   "pearson_r": 0.5223029416873516,
+   "dice": 0.18882395909422936,
+   "com_radius": 0.06269621811295321,
+   "w1_micron": 0.2500395632125897,
+   "nuc_fraction_err": 0.017149295657873154
+  },
+  {
+   "gene": "SEC61B",
+   "cell_stage": "M3",
+   "predictor": "rule_annotation",
+   "n_cells": 1,
+   "pearson_r": 0.03356218902363757,
+   "dice": 0.09203798392987582,
+   "com_radius": 0.24764277578377264,
+   "w1_micron": 1.0281546687672949,
+   "nuc_fraction_err": 0.03150492161512375
+  },
+  {
+   "gene": "SEC61B",
+   "cell_stage": "M4M5",
+   "predictor": "model",
+   "n_cells": 8,
+   "pearson_r": 0.08614646378699785,
+   "dice": 0.07244062179122293,
+   "com_radius": 0.0741499941001249,
+   "w1_micron": 0.8366931503130393,
+   "nuc_fraction_err": 0.043751536679324896
+  },
+  {
+   "gene": "SEC61B",
+   "cell_stage": "M4M5",
+   "predictor": "rule_annotation",
+   "n_cells": 8,
+   "pearson_r": -0.10216441093862806,
+   "dice": 0.055959028942958774,
+   "com_radius": 0.19646414481742175,
+   "w1_micron": 2.4133815113285673,
+   "nuc_fraction_err": 0.021036288180582605
+  },
+  {
+   "gene": "TOMM20",
+   "cell_stage": "M1M2",
+   "predictor": "model",
+   "n_cells": 11,
+   "pearson_r": 0.4644066045437469,
+   "dice": 0.22674047817925838,
+   "com_radius": 0.18109096250967124,
+   "w1_micron": 0.3802299416117548,
+   "nuc_fraction_err": 0.01801223274326499
+  },
+  {
+   "gene": "TOMM20",
+   "cell_stage": "M1M2",
+   "predictor": "rule_annotation",
+   "n_cells": 11,
+   "pearson_r": 0.2574728379971481,
+   "dice": 0.1341091931798057,
+   "com_radius": 0.2206144762386627,
+   "w1_micron": 0.70258360745895,
+   "nuc_fraction_err": 0.09674043269993199
+  },
+  {
+   "gene": "TOMM20",
+   "cell_stage": "M3",
+   "predictor": "model",
+   "n_cells": 4,
+   "pearson_r": 0.08592781647992224,
+   "dice": 0.0814646141527173,
+   "com_radius": 0.0982637805438729,
+   "w1_micron": 0.5000578974067675,
+   "nuc_fraction_err": 0.01334827607848867
+  },
+  {
+   "gene": "TOMM20",
+   "cell_stage": "M3",
+   "predictor": "rule_annotation",
+   "n_cells": 4,
+   "pearson_r": 0.15423078639608662,
+   "dice": 0.10288259647786539,
+   "com_radius": 0.09815355355711271,
+   "w1_micron": 0.21308109388106983,
+   "nuc_fraction_err": 0.020515320539686837
+  },
+  {
+   "gene": "TOMM20",
+   "cell_stage": "M4M5",
+   "predictor": "model",
+   "n_cells": 5,
+   "pearson_r": 0.15109608081045023,
+   "dice": 0.11168419327254327,
+   "com_radius": 0.1444538789871823,
+   "w1_micron": 0.5905028551622682,
+   "nuc_fraction_err": 0.00845857772489166
+  },
+  {
+   "gene": "TOMM20",
+   "cell_stage": "M4M5",
+   "predictor": "rule_annotation",
+   "n_cells": 5,
+   "pearson_r": 0.17905134685738938,
+   "dice": 0.11864944363587489,
+   "com_radius": 0.15467030965043954,
+   "w1_micron": 0.370428440684832,
+   "nuc_fraction_err": 0.022690060478848455
+  },
+  {
+   "gene": "TUBA1B",
+   "cell_stage": "M1M2",
+   "predictor": "model",
+   "n_cells": 7,
+   "pearson_r": 0.549536637204418,
+   "dice": 0.0947509173931187,
+   "com_radius": 0.09719996292045179,
+   "w1_micron": 0.2551644656363651,
+   "nuc_fraction_err": 0.023615152459961392
+  },
+  {
+   "gene": "TUBA1B",
+   "cell_stage": "M1M2",
+   "predictor": "rule_annotation",
+   "n_cells": 7,
+   "pearson_r": 0.4074073818528162,
+   "dice": 0.1172255542905589,
+   "com_radius": 0.10893346342800345,
+   "w1_micron": 0.3914312659991589,
+   "nuc_fraction_err": 0.07504690094382359
+  },
+  {
+   "gene": "TUBA1B",
+   "cell_stage": "M3",
+   "predictor": "model",
+   "n_cells": 2,
+   "pearson_r": -0.09837419411839987,
+   "dice": 0.035584230990614245,
+   "com_radius": 0.1618438683353482,
+   "w1_micron": 0.9740866873853018,
+   "nuc_fraction_err": 0.05431897963500816
+  },
+  {
+   "gene": "TUBA1B",
+   "cell_stage": "M3",
+   "predictor": "rule_annotation",
+   "n_cells": 2,
+   "pearson_r": -0.10850872631043405,
+   "dice": 0.043919620027644324,
+   "com_radius": 0.15121465297955045,
+   "w1_micron": 0.9234102906311071,
+   "nuc_fraction_err": 0.07953742705906985
+  },
+  {
+   "gene": "TUBA1B",
+   "cell_stage": "M4M5",
+   "predictor": "model",
+   "n_cells": 11,
+   "pearson_r": -0.10116268370247998,
+   "dice": 0.04728883860398412,
+   "com_radius": 0.14474308909510625,
+   "w1_micron": 1.1043407492023496,
+   "nuc_fraction_err": 0.061092111917341846
+  },
+  {
+   "gene": "TUBA1B",
+   "cell_stage": "M4M5",
+   "predictor": "rule_annotation",
+   "n_cells": 11,
+   "pearson_r": -0.06734057995108135,
+   "dice": 0.04898700268481709,
+   "com_radius": 0.1356713726236171,
+   "w1_micron": 1.1008166108196165,
+   "nuc_fraction_err": 0.0880890577103203
+  }
+ ],
+ "tie_break": [
+  {
+   "gene": "AAVS1",
+   "rule": "cytoplasm",
+   "n_cells": 24,
+   "dice_index_order": 0.19552306774536932,
+   "dice_random_ties": 0.2538670628212545,
+   "n_tied_rules": 5
+  },
+  {
+   "gene": "ACTB",
+   "rule": "cell_shell",
+   "n_cells": 24,
+   "dice_index_order": 0.08975168291221604,
+   "dice_random_ties": 0.08277810721772878,
+   "n_tied_rules": 5
+  },
+  {
+   "gene": "LMNB1",
+   "rule": "nuclear_shell",
+   "n_cells": 24,
+   "dice_index_order": 0.5553054025918741,
+   "dice_random_ties": 0.5767616209431308,
+   "n_tied_rules": 5
+  },
+  {
+   "gene": "SEC61B",
+   "rule": "perinuclear",
+   "n_cells": 24,
+   "dice_index_order": 0.262763322393179,
+   "dice_random_ties": 0.2627739637562647,
+   "n_tied_rules": 5
+  },
+  {
+   "gene": "TOMM20",
+   "rule": "cytoplasm",
+   "n_cells": 24,
+   "dice_index_order": 0.13642983056532196,
+   "dice_random_ties": 0.11963658812344614,
+   "n_tied_rules": 5
+  },
+  {
+   "gene": "TUBA1B",
+   "rule": "cytoplasm",
+   "n_cells": 24,
+   "dice_index_order": 0.1524848518314672,
+   "dice_random_ties": 0.1689752586866728,
+   "n_tied_rules": 5
+  }
+ ]
+}

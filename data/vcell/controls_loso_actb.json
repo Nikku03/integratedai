@@ -1,0 +1,31 @@
+[
+ {
+  "fold": "loso_ACTB",
+  "gene": "ACTB",
+  "n_cells": 80,
+  "chance_dice": 0.0336721822371379,
+  "dice": 0.016859908705110598,
+  "dice_lo": 0.013444741060488062,
+  "dice_hi": 0.020774166897911856,
+  "lift": 0.5007073371833732,
+  "pearson_r": 0.6536093501560816,
+  "swap_same_compartment": 0.15243984000600447,
+  "swap_same_compartment_lines": [
+   "AAVS1",
+   "TUBA1B"
+  ],
+  "swap_diff_compartment": 0.005969672032915957,
+  "swap_diff_compartment_lines": [
+   "LMNB1",
+   "SEC61B",
+   "TOMM20"
+  ],
+  "swap_per_line": {
+   "AAVS1": 0.23820945900310014,
+   "TUBA1B": 0.06667022100890878,
+   "LMNB1": 0.004014270471193035,
+   "SEC61B": 0.00871471221865299,
+   "TOMM20": 0.005180033408901845
+  }
+ }
+]

@@ -395,10 +395,19 @@ masks. The nuclear envelope is roughly the boundary of the DNA channel; if a
 shell rule matches the network there, nothing was inferred and the answer was
 handed over in the input.
 
+**What came back.** The model beats every atlas and retrieval baseline on most
+structures — and in every fold where the two can be separated, the prediction
+depends on the protein's *compartment*, not on the protein. Feed it a different
+protein from the same compartment and the score does not drop. Feed it the
+untagged control line's annotation and, for actin, the score goes up. The
+registered gates caught this; four of the seven registered hypotheses fail for a
+majority of structures, including one the pre-registration named in advance.
+
 The registered design, its amendment, and what came back:
 
 - [`docs/PREREG_VIRTUAL_CELL.md`](docs/PREREG_VIRTUAL_CELL.md)
 - [`docs/RESULT_VIRTUAL_CELL.md`](docs/RESULT_VIRTUAL_CELL.md)
+- [`data/vcell/`](data/vcell/) — the 900 cells by Allen CellId, and every score cited
 
 ---
 
