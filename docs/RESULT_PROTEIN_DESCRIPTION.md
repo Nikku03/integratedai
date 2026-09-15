@@ -153,6 +153,65 @@ So the target being predicted is real (r = 0.537 across independent fields),
 survives the strongest batch control available, and remains unpredicted by every
 description tried.
 
+### Shortlisting the interactome by co-location: a good list, not a useful feature
+
+A mass-spec pulldown reports partners from a whole-cell lysate, so the raw
+partner list mixes genuine complexes with pairs that only met in the tube. Two
+proteins can only bind if they are in the same place, so intersecting the
+measured partners with the localisation annotations should give a cleaner
+feature. The shortlist is in
+[`compartment_interactions.csv`](../data/vcell/opencell/compartment_interactions.csv),
+with the members of each compartment in
+[`compartment_members.csv`](../data/vcell/opencell/compartment_members.csv).
+
+| compartment | proteins | measured partner links | placeable | same compartment | share | shortlisted pairs |
+|---|---|---|---|---|---|---|
+| cytoplasmic | 24 | 945 | 217 | 138 | 0.64 | 135 |
+| nucleoplasm | 24 | 849 | 160 | 76 | 0.47 | 70 |
+| vesicles | 24 | 169 | 50 | 38 | 0.76 | 36 |
+| er | 24 | 335 | 111 | 74 | 0.67 | 69 |
+| nucleolus_gc | 24 | 538 | 113 | 20 | 0.18 | 19 |
+| chromatin | 24 | 1654 | 327 | 161 | 0.49 | 134 |
+| membrane | 24 | 209 | 29 | 10 | 0.34 | 8 |
+
+Partner localisation is resolved against all 1,310 OpenCell lines, of which 857
+carry an unambiguous dominant compartment; partners with no OpenCell line cannot
+be placed and are counted, not dropped. Note how much the filter removes —
+only 18% of placeable nucleolar links and 34% of plasma-membrane links survive
+it.
+
+**The shortlist is biologically clean.** It recovers known complexes without
+being told about any of them: the CCT/TRiC chaperonin (CCT3–CCT4/5/6A), SWI/SNF
+(SMARCB1/C1/E1–ARID1A/B–SMARCD1/2), RNA polymerase II (POLR2C–POLR2A/D/G), the
+proteasome lid and core (PSMB4/PSMD7–PSMA5/PSMC2/4/5/PSMD1/2/13), V-ATPase
+(ATP6V1A–ATP6V0A1/0D1/1B2/1H), Commander/CCC (CCDC93–CCDC22–COMMD1/2/4/6–VPS29),
+the EMC (EMC1/2/3–EMC4/7/8/9–MMGT1), the oligosaccharyltransferase complex
+(DDOST/STT3A/STT3B–RPN1/RPN2/DAD1/OSTC), endosomal SNAREs
+(STX7/STX12–VAMP8–VTI1B–STX8), and most of the U2 spliceosome
+(SF3A1/SF3B1–SF3B2/3/5/6–SNRNP40–SNRPD2). As a list of who can actually
+interact with whom, it works.
+
+**And it is not a better feature.** Screened the same way, the co-located
+partner set scores *worse* than predicting the training mean:
+
+| block | raw R² | p | within-compartment R² | p |
+|---|---|---|---|---|
+| interactome, co-located partners only | **−0.358** | 0.998 | −0.079 | 0.936 |
+| interactome, cross-compartment partners only | 0.003 | 0.256 | −0.030 | 0.574 |
+| esm + co-located interactome | 0.202 | 0.000 | −0.040 | 0.280 |
+| esm alone, for comparison | 0.253 | 0.000 | −0.035 | 0.262 |
+
+Adding the shortlist to ESM-2 makes it worse (0.253 → 0.202). Two reasons, and
+the first disqualifies the block regardless of its score: the co-located set is
+*constructed from the protein's own compartment label*, so it is circular by
+construction and could not have been used as an honest feature anyway. Second,
+it is a sparse, strongly bimodal signal — a protein in a large co-located
+complex gets a dense vector, a protein with none gets zeros — and that mapping
+does not transfer to held-out proteins.
+
+So the shortlist answers a real biological question and does not answer this
+one. Worth keeping for what it is; not worth carrying as a description.
+
 ### What to do next, in order
 
 1. **A larger sequence model, with position kept.** ESM-2 35M mean-pooled is the

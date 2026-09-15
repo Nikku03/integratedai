@@ -53,7 +53,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from vcell.oc_frames import load_tiles  # noqa: E402
 from vcell.oc_train import build_vectors, training_families  # noqa: E402
 from vcell.opencell import COMPARTMENTS, load_sample  # noqa: E402
-from vcell.protein_desc import BLOCKS, build_blocks, load_uniprot  # noqa: E402
+from vcell.protein_desc import (  # noqa: E402
+    BLOCKS,
+    _hashed_bag,
+    build_blocks,
+    load_uniprot,
+)
 from vcell.retrieval import rank_of_truth, retrieval_summary  # noqa: E402
 
 ALPHAS = np.geomspace(1e-2, 1e5, 22)
@@ -267,6 +272,41 @@ def main() -> int:
     baseline = {g: v[n_comp:] for g, v in baseline.items()}
     blocks = build_blocks(records, esm=esm, baseline=baseline)
 
+    # Two interactome variants built from the co-location shortlist. A pulldown
+    # reports partners from a whole-cell lysate, so the raw partner list mixes
+    # genuine complexes with pairs that only met in the tube. Splitting it by
+    # whether the partner is annotated to the same compartment asks whether the
+    # shortlist is the informative half.
+    from vcell.opencell import parse_grades, sole_dominant
+
+    catalogue = json.loads((D / "catalogue.json").read_text())
+    partner_comp: dict[str, str] = {}
+    for line in catalogue:
+        md = line.get("metadata") or {}
+        ensg = md.get("ensg_id")
+        dom = sole_dominant(parse_grades(
+            list((line.get("annotation") or {}).get("categories") or [])))
+        if ensg and dom:
+            partner_comp.setdefault(ensg, dom)
+    interactors = {t["gene"]: (t.get("interactors") or [])
+                   for d in json.loads((D / "sample.json").read_text()).values()
+                   for v in d.values() for t in v}
+    colocal, cross = {}, {}
+    n_co = n_cross = 0
+    for g in genes:
+        own = compartment_of[g]
+        same = [e for e in interactors.get(g, []) if partner_comp.get(e) == own]
+        diff = [e for e in interactors.get(g, [])
+                if partner_comp.get(e) not in (None, own)]
+        n_co += len(same)
+        n_cross += len(diff)
+        colocal[g] = _hashed_bag(same, 16, salt="coloc")
+        cross[g] = _hashed_bag(diff, 16, salt="cross")
+    blocks["interactome_colocal"] = colocal
+    blocks["interactome_crosscomp"] = cross
+    print(f"co-location split of the measured interactomes: {n_co} same-compartment "
+          f"partner links, {n_cross} cross-compartment\n")
+
     # Standardise every block on training proteins only.
     circular = {b.name: b.circular for b in BLOCKS}
     notes = {b.name: b.note for b in BLOCKS}
@@ -278,6 +318,7 @@ def main() -> int:
     honest = [b.name for b in BLOCKS if not b.circular and b.name in blocks
               and b.name != "baseline"]
     combos["ALL honest (no baseline)"] = honest
+    combos["esm + interactome_colocal"] = ["esm", "interactome_colocal"]
     combos["ALL honest + baseline"] = honest + ["baseline"]
 
     # Compartment-centred target: subtract each compartment's TRAINING mean, so
