@@ -57,6 +57,32 @@ def zscore(X: np.ndarray, rows: np.ndarray):
     return (X - mu) / sd
 
 
+def blockwise_reduce(
+    per_block: list[np.ndarray], is_train: np.ndarray, budget: int
+) -> np.ndarray:
+    """Give every block an equal number of components before fusing.
+
+    Naive concatenation lets a block with more effective dimensions crowd out a
+    lower-rank one in the shared PCA, whatever their column counts. Measured on
+    these views: the ESM-2 embedding carries ~22 effective dimensions and the
+    STRING profile ~7.6, so a joint PCA spends its budget on ESM and discards
+    most of what STRING contributes. Reducing each block to `budget` components
+    first makes the fusion a choice about information rather than about rank.
+
+    The reduction runs *after* compartment is residualised out, so the retained
+    components are within-compartment directions rather than compartment ones
+    that would be removed later anyway.
+    """
+    parts = []
+    for M in per_block:
+        k = max(1, min(budget, M.shape[1], int(is_train.sum()) - 2))
+        Mtr = M[is_train]
+        mu = Mtr.mean(axis=0)
+        _, _, vt = np.linalg.svd(Mtr - mu, full_matrices=False)
+        parts.append((M - mu) @ vt[:k].T)
+    return np.concatenate(parts, axis=1)
+
+
 def residualise_on_compartment(M: np.ndarray, compartment: np.ndarray,
                                is_train: np.ndarray, ridge: float = 1e-3):
     """Remove everything a compartment label can explain, from BOTH views.
@@ -123,6 +149,14 @@ def main() -> int:
     ap.add_argument("--permutations", type=int, default=300,
                     help="permutations for the within-compartment test, the one "
                          "that matters")
+    ap.add_argument("--fusion", default="concat", choices=("concat", "blockwise"),
+                    help="how to combine multiple blocks: raw concatenation, or "
+                         "an equal component budget per block")
+    ap.add_argument("--budget", type=int, default=8,
+                    help="components per block when --fusion blockwise")
+    ap.add_argument("--only", default=None,
+                    help="semicolon-separated combination names to run")
+    ap.add_argument("--out", default=None, help="output json name")
     ap.add_argument("--raw-permutations", type=int, default=25,
                     help="the raw column only needs enough to confirm what two "
                          "previous studies already established")
@@ -168,7 +202,21 @@ def main() -> int:
                                 "go_process_function", "reactome",
                                 "hpa_expression", "alphafold"]
     combos["esm + databases"] = ["esm"] + combos["databases only"]
+    # The two best-motivated features on their own terms: a sequence model and
+    # the functional-association profile that was the only block to clear both
+    # tests. Each additional combination enlarges the family of tests on one
+    # fixed held-out set, so the Bonferroni threshold reported with the results
+    # counts these too.
+    combos["string_profile + string_channels"] = ["string_profile", "string_channels"]
+    combos["esm + string_profile"] = ["esm", "string_profile"]
+    combos["esm + string (both)"] = ["esm", "string_profile", "string_channels"]
 
+    if args.only:
+        wanted = {n.strip() for n in args.only.split(";") if n.strip()}
+        missing = wanted - set(combos)
+        if missing:
+            raise SystemExit(f"unknown combination(s): {sorted(missing)}")
+        combos = {k: v for k, v in combos.items() if k in wanted}
     print(f"{genes.size} proteins: {int(is_train.sum())} training, "
           f"{int((~is_train).sum())} held out; "
           f"{len(blocks)} fingerprint blocks available\n")
@@ -179,29 +227,34 @@ def main() -> int:
     for label, names in combos.items():
         if any(n not in blocks for n in names):
             continue
-        X = np.concatenate([np.stack([blocks[n][g] for g in genes]) for n in names],
-                           axis=1)
-        Xz = zscore(X, is_train)
+        per_block = [zscore(np.stack([blocks[n][g] for g in genes]), is_train)
+                     for n in names]
+        Xz = np.concatenate(per_block, axis=1)
         Yz = zscore(Y, is_train)
         raw = run_match(Xz, Yz, is_train, genes, candidate_sets,
                         args.seed, args.raw_permutations)
         # Both views residualised on compartment: whatever survives cannot be
         # the compartment in either of them.
-        Xr = zscore(residualise_on_compartment(Xz, comp_arr, is_train), is_train)
+        resid = [residualise_on_compartment(M, comp_arr, is_train) for M in per_block]
+        if args.fusion == "blockwise" and len(resid) > 1:
+            Xr = zscore(blockwise_reduce(resid, is_train, args.budget), is_train)
+        else:
+            Xr = zscore(np.concatenate(resid, axis=1), is_train)
         Yr = zscore(residualise_on_compartment(Yz, comp_arr, is_train), is_train)
         cen = run_match(Xr, Yr, is_train, genes, candidate_sets,
                         args.seed, args.permutations)
-        results[label] = {"dims": int(X.shape[1]), "members": names,
+        results[label] = {"dims": int(Xz.shape[1]), "fused_dims": int(Xr.shape[1]),
+                          "fusion": args.fusion, "members": names,
                           "raw": raw, "within_compartment": cen}
-        print(f"{label:26s} {X.shape[1]:5d} | {raw['top_abs_correlation']:10.3f} "
+        print(f"{label:26s} {Xr.shape[1]:5d} | {raw['top_abs_correlation']:10.3f} "
               f"{raw['p_value']:6.3f} {raw['retrieval_top1']:6.3f} | "
               f"{cen['top_abs_correlation']:18.3f} {cen['p_value']:6.3f} "
               f"{cen['retrieval_top1']:6.3f} {cen['retrieval_null_p95']:8.3f} "
               f"{cen['retrieval_chance']:7.3f}")
 
-    (D / "fingerprint_match.json").write_text(json.dumps(results, indent=1,
-                                                         default=float))
-    print(f"\nwrote {D/'fingerprint_match.json'}")
+    out = D / (args.out or "fingerprint_match.json")
+    out.write_text(json.dumps(results, indent=1, default=float))
+    print(f"\nwrote {out}")
     return 0
 
 
