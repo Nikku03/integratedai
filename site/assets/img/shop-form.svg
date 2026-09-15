@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1100" width="1600" height="1100" role="img" aria-label="shop-form placeholder render">
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#3a352d"/><stop offset="1" stop-color="#181614"/>
+  </linearGradient>
+  <radialGradient id="glow" cx="0.70" cy="0.19" r="0.7">
+    <stop offset="0" stop-color="#fff5e0" stop-opacity="0.55"/>
+    <stop offset="0.5" stop-color="#d8c9a8" stop-opacity="0.18"/>
+    <stop offset="1" stop-color="#181614" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="shaft" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#fff5e0" stop-opacity="0.35"/>
+    <stop offset="1" stop-color="#fff5e0" stop-opacity="0"/>
+  </linearGradient>
+  <linearGradient id="floor" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#181614" stop-opacity="0"/>
+    <stop offset="1" stop-color="#000" stop-opacity="0.65"/>
+  </linearGradient>
+  <filter id="grain">
+    <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="111" stitchTiles="stitch"/>
+    <feColorMatrix type="saturate" values="0"/>
+    <feComponentTransfer><feFuncA type="linear" slope="0.14"/></feComponentTransfer>
+    <feBlend in2="SourceGraphic" mode="overlay"/>
+  </filter>
+  <filter id="soft"><feGaussianBlur stdDeviation="28"/></filter>
+</defs>
+<rect x="0.0" y="0.0" width="1600.0" height="1100.0" fill="url(#bg)" opacity="1.00" rx="0"/>
+<rect x="0.0" y="0.0" width="1600.0" height="1100.0" fill="url(#glow)" opacity="1.00" rx="0"/>
+<g transform="translate(790 0) skewX(4.2)"><rect x="0.0" y="0.0" width="123.6" height="1100.0" fill="url(#shaft)" opacity="0.90" rx="0"/></g>
+<g transform="translate(271 0) skewX(-2.8)"><rect x="0.0" y="0.0" width="91.0" height="1100.0" fill="url(#shaft)" opacity="0.90" rx="0"/></g>
+<g transform="translate(368 0) skewX(-3.0)"><rect x="0.0" y="0.0" width="167.3" height="1100.0" fill="url(#shaft)" opacity="0.90" rx="0"/></g>
+<rect x="0.0" y="697.1" width="1600.0" height="402.9" fill="url(#floor)" opacity="1.00" rx="0"/>
+<rect x="1038.2" y="536.9" width="192.1" height="217.4" fill="#3a352d" opacity="0.61" rx="6"/>
+<rect x="1211.7" y="532.3" width="273.0" height="189.9" fill="#000" opacity="0.64" rx="0"/>
+<rect x="1307.5" y="596.6" width="169.1" height="114.5" fill="#000" opacity="0.57" rx="120"/>
+<rect x="1222.3" y="497.9" width="259.3" height="248.5" fill="#3a352d" opacity="0.47" rx="120"/>
+<rect x="896.3" y="594.5" width="343.3" height="159.4" fill="#000" opacity="0.69" rx="0"/>
+<rect x="1140.0" y="469.7" width="135.5" height="253.0" fill="#000" opacity="0.42" rx="0"/>
+<rect x="1346.2" y="662.8" width="209.7" height="72.4" fill="#3a352d" opacity="0.52" rx="120"/>
+<rect x="914.6" y="520.7" width="90.3" height="225.4" fill="#000" opacity="0.31" rx="0"/>
+<circle cx="616" cy="249" r="131" fill="#fff5e0" opacity="0.18" filter="url(#soft)"/>
+<line x1="616" y1="0" x2="616" y2="205" stroke="#d8c9a8" stroke-opacity="0.35" stroke-width="2"/>
+<circle cx="616" cy="249" r="44" fill="#fff5e0" opacity="0.9"/>
+<circle cx="1153" cy="316" r="130" fill="#fff5e0" opacity="0.18" filter="url(#soft)"/>
+<line x1="1153" y1="0" x2="1153" y2="273" stroke="#d8c9a8" stroke-opacity="0.35" stroke-width="2"/>
+<circle cx="1153" cy="316" r="43" fill="#fff5e0" opacity="0.9"/>
+<circle cx="267" cy="235" r="65" fill="#fff5e0" opacity="0.18" filter="url(#soft)"/>
+<line x1="267" y1="0" x2="267" y2="214" stroke="#d8c9a8" stroke-opacity="0.35" stroke-width="2"/>
+<circle cx="267" cy="235" r="22" fill="#fff5e0" opacity="0.9"/>
+<circle cx="375" cy="302" r="122" fill="#fff5e0" opacity="0.18" filter="url(#soft)"/>
+<line x1="375" y1="0" x2="375" y2="262" stroke="#d8c9a8" stroke-opacity="0.35" stroke-width="2"/>
+<circle cx="375" cy="302" r="41" fill="#fff5e0" opacity="0.9"/>
+<rect x="687.5" y="433.9" width="279.0" height="520.0" fill="#d8c9a8" opacity="0.22" rx="0"/>
+<rect x="0.0" y="0.0" width="1600.0" height="1100.0" fill="#000" opacity="0.00" rx="0"/>
+<rect width="1600" height="1100" fill="#181614" opacity="0.001" filter="url(#grain)"/>
+</svg>
