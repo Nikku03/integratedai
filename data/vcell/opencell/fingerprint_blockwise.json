@@ -1,0 +1,186 @@
+{
+ "string_profile + string_channels": {
+  "dims": 521,
+  "fused_dims": 16,
+  "fusion": "blockwise",
+  "members": [
+   "string_profile",
+   "string_channels"
+  ],
+  "raw": {
+   "config": {
+    "k_x": 32,
+    "k_y": 4,
+    "ridge": 0.2,
+    "cv_score": 0.6082077650263324
+   },
+   "train_correlations": [
+    0.7777087195502286,
+    0.6278106047560955,
+    0.4970918810128914
+   ],
+   "heldout_correlations": [
+    0.7686315359396331,
+    0.6739154472227012,
+    0.5854861978526411
+   ],
+   "top_abs_correlation": 0.7686315359396331,
+   "null_p95": 0.24458545216915603,
+   "p_value": 0.0,
+   "retrieval_top1": 0.18867924528301888,
+   "retrieval_chance": 0.13207547169811318,
+   "retrieval_null_p95": 0.20377358490566033,
+   "retrieval_p_value": 0.16,
+   "n_test": 53
+  },
+  "within_compartment": {
+   "config": {
+    "k_x": 8,
+    "k_y": 8,
+    "ridge": 1.0,
+    "cv_score": 0.2821291213774272
+   },
+   "train_correlations": [
+    0.28242420630588505,
+    0.22574887275844208,
+    0.2118858439581563
+   ],
+   "heldout_correlations": [
+    0.1744553335962614,
+    0.32442950145199523,
+    0.3762942037146618
+   ],
+   "top_abs_correlation": 0.1744553335962614,
+   "null_p95": 0.285380102509275,
+   "p_value": 0.21,
+   "retrieval_top1": 0.24528301886792453,
+   "retrieval_chance": 0.13207547169811318,
+   "retrieval_null_p95": 0.20754716981132076,
+   "retrieval_p_value": 0.016666666666666666,
+   "n_test": 53
+  }
+ },
+ "esm + string_profile": {
+  "dims": 992,
+  "fused_dims": 16,
+  "fusion": "blockwise",
+  "members": [
+   "esm",
+   "string_profile"
+  ],
+  "raw": {
+   "config": {
+    "k_x": 32,
+    "k_y": 4,
+    "ridge": 0.2,
+    "cv_score": 0.5711986950692651
+   },
+   "train_correlations": [
+    0.7921728749775803,
+    0.6559502208988063,
+    0.5021858299422914
+   ],
+   "heldout_correlations": [
+    0.7596859800306673,
+    0.5519316709687911,
+    0.2875374596625702
+   ],
+   "top_abs_correlation": 0.7596859800306673,
+   "null_p95": 0.261502792665078,
+   "p_value": 0.0,
+   "retrieval_top1": 0.1509433962264151,
+   "retrieval_chance": 0.13207547169811318,
+   "retrieval_null_p95": 0.18490566037735845,
+   "retrieval_p_value": 0.48,
+   "n_test": 53
+  },
+  "within_compartment": {
+   "config": {
+    "k_x": 16,
+    "k_y": 8,
+    "ridge": 0.2,
+    "cv_score": 0.21669575708402894
+   },
+   "train_correlations": [
+    0.5205819223093104,
+    0.4590925250731912,
+    0.40641838182843626
+   ],
+   "heldout_correlations": [
+    0.19661225427318785,
+    0.10152678939450932,
+    0.4618777298671736
+   ],
+   "top_abs_correlation": 0.19661225427318785,
+   "null_p95": 0.25642570903065326,
+   "p_value": 0.12,
+   "retrieval_top1": 0.16981132075471697,
+   "retrieval_chance": 0.13207547169811318,
+   "retrieval_null_p95": 0.20754716981132076,
+   "retrieval_p_value": 0.27,
+   "n_test": 53
+  }
+ },
+ "esm + string (both)": {
+  "dims": 1001,
+  "fused_dims": 24,
+  "fusion": "blockwise",
+  "members": [
+   "esm",
+   "string_profile",
+   "string_channels"
+  ],
+  "raw": {
+   "config": {
+    "k_x": 32,
+    "k_y": 4,
+    "ridge": 0.2,
+    "cv_score": 0.5727066411064881
+   },
+   "train_correlations": [
+    0.7946804011166572,
+    0.6575659721786978,
+    0.502029188682898
+   ],
+   "heldout_correlations": [
+    0.7620231228608138,
+    0.5514573624352808,
+    0.28651716608255484
+   ],
+   "top_abs_correlation": 0.7620231228608138,
+   "null_p95": 0.2578843701816159,
+   "p_value": 0.0,
+   "retrieval_top1": 0.1509433962264151,
+   "retrieval_chance": 0.13207547169811318,
+   "retrieval_null_p95": 0.16981132075471697,
+   "retrieval_p_value": 0.48,
+   "n_test": 53
+  },
+  "within_compartment": {
+   "config": {
+    "k_x": 16,
+    "k_y": 4,
+    "ridge": 1.0,
+    "cv_score": 0.21627057273096736
+   },
+   "train_correlations": [
+    0.2844599074271374,
+    0.2467163050551866,
+    0.17592479166307376
+   ],
+   "heldout_correlations": [
+    0.3001267589647034,
+    0.11964617832420385,
+    0.43509037759824065
+   ],
+   "top_abs_correlation": 0.3001267589647034,
+   "null_p95": 0.2735563769897706,
+   "p_value": 0.03333333333333333,
+   "retrieval_top1": 0.22641509433962265,
+   "retrieval_chance": 0.13207547169811318,
+   "retrieval_null_p95": 0.20754716981132076,
+   "retrieval_p_value": 0.03333333333333333,
+   "n_test": 53
+  }
+ }
+}

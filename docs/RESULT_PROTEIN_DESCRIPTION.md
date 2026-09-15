@@ -1,13 +1,16 @@
 # Screen: what a protein is, versus what it looks like. One fingerprint survives
 
-**Exploratory, not pre-registered.** Two parts. Part one screens eight
+**Exploratory, not pre-registered.** Three parts. Part one screens eight
 descriptions by predicting the image descriptor, and **none of them works**.
 Part two adds every gene-level database within reach and changes the method from
 prediction to shared-space matching, and **one fingerprint clears both tests**:
 a protein's STRING functional-association profile identifies it within its
-compartment at 0.245 against a chance of 0.132. That result is suggestive rather
-than established, for four reasons set out at the end of part two, and the
-confirmatory version needs pre-registering.
+compartment at 0.245 against a chance of 0.132. Part three tries to improve it
+by combining fingerprints, and **nothing survives that**: adding ESM-2 destroys
+STRING's signal, and the combinations that do look good reverse when an
+arbitrary fusion choice is changed. The one result left standing is the
+single-block STRING profile, which is suggestive rather than established for
+four reasons set out at the end of part two, and needs pre-registering.
 
 **On discipline.** The two studies before this
 ([`RESULT_VIRTUAL_CELL.md`](RESULT_VIRTUAL_CELL.md),
@@ -322,6 +325,75 @@ any of them.
 
 And the earlier headline does not survive: **ESM-2 alone fails this test**
 (0.085, p = 0.553). Its raw R² of 0.253 really was all compartment.
+
+## Part three: combining ESM-2 with STRING, and why no combination survives
+
+The obvious next move was to put the two best-motivated fingerprints together: a
+sequence language model and the functional-association profile that was the only
+block to clear both tests. The cached ESM-2 embeddings were reused, not
+recomputed.
+
+**Concatenation.** ESM destroys it, exactly as predicted before the run, and one
+result was not predicted:
+
+| fingerprint | dims | corr | p | retrieval | p | held-out components |
+|---|---|---|---|---|---|---|
+| string_profile + string_channels | 521 | **0.494** | **0.000** | 0.226 | 0.047 | [+0.49, +0.26, +0.31] |
+| string_profile | 512 | 0.385 | 0.000 | **0.245** | **0.017** | [+0.38, +0.27, +0.25] |
+| string_channels | 9 | 0.193 | 0.160 | 0.245 | 0.013 | [+0.19, +0.29, −0.03] |
+| esm + string (both) | 1001 | 0.113 | 0.423 | 0.151 | 0.423 | [+0.11, +0.32, +0.19] |
+| esm + string_profile | 992 | 0.099 | 0.473 | 0.170 | 0.253 | [+0.10, +0.33, +0.18] |
+| esm | 480 | 0.085 | 0.553 | 0.151 | 0.330 | [+0.09, +0.16, +0.06] |
+
+Adding ESM takes STRING from 0.385 (p = 0.000) to 0.099 (p = 0.473). The two
+STRING blocks together reach 0.494, above either alone.
+
+**Then the same combinations with an equal component budget.** Concatenation is
+not a fair fusion: measured on these views, ESM-2 carries ~22 effective
+dimensions against the STRING profile's ~7.6, so a joint PCA spends its budget
+on ESM. Giving each block 8 components first should fix that. It does something
+worse — it **inverts the ranking**:
+
+| fingerprint | concat corr | p | blockwise corr | p |
+|---|---|---|---|---|
+| string_profile + string_channels | **0.494** | **0.000** | 0.174 | 0.210 |
+| esm + string (both) | 0.113 | 0.423 | **0.300** | **0.033** |
+| esm + string_profile | 0.099 | 0.473 | 0.197 | 0.120 |
+
+The best combination under one fusion rule is the worst under the other, and
+both rules are defensible. **That is an analysis-sensitivity failure, and it
+disqualifies every combination here**, including the 0.494 that looked like the
+strongest result in this document a paragraph ago.
+
+The mechanism is visible in the components. CCA orders its directions by
+training correlation, so the first should be the strongest held out as well.
+It usually is not: blockwise gives [+0.17, +0.32, +0.38], [+0.20, +0.10, +0.46]
+and [+0.30, +0.12, +0.44] — the *third* component is the strongest in all three.
+The canonical directions do not keep their order out of sample, so "the first
+held-out canonical correlation" is a noisy statistic, and which fingerprint wins
+depends on an arbitrary preprocessing choice. At 109 training proteins the
+multi-view fusion is underdetermined.
+
+### What does survive
+
+**Only the single-block STRING profile**, and for a reason that is structural
+rather than lucky: with one block there is no fusion rule to choose, so the
+result cannot move with it. Correlation 0.385 (p = 0.000, past Bonferroni) and
+identification 0.245 against a chance of 0.132 (p = 0.017), unchanged by
+anything in part three.
+
+Retrieval is also the more stable of the two measures across fusion rules —
+string_profile + string_channels gives 0.226 concatenated and 0.245 blockwise,
+against correlations of 0.494 and 0.174 for the same pair. That is another
+reason to treat identification, not correlation, as the headline number.
+
+So the answer to "what do we get in total" is: **nothing reliable from
+combining.** ESM-2 adds no complementary information to STRING under either
+fusion rule that also keeps STRING's own signal, and the apparent gains from
+combining STRING with itself do not survive a change of fusion. The
+confirmatory experiment should register **one** fingerprint — the STRING
+profile — and if it ever tests a combination, it must pre-register the fusion
+rule, because that choice is worth more than the effect being measured.
 
 ### What to do next, in order
 
