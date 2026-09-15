@@ -1,0 +1,124 @@
+{
+ "config": {
+  "k_x": 32,
+  "k_y": 8,
+  "ridge": 1.0,
+  "cv_score": 0.33254422501943975
+ },
+ "n_proteins": 461,
+ "n_train": 308,
+ "n_held_out": 153,
+ "candidate_set_sizes": {
+  "cytoplasmic": 43,
+  "nucleoplasm": 27,
+  "vesicles": 35,
+  "er": 15,
+  "nucleolus_gc": 14,
+  "chromatin": 11,
+  "membrane": 8
+ },
+ "heldout_correlations": [
+  0.2455202889205013,
+  0.24221267601295768,
+  0.009307890089921264
+ ],
+ "correlation_p": 0.001,
+ "correlation_null_p95": 0.15875190894053154,
+ "pooled_top1": 0.0392156862745098,
+ "pooled_top1_lo": 0.013071895424836602,
+ "pooled_top1_hi": 0.0718954248366013,
+ "pooled_chance": 0.0457516339869281,
+ "pooled_lift": 0.8571428571428572,
+ "pooled_mrr": 0.17792723838491345,
+ "pooled_chance_mrr": 0.16141021307448747,
+ "retrieval_p": 0.722,
+ "retrieval_null_p95": 0.0784313725490196,
+ "true_null_top1": 0.0,
+ "per_compartment": {
+  "cytoplasmic": {
+   "n": 43,
+   "top1": 0.046511627906976744,
+   "top2": 0.09302325581395349,
+   "mrr": 0.14497140857771534,
+   "mean_rank": 17.13953488372093,
+   "chance_top1": 0.023255813953488372,
+   "chance_mrr": 0.10116275861864717,
+   "n_candidates": 43.0,
+   "top1_lo": 0.0,
+   "top1_hi": 0.11627906976744186
+  },
+  "nucleoplasm": {
+   "n": 27,
+   "top1": 0.037037037037037035,
+   "top2": 0.1111111111111111,
+   "mrr": 0.17120058659359094,
+   "mean_rank": 11.592592592592593,
+   "chance_top1": 0.03703703703703703,
+   "chance_mrr": 0.1441280278982253,
+   "n_candidates": 27.0,
+   "top1_lo": 0.0,
+   "top1_hi": 0.1111111111111111
+  },
+  "vesicles": {
+   "n": 35,
+   "top1": 0.02857142857142857,
+   "top2": 0.08571428571428572,
+   "mrr": 0.13403431401551333,
+   "mean_rank": 16.114285714285714,
+   "chance_top1": 0.02857142857142857,
+   "chance_mrr": 0.11847946911476746,
+   "n_candidates": 35.0,
+   "top1_lo": 0.0,
+   "top1_hi": 0.08571428571428572
+  },
+  "er": {
+   "n": 15,
+   "top1": 0.0,
+   "top2": 0.0,
+   "mrr": 0.15224460724460726,
+   "mean_rank": 8.6,
+   "chance_top1": 0.06666666666666667,
+   "chance_mrr": 0.22121526621526624,
+   "n_candidates": 15.0,
+   "top1_lo": 0.0,
+   "top1_hi": 0.0
+  },
+  "nucleolus_gc": {
+   "n": 14,
+   "top1": 0.0,
+   "top2": 0.14285714285714285,
+   "mrr": 0.19085240156668729,
+   "mean_rank": 7.714285714285714,
+   "chance_top1": 0.07142857142857141,
+   "chance_mrr": 0.23225445189730906,
+   "n_candidates": 14.0,
+   "top1_lo": 0.0,
+   "top1_hi": 0.0
+  },
+  "chromatin": {
+   "n": 11,
+   "top1": 0.0,
+   "top2": 0.18181818181818182,
+   "mrr": 0.24563820018365476,
+   "mean_rank": 5.636363636363637,
+   "chance_top1": 0.09090909090909091,
+   "chance_mrr": 0.27453430407975865,
+   "n_candidates": 11.0,
+   "top1_lo": 0.0,
+   "top1_hi": 0.0
+  },
+  "membrane": {
+   "n": 8,
+   "top1": 0.25,
+   "top2": 0.625,
+   "mrr": 0.5022321428571428,
+   "mean_rank": 3.375,
+   "chance_top1": 0.125,
+   "chance_mrr": 0.3397321428571428,
+   "n_candidates": 8.0,
+   "top1_lo": 0.0,
+   "top1_hi": 0.5
+  }
+ },
+ "n_permutations": 1000
+}

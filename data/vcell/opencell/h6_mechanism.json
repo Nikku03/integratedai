@@ -1,0 +1,77 @@
+{
+ "config": {
+  "k_x": 32,
+  "k_y": 8,
+  "ridge": 1.0,
+  "cv_score": 0.33254422501943975
+ },
+ "n_held_out": 153,
+ "definition": "a measured OpenCell interaction partner, in the training set, with the same dominant compartment",
+ "with_partner": {
+  "n": 58,
+  "top1": 0.034482758620689655,
+  "top1_count": 2,
+  "chance_top1": 0.05017428552913717,
+  "lift": 0.6872595844073326,
+  "mrr": 0.17231474999908317,
+  "chance_mrr": 0.17343854256788244,
+  "mrr_ratio": 0.9935205142284944,
+  "mean_rank": 12.672413793103448,
+  "top1_lo": 0.0,
+  "top1_hi": 0.08620689655172414
+ },
+ "without_partner": {
+  "n": 95,
+  "top1": 0.042105263157894736,
+  "top1_count": 4,
+  "chance_top1": 0.04305148883484257,
+  "lift": 0.9780210695946471,
+  "mrr": 0.1813538102415256,
+  "chance_mrr": 0.15406660138378309,
+  "mrr_ratio": 1.1771130706633135,
+  "mean_rank": 12.68421052631579,
+  "top1_lo": 0.010263157894736856,
+  "top1_hi": 0.08421052631578947
+ },
+ "lift_difference": -0.2907614851873145,
+ "lift_difference_p": 0.6929,
+ "mrr_ratio_difference": -0.1835925564348191,
+ "mrr_ratio_difference_p": 0.7264,
+ "n_permutations": 10000,
+ "per_compartment": {
+  "cytoplasmic": {
+   "with_partner": 8,
+   "n": 43
+  },
+  "nucleoplasm": {
+   "with_partner": 15,
+   "n": 27
+  },
+  "vesicles": {
+   "with_partner": 14,
+   "n": 35
+  },
+  "er": {
+   "with_partner": 6,
+   "n": 15
+  },
+  "nucleolus_gc": {
+   "with_partner": 5,
+   "n": 14
+  },
+  "chromatin": {
+   "with_partner": 7,
+   "n": 11
+  },
+  "membrane": {
+   "with_partner": 3,
+   "n": 8
+  }
+ },
+ "partner_count_distribution": {
+  "n_with_at_least_one": 58,
+  "n_with_none": 95,
+  "max": 15,
+  "median_among_those_with_any": 2
+ }
+}
