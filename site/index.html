@@ -3,15 +3,15 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Atelier Nord — Interiors for restaurants, bars &amp; shops</title>
-  <meta name="description" content="Atelier Nord designs restaurants, bars and retail spaces that people come back to. Concept, interiors, lighting and fit-out across multiple cities.">
-  <meta property="og:title" content="Atelier Nord — Hospitality &amp; retail interiors">
-  <meta property="og:description" content="Restaurants, bars and shops designed to be lived in.">
+  <title>Two Squares — Design &amp; Build for restaurants, bars &amp; shops</title>
+  <meta name="description" content="Two Squares designs and builds restaurants, bars and retail spaces that people come back to. Concept, interiors, lighting and fit-out.">
+  <meta property="og:title" content="Two Squares — Design &amp; Build">
+  <meta property="og:description" content="Restaurants, bars and shops, designed and built to be lived in.">
   <meta property="og:image" content="assets/img/hero-01.svg">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='9' fill='%23c9a36b'/%3E%3C/svg%3E">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='4' y='4' width='11' height='11' rx='2' fill='%2346523d'/%3E%3Crect x='17' y='17' width='11' height='11' rx='2' fill='%2346523d'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,300..600,0..100,0..1;1,9..144,300..600,0..100,0..1&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,300..600,0..100,0..1;1,9..144,300..600,0..100,0..1&family=Homemade+Apple&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/site.css">
 </head>
 <body>
@@ -19,10 +19,23 @@
   <div class="progress" aria-hidden="true"></div>
   <div class="cursor-glow" aria-hidden="true"></div>
 
+  <!-- prop cut-outs for the walkthrough (flat shapes, currentColor) -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <symbol id="p-table" viewBox="0 0 200 140"><ellipse cx="100" cy="34" rx="92" ry="13" fill="currentColor"/><rect x="94" y="40" width="12" height="90" fill="currentColor"/><rect x="58" y="126" width="84" height="10" rx="5" fill="currentColor"/></symbol>
+      <symbol id="p-chair" viewBox="0 0 200 140"><rect x="40" y="10" width="14" height="120" rx="6" fill="currentColor"/><rect x="40" y="10" width="110" height="12" rx="6" fill="currentColor"/><rect x="40" y="70" width="120" height="14" rx="6" fill="currentColor"/><rect x="146" y="76" width="12" height="60" rx="5" fill="currentColor"/><rect x="60" y="80" width="10" height="56" fill="currentColor"/></symbol>
+      <symbol id="p-counter" viewBox="0 0 200 140"><rect x="0" y="30" width="200" height="110" fill="currentColor"/><rect x="-6" y="18" width="212" height="18" rx="4" fill="currentColor" opacity=".7"/><rect x="18" y="52" width="164" height="70" fill="#fff" opacity=".08"/></symbol>
+      <symbol id="p-banquette" viewBox="0 0 200 140"><rect x="0" y="20" width="200" height="60" rx="10" fill="currentColor"/><rect x="0" y="74" width="200" height="50" rx="8" fill="currentColor" opacity=".8"/><rect x="10" y="120" width="180" height="14" fill="currentColor" opacity=".6"/></symbol>
+      <symbol id="p-plant" viewBox="0 0 200 140"><path d="M70 140 L60 96 H140 L130 140 Z" fill="currentColor"/><circle cx="100" cy="62" r="36" fill="currentColor" opacity=".85"/><circle cx="68" cy="78" r="26" fill="currentColor" opacity=".7"/><circle cx="134" cy="76" r="28" fill="currentColor" opacity=".7"/><circle cx="100" cy="30" r="20" fill="currentColor" opacity=".8"/></symbol>
+      <symbol id="p-stool" viewBox="0 0 200 140"><rect x="60" y="30" width="80" height="16" rx="8" fill="currentColor"/><rect x="94" y="44" width="12" height="70" fill="currentColor"/><rect x="66" y="110" width="68" height="10" rx="5" fill="currentColor"/><rect x="70" y="80" width="60" height="6" rx="3" fill="currentColor" opacity=".7"/></symbol>
+      <symbol id="p-backbar" viewBox="0 0 200 140"><rect x="0" y="0" width="200" height="140" fill="currentColor"/><g fill="#f0c070" opacity=".9"><rect x="10" y="12" width="180" height="3"/><rect x="10" y="52" width="180" height="3"/><rect x="10" y="92" width="180" height="3"/></g><g fill="#f0c070" opacity=".75"><rect x="18" y="20" width="8" height="30"/><rect x="32" y="26" width="6" height="24"/><rect x="46" y="18" width="9" height="32"/><rect x="64" y="24" width="7" height="26"/><rect x="80" y="20" width="8" height="30"/><rect x="98" y="28" width="6" height="22"/><rect x="112" y="18" width="9" height="32"/><rect x="130" y="22" width="7" height="28"/><rect x="146" y="26" width="8" height="24"/><rect x="164" y="18" width="9" height="32"/><rect x="180" y="24" width="6" height="26"/><rect x="24" y="60" width="8" height="30"/><rect x="44" y="64" width="7" height="26"/><rect x="60" y="58" width="9" height="32"/><rect x="82" y="62" width="6" height="28"/><rect x="100" y="60" width="8" height="30"/><rect x="120" y="66" width="7" height="24"/><rect x="138" y="58" width="9" height="32"/><rect x="158" y="62" width="8" height="28"/><rect x="176" y="60" width="6" height="30"/><rect x="18" y="100" width="9" height="32"/><rect x="40" y="104" width="7" height="28"/><rect x="58" y="98" width="8" height="34"/><rect x="78" y="104" width="6" height="28"/><rect x="96" y="100" width="9" height="32"/><rect x="118" y="106" width="7" height="26"/><rect x="136" y="98" width="8" height="34"/><rect x="156" y="102" width="9" height="30"/><rect x="176" y="100" width="6" height="32"/></g></symbol>
+    </defs>
+  </svg>
+
   <!-- ============================================================ NAV -->
-  <header class="nav">
+  <header class="nav nav--on-green">
     <div class="wrap">
-      <a class="brand" href="index.html"><span class="brand__dot"></span>Atelier Nord</a>
+      <a class="brand" href="index.html"><span class="wordmark"><span class="wordmark__name">Two Squares</span><span class="wordmark__sub">Design &amp; Build</span></span></a>
       <nav class="nav__links" aria-label="Primary">
         <a href="restaurants.html">Restaurants</a>
         <a href="bars.html">Bars</a>
@@ -40,13 +53,15 @@
     <a href="retail.html">Shops</a>
     <a href="studio.html">Studio</a>
     <a href="contact.html">Contact</a>
-    <div class="menu__foot"><span>hello@ateliernord.com</span><span>+00 000 000 000</span></div>
+    <div class="menu__foot"><span>hello@twosquares.studio</span><span>+00 000 000 000</span></div>
   </div>
 
   <main>
-    <!-- ============================================================ HERO -->
-    <section class="hero">
-      <div class="hero__bg"></div>
+    <!-- ============================================================ HERO (green, like the card) -->
+    <section class="hero on-green ribbons">
+      <div class="liquid" aria-hidden="true">
+        <span class="blob blob--1"></span><span class="blob blob--2"></span><span class="blob blob--3"></span>
+      </div>
       <div class="hero__stage" aria-hidden="true">
         <div class="card card--a" data-tilt="1" data-float style="--float-dur:9s;--float-amp:12px">
           <img src="assets/img/rest-ember.svg" alt="">
@@ -61,21 +76,22 @@
           <span class="card__tag">Form · Shop</span>
         </div>
         <div class="card card--d" data-tilt="0.7" data-float style="--float-dur:11s;--float-amp:10px;--float-delay:-1s">
-          <img src="assets/img/rest-nori.svg" alt="">
+          <img src="assets/img/cafe-morning.svg" alt="">
         </div>
       </div>
 
       <div class="wrap hero__content">
-        <span class="eyebrow" data-reveal>Interiors for restaurants, bars &amp; shops</span>
-        <h1 class="display t-hero hero__title split">Spaces people <em>come back</em> to.</h1>
-        <p class="lede" data-reveal style="--d:300">We design the rooms where evenings happen — dining rooms, bars and shopfronts built around how people actually move, sit, order and linger.</p>
+        <div class="hero__mark wordmark" data-reveal><span class="wordmark__name">Two Squares</span><span class="wordmark__sub">Design &amp; Build</span></div>
+        <span class="eyebrow" data-reveal style="--d:120">Restaurants, bars &amp; shops</span>
+        <h1 class="display t-hero hero__title split" style="margin-top:1rem">Spaces people <em>come back</em> to.</h1>
+        <p class="lede" data-reveal style="--d:300">We design and build the rooms where evenings happen — dining rooms, bars and shopfronts planned around how people actually move, sit, order and linger.</p>
         <div class="hero__meta" data-reveal style="--d:450">
-          <div><strong>Hospitality &amp; retail</strong>Concept to opening night</div>
-          <div><strong>Multiple cities</strong>Studio-led, site-run</div>
+          <div><strong>Design &amp; build</strong>One team, concept to handover</div>
+          <div><strong>Hospitality &amp; retail</strong>Cafés, restaurants, bars, shops</div>
           <div><strong>Since 2016</strong>60+ venues opened</div>
         </div>
       </div>
-      <div class="scroll-hint" aria-hidden="true"><span>Scroll</span><i></i></div>
+      <div class="scroll-hint" aria-hidden="true"><span>Walk in</span><i></i></div>
     </section>
 
     <!-- ============================================================ TICKER -->
@@ -93,81 +109,187 @@
           <h2 class="display t-1 split" style="margin-top:1rem">A room is a <em>sequence</em>, not a picture.</h2>
         </div>
         <div class="span-6" style="grid-column: 7 / span 6">
-          <p class="lede" data-reveal>Good hospitality interiors are choreographed: the first three seconds at the door, the view from the table, the light on the bar at 11pm, the width of the aisle when the shop is full. We design for those moments — then build them to survive a Saturday night.</p>
-          <p class="muted" data-reveal style="--d:120;margin-top:1.4rem">We work with independent operators and groups alike, from single-site restaurants to roll-out retail formats. Every project is led by a senior designer from first sketch to snag list.</p>
+          <p class="lede" data-reveal>Good hospitality interiors are choreographed: the first three seconds at the door, the view from the table, the light on the bar at 11pm, the width of the aisle when the shop is full. We design for those moments — then build them ourselves, so nothing gets lost between the drawing and the site.</p>
+          <p class="muted" data-reveal style="--d:120;margin-top:1.4rem">Design and build under one roof means one contract, one programme and one team that has to live with its own decisions. Every project is led by a senior designer from first sketch to snag list.</p>
           <div class="row" data-reveal style="--d:220;margin-top:2rem">
             <a class="btn" href="studio.html">About the studio <span class="arr">→</span></a>
-            <a class="btn btn--ghost" href="contact.html">Book a call</a>
+            <a class="btn btn--ghost" href="#walk">Walk through a building ↓</a>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ============================================================ SECTORS -->
-    <section class="section section--tight">
-      <div class="wrap">
-        <div class="row between" style="margin-bottom:2.2rem">
-          <span class="eyebrow" data-reveal>What we design</span>
-          <span class="muted small" data-reveal>Three sectors, one method</span>
+    <!-- ============================================================ THE WALKTHROUGH -->
+    <section class="walk" id="walk" aria-label="Walk through a Two Squares building: café in the morning, restaurant in the afternoon, bar at night">
+      <div class="walk__sticky">
+        <div class="walk__sun" aria-hidden="true"></div>
+        <div class="walk__world" aria-hidden="true">
+
+          <!-- pavement, façade + doors at z = 0 -->
+          <div class="plane ground"></div>
+          <div class="plane facade">
+            <div class="facade__sign"><span class="wordmark"><span class="wordmark__name">Two Squares</span><span class="wordmark__sub">Design &amp; Build</span></span></div>
+          </div>
+          <div class="plane facade__frame"></div>
+          <div class="plane door door--l"></div>
+          <div class="plane door door--r"></div>
+
+          <!-- café — 08:00 -->
+          <div class="room room--cafe room--open" style="--i:0">
+            <div class="plane wall wall--back">
+              <div class="window" style="left:4%;top:18%;width:20%;height:40%"></div>
+              <div class="window" style="right:4%;top:18%;width:20%;height:40%"></div>
+              <div class="portal"></div>
+            </div>
+            <div class="plane wall wall--floor"></div>
+            <div class="plane wall wall--ceil"></div>
+            <div class="plane wall wall--left"></div>
+            <div class="plane wall wall--right"></div>
+            <div class="prop prop--lamp" style="--x:-16vw;--z:-0.32;--h:30vh;--glow:.55"><i class="glow"></i><i class="cord"></i><i class="shade"></i></div>
+            <div class="prop prop--lamp" style="--x:14vw;--z:-0.62;--h:34vh;--glow:.55"><i class="glow"></i><i class="cord"></i><i class="shade"></i></div>
+            <div class="prop" style="--x:-30vw;--z:-0.55;--w:26vw;--h:22vh"><svg viewBox="0 0 200 140"><use href="#p-counter"/></svg></div>
+            <div class="prop" style="--x:16vw;--z:-0.38;--w:14vw;--h:16vh"><svg viewBox="0 0 200 140"><use href="#p-table"/></svg></div>
+            <div class="prop hide-sm" style="--x:26vw;--z:-0.34;--w:9vw;--h:15vh"><svg viewBox="0 0 200 140"><use href="#p-chair"/></svg></div>
+            <div class="prop" style="--x:28vw;--z:-0.74;--w:14vw;--h:16vh"><svg viewBox="0 0 200 140"><use href="#p-table"/></svg></div>
+            <div class="prop hide-sm" style="--x:18vw;--z:-0.78;--w:9vw;--h:15vh"><svg viewBox="0 0 200 140"><use href="#p-chair"/></svg></div>
+            <div class="prop" style="--x:38vw;--z:-0.2;--w:10vw;--h:24vh;--prop:#6f7f62"><svg viewBox="0 0 200 140"><use href="#p-plant"/></svg></div>
+          </div>
+
+          <!-- restaurant — 14:00 -->
+          <div class="room room--rest room--open" style="--i:1">
+            <div class="plane wall wall--back">
+              <div class="window" style="left:3%;top:14%;width:21%;height:52%"></div>
+              <div class="window" style="right:3%;top:14%;width:21%;height:52%"></div>
+              <div class="portal"></div>
+            </div>
+            <div class="plane wall wall--floor"></div>
+            <div class="plane wall wall--ceil"></div>
+            <div class="plane wall wall--left"></div>
+            <div class="plane wall wall--right"></div>
+            <div class="prop prop--lamp" style="--x:-20vw;--z:-1.3;--h:36vh;--glow:.5"><i class="glow"></i><i class="cord"></i><i class="shade"></i></div>
+            <div class="prop prop--lamp" style="--x:0vw;--z:-1.55;--h:32vh;--glow:.5"><i class="glow"></i><i class="cord"></i><i class="shade"></i></div>
+            <div class="prop prop--lamp" style="--x:20vw;--z:-1.8;--h:36vh;--glow:.5"><i class="glow"></i><i class="cord"></i><i class="shade"></i></div>
+            <div class="prop" style="--x:-34vw;--z:-1.5;--w:30vw;--h:18vh"><svg viewBox="0 0 200 140"><use href="#p-banquette"/></svg></div>
+            <div class="prop" style="--x:-22vw;--z:-1.28;--w:14vw;--h:16vh"><svg viewBox="0 0 200 140"><use href="#p-table"/></svg></div>
+            <div class="prop" style="--x:-2vw;--z:-1.5;--w:14vw;--h:16vh"><svg viewBox="0 0 200 140"><use href="#p-table"/></svg></div>
+            <div class="prop hide-sm" style="--x:8vw;--z:-1.46;--w:9vw;--h:15vh"><svg viewBox="0 0 200 140"><use href="#p-chair"/></svg></div>
+            <div class="prop" style="--x:22vw;--z:-1.78;--w:14vw;--h:16vh"><svg viewBox="0 0 200 140"><use href="#p-table"/></svg></div>
+            <div class="prop hide-sm" style="--x:32vw;--z:-1.74;--w:9vw;--h:15vh"><svg viewBox="0 0 200 140"><use href="#p-chair"/></svg></div>
+            <div class="prop" style="--x:-40vw;--z:-1.15;--w:10vw;--h:26vh;--prop:#6f7f62"><svg viewBox="0 0 200 140"><use href="#p-plant"/></svg></div>
+          </div>
+
+          <!-- bar — 23:00 -->
+          <div class="room room--bar" style="--i:2">
+            <div class="plane wall wall--back"></div>
+            <div class="plane wall wall--floor"></div>
+            <div class="plane wall wall--ceil"></div>
+            <div class="plane wall wall--left"></div>
+            <div class="plane wall wall--right"></div>
+            <div class="prop" style="--x:0vw;--z:-2.96;--w:64vw;--h:44vh;--y:22vh;--prop:#0b100d"><svg viewBox="0 0 200 140" preserveAspectRatio="none"><use href="#p-backbar"/></svg></div>
+            <div class="prop" style="--x:0vw;--z:-2.66;--w:60vw;--h:20vh;--prop:#3a2f28"><svg viewBox="0 0 200 140" preserveAspectRatio="none"><use href="#p-counter"/></svg></div>
+            <div class="prop prop--lamp" style="--x:-16vw;--z:-2.6;--h:30vh;--glow:.9"><i class="glow"></i><i class="cord"></i><i class="shade"></i></div>
+            <div class="prop prop--lamp" style="--x:0vw;--z:-2.6;--h:30vh;--glow:.9"><i class="glow"></i><i class="cord"></i><i class="shade"></i></div>
+            <div class="prop prop--lamp" style="--x:16vw;--z:-2.6;--h:30vh;--glow:.9"><i class="glow"></i><i class="cord"></i><i class="shade"></i></div>
+            <div class="prop" style="--x:-18vw;--z:-2.52;--w:8vw;--h:14vh"><svg viewBox="0 0 200 140"><use href="#p-stool"/></svg></div>
+            <div class="prop" style="--x:-6vw;--z:-2.52;--w:8vw;--h:14vh"><svg viewBox="0 0 200 140"><use href="#p-stool"/></svg></div>
+            <div class="prop" style="--x:6vw;--z:-2.52;--w:8vw;--h:14vh"><svg viewBox="0 0 200 140"><use href="#p-stool"/></svg></div>
+            <div class="prop" style="--x:18vw;--z:-2.52;--w:8vw;--h:14vh"><svg viewBox="0 0 200 140"><use href="#p-stool"/></svg></div>
+            <div class="prop hide-sm" style="--x:-34vw;--z:-2.42;--w:12vw;--h:16vh"><svg viewBox="0 0 200 140"><use href="#p-table"/></svg></div>
+            <div class="prop hide-sm" style="--x:34vw;--z:-2.42;--w:12vw;--h:16vh"><svg viewBox="0 0 200 140"><use href="#p-table"/></svg></div>
+          </div>
         </div>
-        <div class="sectors">
-          <a class="sector" href="restaurants.html" data-sector="restaurant" data-reveal style="--d:0">
-            <img src="assets/img/hero-01.svg" alt="">
-            <span class="sector__num">01</span>
-            <span class="eyebrow">Restaurants</span>
-            <h3 class="display t-2">Dining rooms with a pulse</h3>
-            <p>Layouts that turn tables without rushing anyone. Acoustics you can talk over. Lighting that flatters food and faces.</p>
-            <span class="btn">Explore restaurants <span class="arr">→</span></span>
-          </a>
-          <a class="sector" href="bars.html" data-sector="bar" data-reveal style="--d:120">
-            <img src="assets/img/hero-02.svg" alt="">
-            <span class="sector__num">02</span>
-            <span class="eyebrow">Bars</span>
-            <h3 class="display t-2">Rooms built for late</h3>
-            <p>Back-bars as theatre, seating that mixes strangers, sound that lifts as the night does. Designed for the 1am version of the room.</p>
-            <span class="btn">Explore bars <span class="arr">→</span></span>
-          </a>
-          <a class="sector" href="retail.html" data-sector="retail" data-reveal style="--d:240">
-            <img src="assets/img/hero-03.svg" alt="">
-            <span class="sector__num">03</span>
-            <span class="eyebrow">Shops</span>
-            <h3 class="display t-2">Retail you walk slower in</h3>
-            <p>Shopfronts that stop people, floor plans that pull them through, fixtures that make the product the hero — and a till that doesn't queue.</p>
-            <span class="btn">Explore shops <span class="arr">→</span></span>
-          </a>
+
+        <div class="walk__hud" aria-hidden="true">
+          <span class="is-active">Entrance</span>
+          <span>08:00 · Café</span>
+          <span>14:00 · Restaurant</span>
+          <span>23:00 · Bar</span>
+        </div>
+      </div>
+
+      <div class="walk__steps">
+        <div class="walk__step" data-room="entry">
+          <div class="wrap" data-reveal>
+            <div class="walk__panel" data-lift="0.5">
+              <span class="eyebrow">The building</span>
+              <h2 class="display t-2">Every project starts at the <em>door.</em></h2>
+              <p>Scroll to walk through a Two Squares building — one entrance, three rooms, three times of day. It's how we think about every site: as a sequence of moments, not a floor plan.</p>
+            </div>
+          </div>
+        </div>
+        <div class="walk__step" data-room="cafe">
+          <div class="wrap" data-reveal>
+            <div class="walk__panel" data-lift="0.5">
+              <div class="time">08:00</div>
+              <span class="eyebrow">Morning · Café</span>
+              <h2 class="display t-2">Light first, <em>then</em> everything else.</h2>
+              <p>A café earns its living before ten. We plan the counter for a queue that moves, the seats for laptops and prams, and the light for pastries that photograph. Daylight does most of the work — we make sure it lands where it should.</p>
+              <a class="btn" href="restaurants.html">Cafés &amp; restaurants <span class="arr">→</span></a>
+            </div>
+          </div>
+        </div>
+        <div class="walk__step" data-room="rest">
+          <div class="wrap" data-reveal>
+            <div class="walk__panel" data-lift="0.5">
+              <div class="time">14:00</div>
+              <span class="eyebrow">Afternoon · Restaurant</span>
+              <h2 class="display t-2">The long lunch, <em>held.</em></h2>
+              <p>Warm walls, walnut floors, banquettes you sink into. By two o'clock the room should feel like it has been busy for hours — full but calm, with every seat facing something worth looking at.</p>
+              <a class="btn" href="restaurants.html">See restaurants <span class="arr">→</span></a>
+            </div>
+          </div>
+        </div>
+        <div class="walk__step" data-room="bar">
+          <div class="wrap" data-reveal>
+            <div class="walk__panel" data-lift="0.5">
+              <div class="time">23:00</div>
+              <span class="eyebrow">Night · Bar</span>
+              <h2 class="display t-2">The back-bar is the <em>stage.</em></h2>
+              <p>Light drops, the bottles glow, the counter fills. We design bars for this exact hour: sightlines to the back-bar, a top that takes a knock, and acoustics that let the music lift without anyone shouting.</p>
+              <a class="btn" href="bars.html">See bars <span class="arr">→</span></a>
+            </div>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- ============================================================ PINNED CHAPTER -->
-    <section class="chapter" aria-label="How a room works">
-      <div class="chapter__sticky">
-        <div class="chapter__media" aria-hidden="true">
-          <img src="assets/img/rest-verano.svg" alt="" class="is-active">
-          <img src="assets/img/bar-ninety.svg" alt="">
-          <img src="assets/img/shop-atlas.svg" alt="">
+    <!-- ============================================================ SECTORS (green band) -->
+    <section class="section on-green ribbons">
+      <div class="wrap">
+        <div class="row between" style="margin-bottom:2.2rem">
+          <span class="eyebrow" data-reveal>What we design &amp; build</span>
+          <span class="muted small" data-reveal>Three sectors, one team</span>
         </div>
-        <div class="chapter__track" aria-hidden="true"><i class="is-active"></i><i></i><i></i></div>
-        <div class="chapter__steps">
-          <div class="wrap">
-            <div class="chapter__step"><div>
-              <div class="num">01</div>
-              <span class="eyebrow">Arrival</span>
-              <h2 class="display t-1" style="margin-top:.8rem">The first three seconds</h2>
-              <p class="lede" style="margin-top:1.2rem">From the pavement to the host stand, a guest decides how they feel about the night. We design the threshold — the reveal, the light level drop, the first thing you see — before anything else.</p>
-            </div></div>
-            <div class="chapter__step"><div>
-              <div class="num">02</div>
-              <span class="eyebrow">The room</span>
-              <h2 class="display t-1" style="margin-top:.8rem">Every seat is a good seat</h2>
-              <p class="lede" style="margin-top:1.2rem">Banquettes for the long lunch, two-tops with a view of the bar, a communal table that feels like a choice rather than a consolation. We plan the room around sightlines, not just covers.</p>
-            </div></div>
-            <div class="chapter__step"><div>
-              <div class="num">03</div>
-              <span class="eyebrow">The detail</span>
-              <h2 class="display t-1" style="margin-top:.8rem">What people photograph</h2>
-              <p class="lede" style="margin-top:1.2rem">A brass rail worn smooth, a tiled back-bar, the way a pendant catches the glassware. The details are the marketing. We design them to be found, not announced.</p>
-            </div></div>
+        <div class="sectors">
+          <div data-reveal style="--d:0">
+            <a class="sector" href="restaurants.html" data-lift>
+              <img src="assets/img/hero-01.svg" alt="">
+              <span class="sector__num">01</span>
+              <span class="eyebrow">Restaurants</span>
+              <h3 class="display t-2">Dining rooms with a <em>pulse</em></h3>
+              <p>Layouts that turn tables without rushing anyone. Acoustics you can talk over. Lighting that flatters food and faces.</p>
+              <span class="btn">Explore restaurants <span class="arr">→</span></span>
+            </a>
+          </div>
+          <div data-reveal style="--d:120">
+            <a class="sector" href="bars.html" data-lift>
+              <img src="assets/img/hero-02.svg" alt="">
+              <span class="sector__num">02</span>
+              <span class="eyebrow">Bars</span>
+              <h3 class="display t-2">Rooms built for <em>late</em></h3>
+              <p>Back-bars as theatre, seating that mixes strangers, sound that lifts as the night does. Designed for the 1am version of the room.</p>
+              <span class="btn">Explore bars <span class="arr">→</span></span>
+            </a>
+          </div>
+          <div data-reveal style="--d:240">
+            <a class="sector" href="retail.html" data-lift>
+              <img src="assets/img/hero-03.svg" alt="">
+              <span class="sector__num">03</span>
+              <span class="eyebrow">Shops</span>
+              <h3 class="display t-2">Retail you walk <em>slower</em> in</h3>
+              <p>Shopfronts that stop people, floor plans that pull them through, fixtures that make the product the hero — and a till that doesn't queue.</p>
+              <span class="btn">Explore shops <span class="arr">→</span></span>
+            </a>
           </div>
         </div>
       </div>
@@ -186,27 +308,27 @@
 
         <div class="float-grid">
           <a class="proj proj--1" href="project.html" data-speed="1.15">
-            <div class="proj__media wipe" style="--ar:4/5"><img src="assets/img/rest-ember.svg" alt="Ember restaurant interior"><span class="proj__pill">Restaurant</span></div>
+            <div class="proj__media wipe" style="--ar:4/5" data-lift="0.8"><img src="assets/img/rest-ember.svg" alt="Ember restaurant interior"><span class="proj__pill">Restaurant</span></div>
             <div class="proj__meta" data-reveal><h3>Ember</h3><span>Lisbon · 2025</span></div>
           </a>
           <a class="proj proj--2" href="project.html" data-speed="0.85">
-            <div class="proj__media wipe" style="--ar:5/4;--d:120"><img src="assets/img/bar-velvet.svg" alt="Velvet bar interior"><span class="proj__pill">Bar</span></div>
+            <div class="proj__media wipe" style="--ar:5/4;--d:120" data-lift="0.8"><img src="assets/img/bar-velvet.svg" alt="Velvet bar interior"><span class="proj__pill">Bar</span></div>
             <div class="proj__meta" data-reveal style="--d:120"><h3>Velvet Room</h3><span>Berlin · 2025</span></div>
           </a>
           <a class="proj proj--3" href="project.html" data-speed="1.3">
-            <div class="proj__media wipe" style="--ar:1"><img src="assets/img/shop-form.svg" alt="Form concept store"><span class="proj__pill">Shop</span></div>
+            <div class="proj__media wipe" style="--ar:1" data-lift="0.8"><img src="assets/img/shop-form.svg" alt="Form concept store"><span class="proj__pill">Shop</span></div>
             <div class="proj__meta" data-reveal><h3>Form</h3><span>Copenhagen · 2024</span></div>
           </a>
           <a class="proj proj--4" href="project.html" data-speed="0.9">
-            <div class="proj__media wipe" style="--ar:4/5;--d:100"><img src="assets/img/rest-nori.svg" alt="Nori restaurant interior"><span class="proj__pill">Restaurant</span></div>
-            <div class="proj__meta" data-reveal style="--d:100"><h3>Nori</h3><span>London · 2024</span></div>
+            <div class="proj__media wipe" style="--ar:4/5;--d:100" data-lift="0.8"><img src="assets/img/cafe-morning.svg" alt="Salt House café interior"><span class="proj__pill">Café</span></div>
+            <div class="proj__meta" data-reveal style="--d:100"><h3>Salt House</h3><span>Copenhagen · 2024</span></div>
           </a>
           <a class="proj proj--5" href="project.html" data-speed="1.1">
-            <div class="proj__media wipe" style="--ar:16/10"><img src="assets/img/bar-ninety.svg" alt="Ninety bar interior"><span class="proj__pill">Bar</span></div>
+            <div class="proj__media wipe" style="--ar:16/10" data-lift="0.8"><img src="assets/img/bar-ninety.svg" alt="Ninety bar interior"><span class="proj__pill">Bar</span></div>
             <div class="proj__meta" data-reveal><h3>Ninety</h3><span>Dubai · 2024</span></div>
           </a>
           <a class="proj proj--6" href="project.html" data-speed="1.25">
-            <div class="proj__media wipe" style="--ar:3/4;--d:140"><img src="assets/img/shop-clay.svg" alt="Clay homeware store"><span class="proj__pill">Shop</span></div>
+            <div class="proj__media wipe" style="--ar:3/4;--d:140" data-lift="0.8"><img src="assets/img/shop-clay.svg" alt="Clay homeware store"><span class="proj__pill">Shop</span></div>
             <div class="proj__meta" data-reveal style="--d:140"><h3>Clay</h3><span>Mumbai · 2023</span></div>
           </a>
         </div>
@@ -217,7 +339,7 @@
     <section class="section section--tight">
       <div class="wrap">
         <div class="stats">
-          <div class="stat" data-reveal style="--d:0"><b data-count="64" data-suffix="">64</b><span>Venues opened</span></div>
+          <div class="stat" data-reveal style="--d:0"><b data-count="64" data-suffix="">64</b><span>Venues designed &amp; built</span></div>
           <div class="stat" data-reveal style="--d:100"><b data-count="9" data-suffix="">9</b><span>Cities</span></div>
           <div class="stat" data-reveal style="--d:200"><b data-count="18" data-suffix="k">18</b><span>Square metres fitted out</span></div>
           <div class="stat" data-reveal style="--d:300"><b data-count="92" data-suffix="%">92</b><span>Clients who came back for a second site</span></div>
@@ -229,7 +351,7 @@
     <section class="section">
       <div class="wrap">
         <blockquote class="quote" data-reveal="scale">
-          <p>“They designed the bar for the night we actually have, not the one in the mood board.”</p>
+          <p>“They designed the bar for the night we actually have, not the one in the mood board — and then they built it.”</p>
           <footer>Owner, Velvet Room · Berlin</footer>
         </blockquote>
       </div>
@@ -246,26 +368,26 @@
         </div>
         <div class="steps">
           <div class="step" data-reveal><span class="n">01</span><h3>Discover</h3><p>Site visit, operator interviews, service flow, budget reality-check. We map how the room needs to work before we decide how it looks.</p></div>
-          <div class="step" data-reveal style="--d:80"><span class="n">02</span><h3>Concept</h3><p>Narrative, palette, plan options and a 3D walk-through. This is where the brand becomes a place — and where we lock the big moves.</p></div>
-          <div class="step" data-reveal style="--d:160"><span class="n">03</span><h3>Detail</h3><p>Joinery drawings, lighting design, FF&amp;E schedules, finishes samples on site. Everything a contractor needs to price and build without guessing.</p></div>
-          <div class="step" data-reveal style="--d:240"><span class="n">04</span><h3>Deliver</h3><p>Tender, contractor management, weekly site walks, snagging and dressing. We're there on opening night — usually near the bar.</p></div>
+          <div class="step" data-reveal style="--d:80"><span class="n">02</span><h3>Design</h3><p>Narrative, palette, plan options and a 3D walk-through. This is where the brand becomes a place — and where we lock the big moves.</p></div>
+          <div class="step" data-reveal style="--d:160"><span class="n">03</span><h3>Detail</h3><p>Joinery drawings, lighting design, FF&amp;E schedules, finishes samples on site. Everything our own build team needs to price and build without guessing.</p></div>
+          <div class="step" data-reveal style="--d:240"><span class="n">04</span><h3>Build</h3><p>Our team on site, weekly walks, snagging and dressing. One contract, one programme. We're there on opening night — usually near the bar.</p></div>
         </div>
       </div>
     </section>
 
     <!-- ============================================================ HORIZONTAL RAIL -->
     <section class="section section--tight hscroll">
-      <div class="wrap row between" style="margin-bottom:2rem">
+      <div class="wrap row between" style="margin-bottom:1rem">
         <span class="eyebrow" data-reveal>By location</span>
         <span class="muted small" data-reveal>Drag to explore →</span>
       </div>
       <div class="hscroll__rail">
-        <a class="hcard" href="restaurants.html"><img src="assets/img/rest-salt.svg" alt=""><div class="hcard__body"><h3>Lisbon</h3><p>3 restaurants · 1 bar</p></div></a>
-        <a class="hcard" href="bars.html"><img src="assets/img/bar-tempo.svg" alt=""><div class="hcard__body"><h3>Berlin</h3><p>2 bars · 1 café</p></div></a>
-        <a class="hcard" href="retail.html"><img src="assets/img/shop-grove.svg" alt=""><div class="hcard__body"><h3>Copenhagen</h3><p>2 shops · 1 restaurant</p></div></a>
-        <a class="hcard" href="restaurants.html"><img src="assets/img/rest-nori.svg" alt=""><div class="hcard__body"><h3>London</h3><p>6 restaurants · 4 bars · 3 shops</p></div></a>
-        <a class="hcard" href="bars.html"><img src="assets/img/bar-lumen.svg" alt=""><div class="hcard__body"><h3>Dubai</h3><p>2 bars · 1 rooftop</p></div></a>
-        <a class="hcard" href="retail.html"><img src="assets/img/shop-atlas.svg" alt=""><div class="hcard__body"><h3>Mumbai</h3><p>3 shops · 2 restaurants</p></div></a>
+        <a class="hcard" href="restaurants.html" data-lift="0.8"><img src="assets/img/rest-salt.svg" alt=""><div class="hcard__body"><h3>Lisbon</h3><p>3 restaurants · 1 bar</p></div></a>
+        <a class="hcard" href="bars.html" data-lift="0.8"><img src="assets/img/bar-tempo.svg" alt=""><div class="hcard__body"><h3>Berlin</h3><p>2 bars · 1 café</p></div></a>
+        <a class="hcard" href="retail.html" data-lift="0.8"><img src="assets/img/shop-grove.svg" alt=""><div class="hcard__body"><h3>Copenhagen</h3><p>2 shops · 1 restaurant</p></div></a>
+        <a class="hcard" href="restaurants.html" data-lift="0.8"><img src="assets/img/rest-nori.svg" alt=""><div class="hcard__body"><h3>London</h3><p>6 restaurants · 4 bars · 3 shops</p></div></a>
+        <a class="hcard" href="bars.html" data-lift="0.8"><img src="assets/img/bar-lumen.svg" alt=""><div class="hcard__body"><h3>Dubai</h3><p>2 bars · 1 rooftop</p></div></a>
+        <a class="hcard" href="retail.html" data-lift="0.8"><img src="assets/img/shop-atlas.svg" alt=""><div class="hcard__body"><h3>Mumbai</h3><p>3 shops · 2 restaurants</p></div></a>
       </div>
       <div class="hscroll__bar" aria-hidden="true"><i></i></div>
     </section>
@@ -273,33 +395,36 @@
     <!-- ============================================================ CTA -->
     <section class="section">
       <div class="wrap">
-        <div class="cta" data-reveal="scale">
-          <span class="eyebrow" style="justify-content:center">New project</span>
-          <h2 class="display t-1" style="margin-top:1rem">Opening something? <em>Let's talk early.</em></h2>
-          <p class="lede" style="margin:1.4rem auto 0;text-align:center">The best time to bring us in is before the lease is signed. The second-best time is now.</p>
-          <div class="row">
-            <a class="btn btn--accent" href="contact.html">Start a project <span class="arr">→</span></a>
-            <a class="btn" href="mailto:hello@ateliernord.com">hello@ateliernord.com</a>
+        <div data-reveal="scale">
+          <div class="cta" data-lift="0.25">
+            <div class="liquid" aria-hidden="true"><span class="blob blob--1"></span><span class="blob blob--2"></span></div>
+            <span class="eyebrow" style="justify-content:center">New project</span>
+            <h2 class="display t-1" style="margin-top:1rem">Opening something? <em>Let's talk early.</em></h2>
+            <p class="lede" style="margin:1.4rem auto 0;text-align:center">The best time to bring us in is before the lease is signed. The second-best time is now.</p>
+            <div class="row">
+              <a class="btn btn--accent" href="contact.html">Start a project <span class="arr">→</span></a>
+              <a class="btn" href="mailto:hello@twosquares.studio">hello@twosquares.studio</a>
+            </div>
           </div>
         </div>
       </div>
     </section>
   </main>
 
-  <!-- ============================================================ FOOTER -->
-  <footer class="footer">
+  <!-- ============================================================ FOOTER (green, ribboned like the card) -->
+  <footer class="footer on-green ribbons">
     <div class="wrap">
       <div class="footer__grid">
         <div>
-          <a class="brand" href="index.html"><span class="brand__dot"></span>Atelier Nord</a>
-          <p class="muted small" style="margin-top:1rem;max-width:30ch">Interior design for restaurants, bars and shops. Concept to opening night.</p>
+          <a class="brand" href="index.html"><span class="wordmark"><span class="wordmark__name">Two Squares</span><span class="wordmark__sub">Design &amp; Build</span></span></a>
+          <p class="muted small" style="margin-top:1.2rem;max-width:30ch">Design &amp; build for restaurants, bars and shops. Concept to opening night.</p>
         </div>
         <div><h4>Work</h4><a href="restaurants.html">Restaurants</a><a href="bars.html">Bars</a><a href="retail.html">Shops</a></div>
         <div><h4>Studio</h4><a href="studio.html">About</a><a href="contact.html">Contact</a><a href="contact.html">Careers</a></div>
         <div><h4>Follow</h4><a href="#" rel="noopener">Instagram</a><a href="#" rel="noopener">Pinterest</a><a href="#" rel="noopener">LinkedIn</a></div>
       </div>
       <div class="footer__big" data-reveal>Come back<br>to it.</div>
-      <div class="footer__legal"><span>© 2026 Atelier Nord. All rights reserved.</span><span>Studio · hello@ateliernord.com · +00 000 000 000</span></div>
+      <div class="footer__legal"><span>© 2026 Two Squares Design &amp; Build. All rights reserved.</span><span>hello@twosquares.studio · +00 000 000 000</span></div>
     </div>
   </footer>
 

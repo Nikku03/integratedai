@@ -1,60 +1,56 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1100" width="1600" height="1100" role="img" aria-label="shop-atlas placeholder render">
 <defs>
   <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-    <stop offset="0" stop-color="#2b3038"/><stop offset="1" stop-color="#121417"/>
+    <stop offset="0" stop-color="#f4f2ec"/><stop offset="1" stop-color="#ece9df"/>
   </linearGradient>
-  <radialGradient id="glow" cx="0.49" cy="0.37" r="0.7">
-    <stop offset="0" stop-color="#dbe7f7" stop-opacity="0.55"/>
-    <stop offset="0.5" stop-color="#8aa2c2" stop-opacity="0.18"/>
-    <stop offset="1" stop-color="#121417" stop-opacity="0"/>
+  <radialGradient id="glow" cx="0.22" cy="0.45" r="0.7">
+    <stop offset="0" stop-color="#fbf7ea" stop-opacity="0.9"/>
+    <stop offset="0.5" stop-color="#fbf7ea" stop-opacity="0.25"/>
+    <stop offset="1" stop-color="#ece9df" stop-opacity="0"/>
   </radialGradient>
   <linearGradient id="shaft" x1="0" y1="0" x2="0" y2="1">
-    <stop offset="0" stop-color="#dbe7f7" stop-opacity="0.35"/>
-    <stop offset="1" stop-color="#dbe7f7" stop-opacity="0"/>
+    <stop offset="0" stop-color="#fbf7ea" stop-opacity="0.55"/>
+    <stop offset="1" stop-color="#fbf7ea" stop-opacity="0"/>
   </linearGradient>
   <linearGradient id="floor" x1="0" y1="0" x2="0" y2="1">
-    <stop offset="0" stop-color="#121417" stop-opacity="0"/>
-    <stop offset="1" stop-color="#000" stop-opacity="0.65"/>
+    <stop offset="0" stop-color="#2c3428" stop-opacity="0"/>
+    <stop offset="1" stop-color="#2c3428" stop-opacity="0.28"/>
   </linearGradient>
   <filter id="grain">
-    <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="112" stitchTiles="stitch"/>
+    <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="113" stitchTiles="stitch"/>
     <feColorMatrix type="saturate" values="0"/>
-    <feComponentTransfer><feFuncA type="linear" slope="0.14"/></feComponentTransfer>
+    <feComponentTransfer><feFuncA type="linear" slope="0.12"/></feComponentTransfer>
     <feBlend in2="SourceGraphic" mode="overlay"/>
   </filter>
   <filter id="soft"><feGaussianBlur stdDeviation="28"/></filter>
 </defs>
 <rect x="0.0" y="0.0" width="1600.0" height="1100.0" fill="url(#bg)" opacity="1.00" rx="0"/>
 <rect x="0.0" y="0.0" width="1600.0" height="1100.0" fill="url(#glow)" opacity="1.00" rx="0"/>
-<g transform="translate(478 0) skewX(-2.8)"><rect x="0.0" y="0.0" width="134.4" height="1100.0" fill="url(#shaft)" opacity="0.90" rx="0"/></g>
-<g transform="translate(1062 0) skewX(0.9)"><rect x="0.0" y="0.0" width="118.0" height="1100.0" fill="url(#shaft)" opacity="0.90" rx="0"/></g>
-<g transform="translate(43 0) skewX(-9.5)"><rect x="0.0" y="0.0" width="155.3" height="1100.0" fill="url(#shaft)" opacity="0.90" rx="0"/></g>
-<g transform="translate(730 0) skewX(-11.0)"><rect x="0.0" y="0.0" width="102.0" height="1100.0" fill="url(#shaft)" opacity="0.90" rx="0"/></g>
-<rect x="0.0" y="751.0" width="1600.0" height="349.0" fill="url(#floor)" opacity="1.00" rx="0"/>
-<rect x="566.3" y="688.6" width="339.4" height="76.8" fill="#2b3038" opacity="0.36" rx="0"/>
-<rect x="585.6" y="720.2" width="108.5" height="89.1" fill="#000" opacity="0.51" rx="0"/>
-<rect x="1001.8" y="684.8" width="107.1" height="94.0" fill="#000" opacity="0.65" rx="6"/>
-<rect x="697.6" y="612.4" width="265.5" height="135.6" fill="#2b3038" opacity="0.31" rx="0"/>
-<rect x="841.6" y="720.2" width="148.4" height="98.4" fill="#000" opacity="0.45" rx="0"/>
-<rect x="58.6" y="729.6" width="253.4" height="76.2" fill="#000" opacity="0.51" rx="6"/>
-<rect x="721.0" y="636.7" width="117.8" height="145.7" fill="#000" opacity="0.37" rx="0"/>
-<rect x="928.4" y="631.6" width="229.3" height="193.1" fill="#121417" opacity="0.37" rx="120"/>
-<rect x="964.7" y="666.3" width="179.2" height="151.1" fill="#000" opacity="0.61" rx="0"/>
-<rect x="555.8" y="533.2" width="297.1" height="204.9" fill="#121417" opacity="0.43" rx="0"/>
-<rect x="182.9" y="647.6" width="201.1" height="126.6" fill="#121417" opacity="0.60" rx="0"/>
-<circle cx="532" cy="421" r="44" fill="#dbe7f7" opacity="0.18" filter="url(#soft)"/>
-<line x1="532" y1="0" x2="532" y2="407" stroke="#8aa2c2" stroke-opacity="0.35" stroke-width="2"/>
-<circle cx="532" cy="421" r="15" fill="#dbe7f7" opacity="0.9"/>
-<circle cx="1277" cy="280" r="138" fill="#dbe7f7" opacity="0.18" filter="url(#soft)"/>
-<line x1="1277" y1="0" x2="1277" y2="234" stroke="#8aa2c2" stroke-opacity="0.35" stroke-width="2"/>
-<circle cx="1277" cy="280" r="46" fill="#dbe7f7" opacity="0.9"/>
-<circle cx="493" cy="396" r="128" fill="#dbe7f7" opacity="0.18" filter="url(#soft)"/>
-<line x1="493" y1="0" x2="493" y2="353" stroke="#8aa2c2" stroke-opacity="0.35" stroke-width="2"/>
-<circle cx="493" cy="396" r="43" fill="#dbe7f7" opacity="0.9"/>
-<circle cx="154" cy="202" r="60" fill="#dbe7f7" opacity="0.18" filter="url(#soft)"/>
-<line x1="154" y1="0" x2="154" y2="182" stroke="#8aa2c2" stroke-opacity="0.35" stroke-width="2"/>
-<circle cx="154" cy="202" r="20" fill="#dbe7f7" opacity="0.9"/>
-<rect x="329.9" y="357.5" width="544.1" height="520.0" fill="#8aa2c2" opacity="0.22" rx="0"/>
-<rect x="0.0" y="0.0" width="1600.0" height="1100.0" fill="#000" opacity="0.00" rx="0"/>
-<rect width="1600" height="1100" fill="#121417" opacity="0.001" filter="url(#grain)"/>
+<g transform="translate(439 0) skewX(-5.5)"><rect x="0.0" y="0.0" width="136.5" height="1100.0" fill="url(#shaft)" opacity="0.90" rx="0"/></g>
+<g transform="translate(698 0) skewX(-15.6)"><rect x="0.0" y="0.0" width="65.0" height="1100.0" fill="url(#shaft)" opacity="0.90" rx="0"/></g>
+<g transform="translate(202 0) skewX(16.3)"><rect x="0.0" y="0.0" width="107.7" height="1100.0" fill="url(#shaft)" opacity="0.90" rx="0"/></g>
+<g transform="translate(484 0) skewX(-11.0)"><rect x="0.0" y="0.0" width="114.2" height="1100.0" fill="url(#shaft)" opacity="0.90" rx="0"/></g>
+<rect x="0.0" y="697.2" width="1600.0" height="402.8" fill="url(#floor)" opacity="1.00" rx="0"/>
+<rect x="450.8" y="725.5" width="287.3" height="48.4" fill="#2c3428" opacity="0.34" rx="120"/>
+<rect x="531.5" y="628.8" width="274.8" height="76.2" fill="#2c3428" opacity="0.23" rx="0"/>
+<rect x="1082.1" y="687.2" width="99.6" height="79.4" fill="#2c3428" opacity="0.32" rx="0"/>
+<rect x="219.8" y="483.1" width="131.5" height="241.3" fill="#2c3428" opacity="0.32" rx="0"/>
+<rect x="1296.1" y="548.5" width="148.0" height="159.4" fill="#2c3428" opacity="0.37" rx="0"/>
+<rect x="792.9" y="454.7" width="276.2" height="246.1" fill="#46523d" opacity="0.24" rx="0"/>
+<rect x="1131.4" y="474.1" width="118.8" height="218.5" fill="#2c3428" opacity="0.34" rx="6"/>
+<rect x="171.0" y="639.9" width="154.4" height="54.5" fill="#2c3428" opacity="0.31" rx="0"/>
+<circle cx="497" cy="365" r="114" fill="#fbf7ea" opacity="0.5" filter="url(#soft)"/>
+<line x1="497" y1="0" x2="497" y2="327" stroke="#2c3428" stroke-opacity="0.5" stroke-width="2"/>
+<circle cx="497" cy="365" r="38" fill="#fbf7ea" opacity="0.95"/>
+<circle cx="139" cy="157" r="85" fill="#fbf7ea" opacity="0.5" filter="url(#soft)"/>
+<line x1="139" y1="0" x2="139" y2="128" stroke="#2c3428" stroke-opacity="0.5" stroke-width="2"/>
+<circle cx="139" cy="157" r="28" fill="#fbf7ea" opacity="0.95"/>
+<circle cx="900" cy="211" r="80" fill="#fbf7ea" opacity="0.5" filter="url(#soft)"/>
+<line x1="900" y1="0" x2="900" y2="184" stroke="#2c3428" stroke-opacity="0.5" stroke-width="2"/>
+<circle cx="900" cy="211" r="27" fill="#fbf7ea" opacity="0.95"/>
+<circle cx="1424" cy="224" r="87" fill="#fbf7ea" opacity="0.5" filter="url(#soft)"/>
+<line x1="1424" y1="0" x2="1424" y2="195" stroke="#2c3428" stroke-opacity="0.5" stroke-width="2"/>
+<circle cx="1424" cy="224" r="29" fill="#fbf7ea" opacity="0.95"/>
+<rect x="327.4" y="399.9" width="596.7" height="520.0" fill="#46523d" opacity="0.30" rx="0"/>
+<rect width="1600" height="1100" fill="#ece9df" opacity="0.001" filter="url(#grain)"/>
 </svg>

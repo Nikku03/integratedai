@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1100" width="1600" height="1100" role="img" aria-label="cafe-morning placeholder render">
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#f7f1e1"/><stop offset="1" stop-color="#efe7d2"/>
+  </linearGradient>
+  <radialGradient id="glow" cx="0.79" cy="0.28" r="0.7">
+    <stop offset="0" stop-color="#fff3cf" stop-opacity="0.9"/>
+    <stop offset="0.5" stop-color="#fff3cf" stop-opacity="0.25"/>
+    <stop offset="1" stop-color="#efe7d2" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="shaft" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#fff3cf" stop-opacity="0.55"/>
+    <stop offset="1" stop-color="#fff3cf" stop-opacity="0"/>
+  </linearGradient>
+  <linearGradient id="floor" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#46523d" stop-opacity="0"/>
+    <stop offset="1" stop-color="#46523d" stop-opacity="0.28"/>
+  </linearGradient>
+  <filter id="grain">
+    <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="103" stitchTiles="stitch"/>
+    <feColorMatrix type="saturate" values="0"/>
+    <feComponentTransfer><feFuncA type="linear" slope="0.12"/></feComponentTransfer>
+    <feBlend in2="SourceGraphic" mode="overlay"/>
+  </filter>
+  <filter id="soft"><feGaussianBlur stdDeviation="28"/></filter>
+</defs>
+<rect x="0.0" y="0.0" width="1600.0" height="1100.0" fill="url(#bg)" opacity="1.00" rx="0"/>
+<rect x="0.0" y="0.0" width="1600.0" height="1100.0" fill="url(#glow)" opacity="1.00" rx="0"/>
+<g transform="translate(1114 0) skewX(6.8)"><rect x="0.0" y="0.0" width="190.9" height="1100.0" fill="url(#shaft)" opacity="0.90" rx="0"/></g>
+<g transform="translate(1460 0) skewX(5.6)"><rect x="0.0" y="0.0" width="178.3" height="1100.0" fill="url(#shaft)" opacity="0.90" rx="0"/></g>
+<g transform="translate(738 0) skewX(6.3)"><rect x="0.0" y="0.0" width="114.1" height="1100.0" fill="url(#shaft)" opacity="0.90" rx="0"/></g>
+<g transform="translate(783 0) skewX(3.0)"><rect x="0.0" y="0.0" width="81.1" height="1100.0" fill="url(#shaft)" opacity="0.90" rx="0"/></g>
+<rect x="0.0" y="787.8" width="1600.0" height="312.2" fill="url(#floor)" opacity="1.00" rx="0"/>
+<rect x="155.2" y="756.6" width="150.8" height="63.6" fill="#46523d" opacity="0.38" rx="120"/>
+<rect x="1139.3" y="645.0" width="151.2" height="184.6" fill="#46523d" opacity="0.28" rx="0"/>
+<rect x="593.5" y="616.9" width="345.4" height="176.0" fill="#46523d" opacity="0.42" rx="120"/>
+<rect x="389.1" y="620.1" width="232.7" height="195.8" fill="#46523d" opacity="0.22" rx="6"/>
+<rect x="427.0" y="706.0" width="338.3" height="145.9" fill="#8fa07c" opacity="0.37" rx="0"/>
+<rect x="147.3" y="672.2" width="172.6" height="186.9" fill="#46523d" opacity="0.37" rx="6"/>
+<circle cx="870" cy="338" r="82" fill="#fff3cf" opacity="0.5" filter="url(#soft)"/>
+<line x1="870" y1="0" x2="870" y2="311" stroke="#46523d" stroke-opacity="0.5" stroke-width="2"/>
+<circle cx="870" cy="338" r="27" fill="#fff3cf" opacity="0.95"/>
+<circle cx="1247" cy="272" r="118" fill="#fff3cf" opacity="0.5" filter="url(#soft)"/>
+<line x1="1247" y1="0" x2="1247" y2="232" stroke="#46523d" stroke-opacity="0.5" stroke-width="2"/>
+<circle cx="1247" cy="272" r="39" fill="#fff3cf" opacity="0.95"/>
+<rect x="594.1" y="616.3" width="264.6" height="520.0" fill="#8fa07c" opacity="0.30" rx="0"/>
+<rect width="1600" height="1100" fill="#efe7d2" opacity="0.001" filter="url(#grain)"/>
+</svg>

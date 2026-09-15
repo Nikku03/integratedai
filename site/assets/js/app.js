@@ -1,5 +1,5 @@
 /* =====================================================================
-   ATELIER NORD — motion engine
+   TWO SQUARES — motion engine
    One requestAnimationFrame loop drives everything scroll-related.
    Effects are opt-in via data-attributes, so pages stay plain HTML:
 
@@ -14,6 +14,8 @@
      .hscroll                                drag-to-scroll horizontal rail
      data-count="120"                        number counts up when in view
      data-magnetic                           button leans toward the cursor
+     data-lift[="0.5"]                       tilts toward the cursor, rises on Z and zooms (hover)
+     .walk                                   the scroll-driven 3D building walkthrough
 
    Respects prefers-reduced-motion: all motion collapses to static.
    ===================================================================== */
@@ -165,6 +167,7 @@
       px.push({ el, speed: speed * 0.35, top: r.top + S.y, h: r.height });
     });
     chapters.forEach(measureChapter);
+    measureWalk();
   }
   function tickParallax() {
     for (const p of px) {
@@ -304,6 +307,107 @@
     });
   }
 
+  // --------------------------------------------------------------- 3D hover lift
+  // The element tilts toward the cursor (CSS vars), and CSS lifts/zooms it on :hover.
+  $$("[data-lift]").forEach((el) => {
+    const strength = parseFloat(el.dataset.lift) || 1;
+    el.style.setProperty("--lift", strength);
+    if (!finePointer || reduce) return;
+    el.addEventListener("pointermove", (e) => {
+      const r = el.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width - 0.5, y = (e.clientY - r.top) / r.height - 0.5;
+      el.classList.add("is-tilting");
+      el.style.setProperty("--ry", `${(x * 10 * strength).toFixed(2)}deg`);
+      el.style.setProperty("--rx", `${(-y * 8 * strength).toFixed(2)}deg`);
+    });
+    el.addEventListener("pointerleave", () => {
+      el.classList.remove("is-tilting");
+      el.style.setProperty("--rx", "0deg"); el.style.setProperty("--ry", "0deg");
+    });
+  });
+
+  // --------------------------------------------------------------- the walkthrough
+  // A CSS-3D building. Scroll drives the camera (eye) along -z: outside the façade,
+  // through the doors, café → restaurant → bar. Eye positions are anchored to where
+  // each text panel is centred in the viewport, so layout changes can't desync them.
+  const walk = $(".walk");
+  const WK = walk ? {
+    el: walk,
+    sticky: $(".walk__sticky", walk),
+    steps: $$(".walk__step", walk),
+    hud: $$(".walk__hud span", walk),
+    anchors: [],        // document scrollY at which step k is centred
+    pOverD: 0.875,      // perspective distance in room-depth units
+    top: 0, h: 0, room: -1, lastEye: NaN,
+  } : null;
+  const EYE = [1.25, -0.5, -1.5, -2.3];   // eye z (room units) per step: outside, café, restaurant, bar
+  // sky / sun keyframes by eye position (descending), colours as hex
+  const SKY = [
+    { e:  1.8, a: "#d9e3e6", b: "#f2e6d0", sun: "#f6d9a0", sx: 26, sy: -20 },   // dawn, outside
+    { e:  0.0, a: "#cfe0ea", b: "#f6f0dc", sun: "#f7e2a8", sx: 18, sy: -28 },   // morning
+    { e: -1.0, a: "#d6e0dd", b: "#f3e2c0", sun: "#f6d28e", sx:  6, sy: -32 },   // late morning
+    { e: -1.8, a: "#e6cfae", b: "#f0c084", sun: "#ef9f4e", sx: -10, sy: -10 },  // afternoon → dusk
+    { e: -2.3, a: "#0f1a17", b: "#1c2a24", sun: "#f0c070", sx: -22, sy: -30 },  // night
+  ];
+  const hex = (h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+  const mixHex = (h1, h2, t) => { const a = hex(h1), b = hex(h2); return `rgb(${a.map((v, i) => Math.round(lerp(v, b[i], t))).join(",")})`; };
+  const smooth = (t) => t * t * (3 - 2 * t);
+
+  function measureWalk() {
+    if (!WK) return;
+    const r = WK.el.getBoundingClientRect();
+    WK.top = r.top + S.y; WK.h = r.height;
+    const cs = getComputedStyle(WK.el);
+    const P = parseFloat(cs.getPropertyValue("--P")) || 105, D = parseFloat(cs.getPropertyValue("--D")) || 120;
+    WK.pOverD = P / D;
+    WK.anchors = WK.steps.map((st) => {
+      const sr = st.getBoundingClientRect();
+      return sr.top + S.y + sr.height / 2 - S.vh / 2;
+    });
+    WK.lastEye = NaN;
+  }
+  function eyeAt(scroll) {
+    const A = WK.anchors, n = A.length;
+    if (n < 2) return EYE[0];
+    let i = 0;
+    while (i < n - 2 && scroll > A[i + 1]) i++;
+    const t = (scroll - A[i]) / (A[i + 1] - A[i]);       // may extrapolate beyond [0,1]
+    return clamp(lerp(EYE[i], EYE[i + 1], t), -2.5, 1.9);
+  }
+  function tickWalk() {
+    if (!WK) return;
+    if (S.y + S.vh < WK.top - S.vh || S.y > WK.top + WK.h + S.vh) return;   // far away: skip
+    const eye = eyeAt(S.sy);
+    if (Math.abs(eye - WK.lastEye) > 0.0004 || finePointer) {
+      WK.lastEye = eye;
+      const st = WK.el.style;
+      st.setProperty("--cam", (-(eye - WK.pOverD)).toFixed(4));
+      // doors swing as you approach the threshold
+      st.setProperty("--door", (smooth(clamp((0.85 - eye) / 0.6, 0, 1)) * 108).toFixed(2));
+      // time of day
+      let k = 0; while (k < SKY.length - 2 && eye < SKY[k + 1].e) k++;
+      const K0 = SKY[k], K1 = SKY[k + 1];
+      const t = clamp((K0.e - eye) / (K0.e - K1.e), 0, 1);
+      st.setProperty("--sky-a", mixHex(K0.a, K1.a, t));
+      st.setProperty("--sky-b", mixHex(K0.b, K1.b, t));
+      st.setProperty("--sun", mixHex(K0.sun, K1.sun, t));
+      st.setProperty("--sun-x", `${lerp(K0.sx, K1.sx, t).toFixed(1)}vw`);
+      st.setProperty("--sun-y", `${lerp(K0.sy, K1.sy, t).toFixed(1)}vh`);
+      // which room are we in?
+      const room = eye > 0.15 ? 0 : eye > -1 ? 1 : eye > -2 ? 2 : 3;
+      if (room !== WK.room) {
+        WK.room = room;
+        WK.hud.forEach((h, i) => h.classList.toggle("is-active", i === room));
+        WK.el.classList.toggle("is-night", room === 3);
+      }
+    }
+    // gentle look-around with the mouse
+    if (finePointer && !reduce) {
+      const nx = (S.smx / S.vw - 0.5) * 2, ny = (S.smy / S.vh - 0.5) * 2;
+      WK.sticky.style.perspectiveOrigin = `${(50 + nx * 5).toFixed(2)}% ${(50 + ny * 4).toFixed(2)}%`;
+    }
+  }
+
   // --------------------------------------------------------------- cursor glow
   const glow = $(".cursor-glow");
   if (glow && finePointer && !reduce) {
@@ -362,6 +466,7 @@
     tickTilt();
     tickMarquee();
     tickChapters();
+    tickWalk();
     tickGlow();
     S.lastY = S.y;
     requestAnimationFrame(frame);

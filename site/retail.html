@@ -3,12 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Shops — Atelier Nord</title>
-  <meta name="description" content="Retail interior design by Atelier Nord: flagship stores, concept shops, boutiques and roll-out formats designed to slow people down and pull them through.">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='9' fill='%23a6b37a'/%3E%3C/svg%3E">
+  <title>Shops — Two Squares</title>
+  <meta name="description" content="Retail interior design by Two Squares: flagship stores, concept shops, boutiques and roll-out formats designed to slow people down and pull them through.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='4' y='4' width='11' height='11' rx='2' fill='%2346523d'/%3E%3Crect x='17' y='17' width='11' height='11' rx='2' fill='%2346523d'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,300..600,0..100,0..1;1,9..144,300..600,0..100,0..1&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,300..600,0..100,0..1;1,9..144,300..600,0..100,0..1&family=Homemade+Apple&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/site.css">
 </head>
 <body>
@@ -18,7 +18,7 @@
 
   <header class="nav">
     <div class="wrap">
-      <a class="brand" href="index.html"><span class="brand__dot"></span>Atelier Nord</a>
+      <a class="brand" href="index.html"><span class="wordmark"><span class="wordmark__name">Two Squares</span><span class="wordmark__sub">Design &amp; Build</span></span></a>
       <nav class="nav__links" aria-label="Primary">
         <a href="restaurants.html">Restaurants</a>
         <a href="bars.html">Bars</a>
@@ -36,7 +36,7 @@
     <a href="retail.html">Shops</a>
     <a href="studio.html">Studio</a>
     <a href="contact.html">Contact</a>
-    <div class="menu__foot"><span>hello@ateliernord.com</span><span>+00 000 000 000</span></div>
+    <div class="menu__foot"><span>hello@twosquares.studio</span><span>+00 000 000 000</span></div>
   </div>
 
   <main>
@@ -53,7 +53,7 @@
     <section class="section">
       <div class="wrap feature">
         <div class="feature__media" data-reveal="scale">
-          <img src="assets/img/shop-form.svg" alt="Form concept store" data-parallax="0.08">
+          <div data-lift="0.5"><img src="assets/img/shop-form.svg" alt="Form concept store" data-parallax="0.08"></div>
           <div class="card--float" data-parallax="-0.12"><img src="assets/img/shop-clay.svg" alt=""></div>
         </div>
         <div class="stack" style="--stack:1.4rem">
@@ -95,19 +95,19 @@
       <div class="wrap">
         <div class="float-grid">
           <a class="proj proj--1" href="project.html" data-speed="1.2">
-            <div class="proj__media wipe" style="--ar:4/5"><img src="assets/img/shop-form.svg" alt=""><span class="proj__pill">Concept store</span></div>
+            <div class="proj__media wipe" style="--ar:4/5" data-lift="0.8"><img src="assets/img/shop-form.svg" alt=""><span class="proj__pill">Concept store</span></div>
             <div class="proj__meta" data-reveal><h3>Form</h3><span>Copenhagen</span></div>
           </a>
           <a class="proj proj--2" href="project.html" data-speed="0.85">
-            <div class="proj__media wipe" style="--ar:5/4;--d:120"><img src="assets/img/shop-atlas.svg" alt=""><span class="proj__pill">Flagship</span></div>
+            <div class="proj__media wipe" style="--ar:5/4;--d:120" data-lift="0.8"><img src="assets/img/shop-atlas.svg" alt=""><span class="proj__pill">Flagship</span></div>
             <div class="proj__meta" data-reveal style="--d:120"><h3>Atlas</h3><span>Mumbai</span></div>
           </a>
           <a class="proj proj--3" href="project.html" data-speed="1.3">
-            <div class="proj__media wipe" style="--ar:1"><img src="assets/img/shop-clay.svg" alt=""><span class="proj__pill">Homeware</span></div>
+            <div class="proj__media wipe" style="--ar:1" data-lift="0.8"><img src="assets/img/shop-clay.svg" alt=""><span class="proj__pill">Homeware</span></div>
             <div class="proj__meta" data-reveal><h3>Clay</h3><span>Mumbai</span></div>
           </a>
           <a class="proj proj--4" href="project.html" data-speed="0.9">
-            <div class="proj__media wipe" style="--ar:4/5;--d:100"><img src="assets/img/shop-grove.svg" alt=""><span class="proj__pill">Roll-out</span></div>
+            <div class="proj__media wipe" style="--ar:4/5;--d:100" data-lift="0.8"><img src="assets/img/shop-grove.svg" alt=""><span class="proj__pill">Roll-out</span></div>
             <div class="proj__meta" data-reveal style="--d:100"><h3>Grove</h3><span>London</span></div>
           </a>
         </div>
@@ -129,7 +129,9 @@
     <!-- ============================================================ CTA -->
     <section class="section">
       <div class="wrap">
-        <div class="cta" data-reveal="scale">
+        <div data-reveal="scale">
+        <div class="cta" data-lift="0.25">
+          <div class="liquid" aria-hidden="true"><span class="blob blob--1"></span><span class="blob blob--2"></span></div>
           <span class="eyebrow" style="justify-content:center">Shops</span>
           <h2 class="display t-1" style="margin-top:1rem">Opening a store, or <em>ten?</em></h2>
           <p class="lede" style="margin:1.4rem auto 0;text-align:center">One-off flagship or a kit of parts for every high street — we've built both. Tell us which.</p>
@@ -138,23 +140,24 @@
             <a class="btn" href="restaurants.html">See restaurants <span class="arr">→</span></a>
           </div>
         </div>
+        </div>
       </div>
     </section>
   </main>
 
-  <footer class="footer">
+  <footer class="footer on-green ribbons">
     <div class="wrap">
       <div class="footer__grid">
         <div>
-          <a class="brand" href="index.html"><span class="brand__dot"></span>Atelier Nord</a>
-          <p class="muted small" style="margin-top:1rem;max-width:30ch">Interior design for restaurants, bars and shops. Concept to opening night.</p>
+          <a class="brand" href="index.html"><span class="wordmark"><span class="wordmark__name">Two Squares</span><span class="wordmark__sub">Design &amp; Build</span></span></a>
+          <p class="muted small" style="margin-top:1.2rem;max-width:30ch">Design &amp; build for restaurants, bars and shops. Concept to opening night.</p>
         </div>
         <div><h4>Work</h4><a href="restaurants.html">Restaurants</a><a href="bars.html">Bars</a><a href="retail.html">Shops</a></div>
         <div><h4>Studio</h4><a href="studio.html">About</a><a href="contact.html">Contact</a><a href="contact.html">Careers</a></div>
         <div><h4>Follow</h4><a href="#" rel="noopener">Instagram</a><a href="#" rel="noopener">Pinterest</a><a href="#" rel="noopener">LinkedIn</a></div>
       </div>
       <div class="footer__big" data-reveal>Come back<br>to it.</div>
-      <div class="footer__legal"><span>© 2026 Atelier Nord. All rights reserved.</span><span>Studio · hello@ateliernord.com · +00 000 000 000</span></div>
+      <div class="footer__legal"><span>© 2026 Two Squares Design &amp; Build. All rights reserved.</span><span>hello@twosquares.studio · +00 000 000 000</span></div>
     </div>
   </footer>
 
