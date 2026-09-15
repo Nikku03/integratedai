@@ -397,6 +397,9 @@ rule, because that choice is worth more than the effect being measured.
 
 ### What to do next, in order
 
+*Written at the end of part three. Items 1 and 2 were then carried out and
+are answered in part four and in the registered scale-up; read them together.*
+
 The situation has changed from "nothing works" to "one thing might", which
 calls for a confirmatory test rather than more screening.
 
@@ -426,3 +429,122 @@ calls for a confirmatory test rather than more screening.
    protein and clone cannot be separated in this dataset at all. Everything here
    is bounded by that, and a confirmatory result would want either multiple
    independent clones per protein or a transient-expression design.
+
+## Part four: the physical fingerprint — AlphaFold size, shape, charge and diffusion
+
+The request behind this part was specific: fetch each protein's predicted 3D
+structure, measure its size, shape and charge, and let those imply a different
+diffusion rate for every protein. The reasoning is sound — a small compact
+protein and a long thin one do not spread through a cell the same way, and that
+difference is physical rather than annotation-derived, so it cannot be a
+compartment label in disguise.
+
+**What was built.** AlphaFold DB models for **477 of 479** proteins (PRKDC and
+TRRAP have no model), read as Cα traces, reduced to a 20-number fingerprint in
+[`src/vcell/biophysics.py`](../src/vcell/biophysics.py) and split into three
+registered blocks:
+
+* **`bio_shape` (10 dims)** — radius of gyration, hydrodynamic radius, maximum
+  dimension, asphericity, relative shape anisotropy, axial ratio, Perrin
+  friction factor, compactness against the globular expectation
+  `Rg ≈ 2.2·N^0.38`, elongation `Dmax/Rg`, and `log(N)`.
+* **`bio_diffusion` (2 dims)** — the Stokes–Einstein coefficient those imply,
+  `D = kT/(6πηR_h·F)` with `R_h ≈ 1.29·Rg` and `F` the Perrin factor for the
+  equivalent ellipsoid, expressed as a ratio to a 30 kDa globular protein, and
+  its log.
+* **`bio_charge` (8 dims)** — net charge, charge per residue, isoelectric point
+  by Henderson–Hasselbalch bisection, total and per-residue *surface* charge
+  (solvent exposure from Cα neighbour counts), the charge dipole magnitude, and
+  the exposed K/R and D/E fractions.
+
+**The numbers are real and they spread.** Radius of gyration runs from 13.7 Å
+(PFN1, profilin) to 110 Å (RNF40), a factor of 8. Axial ratio runs 1.15 (RBM33)
+to 8.0 (VAMP8) and the Perrin friction factor with it, 1.00 to 2.25. The implied
+diffusion coefficient therefore spans a factor of **10**: slowest RNF40, UTRN,
+BET1L, EEA1, STIM1; fastest PFN1, LAMTOR2, TRAPPC2, VPS29, AP2S1 — which is the
+right ordering, small adaptor and cargo subunits at the fast end, long coiled
+tethers at the slow end. Isoelectric point runs 4.1 (PPM1G) to 12.2 (RPL13).
+Nothing about the block is degenerate.
+
+### Result
+
+The full 461-protein pool this time, not the 53-protein subset of part two:
+**308 training, 153 held out**, candidate sets of 43/35/27/15/14/11/8 by
+compartment, pooled chance **0.046** (7 correct out of 153 by luck).
+**300 permutations**, both views residualised on compartment, same CCA grid
+re-selected inside every permutation. Bonferroni threshold over 7 blocks is
+**0.0071**.
+
+| block | dims | shared corr | p | top-1 | correct / 153 | p | null p95 |
+|---|---|---|---|---|---|---|---|
+| biophysics + string | 532 | **0.276** | **0.000** | 0.065 | 10 | 0.133 | 0.078 |
+| string_profile | 512 | **0.246** | **0.000** | 0.039 | 6 | 0.703 | 0.072 |
+| bio_shape + bio_charge | 18 | 0.176 | 0.053 | 0.033 | 5 | 0.837 | 0.072 |
+| biophysics (all 20) | 20 | 0.175 | 0.040 | 0.026 | 4 | 0.923 | 0.072 |
+| bio_shape | 10 | 0.148 | 0.097 | 0.065 | 10 | 0.130 | 0.072 |
+| bio_charge | 8 | 0.139 | 0.093 | 0.059 | 9 | 0.220 | 0.072 |
+| **bio_diffusion** | 2 | 0.045 | 0.603 | 0.039 | 6 | 0.720 | 0.072 |
+
+**No block identifies a protein above its own permutation null. Not one.** The
+best identification in the table is 10 correct out of 153 where luck gives 7 and
+the 95th percentile of the shuffled null reaches 11. Every retrieval p-value is
+above 0.13.
+
+**The diffusion rate specifically does not work.** `bio_diffusion` is the
+weakest block in the study: correlation 0.045 at p = 0.603, identification at
+chance. Collapsing size and shape into one physically-motivated scalar throws
+away whatever little the ten shape numbers carried — the physics is right, but
+two numbers cannot distinguish 43 proteins that already share a compartment.
+
+**Two blocks clear Bonferroni on correlation only**: `string_profile` (0.246)
+and `biophysics + string` (0.276). So biophysics does add **+0.030** of shared
+correlation on top of STRING, and adds it with better-conditioned held-out
+components ([0.276, 0.241, 0.06] against STRING's [0.246, 0.242, 0.009]) — a
+genuine second direction rather than one direction and noise. It buys no
+identification. Part two's lesson repeats exactly: a significant correlation is
+not a usable identification.
+
+### A correction to something I said earlier
+
+Reporting from a 4-permutation smoke test while the real pass was running, I
+told the user that shape and charge looked better than diffusion and that
+separating them out rather than collapsing to a diffusion rate "was the right
+call." **The 300-permutation result does not support that.** `bio_shape` is at
+p = 0.097 and `bio_charge` at p = 0.093 — neither significant — and
+`bio_shape + bio_charge` *identifies worse* (0.033, 5 correct) than `bio_shape`
+alone (0.065, 10 correct) and worse than chance. The separation I claimed was
+vindicated is not distinguishable from noise in either direction. Four
+permutations cannot support a comparison between blocks and I should not have
+drawn one from them.
+
+### One discipline fault to record
+
+This screen ran `string_profile` on the same 461-protein pool, the same seeded
+split and the same within-compartment protocol as registered Experiment 2 of
+[`PREREG_SCALE.md`](PREREG_SCALE.md), because it was included as the comparison
+column. **That means the registered primary quantity was observed here, through
+an unregistered route, before the registered run finished.** Nothing in the
+registered analysis was chosen after the fact — the script, split seed, single
+fingerprint, 1,000 permutations and retrieval-as-primary were all committed
+beforehand and are unchanged — so the registered result stands as specified and
+is reported in its own document. But the peek happened and belongs on the
+record.
+
+What it shows is worth stating plainly in advance of that report: at 43-way,
+`string_profile` identifies held-out proteins at **0.039 against a chance of
+0.046** — below chance, p = 0.703. Part two's 0.245-against-0.132 at 8-way does
+not reproduce when the candidate set grows. That is the outcome
+[`PREREG_SCALE.md`](PREREG_SCALE.md) registered as the most likely single result
+and said would be reported as the headline if it happened.
+
+### What this leaves
+
+The physical fingerprint was the best-motivated idea in the study — image-
+independent by construction, immune to the annotation circularity that
+disqualified GO cellular component and the HPA subcellular columns, and
+measuring a property that demonstrably varies tenfold across the pool. It still
+does not identify a protein within its compartment. Combined with STRING failing
+to replicate at 43-way, the honest summary of the whole description study is
+that **nothing tested so far identifies which protein produced an image, given
+its compartment** — and the two things that looked like exceptions were a small
+candidate set and a correlation mistaken for an identification.
