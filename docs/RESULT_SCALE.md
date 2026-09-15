@@ -4,8 +4,148 @@ Reports [`PREREG_SCALE.md`](PREREG_SCALE.md) as registered. Every hypothesis in
 that document appears below with its registered threshold next to the number,
 whether it passed or not.
 
-**Experiment 2 is complete and its registered primary outcome failed.**
-Experiment 1 is still running and its section is marked as such.
+**Both experiments are complete. Experiment 1 passed all three of its
+hypotheses; Experiment 2's registered primary outcome failed.** The two together
+say the same thing the project has said throughout: the compartment is
+predictable and the protein is not.
+
+---
+
+# Experiment 1 — 25 structures in one virtual cell
+
+## Verdict
+
+| hypothesis | registered threshold | observed | |
+|---|---|---|---|
+| **H1** the arrangement holds over 300 pairs | Pearson > **0.85**, Spearman > **0.75** | **0.985** / **0.959** | **PASS** |
+| **H2** not carried by the nuclear/cytoplasmic split | Pearson > **0.70** within each block | cytoplasmic **0.796** (153 pairs), nuclear **0.964** (21 pairs) | **PASS** |
+| **H3** accuracy does not collapse with breadth | mean Dice within **20% relative** of the five-structure mean | 0.244 vs 0.280, **−12.9%** | **PASS** |
+
+All three pass. This is the first registered experiment in the project where
+that happens, and the reasons it is weaker than it looks are in the two
+subsections after the tables.
+
+## What was run
+
+2,000 Allen cells over all **25** tagged lines (80 interphase cells each, same
+QC filter), 1,600 training / 400 held out by FOV, the same 826k-parameter 3D
+U-Net at grid (24, 48, 48), 25 epochs, seed 20260915 — every parameter as
+registered. Final training KL 0.1648. The joint virtual cell is built on the
+**400 held-out** cells' geometries.
+
+## H1 / H2 — the pairwise arrangement
+
+Wasserstein-1 between structures' signed-nuclear-distance profiles, measured
+between structures imaged in *different* cells and predicted onto *one* cell:
+
+| pair set | pairs | Pearson | Spearman | MAE | measured range |
+|---|---|---|---|---|---|
+| all pairs | **300** | **0.985** | 0.959 | 0.129 µm | 0.05 – 3.35 µm |
+| cytoplasmic only | 153 | **0.796** | 0.782 | 0.140 µm | 0.08 – 1.20 µm |
+| nuclear only | 21 | 0.964 | 0.978 | 0.076 µm | 0.05 – 1.19 µm |
+
+**At 30× the pairs, the pooled correlation barely moved** — 0.985 against the
+five-structure study's 0.990 over 10 pairs. The arrangement claim is the one
+thing in this project that got *harder* to test and did not degrade.
+
+**But the registered concern was right, and H2 is where it shows.** Restricted
+to the 153 cytoplasm–cytoplasm pairs, the correlation falls to **0.796** from the
+five-structure study's 0.959 over its 6 non-nuclear pairs. It clears the
+registered 0.70, so H2 passes as written — but the pooled 0.985 *is*
+substantially carried by the nuclear/cytoplasmic contrast, exactly as
+[`PREREG_SCALE.md`](PREREG_SCALE.md) warned. The honest summary: the model knows
+which side of the nuclear envelope a structure lives on very well, and orders
+structures *within* the cytoplasm considerably less well. The cytoplasmic MAE of
+0.140 µm against a measured spread of only 1.12 µm is about 12% of the full
+range, against 6% for the nuclear pairs over a comparable span.
+
+## H3 — per-structure accuracy across 25 conditions
+
+Volume-matched Dice on held-out cells, 16 per structure, against the
+parameter-free annotation rule and against each structure's own measured chance
+level (the base rate its voxel count implies):
+
+| structure | Dice | rule | chance | lift |
+|---|---|---|---|---|
+| LMNB1 | 0.501 | 0.516 | 0.095 | 5.29× |
+| NPM1 | 0.473 | 0.100 | 0.040 | 11.84× |
+| FBL | 0.471 | 0.048 | 0.030 | 15.92× |
+| AAVS1 *(control)* | 0.455 | 0.220 | 0.172 | **2.65×** |
+| TJP1 | 0.378 | 0.065 | 0.007 | 53.68× |
+| LAMP1 | 0.372 | 0.081 | 0.047 | 7.92× |
+| CTNNB1 | 0.359 | 0.043 | 0.034 | 10.47× |
+| SEC61B | 0.326 | 0.244 | 0.110 | 2.97× |
+| NUP153 | 0.317 | 0.141 | 0.031 | 10.06× |
+| SON | 0.306 | 0.056 | 0.021 | 14.44× |
+| ATP2A2 | 0.270 | 0.183 | 0.112 | 2.41× |
+| TOMM20 | 0.262 | 0.137 | 0.088 | 2.98× |
+| HIST1H2BJ | 0.261 | 0.122 | 0.052 | 4.99× |
+| ACTB | 0.224 | 0.106 | 0.035 | 6.43× |
+| ACTN1 | 0.216 | 0.105 | 0.029 | 7.36× |
+| MYH10 | 0.209 | 0.117 | 0.036 | 5.83× |
+| ST6GAL1 | 0.204 | 0.013 | 0.021 | 9.70× |
+| TUBA1B | 0.155 | 0.150 | 0.112 | **1.39×** |
+| GJA1 | 0.119 | 0.012 | 0.004 | 30.01× |
+| RAB5A | 0.039 | 0.006 | 0.006 | 6.91× |
+| DSP | 0.030 | 0.000 | 0.001 | 57.99× |
+| SMC1A | 0.028 | 0.008 | 0.003 | 8.93× |
+| SLC25A17 | 0.015 | 0.004 | 0.005 | 2.73× |
+| PXN | **0.000** | 0.009 | 0.002 | 0.00× |
+| CETN2 | **0.000** | 0.000 | 0.000 | 0.00× |
+
+Mean Dice **0.2436** [0.1792, 0.3024]. The five-structure study's mean over its
+five real structures (ACTB 0.193, SEC61B 0.344, TOMM20 0.223, LMNB1 0.482,
+TUBA1B 0.157) is 0.2798, so the change is **−12.9%** and H3 passes as
+registered. The verdict is somewhat sensitive to how the comparison is drawn:
+over the 24 real structures alone (0.2306) it is −17.6%, still inside the
+threshold; against a baseline that also includes the AAVS1 control (0.3057) it
+is −20.3%, marginally outside. Only the first is the registered comparison.
+**Breadth cost roughly an eighth of the accuracy, not a collapse** — that is the
+finding, and it is robust to the two-thirds of readings that pass.
+
+### Three things the table says that the verdicts do not
+
+**Six of 25 structures essentially failed.** CETN2 (centrosome) and PXN (focal
+adhesions) score **exactly 0.000**; SLC25A17 (peroxisomes) 0.015, SMC1A
+(cohesin) 0.028, DSP (desmosomes) 0.030, RAB5A (early endosomes) 0.039. Their
+base rates are the giveaway — CETN2 occupies 0.018% of the cell's voxels and PXN
+0.18%. At a (24, 48, 48) grid a centrosome is well under one voxel, so this is
+at least as much a resolution ceiling as a model failure, and the mean of 0.244
+is an average over conditions where the target is physically representable and
+conditions where it is not. Nothing in H3 distinguishes the two.
+
+**The structureless control is still fourth on raw Dice.** AAVS1 — a safe-harbour
+locus with no tagged structure — scores 0.455, above 21 of the 24 real
+structures. On lift over its own base rate it drops to 2.65×, 22nd of 25, which
+is what a channel with no structure in it should do. This reproduces the trap
+that [`RESULT_VIRTUAL_CELL.md`](RESULT_VIRTUAL_CELL.md) had to correct gate 4
+for, now at 25 structures, and confirms that **raw volume-matched Dice is not
+interpretable across structures with different base rates.** Only the lift column
+means anything in comparisons.
+
+**Lift is inflated where Dice is near zero.** DSP's 57.99× comes from a Dice of
+0.0299 against a base rate of 0.0005. A high ratio on a near-zero numerator is
+not an achievement, and a reader scanning the lift column alone would rank DSP
+first. Both columns have to be read together: the structures that are genuinely
+well predicted are the ones with a substantial Dice *and* a substantial lift —
+NPM1, FBL, TJP1, LAMP1, CTNNB1, NUP153, SON.
+
+**LMNB1 is still beaten by the parameter-free rule** (0.501 against 0.516), as it
+was at five structures. The nuclear envelope remains the one structure a
+one-line geometric rule predicts better than the model.
+
+## What Experiment 1 settles
+
+The virtual cell **scales to 25 structures without collapsing**, and the joint
+arrangement — structures measured in different cells, predicted into one — holds
+over 300 pairs at 0.985. That is the project's strongest positive result and it
+is now registered rather than exploratory.
+
+What it does not show: that the model orders structures well *within* the
+cytoplasm (0.796, and the weakest block), that small or punctate structures are
+predictable at this resolution (six are not), or that anything here identifies a
+*protein* rather than a *compartment* — Experiment 2 is the test of that, and it
+failed.
 
 ---
 
@@ -158,14 +298,3 @@ What remains true and is not weakened by this:
   result here would have needed multiple independent clones per protein or a
   transient-expression design before it could be believed, and this is not a
   positive result.
-
----
-
-# Experiment 1 — 25 structures in one virtual cell
-
-**Still running.** The model is training on 2,000 cells over the 25 Allen lines
-(AAVS1, ACTB, ACTN1, ATP2A2, CETN2, CTNNB1, DSP, FBL, GJA1, HIST1H2BJ, LAMP1,
-LMNB1, MYH10, NPM1, NUP153, PXN, RAB5A, SEC61B, SLC25A17, SMC1A, SON, ST6GAL1,
-TJP1, TOMM20, TUBA1B) at the registered 25 epochs, after which H1, H2 and H3 are
-scored over the 300 pairs. This section will be filled in from that run and from
-nothing else.
