@@ -19,23 +19,10 @@
   <div class="progress" aria-hidden="true"></div>
   <div class="cursor-glow" aria-hidden="true"></div>
 
-  <!-- prop cut-outs for the walkthrough (flat shapes, currentColor) -->
-  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
-    <defs>
-      <symbol id="p-table" viewBox="0 0 200 140"><ellipse cx="100" cy="34" rx="92" ry="13" fill="currentColor"/><rect x="94" y="40" width="12" height="90" fill="currentColor"/><rect x="58" y="126" width="84" height="10" rx="5" fill="currentColor"/></symbol>
-      <symbol id="p-chair" viewBox="0 0 200 140"><rect x="40" y="10" width="14" height="120" rx="6" fill="currentColor"/><rect x="40" y="10" width="110" height="12" rx="6" fill="currentColor"/><rect x="40" y="70" width="120" height="14" rx="6" fill="currentColor"/><rect x="146" y="76" width="12" height="60" rx="5" fill="currentColor"/><rect x="60" y="80" width="10" height="56" fill="currentColor"/></symbol>
-      <symbol id="p-counter" viewBox="0 0 200 140"><rect x="0" y="30" width="200" height="110" fill="currentColor"/><rect x="-6" y="18" width="212" height="18" rx="4" fill="currentColor" opacity=".7"/><rect x="18" y="52" width="164" height="70" fill="#fff" opacity=".08"/></symbol>
-      <symbol id="p-banquette" viewBox="0 0 200 140"><rect x="0" y="20" width="200" height="60" rx="10" fill="currentColor"/><rect x="0" y="74" width="200" height="50" rx="8" fill="currentColor" opacity=".8"/><rect x="10" y="120" width="180" height="14" fill="currentColor" opacity=".6"/></symbol>
-      <symbol id="p-plant" viewBox="0 0 200 140"><path d="M70 140 L60 96 H140 L130 140 Z" fill="currentColor"/><circle cx="100" cy="62" r="36" fill="currentColor" opacity=".85"/><circle cx="68" cy="78" r="26" fill="currentColor" opacity=".7"/><circle cx="134" cy="76" r="28" fill="currentColor" opacity=".7"/><circle cx="100" cy="30" r="20" fill="currentColor" opacity=".8"/></symbol>
-      <symbol id="p-stool" viewBox="0 0 200 140"><rect x="60" y="30" width="80" height="16" rx="8" fill="currentColor"/><rect x="94" y="44" width="12" height="70" fill="currentColor"/><rect x="66" y="110" width="68" height="10" rx="5" fill="currentColor"/><rect x="70" y="80" width="60" height="6" rx="3" fill="currentColor" opacity=".7"/></symbol>
-      <symbol id="p-backbar" viewBox="0 0 200 140"><rect x="0" y="0" width="200" height="140" fill="currentColor"/><g fill="#f0c070" opacity=".9"><rect x="10" y="12" width="180" height="3"/><rect x="10" y="52" width="180" height="3"/><rect x="10" y="92" width="180" height="3"/></g><g fill="#f0c070" opacity=".75"><rect x="18" y="20" width="8" height="30"/><rect x="32" y="26" width="6" height="24"/><rect x="46" y="18" width="9" height="32"/><rect x="64" y="24" width="7" height="26"/><rect x="80" y="20" width="8" height="30"/><rect x="98" y="28" width="6" height="22"/><rect x="112" y="18" width="9" height="32"/><rect x="130" y="22" width="7" height="28"/><rect x="146" y="26" width="8" height="24"/><rect x="164" y="18" width="9" height="32"/><rect x="180" y="24" width="6" height="26"/><rect x="24" y="60" width="8" height="30"/><rect x="44" y="64" width="7" height="26"/><rect x="60" y="58" width="9" height="32"/><rect x="82" y="62" width="6" height="28"/><rect x="100" y="60" width="8" height="30"/><rect x="120" y="66" width="7" height="24"/><rect x="138" y="58" width="9" height="32"/><rect x="158" y="62" width="8" height="28"/><rect x="176" y="60" width="6" height="30"/><rect x="18" y="100" width="9" height="32"/><rect x="40" y="104" width="7" height="28"/><rect x="58" y="98" width="8" height="34"/><rect x="78" y="104" width="6" height="28"/><rect x="96" y="100" width="9" height="32"/><rect x="118" y="106" width="7" height="26"/><rect x="136" y="98" width="8" height="34"/><rect x="156" y="102" width="9" height="30"/><rect x="176" y="100" width="6" height="32"/></g></symbol>
-    </defs>
-  </svg>
-
   <!-- ============================================================ NAV -->
   <header class="nav nav--on-green">
     <div class="wrap">
-      <a class="brand" href="index.html"><span class="wordmark"><span class="wordmark__name">Two Squares</span><span class="wordmark__sub">Design &amp; Build</span></span></a>
+      <a class="brand" href="index.html"><span class="logo logo--mark" role="img" aria-label="Two Squares — Design &amp; Build"></span></a>
       <nav class="nav__links" aria-label="Primary">
         <a href="restaurants.html">Restaurants</a>
         <a href="bars.html">Bars</a>
@@ -81,7 +68,7 @@
       </div>
 
       <div class="wrap hero__content">
-        <div class="hero__mark wordmark" data-reveal><span class="wordmark__name">Two Squares</span><span class="wordmark__sub">Design &amp; Build</span></div>
+        <div class="hero__mark" data-reveal><span class="logo logo--lockup" role="img" aria-label="Two Squares — Design &amp; Build"></span></div>
         <span class="eyebrow" data-reveal style="--d:120">Restaurants, bars &amp; shops</span>
         <h1 class="display t-hero hero__title split" style="margin-top:1rem">Spaces people <em>come back</em> to.</h1>
         <p class="lede" data-reveal style="--d:300">We design and build the rooms where evenings happen — dining rooms, bars and shopfronts planned around how people actually move, sit, order and linger.</p>
@@ -113,113 +100,53 @@
           <p class="muted" data-reveal style="--d:120;margin-top:1.4rem">Design and build under one roof means one contract, one programme and one team that has to live with its own decisions. Every project is led by a senior designer from first sketch to snag list.</p>
           <div class="row" data-reveal style="--d:220;margin-top:2rem">
             <a class="btn" href="studio.html">About the studio <span class="arr">→</span></a>
-            <a class="btn btn--ghost" href="#walk">Walk through a building ↓</a>
+            <a class="btn btn--ghost" href="#walk">Open the door ↓</a>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ============================================================ THE WALKTHROUGH -->
-    <section class="walk" id="walk" aria-label="Walk through a Two Squares building: café in the morning, restaurant in the afternoon, bar at night">
-      <div class="walk__sticky">
-        <div class="walk__sun" aria-hidden="true"></div>
-        <div class="walk__world" aria-hidden="true">
-
-          <!-- pavement, façade + doors at z = 0 -->
-          <div class="plane ground"></div>
-          <div class="plane facade">
-            <div class="facade__sign"><span class="wordmark"><span class="wordmark__name">Two Squares</span><span class="wordmark__sub">Design &amp; Build</span></span></div>
-          </div>
-          <div class="plane facade__frame"></div>
-          <div class="plane door door--l"></div>
-          <div class="plane door door--r"></div>
-
-          <!-- café — 08:00 -->
-          <div class="room room--cafe room--open" style="--i:0">
-            <div class="plane wall wall--back">
-              <div class="window" style="left:4%;top:18%;width:20%;height:40%"></div>
-              <div class="window" style="right:4%;top:18%;width:20%;height:40%"></div>
-              <div class="portal"></div>
-            </div>
-            <div class="plane wall wall--floor"></div>
-            <div class="plane wall wall--ceil"></div>
-            <div class="plane wall wall--left"></div>
-            <div class="plane wall wall--right"></div>
-            <div class="prop prop--lamp" style="--x:-16vw;--z:-0.32;--h:30vh;--glow:.55"><i class="glow"></i><i class="cord"></i><i class="shade"></i></div>
-            <div class="prop prop--lamp" style="--x:14vw;--z:-0.62;--h:34vh;--glow:.55"><i class="glow"></i><i class="cord"></i><i class="shade"></i></div>
-            <div class="prop" style="--x:-30vw;--z:-0.55;--w:26vw;--h:22vh"><svg viewBox="0 0 200 140"><use href="#p-counter"/></svg></div>
-            <div class="prop" style="--x:16vw;--z:-0.38;--w:14vw;--h:16vh"><svg viewBox="0 0 200 140"><use href="#p-table"/></svg></div>
-            <div class="prop hide-sm" style="--x:26vw;--z:-0.34;--w:9vw;--h:15vh"><svg viewBox="0 0 200 140"><use href="#p-chair"/></svg></div>
-            <div class="prop" style="--x:28vw;--z:-0.74;--w:14vw;--h:16vh"><svg viewBox="0 0 200 140"><use href="#p-table"/></svg></div>
-            <div class="prop hide-sm" style="--x:18vw;--z:-0.78;--w:9vw;--h:15vh"><svg viewBox="0 0 200 140"><use href="#p-chair"/></svg></div>
-            <div class="prop" style="--x:38vw;--z:-0.2;--w:10vw;--h:24vh;--prop:#6f7f62"><svg viewBox="0 0 200 140"><use href="#p-plant"/></svg></div>
-          </div>
-
-          <!-- restaurant — 14:00 -->
-          <div class="room room--rest room--open" style="--i:1">
-            <div class="plane wall wall--back">
-              <div class="window" style="left:3%;top:14%;width:21%;height:52%"></div>
-              <div class="window" style="right:3%;top:14%;width:21%;height:52%"></div>
-              <div class="portal"></div>
-            </div>
-            <div class="plane wall wall--floor"></div>
-            <div class="plane wall wall--ceil"></div>
-            <div class="plane wall wall--left"></div>
-            <div class="plane wall wall--right"></div>
-            <div class="prop prop--lamp" style="--x:-20vw;--z:-1.3;--h:36vh;--glow:.5"><i class="glow"></i><i class="cord"></i><i class="shade"></i></div>
-            <div class="prop prop--lamp" style="--x:0vw;--z:-1.55;--h:32vh;--glow:.5"><i class="glow"></i><i class="cord"></i><i class="shade"></i></div>
-            <div class="prop prop--lamp" style="--x:20vw;--z:-1.8;--h:36vh;--glow:.5"><i class="glow"></i><i class="cord"></i><i class="shade"></i></div>
-            <div class="prop" style="--x:-34vw;--z:-1.5;--w:30vw;--h:18vh"><svg viewBox="0 0 200 140"><use href="#p-banquette"/></svg></div>
-            <div class="prop" style="--x:-22vw;--z:-1.28;--w:14vw;--h:16vh"><svg viewBox="0 0 200 140"><use href="#p-table"/></svg></div>
-            <div class="prop" style="--x:-2vw;--z:-1.5;--w:14vw;--h:16vh"><svg viewBox="0 0 200 140"><use href="#p-table"/></svg></div>
-            <div class="prop hide-sm" style="--x:8vw;--z:-1.46;--w:9vw;--h:15vh"><svg viewBox="0 0 200 140"><use href="#p-chair"/></svg></div>
-            <div class="prop" style="--x:22vw;--z:-1.78;--w:14vw;--h:16vh"><svg viewBox="0 0 200 140"><use href="#p-table"/></svg></div>
-            <div class="prop hide-sm" style="--x:32vw;--z:-1.74;--w:9vw;--h:15vh"><svg viewBox="0 0 200 140"><use href="#p-chair"/></svg></div>
-            <div class="prop" style="--x:-40vw;--z:-1.15;--w:10vw;--h:26vh;--prop:#6f7f62"><svg viewBox="0 0 200 140"><use href="#p-plant"/></svg></div>
-          </div>
-
-          <!-- bar — 23:00 -->
-          <div class="room room--bar" style="--i:2">
-            <div class="plane wall wall--back"></div>
-            <div class="plane wall wall--floor"></div>
-            <div class="plane wall wall--ceil"></div>
-            <div class="plane wall wall--left"></div>
-            <div class="plane wall wall--right"></div>
-            <div class="prop" style="--x:0vw;--z:-2.96;--w:64vw;--h:44vh;--y:22vh;--prop:#0b100d"><svg viewBox="0 0 200 140" preserveAspectRatio="none"><use href="#p-backbar"/></svg></div>
-            <div class="prop" style="--x:0vw;--z:-2.66;--w:60vw;--h:20vh;--prop:#3a2f28"><svg viewBox="0 0 200 140" preserveAspectRatio="none"><use href="#p-counter"/></svg></div>
-            <div class="prop prop--lamp" style="--x:-16vw;--z:-2.6;--h:30vh;--glow:.9"><i class="glow"></i><i class="cord"></i><i class="shade"></i></div>
-            <div class="prop prop--lamp" style="--x:0vw;--z:-2.6;--h:30vh;--glow:.9"><i class="glow"></i><i class="cord"></i><i class="shade"></i></div>
-            <div class="prop prop--lamp" style="--x:16vw;--z:-2.6;--h:30vh;--glow:.9"><i class="glow"></i><i class="cord"></i><i class="shade"></i></div>
-            <div class="prop" style="--x:-18vw;--z:-2.52;--w:8vw;--h:14vh"><svg viewBox="0 0 200 140"><use href="#p-stool"/></svg></div>
-            <div class="prop" style="--x:-6vw;--z:-2.52;--w:8vw;--h:14vh"><svg viewBox="0 0 200 140"><use href="#p-stool"/></svg></div>
-            <div class="prop" style="--x:6vw;--z:-2.52;--w:8vw;--h:14vh"><svg viewBox="0 0 200 140"><use href="#p-stool"/></svg></div>
-            <div class="prop" style="--x:18vw;--z:-2.52;--w:8vw;--h:14vh"><svg viewBox="0 0 200 140"><use href="#p-stool"/></svg></div>
-            <div class="prop hide-sm" style="--x:-34vw;--z:-2.42;--w:12vw;--h:16vh"><svg viewBox="0 0 200 140"><use href="#p-table"/></svg></div>
-            <div class="prop hide-sm" style="--x:34vw;--z:-2.42;--w:12vw;--h:16vh"><svg viewBox="0 0 200 140"><use href="#p-table"/></svg></div>
+    <!-- ============================================================ THE DOOR SEQUENCE -->
+    <section class="doors" id="walk" data-room="cafe" aria-label="Through the door: a café in the morning, a restaurant in the afternoon, a bar at night">
+      <div class="doors__sticky">
+        <div class="doors__rooms" aria-hidden="true">
+          <figure class="doors__room is-active"><img src="assets/img/room-cafe.svg" alt=""></figure>
+          <figure class="doors__room"><img src="assets/img/room-restaurant.svg" alt=""></figure>
+          <figure class="doors__room"><img src="assets/img/room-bar.svg" alt=""></figure>
+          <div class="doors__grade"></div>
+        </div>
+        <div class="doors__wallgroup" aria-hidden="true">
+          <div class="doors__wall"></div>
+          <div class="doors__spill"></div>
+          <div class="doors__frame"></div>
+          <div class="doors__leaf doors__leaf--l"></div>
+          <div class="doors__leaf doors__leaf--r"></div>
+          <div class="doors__sign">
+            <span class="logo logo--lockup" role="img" aria-label="Two Squares — Design &amp; Build"></span>
+            <span class="doors__label">08:00 · Café</span>
           </div>
         </div>
-
-        <div class="walk__hud" aria-hidden="true">
-          <span class="is-active">Entrance</span>
+        <div class="doors__hud" aria-hidden="true">
+          <span class="is-active">At the door</span>
           <span>08:00 · Café</span>
           <span>14:00 · Restaurant</span>
           <span>23:00 · Bar</span>
         </div>
       </div>
 
-      <div class="walk__steps">
-        <div class="walk__step" data-room="entry">
+      <div class="doors__steps">
+        <div class="doors__step" data-room="entry">
           <div class="wrap" data-reveal>
-            <div class="walk__panel" data-lift="0.5">
-              <span class="eyebrow">The building</span>
+            <div class="doors__panel" data-lift="0.5">
+              <span class="eyebrow">Through the door</span>
               <h2 class="display t-2">Every project starts at the <em>door.</em></h2>
-              <p>Scroll to walk through a Two Squares building — one entrance, three rooms, three times of day. It's how we think about every site: as a sequence of moments, not a floor plan.</p>
+              <p>Scroll to open it. Behind the same door: a café at eight in the morning, a restaurant at two, a bar at eleven at night — three rooms we design and build, three times of day they have to work.</p>
             </div>
           </div>
         </div>
-        <div class="walk__step" data-room="cafe">
+        <div class="doors__step" data-room="cafe">
           <div class="wrap" data-reveal>
-            <div class="walk__panel" data-lift="0.5">
+            <div class="doors__panel" data-lift="0.5">
               <div class="time">08:00</div>
               <span class="eyebrow">Morning · Café</span>
               <h2 class="display t-2">Light first, <em>then</em> everything else.</h2>
@@ -228,9 +155,9 @@
             </div>
           </div>
         </div>
-        <div class="walk__step" data-room="rest">
+        <div class="doors__step" data-room="rest">
           <div class="wrap" data-reveal>
-            <div class="walk__panel" data-lift="0.5">
+            <div class="doors__panel" data-lift="0.5">
               <div class="time">14:00</div>
               <span class="eyebrow">Afternoon · Restaurant</span>
               <h2 class="display t-2">The long lunch, <em>held.</em></h2>
@@ -239,9 +166,9 @@
             </div>
           </div>
         </div>
-        <div class="walk__step" data-room="bar">
+        <div class="doors__step" data-room="bar">
           <div class="wrap" data-reveal>
-            <div class="walk__panel" data-lift="0.5">
+            <div class="doors__panel" data-lift="0.5">
               <div class="time">23:00</div>
               <span class="eyebrow">Night · Bar</span>
               <h2 class="display t-2">The back-bar is the <em>stage.</em></h2>
@@ -416,7 +343,7 @@
     <div class="wrap">
       <div class="footer__grid">
         <div>
-          <a class="brand" href="index.html"><span class="wordmark"><span class="wordmark__name">Two Squares</span><span class="wordmark__sub">Design &amp; Build</span></span></a>
+          <a class="brand" href="index.html"><span class="logo logo--lockup" role="img" aria-label="Two Squares — Design &amp; Build"></span></a>
           <p class="muted small" style="margin-top:1.2rem;max-width:30ch">Design &amp; build for restaurants, bars and shops. Concept to opening night.</p>
         </div>
         <div><h4>Work</h4><a href="restaurants.html">Restaurants</a><a href="bars.html">Bars</a><a href="retail.html">Shops</a></div>

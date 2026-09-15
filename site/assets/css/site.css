@@ -175,6 +175,23 @@ body::before {
 .wordmark__name { font-family: var(--font-script); font-weight: 400; font-size: 1em; letter-spacing: 0; white-space: nowrap; }
 .wordmark__sub  { font-family: var(--font-body); font-size: 0.28em; letter-spacing: 0.42em; text-transform: uppercase; font-weight: 500; color: var(--ink-2); padding-left: 0.1em; }
 
+
+/* logo: the traced card wordmark, used as a mask so it takes currentColor
+   (cream on green, dark green on off-white). Swap the SVGs for the real vector logo. */
+.logo {
+  display: inline-block; background-color: currentColor;
+  -webkit-mask: var(--logo) center / contain no-repeat; mask: var(--logo) center / contain no-repeat;
+  height: var(--logo-h, 32px); aspect-ratio: var(--logo-ar, 2406 / 755); vertical-align: middle;
+  transition: background-color 0.4s;
+}
+.logo--mark   { --logo: url("../img/logo-mark-white.svg"); --logo-ar: 2406 / 755; }
+.logo--lockup { --logo: url("../img/logo-white.svg");      --logo-ar: 2406 / 1050; }
+.brand .logo { --logo-h: 30px; }
+.hero__mark .logo { --logo-h: clamp(84px, 12vw, 160px); }
+.doors__sign .logo { --logo-h: clamp(44px, 7.5vw, 104px); }
+.footer .brand .logo { --logo-h: 68px; }
+@media (max-width: 900px) { .brand .logo { --logo-h: 26px; } .doors__sign .logo { --logo-h: 40px; } .footer .brand .logo { --logo-h: 56px; } }
+
 /* ------------------------------------------------ layout */
 .wrap { width: min(100% - 2 * var(--gutter), var(--max)); margin-inline: auto; }
 .section { padding-block: clamp(80px, 12vw, 200px); position: relative; }
@@ -405,7 +422,7 @@ body.menu-open .menu a { transform: none; opacity: 1; }
   .hero__mark { font-size: 2.2rem; }
 }
 .hero__content { position: relative; z-index: 1; }
-.hero__mark { display: grid; font-size: clamp(2.4rem, 6vw, 5.6rem); margin-bottom: clamp(1.2rem, 2.5vw, 2.4rem); }
+.hero__mark { display: block; margin-bottom: clamp(1.2rem, 2.5vw, 2.4rem); }
 .hero__mark .wordmark__sub { color: var(--ink-2); }
 .hero__title { max-width: 12ch; }
 .hero__meta {
@@ -720,225 +737,140 @@ body.is-entering .veil { transform: scaleY(1); transition: none; }
 body.is-entering .veil.is-out { transform: scaleY(0); transform-origin: top; transition: transform 0.7s var(--ease); }
 
 /* =====================================================================
-   THE WALKTHROUGH — a CSS-3D architectural model you scroll through.
-   Façade with doors at z=0, then three rooms stacked along -z:
-   café (morning) → restaurant (afternoon) → bar (night).
-   JS sets --cam (camera depth in room units), --door (0–105deg) and the
-   sky colours; everything else is geometry.
+   THE DOOR SEQUENCE — one door, three rooms, like a film cut.
+   Scroll: approach → the door opens onto a full-bleed room image →
+   you travel in (the doorway expands past the frame, the image zooms) →
+   travel back out → the door closes → the room behind it changes.
+   JS drives --dolly (wall scale), --open (leaf angle) and --zoom (image);
+   everything else is CSS. Replace the room images with photos.
    ===================================================================== */
-.walk {
+.doors {
   position: relative;
-  --W: 100vw;          /* room width  */
-  --H: 100svh;         /* room height */
-  --D: 120vw;          /* room depth  */
-  --P: 105vw;          /* perspective distance (eye sits --P in front of the sticky plane) */
-  --cam: -1.9;         /* world translateZ, in --D units; JS-driven */
-  --door: 0;           /* degrees */
-  --sky-a: #d9e3e6; --sky-b: #f2e6d0; --sun: #f6d9a0; --haze: rgba(255,244,214,0.45);
+  --dw: 34vw;   /* door width  */
+  --dh: 78svh;  /* door height */
+  --dy: 46svh;  /* door bottom, below the viewport centre */
+  --dolly: 0.7; --open: 0; --zoom: 1; --mx: 0px; --my: 0px;
+  --wall-tint: #4d5a43; --spill: #fff1c4;
+  --grade: linear-gradient(180deg, rgba(255,250,230,0) 40%, rgba(255,236,190,0.18));
 }
-.walk__sticky {
-  position: sticky; top: 0; height: 100svh; overflow: clip;
-  perspective: var(--P); perspective-origin: 50% 50%;
-  background: linear-gradient(180deg, var(--sky-a), var(--sky-b));
-  transition: background 0.6s linear;
+.doors[data-room="rest"] { --wall-tint: #46523d; --spill: #ffd08a; --grade: linear-gradient(180deg, rgba(255,214,150,0.08), rgba(200,120,50,0.22)); }
+.doors[data-room="bar"]  { --wall-tint: #1f2822; --spill: #f0c070; --grade: radial-gradient(80% 70% at 50% 45%, rgba(10,18,14,0) 40%, rgba(6,10,8,0.55)); }
+.doors__sticky {
+  position: sticky; top: 0; height: 100svh; overflow: clip; background: #0e120f;
 }
-.walk__sun {
-  position: absolute; left: 50%; top: 50%; width: 46vmin; height: 46vmin; border-radius: 50%;
-  background: radial-gradient(circle, var(--sun) 0%, rgba(255,255,255,0) 70%);
-  transform: translate(calc(-50% + var(--sun-x, 26vw)), calc(-50% + var(--sun-y, -22vh)));
-  opacity: 0.9; pointer-events: none; filter: blur(6px);
-}
-.walk__world {
-  position: absolute; inset: 0;
-  transform-style: preserve-3d;
-  transform: translateZ(calc(var(--cam) * var(--D)));
+/* rooms: full-bleed images, one active at a time, swapped while the door is shut */
+.doors__rooms { position: absolute; inset: 0; }
+.doors__room { position: absolute; inset: 0; margin: 0; opacity: 0; transition: opacity 0.5s linear; }
+.doors__room.is-active { opacity: 1; }
+.doors__room img {
+  width: 100%; height: 100%; object-fit: cover; transform-origin: 50% 56%;
+  transform: translate(var(--mx), var(--my)) scale(var(--zoom));
   will-change: transform;
 }
-/* every plane is centred then pushed into place */
-.plane {
-  position: absolute; left: 50%; top: 50%;
-  transform-style: preserve-3d;
+.doors__grade { position: absolute; inset: 0; background: var(--grade); pointer-events: none; transition: background 0.6s linear; }
+/* the wall + door group, scaled about the door's centre to dolly through it */
+.doors__wallgroup {
+  position: absolute; left: 50%; top: 50%; width: 160vw; height: 160svh;
+  transform: translate(-50%, -50%) scale(var(--dolly));
+  transform-origin: 50% calc(50% + var(--dy) - var(--dh) / 2);
+  perspective: 1400px; perspective-origin: 50% calc(50% + var(--dy) - var(--dh) / 2);
+  will-change: transform;
 }
-.room { position: absolute; inset: 0; transform-style: preserve-3d; }
-.room .wall--back  { width: var(--W); height: var(--H); transform: translate(-50%, -50%) translateZ(calc(-1 * (var(--i) + 1) * var(--D))); }
-.room .wall--floor { width: var(--W); height: var(--D); transform: translate(-50%, -50%) translateY(calc(var(--H) / 2)) translateZ(calc(-1 * (var(--i) + 0.5) * var(--D))) rotateX(90deg); }
-.room .wall--ceil  { width: var(--W); height: var(--D); transform: translate(-50%, -50%) translateY(calc(var(--H) / -2)) translateZ(calc(-1 * (var(--i) + 0.5) * var(--D))) rotateX(-90deg); }
-.room .wall--left  { width: var(--D); height: var(--H); transform: translate(-50%, -50%) translateX(calc(var(--W) / -2)) translateZ(calc(-1 * (var(--i) + 0.5) * var(--D))) rotateY(90deg); }
-.room .wall--right { width: var(--D); height: var(--H); transform: translate(-50%, -50%) translateX(calc(var(--W) / 2)) translateZ(calc(-1 * (var(--i) + 0.5) * var(--D))) rotateY(-90deg); }
-.wall { background: var(--wall); }
-.wall--floor { background: var(--floor); }
-.wall--ceil  { background: var(--ceil); }
-.wall--back  { background: var(--wall-back, var(--wall)); }
-.wall--left  { background: linear-gradient(90deg, rgba(0,0,0,0.02), rgba(0,0,0,0.16)), var(--wall-side, var(--wall)); }
-.wall--right { background: linear-gradient(270deg, rgba(0,0,0,0.02), rgba(0,0,0,0.16)), var(--wall-side, var(--wall)); }
-.wall--ceil  { background: linear-gradient(180deg, rgba(0,0,0,0.14), rgba(0,0,0,0.03)), var(--ceil); }
-.wall--floor { background: linear-gradient(180deg, rgba(0,0,0,0.10), rgba(0,0,0,0)), var(--floor); }
-/* an opening in the back wall of every room but the last: you see the next room ahead and walk through */
-.room--open .wall--back {
+.doors__wall {
+  position: absolute; inset: 0; background-color: var(--wall-tint); transition: background-color 0.6s linear;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1400 900' preserveAspectRatio='none'><g fill='none' stroke='%23000' stroke-opacity='0.1' stroke-width='120' stroke-linecap='round'><path d='M-60 780 C 120 780 220 700 240 520 C 260 340 280 220 520 200 C 700 190 760 260 760 420 L 760 900'/><path d='M300 -40 L 300 380 C 300 560 420 620 620 620 C 900 620 980 500 980 300 L 980 -40'/><path d='M1120 900 L 1120 520 C 1120 380 1220 300 1380 300 L 1500 300'/></g></svg>");
+  background-size: 130vw auto; background-position: 50% 50%; background-repeat: no-repeat;
   clip-path: polygon(
     0 0, 100% 0, 100% 100%, 0 100%, 0 0,
-    calc(50% - var(--op, 22vw)) 22%, calc(50% - var(--op, 22vw)) 100%,
-    calc(50% + var(--op, 22vw)) 100%, calc(50% + var(--op, 22vw)) 22%, calc(50% - var(--op, 22vw)) 22%
+    calc(50% - var(--dw) / 2) calc(50% + var(--dy) - var(--dh)),
+    calc(50% - var(--dw) / 2) calc(50% + var(--dy)),
+    calc(50% + var(--dw) / 2) calc(50% + var(--dy)),
+    calc(50% + var(--dw) / 2) calc(50% + var(--dy) - var(--dh)),
+    calc(50% - var(--dw) / 2) calc(50% + var(--dy) - var(--dh))
   );
 }
-.portal {
-  position: absolute; left: calc(50% - var(--op, 22vw) - 1vw); top: calc(22% - 1.6vh);
-  width: calc(2 * var(--op, 22vw) + 2vw); height: calc(78% + 1.6vh);
-  border: 1vw solid var(--trim-solid, rgba(0,0,0,0.25)); border-bottom: 0; box-sizing: border-box;
+/* floor line + shadow under the door */
+.doors__wall::after {
+  content: ""; position: absolute; left: 0; right: 0; top: calc(50% + var(--dy)); height: 160svh;
+  background: linear-gradient(180deg, rgba(0,0,0,0.28), rgba(0,0,0,0.12) 12svh, rgba(0,0,0,0.12));
 }
-/* pavement in front of the façade */
-.ground {
-  width: 320vw; height: calc(2.5 * var(--D));
-  transform: translate(-50%, -50%) translateY(calc(var(--H) / 2)) translateZ(calc(1.25 * var(--D))) rotateX(90deg);
-  background: linear-gradient(180deg, rgba(0,0,0,0.08), rgba(0,0,0,0)), #d9d3c3;
+.doors__spill {
+  position: absolute; left: 50%; top: calc(50% + var(--dy) - var(--dh) / 2);
+  width: calc(var(--dw) * 1.6); height: calc(var(--dh) * 1.25);
+  transform: translate(-50%, -50%);
+  background: radial-gradient(50% 50% at 50% 50%, var(--spill) 0%, rgba(255,255,255,0) 70%);
+  opacity: calc(0.35 * (1 - var(--open) / 108)); filter: blur(24px); mix-blend-mode: screen; pointer-events: none;
 }
-.ground::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, rgba(0,0,0,0) 0 9vw, rgba(0,0,0,0.05) 9vw 9.3vw); }
-/* soft light pools painted onto floor + back wall */
-.wall--floor::after { content: ""; position: absolute; inset: 0; background: var(--pool); }
-.wall--back::after  { content: ""; position: absolute; inset: 0; background: var(--wash); }
-/* skirting / cornice lines give the box edges */
-.wall--left::before, .wall--right::before, .wall--back::before {
-  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1.2vh; background: var(--trim, rgba(0,0,0,0.12));
-}
-
-/* room palettes ------------------------------------------------------ */
-.room--cafe {
-  --wall: #efe7d4; --wall-side: #e6dcc4; --wall-back: #e9dfc6; --floor: #d6c5a6; --ceil: #efe9db; --trim: rgba(70,82,61,0.35); --trim-solid: #46523d;
-  --pool: radial-gradient(60% 50% at 50% 30%, rgba(255,243,206,0.75), rgba(255,243,206,0) 70%);
-  --wash: radial-gradient(70% 60% at 50% 20%, rgba(255,248,224,0.9), rgba(255,248,224,0) 70%);
-  --lamp: #fff1c4;
-}
-.room--rest {
-  --wall: #e3cfae; --wall-side: #d8c19c; --wall-back: #d9bf98; --floor: #a9784c; --ceil: #e2d2b8; --trim: rgba(74,58,42,0.45); --trim-solid: #5a3f2a;
-  --pool: radial-gradient(55% 45% at 50% 32%, rgba(255,214,150,0.85), rgba(255,214,150,0) 70%);
-  --wash: radial-gradient(70% 60% at 50% 22%, rgba(255,222,170,0.85), rgba(255,222,170,0) 70%);
-  --lamp: #ffd08a;
-}
-.room--bar {
-  --wall: #1d2822; --wall-side: #1a2420; --wall-back: #172019; --floor: #12191a; --ceil: #10171a; --trim: rgba(240,192,112,0.18); --trim-solid: rgba(240,192,112,0.35);
-  --pool: radial-gradient(50% 40% at 50% 34%, rgba(240,192,112,0.42), rgba(240,192,112,0) 70%);
-  --wash: radial-gradient(60% 50% at 50% 28%, rgba(240,192,112,0.45), rgba(240,192,112,0) 70%);
-  --lamp: #f0c070;
-}
-
-/* façade + doors ------------------------------------------------------ */
-.facade {
-  width: 320vw; height: 170vh; transform: translate(-50%, -50%) translateY(-5vh) translateZ(0.01px);
-  background: var(--green);
-  background-image:
-    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1400 900' preserveAspectRatio='none'><g fill='none' stroke='%23000' stroke-opacity='0.1' stroke-width='120' stroke-linecap='round'><path d='M-60 780 C 120 780 220 700 240 520 C 260 340 280 220 520 200 C 700 190 760 260 760 420 L 760 900'/><path d='M300 -40 L 300 380 C 300 560 420 620 620 620 C 900 620 980 500 980 300 L 980 -40'/><path d='M1120 900 L 1120 520 C 1120 380 1220 300 1380 300 L 1500 300'/></g></svg>");
-  background-size: 120% auto; background-position: 50% 50%;
-  /* door hole: 34vw wide, 78vh tall, bottom-aligned to the room floor */
-  clip-path: polygon(
-    0 0, 100% 0, 100% 100%, 0 100%, 0 0,
-    calc(50% - 17vw) calc(50% + 50svh - 78svh),
-    calc(50% - 17vw) calc(50% + 50svh),
-    calc(50% + 17vw) calc(50% + 50svh),
-    calc(50% + 17vw) calc(50% + 50svh - 78svh),
-    calc(50% - 17vw) calc(50% + 50svh - 78svh)
-  );
-}
-.facade__sign {
-  position: absolute; left: 50%; top: calc(50% + 50svh - 78svh - 14vh); transform: translateX(-50%);
-  color: var(--cream); text-align: center; white-space: nowrap;
-}
-.facade__sign .wordmark { justify-items: center; font-size: clamp(2rem, 5vw, 4.4rem); }
-.facade__sign .wordmark__sub { color: rgba(244,242,236,.7); }
-.facade__frame {
-  width: calc(34vw + 3vw); height: calc(78svh + 1.5vh);
-  transform: translate(-50%, -50%) translateY(calc(50svh - 39svh - 0.75vh)) translateZ(0.02px);
+.doors__frame {
+  position: absolute; left: 50%; top: calc(50% + var(--dy) - var(--dh) / 2 - 0.75vw);
+  width: calc(var(--dw) + 3vw); height: calc(var(--dh) + 1.5vw);
+  transform: translate(-50%, -50%);
   border: 1.5vw solid var(--cream); border-bottom: 0; box-sizing: border-box;
-  box-shadow: 0 0 0 0.3vw rgba(0,0,0,0.12);
+  box-shadow: 0 0 0 0.3vw rgba(0,0,0,0.14), inset 0 0 0 0.2vw rgba(0,0,0,0.08);
 }
-.door {
-  width: 17vw; height: 78svh; top: 50%;
-  background: linear-gradient(180deg, #f6f3ea, #e8e3d4);
-  border: 0.35vw solid #dcd6c4; box-sizing: border-box;
-  box-shadow: inset 0 0 0 1.4vw rgba(70,82,61,0.06);
-  transform-style: preserve-3d; backface-visibility: visible;
+.doors__leaf {
+  position: absolute; left: 50%; top: 50%; width: calc(var(--dw) / 2); height: var(--dh);
+  background: linear-gradient(180deg, #f6f3ea, #e6e1d2);
+  border: 0.32vw solid #d9d3c1; box-sizing: border-box;
+  box-shadow: inset 0 0 0 1.3vw rgba(70,82,61,0.06);
+  backface-visibility: visible;
 }
-.door::before { content: ""; position: absolute; inset: 14% 18% 22% 18%; border: 0.3vw solid rgba(70,82,61,0.22); }
-.door::after  { content: ""; position: absolute; top: 50%; width: 0.7vw; height: 8svh; background: var(--sand); border-radius: 1vw; }
-.door--l { left: 50%; transform-origin: 0 50%;   transform: translate(-100%, -50%) translateY(calc(50svh - 39svh)) translateZ(0.03px) rotateY(calc(var(--door) * 1deg)); }
-.door--r { left: 50%; transform-origin: 100% 50%; transform: translate(0, -50%)    translateY(calc(50svh - 39svh)) translateZ(0.03px) rotateY(calc(var(--door) * -1deg)); }
-.door--l::after { right: 8%; } .door--r::after { left: 8%; }
-
-/* props: flat cut-outs standing on the floor, like an architect's model */
-.prop {
-  position: absolute; left: 50%; top: 50%;
-  width: var(--w, 16vw); height: var(--h, 12vh);
-  transform: translate(-50%, -100%) translateX(var(--x, 0px)) translateY(calc(var(--H) / 2 - var(--y, 0px))) translateZ(calc(var(--z, -0.5) * var(--D)));
-  color: var(--prop, var(--green));
+.doors__leaf::before { content: ""; position: absolute; inset: 12% 16% 24% 16%; border: 0.28vw solid rgba(70,82,61,0.22); }
+.doors__leaf::after  { content: ""; position: absolute; top: 50%; width: 0.6vw; height: 8svh; background: var(--sand); border-radius: 1vw; transform: translateY(-50%); }
+.doors__leaf--l { transform-origin: 0 50%;    transform: translate(-100%, -50%) translateY(calc(var(--dy) - var(--dh) / 2)) rotateY(calc(var(--open) * 1deg)); }
+.doors__leaf--r { transform-origin: 100% 50%; transform: translate(0, -50%)     translateY(calc(var(--dy) - var(--dh) / 2)) rotateY(calc(var(--open) * -1deg)); }
+.doors__leaf--l::after { right: 9%; } .doors__leaf--r::after { left: 9%; }
+.doors__sign {
+  position: absolute; left: 50%; top: calc(50% + var(--dy) - var(--dh) - 3vh); transform: translate(-50%, -100%);
+  display: grid; justify-items: center; gap: 1.2vh; color: var(--cream); white-space: nowrap; text-align: center;
 }
-.prop svg { width: 100%; height: 100%; overflow: visible; }
-.prop--lamp { transform: translate(-50%, 0) translateX(var(--x, 0px)) translateY(calc(var(--H) / -2)) translateZ(calc(var(--z, -0.5) * var(--D))); }
-.prop--lamp .glow {
-  position: absolute; left: 50%; bottom: 0; width: 26vw; height: 26vw; border-radius: 50%;
-  transform: translate(-50%, 45%); background: radial-gradient(circle, var(--lamp) 0%, rgba(255,255,255,0) 65%);
-  opacity: var(--glow, 0.5); filter: blur(10px); pointer-events: none;
-}
-.prop--lamp .cord { position: absolute; left: 50%; top: 0; width: 0.25vw; height: calc(100% - 3.2vh); background: currentColor; transform: translateX(-50%); }
-.prop--lamp .shade { position: absolute; left: 50%; bottom: 0; width: 5vw; height: 3.2vh; transform: translateX(-50%); background: currentColor; border-radius: 0.6vw 0.6vw 50% 50% / 0.6vw 0.6vw 100% 100%; }
-.prop--lamp .shade::after { content: ""; position: absolute; left: 50%; bottom: -0.6vh; width: 2.4vw; height: 1.2vh; transform: translateX(-50%); border-radius: 50%; background: var(--lamp); box-shadow: 0 0 2vw var(--lamp); }
-.room--bar .prop { --prop: #0b100d; }
-.room--rest .prop { --prop: #5a3f2a; }
-.room--cafe .prop { --prop: #46523d; }
-/* window in the back wall shows the sky */
-.window {
-  position: absolute; background: linear-gradient(180deg, var(--sky-a), var(--sky-b));
-  border: 0.6vw solid var(--trim-solid, rgba(0,0,0,0.25)); box-shadow: inset 0 0 6vw rgba(255,255,255,0.25);
-  transition: background 0.6s linear;
-}
-.window::before, .window::after { content: ""; position: absolute; background: var(--trim-solid, rgba(0,0,0,0.25)); }
-.window::before { left: 50%; top: 0; bottom: 0; width: 0.5vw; transform: translateX(-50%); }
-.window::after  { top: 50%; left: 0; right: 0; height: 0.5vw; transform: translateY(-50%); }
+.doors__sign .wordmark { justify-items: center; font-size: clamp(2rem, 5vw, 4.4rem); }
+.doors__sign .wordmark__sub { color: rgba(244,242,236,.7); }
+.doors__label { font-size: 0.72rem; letter-spacing: 0.24em; text-transform: uppercase; color: var(--sand); }
 
 /* text panels scroll over the scene */
-.walk__steps { position: relative; z-index: 2; margin-top: -100svh; pointer-events: none; }
-.walk__step { min-height: 110svh; display: grid; align-items: center; }
-.walk__step:last-child { min-height: 120svh; }
-.walk__panel {
+.doors__steps { position: relative; z-index: 2; margin-top: -100svh; pointer-events: none; }
+.doors__step { min-height: 110svh; display: grid; align-items: center; }
+.doors__step:last-child { min-height: 235svh; }
+.doors__panel {
   pointer-events: auto; max-width: 30rem; padding: clamp(24px, 2.6vw, 40px);
   background: rgba(244,242,236,0.86); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
   border-radius: var(--radius); border: 1px solid rgba(31,38,28,0.08); box-shadow: var(--shadow);
   color: #1f261c;
 }
-.walk__panel .eyebrow { color: var(--green); }
-.walk__panel h2 { margin-top: 0.6rem; }
-.walk__panel h2 em { color: var(--panel-accent, var(--green)); }
-.walk__panel p { color: rgba(31,38,28,0.72); margin-top: 0.9rem; }
-.walk__panel .btn { margin-top: 1.3rem; color: #1f261c; border-color: rgba(31,38,28,0.2); }
-.walk__panel .btn::before { background: #1f261c; }
-.walk__panel .btn:hover { color: var(--cream); }
-.walk__panel .time { font-family: var(--font-display); font-size: clamp(2.2rem, 4vw, 3.6rem); font-weight: 300; letter-spacing: -0.03em; line-height: 1; color: var(--panel-accent, var(--green)); }
-.walk__step[data-room="rest"] .walk__panel { --panel-accent: var(--rest); }
-.walk__step[data-room="bar"]  .walk__panel { --panel-accent: #2c3e34; background: rgba(31,38,28,0.78); color: var(--cream); border-color: rgba(244,242,236,0.12); }
-.walk__step[data-room="bar"]  .walk__panel p { color: rgba(244,242,236,0.75); }
-.walk__step[data-room="bar"]  .walk__panel .eyebrow, .walk__step[data-room="bar"] .walk__panel .time, .walk__step[data-room="bar"] .walk__panel h2 em { color: #f0c070; }
-.walk__step[data-room="bar"]  .walk__panel .btn { color: var(--cream); border-color: rgba(244,242,236,0.3); }
-.walk__step[data-room="bar"]  .walk__panel .btn::before { background: var(--cream); }
-.walk__step[data-room="bar"]  .walk__panel .btn:hover { color: #1f261c; }
+.doors__panel .eyebrow { color: var(--green); }
+.doors__panel h2 { margin-top: 0.6rem; }
+.doors__panel h2 em { color: var(--panel-accent, var(--green)); }
+.doors__panel p { color: rgba(31,38,28,0.72); margin-top: 0.9rem; }
+.doors__panel .btn { margin-top: 1.3rem; color: #1f261c; border-color: rgba(31,38,28,0.2); }
+.doors__panel .btn::before { background: #1f261c; }
+.doors__panel .btn:hover { color: var(--cream); }
+.doors__panel .time { font-family: var(--font-display); font-size: clamp(2.2rem, 4vw, 3.6rem); font-weight: 300; letter-spacing: -0.03em; line-height: 1; color: var(--panel-accent, var(--green)); }
+.doors__step[data-room="rest"] .doors__panel { --panel-accent: var(--rest); }
+.doors__step[data-room="bar"]  .doors__panel { --panel-accent: #2c3e34; background: rgba(31,38,28,0.78); color: var(--cream); border-color: rgba(244,242,236,0.12); }
+.doors__step[data-room="bar"]  .doors__panel p { color: rgba(244,242,236,0.75); }
+.doors__step[data-room="bar"]  .doors__panel .eyebrow, .doors__step[data-room="bar"] .doors__panel .time, .doors__step[data-room="bar"] .doors__panel h2 em { color: #f0c070; }
+.doors__step[data-room="bar"]  .doors__panel .btn { color: var(--cream); border-color: rgba(244,242,236,0.3); }
+.doors__step[data-room="bar"]  .doors__panel .btn::before { background: var(--cream); }
+.doors__step[data-room="bar"]  .doors__panel .btn:hover { color: #1f261c; }
 
 /* HUD: time-of-day rail */
-.walk__hud {
+.doors__hud {
   position: absolute; right: var(--gutter); top: 50%; transform: translateY(-50%); z-index: 3;
   display: grid; gap: 1.1rem; font-size: 0.72rem; letter-spacing: 0.18em; text-transform: uppercase;
-  color: rgba(31,38,28,0.55); mix-blend-mode: multiply; transition: color 0.5s;
+  color: rgba(244,242,236,0.8); text-shadow: 0 1px 8px rgba(0,0,0,0.35);
 }
-.walk.is-night .walk__hud { color: rgba(244,242,236,0.7); mix-blend-mode: normal; }
-.walk__hud span { display: grid; grid-template-columns: 14px auto; gap: 0.8rem; align-items: center; opacity: 0.55; transition: opacity 0.4s; }
-.walk__hud span::before { content: ""; width: 14px; height: 1px; background: currentColor; transition: width 0.4s var(--ease); }
-.walk__hud span.is-active { opacity: 1; }
-.walk__hud span.is-active::before { width: 28px; }
+.doors__hud span { display: grid; grid-template-columns: 14px auto; gap: 0.8rem; align-items: center; opacity: 0.5; transition: opacity 0.4s; }
+.doors__hud span::before { content: ""; width: 14px; height: 1px; background: currentColor; transition: width 0.4s var(--ease); }
+.doors__hud span.is-active { opacity: 1; }
+.doors__hud span.is-active::before { width: 28px; }
 @media (max-width: 900px) {
-  .walk { --D: 160vw; --P: 120vw; }
-  .walk__hud { display: none; }
-  .walk__step { align-items: end; padding-bottom: 8svh; }
-  .walk__panel { max-width: none; padding: 20px; }
-  .facade { width: 400vw; }
-  .walk { --op: 26vw; }
-  .facade__sign .wordmark { font-size: 1.8rem; }
-  .prop.hide-sm { display: none; }
+  .doors { --dw: 62vw; --dh: 66svh; --dy: 40svh; }
+  .doors__hud { display: none; }
+  .doors__step { align-items: end; padding-bottom: 8svh; }
+  .doors__panel { max-width: none; padding: 20px; }
+  .doors__sign .wordmark { font-size: 1.8rem; }
+  .doors__frame { border-width: 3vw; width: calc(var(--dw) + 6vw); height: calc(var(--dh) + 3vw); top: calc(50% + var(--dy) - var(--dh) / 2 - 1.5vw); }
 }
 
 /* ------------------------------------------------ reduced motion */

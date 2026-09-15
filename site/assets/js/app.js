@@ -15,7 +15,7 @@
      data-count="120"                        number counts up when in view
      data-magnetic                           button leans toward the cursor
      data-lift[="0.5"]                       tilts toward the cursor, rises on Z and zooms (hover)
-     .walk                                   the scroll-driven 3D building walkthrough
+     .doors                                  the scroll-driven door sequence (one door, three rooms)
 
    Respects prefers-reduced-motion: all motion collapses to static.
    ===================================================================== */
@@ -326,85 +326,75 @@
     });
   });
 
-  // --------------------------------------------------------------- the walkthrough
-  // A CSS-3D building. Scroll drives the camera (eye) along -z: outside the façade,
-  // through the doors, café → restaurant → bar. Eye positions are anchored to where
-  // each text panel is centred in the viewport, so layout changes can't desync them.
-  const walk = $(".walk");
-  const WK = walk ? {
-    el: walk,
-    sticky: $(".walk__sticky", walk),
-    steps: $$(".walk__step", walk),
-    hud: $$(".walk__hud span", walk),
-    anchors: [],        // document scrollY at which step k is centred
-    pOverD: 0.875,      // perspective distance in room-depth units
-    top: 0, h: 0, room: -1, lastEye: NaN,
+  // --------------------------------------------------------------- the door sequence
+  // One door, three rooms. Scroll progress P runs 0→3 (one unit per room); within a
+  // room, p in [0,1] phases: approach → open → travel in → hold → travel out → close.
+  // P is anchored to where each text panel is centred in the viewport.
+  const doors = $(".doors");
+  const DR = doors ? {
+    el: doors,
+    rooms: $$(".doors__room", doors),
+    steps: $$(".doors__step", doors),
+    hud: $$(".doors__hud span", doors),
+    label: $(".doors__label", doors),
+    anchors: [], top: 0, h: 0, room: -1, hudIdx: -1, lastP: NaN,
   } : null;
-  const EYE = [1.25, -0.5, -1.5, -2.3];   // eye z (room units) per step: outside, café, restaurant, bar
-  // sky / sun keyframes by eye position (descending), colours as hex
-  const SKY = [
-    { e:  1.8, a: "#d9e3e6", b: "#f2e6d0", sun: "#f6d9a0", sx: 26, sy: -20 },   // dawn, outside
-    { e:  0.0, a: "#cfe0ea", b: "#f6f0dc", sun: "#f7e2a8", sx: 18, sy: -28 },   // morning
-    { e: -1.0, a: "#d6e0dd", b: "#f3e2c0", sun: "#f6d28e", sx:  6, sy: -32 },   // late morning
-    { e: -1.8, a: "#e6cfae", b: "#f0c084", sun: "#ef9f4e", sx: -10, sy: -10 },  // afternoon → dusk
-    { e: -2.3, a: "#0f1a17", b: "#1c2a24", sun: "#f0c070", sx: -22, sy: -30 },  // night
-  ];
-  const hex = (h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
-  const mixHex = (h1, h2, t) => { const a = hex(h1), b = hex(h2); return `rgb(${a.map((v, i) => Math.round(lerp(v, b[i], t))).join(",")})`; };
+  const CH = [0.06, 0.62, 1.62, 2.62];                     // P when each step (entry, café, restaurant, bar) is centred
+  const ROOM_KEYS = ["cafe", "rest", "bar"];
+  const ROOM_LABELS = ["08:00 · Café", "14:00 · Restaurant", "23:00 · Bar"];
   const smooth = (t) => t * t * (3 - 2 * t);
+  const seg = (p, a, b) => clamp((p - a) / (b - a), 0, 1);
 
   function measureWalk() {
-    if (!WK) return;
-    const r = WK.el.getBoundingClientRect();
-    WK.top = r.top + S.y; WK.h = r.height;
-    const cs = getComputedStyle(WK.el);
-    const P = parseFloat(cs.getPropertyValue("--P")) || 105, D = parseFloat(cs.getPropertyValue("--D")) || 120;
-    WK.pOverD = P / D;
-    WK.anchors = WK.steps.map((st) => {
-      const sr = st.getBoundingClientRect();
-      return sr.top + S.y + sr.height / 2 - S.vh / 2;
-    });
-    WK.lastEye = NaN;
+    if (!DR) return;
+    const r = DR.el.getBoundingClientRect();
+    DR.top = r.top + S.y; DR.h = r.height;
+    DR.anchors = DR.steps.map((st) => { const sr = st.getBoundingClientRect(); return sr.top + S.y + sr.height / 2 - S.vh / 2; });
+    DR.lastP = NaN;
   }
-  function eyeAt(scroll) {
-    const A = WK.anchors, n = A.length;
-    if (n < 2) return EYE[0];
+  function progressAt(scroll) {
+    const A = DR.anchors, n = A.length;
+    if (n < 2) return 0;
     let i = 0;
     while (i < n - 2 && scroll > A[i + 1]) i++;
-    const t = (scroll - A[i]) / (A[i + 1] - A[i]);       // may extrapolate beyond [0,1]
-    return clamp(lerp(EYE[i], EYE[i + 1], t), -2.5, 1.9);
+    const t = (scroll - A[i]) / (A[i + 1] - A[i]);
+    return clamp(lerp(CH[i], CH[i + 1], t), 0, 3);
   }
   function tickWalk() {
-    if (!WK) return;
-    if (S.y + S.vh < WK.top - S.vh || S.y > WK.top + WK.h + S.vh) return;   // far away: skip
-    const eye = eyeAt(S.sy);
-    if (Math.abs(eye - WK.lastEye) > 0.0004 || finePointer) {
-      WK.lastEye = eye;
-      const st = WK.el.style;
-      st.setProperty("--cam", (-(eye - WK.pOverD)).toFixed(4));
-      // doors swing as you approach the threshold
-      st.setProperty("--door", (smooth(clamp((0.85 - eye) / 0.6, 0, 1)) * 108).toFixed(2));
-      // time of day
-      let k = 0; while (k < SKY.length - 2 && eye < SKY[k + 1].e) k++;
-      const K0 = SKY[k], K1 = SKY[k + 1];
-      const t = clamp((K0.e - eye) / (K0.e - K1.e), 0, 1);
-      st.setProperty("--sky-a", mixHex(K0.a, K1.a, t));
-      st.setProperty("--sky-b", mixHex(K0.b, K1.b, t));
-      st.setProperty("--sun", mixHex(K0.sun, K1.sun, t));
-      st.setProperty("--sun-x", `${lerp(K0.sx, K1.sx, t).toFixed(1)}vw`);
-      st.setProperty("--sun-y", `${lerp(K0.sy, K1.sy, t).toFixed(1)}vh`);
-      // which room are we in?
-      const room = eye > 0.15 ? 0 : eye > -1 ? 1 : eye > -2 ? 2 : 3;
-      if (room !== WK.room) {
-        WK.room = room;
-        WK.hud.forEach((h, i) => h.classList.toggle("is-active", i === room));
-        WK.el.classList.toggle("is-night", room === 3);
+    if (!DR) return;
+    if (S.y + S.vh < DR.top - S.vh || S.y > DR.top + DR.h + S.vh) return;
+    const P = progressAt(S.sy);
+    const k = Math.min(2, Math.floor(P));
+    const p = P >= 3 ? 1 : P - k;
+    if (Math.abs(P - DR.lastP) > 0.0003 || finePointer) {
+      DR.lastP = P;
+      let dolly;
+      if (p < 0.32)      dolly = lerp(0.7, 1, smooth(seg(p, 0, 0.18)));
+      else if (p < 0.72) dolly = lerp(1, 4.4, smooth(seg(p, 0.32, 0.58)));
+      else if (p < 0.92) dolly = lerp(4.4, 1, smooth(seg(p, 0.72, 0.9)));
+      else               dolly = lerp(1, 0.7, smooth(seg(p, 0.92, 1)));
+      const open = p < 0.5 ? 108 * smooth(seg(p, 0.14, 0.34)) : 108 * (1 - smooth(seg(p, 0.86, 0.98)));
+      const zoom = p < 0.58 ? lerp(1, 1.18, smooth(seg(p, 0.32, 0.58)))
+                 : p < 0.72 ? lerp(1.18, 1.24, seg(p, 0.58, 0.72))
+                 :            lerp(1.24, 1, smooth(seg(p, 0.72, 0.9)));
+      const st = DR.el.style;
+      st.setProperty("--dolly", dolly.toFixed(4));
+      st.setProperty("--open", open.toFixed(2));
+      st.setProperty("--zoom", zoom.toFixed(4));
+      if (k !== DR.room) {
+        DR.room = k;
+        DR.rooms.forEach((r, i) => r.classList.toggle("is-active", i === k));
+        DR.el.dataset.room = ROOM_KEYS[k];
+        if (DR.label) DR.label.textContent = ROOM_LABELS[k];
       }
+      const hudIdx = (k === 0 && p < 0.2) ? 0 : k + 1;
+      if (hudIdx !== DR.hudIdx) { DR.hudIdx = hudIdx; DR.hud.forEach((h, i) => h.classList.toggle("is-active", i === hudIdx)); }
     }
-    // gentle look-around with the mouse
+    // slight look-around with the mouse
     if (finePointer && !reduce) {
       const nx = (S.smx / S.vw - 0.5) * 2, ny = (S.smy / S.vh - 0.5) * 2;
-      WK.sticky.style.perspectiveOrigin = `${(50 + nx * 5).toFixed(2)}% ${(50 + ny * 4).toFixed(2)}%`;
+      DR.el.style.setProperty("--mx", `${(-nx * 1.2).toFixed(2)}%`);
+      DR.el.style.setProperty("--my", `${(-ny * 0.8).toFixed(2)}%`);
     }
   }
 
