@@ -174,22 +174,33 @@ def main() -> int:
     train_genes = {t.gene for d in sample.values() for t in d["train"]}
     is_train = np.array([g in train_genes for g in genes])
 
-    # Sequence and annotation blocks, then the gene-level database blocks.
-    records = load_uniprot(D / "uniprot.json")
-    esm = None
-    if (D / "esm.npz").exists():
-        with np.load(D / "esm.npz", allow_pickle=False) as z:
-            esm = {str(g): v for g, v in zip(z["genes"], z["emb"], strict=True)}
-    families = training_families(sample)
-    base = build_vectors(sample, families, compartment_form="dominant")
-    blocks = build_blocks(records, esm=esm, baseline={g: v[19:] for g, v in base.items()})
-    blocks.pop("location_kw", None)  # circular; excluded from every combination here
-    with np.load(D / "gene_blocks.npz", allow_pickle=False) as z:
-        gene_names = [str(g) for g in z["genes"]]
-        for name in z.files:
-            if name == "genes":
-                continue
-            blocks[name] = {g: v for g, v in zip(gene_names, z[name], strict=True)}
+    # Sequence and annotation blocks, where available, then the gene-level
+    # database blocks. A sample built without the UniProt or ESM step still
+    # screens whatever it does have.
+    blocks: dict[str, dict[str, np.ndarray]] = {}
+    if (D / "uniprot.json").exists():
+        records = load_uniprot(D / "uniprot.json")
+        esm = None
+        if (D / "esm.npz").exists():
+            with np.load(D / "esm.npz", allow_pickle=False) as z:
+                esm = {str(g): v for g, v in zip(z["genes"], z["emb"], strict=True)}
+        families = training_families(sample)
+        base = build_vectors(sample, families, compartment_form="dominant")
+        blocks = build_blocks(records, esm=esm,
+                              baseline={g: v[19:] for g, v in base.items()})
+        blocks.pop("location_kw", None)   # circular; never in any combination
+    else:
+        print("(no uniprot.json: sequence and annotation blocks skipped)")
+    for source in ("gene_blocks.npz", "biophysics.npz"):
+        if not (D / source).exists():
+            continue
+        with np.load(D / source, allow_pickle=False) as z:
+            gene_names = [str(g) for g in z["genes"]]
+            for name in z.files:
+                if name == "genes":
+                    continue
+                blocks[name] = {g: v for g, v in
+                                zip(gene_names, z[name], strict=True)}
 
     candidate_sets = [[t.gene for t in sample[c]["held_out"] if t.gene in set(genes)]
                       for c in COMPARTMENTS]
@@ -208,6 +219,10 @@ def main() -> int:
     # fixed held-out set, so the Bonferroni threshold reported with the results
     # counts these too.
     combos["string_profile + string_channels"] = ["string_profile", "string_channels"]
+    # The biophysical fingerprint: size, shape, surface charge, and the
+    # diffusion coefficient Stokes-Einstein implies from them.
+    combos["biophysics (all)"] = ["bio_shape", "bio_diffusion", "bio_charge"]
+    combos["biophysics + string"] = ["biophysics", "string_profile"]
     combos["esm + string_profile"] = ["esm", "string_profile"]
     combos["esm + string (both)"] = ["esm", "string_profile", "string_channels"]
 
