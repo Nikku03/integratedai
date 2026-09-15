@@ -1,0 +1,1457 @@
+{
+ "per_plate": [
+  {
+   "compartment": "chromatin",
+   "plate": "P0011",
+   "candidates": 2,
+   "tiles": 21,
+   "top1": 0.7619047619047619,
+   "top1_ci": [
+    0.6666666666666666,
+    0.8
+   ],
+   "chance": 0.5,
+   "genes": [
+    "CTNNBL1",
+    "TOP1"
+   ]
+  },
+  {
+   "compartment": "chromatin",
+   "plate": "P0013",
+   "candidates": 2,
+   "tiles": 17,
+   "top1": 0.29411764705882354,
+   "top1_ci": [
+    0.25,
+    0.3333333333333333
+   ],
+   "chance": 0.5,
+   "genes": [
+    "BAZ1A",
+    "BAZ1B"
+   ]
+  },
+  {
+   "compartment": "chromatin",
+   "plate": "P0014",
+   "candidates": 2,
+   "tiles": 30,
+   "top1": 0.9,
+   "top1_ci": [
+    0.875,
+    0.9285714285714286
+   ],
+   "chance": 0.5,
+   "genes": [
+    "PRPF4B",
+    "TRIM24"
+   ]
+  },
+  {
+   "compartment": "chromatin",
+   "plate": "P0017",
+   "candidates": 17,
+   "tiles": 130,
+   "top1": 0.13846153846153847,
+   "top1_ci": [
+    0.08399888881172304,
+    0.1984126984126984
+   ],
+   "chance": 0.05882352941176471,
+   "genes": [
+    "RBM10",
+    "RBM17",
+    "RBM22",
+    "RBM33",
+    "RBM39",
+    "RBM42",
+    "RBM5",
+    "RBM8A",
+    "SF3A1",
+    "SF3B1",
+    "SF3B2",
+    "SF3B3",
+    "SF3B5",
+    "SF3B6",
+    "SNRNP40",
+    "SNRPB2",
+    "SNRPF"
+   ]
+  },
+  {
+   "compartment": "chromatin",
+   "plate": "P0019",
+   "candidates": 6,
+   "tiles": 60,
+   "top1": 0.55,
+   "top1_ci": [
+    0.20833333333333334,
+    0.7777777777777778
+   ],
+   "chance": 0.1666666666666666,
+   "genes": [
+    "EFTUD2",
+    "HNRNPH1",
+    "PRPF19",
+    "RAD21",
+    "STAG2",
+    "U2SURP"
+   ]
+  },
+  {
+   "compartment": "chromatin",
+   "plate": "P0021",
+   "candidates": 3,
+   "tiles": 23,
+   "top1": 0.21739130434782608,
+   "top1_ci": [
+    0.1,
+    0.5
+   ],
+   "chance": 0.3333333333333332,
+   "genes": [
+    "H2AZ1",
+    "HMGN2",
+    "NUCKS1"
+   ]
+  },
+  {
+   "compartment": "cytoplasmic",
+   "plate": "P0001",
+   "candidates": 3,
+   "tiles": 19,
+   "top1": 0.631578947368421,
+   "top1_ci": [
+    0.3333333333333333,
+    0.8571428571428571
+   ],
+   "chance": 0.33333333333333326,
+   "genes": [
+    "C14orf119",
+    "MTOR",
+    "RABGAP1L"
+   ]
+  },
+  {
+   "compartment": "cytoplasmic",
+   "plate": "P0002",
+   "candidates": 4,
+   "tiles": 38,
+   "top1": 0.7105263157894737,
+   "top1_ci": [
+    0.5,
+    0.7857142857142857
+   ],
+   "chance": 0.25,
+   "genes": [
+    "CHMP7",
+    "TSG101",
+    "TUBA1B",
+    "VPS37B"
+   ]
+  },
+  {
+   "compartment": "cytoplasmic",
+   "plate": "P0003",
+   "candidates": 2,
+   "tiles": 20,
+   "top1": 1.0,
+   "top1_ci": [
+    1.0,
+    1.0
+   ],
+   "chance": 0.5,
+   "genes": [
+    "RPL10A",
+    "RPL27"
+   ]
+  },
+  {
+   "compartment": "cytoplasmic",
+   "plate": "P0005",
+   "candidates": 6,
+   "tiles": 59,
+   "top1": 0.2711864406779661,
+   "top1_ci": [
+    0.11538461538461539,
+    0.40364832535885153
+   ],
+   "chance": 0.16666666666666663,
+   "genes": [
+    "BTF3",
+    "CHM",
+    "DNAJC2",
+    "G3BP2",
+    "HSPA14",
+    "PDCD6IP"
+   ]
+  },
+  {
+   "compartment": "cytoplasmic",
+   "plate": "P0006",
+   "candidates": 7,
+   "tiles": 73,
+   "top1": 0.5068493150684932,
+   "top1_ci": [
+    0.38351207642393653,
+    0.6307692307692307
+   ],
+   "chance": 0.14285714285714282,
+   "genes": [
+    "INPP4A",
+    "OCRL",
+    "PIK3C2A",
+    "PIK3C3",
+    "PIP4K2A",
+    "PSME1",
+    "PSME2"
+   ]
+  },
+  {
+   "compartment": "cytoplasmic",
+   "plate": "P0007",
+   "candidates": 5,
+   "tiles": 60,
+   "top1": 0.38333333333333336,
+   "top1_ci": [
+    0.3,
+    0.4461538461538462
+   ],
+   "chance": 0.19999999999999993,
+   "genes": [
+    "ACLY",
+    "CCT3",
+    "CCT4",
+    "CCT5",
+    "CCT6A"
+   ]
+  },
+  {
+   "compartment": "cytoplasmic",
+   "plate": "P0008",
+   "candidates": 6,
+   "tiles": 65,
+   "top1": 0.3076923076923077,
+   "top1_ci": [
+    0.17391304347826086,
+    0.4492753623188406
+   ],
+   "chance": 0.16666666666666666,
+   "genes": [
+    "DNM1",
+    "PACSIN2",
+    "SNX9",
+    "TRAPPC2",
+    "WASF2",
+    "YWHAQ"
+   ]
+  },
+  {
+   "compartment": "cytoplasmic",
+   "plate": "P0009",
+   "candidates": 6,
+   "tiles": 66,
+   "top1": 0.5606060606060606,
+   "top1_ci": [
+    0.39655172413793105,
+    0.71875
+   ],
+   "chance": 0.16666666666666663,
+   "genes": [
+    "ARHGAP35",
+    "DIAPH1",
+    "PFN1",
+    "RAC3",
+    "RHOC",
+    "SOS1"
+   ]
+  },
+  {
+   "compartment": "cytoplasmic",
+   "plate": "P0010",
+   "candidates": 5,
+   "tiles": 54,
+   "top1": 0.2777777777777778,
+   "top1_ci": [
+    0.13052842692710154,
+    0.41818181818181815
+   ],
+   "chance": 0.19999999999999993,
+   "genes": [
+    "APPL2",
+    "EIF2AK2",
+    "SH3GLB1",
+    "SH3GLB2",
+    "SNX17"
+   ]
+  },
+  {
+   "compartment": "cytoplasmic",
+   "plate": "P0011",
+   "candidates": 8,
+   "tiles": 102,
+   "top1": 0.3627450980392157,
+   "top1_ci": [
+    0.2067803177063154,
+    0.5135197123729234
+   ],
+   "chance": 0.125,
+   "genes": [
+    "CAD",
+    "CSK",
+    "ECPAS",
+    "EIF3K",
+    "FAU",
+    "GAPDH",
+    "PDCL3",
+    "RPS16"
+   ]
+  },
+  {
+   "compartment": "cytoplasmic",
+   "plate": "P0012",
+   "candidates": 3,
+   "tiles": 14,
+   "top1": 0.0,
+   "top1_ci": [
+    0.0,
+    0.0
+   ],
+   "chance": 0.3333333333333333,
+   "genes": [
+    "AAMP",
+    "GLUL",
+    "SRP68"
+   ]
+  },
+  {
+   "compartment": "cytoplasmic",
+   "plate": "P0013",
+   "candidates": 12,
+   "tiles": 128,
+   "top1": 0.140625,
+   "top1_ci": [
+    0.055544619422572175,
+    0.22464673913043479
+   ],
+   "chance": 0.08333333333333331,
+   "genes": [
+    "AGO2",
+    "ARAF",
+    "CAMK1",
+    "GSK3A",
+    "GSK3B",
+    "IKBKB",
+    "IRAK1",
+    "MAP2K1",
+    "MAP2K2",
+    "MAP3K7",
+    "MAPK1",
+    "RACK1"
+   ]
+  },
+  {
+   "compartment": "cytoplasmic",
+   "plate": "P0014",
+   "candidates": 17,
+   "tiles": 215,
+   "top1": 0.10697674418604651,
+   "top1_ci": [
+    0.052619107009229234,
+    0.1614531571930675
+   ],
+   "chance": 0.058823529411764705,
+   "genes": [
+    "MKNK1",
+    "NEK9",
+    "NRBP1",
+    "OXSR1",
+    "PAK4",
+    "PASK",
+    "PHKG2",
+    "PKN1",
+    "RIOK1",
+    "RIOK2",
+    "RIOK3",
+    "SCYL1",
+    "SLK",
+    "STK26",
+    "STK4",
+    "TAOK1",
+    "WNK1"
+   ]
+  },
+  {
+   "compartment": "cytoplasmic",
+   "plate": "P0015",
+   "candidates": 4,
+   "tiles": 58,
+   "top1": 0.22413793103448276,
+   "top1_ci": [
+    0.10714285714285714,
+    0.35
+   ],
+   "chance": 0.25,
+   "genes": [
+    "ANKRD17",
+    "ANKRD28",
+    "ANKRD52",
+    "ANKZF1"
+   ]
+  },
+  {
+   "compartment": "cytoplasmic",
+   "plate": "P0016",
+   "candidates": 7,
+   "tiles": 79,
+   "top1": 0.16455696202531644,
+   "top1_ci": [
+    0.056338028169014086,
+    0.2533829787234042
+   ],
+   "chance": 0.14285714285714277,
+   "genes": [
+    "ATXN2L",
+    "CAPRIN1",
+    "FAM120A",
+    "FXR1",
+    "FXR2",
+    "NUFIP2",
+    "USP10"
+   ]
+  },
+  {
+   "compartment": "cytoplasmic",
+   "plate": "P0017",
+   "candidates": 7,
+   "tiles": 66,
+   "top1": 0.3333333333333333,
+   "top1_ci": [
+    0.11663461538461539,
+    0.521158293041833
+   ],
+   "chance": 0.1428571428571428,
+   "genes": [
+    "DYNC1LI1",
+    "DYNC1LI2",
+    "KIF20A",
+    "KIF3B",
+    "KIFBP",
+    "RBM38",
+    "UPF1"
+   ]
+  },
+  {
+   "compartment": "cytoplasmic",
+   "plate": "P0018",
+   "candidates": 6,
+   "tiles": 63,
+   "top1": 0.3333333333333333,
+   "top1_ci": [
+    0.16071428571428573,
+    0.4898526077097505
+   ],
+   "chance": 0.16666666666666657,
+   "genes": [
+    "ATXN10",
+    "DRG1",
+    "GYG1",
+    "PPP6R1",
+    "SRP19",
+    "SRP72"
+   ]
+  },
+  {
+   "compartment": "cytoplasmic",
+   "plate": "P0019",
+   "candidates": 14,
+   "tiles": 167,
+   "top1": 0.17964071856287425,
+   "top1_ci": [
+    0.09084224598930482,
+    0.27605238970588236
+   ],
+   "chance": 0.0714285714285714,
+   "genes": [
+    "AKT1S1",
+    "CASP3",
+    "CTPS1",
+    "EEF1G",
+    "EIF3B",
+    "EIF3G",
+    "EIF4A1",
+    "GSPT1",
+    "METAP2",
+    "NFKB1",
+    "PABPC4",
+    "RELA",
+    "RPL13",
+    "RPL4"
+   ]
+  },
+  {
+   "compartment": "cytoplasmic",
+   "plate": "P0021",
+   "candidates": 7,
+   "tiles": 66,
+   "top1": 0.3484848484848485,
+   "top1_ci": [
+    0.18329545454545454,
+    0.5001543209876542
+   ],
+   "chance": 0.1428571428571428,
+   "genes": [
+    "ATG12",
+    "ATG3",
+    "ATG7",
+    "NEMF",
+    "PDAP1",
+    "TCF25",
+    "UBA5"
+   ]
+  },
+  {
+   "compartment": "er",
+   "plate": "P0001",
+   "candidates": 7,
+   "tiles": 64,
+   "top1": 0.3125,
+   "top1_ci": [
+    0.2222222222222222,
+    0.4091095380029806
+   ],
+   "chance": 0.14285714285714282,
+   "genes": [
+    "BCAP31",
+    "OSBPL8",
+    "RAB10",
+    "RAB8B",
+    "RTN4",
+    "SEC61B",
+    "SPTLC1"
+   ]
+  },
+  {
+   "compartment": "er",
+   "plate": "P0002",
+   "candidates": 2,
+   "tiles": 25,
+   "top1": 0.72,
+   "top1_ci": [
+    0.6666666666666666,
+    0.7692307692307693
+   ],
+   "chance": 0.5,
+   "genes": [
+    "BNIP1",
+    "STX18"
+   ]
+  },
+  {
+   "compartment": "er",
+   "plate": "P0004",
+   "candidates": 8,
+   "tiles": 87,
+   "top1": 0.25287356321839083,
+   "top1_ci": [
+    0.14285714285714285,
+    0.39325842696629215
+   ],
+   "chance": 0.125,
+   "genes": [
+    "CERS5",
+    "CYB5R3",
+    "GPAT4",
+    "LPCAT1",
+    "NSDHL",
+    "PTDSS2",
+    "SGPL1",
+    "STIM1"
+   ]
+  },
+  {
+   "compartment": "er",
+   "plate": "P0007",
+   "candidates": 5,
+   "tiles": 35,
+   "top1": 0.11428571428571428,
+   "top1_ci": [
+    0.022222222222222223,
+    0.28040740740740705
+   ],
+   "chance": 0.20000000000000004,
+   "genes": [
+    "DAD1",
+    "DDOST",
+    "OST4",
+    "STT3A",
+    "STT3B"
+   ]
+  },
+  {
+   "compartment": "er",
+   "plate": "P0010",
+   "candidates": 2,
+   "tiles": 20,
+   "top1": 0.3,
+   "top1_ci": [
+    0.2,
+    0.4
+   ],
+   "chance": 0.5,
+   "genes": [
+    "ARF4",
+    "ARF5"
+   ]
+  },
+  {
+   "compartment": "er",
+   "plate": "P0016",
+   "candidates": 3,
+   "tiles": 37,
+   "top1": 0.6486486486486487,
+   "top1_ci": [
+    0.15384615384615385,
+    0.9230769230769231
+   ],
+   "chance": 0.33333333333333337,
+   "genes": [
+    "REEP3",
+    "REEP4",
+    "REEP5"
+   ]
+  },
+  {
+   "compartment": "er",
+   "plate": "P0018",
+   "candidates": 2,
+   "tiles": 26,
+   "top1": 0.8846153846153846,
+   "top1_ci": [
+    0.8461538461538461,
+    0.9230769230769231
+   ],
+   "chance": 0.5,
+   "genes": [
+    "EMC3",
+    "SRPRA"
+   ]
+  },
+  {
+   "compartment": "er",
+   "plate": "P0021",
+   "candidates": 8,
+   "tiles": 70,
+   "top1": 0.22857142857142856,
+   "top1_ci": [
+    0.08951931518876206,
+    0.410958904109589
+   ],
+   "chance": 0.125,
+   "genes": [
+    "EMC1",
+    "EMC2",
+    "EMC4",
+    "EMC7",
+    "EMC8",
+    "TMEM147",
+    "TMEM208",
+    "VMP1"
+   ]
+  },
+  {
+   "compartment": "er",
+   "plate": "P0022",
+   "candidates": 2,
+   "tiles": 19,
+   "top1": 0.8421052631578947,
+   "top1_ci": [
+    0.75,
+    0.9090909090909091
+   ],
+   "chance": 0.5,
+   "genes": [
+    "CCDC47",
+    "NCLN"
+   ]
+  },
+  {
+   "compartment": "membrane",
+   "plate": "P0003",
+   "candidates": 2,
+   "tiles": 21,
+   "top1": 0.5714285714285714,
+   "top1_ci": [
+    0.5714285714285714,
+    0.5714285714285714
+   ],
+   "chance": 0.5,
+   "genes": [
+    "ATP2B1",
+    "EZR"
+   ]
+  },
+  {
+   "compartment": "membrane",
+   "plate": "P0006",
+   "candidates": 3,
+   "tiles": 20,
+   "top1": 0.6,
+   "top1_ci": [
+    0.3333333333333333,
+    0.8181818181818182
+   ],
+   "chance": 0.33333333333333326,
+   "genes": [
+    "PI4KA",
+    "PIP4K2C",
+    "PIP5K1C"
+   ]
+  },
+  {
+   "compartment": "membrane",
+   "plate": "P0008",
+   "candidates": 4,
+   "tiles": 52,
+   "top1": 0.6730769230769231,
+   "top1_ci": [
+    0.4,
+    0.8983050847457628
+   ],
+   "chance": 0.25,
+   "genes": [
+    "ACTR2",
+    "CORO1B",
+    "KRAS",
+    "PICALM"
+   ]
+  },
+  {
+   "compartment": "membrane",
+   "plate": "P0009",
+   "candidates": 2,
+   "tiles": 21,
+   "top1": 1.0,
+   "top1_ci": [
+    1.0,
+    1.0
+   ],
+   "chance": 0.5,
+   "genes": [
+    "RAC1",
+    "UTRN"
+   ]
+  },
+  {
+   "compartment": "membrane",
+   "plate": "P0010",
+   "candidates": 4,
+   "tiles": 40,
+   "top1": 0.45,
+   "top1_ci": [
+    0.375,
+    0.59375
+   ],
+   "chance": 0.25,
+   "genes": [
+    "ARF6",
+    "CTNNB1",
+    "PACSIN3",
+    "SEPTIN7"
+   ]
+  },
+  {
+   "compartment": "membrane",
+   "plate": "P0013",
+   "candidates": 2,
+   "tiles": 15,
+   "top1": 0.5333333333333333,
+   "top1_ci": [
+    0.16666666666666666,
+    0.7777777777777778
+   ],
+   "chance": 0.5,
+   "genes": [
+    "AKT2",
+    "CDC42BPB"
+   ]
+  },
+  {
+   "compartment": "membrane",
+   "plate": "P0017",
+   "candidates": 2,
+   "tiles": 20,
+   "top1": 0.55,
+   "top1_ci": [
+    0.25,
+    0.75
+   ],
+   "chance": 0.5,
+   "genes": [
+    "MYO1B",
+    "MYO1C"
+   ]
+  },
+  {
+   "compartment": "nucleolus_gc",
+   "plate": "P0001",
+   "candidates": 2,
+   "tiles": 14,
+   "top1": 0.8571428571428571,
+   "top1_ci": [
+    0.5,
+    1.0
+   ],
+   "chance": 0.5,
+   "genes": [
+    "C18orf21",
+    "C7orf50"
+   ]
+  },
+  {
+   "compartment": "nucleolus_gc",
+   "plate": "P0003",
+   "candidates": 3,
+   "tiles": 22,
+   "top1": 0.5909090909090909,
+   "top1_ci": [
+    0.0,
+    0.9090909090909091
+   ],
+   "chance": 0.33333333333333326,
+   "genes": [
+    "MYBBP1A",
+    "NPM3",
+    "RRP1"
+   ]
+  },
+  {
+   "compartment": "nucleolus_gc",
+   "plate": "P0011",
+   "candidates": 4,
+   "tiles": 28,
+   "top1": 0.7142857142857143,
+   "top1_ci": [
+    0.0,
+    1.0
+   ],
+   "chance": 0.25,
+   "genes": [
+    "CCDC86",
+    "NOP2",
+    "NSA2",
+    "WDR3"
+   ]
+  },
+  {
+   "compartment": "nucleolus_gc",
+   "plate": "P0012",
+   "candidates": 27,
+   "tiles": 162,
+   "top1": 0.18518518518518517,
+   "top1_ci": [
+    0.07137896825396825,
+    0.3295908418504572
+   ],
+   "chance": 0.037037037037037035,
+   "genes": [
+    "AATF",
+    "BUD23",
+    "BYSL",
+    "DDX21",
+    "DDX47",
+    "DDX56",
+    "DHX37",
+    "GNL2",
+    "GNL3",
+    "IMP3",
+    "MPHOSPH10",
+    "NCL",
+    "NMD3",
+    "NOL11",
+    "NOM1",
+    "NOP53",
+    "NVL",
+    "PDCD11",
+    "RPP30",
+    "RSL1D1",
+    "SPOUT1",
+    "SRP9",
+    "USP36",
+    "UTP14A",
+    "WDR12",
+    "WDR75",
+    "ZCCHC9"
+   ]
+  },
+  {
+   "compartment": "nucleolus_gc",
+   "plate": "P0017",
+   "candidates": 2,
+   "tiles": 19,
+   "top1": 0.6842105263157895,
+   "top1_ci": [
+    0.4444444444444444,
+    0.9
+   ],
+   "chance": 0.5,
+   "genes": [
+    "RBM19",
+    "RBM34"
+   ]
+  },
+  {
+   "compartment": "nucleoplasm",
+   "plate": "P0005",
+   "candidates": 3,
+   "tiles": 11,
+   "top1": 0.9090909090909091,
+   "top1_ci": [
+    0.5,
+    1.0
+   ],
+   "chance": 0.33333333333333337,
+   "genes": [
+    "DNAJC17",
+    "HSF1",
+    "HSPA4"
+   ]
+  },
+  {
+   "compartment": "nucleoplasm",
+   "plate": "P0006",
+   "candidates": 10,
+   "tiles": 130,
+   "top1": 0.27692307692307694,
+   "top1_ci": [
+    0.15573315118397085,
+    0.4252012574920672
+   ],
+   "chance": 0.09999999999999999,
+   "genes": [
+    "PSMA5",
+    "PSMB4",
+    "PSMC4",
+    "PSMC5",
+    "PSMC6",
+    "PSMD1",
+    "PSMD13",
+    "PSMD2",
+    "PSMD7",
+    "PSME3"
+   ]
+  },
+  {
+   "compartment": "nucleoplasm",
+   "plate": "P0010",
+   "candidates": 4,
+   "tiles": 13,
+   "top1": 0.23076923076923078,
+   "top1_ci": [
+    0.0,
+    0.42857142857142855
+   ],
+   "chance": 0.25,
+   "genes": [
+    "POLR2C",
+    "POLR2D",
+    "POLR2I",
+    "POLR3C"
+   ]
+  },
+  {
+   "compartment": "nucleoplasm",
+   "plate": "P0011",
+   "candidates": 6,
+   "tiles": 69,
+   "top1": 0.34782608695652173,
+   "top1_ci": [
+    0.20338320974576274,
+    0.5239087301587301
+   ],
+   "chance": 0.1666666666666666,
+   "genes": [
+    "C9orf78",
+    "CPSF6",
+    "CUTC",
+    "DNTTIP1",
+    "FKBP5",
+    "H1-0"
+   ]
+  },
+  {
+   "compartment": "nucleoplasm",
+   "plate": "P0012",
+   "candidates": 5,
+   "tiles": 39,
+   "top1": 0.46153846153846156,
+   "top1_ci": [
+    0.1935483870967742,
+    0.6923076923076923
+   ],
+   "chance": 0.20000000000000004,
+   "genes": [
+    "DDB1",
+    "NUMA1",
+    "SSB",
+    "SUPT5H",
+    "YY1"
+   ]
+  },
+  {
+   "compartment": "nucleoplasm",
+   "plate": "P0013",
+   "candidates": 8,
+   "tiles": 83,
+   "top1": 0.39759036144578314,
+   "top1_ci": [
+    0.2463768115942029,
+    0.5361635584385497
+   ],
+   "chance": 0.125,
+   "genes": [
+    "BRD3",
+    "BRD4",
+    "CDC7",
+    "CDK12",
+    "CDK2",
+    "CDK7",
+    "CDK9",
+    "CHEK2"
+   ]
+  },
+  {
+   "compartment": "nucleoplasm",
+   "plate": "P0014",
+   "candidates": 6,
+   "tiles": 72,
+   "top1": 0.5138888888888888,
+   "top1_ci": [
+    0.27013116057233705,
+    0.7375
+   ],
+   "chance": 0.16666666666666666,
+   "genes": [
+    "PRKDC",
+    "TLK2",
+    "TRIM28",
+    "TRIM33",
+    "TRRAP",
+    "VRK3"
+   ]
+  },
+  {
+   "compartment": "nucleoplasm",
+   "plate": "P0016",
+   "candidates": 4,
+   "tiles": 54,
+   "top1": 0.5,
+   "top1_ci": [
+    0.2916666666666667,
+    0.6666666666666666
+   ],
+   "chance": 0.25,
+   "genes": [
+    "CSE1L",
+    "HDAC2",
+    "IPO11",
+    "XPO5"
+   ]
+  },
+  {
+   "compartment": "nucleoplasm",
+   "plate": "P0017",
+   "candidates": 6,
+   "tiles": 44,
+   "top1": 0.5909090909090909,
+   "top1_ci": [
+    0.4,
+    0.7777777777777778
+   ],
+   "chance": 0.16666666666666669,
+   "genes": [
+    "KIF4A",
+    "NONO",
+    "PRMT9",
+    "RBM15B",
+    "RBM4",
+    "RBM7"
+   ]
+  },
+  {
+   "compartment": "nucleoplasm",
+   "plate": "P0018",
+   "candidates": 13,
+   "tiles": 105,
+   "top1": 0.34285714285714286,
+   "top1_ci": [
+    0.18678887484197218,
+    0.5221238938053098
+   ],
+   "chance": 0.0769230769230769,
+   "genes": [
+    "ARID1A",
+    "CD2BP2",
+    "FAM50B",
+    "JUN",
+    "KIAA1143",
+    "SMARCA1",
+    "SMARCB1",
+    "SMARCC1",
+    "SMARCC2",
+    "SMARCD1",
+    "SMARCD2",
+    "SMARCE1",
+    "UBE2M"
+   ]
+  },
+  {
+   "compartment": "nucleoplasm",
+   "plate": "P0019",
+   "candidates": 6,
+   "tiles": 56,
+   "top1": 0.5178571428571429,
+   "top1_ci": [
+    0.275,
+    0.7378897460623592
+   ],
+   "chance": 0.16666666666666666,
+   "genes": [
+    "CTCF",
+    "HMGB2",
+    "PPM1G",
+    "RNF40",
+    "SAE1",
+    "UBA1"
+   ]
+  },
+  {
+   "compartment": "nucleoplasm",
+   "plate": "P0021",
+   "candidates": 5,
+   "tiles": 27,
+   "top1": 0.2962962962962963,
+   "top1_ci": [
+    0.05263157894736842,
+    0.5417613636363635
+   ],
+   "chance": 0.20000000000000004,
+   "genes": [
+    "ACTR5",
+    "HNRNPC",
+    "HNRNPD",
+    "HNRNPU",
+    "RBBP4"
+   ]
+  },
+  {
+   "compartment": "vesicles",
+   "plate": "P0001",
+   "candidates": 8,
+   "tiles": 83,
+   "top1": 0.4457831325301205,
+   "top1_ci": [
+    0.3493928093325684,
+    0.5208333333333334
+   ],
+   "chance": 0.125,
+   "genes": [
+    "CD63",
+    "CLTA",
+    "CLTB",
+    "CLTC",
+    "ERG28",
+    "RAB14",
+    "RAB7A",
+    "RAB9A"
+   ]
+  },
+  {
+   "compartment": "vesicles",
+   "plate": "P0002",
+   "candidates": 23,
+   "tiles": 264,
+   "top1": 0.3712121212121212,
+   "top1_ci": [
+    0.2677807794946134,
+    0.4675937212200011
+   ],
+   "chance": 0.04347826086956521,
+   "genes": [
+    "BET1",
+    "BET1L",
+    "CHMP1A",
+    "CHMP4B",
+    "CLINT1",
+    "DCP1A",
+    "DCP2",
+    "EDC4",
+    "GOSR1",
+    "GOSR2",
+    "LNPK",
+    "SEC16A",
+    "SEC22B",
+    "SPAST",
+    "STAM",
+    "STAM2",
+    "STX10",
+    "STX6",
+    "STX7",
+    "STX8",
+    "VAMP4",
+    "VAMP8",
+    "VTI1A"
+   ]
+  },
+  {
+   "compartment": "vesicles",
+   "plate": "P0003",
+   "candidates": 10,
+   "tiles": 93,
+   "top1": 0.3118279569892473,
+   "top1_ci": [
+    0.12632464255677042,
+    0.4848631950573698
+   ],
+   "chance": 0.09999999999999996,
+   "genes": [
+    "ATP1A1",
+    "KIAA0319L",
+    "LAMP1",
+    "LMAN1",
+    "SEC23A",
+    "SEC23B",
+    "SEC24C",
+    "SEC24D",
+    "SEC31A",
+    "TMED2"
+   ]
+  },
+  {
+   "compartment": "vesicles",
+   "plate": "P0004",
+   "candidates": 2,
+   "tiles": 21,
+   "top1": 0.7619047619047619,
+   "top1_ci": [
+    0.5454545454545454,
+    1.0
+   ],
+   "chance": 0.5,
+   "genes": [
+    "ITPR3",
+    "TMEM192"
+   ]
+  },
+  {
+   "compartment": "vesicles",
+   "plate": "P0005",
+   "candidates": 6,
+   "tiles": 53,
+   "top1": 0.5094339622641509,
+   "top1_ci": [
+    0.35294117647058826,
+    0.6857282913165266
+   ],
+   "chance": 0.1666666666666666,
+   "genes": [
+    "ATG9A",
+    "CHMP3",
+    "DNAJC13",
+    "SLC7A1",
+    "SQSTM1",
+    "STX12"
+   ]
+  },
+  {
+   "compartment": "vesicles",
+   "plate": "P0006",
+   "candidates": 3,
+   "tiles": 42,
+   "top1": 0.8571428571428571,
+   "top1_ci": [
+    0.6923076923076923,
+    0.9375
+   ],
+   "chance": 0.3333333333333333,
+   "genes": [
+    "PI4K2A",
+    "PIKFYVE",
+    "PIP4P1"
+   ]
+  },
+  {
+   "compartment": "vesicles",
+   "plate": "P0007",
+   "candidates": 7,
+   "tiles": 77,
+   "top1": 0.4805194805194805,
+   "top1_ci": [
+    0.28745535714285714,
+    0.6555555555555556
+   ],
+   "chance": 0.1428571428571428,
+   "genes": [
+    "CCDC22",
+    "CCDC93",
+    "COMMD1",
+    "COMMD2",
+    "COMMD4",
+    "COMMD6",
+    "VPS4A"
+   ]
+  },
+  {
+   "compartment": "vesicles",
+   "plate": "P0008",
+   "candidates": 4,
+   "tiles": 32,
+   "top1": 0.53125,
+   "top1_ci": [
+    0.3125,
+    0.75
+   ],
+   "chance": 0.25,
+   "genes": [
+    "APPL1",
+    "DBNL",
+    "EEA1",
+    "GAK"
+   ]
+  },
+  {
+   "compartment": "vesicles",
+   "plate": "P0010",
+   "candidates": 7,
+   "tiles": 62,
+   "top1": 0.3387096774193548,
+   "top1_ci": [
+    0.11538461538461539,
+    0.5441510695187165
+   ],
+   "chance": 0.14285714285714277,
+   "genes": [
+    "SNX1",
+    "SNX12",
+    "SNX2",
+    "SNX27",
+    "SNX3",
+    "SNX4",
+    "SNX5"
+   ]
+  },
+  {
+   "compartment": "vesicles",
+   "plate": "P0015",
+   "candidates": 8,
+   "tiles": 67,
+   "top1": 0.29850746268656714,
+   "top1_ci": [
+    0.1557942057942058,
+    0.44001694915254236
+   ],
+   "chance": 0.125,
+   "genes": [
+    "SLC11A2",
+    "SLC15A4",
+    "SLC18B1",
+    "SLC2A1",
+    "SLC31A1",
+    "SLC35F2",
+    "SLC6A15",
+    "SLC9A3R1"
+   ]
+  },
+  {
+   "compartment": "vesicles",
+   "plate": "P0016",
+   "candidates": 2,
+   "tiles": 30,
+   "top1": 0.8,
+   "top1_ci": [
+    0.75,
+    0.8571428571428571
+   ],
+   "chance": 0.5,
+   "genes": [
+    "DNM1L",
+    "PEX3"
+   ]
+  },
+  {
+   "compartment": "vesicles",
+   "plate": "P0018",
+   "candidates": 9,
+   "tiles": 68,
+   "top1": 0.35294117647058826,
+   "top1_ci": [
+    0.23633689839572192,
+    0.49021390374331547
+   ],
+   "chance": 0.1111111111111111,
+   "genes": [
+    "ATP6AP1",
+    "ATP6V0A1",
+    "ATP6V0D1",
+    "ATP6V1A",
+    "ATP6V1B2",
+    "ATP6V1H",
+    "CLCN7",
+    "MCOLN1",
+    "MFSD11"
+   ]
+  },
+  {
+   "compartment": "vesicles",
+   "plate": "P0021",
+   "candidates": 13,
+   "tiles": 86,
+   "top1": 0.3953488372093023,
+   "top1_ci": [
+    0.26864761558063344,
+    0.5281060312540359
+   ],
+   "chance": 0.0769230769230769,
+   "genes": [
+    "ATG14",
+    "ATG2A",
+    "ATG2B",
+    "FTH1",
+    "MFSD12",
+    "PNPLA2",
+    "SPG21",
+    "SPNS1",
+    "TGFBRAP1",
+    "TMEM63B",
+    "VPS16",
+    "VPS39",
+    "VPS8"
+   ]
+  }
+ ],
+ "pooled": {
+  "summary": {
+   "n": 4191,
+   "top1": 0.3750894774516822,
+   "top2": 0.5676449534717252,
+   "mrr": 0.5650295678313496,
+   "mean_rank": 3.332856120257695,
+   "chance_top1": 0.16489387777725772,
+   "chance_mrr": 0.3741579507082055,
+   "n_candidates": 9.561918396564066
+  },
+  "top1_ci": [
+   0.34613439191088186,
+   0.40680868596069314
+  ],
+  "n_proteins": 435,
+  "n_plates": 21
+ },
+ "well_confound": {
+  "n_proteins_with_well": 479,
+  "n_distinct_plate_well_pairs": 479,
+  "note": "one line per well, so (plate, well) and protein are perfectly confounded by design -- as many distinct pairs as proteins -- and cannot be controlled for here"
+ },
+ "proteins_without_plate_id": []
+}

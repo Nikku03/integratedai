@@ -64,6 +64,67 @@ estimate is 3.4× chance but only 6 of its 8 candidates survived tiling and
 So for five compartments the pixels demonstrably carry protein-specific signal,
 and the experiment is a real test rather than a vacuous one.
 
+### Addendum: gate 1 at the full pool, and a reproducible batch control
+
+Both numbers in this section and the batch-control table in
+[`RESULT_PROTEIN_DESCRIPTION.md`](RESULT_PROTEIN_DESCRIPTION.md) were originally
+transcribed from an ad-hoc run: `gate1.json` had no producing script and the
+plate assignments the batch control needs were never carried on the sample
+record at all. [`scripts/vcell_gate1.py`](../scripts/vcell_gate1.py) is now the
+producer for both, `Target` carries `plate_id` and `well_id`, and
+[`opencell_plate_well.csv`](../data/vcell/opencell/opencell_plate_well.csv)
+commits the assignments. Re-running on the **461-protein** pool used by the
+scale-up rather than the original 8-way sample makes the test far harder, and it
+gets stronger rather than weaker.
+
+**Gate 1 now passes 7 of 7, with candidate sets of 25 to 130** — every interval
+excluding chance, where the 8-way version passed 5 of 7:
+
+| compartment | candidates | tiles | descriptor top-1 | chance | lift | MRR | chance MRR |
+|---|---|---|---|---|---|---|---|
+| membrane | 25 | 252 | **0.310** [0.196, 0.432] | 0.040 | 7.7× | 0.453 | 0.153 |
+| nucleolus_gc | 41 | 268 | **0.179** [0.088, 0.276] | 0.024 | 7.3× | 0.320 | 0.105 |
+| vesicles | 107 | 1033 | **0.178** [0.142, 0.217] | 0.009 | **19.1×** | 0.313 | 0.049 |
+| chromatin | 35 | 303 | **0.162** [0.109, 0.216] | 0.029 | 5.7× | 0.288 | 0.118 |
+| nucleoplasm | 80 | 737 | **0.117** [0.082, 0.154] | 0.012 | 9.3× | 0.247 | 0.062 |
+| er | 43 | 434 | **0.104** [0.063, 0.156] | 0.023 | 4.5× | 0.218 | 0.101 |
+| cytoplasmic | 130 | 1419 | **0.039** [0.028, 0.054] | 0.008 | 5.1× | 0.117 | 0.042 |
+
+**ER and nucleolus_gc, the two that did not pass at 8-way, both pass here.** The
+8-way failures were sample-size failures, not evidence of absence: ER at 7
+candidates and 82 tiles gave 0.195 [0.065, 0.317] against a chance of 0.143 —
+an interval too wide to separate — and at 43 candidates and 434 tiles it gives
+0.104 [0.063, 0.156] against 0.023. The point estimate fell and the conclusion
+reversed, which is what a bigger candidate set is supposed to do to a real
+effect. Cytoplasmic identifies one protein in 26 correctly where luck gives one
+in 130.
+
+**The batch control also strengthens.** Restricting each candidate set to
+proteins grown on a single plate — 71 compartment/plate cells over 435 proteins
+and 21 plates, 4,191 tiles:
+
+pooled top-1 **0.375** [0.346, 0.407] against a chance of **0.165**, a lift of
+2.3× with the interval nowhere near chance. The original control reported
+0.641 [0.546, 0.732] against 0.402 on 24 proteins and 231 tiles; this is 18×
+the tiles and the same conclusion. **Plate identity does not explain gate 1.**
+
+**And the irreducible confound is now measured exactly rather than asserted:**
+479 proteins occupy **479 distinct (plate, well) pairs**. One line per well, so
+protein and clone are perfectly confounded by construction. Everything above is
+bounded by that — gate 1 establishes that these cell lines are distinguishable
+from their images within a compartment, and cannot establish that the
+distinguishing signal is the *protein* rather than the clone. That needs
+multiple independent clones per protein or a transient-expression design, and
+no analysis of this dataset can substitute.
+
+**Why this matters for the rest of the project.** Gate 1 at 130-way and
+Experiment 2 of [`RESULT_SCALE.md`](RESULT_SCALE.md) at 43-way ran on the same
+461 proteins, the same compartments and the same images. The images identify the
+protein at 4.5–19× chance with no model and no fitting. No *description* of the
+protein — 1,726 dimensions across 16 fingerprints, plus AlphaFold biophysics —
+identifies it above chance at all. The gap between those two sentences is the
+project's central finding, and it is now measured on one pool at one scale.
+
 ## H1 — and it fails
 
 Volume of evidence first, then the two forms it was run in.

@@ -206,9 +206,20 @@ why `PREREG_SCALE.md` registered retrieval as the primary outcome rather than
 correlation. Had the primary outcome been correlation, this experiment would be
 reported as a pass.
 
-**The true null is exact.** Giving every candidate an identical fingerprint
-returns top-1 of exactly 0.0000 under pessimistic tie-breaking, as registered.
-The machinery is sound; the result is a real negative, not a broken pipeline.
+**The true null is exact, and it checks less than it looks like it checks.**
+Giving every candidate an identical fingerprint returns top-1 of exactly 0.0000,
+as registered. But identical fingerprints force a universal tie, and
+`rank_of_truth` breaks ties pessimistically by construction
+([`retrieval.py:39`](../src/vcell/retrieval.py)), so 0.0000 is the only value
+this check can return whatever else is wrong. It establishes exactly one thing —
+that a degenerate predictor cannot score lucky hits — and is insensitive to an
+error in the descriptor, the image view, the split, the residualisation or the
+scoring. "The machinery is sound" does not follow from it and should not have
+been claimed. What does support reading this as a real negative is separate:
+the same 461 proteins and the same images pass gate 1 at 4.5–19× chance with no
+model at all (see the addendum in
+[`RESULT_OPENCELL.md`](RESULT_OPENCELL.md)), so the images going into this test
+demonstrably carry the signal it failed to find.
 
 ## Per compartment
 

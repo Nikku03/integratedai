@@ -168,6 +168,23 @@ So the target being predicted is real (r = 0.537 across independent fields),
 survives the strongest batch control available, and remains unpredicted by every
 description tried.
 
+**Correction on provenance, and a stronger re-run.** The table above was
+transcribed from console output: no script produced it, and the plate
+assignments it rests on were never carried on the sample record, so it could not
+be regenerated from the committed tree. That is now fixed —
+[`scripts/vcell_gate1.py`](../scripts/vcell_gate1.py) is the producer,
+`Target` carries `plate_id`/`well_id`, and
+[`opencell_plate_well.csv`](../data/vcell/opencell/opencell_plate_well.csv)
+commits them. Re-run on the 461-protein pool the control gives pooled top-1
+**0.375 [0.346, 0.407]** against a chance of **0.165** over 4,191 tiles, 435
+proteins and 21 plates — 18× the tiles of the table above and the same
+conclusion. The distinct (plate, well) count quoted above is likewise now
+measured rather than asserted, on both samples: the 8-way sample holds **168
+proteins in 168 distinct pairs** across 21 plates, the full pool **479 proteins
+in 479 distinct pairs** across the same 21 plates. One line per well, exactly. See the
+addendum in [`RESULT_OPENCELL.md`](RESULT_OPENCELL.md), which also reports gate
+1 passing 7 of 7 at candidate sets of 25 to 130.
+
 ### Shortlisting the interactome by co-location: a good list, not a useful feature
 
 A mass-spec pulldown reports partners from a whole-cell lysate, so the raw

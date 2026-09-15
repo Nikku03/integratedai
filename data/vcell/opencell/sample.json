@@ -24,7 +24,9 @@
      "ENSG00000131437"
     ],
     "interactor_enrichment": 8.465948569933333,
-    "interactor_stoich": 0.8814799317666667
+    "interactor_stoich": 0.8814799317666667,
+    "plate_id": "P0017",
+    "well_id": "B10"
    },
    {
     "gene": "RPS16",
@@ -369,7 +371,9 @@
      "ENSG00000288701"
     ],
     "interactor_enrichment": 2.880899587631046,
-    "interactor_stoich": 0.21678054415163395
+    "interactor_stoich": 0.21678054415163395,
+    "plate_id": "P0011",
+    "well_id": "E08"
    },
    {
     "gene": "GSK3A",
@@ -400,7 +404,9 @@
      "ENSG00000188191"
     ],
     "interactor_enrichment": 5.0952926969,
-    "interactor_stoich": 0.1918973896375
+    "interactor_stoich": 0.1918973896375,
+    "plate_id": "P0013",
+    "well_id": "F02"
    },
    {
     "gene": "METAP2",
@@ -581,7 +587,9 @@
      "ENSG00000288701"
     ],
     "interactor_enrichment": 2.6902276735180553,
-    "interactor_stoich": 0.11945034625902778
+    "interactor_stoich": 0.11945034625902778,
+    "plate_id": "P0019",
+    "well_id": "G11"
    },
    {
     "gene": "NRBP1",
@@ -610,7 +618,9 @@
      "ENSG00000196428"
     ],
     "interactor_enrichment": 7.7498931218375,
-    "interactor_stoich": 0.4707280038625
+    "interactor_stoich": 0.4707280038625,
+    "plate_id": "P0014",
+    "well_id": "B02"
    },
    {
     "gene": "RPS6KA1",
@@ -633,7 +643,9 @@
      "ENSG00000117676"
     ],
     "interactor_enrichment": 4.4656473953,
-    "interactor_stoich": 0.51690643335
+    "interactor_stoich": 0.51690643335,
+    "plate_id": "P0014",
+    "well_id": "D11"
    },
    {
     "gene": "OCRL",
@@ -661,7 +673,9 @@
      "ENSG00000205609"
     ],
     "interactor_enrichment": 6.020372973380001,
-    "interactor_stoich": 0.28315318089999997
+    "interactor_stoich": 0.28315318089999997,
+    "plate_id": "P0006",
+    "well_id": "F08"
    },
    {
     "gene": "PAK4",
@@ -688,7 +702,9 @@
      "ENSG00000197102"
     ],
     "interactor_enrichment": 3.7685171747200004,
-    "interactor_stoich": 0.22341863662
+    "interactor_stoich": 0.22341863662,
+    "plate_id": "P0014",
+    "well_id": "B04"
    },
    {
     "gene": "STK26",
@@ -757,7 +773,9 @@
      "ENSG00000264364"
     ],
     "interactor_enrichment": 5.4427229881260875,
-    "interactor_stoich": 0.10463032336739131
+    "interactor_stoich": 0.10463032336739131,
+    "plate_id": "P0014",
+    "well_id": "F05"
    },
    {
     "gene": "RABGAP1L",
@@ -783,7 +801,9 @@
      "ENSG00000152061"
     ],
     "interactor_enrichment": 9.2512340884,
-    "interactor_stoich": 0.60321815265
+    "interactor_stoich": 0.60321815265,
+    "plate_id": "P0001",
+    "well_id": "G11"
    },
    {
     "gene": "WASF2",
@@ -824,7 +844,9 @@
      "ENSG00000273749"
     ],
     "interactor_enrichment": 4.941151561805,
-    "interactor_stoich": 0.12013219560499999
+    "interactor_stoich": 0.12013219560499999,
+    "plate_id": "P0008",
+    "well_id": "H06"
    },
    {
     "gene": "ANKZF1",
@@ -860,7 +882,9 @@
      "ENSG00000198931"
     ],
     "interactor_enrichment": 4.121723051225,
-    "interactor_stoich": 0.0680365197625
+    "interactor_stoich": 0.0680365197625,
+    "plate_id": "P0015",
+    "well_id": "H06"
    },
    {
     "gene": "GYG1",
@@ -886,7 +910,9 @@
      "ENSG00000163754"
     ],
     "interactor_enrichment": 5.351505134183333,
-    "interactor_stoich": 0.9392459660166667
+    "interactor_stoich": 0.9392459660166667,
+    "plate_id": "P0018",
+    "well_id": "A03"
    },
    {
     "gene": "NEMF",
@@ -905,7 +931,9 @@
     "pulldown_id": 3268,
     "interactors": [],
     "interactor_enrichment": null,
-    "interactor_stoich": null
+    "interactor_stoich": null,
+    "plate_id": "P0021",
+    "well_id": "D11"
    },
    {
     "gene": "RPL4",
@@ -1053,7 +1081,9 @@
      "ENSG00000280969"
     ],
     "interactor_enrichment": 2.87849711628938,
-    "interactor_stoich": 0.4959019461752212
+    "interactor_stoich": 0.4959019461752212,
+    "plate_id": "P0019",
+    "well_id": "E03"
    },
    {
     "gene": "SRP72",
@@ -1241,7 +1271,9 @@
      "ENSG00000280969"
     ],
     "interactor_enrichment": 2.887814223584768,
-    "interactor_stoich": 0.20380523552715227
+    "interactor_stoich": 0.20380523552715227,
+    "plate_id": "P0018",
+    "well_id": "A07"
    }
   ],
   "held_out": [
@@ -1269,7 +1301,9 @@
      "ENSG00000130779"
     ],
     "interactor_enrichment": 5.1186971136,
-    "interactor_stoich": 0.250344493525
+    "interactor_stoich": 0.250344493525,
+    "plate_id": "P0014",
+    "well_id": "E09"
    },
    {
     "gene": "IKBKB",
@@ -1295,7 +1329,9 @@
      "ENSG00000269335"
     ],
     "interactor_enrichment": 7.418194384625,
-    "interactor_stoich": 2.220179783825
+    "interactor_stoich": 2.220179783825,
+    "plate_id": "P0013",
+    "well_id": "F06"
    },
    {
     "gene": "SNX17",
@@ -1319,7 +1355,9 @@
      "ENSG00000165264"
     ],
     "interactor_enrichment": 8.67904911025,
-    "interactor_stoich": 0.51213301725
+    "interactor_stoich": 0.51213301725,
+    "plate_id": "P0010",
+    "well_id": "D07"
    },
    {
     "gene": "FXR2",
@@ -1342,7 +1380,9 @@
      "ENSG00000257103"
     ],
     "interactor_enrichment": 4.21927164345,
-    "interactor_stoich": 1.2532305649
+    "interactor_stoich": 1.2532305649,
+    "plate_id": "P0016",
+    "well_id": "B05"
    },
    {
     "gene": "CCT3",
@@ -1376,7 +1416,9 @@
      "ENSG00000166226"
     ],
     "interactor_enrichment": 7.089902291966667,
-    "interactor_stoich": 0.5185214521333333
+    "interactor_stoich": 0.5185214521333333,
+    "plate_id": "P0007",
+    "well_id": "C08"
    },
    {
     "gene": "MAP2K1",
@@ -1410,7 +1452,9 @@
      "ENSG00000182534"
     ],
     "interactor_enrichment": 4.929688464521428,
-    "interactor_stoich": 0.11286620306428573
+    "interactor_stoich": 0.11286620306428573,
+    "plate_id": "P0013",
+    "well_id": "F11"
    },
    {
     "gene": "OXSR1",
@@ -1437,7 +1481,9 @@
      "ENSG00000197102"
     ],
     "interactor_enrichment": 7.342042635049999,
-    "interactor_stoich": 0.2612616348333333
+    "interactor_stoich": 0.2612616348333333,
+    "plate_id": "P0014",
+    "well_id": "B03"
    },
    {
     "gene": "RELA",
@@ -1477,7 +1523,9 @@
      "ENSG00000269335"
     ],
     "interactor_enrichment": 7.04949256770625,
-    "interactor_stoich": 0.20487491884375
+    "interactor_stoich": 0.20487491884375,
+    "plate_id": "P0019",
+    "well_id": "B01"
    }
   ]
  },
@@ -1522,7 +1570,9 @@
      "ENSG00000182481"
     ],
     "interactor_enrichment": 4.8254876036050005,
-    "interactor_stoich": 0.23634632704500005
+    "interactor_stoich": 0.23634632704500005,
+    "plate_id": "P0018",
+    "well_id": "H08"
    },
    {
     "gene": "POLR2C",
@@ -1565,7 +1615,9 @@
      "ENSG00000263155"
     ],
     "interactor_enrichment": 5.161212662622223,
-    "interactor_stoich": 0.527185743988889
+    "interactor_stoich": 0.527185743988889,
+    "plate_id": "P0010",
+    "well_id": "E02"
    },
    {
     "gene": "PSMD7",
@@ -1602,7 +1654,9 @@
      "ENSG00000185627"
     ],
     "interactor_enrichment": 4.474609931640001,
-    "interactor_stoich": 0.71243222556
+    "interactor_stoich": 0.71243222556,
+    "plate_id": "P0006",
+    "well_id": "C02"
    },
    {
     "gene": "POLR2I",
@@ -1648,7 +1702,9 @@
      "ENSG00000228049"
     ],
     "interactor_enrichment": 4.625358128668181,
-    "interactor_stoich": 0.1878443008227273
+    "interactor_stoich": 0.1878443008227273,
+    "plate_id": "P0010",
+    "well_id": "E08"
    },
    {
     "gene": "PPM1G",
@@ -1727,7 +1783,9 @@
      "ENSG00000278588"
     ],
     "interactor_enrichment": 3.88006409845,
-    "interactor_stoich": 0.06667306079499999
+    "interactor_stoich": 0.06667306079499999,
+    "plate_id": "P0019",
+    "well_id": "H05"
    },
    {
     "gene": "HDAC1",
@@ -1747,7 +1805,9 @@
     "pulldown_id": 2867,
     "interactors": [],
     "interactor_enrichment": null,
-    "interactor_stoich": null
+    "interactor_stoich": null,
+    "plate_id": "P0016",
+    "well_id": "A02"
    },
    {
     "gene": "CUTC",
@@ -1770,7 +1830,9 @@
      "ENSG00000181830"
     ],
     "interactor_enrichment": 8.642904132,
-    "interactor_stoich": 0.5750326332000001
+    "interactor_stoich": 0.5750326332000001,
+    "plate_id": "P0011",
+    "well_id": "H07"
    },
    {
     "gene": "TRIM28",
@@ -1869,7 +1931,9 @@
      "ENSG00000278129"
     ],
     "interactor_enrichment": 5.72625081340597,
-    "interactor_stoich": 0.018909836119402987
+    "interactor_stoich": 0.018909836119402987,
+    "plate_id": "P0014",
+    "well_id": "G06"
    },
    {
     "gene": "PSME3",
@@ -1922,7 +1986,9 @@
      "ENSG00000278615"
     ],
     "interactor_enrichment": 4.8165586509875,
-    "interactor_stoich": 0.050488207565625
+    "interactor_stoich": 0.050488207565625,
+    "plate_id": "P0006",
+    "well_id": "A07"
    },
    {
     "gene": "PSMB4",
@@ -1968,7 +2034,9 @@
      "ENSG00000197170"
     ],
     "interactor_enrichment": 3.8201030266916667,
-    "interactor_stoich": 155.2457739603875
+    "interactor_stoich": 155.2457739603875,
+    "plate_id": "P0006",
+    "well_id": "A03"
    },
    {
     "gene": "RBBP4",
@@ -2041,7 +2109,9 @@
      "ENSG00000276410"
     ],
     "interactor_enrichment": 4.755770735326087,
-    "interactor_stoich": 0.0639126304695652
+    "interactor_stoich": 0.0639126304695652,
+    "plate_id": "P0021",
+    "well_id": "F03"
    },
    {
     "gene": "HMGB2",
@@ -2149,7 +2219,9 @@
      "ENSG00000280969"
     ],
     "interactor_enrichment": 3.2229521666961536,
-    "interactor_stoich": 0.0652365246551282
+    "interactor_stoich": 0.0652365246551282,
+    "plate_id": "P0019",
+    "well_id": "F11"
    },
    {
     "gene": "CDK12",
@@ -2175,7 +2247,9 @@
      "ENSG00000167258"
     ],
     "interactor_enrichment": 6.564572406233334,
-    "interactor_stoich": 0.9408054303333334
+    "interactor_stoich": 0.9408054303333334,
+    "plate_id": "P0013",
+    "well_id": "C01"
    },
    {
     "gene": "BRD3",
@@ -2196,7 +2270,9 @@
      "ENSG00000169925"
     ],
     "interactor_enrichment": 4.8198926167,
-    "interactor_stoich": 1.0
+    "interactor_stoich": 1.0,
+    "plate_id": "P0013",
+    "well_id": "B02"
    },
    {
     "gene": "SMARCC1",
@@ -2229,7 +2305,9 @@
      "ENSG00000173473"
     ],
     "interactor_enrichment": 5.793684891318183,
-    "interactor_stoich": 0.3430380266909091
+    "interactor_stoich": 0.3430380266909091,
+    "plate_id": "P0018",
+    "well_id": "H03"
    },
    {
     "gene": "H1-0",
@@ -2326,7 +2404,9 @@
      "ENSG00000278705"
     ],
     "interactor_enrichment": 3.395687980192,
-    "interactor_stoich": 0.258002334226
+    "interactor_stoich": 0.258002334226,
+    "plate_id": "P0011",
+    "well_id": "D07"
    }
   ],
   "held_out": [
@@ -2375,7 +2455,9 @@
      "ENSG00000277058"
     ],
     "interactor_enrichment": 3.990065926252382,
-    "interactor_stoich": 0.1801637359142857
+    "interactor_stoich": 0.1801637359142857,
+    "plate_id": "P0021",
+    "well_id": "E08"
    },
    {
     "gene": "SMARCB1",
@@ -2407,7 +2489,9 @@
      "ENSG00000173473"
     ],
     "interactor_enrichment": 5.5026114654,
-    "interactor_stoich": 0.36196946301
+    "interactor_stoich": 0.36196946301,
+    "plate_id": "P0018",
+    "well_id": "H02"
    },
    {
     "gene": "NUMA1",
@@ -2655,7 +2739,9 @@
      "ENSG00000287080"
     ],
     "interactor_enrichment": 3.634410275195093,
-    "interactor_stoich": 0.33626380711779147
+    "interactor_stoich": 0.33626380711779147,
+    "plate_id": "P0012",
+    "well_id": "G02"
    },
    {
     "gene": "FAM50B",
@@ -2677,7 +2763,9 @@
      "ENSG00000145945"
     ],
     "interactor_enrichment": 6.8460550309,
-    "interactor_stoich": 1.0
+    "interactor_stoich": 1.0,
+    "plate_id": "P0018",
+    "well_id": "D07"
    },
    {
     "gene": "KIAA1143",
@@ -2701,7 +2789,9 @@
      "ENSG00000221914"
     ],
     "interactor_enrichment": 9.4476599094,
-    "interactor_stoich": 0.3379756634666667
+    "interactor_stoich": 0.3379756634666667,
+    "plate_id": "P0018",
+    "well_id": "C02"
    },
    {
     "gene": "CD2BP2",
@@ -2760,7 +2850,9 @@
      "ENSG00000240303"
     ],
     "interactor_enrichment": 4.254639263539474,
-    "interactor_stoich": 0.061328748102631586
+    "interactor_stoich": 0.061328748102631586,
+    "plate_id": "P0018",
+    "well_id": "C09"
    },
    {
     "gene": "HSPA4",
@@ -2832,7 +2924,9 @@
      "ENSG00000213551"
     ],
     "interactor_enrichment": 4.86292866646875,
-    "interactor_stoich": 0.07507251082500001
+    "interactor_stoich": 0.07507251082500001,
+    "plate_id": "P0005",
+    "well_id": "D11"
    },
    {
     "gene": "RBM4",
@@ -2858,7 +2952,9 @@
      "ENSG00000173933"
     ],
     "interactor_enrichment": 4.094154586566667,
-    "interactor_stoich": 0.3351676957666667
+    "interactor_stoich": 0.3351676957666667,
+    "plate_id": "P0017",
+    "well_id": "G11"
    }
   ]
  },
@@ -2885,7 +2981,9 @@
      "ENSG00000196998"
     ],
     "interactor_enrichment": 10.0840908213,
-    "interactor_stoich": 0.7530988789999999
+    "interactor_stoich": 0.7530988789999999,
+    "plate_id": "P0021",
+    "well_id": "D01"
    },
    {
     "gene": "VPS35",
@@ -2904,7 +3002,9 @@
     "pulldown_id": 2714,
     "interactors": [],
     "interactor_enrichment": null,
-    "interactor_stoich": null
+    "interactor_stoich": null,
+    "plate_id": "P0017",
+    "well_id": "H02"
    },
    {
     "gene": "STX7",
@@ -2959,7 +3059,9 @@
      "ENSG00000220205"
     ],
     "interactor_enrichment": 3.4991333540343748,
-    "interactor_stoich": 0.08180763634375
+    "interactor_stoich": 0.08180763634375,
+    "plate_id": "P0002",
+    "well_id": "B10"
    },
    {
     "gene": "TMED2",
@@ -2979,7 +3081,9 @@
     "pulldown_id": 3227,
     "interactors": [],
     "interactor_enrichment": null,
-    "interactor_stoich": null
+    "interactor_stoich": null,
+    "plate_id": "P0003",
+    "well_id": "F08"
    },
    {
     "gene": "CLCN7",
@@ -3001,7 +3105,9 @@
      "ENSG00000103249"
     ],
     "interactor_enrichment": 7.72081856635,
-    "interactor_stoich": 3.1712164936
+    "interactor_stoich": 3.1712164936,
+    "plate_id": "P0018",
+    "well_id": "F06"
    },
    {
     "gene": "GOSR2",
@@ -3032,7 +3138,9 @@
      "ENSG00000265808"
     ],
     "interactor_enrichment": 3.609510890711111,
-    "interactor_stoich": 10.805044401877778
+    "interactor_stoich": 10.805044401877778,
+    "plate_id": "P0002",
+    "well_id": "A07"
    },
    {
     "gene": "SNX4",
@@ -3058,7 +3166,9 @@
      "ENSG00000205302"
     ],
     "interactor_enrichment": 7.933115211720001,
-    "interactor_stoich": 0.34458633161999996
+    "interactor_stoich": 0.34458633161999996,
+    "plate_id": "P0010",
+    "well_id": "C09"
    },
    {
     "gene": "PIKFYVE",
@@ -3081,7 +3191,9 @@
      "ENSG00000115020"
     ],
     "interactor_enrichment": 11.04341270265,
-    "interactor_stoich": 0.58028408665
+    "interactor_stoich": 0.58028408665,
+    "plate_id": "P0006",
+    "well_id": "H07"
    },
    {
     "gene": "SEC31A",
@@ -3108,7 +3220,9 @@
      "ENSG00000157020"
     ],
     "interactor_enrichment": 5.335915005839999,
-    "interactor_stoich": 0.21878426622
+    "interactor_stoich": 0.21878426622,
+    "plate_id": "P0003",
+    "well_id": "F02"
    },
    {
     "gene": "SLC7A1",
@@ -3128,7 +3242,9 @@
     "pulldown_id": null,
     "interactors": [],
     "interactor_enrichment": null,
-    "interactor_stoich": null
+    "interactor_stoich": null,
+    "plate_id": "P0005",
+    "well_id": "G10"
    },
    {
     "gene": "KIAA0319L",
@@ -3151,7 +3267,9 @@
      "ENSG00000147065"
     ],
     "interactor_enrichment": 10.26471367045,
-    "interactor_stoich": 2.9693677263
+    "interactor_stoich": 2.9693677263,
+    "plate_id": "P0003",
+    "well_id": "D12"
    },
    {
     "gene": "APPL1",
@@ -3171,7 +3289,9 @@
     "pulldown_id": null,
     "interactors": [],
     "interactor_enrichment": null,
-    "interactor_stoich": null
+    "interactor_stoich": null,
+    "plate_id": "P0008",
+    "well_id": "D08"
    },
    {
     "gene": "SQSTM1",
@@ -3196,7 +3316,9 @@
      "ENSG00000184117"
     ],
     "interactor_enrichment": 5.0263979409,
-    "interactor_stoich": 0.63244054185
+    "interactor_stoich": 0.63244054185,
+    "plate_id": "P0005",
+    "well_id": "E11"
    },
    {
     "gene": "MFSD12",
@@ -3215,7 +3337,9 @@
     "pulldown_id": 3288,
     "interactors": [],
     "interactor_enrichment": null,
-    "interactor_stoich": null
+    "interactor_stoich": null,
+    "plate_id": "P0021",
+    "well_id": "F12"
    },
    {
     "gene": "ATP1A1",
@@ -3245,7 +3369,9 @@
      "ENSG00000168003"
     ],
     "interactor_enrichment": 6.806284925100001,
-    "interactor_stoich": 0.31835094766666666
+    "interactor_stoich": 0.31835094766666666,
+    "plate_id": "P0003",
+    "well_id": "C09"
    },
    {
     "gene": "SPNS1",
@@ -3264,7 +3390,9 @@
     "pulldown_id": 3289,
     "interactors": [],
     "interactor_enrichment": null,
-    "interactor_stoich": null
+    "interactor_stoich": null,
+    "plate_id": "P0021",
+    "well_id": "G02"
    }
   ],
   "held_out": [
@@ -3292,7 +3420,9 @@
      "ENSG00000220205"
     ],
     "interactor_enrichment": 4.10501679362,
-    "interactor_stoich": 0.2588203381
+    "interactor_stoich": 0.2588203381,
+    "plate_id": "P0015",
+    "well_id": "F03"
    },
    {
     "gene": "SNX5",
@@ -3319,7 +3449,9 @@
      "ENSG00000205302"
     ],
     "interactor_enrichment": 6.8369877353333335,
-    "interactor_stoich": 0.2041803142166667
+    "interactor_stoich": 0.2041803142166667,
+    "plate_id": "P0010",
+    "well_id": "C10"
    },
    {
     "gene": "ATP6V1A",
@@ -3349,7 +3481,9 @@
      "ENSG00000159720"
     ],
     "interactor_enrichment": 6.821575855730001,
-    "interactor_stoich": 0.4161895006700001
+    "interactor_stoich": 0.4161895006700001,
+    "plate_id": "P0018",
+    "well_id": "E08"
    },
    {
     "gene": "STX12",
@@ -3410,7 +3544,9 @@
      "ENSG00000220205"
     ],
     "interactor_enrichment": 3.35502686265,
-    "interactor_stoich": 0.03757264158157895
+    "interactor_stoich": 0.03757264158157895,
+    "plate_id": "P0005",
+    "well_id": "G12"
    },
    {
     "gene": "CCDC93",
@@ -3452,7 +3588,9 @@
      "ENSG00000188243"
     ],
     "interactor_enrichment": 6.987218890533332,
-    "interactor_stoich": 0.456479748395238
+    "interactor_stoich": 0.456479748395238,
+    "plate_id": "P0007",
+    "well_id": "H03"
    },
    {
     "gene": "STX6",
@@ -3488,7 +3626,9 @@
      "ENSG00000220205"
     ],
     "interactor_enrichment": 3.479879347835714,
-    "interactor_stoich": 0.09317786806428571
+    "interactor_stoich": 0.09317786806428571,
+    "plate_id": "P0002",
+    "well_id": "B06"
    },
    {
     "gene": "VPS16",
@@ -3513,7 +3653,9 @@
      "ENSG00000215305"
     ],
     "interactor_enrichment": 4.7538367391500005,
-    "interactor_stoich": 0.64319299625
+    "interactor_stoich": 0.64319299625,
+    "plate_id": "P0021",
+    "well_id": "G07"
    },
    {
     "gene": "SEC22B",
@@ -3540,7 +3682,9 @@
      "ENSG00000265808"
     ],
     "interactor_enrichment": 3.64571661532,
-    "interactor_stoich": 0.25477334163999993
+    "interactor_stoich": 0.25477334163999993,
+    "plate_id": "P0002",
+    "well_id": "A05"
    }
   ]
  },
@@ -3589,7 +3733,9 @@
      "ENSG00000197102"
     ],
     "interactor_enrichment": 3.79262837454,
-    "interactor_stoich": 0.104241546275
+    "interactor_stoich": 0.104241546275,
+    "plate_id": "P0001",
+    "well_id": "H09"
    },
    {
     "gene": "OSBPL8",
@@ -3617,7 +3763,9 @@
      "ENSG00000147475"
     ],
     "interactor_enrichment": 5.6307061394,
-    "interactor_stoich": 0.20033752695999998
+    "interactor_stoich": 0.20033752695999998,
+    "plate_id": "P0001",
+    "well_id": "E01"
    },
    {
     "gene": "TMEM147",
@@ -3651,7 +3799,9 @@
      "ENSG00000186468"
     ],
     "interactor_enrichment": 3.361288180925,
-    "interactor_stoich": 60.44632146335834
+    "interactor_stoich": 60.44632146335834,
+    "plate_id": "P0021",
+    "well_id": "B07"
    },
    {
     "gene": "CCDC47",
@@ -3670,7 +3820,9 @@
     "pulldown_id": 3474,
     "interactors": [],
     "interactor_enrichment": null,
-    "interactor_stoich": null
+    "interactor_stoich": null,
+    "plate_id": "P0022",
+    "well_id": "G11"
    },
    {
     "gene": "RTN4",
@@ -3690,7 +3842,9 @@
     "pulldown_id": 3098,
     "interactors": [],
     "interactor_enrichment": null,
-    "interactor_stoich": null
+    "interactor_stoich": null,
+    "plate_id": "P0001",
+    "well_id": "H05"
    },
    {
     "gene": "NCLN",
@@ -3710,7 +3864,9 @@
     "pulldown_id": 3475,
     "interactors": [],
     "interactor_enrichment": null,
-    "interactor_stoich": null
+    "interactor_stoich": null,
+    "plate_id": "P0022",
+    "well_id": "G12"
    },
    {
     "gene": "EMC1",
@@ -3737,7 +3893,9 @@
      "ENSG00000144713"
     ],
     "interactor_enrichment": 5.59645452252857,
-    "interactor_stoich": 1.3431775994714286
+    "interactor_stoich": 1.3431775994714286,
+    "plate_id": "P0021",
+    "well_id": "A11"
    },
    {
     "gene": "INPP5K",
@@ -3760,7 +3918,9 @@
      "ENSG00000159131"
     ],
     "interactor_enrichment": 6.044015315433334,
-    "interactor_stoich": 0.41247747316666666
+    "interactor_stoich": 0.41247747316666666,
+    "plate_id": "P0006",
+    "well_id": "G08"
    },
    {
     "gene": "STT3A",
@@ -3790,7 +3950,9 @@
      "ENSG00000244038"
     ],
     "interactor_enrichment": 4.300535039344445,
-    "interactor_stoich": 2.0724433769333337
+    "interactor_stoich": 2.0724433769333337,
+    "plate_id": "P0007",
+    "well_id": "A05"
    },
    {
     "gene": "GPAT4",
@@ -3813,7 +3975,9 @@
      "ENSG00000187446"
     ],
     "interactor_enrichment": 8.31330349075,
-    "interactor_stoich": 2.00078176885
+    "interactor_stoich": 2.00078176885,
+    "plate_id": "P0004",
+    "well_id": "E09"
    },
    {
     "gene": "STT3B",
@@ -3892,7 +4056,9 @@
      "ENSG00000254772"
     ],
     "interactor_enrichment": 3.6788181594037037,
-    "interactor_stoich": 0.20383011774814822
+    "interactor_stoich": 0.20383011774814822,
+    "plate_id": "P0007",
+    "well_id": "A06"
    },
    {
     "gene": "TMEM208",
@@ -3911,7 +4077,9 @@
     "pulldown_id": 3328,
     "interactors": [],
     "interactor_enrichment": null,
-    "interactor_stoich": null
+    "interactor_stoich": null,
+    "plate_id": "P0021",
+    "well_id": "H06"
    },
    {
     "gene": "STX18",
@@ -3950,7 +4118,9 @@
      "ENSG00000265808"
     ],
     "interactor_enrichment": 4.793192701150001,
-    "interactor_stoich": 0.5477201115333332
+    "interactor_stoich": 0.5477201115333332,
+    "plate_id": "P0002",
+    "well_id": "B03"
    },
    {
     "gene": "ARL6IP1",
@@ -3989,7 +4159,9 @@
      "ENSG00000185825"
     ],
     "interactor_enrichment": 4.359361472552632,
-    "interactor_stoich": 0.2859296695368421
+    "interactor_stoich": 0.2859296695368421,
+    "plate_id": "P0005",
+    "well_id": "H09"
    },
    {
     "gene": "SRPRA",
@@ -4016,7 +4188,9 @@
      "ENSG00000198363"
     ],
     "interactor_enrichment": 7.515630817757143,
-    "interactor_stoich": 0.6632758452428572
+    "interactor_stoich": 0.6632758452428572,
+    "plate_id": "P0018",
+    "well_id": "A08"
    },
    {
     "gene": "OST4",
@@ -4035,7 +4209,9 @@
     "pulldown_id": 2296,
     "interactors": [],
     "interactor_enrichment": null,
-    "interactor_stoich": null
+    "interactor_stoich": null,
+    "plate_id": "P0007",
+    "well_id": "A09"
    }
   ],
   "held_out": [
@@ -4064,7 +4240,9 @@
      "ENSG00000203879"
     ],
     "interactor_enrichment": 4.932917740180001,
-    "interactor_stoich": 0.23251544007999997
+    "interactor_stoich": 0.23251544007999997,
+    "plate_id": "P0001",
+    "well_id": "E02"
    },
    {
     "gene": "EMC2",
@@ -4094,7 +4272,9 @@
      "ENSG00000169446"
     ],
     "interactor_enrichment": 6.185628103609999,
-    "interactor_stoich": 0.6619067391900001
+    "interactor_stoich": 0.6619067391900001,
+    "plate_id": "P0021",
+    "well_id": "A12"
    },
    {
     "gene": "EMC3",
@@ -4125,7 +4305,9 @@
      "ENSG00000165264"
     ],
     "interactor_enrichment": 5.917683249,
-    "interactor_stoich": 0.5585602416636364
+    "interactor_stoich": 0.5585602416636364,
+    "plate_id": "P0018",
+    "well_id": "F03"
    },
    {
     "gene": "MBOAT7",
@@ -4148,7 +4330,9 @@
      "ENSG00000166224"
     ],
     "interactor_enrichment": 5.183701125633333,
-    "interactor_stoich": 0.3581860007666667
+    "interactor_stoich": 0.3581860007666667,
+    "plate_id": "P0004",
+    "well_id": "F08"
    },
    {
     "gene": "SGPL1",
@@ -4175,7 +4359,9 @@
      "ENSG00000244734"
     ],
     "interactor_enrichment": 5.40274942618,
-    "interactor_stoich": 0.20993642684
+    "interactor_stoich": 0.20993642684,
+    "plate_id": "P0004",
+    "well_id": "D05"
    },
    {
     "gene": "ARF4",
@@ -4204,7 +4390,9 @@
      "ENSG00000185825"
     ],
     "interactor_enrichment": 4.72312464465,
-    "interactor_stoich": 0.24593204097500002
+    "interactor_stoich": 0.24593204097500002,
+    "plate_id": "P0010",
+    "well_id": "A07"
    },
    {
     "gene": "PTDSS2",
@@ -4241,7 +4429,9 @@
      "ENSG00000278677"
     ],
     "interactor_enrichment": 4.268953055409091,
-    "interactor_stoich": 0.8101100806272725
+    "interactor_stoich": 0.8101100806272725,
+    "plate_id": "P0004",
+    "well_id": "G08"
    },
    {
     "gene": "DDOST",
@@ -4385,7 +4575,9 @@
      "ENSG00000244038"
     ],
     "interactor_enrichment": 3.829993590879825,
-    "interactor_stoich": 0.10829268547017544
+    "interactor_stoich": 0.10829268547017544,
+    "plate_id": "P0007",
+    "well_id": "A04"
    }
   ]
  },
@@ -4411,7 +4603,9 @@
      "ENSG00000055483"
     ],
     "interactor_enrichment": 8.2659698562,
-    "interactor_stoich": 0.56444880825
+    "interactor_stoich": 0.56444880825,
+    "plate_id": "P0012",
+    "well_id": "H01"
    },
    {
     "gene": "MPHOSPH10",
@@ -4435,7 +4629,9 @@
      "ENSG00000136718"
     ],
     "interactor_enrichment": 5.7977777944749995,
-    "interactor_stoich": 0.37559119857499995
+    "interactor_stoich": 0.37559119857499995,
+    "plate_id": "P0012",
+    "well_id": "H08"
    },
    {
     "gene": "WDR12",
@@ -4461,7 +4657,9 @@
      "ENSG00000261236"
     ],
     "interactor_enrichment": 5.80033203022,
-    "interactor_stoich": 0.32432238854
+    "interactor_stoich": 0.32432238854,
+    "plate_id": "P0012",
+    "well_id": "D12"
    },
    {
     "gene": "C18orf21",
@@ -4481,7 +4679,9 @@
     "pulldown_id": null,
     "interactors": [],
     "interactor_enrichment": null,
-    "interactor_stoich": null
+    "interactor_stoich": null,
+    "plate_id": "P0001",
+    "well_id": "A10"
    },
    {
     "gene": "SRP9",
@@ -4786,7 +4986,9 @@
      "ENSG00000288701"
     ],
     "interactor_enrichment": 3.0017299215473483,
-    "interactor_stoich": 0.12330741767878789
+    "interactor_stoich": 0.12330741767878789,
+    "plate_id": "P0012",
+    "well_id": "A07"
    },
    {
     "gene": "NVL",
@@ -4811,7 +5013,9 @@
      "ENSG00000178127"
     ],
     "interactor_enrichment": 3.8416921118,
-    "interactor_stoich": 0.1165725946
+    "interactor_stoich": 0.1165725946,
+    "plate_id": "P0012",
+    "well_id": "F09"
    },
    {
     "gene": "PDCD11",
@@ -4833,7 +5037,9 @@
      "ENSG00000148843"
     ],
     "interactor_enrichment": 2.7809881449500002,
-    "interactor_stoich": 7.5871500626
+    "interactor_stoich": 7.5871500626,
+    "plate_id": "P0012",
+    "well_id": "F12"
    },
    {
     "gene": "DHX37",
@@ -4859,7 +5065,9 @@
      "ENSG00000253797"
     ],
     "interactor_enrichment": 5.1295820412,
-    "interactor_stoich": 0.299036153125
+    "interactor_stoich": 0.299036153125,
+    "plate_id": "P0012",
+    "well_id": "G08"
    },
    {
     "gene": "NIFK",
@@ -4880,7 +5088,9 @@
      "ENSG00000155438"
     ],
     "interactor_enrichment": 6.8995393109,
-    "interactor_stoich": 1.0
+    "interactor_stoich": 1.0,
+    "plate_id": "P0010",
+    "well_id": "G01"
    },
    {
     "gene": "UTP14A",
@@ -4907,7 +5117,9 @@
      "ENSG00000253797"
     ],
     "interactor_enrichment": 4.97270543352,
-    "interactor_stoich": 0.21506200920000001
+    "interactor_stoich": 0.21506200920000001,
+    "plate_id": "P0012",
+    "well_id": "F03"
    },
    {
     "gene": "GNL3",
@@ -4943,7 +5155,9 @@
      "ENSG00000174891"
     ],
     "interactor_enrichment": 2.74658786392,
-    "interactor_stoich": 0.7233380329666667
+    "interactor_stoich": 0.7233380329666667,
+    "plate_id": "P0012",
+    "well_id": "B05"
    },
    {
     "gene": "NMD3",
@@ -4967,7 +5181,9 @@
      "ENSG00000169251"
     ],
     "interactor_enrichment": 4.38447200135,
-    "interactor_stoich": 0.50102335895
+    "interactor_stoich": 0.50102335895,
+    "plate_id": "P0012",
+    "well_id": "G05"
    },
    {
     "gene": "RBM34",
@@ -4988,7 +5204,9 @@
      "ENSG00000188739"
     ],
     "interactor_enrichment": 6.3353946856,
-    "interactor_stoich": 1.0
+    "interactor_stoich": 1.0,
+    "plate_id": "P0017",
+    "well_id": "G08"
    },
    {
     "gene": "SPOUT1",
@@ -5007,7 +5225,9 @@
     "pulldown_id": 2435,
     "interactors": [],
     "interactor_enrichment": null,
-    "interactor_stoich": null
+    "interactor_stoich": null,
+    "plate_id": "P0012",
+    "well_id": "G10"
    },
    {
     "gene": "BOP1",
@@ -5029,7 +5249,9 @@
      "ENSG00000113522"
     ],
     "interactor_enrichment": 5.84889121355,
-    "interactor_stoich": 0.16168999915
+    "interactor_stoich": 0.16168999915,
+    "plate_id": "P0012",
+    "well_id": "C11"
    },
    {
     "gene": "AATF",
@@ -5052,7 +5274,9 @@
      "ENSG00000275700"
     ],
     "interactor_enrichment": 3.8358616494333337,
-    "interactor_stoich": 1.0095487128666667
+    "interactor_stoich": 1.0095487128666667,
+    "plate_id": "P0012",
+    "well_id": "E09"
    }
   ],
   "held_out": [
@@ -5075,7 +5299,9 @@
      "ENSG00000106344"
     ],
     "interactor_enrichment": 5.9087664557,
-    "interactor_stoich": 1.0
+    "interactor_stoich": 1.0,
+    "plate_id": "P0012",
+    "well_id": "E04"
    },
    {
     "gene": "CCDC86",
@@ -5095,7 +5321,9 @@
     "pulldown_id": null,
     "interactors": [],
     "interactor_enrichment": null,
-    "interactor_stoich": null
+    "interactor_stoich": null,
+    "plate_id": "P0011",
+    "well_id": "G08"
    },
    {
     "gene": "NOP2",
@@ -5118,7 +5346,9 @@
      "ENSG00000132603"
     ],
     "interactor_enrichment": 4.7265139838,
-    "interactor_stoich": 0.38054192700000006
+    "interactor_stoich": 0.38054192700000006,
+    "plate_id": "P0011",
+    "well_id": "B09"
    },
    {
     "gene": "C7orf50",
@@ -5139,7 +5369,9 @@
     "pulldown_id": 3048,
     "interactors": [],
     "interactor_enrichment": null,
-    "interactor_stoich": null
+    "interactor_stoich": null,
+    "plate_id": "P0001",
+    "well_id": "B10"
    },
    {
     "gene": "NOM1",
@@ -5161,7 +5393,9 @@
      "ENSG00000146909"
     ],
     "interactor_enrichment": 13.2084523935,
-    "interactor_stoich": 1.0
+    "interactor_stoich": 1.0,
+    "plate_id": "P0012",
+    "well_id": "H07"
    },
    {
     "gene": "SLX9",
@@ -5200,7 +5434,9 @@
      "ENSG00000213923"
     ],
     "interactor_enrichment": 6.493516249270589,
-    "interactor_stoich": 0.1567476916764706
+    "interactor_stoich": 0.1567476916764706,
+    "plate_id": "P0022",
+    "well_id": "E08"
    },
    {
     "gene": "DDX21",
@@ -5404,7 +5640,9 @@
      "ENSG00000277058"
     ],
     "interactor_enrichment": 2.863634249998246,
-    "interactor_stoich": 0.07224692267309941
+    "interactor_stoich": 0.07224692267309941,
+    "plate_id": "P0012",
+    "well_id": "C01"
    },
    {
     "gene": "RSL1D1",
@@ -5438,7 +5676,9 @@
      "ENSG00000174891"
     ],
     "interactor_enrichment": 2.961475088757143,
-    "interactor_stoich": 3.4150994626571425
+    "interactor_stoich": 3.4150994626571425,
+    "plate_id": "P0012",
+    "well_id": "B06"
    }
   ]
  },
@@ -5467,7 +5707,9 @@
      "ENSG00000189091"
     ],
     "interactor_enrichment": 2.6281765885399997,
-    "interactor_stoich": 0.23661830455999996
+    "interactor_stoich": 0.23661830455999996,
+    "plate_id": "P0017",
+    "well_id": "H03"
    },
    {
     "gene": "AKAP8L",
@@ -5490,7 +5732,9 @@
      "ENSG00000144381"
     ],
     "interactor_enrichment": 3.8586558559000004,
-    "interactor_stoich": 1.15293577
+    "interactor_stoich": 1.15293577,
+    "plate_id": "P0016",
+    "well_id": "D11"
    },
    {
     "gene": "NUCKS1",
@@ -5511,7 +5755,9 @@
     "pulldown_id": 3283,
     "interactors": [],
     "interactor_enrichment": null,
-    "interactor_stoich": null
+    "interactor_stoich": null,
+    "plate_id": "P0021",
+    "well_id": "F04"
    },
    {
     "gene": "SF3B2",
@@ -5561,7 +5807,9 @@
      "ENSG00000275052"
     ],
     "interactor_enrichment": 4.31217954837931,
-    "interactor_stoich": 0.14007532250000002
+    "interactor_stoich": 0.14007532250000002,
+    "plate_id": "P0017",
+    "well_id": "D10"
    },
    {
     "gene": "SF3A1",
@@ -5718,7 +5966,9 @@
      "ENSG00000277058"
     ],
     "interactor_enrichment": 3.0211901851084617,
-    "interactor_stoich": 0.05035664564153845
+    "interactor_stoich": 0.05035664564153845,
+    "plate_id": "P0017",
+    "well_id": "D06"
    },
    {
     "gene": "PRPF19",
@@ -5764,7 +6014,9 @@
      "ENSG00000240682"
     ],
     "interactor_enrichment": 5.812325828152,
-    "interactor_stoich": 0.060831945004
+    "interactor_stoich": 0.060831945004,
+    "plate_id": "P0019",
+    "well_id": "G08"
    },
    {
     "gene": "SF3B6",
@@ -5821,7 +6073,9 @@
      "ENSG00000275052"
     ],
     "interactor_enrichment": 4.506661821186111,
-    "interactor_stoich": 0.5003246839472222
+    "interactor_stoich": 0.5003246839472222,
+    "plate_id": "P0017",
+    "well_id": "E02"
    },
    {
     "gene": "SF3B1",
@@ -5965,7 +6219,9 @@
      "ENSG00000278289"
     ],
     "interactor_enrichment": 3.501634413283486,
-    "interactor_stoich": 0.14265139668990826
+    "interactor_stoich": 0.14265139668990826,
+    "plate_id": "P0017",
+    "well_id": "D09"
    },
    {
     "gene": "TRIM24",
@@ -5988,7 +6244,9 @@
      "ENSG00000197323"
     ],
     "interactor_enrichment": 9.18237765625,
-    "interactor_stoich": 0.6164314117
+    "interactor_stoich": 0.6164314117,
+    "plate_id": "P0014",
+    "well_id": "G05"
    },
    {
     "gene": "CTNNBL1",
@@ -6019,7 +6277,9 @@
      "ENSG00000240682"
     ],
     "interactor_enrichment": 4.9620906757909085,
-    "interactor_stoich": 0.37399691606363633
+    "interactor_stoich": 0.37399691606363633,
+    "plate_id": "P0011",
+    "well_id": "H09"
    },
    {
     "gene": "RAD21",
@@ -6047,7 +6307,9 @@
      "ENSG00000244588"
     ],
     "interactor_enrichment": 6.791610866716667,
-    "interactor_stoich": 7.23416964095
+    "interactor_stoich": 7.23416964095,
+    "plate_id": "P0019",
+    "well_id": "D01"
    },
    {
     "gene": "JUNB",
@@ -6070,7 +6332,9 @@
      "ENSG00000171223"
     ],
     "interactor_enrichment": 9.01222482885,
-    "interactor_stoich": 0.506329194
+    "interactor_stoich": 0.506329194,
+    "plate_id": "P0018",
+    "well_id": "F09"
    },
    {
     "gene": "RBM10",
@@ -6092,7 +6356,9 @@
      "ENSG00000182872"
     ],
     "interactor_enrichment": 3.5309939373,
-    "interactor_stoich": 0.52374469665
+    "interactor_stoich": 0.52374469665,
+    "plate_id": "P0017",
+    "well_id": "F05"
    },
    {
     "gene": "RBM33",
@@ -6144,7 +6410,9 @@
      "ENSG00000265241"
     ],
     "interactor_enrichment": 4.178514589010345,
-    "interactor_stoich": 0.18414189953448276
+    "interactor_stoich": 0.18414189953448276,
+    "plate_id": "P0017",
+    "well_id": "G07"
    },
    {
     "gene": "SF3B3",
@@ -6216,7 +6484,9 @@
      "ENSG00000275052"
     ],
     "interactor_enrichment": 3.991113570036,
-    "interactor_stoich": 0.21109754822799995
+    "interactor_stoich": 0.21109754822799995,
+    "plate_id": "P0017",
+    "well_id": "D11"
    },
    {
     "gene": "BAZ1A",
@@ -6238,7 +6508,9 @@
      "ENSG00000198604"
     ],
     "interactor_enrichment": 5.53995763225,
-    "interactor_stoich": 1.2881442702500001
+    "interactor_stoich": 1.2881442702500001,
+    "plate_id": "P0013",
+    "well_id": "A10"
    }
   ],
   "held_out": [
@@ -6262,7 +6534,9 @@
      "ENSG00000086589"
     ],
     "interactor_enrichment": 6.4730551288500005,
-    "interactor_stoich": 0.50061734245
+    "interactor_stoich": 0.50061734245,
+    "plate_id": "P0017",
+    "well_id": "G02"
    },
    {
     "gene": "EFTUD2",
@@ -6310,7 +6584,9 @@
      "ENSG00000182004"
     ],
     "interactor_enrichment": 5.024019422874074,
-    "interactor_stoich": 0.27323341395555556
+    "interactor_stoich": 0.27323341395555556,
+    "plate_id": "P0019",
+    "well_id": "H01"
    },
    {
     "gene": "PRPF4B",
@@ -6409,7 +6685,9 @@
      "ENSG00000277058"
     ],
     "interactor_enrichment": 3.0863469950287667,
-    "interactor_stoich": 0.28034795260821915
+    "interactor_stoich": 0.28034795260821915,
+    "plate_id": "P0014",
+    "well_id": "D02"
    },
    {
     "gene": "SNRPB2",
@@ -6503,7 +6781,9 @@
      "ENSG00000275052"
     ],
     "interactor_enrichment": 3.1915805193957145,
-    "interactor_stoich": 0.06091071726428572
+    "interactor_stoich": 0.06091071726428572,
+    "plate_id": "P0017",
+    "well_id": "E06"
    },
    {
     "gene": "RBM42",
@@ -6753,7 +7033,9 @@
      "ENSG00000280969"
     ],
     "interactor_enrichment": 2.6043020752537744,
-    "interactor_stoich": 1.1718277167273585
+    "interactor_stoich": 1.1718277167273585,
+    "plate_id": "P0017",
+    "well_id": "H01"
    },
    {
     "gene": "SNRPF",
@@ -6987,7 +7269,9 @@
      "ENSG00000277058"
     ],
     "interactor_enrichment": 3.1868762154893937,
-    "interactor_stoich": 0.11726735293131313
+    "interactor_stoich": 0.11726735293131313,
+    "plate_id": "P0017",
+    "well_id": "E11"
    },
    {
     "gene": "TOP1",
@@ -7327,7 +7611,9 @@
      "ENSG00000278677"
     ],
     "interactor_enrichment": 2.8629350203524133,
-    "interactor_stoich": 0.059110764772068974
+    "interactor_stoich": 0.059110764772068974,
+    "plate_id": "P0011",
+    "well_id": "F12"
    },
    {
     "gene": "RBM8A",
@@ -7612,7 +7898,9 @@
      "ENSG00000280969"
     ],
     "interactor_enrichment": 2.6287474671558337,
-    "interactor_stoich": 0.11300626180875
+    "interactor_stoich": 0.11300626180875,
+    "plate_id": "P0017",
+    "well_id": "H06"
    }
   ]
  },
@@ -7652,7 +7940,9 @@
      "ENSG00000196961"
     ],
     "interactor_enrichment": 5.629743673013333,
-    "interactor_stoich": 0.18903474247333335
+    "interactor_stoich": 0.18903474247333335,
+    "plate_id": "P0019",
+    "well_id": "E12"
    },
    {
     "gene": "PLPP1",
@@ -7673,7 +7963,9 @@
     "pulldown_id": null,
     "interactors": [],
     "interactor_enrichment": null,
-    "interactor_stoich": null
+    "interactor_stoich": null,
+    "plate_id": "P0004",
+    "well_id": "F10"
    },
    {
     "gene": "AKT2",
@@ -7700,7 +7992,9 @@
      "ENSG00000166747"
     ],
     "interactor_enrichment": 10.0680887743,
-    "interactor_stoich": 0.50019699085
+    "interactor_stoich": 0.50019699085,
+    "plate_id": "P0013",
+    "well_id": "A04"
    },
    {
     "gene": "MYO1B",
@@ -7729,7 +8023,9 @@
      "ENSG00000198668"
     ],
     "interactor_enrichment": 5.928477492960001,
-    "interactor_stoich": 1.0536924919200001
+    "interactor_stoich": 1.0536924919200001,
+    "plate_id": "P0017",
+    "well_id": "D02"
    },
    {
     "gene": "AKAP12",
@@ -7761,7 +8057,9 @@
      "ENSG00000165868"
     ],
     "interactor_enrichment": 4.31122118883,
-    "interactor_stoich": 0.12939323273999997
+    "interactor_stoich": 0.12939323273999997,
+    "plate_id": "P0011",
+    "well_id": "C04"
    },
    {
     "gene": "KRAS",
@@ -7802,7 +8100,9 @@
      "ENSG00000241685"
     ],
     "interactor_enrichment": 3.517824244,
-    "interactor_stoich": 0.3760795409526315
+    "interactor_stoich": 0.3760795409526315,
+    "plate_id": "P0008",
+    "well_id": "B07"
    },
    {
     "gene": "RAC1",
@@ -7845,7 +8145,9 @@
      "ENSG00000242173"
     ],
     "interactor_enrichment": 5.452504025876471,
-    "interactor_stoich": 0.1000738246764706
+    "interactor_stoich": 0.1000738246764706,
+    "plate_id": "P0009",
+    "well_id": "E05"
    },
    {
     "gene": "UTRN",
@@ -7879,7 +8181,9 @@
      "ENSG00000173402"
     ],
     "interactor_enrichment": 9.026619682766666,
-    "interactor_stoich": 0.15250714269166665
+    "interactor_stoich": 0.15250714269166665,
+    "plate_id": "P0009",
+    "well_id": "F09"
    },
    {
     "gene": "ARF6",
@@ -7899,7 +8203,9 @@
     "pulldown_id": null,
     "interactors": [],
     "interactor_enrichment": null,
-    "interactor_stoich": null
+    "interactor_stoich": null,
+    "plate_id": "P0010",
+    "well_id": "A09"
    },
    {
     "gene": "PACSIN3",
@@ -7929,7 +8235,9 @@
      "ENSG00000166889"
     ],
     "interactor_enrichment": 6.928804326125,
-    "interactor_stoich": 0.20466492996250002
+    "interactor_stoich": 0.20466492996250002,
+    "plate_id": "P0010",
+    "well_id": "B03"
    },
    {
     "gene": "PIP4K2C",
@@ -7956,7 +8264,9 @@
      "ENSG00000166908"
     ],
     "interactor_enrichment": 3.90130167926,
-    "interactor_stoich": 7.757005982259999
+    "interactor_stoich": 7.757005982259999,
+    "plate_id": "P0006",
+    "well_id": "G04"
    },
    {
     "gene": "CTNNB1",
@@ -7998,7 +8308,9 @@
      "ENSG00000198561"
     ],
     "interactor_enrichment": 5.4417177449125,
-    "interactor_stoich": 0.2541802159125
+    "interactor_stoich": 0.2541802159125,
+    "plate_id": "P0010",
+    "well_id": "H09"
    },
    {
     "gene": "CORO1B",
@@ -8038,7 +8350,9 @@
      "ENSG00000278588"
     ],
     "interactor_enrichment": 5.094190257319999,
-    "interactor_stoich": 3.4422624006399993
+    "interactor_stoich": 3.4422624006399993,
+    "plate_id": "P0008",
+    "well_id": "E11"
    },
    {
     "gene": "YES1",
@@ -8064,7 +8378,9 @@
      "ENSG00000197122"
     ],
     "interactor_enrichment": 7.8840736394999995,
-    "interactor_stoich": 1.8102333916666666
+    "interactor_stoich": 1.8102333916666666,
+    "plate_id": "P0014",
+    "well_id": "H09"
    },
    {
     "gene": "PIP5K1C",
@@ -8089,7 +8405,9 @@
      "ENSG00000186111"
     ],
     "interactor_enrichment": 4.658823144233334,
-    "interactor_stoich": 0.34089006813333333
+    "interactor_stoich": 0.34089006813333333,
+    "plate_id": "P0006",
+    "well_id": "H01"
    },
    {
     "gene": "MYO1C",
@@ -8114,7 +8432,9 @@
      "ENSG00000198668"
     ],
     "interactor_enrichment": 9.31060158495,
-    "interactor_stoich": 3.30664889445
+    "interactor_stoich": 3.30664889445,
+    "plate_id": "P0017",
+    "well_id": "D03"
    }
   ],
   "held_out": [
@@ -8150,7 +8470,9 @@
      "ENSG00000196961"
     ],
     "interactor_enrichment": 6.317515745261539,
-    "interactor_stoich": 0.38494606976923074
+    "interactor_stoich": 0.38494606976923074,
+    "plate_id": "P0021",
+    "well_id": "E12"
    },
    {
     "gene": "ATP2B1",
@@ -8181,7 +8503,9 @@
      "ENSG00000206557"
     ],
     "interactor_enrichment": 5.071372590071428,
-    "interactor_stoich": 0.4270992764142857
+    "interactor_stoich": 0.4270992764142857,
+    "plate_id": "P0003",
+    "well_id": "D01"
    },
    {
     "gene": "PICALM",
@@ -8213,7 +8537,9 @@
      "ENSG00000272196"
     ],
     "interactor_enrichment": 3.2649762054599996,
-    "interactor_stoich": 0.16395154364
+    "interactor_stoich": 0.16395154364,
+    "plate_id": "P0008",
+    "well_id": "G11"
    },
    {
     "gene": "EZR",
@@ -8238,7 +8564,9 @@
      "ENSG00000165525"
     ],
     "interactor_enrichment": 7.1231397567000005,
-    "interactor_stoich": 0.24970809
+    "interactor_stoich": 0.24970809,
+    "plate_id": "P0003",
+    "well_id": "C10"
    },
    {
     "gene": "SEPTIN7",
@@ -8270,7 +8598,9 @@
      "ENSG00000196924"
     ],
     "interactor_enrichment": 3.8674224590333335,
-    "interactor_stoich": 0.5717546979222221
+    "interactor_stoich": 0.5717546979222221,
+    "plate_id": "P0010",
+    "well_id": "G09"
    },
    {
     "gene": "HSPA12A",
@@ -8297,7 +8627,9 @@
      "ENSG00000165868"
     ],
     "interactor_enrichment": 9.134104544825,
-    "interactor_stoich": 0.29997945975
+    "interactor_stoich": 0.29997945975,
+    "plate_id": "P0005",
+    "well_id": "D08"
    },
    {
     "gene": "CDC42BPB",
@@ -8334,7 +8666,9 @@
      "ENSG00000278588"
     ],
     "interactor_enrichment": 4.22957177362,
-    "interactor_stoich": 3.2215426513799996
+    "interactor_stoich": 3.2215426513799996,
+    "plate_id": "P0013",
+    "well_id": "B09"
    },
    {
     "gene": "PI4KA",
@@ -8364,7 +8698,9 @@
      "ENSG00000241973"
     ],
     "interactor_enrichment": 9.320313683771428,
-    "interactor_stoich": 0.7788712944857143
+    "interactor_stoich": 0.7788712944857143,
+    "plate_id": "P0006",
+    "well_id": "F03"
    }
   ]
  }

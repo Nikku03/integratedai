@@ -83,6 +83,12 @@ class Target:
     protein_concentration: float | None = None
     rna_abundance: float | None = None
     n_fovs: int = 0
+    # Plate and well the line was grown in. Kept so the batch control in
+    # RESULT_PROTEIN_DESCRIPTION.md can be reproduced from a committed sample:
+    # OpenCell grows one line per well, so well_id is perfectly confounded with
+    # protein identity, while plate_id is shared and therefore testable.
+    plate_id: str | None = None
+    well_id: str | None = None
     pulldown_id: int | None = None
     interactors: list[str] = field(default_factory=list)
     interactor_enrichment: float | None = None
@@ -168,6 +174,7 @@ def build_targets(catalogue: list[dict]) -> list[Target]:
             protein_concentration=ab.get("protein_concentration"),
             rna_abundance=ab.get("rna_abundance"),
             n_fovs=int(fc.get("num_fovs") or 0),
+            plate_id=md.get("plate_id"), well_id=md.get("well_id"),
             pulldown_id=bp.get("id"),
         ))
     return out
