@@ -413,3 +413,66 @@ def test_hashed_bag_is_deterministic_and_order_free():
     # collide with each other in the same buckets.
     assert not np.allclose(a, _hashed_bag(["PF00071", "PF12850"], 16, salt="kwfun"))
     assert np.allclose(_hashed_bag([], 16, salt="pfam"), 0.0)
+
+
+# --- shared-space fingerprint matching ------------------------------------
+def test_cca_finds_a_planted_shared_direction_and_rejects_noise():
+    from vcell.fingerprint import fit_cca, held_out_correlations
+
+    rng = np.random.default_rng(0)
+    n, p, q = 160, 12, 10
+    shared = rng.standard_normal(n)
+    X = rng.standard_normal((n, p))
+    Y = rng.standard_normal((n, q))
+    X[:, 0] += 2.0 * shared
+    Y[:, 3] += 2.0 * shared
+    tr, te = slice(0, 110), slice(110, n)
+    fp = fit_cca(X[tr], Y[tr], k_x=6, k_y=6, ridge=0.1, n_components=2)
+    r = held_out_correlations(fp, X[te], Y[te])
+    assert abs(r[0]) > 0.5, f"planted shared direction not recovered: {r}"
+
+    # With the pairing destroyed there must be nothing left to find.
+    Yp = Y[rng.permutation(n)]
+    fpn = fit_cca(X[tr], Yp[tr], k_x=6, k_y=6, ridge=0.1, n_components=2)
+    rn = held_out_correlations(fpn, X[te], Yp[te])
+    assert abs(rn[0]) < abs(r[0])
+
+
+def test_residualising_removes_a_group_effect_from_both_views():
+    """The leak this closes: compartment left in both views pairs with itself."""
+    import sys
+    from pathlib import Path
+
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+    from vcell_fingerprint import residualise_on_compartment
+
+    rng = np.random.default_rng(1)
+    groups = np.array(["a"] * 40 + ["b"] * 40)
+    offset = np.where(groups == "a", 5.0, -5.0)[:, None]
+    M = rng.standard_normal((80, 6)) + offset
+    is_train = np.zeros(80, bool)
+    is_train[:30] = True
+    is_train[40:70] = True
+    R = residualise_on_compartment(M, groups, is_train)
+    # Group means must be near zero afterwards, on held-out rows too.
+    for g in ("a", "b"):
+        held = (groups == g) & ~is_train
+        assert abs(float(R[held].mean())) < 0.6, f"group {g} offset survived"
+    assert abs(float(M[groups == "a"].mean() - M[groups == "b"].mean())) > 5.0
+
+
+def test_retrieval_in_shared_space_is_chance_when_views_are_unrelated():
+    from vcell.fingerprint import fit_cca, retrieve_in_shared_space
+    from vcell.retrieval import retrieval_summary
+
+    rng = np.random.default_rng(2)
+    genes = np.array([f"g{i}" for i in range(64)])
+    X = rng.standard_normal((64, 8))
+    Y = rng.standard_normal((64, 8))
+    fp = fit_cca(X[:40], Y[:40], k_x=4, k_y=4, ridge=1.0, n_components=2)
+    sets = [list(genes[i:i + 8]) for i in range(40, 64, 8)]
+    ranks = retrieve_in_shared_space(fp, X, Y, genes, sets)
+    s = retrieval_summary(ranks)
+    assert s["n"] > 0
+    # Unrelated views: top-1 must not land far above the 1/8 chance level.
+    assert s["top1"] < 0.45, s["top1"]

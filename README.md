@@ -337,7 +337,7 @@ src/iai/
   backtest/          next-open fills, sqrt impact, deflated Sharpe
 docs/                ARCHITECTURE.md · DATA_SOURCES.md · RISK.md · FINDINGS.md
 scripts/             run_smallmid.py (fetch) · model_smallmid.py (train+backtest)
-tests/               229 tests, PIT correctness first
+tests/               232 tests, PIT correctness first
 ```
 
 ```bash
@@ -427,15 +427,27 @@ nothing but the bare sequence. Screened by ridge regression against the image
 descriptor, seconds per candidate instead of a 50-minute training run, every
 number against a 500-fold permutation null.
 
-ESM-2 predicts **25% of the variance** in how a protein's images look, on
-proteins it never saw — beating UniProt's curated location keywords (15%), which
-is a genuine result: a bare sequence is a better predictor of appearance than a
-human-curated location label. And it is the wrong 25%. Subtract each
-compartment's mean and **every description collapses to zero** (ESM-2: 0.253 →
-−0.035). The signal was "which compartment", again. Meanwhile the
-within-compartment appearance is stable to r = 0.54 across independent fields,
-and survives a same-plate batch control, so the null is about the descriptions
-and not about noise.
+ESM-2 predicts **25% of the variance** in how a protein's images look — and it
+is the wrong 25%: subtract each compartment's mean and every description
+collapses to zero. The signal was "which compartment", again.
+
+So we added **every gene-level database within reach** (STRING functional
+associations, GO process and function, Reactome, HPA expression, AlphaFold
+structure — 1,726 dimensions, with all imaging-derived annotation excluded) and
+changed the method from *predicting the image* to **matching both views in a
+shared space**. That second change was the substantive one: under regression
+every block was at zero, and under matching five clear a 300-fold permutation
+null.
+
+**One fingerprint clears both tests.** A protein's STRING functional-association
+profile identifies it within its compartment at **0.245 against a chance of
+0.132** (p = 0.017), with a shared-space correlation of 0.385 (p < 0.003). It is
+the first description in three studies to beat this null — and mechanistically
+the expected one, since STRING partly encodes complex membership and complex
+members genuinely co-localise. It is suggestive, not established: the retrieval
+p does not survive correction for sixteen combinations, and GO reaches an even
+stronger correlation while identifying proteins at *half* of chance, which is
+why both numbers are always reported together.
 
 Three studies, with what came back:
 

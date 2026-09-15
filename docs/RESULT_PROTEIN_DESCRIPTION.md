@@ -1,6 +1,15 @@
-# Screen: eight descriptions of a protein, including a language model. None works
+# Screen: what a protein is, versus what it looks like. One fingerprint survives
 
-**Exploratory, not pre-registered.** The two studies before this
+**Exploratory, not pre-registered.** Two parts. Part one screens eight
+descriptions by predicting the image descriptor, and **none of them works**.
+Part two adds every gene-level database within reach and changes the method from
+prediction to shared-space matching, and **one fingerprint clears both tests**:
+a protein's STRING functional-association profile identifies it within its
+compartment at 0.245 against a chance of 0.132. That result is suggestive rather
+than established, for four reasons set out at the end of part two, and the
+confirmatory version needs pre-registering.
+
+**On discipline.** The two studies before this
 ([`RESULT_VIRTUAL_CELL.md`](RESULT_VIRTUAL_CELL.md),
 [`RESULT_OPENCELL.md`](RESULT_OPENCELL.md)) were registered in advance. This is a
 screen — its job is to find out which descriptions are worth registering a
@@ -8,9 +17,12 @@ confirmatory test on. Every number carries a permutation null, and the honest
 reading of a screen is "nothing here justifies the next experiment yet", which
 is what it returned.
 
-Run with `scripts/vcell_describe.py`. 162 OpenCell proteins with images, 109
-training and 53 held out, reusing the tiles and the protein split from the
-OpenCell study. Data in [`data/vcell/opencell/describe_screen.json`](../data/vcell/opencell/describe_screen.json).
+Run with `scripts/vcell_describe.py` (part one), `scripts/vcell_gene_data.py`
+and `scripts/vcell_fingerprint.py` (part two). 162 OpenCell proteins with
+images, 109 training and 53 held out, reusing the tiles and the protein split
+from the OpenCell study. Data in
+[`describe_screen.json`](../data/vcell/opencell/describe_screen.json) and
+[`fingerprint_match.json`](../data/vcell/opencell/fingerprint_match.json).
 
 ## Why a screen and not a study
 
@@ -212,18 +224,133 @@ does not transfer to held-out proteins.
 So the shortlist answers a real biological question and does not answer this
 one. Worth keeping for what it is; not worth carrying as a description.
 
+## Part two: all the gene data, matched in a shared space
+
+The screen above failed in a way that suggested two things were wrong with it,
+not one. It used a handful of features, and it asked the question backwards.
+
+**More data.** Six new image-independent blocks, 1,726 description dimensions in
+total: **STRING** functional associations (score profile over a 512-gene
+reference panel, plus per-channel strength), **GO** biological process and
+molecular function, **Reactome** pathways, **HPA** expression specificity across
+tissues, cell types, cancers and cell lines, and **AlphaFold** confidence and
+compactness. DepMap co-essentiality would have been the best single source and
+is unreachable — the portal is behind a bot wall and the figshare mirror returns
+403 — so the STRING profile stands in for it.
+
+The exclusions are load-bearing. **GO cellular component is dropped** (280,334
+annotations, against 626,111 process and function ones kept) and so are all four
+**HPA subcellular columns**, because HPA derives those from immunofluorescence —
+the same measurement being predicted. UniProt's location keywords stay out of
+every combination.
+
+**Matching, not predicting.** Regressing the 36-dim image descriptor spreads a
+shared signal over 36 regressions and asks the description to explain exposure
+and cell density too. Identification by fingerprint is **canonical correlation**:
+put both views in one shared space and measure whether they still co-vary on
+proteins the fit never saw. Components and ridge are chosen by 5-fold on
+training proteins only, over one grid used identically for the observed fit and
+for all 300 permutations, so the null carries the same selection optimism the
+observed value does.
+
+**One leak closed first.** The initial version residualised only the image view
+by compartment. A gene-level view like the STRING profile encodes compartment
+strongly, and training-estimated compartment means leave a residual offset in
+held-out proteins, so the method could pair leftover compartment against
+leftover compartment. Both views are now residualised on the compartment
+one-hot with training-fitted coefficients. Everything below is after that.
+
+### Result
+
+53 held-out proteins, 7 candidate sets, retrieval chance 0.132, 300
+permutations, 16 combinations tested (Bonferroni threshold 0.0031).
+
+| fingerprint | dims | shared-space corr | p | retrieval top-1 | p | chance |
+|---|---|---|---|---|---|---|
+| **string_profile** | 512 | **0.385** | **0.000** | **0.245** | **0.017** | 0.132 |
+| EVERYTHING | 1726 | **0.453** | **0.000** | 0.189 | 0.137 | 0.132 |
+| go_process_function | 301 | **0.370** | **0.000** | 0.057 | 0.980 | 0.132 |
+| baseline | 51 | 0.370 | 0.003 | 0.113 | 0.730 | 0.132 |
+| alphafold | 8 | 0.314 | 0.013 | 0.208 | 0.067 | 0.132 |
+| string_channels | 9 | 0.193 | 0.160 | 0.245 | 0.013 | 0.132 |
+| esm + databases | 1601 | 0.163 | 0.250 | 0.226 | 0.030 | 0.132 |
+| topology | 10 | 0.229 | 0.113 | 0.189 | 0.127 | 0.132 |
+| reactome | 201 | 0.109 | 0.423 | 0.075 | 0.940 | 0.132 |
+| **esm** | 480 | 0.085 | 0.553 | 0.151 | 0.330 | 0.132 |
+| hpa_expression | 90 | 0.082 | 0.510 | 0.057 | 0.977 | 0.132 |
+| databases only | 1121 | 0.078 | 0.583 | 0.189 | 0.110 | 0.132 |
+| lowcomplexity | 5 | 0.069 | 0.657 | 0.132 | 0.460 | 0.132 |
+| domains | 16 | 0.033 | 0.830 | 0.132 | 0.593 | 0.132 |
+| composition | 27 | 0.008 | 0.957 | 0.113 | 0.727 | 0.132 |
+| function_kw | 16 | 0.000 | 1.000 | 0.113 | 0.733 | 0.132 |
+
+**The method change was the substantive one.** Under regression every block gave
+a within-compartment R² of zero. Under shared-space matching, five clear the
+permutation null on the correlation, three of them past Bonferroni. Regressing
+36 outputs was diluting a signal that was there.
+
+**One fingerprint clears both tests: STRING functional associations.** Shared
+correlation 0.385 (p = 0.000, past Bonferroni) *and* identification 0.245
+against a chance of 0.132 (p = 0.017). It is the first description in three
+studies to beat the within-compartment null at identifying the protein. That is
+also mechanistically the one to expect: STRING associations partly encode
+complex membership, and members of a complex genuinely co-localise at
+sub-compartment scale — the co-location shortlist above recovered CCT, SWI/SNF,
+the proteasome, V-ATPase, the EMC and the OST complex without being told about
+any of them.
+
+### Four things that stop this being a claim
+
+1. **The retrieval p does not survive multiple testing.** 0.017 against a
+   Bonferroni threshold of 0.0031 over 16 combinations. Suggestive, not
+   established.
+2. **A significant correlation is not a usable identification, and this run
+   proves it.** `go_process_function` has one of the strongest correlations
+   (0.370, p = 0.000) and a retrieval of **0.057** — less than half of chance.
+   A real shared direction can be actively wrong for ranking. Anyone reading
+   only the correlation column would conclude GO works.
+3. **Two of the five "significant" correlations look like noise on inspection.**
+   `baseline`'s held-out components are [0.370, −0.135, 0.017] — one direction
+   and nothing behind it, with below-chance retrieval. `alphafold`'s held-out
+   correlations (0.314) *exceed its training* correlations (0.139), which with 8
+   dimensions means instability, not signal. `EVERYTHING` gives [0.453, 0.06,
+   0.491] — a near-zero middle component between two strong ones, the signature
+   of unstable canonical directions.
+4. **The effect is modest even taken at face value.** 0.245 against 0.132 is
+   right roughly one time in four instead of one in eight, on 53 proteins in
+   candidate sets of 8.
+
+And the earlier headline does not survive: **ESM-2 alone fails this test**
+(0.085, p = 0.553). Its raw R² of 0.253 really was all compartment.
+
 ### What to do next, in order
 
-1. **A larger sequence model, with position kept.** ESM-2 35M mean-pooled is the
-   weakest useful version of this feature. `esm2_t33_650M` with per-residue
-   states preserved is the obvious next try, and the screen here runs it in
-   seconds once embedded — no training needed to find out.
-2. **Only then register a confirmatory test.** If a block clears the
-   within-compartment permutation null in this screen, the confirmatory form is
-   the registered retrieval against a chance of 1/8, with the true null in place
-   from the start, as in [`PREREG_OPENCELL.md`](PREREG_OPENCELL.md).
-3. **If nothing clears it, say so and stop.** The screen is cheap precisely so
-   that a null can be established over many candidates rather than assumed after
-   one. Eight descriptions, one of them a language model, is not yet enough to
-   call the question closed — but it is enough to stop guessing and to say that
-   the obvious features are not the answer.
+The situation has changed from "nothing works" to "one thing might", which
+calls for a confirmatory test rather than more screening.
+
+1. **Pre-register the STRING retrieval, and make it a harder test.** The
+   suggestive result is one combination out of sixteen at p = 0.017. The
+   confirmatory form should fix STRING as the single registered fingerprint in
+   advance, and enlarge the candidate sets: the cytoplasmic compartment alone
+   has 135 qualifying proteins, so chance can be 1/50 rather than 1/8, where a
+   real effect is unmistakable and a fluke cannot survive. The true null
+   (identical vectors for all candidates) goes in from the start.
+2. **Test the mechanism, because it is checkable.** If STRING works through
+   complex co-membership, then its retrieval should be much stronger for
+   held-out proteins that have a co-located partner in the training set than for
+   those that do not — and the co-location shortlist in
+   [`compartment_interactions.csv`](../data/vcell/opencell/compartment_interactions.csv)
+   already labels which is which. If that split shows nothing, the mechanism is
+   something else and the feature is less trustworthy than it looks.
+3. **Report the correlation and the retrieval together, always.** This run is
+   the argument for it: GO reaches a correlation of 0.370 at p = 0.000 while
+   identifying proteins at less than half of chance. Either number alone is
+   misleading.
+4. **Do not chase the remaining blocks.** ESM-2 alone, composition, topology,
+   domains, keywords, Reactome and HPA expression are all at the null on the
+   question that matters. A larger sequence model is worth one try, but the
+   evidence now points at functional-association data rather than at sequence.
+5. **Remember the irreducible confound.** OpenCell grows one line per well, so
+   protein and clone cannot be separated in this dataset at all. Everything here
+   is bounded by that, and a confirmatory result would want either multiple
+   independent clones per protein or a transient-expression design.
