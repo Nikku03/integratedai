@@ -223,6 +223,10 @@ def main() -> int:
     # diffusion coefficient Stokes-Einstein implies from them.
     combos["biophysics (all)"] = ["bio_shape", "bio_diffusion", "bio_charge"]
     combos["biophysics + string"] = ["biophysics", "string_profile"]
+    # Shape and charge kept separate from the collapsed diffusion coefficient:
+    # reducing size and elongation to a single rate discards the anisotropy that
+    # distinguishes a rod from a sphere of equal volume.
+    combos["bio_shape + bio_charge"] = ["bio_shape", "bio_charge"]
     combos["esm + string_profile"] = ["esm", "string_profile"]
     combos["esm + string (both)"] = ["esm", "string_profile", "string_channels"]
 
