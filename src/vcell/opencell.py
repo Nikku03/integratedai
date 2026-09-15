@@ -366,6 +366,7 @@ def choose_sample(
     n_held_out: int,
     min_fovs: int,
     seed: int,
+    held_out_fraction: float | None = None,
 ) -> dict[str, dict[str, list[Target]]]:
     """Per compartment: `n_per_compartment` targets, split train / held out.
 
@@ -386,9 +387,15 @@ def choose_sample(
         chosen = [pool[i] for i in sorted(pick)]
         if len(chosen) < n_per_compartment:
             print(f"  {compartment}: only {len(chosen)} targets available")
+        # A fraction keeps the candidate set proportional to the compartment,
+        # which is the point of using the whole pool: a big compartment should
+        # give a harder retrieval, not the same 8-way one.
+        k = (max(2, int(round(len(chosen) * held_out_fraction)))
+             if held_out_fraction else n_held_out)
+        k = min(k, max(0, len(chosen) - 2))
         order = rng.permutation(len(chosen))
-        held = [chosen[i] for i in sorted(order[:n_held_out])]
-        train = [chosen[i] for i in sorted(order[n_held_out:])]
+        held = [chosen[i] for i in sorted(order[:k])]
+        train = [chosen[i] for i in sorted(order[k:])]
         out[compartment] = {"train": train, "held_out": held}
     return out
 
