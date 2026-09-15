@@ -341,9 +341,14 @@ def main() -> int:
     D = Path(args.data_dir)
     G = Path(args.gene_data or (D.parent / "gene_data"))
     sample = json.loads((D / "sample.json").read_text())
-    uniprot = json.loads((D / "uniprot.json").read_text())
+    # Accessions are only needed by the Reactome and AlphaFold blocks, so a
+    # sample without a UniProt fetch can still build the rest.
+    uniprot = (json.loads((D / "uniprot.json").read_text())
+               if (D / "uniprot.json").exists() else {})
     genes = sorted({t["gene"] for d in sample.values() for v in d.values() for t in v})
     accessions = {g: (uniprot.get(g) or {}).get("primaryAccession", "") for g in genes}
+    if not uniprot:
+        print("  (no uniprot.json; reactome and alphafold need it)", flush=True)
     print(f"building gene-level fingerprints for {len(genes)} proteins\n")
 
     skip = {s.strip() for s in args.skip.split(",") if s.strip()}
