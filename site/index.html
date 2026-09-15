@@ -88,65 +88,64 @@
       </div>
     </div>
 
-    <!-- ============================================================ INTRO -->
-    <section class="section">
-      <div class="wrap grid grid-12">
-        <div class="span-5">
-          <span class="eyebrow" data-reveal>The studio</span>
-          <h2 class="display t-1 split" style="margin-top:1rem">A room is a <em>sequence</em>, not a picture.</h2>
+    <!-- ============================================================ THE WALK: framed doors -->
+    <section class="gates" id="walk" data-room="cafe" aria-label="A walk past three doors: a café in the morning, a restaurant in the afternoon, a bar at night">
+      <div class="gates__sticky">
+        <div class="gates__wall" aria-hidden="true"></div>
+        <div class="gates__floor" aria-hidden="true"></div>
+        <!-- the rooms behind the doors: swap these three images for photos -->
+        <img class="gates__inside is-active" src="assets/img/room-cafe.svg" alt="" aria-hidden="true">
+        <img class="gates__inside" src="assets/img/room-restaurant.svg" alt="" aria-hidden="true">
+        <img class="gates__inside" src="assets/img/room-bar.svg" alt="" aria-hidden="true">
+        <div class="gates__grade" aria-hidden="true"></div>
+        <!-- the entrances, framed. Door rectangle + hinge are declared per picture (% of the image). -->
+        <div class="gates__track" aria-hidden="true">
+          <figure class="gate" data-room="cafe" style="--ar: 693 / 900; --dx: 48.3; --dy: 29.8; --dw: 26; --dh: 62.2; --hinge: 100%; --dir: -1">
+            <div class="gate__frame">
+              <img class="gate__outside" src="assets/img/facade-cafe.svg" alt="">
+              <div class="gate__shade"></div>
+              <div class="gate__leaf"><img src="assets/img/facade-cafe.svg" alt=""></div>
+            </div>
+            <figcaption class="gate__plaque"><b>08:00</b>Café · the entrance</figcaption>
+          </figure>
+          <figure class="gate" data-room="rest" style="--ar: 693 / 900; --dx: 48.3; --dy: 29.8; --dw: 26; --dh: 62.2; --hinge: 100%; --dir: -1">
+            <div class="gate__frame">
+              <img class="gate__outside" src="assets/img/facade-restaurant.svg" alt="">
+              <div class="gate__shade"></div>
+              <div class="gate__leaf"><img src="assets/img/facade-restaurant.svg" alt=""></div>
+            </div>
+            <figcaption class="gate__plaque"><b>14:00</b>Restaurant · the entrance</figcaption>
+          </figure>
+          <figure class="gate" data-room="bar" style="--ar: 693 / 900; --dx: 48.3; --dy: 29.8; --dw: 26; --dh: 62.2; --hinge: 100%; --dir: -1">
+            <div class="gate__frame">
+              <img class="gate__outside" src="assets/img/facade-bar.svg" alt="">
+              <div class="gate__shade"></div>
+              <div class="gate__leaf"><img src="assets/img/facade-bar.svg" alt=""></div>
+            </div>
+            <figcaption class="gate__plaque"><b>23:00</b>Bar · the entrance</figcaption>
+          </figure>
         </div>
-        <div class="span-6" style="grid-column: 7 / span 6">
-          <p class="lede" data-reveal>Good hospitality interiors are choreographed: the first three seconds at the door, the view from the table, the light on the bar at 11pm, the width of the aisle when the shop is full. We design for those moments — then build them ourselves, so nothing gets lost between the drawing and the site.</p>
-          <p class="muted" data-reveal style="--d:120;margin-top:1.4rem">Design and build under one roof means one contract, one programme and one team that has to live with its own decisions. Every project is led by a senior designer from first sketch to snag list.</p>
-          <div class="row" data-reveal style="--d:220;margin-top:2rem">
-            <a class="btn" href="studio.html">About the studio <span class="arr">→</span></a>
-            <a class="btn btn--ghost" href="#walk">Open the door ↓</a>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ============================================================ THE DOOR SEQUENCE -->
-    <section class="doors" id="walk" data-room="cafe" aria-label="Through the door: a café in the morning, a restaurant in the afternoon, a bar at night">
-      <div class="doors__sticky">
-        <div class="doors__rooms" aria-hidden="true">
-          <figure class="doors__room is-active"><img src="assets/img/room-cafe.svg" alt=""></figure>
-          <figure class="doors__room"><img src="assets/img/room-restaurant.svg" alt=""></figure>
-          <figure class="doors__room"><img src="assets/img/room-bar.svg" alt=""></figure>
-          <div class="doors__grade"></div>
-        </div>
-        <div class="doors__wallgroup" aria-hidden="true">
-          <div class="doors__wall"></div>
-          <div class="doors__spill"></div>
-          <div class="doors__frame"></div>
-          <div class="doors__leaf doors__leaf--l"></div>
-          <div class="doors__leaf doors__leaf--r"></div>
-          <div class="doors__sign">
-            <span class="logo logo--lockup" role="img" aria-label="Two Squares — Design &amp; Build"></span>
-            <span class="doors__label">08:00 · Café</span>
-          </div>
-        </div>
-        <div class="doors__hud" aria-hidden="true">
-          <span class="is-active">At the door</span>
+        <div class="gates__hud" aria-hidden="true">
+          <span class="is-active">On the street</span>
           <span>08:00 · Café</span>
           <span>14:00 · Restaurant</span>
           <span>23:00 · Bar</span>
         </div>
       </div>
 
-      <div class="doors__steps">
-        <div class="doors__step" data-room="entry">
+      <div class="gates__steps">
+        <div class="gates__step" data-room="entry">
           <div class="wrap" data-reveal>
-            <div class="doors__panel" data-lift="0.5">
-              <span class="eyebrow">Through the door</span>
-              <h2 class="display t-2">Every project starts at the <em>door.</em></h2>
-              <p>Scroll to open it. Behind the same door: a café at eight in the morning, a restaurant at two, a bar at eleven at night — three rooms we design and build, three times of day they have to work.</p>
+            <div class="gates__panel" data-lift="0.5">
+              <span class="eyebrow">The studio</span>
+              <h2 class="display t-2">A room is a <em>sequence</em>, not a picture.</h2>
+              <p>Scroll to open the first door. Behind it, a café at eight in the morning; further along, a restaurant at two and a bar at eleven — three rooms we design and build, three times of day they have to work.</p>
             </div>
           </div>
         </div>
-        <div class="doors__step" data-room="cafe">
+        <div class="gates__step" data-room="cafe">
           <div class="wrap" data-reveal>
-            <div class="doors__panel" data-lift="0.5">
+            <div class="gates__panel" data-lift="0.5">
               <div class="time">08:00</div>
               <span class="eyebrow">Morning · Café</span>
               <h2 class="display t-2">Light first, <em>then</em> everything else.</h2>
@@ -155,9 +154,9 @@
             </div>
           </div>
         </div>
-        <div class="doors__step" data-room="rest">
+        <div class="gates__step" data-room="rest">
           <div class="wrap" data-reveal>
-            <div class="doors__panel" data-lift="0.5">
+            <div class="gates__panel" data-lift="0.5">
               <div class="time">14:00</div>
               <span class="eyebrow">Afternoon · Restaurant</span>
               <h2 class="display t-2">The long lunch, <em>held.</em></h2>
@@ -166,9 +165,9 @@
             </div>
           </div>
         </div>
-        <div class="doors__step" data-room="bar">
+        <div class="gates__step" data-room="bar">
           <div class="wrap" data-reveal>
-            <div class="doors__panel" data-lift="0.5">
+            <div class="gates__panel" data-lift="0.5">
               <div class="time">23:00</div>
               <span class="eyebrow">Night · Bar</span>
               <h2 class="display t-2">The back-bar is the <em>stage.</em></h2>

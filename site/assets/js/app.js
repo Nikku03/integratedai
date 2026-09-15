@@ -15,7 +15,7 @@
      data-count="120"                        number counts up when in view
      data-magnetic                           button leans toward the cursor
      data-lift[="0.5"]                       tilts toward the cursor, rises on Z and zooms (hover)
-     .doors                                  the scroll-driven door sequence (one door, three rooms)
+     .gates                                  the framed-door walk (entrance opens → room fills the screen → next door)
 
    Respects prefers-reduced-motion: all motion collapses to static.
    ===================================================================== */
@@ -326,76 +326,109 @@
     });
   });
 
-  // --------------------------------------------------------------- the door sequence
-  // One door, three rooms. Scroll progress P runs 0→3 (one unit per room); within a
-  // room, p in [0,1] phases: approach → open → travel in → hold → travel out → close.
-  // P is anchored to where each text panel is centred in the viewport.
-  const doors = $(".doors");
-  const DR = doors ? {
-    el: doors,
-    rooms: $$(".doors__room", doors),
-    steps: $$(".doors__step", doors),
-    hud: $$(".doors__hud span", doors),
-    label: $(".doors__label", doors),
-    anchors: [], top: 0, h: 0, room: -1, hudIdx: -1, lastP: NaN,
+  // --------------------------------------------------------------- the walk (framed doors)
+  // Framed entrance pictures hang in a row. Scroll progress W runs one unit per
+  // gate: the door in picture k opens, the frame scales about the door until the
+  // room behind fills the screen, scales back, the door shuts, and the row slides
+  // so the next door is centred. W is anchored to where each text panel is centred.
+  const gatesEl = $(".gates");
+  const GT = gatesEl ? {
+    el: gatesEl,
+    track: $(".gates__track", gatesEl),
+    floor: $(".gates__floor", gatesEl),
+    grade: $(".gates__grade", gatesEl),
+    gates: $$(".gate", gatesEl).map((g) => ({
+      el: g, frame: $(".gate__frame", g),
+      dx: parseFloat(g.style.getPropertyValue("--dx")) / 100, dy: parseFloat(g.style.getPropertyValue("--dy")) / 100,
+      dw: parseFloat(g.style.getPropertyValue("--dw")) / 100, dh: parseFloat(g.style.getPropertyValue("--dh")) / 100,
+      cx: 0, cy: 0, w: 0, h: 0, smax: 4,
+    })),
+    insides: $$(".gates__inside", gatesEl),
+    steps: $$(".gates__step", gatesEl),
+    hud: $$(".gates__hud span", gatesEl),
+    anchors: [], top: 0, h: 0, room: -1, hudIdx: -1, lastW: NaN, active: -1,
   } : null;
-  const CH = [0.06, 0.62, 1.62, 2.62];                     // P when each step (entry, café, restaurant, bar) is centred
+  const CH = [-0.05, 0.41, 1.41, 2.41];                    // W when each step (arrive, café, restaurant, bar) is centred
   const ROOM_KEYS = ["cafe", "rest", "bar"];
-  const ROOM_LABELS = ["08:00 · Café", "14:00 · Restaurant", "23:00 · Bar"];
   const smooth = (t) => t * t * (3 - 2 * t);
   const seg = (p, a, b) => clamp((p - a) / (b - a), 0, 1);
 
   function measureWalk() {
-    if (!DR) return;
-    const r = DR.el.getBoundingClientRect();
-    DR.top = r.top + S.y; DR.h = r.height;
-    DR.anchors = DR.steps.map((st) => { const sr = st.getBoundingClientRect(); return sr.top + S.y + sr.height / 2 - S.vh / 2; });
-    DR.lastP = NaN;
+    if (!GT) return;
+    const r = GT.el.getBoundingClientRect();
+    GT.top = r.top + S.y; GT.h = r.height;
+    GT.anchors = GT.steps.map((st) => { const sr = st.getBoundingClientRect(); return sr.top + S.y + sr.height / 2 - S.vh / 2; });
+    // door centres in track coordinates (frames unscaled)
+    GT.track.style.setProperty("--tx", "0px");
+    GT.gates.forEach((g) => { g.frame.style.setProperty("--s", "1"); });
+    const tr = GT.track.getBoundingClientRect();
+    const sk = $(".gates__sticky", GT.el).getBoundingClientRect();
+    GT.gates.forEach((g) => {
+      const fr = g.el.getBoundingClientRect();
+      g.w = fr.width; g.h = fr.height;
+      g.cx = fr.left - tr.left + (g.dx + g.dw / 2) * fr.width;      // relative to the track's left edge
+      g.cy = fr.top - sk.top + (g.dy + g.dh / 2) * fr.height;       // relative to the sticky stage (= viewport when pinned)
+      const holeW = g.dw * fr.width, holeH = g.dh * fr.height;
+      g.smax = Math.max(S.vw / holeW, S.vh / holeH) * 1.06;
+    });
+    GT.lastW = NaN;
   }
   function progressAt(scroll) {
-    const A = DR.anchors, n = A.length;
+    const A = GT.anchors, n = A.length;
     if (n < 2) return 0;
     let i = 0;
     while (i < n - 2 && scroll > A[i + 1]) i++;
     const t = (scroll - A[i]) / (A[i + 1] - A[i]);
-    return clamp(lerp(CH[i], CH[i + 1], t), 0, 3);
+    return clamp(lerp(CH[i], CH[i + 1], t), -0.4, 2.78);
   }
   function tickWalk() {
-    if (!DR) return;
-    if (S.y + S.vh < DR.top - S.vh || S.y > DR.top + DR.h + S.vh) return;
-    const P = progressAt(S.sy);
-    const k = Math.min(2, Math.floor(P));
-    const p = P >= 3 ? 1 : P - k;
-    if (Math.abs(P - DR.lastP) > 0.0003 || finePointer) {
-      DR.lastP = P;
-      let dolly;
-      if (p < 0.32)      dolly = lerp(0.7, 1, smooth(seg(p, 0, 0.18)));
-      else if (p < 0.72) dolly = lerp(1, 4.4, smooth(seg(p, 0.32, 0.58)));
-      else if (p < 0.92) dolly = lerp(4.4, 1, smooth(seg(p, 0.72, 0.9)));
-      else               dolly = lerp(1, 0.7, smooth(seg(p, 0.92, 1)));
-      const open = p < 0.5 ? 108 * smooth(seg(p, 0.14, 0.34)) : 108 * (1 - smooth(seg(p, 0.86, 0.98)));
-      const zoom = p < 0.58 ? lerp(1, 1.18, smooth(seg(p, 0.32, 0.58)))
-                 : p < 0.72 ? lerp(1.18, 1.24, seg(p, 0.58, 0.72))
-                 :            lerp(1.24, 1, smooth(seg(p, 0.72, 0.9)));
-      const st = DR.el.style;
-      st.setProperty("--dolly", dolly.toFixed(4));
-      st.setProperty("--open", open.toFixed(2));
-      st.setProperty("--zoom", zoom.toFixed(4));
-      if (k !== DR.room) {
-        DR.room = k;
-        DR.rooms.forEach((r, i) => r.classList.toggle("is-active", i === k));
-        DR.el.dataset.room = ROOM_KEYS[k];
-        if (DR.label) DR.label.textContent = ROOM_LABELS[k];
-      }
-      const hudIdx = (k === 0 && p < 0.2) ? 0 : k + 1;
-      if (hudIdx !== DR.hudIdx) { DR.hudIdx = hudIdx; DR.hud.forEach((h, i) => h.classList.toggle("is-active", i === hudIdx)); }
+    if (!GT || !GT.gates.length) return;
+    if (S.y + S.vh < GT.top - S.vh || S.y > GT.top + GT.h + S.vh) return;
+    const W = progressAt(S.sy);
+    if (Math.abs(W - GT.lastW) < 0.0002) return;
+    GT.lastW = W;
+    const n = GT.gates.length;
+    const k = clamp(Math.floor(W), 0, n - 1);
+    const p = W - k;                                        // negative before the first door
+    const g = GT.gates[k];
+    // phases: open .03–.13 · travel in .13–.34 · hold .34–.50 · travel out .50–.70 · close .66–.76 · walk .80–1
+    const open = 106 * smooth(seg(p, 0.03, 0.13)) * (1 - smooth(seg(p, 0.66, 0.76)));
+    const depth = smooth(seg(p, 0.13, 0.34)) * (1 - smooth(seg(p, 0.50, 0.70)));   // 0 outside … 1 fully inside
+    const s = 1 + (g.smax - 1) * depth;
+    const zoom = 1 + 0.12 * depth;
+    const walk = p < 0 ? p * 2 : k + smooth(seg(p, 0.80, 1.0));
+    // exterior fades once the doorway is most of the screen, so the room takes over cleanly
+    const cover = (g.dw * g.w * s) / S.vw;
+    const ext = 1 - smooth(seg(cover, 0.6, 1.05));
+    // track: door centre of the walk position sits at the viewport centre
+    let cxTrack;
+    if (walk < 0) cxTrack = GT.gates[0].cx + walk * (n > 1 ? GT.gates[1].cx - GT.gates[0].cx : 400);
+    else { const i = Math.min(Math.floor(walk), n - 1), j = Math.min(i + 1, n - 1); cxTrack = lerp(GT.gates[i].cx, GT.gates[j].cx, walk - i); }
+    const tx = S.vw / 2 - cxTrack;
+    GT.track.style.setProperty("--tx", `${tx.toFixed(1)}px`);
+    GT.floor.style.setProperty("--fx", `${(tx * 0.35).toFixed(1)}px`);
+    // active gate
+    if (k !== GT.active) {
+      GT.gates.forEach((x, i) => { x.el.classList.toggle("is-active", i === k); if (i !== k) { x.frame.style.setProperty("--s", "1"); x.el.style.setProperty("--open", "0"); x.el.style.setProperty("--ext", "1"); } });
+      GT.insides.forEach((im, i) => im.classList.toggle("is-active", i === k));
+      GT.el.dataset.room = ROOM_KEYS[k] || ROOM_KEYS[0];
+      GT.active = k;
     }
-    // slight look-around with the mouse
-    if (finePointer && !reduce) {
-      const nx = (S.smx / S.vw - 0.5) * 2, ny = (S.smy / S.vh - 0.5) * 2;
-      DR.el.style.setProperty("--mx", `${(-nx * 1.2).toFixed(2)}%`);
-      DR.el.style.setProperty("--my", `${(-ny * 0.8).toFixed(2)}%`);
-    }
+    g.el.style.setProperty("--open", open.toFixed(2));
+    g.el.style.setProperty("--ext", ext.toFixed(3));
+    g.frame.style.setProperty("--s", s.toFixed(4));
+    GT.el.style.setProperty("--zoom", zoom.toFixed(4));
+    // the room shows only through the doorway: clip the full-bleed interior to the hole
+    const hw = g.dw * g.w * s, hh = g.dh * g.h * s, cx = S.vw / 2, cy = g.cy;
+    const cl = Math.max(0, cx - hw / 2), cr = Math.max(0, S.vw - (cx + hw / 2));
+    const ct = Math.max(0, cy - hh / 2), cb = Math.max(0, S.vh - (cy + hh / 2));
+    const clip = open > 0.5 || depth > 0 ? `inset(${ct.toFixed(1)}px ${cr.toFixed(1)}px ${cb.toFixed(1)}px ${cl.toFixed(1)}px)` : "inset(50% 50% 50% 50%)";
+    const inside = GT.insides[k]; if (inside) inside.style.clipPath = clip;
+    GT.grade.style.clipPath = clip;
+    GT.el.classList.toggle("is-inside", depth > 0.6);
+    // HUD
+    const hudIdx = (k === 0 && p < 0.03) ? 0 : k + 1;
+    if (hudIdx !== GT.hudIdx) { GT.hudIdx = hudIdx; GT.hud.forEach((h, i) => h.classList.toggle("is-active", i === hudIdx)); }
   }
 
   // --------------------------------------------------------------- cursor glow
