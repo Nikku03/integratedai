@@ -337,7 +337,7 @@ src/iai/
   backtest/          next-open fills, sqrt impact, deflated Sharpe
 docs/                ARCHITECTURE.md · DATA_SOURCES.md · RISK.md · FINDINGS.md
 scripts/             run_smallmid.py (fetch) · model_smallmid.py (train+backtest)
-tests/               226 tests, PIT correctness first
+tests/               229 tests, PIT correctness first
 ```
 
 ```bash
@@ -419,10 +419,29 @@ the annotation.**
     vcell prepare --data-dir .vcell        # Allen: 24 GB in, 102 MB of frames out
     python scripts/vcell_opencell.py --data-dir .vcell/oc --blocks noncircular
 
-Both studies, registered before any metric, with what came back:
+**So we went looking for a better description**, and screened eight of them —
+amino-acid composition, transmembrane topology, signal peptides, lipidation,
+coiled coils, low-complexity regions, Pfam domains, non-location keywords, the
+old abundance/interactome baseline, and a **protein language model** (ESM-2) shown
+nothing but the bare sequence. Screened by ridge regression against the image
+descriptor, seconds per candidate instead of a 50-minute training run, every
+number against a 500-fold permutation null.
+
+ESM-2 predicts **25% of the variance** in how a protein's images look, on
+proteins it never saw — beating UniProt's curated location keywords (15%), which
+is a genuine result: a bare sequence is a better predictor of appearance than a
+human-curated location label. And it is the wrong 25%. Subtract each
+compartment's mean and **every description collapses to zero** (ESM-2: 0.253 →
+−0.035). The signal was "which compartment", again. Meanwhile the
+within-compartment appearance is stable to r = 0.54 across independent fields,
+and survives a same-plate batch control, so the null is about the descriptions
+and not about noise.
+
+Three studies, with what came back:
 
 - [`docs/PREREG_VIRTUAL_CELL.md`](docs/PREREG_VIRTUAL_CELL.md) → [`docs/RESULT_VIRTUAL_CELL.md`](docs/RESULT_VIRTUAL_CELL.md)
 - [`docs/PREREG_OPENCELL.md`](docs/PREREG_OPENCELL.md) → [`docs/RESULT_OPENCELL.md`](docs/RESULT_OPENCELL.md)
+- [`docs/RESULT_PROTEIN_DESCRIPTION.md`](docs/RESULT_PROTEIN_DESCRIPTION.md) — the description screen (exploratory, not registered)
 - [`data/vcell/`](data/vcell/) — the 900 Allen cells by CellId, the 168 OpenCell
   targets, and every score cited in either document
 

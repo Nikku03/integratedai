@@ -327,3 +327,89 @@ def test_dominant_form_makes_whole_vectors_identical_under_the_null():
 def test_unknown_compartment_form_raises():
     with pytest.raises(ValueError, match="compartment_form"):
         knowledge_blocks(_target(), [], compartment_form="nonsense")
+
+
+# --- candidate protein descriptions ---------------------------------------
+def test_description_blocks_are_finite_and_fixed_length():
+    from vcell.protein_desc import (
+        BLOCKS,
+        composition_block,
+        domains_block,
+        function_kw_block,
+        location_kw_block,
+        lowcomplexity_block,
+        topology_block,
+    )
+
+    short = {"sequence": {"value": "MAKLV"}, "features": [], "keywords": [],
+             "uniProtKBCrossReferences": []}
+    rich = {
+        "sequence": {"value": "M" + "AILVFWM" * 40 + "KKKRRRDDDEEE" + "PPPPPPPP"},
+        "features": [
+            {"type": "Transmembrane",
+             "location": {"start": {"value": 10}, "end": {"value": 30}}},
+            {"type": "Signal", "location": {"start": {"value": 1},
+                                            "end": {"value": 22}}},
+            {"type": "Lipidation", "location": {"start": {"value": 5},
+                                                "end": {"value": 5}}},
+            {"type": "Coiled coil", "location": {"start": {"value": 40},
+                                                 "end": {"value": 80}}},
+            {"type": "Compositional bias",
+             "location": {"start": {"value": 100}, "end": {"value": 140}}},
+            {"type": "Domain", "location": {"start": {"value": 50},
+                                            "end": {"value": 90}},
+             "description": "Ras"},
+        ],
+        "keywords": [
+            {"category": "Cellular component", "name": "Golgi apparatus"},
+            {"category": "PTM", "name": "Prenylation"},
+            {"category": "Molecular function", "name": "Hydrolase"},
+        ],
+        "uniProtKBCrossReferences": [{"database": "Pfam", "id": "PF00071"}],
+    }
+    for fn in (composition_block, topology_block, lowcomplexity_block,
+               domains_block, function_kw_block, location_kw_block):
+        a, b = fn(short), fn(rich)
+        assert a.shape == b.shape, fn.__name__
+        assert np.isfinite(a).all() and np.isfinite(b).all(), fn.__name__
+        assert not np.allclose(a, b), f"{fn.__name__} does not distinguish these"
+    # An empty record must not crash any block.
+    empty = {"sequence": {"value": ""}, "features": [], "keywords": [],
+             "uniProtKBCrossReferences": []}
+    for fn in (composition_block, topology_block, lowcomplexity_block,
+               domains_block, function_kw_block, location_kw_block):
+        assert np.isfinite(fn(empty)).all(), fn.__name__
+    # Exactly one block may be marked circular, and it must be the location one.
+    circular = [b.name for b in BLOCKS if b.circular]
+    assert circular == ["location_kw"]
+
+
+def test_location_and_function_keywords_do_not_overlap():
+    """The circular block must take the location keywords and nothing else."""
+    from vcell.protein_desc import _keywords
+
+    rec = {"keywords": [
+        {"category": "Cellular component", "name": "Nucleus"},
+        {"category": "Cellular component", "name": "Membrane"},
+        {"category": "Molecular function", "name": "Hydrolase"},
+        {"category": "PTM", "name": "Acetylation"},
+    ]}
+    loc = set(_keywords(rec, location=True))
+    fun = set(_keywords(rec, location=False))
+    assert loc == {"Nucleus", "Membrane"}
+    assert fun == {"Hydrolase", "Acetylation"}
+    assert not (loc & fun)
+
+
+def test_hashed_bag_is_deterministic_and_order_free():
+    from vcell.protein_desc import _hashed_bag
+
+    a = _hashed_bag(["PF00071", "PF12850"], 16, salt="pfam")
+    b = _hashed_bag(["PF12850", "PF00071", "PF00071"], 16, salt="pfam")
+    c = _hashed_bag(["PF99999"], 16, salt="pfam")
+    assert np.allclose(a, b)          # a set, and order cannot matter
+    assert not np.allclose(a, c)
+    # A different salt must give a different projection, so blocks do not
+    # collide with each other in the same buckets.
+    assert not np.allclose(a, _hashed_bag(["PF00071", "PF12850"], 16, salt="kwfun"))
+    assert np.allclose(_hashed_bag([], 16, salt="pfam"), 0.0)

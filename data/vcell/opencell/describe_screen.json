@@ -1,0 +1,754 @@
+{
+ "blocks": {
+  "composition": {
+   "alpha": 464.1588833612773,
+   "r2": 0.1272098081561296,
+   "r2_null_median": -0.010738803460743851,
+   "r2_null_p95": 0.023568709093561405,
+   "p_value": 0.0,
+   "n_dims_above_null": 34,
+   "n_dims": 36,
+   "best_dims": [
+    2,
+    7,
+    6,
+    8,
+    17
+   ],
+   "best_dim_r2": [
+    0.19108645408527525,
+    0.18990652049286294,
+    0.18498113516413062,
+    0.18247735717154,
+    0.17262511943902392
+   ],
+   "block": "composition",
+   "members": [
+    "composition"
+   ],
+   "dims": 27,
+   "circular": false,
+   "note": "amino-acid frequencies, length, charge, hydropathy",
+   "retrieval": {
+    "n": 53,
+    "top1": 0.16981132075471697,
+    "top2": 0.2830188679245283,
+    "mrr": 0.3757412398921833,
+    "mean_rank": 4.188679245283019,
+    "chance_top1": 0.13207547169811318,
+    "chance_mrr": 0.3515498652291106,
+    "n_candidates": 7.6415094339622645
+   },
+   "within_compartment": {
+    "alpha": 100000.0,
+    "r2": 8.863517334745108e-05,
+    "r2_null_median": 4.986595899314494e-06,
+    "r2_null_p95": 0.00024457213479033837,
+    "p_value": 0.274,
+    "n_dims_above_null": 4,
+    "n_dims": 36,
+    "best_dims": [
+     18,
+     17,
+     8,
+     9,
+     12
+    ],
+    "best_dim_r2": [
+     0.000685968803347814,
+     0.0004740753443979173,
+     0.0004287093989822077,
+     0.00037517406617149085,
+     0.00032697670025794157
+    ]
+   },
+   "retrieval_centred": {
+    "n": 53,
+    "top1": 0.1509433962264151,
+    "top2": 0.3018867924528302,
+    "mrr": 0.37742587601078165,
+    "mean_rank": 3.9622641509433962,
+    "chance_top1": 0.13207547169811318,
+    "chance_mrr": 0.3515498652291106,
+    "n_candidates": 7.6415094339622645
+   }
+  },
+  "topology": {
+   "alpha": 100.0,
+   "r2": 0.08042586853323552,
+   "r2_null_median": -0.008516570899966047,
+   "r2_null_p95": 0.021160417029149087,
+   "p_value": 0.002,
+   "n_dims_above_null": 25,
+   "n_dims": 36,
+   "best_dims": [
+    2,
+    5,
+    6,
+    7,
+    8
+   ],
+   "best_dim_r2": [
+    0.1515807827593123,
+    0.1412130754839951,
+    0.1389175502962875,
+    0.13643317935763155,
+    0.13501825694143987
+   ],
+   "block": "topology",
+   "members": [
+    "topology"
+   ],
+   "dims": 10,
+   "circular": false,
+   "note": "transmembrane passes, signal peptide, lipidation, glycosylation",
+   "retrieval": {
+    "n": 53,
+    "top1": 0.1509433962264151,
+    "top2": 0.2830188679245283,
+    "mrr": 0.3672506738544474,
+    "mean_rank": 4.169811320754717,
+    "chance_top1": 0.13207547169811318,
+    "chance_mrr": 0.3515498652291106,
+    "n_candidates": 7.6415094339622645
+   },
+   "within_compartment": {
+    "alpha": 1000.0,
+    "r2": -0.0004055289735578338,
+    "r2_null_median": -0.0007863332105192411,
+    "r2_null_p95": 0.008996812925369128,
+    "p_value": 0.458,
+    "n_dims_above_null": 3,
+    "n_dims": 36,
+    "best_dims": [
+     33,
+     34,
+     32,
+     18,
+     7
+    ],
+    "best_dim_r2": [
+     0.010398499362626823,
+     0.009641573074822163,
+     0.009525283220916614,
+     0.008922859845243325,
+     0.008608268657619766
+    ]
+   },
+   "retrieval_centred": {
+    "n": 53,
+    "top1": 0.1509433962264151,
+    "top2": 0.2830188679245283,
+    "mrr": 0.37264150943396224,
+    "mean_rank": 4.132075471698113,
+    "chance_top1": 0.13207547169811318,
+    "chance_mrr": 0.3515498652291106,
+    "n_candidates": 7.6415094339622645
+   }
+  },
+  "lowcomplexity": {
+   "alpha": 100.0,
+   "r2": 0.09484507537570275,
+   "r2_null_median": -0.009258895369657183,
+   "r2_null_p95": 0.023937463641487404,
+   "p_value": 0.0,
+   "n_dims_above_null": 25,
+   "n_dims": 36,
+   "best_dims": [
+    2,
+    6,
+    5,
+    7,
+    4
+   ],
+   "best_dim_r2": [
+    0.1747580481079899,
+    0.16156312169039644,
+    0.15602650286667152,
+    0.15447801925503346,
+    0.1514036810123195
+   ],
+   "block": "lowcomplexity",
+   "members": [
+    "lowcomplexity"
+   ],
+   "dims": 5,
+   "circular": false,
+   "note": "coiled coils, compositional bias, homopolymer runs",
+   "retrieval": {
+    "n": 53,
+    "top1": 0.11320754716981132,
+    "top2": 0.16981132075471697,
+    "mrr": 0.31648697214734944,
+    "mean_rank": 4.622641509433962,
+    "chance_top1": 0.13207547169811318,
+    "chance_mrr": 0.3515498652291106,
+    "n_candidates": 7.6415094339622645
+   },
+   "within_compartment": {
+    "alpha": 464.1588833612773,
+    "r2": 0.004552362064891846,
+    "r2_null_median": -0.0016673215731043411,
+    "r2_null_p95": 0.013067555851038137,
+    "p_value": 0.202,
+    "n_dims_above_null": 2,
+    "n_dims": 36,
+    "best_dims": [
+     19,
+     17,
+     8,
+     9,
+     32
+    ],
+    "best_dim_r2": [
+     0.019546717781075418,
+     0.017644345890821866,
+     0.008843062825844572,
+     0.008761642203085618,
+     0.007505573434978485
+    ]
+   },
+   "retrieval_centred": {
+    "n": 53,
+    "top1": 0.1320754716981132,
+    "top2": 0.2641509433962264,
+    "mrr": 0.3554582210242587,
+    "mean_rank": 4.2075471698113205,
+    "chance_top1": 0.13207547169811318,
+    "chance_mrr": 0.3515498652291106,
+    "n_candidates": 7.6415094339622645
+   }
+  },
+  "domains": {
+   "alpha": 2154.4346900318824,
+   "r2": 0.0029005867764966276,
+   "r2_null_median": -0.00014587700529922198,
+   "r2_null_p95": 0.006609192510437765,
+   "p_value": 0.214,
+   "n_dims_above_null": 9,
+   "n_dims": 36,
+   "best_dims": [
+    3,
+    21,
+    11,
+    10,
+    9
+   ],
+   "best_dim_r2": [
+    0.014767449934149024,
+    0.014270290261991114,
+    0.013862251017643157,
+    0.011684513740709224,
+    0.010368614542372034
+   ],
+   "block": "domains",
+   "members": [
+    "domains"
+   ],
+   "dims": 16,
+   "circular": false,
+   "note": "hashed Pfam bag",
+   "retrieval": {
+    "n": 53,
+    "top1": 0.1509433962264151,
+    "top2": 0.3018867924528302,
+    "mrr": 0.37580862533692716,
+    "mean_rank": 4.09433962264151,
+    "chance_top1": 0.13207547169811318,
+    "chance_mrr": 0.3515498652291106,
+    "n_candidates": 7.6415094339622645
+   },
+   "within_compartment": {
+    "alpha": 464.1588833612773,
+    "r2": -0.011330258568140517,
+    "r2_null_median": -0.005499731919987316,
+    "r2_null_p95": 0.01806437497266292,
+    "p_value": 0.646,
+    "n_dims_above_null": 3,
+    "n_dims": 36,
+    "best_dims": [
+     3,
+     10,
+     11,
+     9,
+     14
+    ],
+    "best_dim_r2": [
+     0.0351836759317149,
+     0.033514690210617926,
+     0.03230089552676463,
+     0.019236260091141433,
+     0.01249666789537196
+    ]
+   },
+   "retrieval_centred": {
+    "n": 53,
+    "top1": 0.09433962264150944,
+    "top2": 0.2641509433962264,
+    "mrr": 0.3302785265049416,
+    "mean_rank": 4.39622641509434,
+    "chance_top1": 0.13207547169811318,
+    "chance_mrr": 0.3515498652291106,
+    "n_candidates": 7.6415094339622645
+   }
+  },
+  "function_kw": {
+   "alpha": 100.0,
+   "r2": 0.09773172850530276,
+   "r2_null_median": -0.03335389890484397,
+   "r2_null_p95": 0.031169599889517466,
+   "p_value": 0.0,
+   "n_dims_above_null": 29,
+   "n_dims": 36,
+   "best_dims": [
+    13,
+    14,
+    33,
+    34,
+    32
+   ],
+   "best_dim_r2": [
+    0.22082237481087008,
+    0.21842302489802823,
+    0.20076526705858755,
+    0.17707401390087774,
+    0.17572017968376785
+   ],
+   "block": "function_kw",
+   "members": [
+    "function_kw"
+   ],
+   "dims": 16,
+   "circular": false,
+   "note": "hashed UniProt keywords, EXCLUDING cellular component",
+   "retrieval": {
+    "n": 53,
+    "top1": 0.18867924528301888,
+    "top2": 0.33962264150943394,
+    "mrr": 0.4093890386343216,
+    "mean_rank": 3.8679245283018866,
+    "chance_top1": 0.13207547169811318,
+    "chance_mrr": 0.3515498652291106,
+    "n_candidates": 7.6415094339622645
+   },
+   "within_compartment": {
+    "alpha": 100000.0,
+    "r2": 0.00011098676049170475,
+    "r2_null_median": 1.7685256490929113e-06,
+    "r2_null_p95": 0.00012390112225722498,
+    "p_value": 0.076,
+    "n_dims_above_null": 4,
+    "n_dims": 36,
+    "best_dims": [
+     34,
+     33,
+     35,
+     32,
+     25
+    ],
+    "best_dim_r2": [
+     0.0002781327782713783,
+     0.0002736883609676388,
+     0.0002588744738952764,
+     0.00019083031807931583,
+     0.00018414431876534465
+    ]
+   },
+   "retrieval_centred": {
+    "n": 53,
+    "top1": 0.16981132075471697,
+    "top2": 0.39622641509433965,
+    "mrr": 0.40678346810422283,
+    "mean_rank": 3.8867924528301887,
+    "chance_top1": 0.13207547169811318,
+    "chance_mrr": 0.3515498652291106,
+    "n_candidates": 7.6415094339622645
+   }
+  },
+  "location_kw": {
+   "alpha": 100.0,
+   "r2": 0.15098864754528052,
+   "r2_null_median": -0.016132738760466392,
+   "r2_null_p95": 0.025565904237040415,
+   "p_value": 0.0,
+   "n_dims_above_null": 23,
+   "n_dims": 36,
+   "best_dims": [
+    21,
+    20,
+    2,
+    17,
+    8
+   ],
+   "best_dim_r2": [
+    0.27198152568260325,
+    0.2619283046385038,
+    0.2320846684361243,
+    0.22154961923423067,
+    0.2106687423616015
+   ],
+   "block": "location_kw",
+   "members": [
+    "location_kw"
+   ],
+   "dims": 8,
+   "circular": true,
+   "note": "hashed UniProt CELLULAR COMPONENT keywords -- curated from literature including imaging, so circular for this test",
+   "retrieval": {
+    "n": 53,
+    "top1": 0.11320754716981132,
+    "top2": 0.18867924528301888,
+    "mrr": 0.31347708894878706,
+    "mean_rank": 4.716981132075472,
+    "chance_top1": 0.13207547169811318,
+    "chance_mrr": 0.3515498652291106,
+    "n_candidates": 7.6415094339622645
+   },
+   "within_compartment": {
+    "alpha": 100000.0,
+    "r2": 3.812616726173168e-05,
+    "r2_null_median": -3.1427532022343385e-06,
+    "r2_null_p95": 9.540203857965609e-05,
+    "p_value": 0.204,
+    "n_dims_above_null": 3,
+    "n_dims": 36,
+    "best_dims": [
+     21,
+     27,
+     32,
+     0,
+     33
+    ],
+    "best_dim_r2": [
+     0.00014231763630812022,
+     0.00010244832596406628,
+     9.523061249860909e-05,
+     9.200524181429692e-05,
+     8.537646638662189e-05
+    ]
+   },
+   "retrieval_centred": {
+    "n": 53,
+    "top1": 0.1509433962264151,
+    "top2": 0.22641509433962265,
+    "mrr": 0.3436208445642408,
+    "mean_rank": 4.547169811320755,
+    "chance_top1": 0.13207547169811318,
+    "chance_mrr": 0.3515498652291106,
+    "n_candidates": 7.6415094339622645
+   }
+  },
+  "esm": {
+   "alpha": 464.1588833612773,
+   "r2": 0.2531622154811226,
+   "r2_null_median": -0.13153502629529312,
+   "r2_null_p95": -0.008854131363230692,
+   "p_value": 0.0,
+   "n_dims_above_null": 34,
+   "n_dims": 36,
+   "best_dims": [
+    1,
+    5,
+    2,
+    6,
+    7
+   ],
+   "best_dim_r2": [
+    0.3991811182410916,
+    0.3900821867980324,
+    0.3783761653299075,
+    0.3766177007823692,
+    0.3624612178248976
+   ],
+   "block": "esm",
+   "members": [
+    "esm"
+   ],
+   "dims": 480,
+   "circular": false,
+   "note": "mean-pooled ESM-2 embedding of the bare sequence",
+   "retrieval": {
+    "n": 53,
+    "top1": 0.1509433962264151,
+    "top2": 0.33962264150943394,
+    "mrr": 0.3769991015274034,
+    "mean_rank": 4.150943396226415,
+    "chance_top1": 0.13207547169811318,
+    "chance_mrr": 0.3515498652291106,
+    "n_candidates": 7.6415094339622645
+   },
+   "within_compartment": {
+    "alpha": 1000.0,
+    "r2": -0.03538668803402145,
+    "r2_null_median": -0.06751920100961106,
+    "r2_null_p95": 0.014404312829628358,
+    "p_value": 0.262,
+    "n_dims_above_null": 7,
+    "n_dims": 36,
+    "best_dims": [
+     33,
+     34,
+     32,
+     31,
+     15
+    ],
+    "best_dim_r2": [
+     0.11273035821813415,
+     0.10480491408454862,
+     0.0936123153349735,
+     0.06712904889220384,
+     0.06154344786141874
+    ]
+   },
+   "retrieval_centred": {
+    "n": 53,
+    "top1": 0.22641509433962265,
+    "top2": 0.33962264150943394,
+    "mrr": 0.4314016172506738,
+    "mean_rank": 3.7735849056603774,
+    "chance_top1": 0.13207547169811318,
+    "chance_mrr": 0.3515498652291106,
+    "n_candidates": 7.6415094339622645
+   }
+  },
+  "baseline": {
+   "alpha": 100.0,
+   "r2": 0.10583296800924558,
+   "r2_null_median": -0.09203924871540825,
+   "r2_null_p95": 0.015504721277847834,
+   "p_value": 0.0,
+   "n_dims_above_null": 26,
+   "n_dims": 36,
+   "best_dims": [
+    12,
+    13,
+    14,
+    21,
+    17
+   ],
+   "best_dim_r2": [
+    0.3152710277839865,
+    0.26479677341756835,
+    0.24007615954477857,
+    0.22940766974403715,
+    0.2205463016202307
+   ],
+   "block": "baseline",
+   "members": [
+    "baseline"
+   ],
+   "dims": 51,
+   "circular": false,
+   "note": "abundance + family + terminus + interactome -- the known failure",
+   "retrieval": {
+    "n": 53,
+    "top1": 0.07547169811320754,
+    "top2": 0.24528301886792453,
+    "mrr": 0.30972596585804135,
+    "mean_rank": 4.566037735849057,
+    "chance_top1": 0.13207547169811318,
+    "chance_mrr": 0.3515498652291106,
+    "n_candidates": 7.6415094339622645
+   },
+   "within_compartment": {
+    "alpha": 1000.0,
+    "r2": 0.0034863669316109736,
+    "r2_null_median": -0.0033717839595346355,
+    "r2_null_p95": 0.014156675770944378,
+    "p_value": 0.266,
+    "n_dims_above_null": 6,
+    "n_dims": 36,
+    "best_dims": [
+     12,
+     13,
+     35,
+     18,
+     14
+    ],
+    "best_dim_r2": [
+     0.08442627226701638,
+     0.047726954655056164,
+     0.0342858092461088,
+     0.03191811245208609,
+     0.030413811392358436
+    ]
+   },
+   "retrieval_centred": {
+    "n": 53,
+    "top1": 0.16981132075471697,
+    "top2": 0.37735849056603776,
+    "mrr": 0.4023135669362084,
+    "mean_rank": 3.943396226415094,
+    "chance_top1": 0.13207547169811318,
+    "chance_mrr": 0.3515498652291106,
+    "n_candidates": 7.6415094339622645
+   }
+  },
+  "ALL honest (no baseline)": {
+   "alpha": 1000.0,
+   "r2": 0.26520708956644024,
+   "r2_null_median": -0.07848566804376844,
+   "r2_null_p95": 0.01761052645663133,
+   "p_value": 0.0,
+   "n_dims_above_null": 35,
+   "n_dims": 36,
+   "best_dims": [
+    1,
+    5,
+    2,
+    6,
+    7
+   ],
+   "best_dim_r2": [
+    0.3903800171845003,
+    0.3751371428957083,
+    0.37288142035548766,
+    0.37003056226324127,
+    0.3554626682959243
+   ],
+   "block": "ALL honest (no baseline)",
+   "members": [
+    "composition",
+    "topology",
+    "lowcomplexity",
+    "domains",
+    "function_kw",
+    "esm"
+   ],
+   "dims": 554,
+   "circular": false,
+   "note": "amino-acid frequencies, length, charge, hydropathy; transmembrane passes, signal peptide, lipidation, glycosylation; coiled coils, compositional bias, homopolymer runs; hashed Pfam bag; hashed UniProt keywords, EXCLUDING cellular component; mean-pooled ESM-2 embedding of the bare sequence",
+   "retrieval": {
+    "n": 53,
+    "top1": 0.1320754716981132,
+    "top2": 0.24528301886792453,
+    "mrr": 0.360062893081761,
+    "mean_rank": 4.09433962264151,
+    "chance_top1": 0.13207547169811318,
+    "chance_mrr": 0.3515498652291106,
+    "n_candidates": 7.6415094339622645
+   },
+   "within_compartment": {
+    "alpha": 1000.0,
+    "r2": -0.036168289054454794,
+    "r2_null_median": -0.07282499751356275,
+    "r2_null_p95": 0.010697716399358731,
+    "p_value": 0.232,
+    "n_dims_above_null": 9,
+    "n_dims": 36,
+    "best_dims": [
+     33,
+     34,
+     32,
+     15,
+     31
+    ],
+    "best_dim_r2": [
+     0.12465396684424734,
+     0.11776739045906615,
+     0.10207237215586051,
+     0.07487227685417608,
+     0.0734660018394192
+    ]
+   },
+   "retrieval_centred": {
+    "n": 53,
+    "top1": 0.20754716981132076,
+    "top2": 0.3584905660377358,
+    "mrr": 0.4274258760107817,
+    "mean_rank": 3.7169811320754715,
+    "chance_top1": 0.13207547169811318,
+    "chance_mrr": 0.3515498652291106,
+    "n_candidates": 7.6415094339622645
+   }
+  },
+  "ALL honest + baseline": {
+   "alpha": 464.1588833612773,
+   "r2": 0.3024332590820583,
+   "r2_null_median": -0.14317158855794887,
+   "r2_null_p95": -0.019200156751063808,
+   "p_value": 0.0,
+   "n_dims_above_null": 35,
+   "n_dims": 36,
+   "best_dims": [
+    6,
+    2,
+    5,
+    7,
+    1
+   ],
+   "best_dim_r2": [
+    0.37879993196000394,
+    0.37822388068691526,
+    0.3707879786959908,
+    0.3641547072214396,
+    0.3635967407973809
+   ],
+   "block": "ALL honest + baseline",
+   "members": [
+    "composition",
+    "topology",
+    "lowcomplexity",
+    "domains",
+    "function_kw",
+    "esm",
+    "baseline"
+   ],
+   "dims": 605,
+   "circular": false,
+   "note": "amino-acid frequencies, length, charge, hydropathy; transmembrane passes, signal peptide, lipidation, glycosylation; coiled coils, compositional bias, homopolymer runs; hashed Pfam bag; hashed UniProt keywords, EXCLUDING cellular component; mean-pooled ESM-2 embedding of the bare sequence; abundance + family + terminus + interactome -- the known failure",
+   "retrieval": {
+    "n": 53,
+    "top1": 0.1320754716981132,
+    "top2": 0.37735849056603776,
+    "mrr": 0.3834456424079066,
+    "mean_rank": 3.943396226415094,
+    "chance_top1": 0.13207547169811318,
+    "chance_mrr": 0.3515498652291106,
+    "n_candidates": 7.6415094339622645
+   },
+   "within_compartment": {
+    "alpha": 1000.0,
+    "r2": -0.03320603257184174,
+    "r2_null_median": -0.07387158218782452,
+    "r2_null_p95": 0.009702306512651433,
+    "p_value": 0.224,
+    "n_dims_above_null": 8,
+    "n_dims": 36,
+    "best_dims": [
+     33,
+     34,
+     12,
+     32,
+     15
+    ],
+    "best_dim_r2": [
+     0.12006974944443538,
+     0.1171986688552984,
+     0.08799328564720865,
+     0.0868277846129778,
+     0.07985505882136756
+    ]
+   },
+   "retrieval_centred": {
+    "n": 53,
+    "top1": 0.24528301886792453,
+    "top2": 0.3584905660377358,
+    "mrr": 0.4494609164420485,
+    "mean_rank": 3.641509433962264,
+    "chance_top1": 0.13207547169811318,
+    "chance_mrr": 0.3515498652291106,
+    "n_candidates": 7.6415094339622645
+   }
+  }
+ },
+ "reliability": {
+  "n_proteins": 155,
+  "raw_mean_r": 0.7501992920789463,
+  "raw_dims_above_half": 33,
+  "centred_mean_r": 0.537236810567945,
+  "centred_median_r": 0.606039285655491,
+  "centred_dims_above_half": 19,
+  "n_dims": 36
+ }
+}
