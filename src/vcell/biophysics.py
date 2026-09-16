@@ -218,3 +218,34 @@ def split_blocks(vector: np.ndarray) -> dict[str, np.ndarray]:
         "diffusion": vector[10:12],
         "charge": vector[12:20],
     }
+
+# Cytoplasmic viscosity. Water is 0.69e-3 Pa s at 37 C; cytoplasm behaves like
+# roughly 4-6x that for a globular protein of this size, which is the range
+# that reproduces the measured ~25 um2/s for GFP. Every absolute diffusion
+# coefficient below scales as 1/eta, so the number is reported alongside them
+# rather than buried.
+CYTOPLASM_VISCOSITY_PA_S = 4.0e-3
+BODY_TEMPERATURE_K = 310.15
+BOLTZMANN = 1.380649e-23
+
+
+def stokes_einstein(
+    rg_angstrom: float,
+    friction: float,
+    eta_pa_s: float = CYTOPLASM_VISCOSITY_PA_S,
+    temp_k: float = BODY_TEMPERATURE_K,
+) -> float:
+    """Absolute diffusion coefficient in um^2/s from the structure's own shape.
+
+    D = kT / (6 pi eta R_h F), with R_h = 1.29 Rg from the AlphaFold model and
+    F the Perrin friction factor of the equivalent ellipsoid. `describe_protein`
+    returns a *relative* coefficient because that is all the fingerprint needed;
+    this is the same quantity in physical units, for use where a real timescale
+    is wanted.
+    """
+    r_h_m = RH_OVER_RG * float(rg_angstrom) * 1e-10
+    if r_h_m <= 0 or eta_pa_s <= 0:
+        return float("nan")
+    d_m2_s = (BOLTZMANN * temp_k) / (6.0 * math.pi * eta_pa_s * r_h_m
+                                     * max(float(friction), 1e-9))
+    return d_m2_s * 1e12
