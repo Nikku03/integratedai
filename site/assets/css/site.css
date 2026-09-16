@@ -736,10 +736,13 @@ body.is-entering .veil { transform: scaleY(1); transition: none; }
 body.is-entering .veil.is-out { transform: scaleY(0); transform-origin: top; transition: transform 0.7s var(--ease); }
 
 /* =====================================================================
-   THE WALK — framed entrances hanging on a wall. Scroll: the door in the
-   picture opens, you travel into the frame until the room fills the
-   screen, back out, the door shuts, and you walk along to the next frame.
-   Each .gate declares its door rectangle (% of the image) and hinge side;
+   THE WALK — framed entrances hanging on a wall. Scroll: you travel into
+   a frame until it fills the screen, go in, come back out, and walk on to
+   the next frame. Two kinds of gate:
+     .gate--video  a filmed walk-in; the frame grows to fill the screen and
+                   the clip scrubs with the scroll (café).
+     .gate--door   a still photo whose door swings open on its hinge and
+                   reveals the room behind it (restaurant, bar).
    JS drives --open, --s (frame scale), --ext (exterior opacity), --tx (track).
    ===================================================================== */
 .gates {
@@ -828,6 +831,18 @@ body.is-entering .veil.is-out { transform: scaleY(0); transform-origin: top; tra
   left: calc(-100% * var(--dx) / var(--dw)); top: calc(-100% * var(--dy) / var(--dh));
 }
 .gate__leaf::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(0,0,0,calc(var(--open) / 300)), rgba(0,0,0,0)); }
+/* video gate: the clip itself is the picture, and the travel */
+.gate--video .gate__frame { perspective: none; transform-origin: 50% 50%; }
+.gate--video .gate__frame::before { opacity: var(--ext); }
+.gate__video {
+  position: absolute; inset: 0; width: 100%; height: 100%; display: block;
+  object-fit: cover; background: #1b1f19;
+}
+.gate--video .gate__vig {
+  position: absolute; inset: 0; pointer-events: none; opacity: var(--ext);
+  box-shadow: inset 0 0 6vw rgba(0,0,0,0.3);
+}
+
 /* gallery plaque under the frame */
 .gate__plaque {
   position: absolute; left: 0; right: 0; top: calc(100% + 3.2vw); text-align: center; white-space: nowrap;
@@ -876,6 +891,8 @@ body.is-entering .veil.is-out { transform: scaleY(0); transform-origin: top; tra
   .gates__hud { display: none; }
   .gates__track { gap: 30vw; }
   .gate { height: 48svh; }
+  /* phones get a portrait crop of the same clip, sized by width */
+  .gate--video { height: auto; width: 74vw; aspect-ratio: 4 / 5; }
   .gate__frame::before { inset: -4vw; border-width: 4vw; outline-width: 1vw; }
   .gate__plaque { top: calc(100% + 5vw); }
   .gate__plaque b { font-size: 1.2rem; }

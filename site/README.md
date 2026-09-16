@@ -6,7 +6,7 @@ Upload the folder to any host (Netlify, Vercel, GitHub Pages, cPanel) and it wor
 
 ```
 site/
-├── index.html          Home — green hero, the walk (three framed doors: café → restaurant → bar), sectors, drifting project grid
+├── index.html          Home — green hero, the walk (filmed café walk-in, then restaurant & bar doors), sectors, drifting project grid
 ├── restaurants.html    Sector page — restaurants (afternoon amber accent)
 ├── bars.html           Sector page — bars (dusk slate accent), with an image "story" chapter
 ├── retail.html         Sector page — shops (sage accent)
@@ -16,7 +16,8 @@ site/
 ├── assets/
 │   ├── css/site.css    All styling. Colours + type live in the :root block at the top.
 │   ├── js/app.js       All scroll / motion effects (see "How the effects work")
-│   └── img/*.svg       logo-*.svg (traced from the card), facade-*.svg + room-*.svg (the walk), placeholder "renders"
+│   ├── img/            logo-*.svg (traced from the card), facade-*.svg + room-*.svg (door gates), placeholder "renders"
+│   └── video/          cafe-walk[-sm].mp4/.webm — the filmed walk-in (see §2)
 └── tools/              make_placeholders.py, make_rooms.py, make_facades.py — regenerate placeholder images (optional)
 ```
 
@@ -83,24 +84,86 @@ tonal pattern. Each sector page sets `<html data-sector="restaurant|bar|retail">
 
 ## 2. The walk (home page)
 
-`index.html` → `<section class="gates">`. Three framed pictures of entrances hang on a wall. Scroll: the door
-*in the picture* opens, you travel into the frame until the room behind fills the screen, travel back out,
-the door shuts, and you walk along to the next frame. Café at 08:00, restaurant at 14:00, bar at 23:00.
+`index.html` → `<section class="gates">`. Three framed pictures of entrances hang on a wall. Scroll: you
+travel into a frame until it fills the screen, go inside, come back out, and walk on to the next frame.
+Café at 08:00, restaurant at 14:00, bar at 23:00.
 
-Each gate is one `<figure class="gate">` with two images:
+There are **two kinds of gate**, and you can mix them freely:
 
-- **The entrance** (`.gate__outside`, and the same file again inside `.gate__leaf`) — the picture in the frame.
-  Its `style` declares where the door is, in **percent of the image**: `--dx` (left), `--dy` (top), `--dw` (width),
-  `--dh` (height), plus `--hinge: 100%` for a door hinged on the right (handle on the left) or `0%` for the left,
-  and `--ar` = the image's width / height. The placeholders (`facade-*.svg`, from `tools/make_facades.py`) all put
-  the door at `48.3 / 29.8 / 26 / 62.2`; when you replace one with a photo, measure the door in the photo and
-  update those four numbers — the leaf is cut from exactly that rectangle.
-- **The room** — the matching `<img class="gates__inside">` at the top of the section (`room-*.svg`, from
-  `tools/make_rooms.py`). Full-bleed; landscape photos 1600px+ wide work best.
+### Video gate (the café) — a filmed walk-in
 
-Colour grades per room are under `.gates[data-room="…"]` in `site.css`; the phase timings (open, travel in,
-hold, travel out, close, walk) are the `seg(p, …)` thresholds in `tickWalk()` in `app.js`. Each text panel
-(`.gates__step`) is one gate; the frame is fully open when its panel is centred on screen.
+```html
+<figure class="gate gate--video" data-room="cafe" style="--ar: 16 / 9">
+  <div class="gate__frame">
+    <video class="gate__video" poster="assets/img/cafe-walk-poster.jpg"
+           data-poster-sm="assets/img/cafe-walk-poster-sm.jpg"
+           data-src="assets/video/cafe-walk" data-src-sm="assets/video/cafe-walk-sm"
+           preload="none" muted playsinline webkit-playsinline disablepictureinpicture></video>
+    <div class="gate__vig"></div>
+  </div>
+  <figcaption class="gate__plaque"><b>08:00</b>Café · walk in</figcaption>
+</figure>
+```
+
+The frame grows until the clip fills the screen, then **the clip scrubs with the scroll** — forward as you
+walk in, backward as you come out. Nothing plays on its own; the scroll position *is* the playhead.
+
+`data-src` is a path **without an extension**. The page appends `.webm` where the browser supports VP9
+(Chrome, Firefox, Edge — smaller files) and `.mp4` otherwise (Safari, iOS). `data-src-sm` / `data-poster-sm`
+are used under 900px. So each clip needs four files in `assets/video/`:
+
+| File | What |
+|---|---|
+| `cafe-walk.mp4` / `.webm` | landscape, 1280px wide — desktop |
+| `cafe-walk-sm.mp4` / `.webm` | a **portrait crop** of the same shot, 640×800 — phones |
+
+Set `--ar` to the desktop clip's aspect ratio; the phone aspect ratio is set once in the `max-width: 900px`
+block in `site.css` (`.gate--video { aspect-ratio: 4 / 5 }`).
+
+**To add your own footage** (a walk from the pavement, through the door, into the room — hold the camera
+steady and walk at an even pace; 8–12 seconds is right):
+
+```bash
+# desktop pair
+ffmpeg -i walk.mov -an -vf "scale=1280:-2" -c:v libx264 -crf 25 -g 8 -keyint_min 8   -sc_threshold 0 -pix_fmt yuv420p -preset slow -movflags +faststart site/assets/video/NAME.mp4
+ffmpeg -i walk.mov -an -vf "scale=1280:-2" -c:v libvpx-vp9 -crf 33 -b:v 0 -g 8 -keyint_min 8   -row-mt 1 -pix_fmt yuv420p site/assets/video/NAME.webm
+
+# phone pair: centre-crop to 4:5 first (576x720 out of 1280x720)
+ffmpeg -i walk.mov -an -vf "crop=576:720:352:0,scale=640:800" -c:v libx264 -crf 26 -g 8 -keyint_min 8   -sc_threshold 0 -pix_fmt yuv420p -preset slow -movflags +faststart site/assets/video/NAME-sm.mp4
+ffmpeg -i walk.mov -an -vf "crop=576:720:352:0,scale=640:800" -c:v libvpx-vp9 -crf 34 -b:v 0 -g 8   -keyint_min 8 -row-mt 1 -pix_fmt yuv420p site/assets/video/NAME-sm.webm
+
+# posters (first frame)
+ffmpeg -i walk.mov -frames:v 1 -vf "scale=1280:-2" -q:v 3 site/assets/img/NAME-poster.jpg
+ffmpeg -i walk.mov -frames:v 1 -vf "crop=576:720:352:0,scale=640:800" -q:v 3 site/assets/img/NAME-poster-sm.jpg
+```
+
+`-g 8` is the important flag: it puts a keyframe every 8 frames so scrubbing lands instantly. Without it
+the clip stutters as you scroll. Strip the audio (`-an`) — the clip is muted anyway.
+
+**Your host must support HTTP range requests**, or the browser can't seek and the clip won't scrub.
+Netlify, Vercel, GitHub Pages, nginx and Apache all do; Python's `http.server` does *not*, so test with a
+real static server.
+
+### Door gate (restaurant, bar) — a still whose door opens
+
+```html
+<figure class="gate" data-room="rest"
+        style="--ar: 693 / 900; --dx: 48.3; --dy: 29.8; --dw: 26; --dh: 62.2; --hinge: 100%; --dir: -1">
+```
+
+The door in the still swings open on its hinge and the room behind shows through the opening. The `style`
+declares where the door is, in **percent of the image**: `--dx` (left), `--dy` (top), `--dw` (width),
+`--dh` (height), plus `--hinge: 100%` for a door hinged on the right (handle on the left) or `0%` for the
+left, and `--ar` = the image's width / height. Replace `facade-*.svg` with a photo and update those four
+numbers to match the door in your photo — the swinging leaf is cut from exactly that rectangle. The room
+behind it is the matching `<img class="gates__inside" data-gate="N">` at the top of the section.
+
+### Both kinds
+
+Colour grades per room are under `.gates[data-room="…"]` in `site.css`; the phase timings (grow, walk in,
+hold, walk out, shrink) are the `seg(p, …)` thresholds in `tickWalk()` in `app.js`. Each text panel
+(`.gates__step`) is one gate, and the gate is fully open when its panel is centred on screen — so panels
+and pictures can't drift apart if you edit the copy.
 
 ---
 
@@ -155,7 +218,9 @@ Everything respects the OS "reduce motion" setting.
 
 ```bash
 python3 site/tools/make_placeholders.py   # abstract project "renders"
-python3 site/tools/make_rooms.py          # the three room interiors behind the doors
-python3 site/tools/make_facades.py        # the three framed entrances
+python3 site/tools/make_rooms.py          # room interiors behind the door gates
+python3 site/tools/make_facades.py        # framed entrance stills for door gates
 ```
-Edit the `PROJECTS` list and palettes in the first, the `ROOMS` / `FACADES` dicts in the others.
+Edit the `PROJECTS` list and palettes in the first, the `ROOMS` / `FACADES` dicts in the others. (The café
+gate uses real footage instead, so its generated stills aren't wired up — they're there if you ever want a
+still fallback.)

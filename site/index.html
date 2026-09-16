@@ -94,19 +94,20 @@
         <div class="gates__wall" aria-hidden="true"></div>
         <div class="gates__floor" aria-hidden="true"></div>
         <!-- the rooms behind the doors: swap these three images for photos -->
-        <img class="gates__inside is-active" src="assets/img/room-cafe.svg" alt="" aria-hidden="true">
-        <img class="gates__inside" src="assets/img/room-restaurant.svg" alt="" aria-hidden="true">
-        <img class="gates__inside" src="assets/img/room-bar.svg" alt="" aria-hidden="true">
+        <img class="gates__inside" data-gate="1" src="assets/img/room-restaurant.svg" alt="" aria-hidden="true">
+        <img class="gates__inside" data-gate="2" src="assets/img/room-bar.svg" alt="" aria-hidden="true">
         <div class="gates__grade" aria-hidden="true"></div>
         <!-- the entrances, framed. Door rectangle + hinge are declared per picture (% of the image). -->
         <div class="gates__track" aria-hidden="true">
-          <figure class="gate" data-room="cafe" style="--ar: 693 / 900; --dx: 48.3; --dy: 29.8; --dw: 26; --dh: 62.2; --hinge: 100%; --dir: -1">
+          <!-- a filmed walk-in: the frame grows to fill the screen and the clip scrubs with the scroll -->
+          <figure class="gate gate--video" data-room="cafe" style="--ar: 16 / 9">
             <div class="gate__frame">
-              <img class="gate__outside" src="assets/img/facade-cafe.svg" alt="">
-              <div class="gate__shade"></div>
-              <div class="gate__leaf"><img src="assets/img/facade-cafe.svg" alt=""></div>
+              <video class="gate__video" poster="assets/img/cafe-walk-poster.jpg" data-poster-sm="assets/img/cafe-walk-poster-sm.jpg"
+                     data-src="assets/video/cafe-walk" data-src-sm="assets/video/cafe-walk-sm"
+                     preload="none" muted playsinline webkit-playsinline disablepictureinpicture></video>
+              <div class="gate__vig"></div>
             </div>
-            <figcaption class="gate__plaque"><b>08:00</b>Café · the entrance</figcaption>
+            <figcaption class="gate__plaque"><b>08:00</b>Café · walk in</figcaption>
           </figure>
           <figure class="gate" data-room="rest" style="--ar: 693 / 900; --dx: 48.3; --dy: 29.8; --dw: 26; --dh: 62.2; --hinge: 100%; --dir: -1">
             <div class="gate__frame">
@@ -139,7 +140,7 @@
             <div class="gates__panel" data-lift="0.5">
               <span class="eyebrow">The studio</span>
               <h2 class="display t-2">A room is a <em>sequence</em>, not a picture.</h2>
-              <p>Scroll to open the first door. Behind it, a café at eight in the morning; further along, a restaurant at two and a bar at eleven — three rooms we design and build, three times of day they have to work.</p>
+              <p>Scroll to walk in. Behind the first door, a café at eight in the morning; further along, a restaurant at two and a bar at eleven — three rooms we design and build, three times of day they have to work.</p>
             </div>
           </div>
         </div>

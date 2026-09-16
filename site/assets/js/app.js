@@ -15,7 +15,7 @@
      data-count="120"                        number counts up when in view
      data-magnetic                           button leans toward the cursor
      data-lift[="0.5"]                       tilts toward the cursor, rises on Z and zooms (hover)
-     .gates                                  the framed-door walk (entrance opens → room fills the screen → next door)
+     .gates                                  the framed walk (gate scales up → filmed walk-in or door opens → next gate)
 
    Respects prefers-reduced-motion: all motion collapses to static.
    ===================================================================== */
@@ -327,38 +327,69 @@
   });
 
   // --------------------------------------------------------------- the walk (framed doors)
-  // Framed entrance pictures hang in a row. Scroll progress W runs one unit per
-  // gate: the door in picture k opens, the frame scales about the door until the
-  // room behind fills the screen, scales back, the door shuts, and the row slides
-  // so the next door is centred. W is anchored to where each text panel is centred.
+  // Framed pictures hang in a row. Scroll progress W runs one unit per gate.
+  // A gate is one of two kinds:
+  //   video — the frame grows until the clip fills the screen, then the clip
+  //           scrubs with the scroll: you walk in, hold, and walk back out.
+  //   door  — the door inside the still swings open, the frame scales about
+  //           that doorway until the room behind fills the screen, and back.
+  // Between gates the row slides so the next picture is centred. W is anchored
+  // to where each text panel is centred, so copy and picture can't drift apart.
   const gatesEl = $(".gates");
   const GT = gatesEl ? {
     el: gatesEl,
     track: $(".gates__track", gatesEl),
     floor: $(".gates__floor", gatesEl),
     grade: $(".gates__grade", gatesEl),
-    gates: $$(".gate", gatesEl).map((g) => ({
-      el: g, frame: $(".gate__frame", g),
-      dx: parseFloat(g.style.getPropertyValue("--dx")) / 100, dy: parseFloat(g.style.getPropertyValue("--dy")) / 100,
-      dw: parseFloat(g.style.getPropertyValue("--dw")) / 100, dh: parseFloat(g.style.getPropertyValue("--dh")) / 100,
-      cx: 0, cy: 0, w: 0, h: 0, smax: 4,
-    })),
-    insides: $$(".gates__inside", gatesEl),
-    steps: $$(".gates__step", gatesEl),
-    hud: $$(".gates__hud span", gatesEl),
-    anchors: [], top: 0, h: 0, room: -1, hudIdx: -1, lastW: NaN, active: -1,
+    gates: $$(".gate", gatesEl).map((g) => {
+      const video = $(".gate__video", g);
+      return {
+        el: g, frame: $(".gate__frame", g), video,
+        kind: video ? "video" : "door",
+        dx: parseFloat(g.style.getPropertyValue("--dx")) / 100, dy: parseFloat(g.style.getPropertyValue("--dy")) / 100,
+        dw: parseFloat(g.style.getPropertyValue("--dw")) / 100, dh: parseFloat(g.style.getPropertyValue("--dh")) / 100,
+        cx: 0, cy: 0, w: 0, h: 0, smax: 4, lastSeek: -1,
+      };
+    }),
+    insides: [], steps: $$(".gates__step", gatesEl), hud: $$(".gates__hud span", gatesEl),
+    anchors: [], top: 0, h: 0, hudIdx: -1, lastW: NaN, active: -1, loaded: false,
   } : null;
-  const CH = [-0.05, 0.41, 1.41, 2.41];                    // W when each step (arrive, café, restaurant, bar) is centred
+  if (GT) $$(".gates__inside", gatesEl).forEach((im) => { GT.insides[parseInt(im.dataset.gate, 10)] = im; });
+  const CH = [-0.05, 0.41, 1.41, 2.41];               // W when each step (arrive, café, restaurant, bar) is centred
   const ROOM_KEYS = ["cafe", "rest", "bar"];
   const smooth = (t) => t * t * (3 - 2 * t);
   const seg = (p, a, b) => clamp((p - a) / (b - a), 0, 1);
 
+  // the clip is heavy, so it only loads once the walk is close, and iOS needs
+  // one play()/pause() before it will honour currentTime
+  function loadGateVideo() {
+    if (!GT || GT.loaded) return;
+    GT.loaded = true;
+    GT.gates.forEach((g) => {
+      if (!g.video) return;
+      const small = S.vw <= 900;
+      const base = (small && g.video.dataset.srcSm) || g.video.dataset.src;
+      if (small && g.video.dataset.posterSm) g.video.poster = g.video.dataset.posterSm;
+      // WebM/VP9 where it is supported (smaller, and what Chromium ships), MP4/H.264 for Safari and iOS
+      const ext = g.video.canPlayType('video/webm; codecs="vp9"') === "probably" ? "webm" : "mp4";
+      g.video.src = `${base}.${ext}`;
+      g.video.load();
+      const unlock = () => {
+        const p = g.video.play();
+        if (p && p.then) p.then(() => g.video.pause()).catch(() => {});
+        else g.video.pause();
+      };
+      g.video.addEventListener("loadeddata", unlock, { once: true });
+      window.addEventListener("touchstart", unlock, { once: true, passive: true });
+      window.addEventListener("pointerdown", unlock, { once: true });
+    });
+  }
+
   function measureWalk() {
-    if (!GT) return;
+    if (!GT || !GT.gates.length) return;
     const r = GT.el.getBoundingClientRect();
     GT.top = r.top + S.y; GT.h = r.height;
     GT.anchors = GT.steps.map((st) => { const sr = st.getBoundingClientRect(); return sr.top + S.y + sr.height / 2 - S.vh / 2; });
-    // door centres in track coordinates (frames unscaled)
     GT.track.style.setProperty("--tx", "0px");
     GT.gates.forEach((g) => { g.frame.style.setProperty("--s", "1"); });
     const tr = GT.track.getBoundingClientRect();
@@ -366,10 +397,16 @@
     GT.gates.forEach((g) => {
       const fr = g.el.getBoundingClientRect();
       g.w = fr.width; g.h = fr.height;
-      g.cx = fr.left - tr.left + (g.dx + g.dw / 2) * fr.width;      // relative to the track's left edge
-      g.cy = fr.top - sk.top + (g.dy + g.dh / 2) * fr.height;       // relative to the sticky stage (= viewport when pinned)
-      const holeW = g.dw * fr.width, holeH = g.dh * fr.height;
-      g.smax = Math.max(S.vw / holeW, S.vh / holeH) * 1.06;
+      if (g.kind === "video") {
+        // grow until the clip covers the viewport (phones load a portrait crop of it)
+        g.cx = fr.left - tr.left + fr.width / 2;
+        g.cy = fr.top - sk.top + fr.height / 2;
+        g.smax = Math.max(S.vw / g.w, S.vh / g.h) * 1.02;
+      } else {
+        g.cx = fr.left - tr.left + (g.dx + g.dw / 2) * fr.width;
+        g.cy = fr.top - sk.top + (g.dy + g.dh / 2) * fr.height;
+        g.smax = Math.max(S.vw / (g.dw * fr.width), S.vh / (g.dh * fr.height)) * 1.06;
+      }
     });
     GT.lastW = NaN;
   }
@@ -383,50 +420,75 @@
   }
   function tickWalk() {
     if (!GT || !GT.gates.length) return;
+    const near = S.y + S.vh * 2 > GT.top && S.y < GT.top + GT.h + S.vh;
+    if (near) loadGateVideo();
     if (S.y + S.vh < GT.top - S.vh || S.y > GT.top + GT.h + S.vh) return;
     const W = progressAt(S.sy);
     if (Math.abs(W - GT.lastW) < 0.0002) return;
     GT.lastW = W;
     const n = GT.gates.length;
     const k = clamp(Math.floor(W), 0, n - 1);
-    const p = W - k;                                        // negative before the first door
+    const p = W - k;                                  // negative before the first gate
     const g = GT.gates[k];
-    // phases: open .03–.13 · travel in .13–.34 · hold .34–.50 · travel out .50–.70 · close .66–.76 · walk .80–1
-    const open = 106 * smooth(seg(p, 0.03, 0.13)) * (1 - smooth(seg(p, 0.66, 0.76)));
-    const depth = smooth(seg(p, 0.13, 0.34)) * (1 - smooth(seg(p, 0.50, 0.70)));   // 0 outside … 1 fully inside
-    const s = 1 + (g.smax - 1) * depth;
-    const zoom = 1 + 0.12 * depth;
-    const walk = p < 0 ? p * 2 : k + smooth(seg(p, 0.80, 1.0));
-    // exterior fades once the doorway is most of the screen, so the room takes over cleanly
-    const cover = (g.dw * g.w * s) / S.vw;
-    const ext = 1 - smooth(seg(cover, 0.6, 1.05));
-    // track: door centre of the walk position sits at the viewport centre
-    let cxTrack;
-    if (walk < 0) cxTrack = GT.gates[0].cx + walk * (n > 1 ? GT.gates[1].cx - GT.gates[0].cx : 400);
-    else { const i = Math.min(Math.floor(walk), n - 1), j = Math.min(i + 1, n - 1); cxTrack = lerp(GT.gates[i].cx, GT.gates[j].cx, walk - i); }
-    const tx = S.vw / 2 - cxTrack;
-    GT.track.style.setProperty("--tx", `${tx.toFixed(1)}px`);
-    GT.floor.style.setProperty("--fx", `${(tx * 0.35).toFixed(1)}px`);
-    // active gate
+
     if (k !== GT.active) {
-      GT.gates.forEach((x, i) => { x.el.classList.toggle("is-active", i === k); if (i !== k) { x.frame.style.setProperty("--s", "1"); x.el.style.setProperty("--open", "0"); x.el.style.setProperty("--ext", "1"); } });
-      GT.insides.forEach((im, i) => im.classList.toggle("is-active", i === k));
+      GT.gates.forEach((x, i) => {
+        x.el.classList.toggle("is-active", i === k);
+        if (i !== k) { x.frame.style.setProperty("--s", "1"); x.el.style.setProperty("--open", "0"); x.el.style.setProperty("--ext", "1"); }
+      });
+      GT.insides.forEach((im, i) => { if (im) im.classList.toggle("is-active", i === k); });
       GT.el.dataset.room = ROOM_KEYS[k] || ROOM_KEYS[0];
       GT.active = k;
     }
-    g.el.style.setProperty("--open", open.toFixed(2));
+
+    let depth, s, ext;
+    if (g.kind === "video") {
+      // grow → walk in → hold → walk back out → shrink
+      const grow = smooth(seg(p, 0.05, 0.24)) - smooth(seg(p, 0.80, 0.97));
+      const travel = smooth(seg(p, 0.24, 0.62)) - smooth(seg(p, 0.70, 0.86));
+      depth = grow;
+      s = 1 + (g.smax - 1) * grow;
+      ext = 1 - clamp(grow * 1.8, 0, 1);
+      if (g.video && g.video.readyState >= 1 && !reduce) {
+        const d = g.video.duration || 0;
+        const t = clamp(travel, 0, 1) * d;
+        if (d && Math.abs(t - g.lastSeek) > d / 96 && !g.video.seeking) { g.video.currentTime = t; g.lastSeek = t; }
+      }
+      g.el.style.setProperty("--open", "0");
+      GT.grade.style.clipPath = "none";
+      GT.grade.style.opacity = grow.toFixed(3);
+    } else {
+      // phases: open .03–.13 · travel in .13–.34 · hold .34–.50 · out .50–.70 · close .66–.76 · walk .80–1
+      const open = 106 * smooth(seg(p, 0.03, 0.13)) * (1 - smooth(seg(p, 0.66, 0.76)));
+      depth = smooth(seg(p, 0.13, 0.34)) * (1 - smooth(seg(p, 0.50, 0.70)));
+      s = 1 + (g.smax - 1) * depth;
+      const cover = (g.dw * g.w * s) / S.vw;
+      ext = 1 - smooth(seg(cover, 0.6, 1.05));
+      g.el.style.setProperty("--open", open.toFixed(2));
+      // the room shows only through the doorway: clip the full-bleed interior to the hole
+      const hw = g.dw * g.w * s, hh = g.dh * g.h * s, cx = S.vw / 2, cy = g.cy;
+      const cl = Math.max(0, cx - hw / 2), cr = Math.max(0, S.vw - (cx + hw / 2));
+      const ct = Math.max(0, cy - hh / 2), cb = Math.max(0, S.vh - (cy + hh / 2));
+      const clip = open > 0.5 || depth > 0 ? `inset(${ct.toFixed(1)}px ${cr.toFixed(1)}px ${cb.toFixed(1)}px ${cl.toFixed(1)}px)` : "inset(50% 50% 50% 50%)";
+      const inside = GT.insides[k]; if (inside) inside.style.clipPath = clip;
+      GT.grade.style.clipPath = clip;
+      GT.grade.style.opacity = "1";
+      GT.el.style.setProperty("--zoom", (1 + 0.12 * depth).toFixed(4));
+    }
+
     g.el.style.setProperty("--ext", ext.toFixed(3));
     g.frame.style.setProperty("--s", s.toFixed(4));
-    GT.el.style.setProperty("--zoom", zoom.toFixed(4));
-    // the room shows only through the doorway: clip the full-bleed interior to the hole
-    const hw = g.dw * g.w * s, hh = g.dh * g.h * s, cx = S.vw / 2, cy = g.cy;
-    const cl = Math.max(0, cx - hw / 2), cr = Math.max(0, S.vw - (cx + hw / 2));
-    const ct = Math.max(0, cy - hh / 2), cb = Math.max(0, S.vh - (cy + hh / 2));
-    const clip = open > 0.5 || depth > 0 ? `inset(${ct.toFixed(1)}px ${cr.toFixed(1)}px ${cb.toFixed(1)}px ${cl.toFixed(1)}px)` : "inset(50% 50% 50% 50%)";
-    const inside = GT.insides[k]; if (inside) inside.style.clipPath = clip;
-    GT.grade.style.clipPath = clip;
     GT.el.classList.toggle("is-inside", depth > 0.6);
-    // HUD
+
+    // the row slides so the walk position's picture is centred
+    const walk = p < 0 ? p * 2 : k + smooth(seg(p, 0.80, 1.0));
+    let cxTrack;
+    if (walk < 0) cxTrack = GT.gates[0].cx + walk * (n > 1 ? GT.gates[1].cx - GT.gates[0].cx : 400);
+    else { const i = Math.min(Math.floor(walk), n - 1), jj = Math.min(i + 1, n - 1); cxTrack = lerp(GT.gates[i].cx, GT.gates[jj].cx, walk - i); }
+    const tx = S.vw / 2 - cxTrack;
+    GT.track.style.setProperty("--tx", `${tx.toFixed(1)}px`);
+    GT.floor.style.setProperty("--fx", `${(tx * 0.35).toFixed(1)}px`);
+
     const hudIdx = (k === 0 && p < 0.03) ? 0 : k + 1;
     if (hudIdx !== GT.hudIdx) { GT.hudIdx = hudIdx; GT.hud.forEach((h, i) => h.classList.toggle("is-active", i === hudIdx)); }
   }
