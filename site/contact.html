@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Contact — Two Squares</title>
+  <meta name="description" content="Start a restaurant, bar or retail interior project with Two Squares. Tell us about the site and we'll come back within two working days.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='4' y='4' width='11' height='11' rx='2' fill='%2346523d'/%3E%3Crect x='17' y='17' width='11' height='11' rx='2' fill='%2346523d'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,300..600,0..100,0..1;1,9..144,300..600,0..100,0..1&family=Homemade+Apple&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/site.css">
+</head>
+<body>
+  <div class="veil" aria-hidden="true"></div>
+  <div class="progress" aria-hidden="true"></div>
+  <div class="cursor-glow" aria-hidden="true"></div>
+
+  <header class="nav">
+    <div class="wrap">
+      <a class="brand" href="index.html"><span class="logo logo--mark" role="img" aria-label="Two Squares — Design &amp; Build"></span></a>
+      <nav class="nav__links" aria-label="Primary">
+        <a href="restaurants.html">Restaurants</a>
+        <a href="bars.html">Bars</a>
+        <a href="retail.html">Shops</a>
+        <a href="studio.html">Studio</a>
+      </nav>
+      <a class="btn nav__cta" href="contact.html">Start a project <span class="arr">→</span></a>
+      <button class="burger" aria-label="Menu" aria-expanded="false"><span></span><span></span><span></span></button>
+    </div>
+  </header>
+  <div class="menu" aria-hidden="true">
+    <a href="index.html">Home</a>
+    <a href="restaurants.html">Restaurants</a>
+    <a href="bars.html">Bars</a>
+    <a href="retail.html">Shops</a>
+    <a href="studio.html">Studio</a>
+    <a href="contact.html">Contact</a>
+    <div class="menu__foot"><span>hello@twosquares.studio</span><span>+00 000 000 000</span></div>
+  </div>
+
+  <main>
+    <section class="section" style="padding-top:calc(var(--nav-h) + 12vh)">
+      <div class="wrap grid grid-12" style="row-gap:4rem">
+        <div class="span-12">
+          <span class="eyebrow" data-reveal>Start a project</span>
+          <h1 class="display t-hero split" style="margin-top:1rem;max-width:12ch">Tell us about the <em>room.</em></h1>
+        </div>
+
+        <div class="span-7">
+          <!--
+            This form is a working demo (it shows a thank-you message, but doesn't send).
+            To make it send emails for real with no server, use a form service:
+              Formspree  → set action="https://formspree.io/f/YOUR_ID" method="POST" and remove data-demo
+              Netlify    → add  netlify  attribute to <form> and remove data-demo (when hosted on Netlify)
+          -->
+          <form class="form" data-demo data-reveal style="--d:200">
+            <div class="two">
+              <div class="field"><label for="name">Your name</label><input id="name" name="name" type="text" required autocomplete="name"></div>
+              <div class="field"><label for="email">Email</label><input id="email" name="email" type="email" required autocomplete="email"></div>
+            </div>
+            <div class="two">
+              <div class="field"><label for="company">Business / brand</label><input id="company" name="company" type="text"></div>
+              <div class="field"><label for="city">City of the site</label><input id="city" name="city" type="text" placeholder="e.g. Lisbon"></div>
+            </div>
+            <div class="field">
+              <label>What are we designing?</label>
+              <div class="chips">
+                <label class="chip"><input type="checkbox" name="type" value="restaurant"><span>Restaurant</span></label>
+                <label class="chip"><input type="checkbox" name="type" value="bar"><span>Bar</span></label>
+                <label class="chip"><input type="checkbox" name="type" value="cafe"><span>Café</span></label>
+                <label class="chip"><input type="checkbox" name="type" value="shop"><span>Shop</span></label>
+                <label class="chip"><input type="checkbox" name="type" value="hotel"><span>Hotel F&amp;B</span></label>
+                <label class="chip"><input type="checkbox" name="type" value="other"><span>Something else</span></label>
+              </div>
+            </div>
+            <div class="two">
+              <div class="field">
+                <label for="stage">Where are you?</label>
+                <select id="stage" name="stage">
+                  <option>Looking at sites</option>
+                  <option>Lease signed, no design yet</option>
+                  <option>Have a concept, need delivery</option>
+                  <option>Refurbishing an existing venue</option>
+                  <option>Rolling out multiple sites</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="budget">Rough fit-out budget</label>
+                <select id="budget" name="budget">
+                  <option>Not sure yet</option>
+                  <option>Under 100k</option>
+                  <option>100k – 300k</option>
+                  <option>300k – 750k</option>
+                  <option>750k+</option>
+                </select>
+              </div>
+            </div>
+            <div class="field"><label for="msg">Tell us about it</label><textarea id="msg" name="message" placeholder="Site size, opening date, the feeling you're after — anything helps."></textarea></div>
+            <div><button class="btn btn--accent" type="submit">Send it over <span class="arr">→</span></button></div>
+          </form>
+        </div>
+
+        <aside class="span-4 contact-aside" data-reveal="right" style="grid-column: 9 / span 4;--d:300">
+          <dl>
+            <div><dt>Email</dt><dd><a href="mailto:hello@twosquares.studio">hello@twosquares.studio</a></dd></div>
+            <div><dt>Phone</dt><dd><a href="tel:+0000000000">+00 000 000 000</a></dd></div>
+            <div><dt>Studio</dt><dd>Street name 12<br>City, Postcode<br><span class="muted small">By appointment</span></dd></div>
+            <div><dt>Response</dt><dd>Within two working days. Faster if there's a lease deadline.</dd></div>
+            <div><dt>Follow</dt><dd><a href="#">Instagram</a> · <a href="#">Pinterest</a> · <a href="#">LinkedIn</a></dd></div>
+          </dl>
+        </aside>
+      </div>
+    </section>
+
+    <section class="section section--tight">
+      <div class="wrap">
+        <div class="wipe"><img src="assets/img/studio-process.svg" alt="" style="aspect-ratio:21/9;object-fit:cover;width:100%" data-parallax="0.06"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer on-green ribbons">
+    <div class="wrap">
+      <div class="footer__grid">
+        <div>
+          <a class="brand" href="index.html"><span class="logo logo--lockup" role="img" aria-label="Two Squares — Design &amp; Build"></span></a>
+          <p class="muted small" style="margin-top:1.2rem;max-width:30ch">Design &amp; build for restaurants, bars and shops. Concept to opening night.</p>
+        </div>
+        <div><h4>Work</h4><a href="restaurants.html">Restaurants</a><a href="bars.html">Bars</a><a href="retail.html">Shops</a></div>
+        <div><h4>Studio</h4><a href="studio.html">About</a><a href="contact.html">Contact</a><a href="contact.html">Careers</a></div>
+        <div><h4>Follow</h4><a href="#" rel="noopener">Instagram</a><a href="#" rel="noopener">Pinterest</a><a href="#" rel="noopener">LinkedIn</a></div>
+      </div>
+      <div class="footer__big" data-reveal>Come back<br>to it.</div>
+      <div class="footer__legal"><span>© 2026 Two Squares Design &amp; Build. All rights reserved.</span><span>hello@twosquares.studio · +00 000 000 000</span></div>
+    </div>
+  </footer>
+
+  <script src="assets/js/app.js" defer></script>
+</body>
+</html>
