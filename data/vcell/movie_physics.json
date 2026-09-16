@@ -1,0 +1,831 @@
+{
+ "voxel_micron": [
+  0.4176355004310608,
+  0.4256339967250824,
+  0.6349894404411316
+ ],
+ "viscosity_pa_s": 0.004,
+ "stage_seconds_assumed": {
+  "M0->M1M2": 1200,
+  "M1M2->M3": 1080,
+  "M3->M4M5": 720
+ },
+ "genes": {
+  "TOMM20": {
+   "stages": {
+    "M0": 82,
+    "M1M2": 136,
+    "M3": 96,
+    "M4M5": 176
+   },
+   "representative_cells": {
+    "M0": "411216",
+    "M1M2": "269032",
+    "M3": "269652",
+    "M4M5": "268801"
+   },
+   "representative_r": {
+    "M0": 0.6120693321266117,
+    "M1M2": 0.6152253617741594,
+    "M3": 0.6418956533255854,
+    "M4M5": 0.6691885779162701
+   },
+   "diffusion_micron2_per_s": 13.366729564225645,
+   "transitions": {
+    "M0->M1M2": {
+     "displacement_micron": 0.5733046584583992,
+     "solver_residual": 9.768542622528319e-11,
+     "solver_converged": true,
+     "diffusive_cosine": 0.09406745586409615,
+     "uphill_mass_fraction": 0.41658609800720736,
+     "diffusive_tau_seconds": 0.011571808961196122,
+     "n_voxels": 20631,
+     "stage_seconds_assumed": 1200,
+     "tau_over_stage": 9.643174134330101e-06,
+     "slower_than_free_diffusion": 103700.29474423347,
+     "diffusion_length_micron": 179.10932682063643,
+     "peclet": 0.00320086434712871,
+     "n_cells": [
+      82,
+      136
+     ],
+     "split_half": {
+      "density_r": 0.6668631135779721,
+      "direction_cosine": -0.04018215599779585,
+      "n_cells_per_half": [
+       41,
+       68
+      ]
+     }
+    },
+    "M1M2->M3": {
+     "displacement_micron": 0.6233167197112535,
+     "solver_residual": 9.305733717397227e-11,
+     "solver_converged": true,
+     "diffusive_cosine": 0.13917507922185202,
+     "uphill_mass_fraction": 0.38501126438941985,
+     "diffusive_tau_seconds": 0.016506377302001267,
+     "n_voxels": 25866,
+     "stage_seconds_assumed": 1080,
+     "tau_over_stage": 1.528368268703821e-05,
+     "slower_than_free_diffusion": 65429.256840570255,
+     "diffusion_length_micron": 169.9180268798087,
+     "peclet": 0.0036683377929768203,
+     "n_cells": [
+      136,
+      96
+     ],
+     "split_half": {
+      "density_r": 0.8084057499518954,
+      "direction_cosine": 0.564714528203557,
+      "n_cells_per_half": [
+       68,
+       48
+      ]
+     }
+    },
+    "M3->M4M5": {
+     "displacement_micron": 0.6295340230357289,
+     "solver_residual": 8.998983609843019e-11,
+     "solver_converged": true,
+     "diffusive_cosine": -0.017976162693210517,
+     "uphill_mass_fraction": 0.5139840778929354,
+     "diffusive_tau_seconds": 0.01198899802909289,
+     "n_voxels": 26889,
+     "stage_seconds_assumed": 720,
+     "tau_over_stage": 1.6651386151517904e-05,
+     "slower_than_free_diffusion": 60055.06033555304,
+     "diffusion_length_micron": 138.73748798534925,
+     "peclet": 0.00453759133293669,
+     "n_cells": [
+      96,
+      176
+     ],
+     "split_half": {
+      "density_r": 0.8576168991913565,
+      "direction_cosine": 0.3941307583527721,
+      "n_cells_per_half": [
+       48,
+       88
+      ]
+     }
+    }
+   },
+   "gif": "/tmp/claude-0/-home-user-integratedai/c3f002f9-bc24-587b-b7ad-33be5b1f7454/scratchpad/movies_full/TOMM20_mitosis.gif"
+  },
+  "NUP153": {
+   "stages": {
+    "M0": 82,
+    "M1M2": 152,
+    "M3": 59,
+    "M4M5": 192
+   },
+   "representative_cells": {
+    "M0": "802852",
+    "M1M2": "846769",
+    "M3": "674945",
+    "M4M5": "807959"
+   },
+   "representative_r": {
+    "M0": 0.6993760367723565,
+    "M1M2": 0.7580221831651643,
+    "M3": 0.7825022660532749,
+    "M4M5": 0.8276447904330057
+   },
+   "diffusion_micron2_per_s": 6.6137708017517856,
+   "transitions": {
+    "M0->M1M2": {
+     "displacement_micron": 0.4982022644462858,
+     "solver_residual": 9.3986075716449e-11,
+     "solver_converged": true,
+     "diffusive_cosine": -0.06611285475394056,
+     "uphill_mass_fraction": 0.5481849724977548,
+     "diffusive_tau_seconds": 0.022522299445677997,
+     "n_voxels": 20148,
+     "stage_seconds_assumed": 1200,
+     "tau_over_stage": 1.876858287139833e-05,
+     "slower_than_free_diffusion": 53280.52772294876,
+     "diffusion_length_micron": 125.98829280613451,
+     "peclet": 0.003954353641515712,
+     "n_cells": [
+      82,
+      152
+     ],
+     "split_half": {
+      "density_r": 0.8838506952349786,
+      "direction_cosine": 0.3531269579505682,
+      "n_cells_per_half": [
+       41,
+       76
+      ]
+     }
+    },
+    "M1M2->M3": {
+     "displacement_micron": 2.0586936591005824,
+     "solver_residual": 9.375775097771456e-11,
+     "solver_converged": true,
+     "diffusive_cosine": 0.2602230478293493,
+     "uphill_mass_fraction": 0.26937808981336475,
+     "diffusive_tau_seconds": 0.05029477044624329,
+     "n_voxels": 23912,
+     "stage_seconds_assumed": 1080,
+     "tau_over_stage": 4.6569231894669714e-05,
+     "slower_than_free_diffusion": 21473.405493605736,
+     "diffusion_length_micron": 119.52298913507751,
+     "peclet": 0.017224248439553114,
+     "n_cells": [
+      152,
+      59
+     ],
+     "split_half": {
+      "density_r": 0.9189344359587376,
+      "direction_cosine": 0.9062724765681105,
+      "n_cells_per_half": [
+       76,
+       29
+      ]
+     }
+    },
+    "M3->M4M5": {
+     "displacement_micron": 0.6564302473287751,
+     "solver_residual": 9.089943941045225e-11,
+     "solver_converged": true,
+     "diffusive_cosine": 0.23977989346338313,
+     "uphill_mass_fraction": 0.29410255978882527,
+     "diffusive_tau_seconds": 0.028975896789372905,
+     "n_voxels": 26664,
+     "stage_seconds_assumed": 720,
+     "tau_over_stage": 4.024430109635126e-05,
+     "slower_than_free_diffusion": 24848.238701073253,
+     "diffusion_length_micron": 97.59011197105254,
+     "peclet": 0.006726401210846928,
+     "n_cells": [
+      59,
+      192
+     ],
+     "split_half": {
+      "density_r": 0.8865091616936319,
+      "direction_cosine": 0.5808602520103026,
+      "n_cells_per_half": [
+       29,
+       96
+      ]
+     }
+    }
+   },
+   "gif": "/tmp/claude-0/-home-user-integratedai/c3f002f9-bc24-587b-b7ad-33be5b1f7454/scratchpad/movies_full/NUP153_mitosis.gif"
+  },
+  "TUBA1B": {
+   "stages": {
+    "M0": 82,
+    "M1M2": 99,
+    "M3": 66,
+    "M4M5": 199
+   },
+   "representative_cells": {
+    "M0": "889263",
+    "M1M2": "243195",
+    "M3": "262874",
+    "M4M5": "233849"
+   },
+   "representative_r": {
+    "M0": 0.6567052770469686,
+    "M1M2": 0.7947961139037615,
+    "M3": 0.8330964969379726,
+    "M4M5": 0.8505854883568816
+   },
+   "diffusion_micron2_per_s": 19.73685713425793,
+   "transitions": {
+    "M0->M1M2": {
+     "displacement_micron": 0.6335734486565939,
+     "solver_residual": 8.848200832989177e-11,
+     "solver_converged": true,
+     "diffusive_cosine": 0.056820700165056276,
+     "uphill_mass_fraction": 0.47580154803945574,
+     "diffusive_tau_seconds": 0.008127163973320438,
+     "n_voxels": 22362,
+     "stage_seconds_assumed": 1200,
+     "tau_over_stage": 6.772636644433698e-06,
+     "slower_than_free_diffusion": 147652.9825089437,
+     "diffusion_length_micron": 217.64295789714637,
+     "peclet": 0.0029110679930935686,
+     "n_cells": [
+      82,
+      99
+     ],
+     "split_half": {
+      "density_r": 0.7537011053780113,
+      "direction_cosine": 0.23404492653190806,
+      "n_cells_per_half": [
+       41,
+       49
+      ]
+     }
+    },
+    "M1M2->M3": {
+     "displacement_micron": 2.2015648747730987,
+     "solver_residual": 8.788911971826307e-11,
+     "solver_converged": true,
+     "diffusive_cosine": -0.4589419225626643,
+     "uphill_mass_fraction": 0.9034598270081887,
+     "diffusive_tau_seconds": 0.04758331426352077,
+     "n_voxels": 26454,
+     "stage_seconds_assumed": 1080,
+     "tau_over_stage": 4.405862431807479e-05,
+     "slower_than_free_diffusion": 22697.031863288477,
+     "diffusion_length_micron": 206.47423909533396,
+     "peclet": 0.010662661281229302,
+     "n_cells": [
+      99,
+      66
+     ],
+     "split_half": {
+      "density_r": 0.9100806401751449,
+      "direction_cosine": 0.8215911809287975,
+      "n_cells_per_half": [
+       49,
+       33
+      ]
+     }
+    },
+    "M3->M4M5": {
+     "displacement_micron": 0.3889861531582952,
+     "solver_residual": 9.184707566830895e-11,
+     "solver_converged": true,
+     "diffusive_cosine": 0.10892391398151297,
+     "uphill_mass_fraction": 0.348427954654199,
+     "diffusive_tau_seconds": 0.02042061463287095,
+     "n_voxels": 27510,
+     "stage_seconds_assumed": 720,
+     "tau_over_stage": 2.836196476787632e-05,
+     "slower_than_free_diffusion": 35258.488196580525,
+     "diffusion_length_micron": 168.585510270994,
+     "peclet": 0.0023073522305269096,
+     "n_cells": [
+      66,
+      199
+     ],
+     "split_half": {
+      "density_r": 0.9629307525877453,
+      "direction_cosine": -0.03354188797203901,
+      "n_cells_per_half": [
+       33,
+       99
+      ]
+     }
+    }
+   },
+   "gif": "/tmp/claude-0/-home-user-integratedai/c3f002f9-bc24-587b-b7ad-33be5b1f7454/scratchpad/movies_full/TUBA1B_mitosis.gif"
+  },
+  "NPM1": {
+   "stages": {
+    "M0": 82,
+    "M1M2": 119,
+    "M3": 67,
+    "M4M5": 184
+   },
+   "representative_cells": {
+    "M0": "959470",
+    "M1M2": "641610",
+    "M3": "988987",
+    "M4M5": "702512"
+   },
+   "representative_r": {
+    "M0": 0.8640410537023168,
+    "M1M2": 0.8723217643476261,
+    "M3": 0.8534230998721732,
+    "M4M5": 0.9160300143659507
+   },
+   "diffusion_micron2_per_s": 10.67539774906909,
+   "transitions": {
+    "M0->M1M2": {
+     "displacement_micron": 0.8643706016164268,
+     "solver_residual": 9.173511034430183e-11,
+     "solver_converged": true,
+     "diffusive_cosine": 0.2303430919761899,
+     "uphill_mass_fraction": 0.2804479441986879,
+     "diffusive_tau_seconds": 0.052207293739824384,
+     "n_voxels": 20110,
+     "stage_seconds_assumed": 1200,
+     "tau_over_stage": 4.350607811652032e-05,
+     "slower_than_free_diffusion": 22985.294085156245,
+     "diffusion_length_micron": 160.06546972337856,
+     "peclet": 0.00540010661331399,
+     "n_cells": [
+      82,
+      119
+     ],
+     "split_half": {
+      "density_r": 0.9621201727784884,
+      "direction_cosine": 0.5385219306238243,
+      "n_cells_per_half": [
+       41,
+       59
+      ]
+     }
+    },
+    "M1M2->M3": {
+     "displacement_micron": 3.2289632072761556,
+     "solver_residual": 9.646727848310877e-11,
+     "solver_converged": true,
+     "diffusive_cosine": 0.599384189686399,
+     "uphill_mass_fraction": 0.029376133834231117,
+     "diffusive_tau_seconds": 0.1480097999379956,
+     "n_voxels": 25218,
+     "stage_seconds_assumed": 1080,
+     "tau_over_stage": 0.00013704611105369962,
+     "slower_than_free_diffusion": 7296.814132931972,
+     "diffusion_length_micron": 151.85143772117942,
+     "peclet": 0.021263962039035716,
+     "n_cells": [
+      119,
+      67
+     ],
+     "split_half": {
+      "density_r": 0.9655115719965167,
+      "direction_cosine": 0.9492956219664516,
+      "n_cells_per_half": [
+       59,
+       33
+      ]
+     }
+    },
+    "M3->M4M5": {
+     "displacement_micron": 1.0678994378530366,
+     "solver_residual": 9.245822714731668e-11,
+     "solver_converged": true,
+     "diffusive_cosine": 0.14281146755182783,
+     "uphill_mass_fraction": 0.37728068266588255,
+     "diffusive_tau_seconds": 0.023195674513084377,
+     "n_voxels": 26909,
+     "stage_seconds_assumed": 720,
+     "tau_over_stage": 3.221621460150608e-05,
+     "slower_than_free_diffusion": 31040.270012146335,
+     "diffusion_length_micron": 123.98617970830253,
+     "peclet": 0.008613052199571293,
+     "n_cells": [
+      67,
+      184
+     ],
+     "split_half": {
+      "density_r": 0.9358750398590614,
+      "direction_cosine": 0.798380140923059,
+      "n_cells_per_half": [
+       33,
+       92
+      ]
+     }
+    }
+   },
+   "gif": "/tmp/claude-0/-home-user-integratedai/c3f002f9-bc24-587b-b7ad-33be5b1f7454/scratchpad/movies_full/NPM1_mitosis.gif"
+  },
+  "LMNB1": {
+   "stages": {
+    "M0": 82,
+    "M1M2": 97,
+    "M3": 47,
+    "M4M5": 151
+   },
+   "representative_cells": {
+    "M0": "291570",
+    "M1M2": "286382",
+    "M3": "298994",
+    "M4M5": "284823"
+   },
+   "representative_r": {
+    "M0": 0.7467052833962146,
+    "M1M2": 0.743523802330333,
+    "M3": 0.7614195988359003,
+    "M4M5": 0.8436380094008706
+   },
+   "diffusion_micron2_per_s": 4.530464215287381,
+   "transitions": {
+    "M0->M1M2": {
+     "displacement_micron": 0.47276421706002125,
+     "solver_residual": 8.701784308613151e-11,
+     "solver_converged": true,
+     "diffusive_cosine": -0.01823644261895994,
+     "uphill_mass_fraction": 0.5050918812463288,
+     "diffusive_tau_seconds": 0.038166584331843875,
+     "n_voxels": 20918,
+     "stage_seconds_assumed": 1200,
+     "tau_over_stage": 3.180548694320323e-05,
+     "slower_than_free_diffusion": 31441.11586110138,
+     "diffusion_length_micron": 104.27422556264666,
+     "peclet": 0.004533854981986803,
+     "n_cells": [
+      82,
+      97
+     ],
+     "split_half": {
+      "density_r": 0.9123226461596328,
+      "direction_cosine": 0.5258154389550762,
+      "n_cells_per_half": [
+       41,
+       48
+      ]
+     }
+    },
+    "M1M2->M3": {
+     "displacement_micron": 1.3848864166745094,
+     "solver_residual": 9.759052114822745e-11,
+     "solver_converged": true,
+     "diffusive_cosine": 0.1667829863031014,
+     "uphill_mass_fraction": 0.3501472058429904,
+     "diffusive_tau_seconds": 0.06071021831763748,
+     "n_voxels": 26159,
+     "stage_seconds_assumed": 1080,
+     "tau_over_stage": 5.6213165108923595e-05,
+     "slower_than_free_diffusion": 17789.427050804054,
+     "diffusion_length_micron": 98.92321620843484,
+     "peclet": 0.013999609694821315,
+     "n_cells": [
+      97,
+      47
+     ],
+     "split_half": {
+      "density_r": 0.9016538612464885,
+      "direction_cosine": 0.8956020544558676,
+      "n_cells_per_half": [
+       48,
+       23
+      ]
+     }
+    },
+    "M3->M4M5": {
+     "displacement_micron": 2.0545475576354084,
+     "solver_residual": 8.527283644681901e-11,
+     "solver_converged": true,
+     "diffusive_cosine": 0.17859742166684292,
+     "uphill_mass_fraction": 0.3353247428961826,
+     "diffusive_tau_seconds": 0.10560157011570032,
+     "n_voxels": 27628,
+     "stage_seconds_assumed": 720,
+     "tau_over_stage": 0.00014666884738291712,
+     "slower_than_free_diffusion": 6818.080443417138,
+     "diffusion_length_micron": 80.77046780856125,
+     "peclet": 0.025436865891442034,
+     "n_cells": [
+      47,
+      151
+     ],
+     "split_half": {
+      "density_r": 0.8984232543442516,
+      "direction_cosine": 0.9429274045538993,
+      "n_cells_per_half": [
+       23,
+       75
+      ]
+     }
+    }
+   },
+   "gif": "/tmp/claude-0/-home-user-integratedai/c3f002f9-bc24-587b-b7ad-33be5b1f7454/scratchpad/movies_full/LMNB1_mitosis.gif"
+  },
+  "ACTN1": {
+   "stages": {
+    "M0": 82,
+    "M1M2": 108,
+    "M3": 32,
+    "M4M5": 155
+   },
+   "representative_cells": {
+    "M0": "573649",
+    "M1M2": "974444",
+    "M3": "566280",
+    "M4M5": "579403"
+   },
+   "representative_r": {
+    "M0": 0.6215384068250868,
+    "M1M2": 0.5779465050126468,
+    "M3": 0.5988744390247428,
+    "M4M5": 0.6514475910701073
+   },
+   "diffusion_micron2_per_s": 6.238538870301088,
+   "transitions": {
+    "M0->M1M2": {
+     "displacement_micron": 0.6371690650678326,
+     "solver_residual": 9.248166521119601e-11,
+     "solver_converged": true,
+     "diffusive_cosine": -0.04563624501945926,
+     "uphill_mass_fraction": 0.5456642502256978,
+     "diffusive_tau_seconds": 0.013598487079609785,
+     "n_voxels": 20127,
+     "stage_seconds_assumed": 1200,
+     "tau_over_stage": 1.1332072566341488e-05,
+     "slower_than_free_diffusion": 88245.11086967438,
+     "diffusion_length_micron": 122.36213993193569,
+     "peclet": 0.00520724029035664,
+     "n_cells": [
+      82,
+      108
+     ],
+     "split_half": {
+      "density_r": 0.7828526185231728,
+      "direction_cosine": 0.2019779855930201,
+      "n_cells_per_half": [
+       41,
+       54
+      ]
+     }
+    },
+    "M1M2->M3": {
+     "displacement_micron": 1.9274814739820256,
+     "solver_residual": 9.707652928405192e-11,
+     "solver_converged": true,
+     "diffusive_cosine": 0.12113719303384471,
+     "uphill_mass_fraction": 0.3830335086900466,
+     "diffusive_tau_seconds": 0.027038593078013182,
+     "n_voxels": 26228,
+     "stage_seconds_assumed": 1080,
+     "tau_over_stage": 2.5035734331493687e-05,
+     "slower_than_free_diffusion": 39942.90667727891,
+     "diffusion_length_micron": 116.08291846714722,
+     "peclet": 0.016604350574865367,
+     "n_cells": [
+      108,
+      32
+     ],
+     "split_half": {
+      "density_r": 0.6677710212584189,
+      "direction_cosine": 0.8252145290154888,
+      "n_cells_per_half": [
+       54,
+       16
+      ]
+     }
+    },
+    "M3->M4M5": {
+     "displacement_micron": 0.7509289216481485,
+     "solver_residual": 9.807604267070018e-11,
+     "solver_converged": true,
+     "diffusive_cosine": 0.11630507485411504,
+     "uphill_mass_fraction": 0.4261981284807159,
+     "diffusive_tau_seconds": 0.016360477526976818,
+     "n_voxels": 27814,
+     "stage_seconds_assumed": 720,
+     "tau_over_stage": 2.272288545413447e-05,
+     "slower_than_free_diffusion": 44008.49540074798,
+     "diffusion_length_micron": 94.7813060325377,
+     "peclet": 0.00792275347409077,
+     "n_cells": [
+      32,
+      155
+     ],
+     "split_half": {
+      "density_r": 0.5507192823506093,
+      "direction_cosine": 0.30848735268548627,
+      "n_cells_per_half": [
+       16,
+       77
+      ]
+     }
+    }
+   },
+   "gif": "/tmp/claude-0/-home-user-integratedai/c3f002f9-bc24-587b-b7ad-33be5b1f7454/scratchpad/movies_full/ACTN1_mitosis.gif"
+  },
+  "ATP2A2": {
+   "stages": {
+    "M0": 82,
+    "M1M2": 80,
+    "M3": 34,
+    "M4M5": 142
+   },
+   "representative_cells": {
+    "M0": "930138",
+    "M1M2": "922814",
+    "M3": "821847",
+    "M4M5": "865636"
+   },
+   "representative_r": {
+    "M0": 0.6600114986887482,
+    "M1M2": 0.7089013377200248,
+    "M3": 0.6951155481360074,
+    "M4M5": 0.7817461456300313
+   },
+   "diffusion_micron2_per_s": 9.824660966900561,
+   "transitions": {
+    "M0->M1M2": {
+     "displacement_micron": 0.619308153354692,
+     "solver_residual": 9.441728511132593e-11,
+     "solver_converged": true,
+     "diffusive_cosine": -0.14625550610730267,
+     "uphill_mass_fraction": 0.6161350508764174,
+     "diffusive_tau_seconds": 0.013511922783989896,
+     "n_voxels": 21850,
+     "stage_seconds_assumed": 1200,
+     "tau_over_stage": 1.1259935653324914e-05,
+     "slower_than_free_diffusion": 88810.45423245495,
+     "diffusion_length_micron": 153.55515725810497,
+     "peclet": 0.004033131575735491,
+     "n_cells": [
+      82,
+      80
+     ],
+     "split_half": {
+      "density_r": 0.7908721043857433,
+      "direction_cosine": -0.028264178219054564,
+      "n_cells_per_half": [
+       41,
+       40
+      ]
+     }
+    },
+    "M1M2->M3": {
+     "displacement_micron": 0.55807307766894,
+     "solver_residual": 9.382080576469399e-11,
+     "solver_converged": true,
+     "diffusive_cosine": 0.19545280071557578,
+     "uphill_mass_fraction": 0.36076355703977575,
+     "diffusive_tau_seconds": 0.018652781767293885,
+     "n_voxels": 24838,
+     "stage_seconds_assumed": 1080,
+     "tau_over_stage": 1.727109422897582e-05,
+     "slower_than_free_diffusion": 57900.210996608075,
+     "diffusion_length_micron": 145.6752130202843,
+     "peclet": 0.003830940529266513,
+     "n_cells": [
+      80,
+      34
+     ],
+     "split_half": {
+      "density_r": 0.7505267408818199,
+      "direction_cosine": 0.6061526934328959,
+      "n_cells_per_half": [
+       40,
+       17
+      ]
+     }
+    },
+    "M3->M4M5": {
+     "displacement_micron": 1.266940632749344,
+     "solver_residual": 8.768448965916689e-11,
+     "solver_converged": true,
+     "diffusive_cosine": -0.044064951667415225,
+     "uphill_mass_fraction": 0.5016845510294771,
+     "diffusive_tau_seconds": 0.03347462977411797,
+     "n_voxels": 27164,
+     "stage_seconds_assumed": 720,
+     "tau_over_stage": 4.649254135294162e-05,
+     "slower_than_free_diffusion": 21508.826381604737,
+     "diffusion_length_micron": 118.9433133569803,
+     "peclet": 0.010651633933779199,
+     "n_cells": [
+      34,
+      142
+     ],
+     "split_half": {
+      "density_r": 0.7930821916253568,
+      "direction_cosine": 0.6752568125751122,
+      "n_cells_per_half": [
+       17,
+       71
+      ]
+     }
+    }
+   },
+   "gif": "/tmp/claude-0/-home-user-integratedai/c3f002f9-bc24-587b-b7ad-33be5b1f7454/scratchpad/movies_full/ATP2A2_mitosis.gif"
+  },
+  "AAVS1": {
+   "stages": {
+    "M0": 82,
+    "M1M2": 68,
+    "M3": 38,
+    "M4M5": 113
+   },
+   "representative_cells": {
+    "M0": "517762",
+    "M1M2": "623333",
+    "M3": "612120",
+    "M4M5": "516926"
+   },
+   "representative_r": {
+    "M0": 0.5334186246811331,
+    "M1M2": 0.5485159523421393,
+    "M3": 0.5167767018233645,
+    "M4M5": 0.6077522130401447
+   },
+   "diffusion_micron2_per_s": NaN,
+   "transitions": {
+    "M0->M1M2": {
+     "displacement_micron": 0.44215349426386485,
+     "solver_residual": 8.904489818949655e-11,
+     "solver_converged": true,
+     "diffusive_cosine": -0.1607022430510109,
+     "uphill_mass_fraction": 0.62191646087516,
+     "diffusive_tau_seconds": NaN,
+     "n_voxels": 20090,
+     "stage_seconds_assumed": 1200,
+     "tau_over_stage": NaN,
+     "slower_than_free_diffusion": Infinity,
+     "diffusion_length_micron": NaN,
+     "peclet": NaN,
+     "n_cells": [
+      82,
+      68
+     ],
+     "split_half": {
+      "density_r": 0.777020376902751,
+      "direction_cosine": -0.12244462010476989,
+      "n_cells_per_half": [
+       41,
+       34
+      ]
+     }
+    },
+    "M1M2->M3": {
+     "displacement_micron": 0.8356647084092694,
+     "solver_residual": 8.736706350465263e-11,
+     "solver_converged": true,
+     "diffusive_cosine": -0.02274748003576184,
+     "uphill_mass_fraction": 0.5039016919081408,
+     "diffusive_tau_seconds": NaN,
+     "n_voxels": 24269,
+     "stage_seconds_assumed": 1080,
+     "tau_over_stage": NaN,
+     "slower_than_free_diffusion": Infinity,
+     "diffusion_length_micron": NaN,
+     "peclet": NaN,
+     "n_cells": [
+      68,
+      38
+     ],
+     "split_half": {
+      "density_r": 0.7107715983165578,
+      "direction_cosine": 0.6077256026075787,
+      "n_cells_per_half": [
+       34,
+       19
+      ]
+     }
+    },
+    "M3->M4M5": {
+     "displacement_micron": 0.9528087356572803,
+     "solver_residual": 8.982012546907866e-11,
+     "solver_converged": true,
+     "diffusive_cosine": -0.08235837419197858,
+     "uphill_mass_fraction": 0.5800703247723416,
+     "diffusive_tau_seconds": NaN,
+     "n_voxels": 27017,
+     "stage_seconds_assumed": 720,
+     "tau_over_stage": NaN,
+     "slower_than_free_diffusion": Infinity,
+     "diffusion_length_micron": NaN,
+     "peclet": NaN,
+     "n_cells": [
+      38,
+      113
+     ],
+     "split_half": {
+      "density_r": 0.746326031893209,
+      "direction_cosine": 0.2488765803489887,
+      "n_cells_per_half": [
+       19,
+       56
+      ]
+     }
+    }
+   },
+   "gif": "/tmp/claude-0/-home-user-integratedai/c3f002f9-bc24-587b-b7ad-33be5b1f7454/scratchpad/movies_full/AAVS1_mitosis.gif"
+  }
+ }
+}
