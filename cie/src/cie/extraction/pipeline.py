@@ -40,7 +40,7 @@ from cie.extraction.sectioning import BlockRef, build_sections
 from cie.governance.scanners import scan_text
 from cie.memory.autolink import autolink
 from cie.memory.embeddings import EmbeddingProvider, get_embedding_provider
-from cie.memory.entities import resolve
+from cie.memory.entities import remember_alias, resolve
 from cie.memory.records import create_record
 from cie.memory.text import tsvector_expr
 from cie.vault.service import VaultService
@@ -217,9 +217,7 @@ def _derive(session: Session, document: Document, extraction: Extraction, sectio
             ent, status = resolve(session, document.tenant_id, document.scope_id, name, RecordType(d.type))
             if status == "matched" and ent is not None:
                 # inherit the canonical entity instead of duplicating it; keep the alias and the new evidence
-                aliases = list((ent.content or {}).get("aliases", []))
-                if name != ent.summary and name not in aliases:
-                    ent.content = {**(ent.content or {}), "aliases": aliases + [name]}
+                remember_alias(ent, name)
                 locs = list(ent.source_locations or [])
                 if len(locs) < 20:
                     ent.source_locations = locs + [{**d.source_locations[0], "document_id": str(document.id)}]

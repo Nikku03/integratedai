@@ -133,6 +133,16 @@ def scale_section(out: Path) -> list[str]:
                   f"{ha['warm_p50_ms']} ms, p95 {ha['warm_p95_ms']} ms, hit@20 {ha['hit_at_20']} (lexical stage p50 {lb.get('stage_ms_p50', {}).get('lexical_ms', '?')} → "
                   f"{ha['stage_ms_p50'].get('lexical_ms', '?')} ms; lexical-only hit@20 {lb.get('hit_at_20', '?')} → {la.get('hit_at_20', '?')}). "
                   f"The 10k and 100k rows are from the first run and were not re-measured; their latencies are upper bounds for the fixed code.", ""]
+    org = (sizes.get(after) if after else b).get("organisation") or b.get("organisation")
+    if org:
+        dg = org["digest"]
+        lines += [f"**Can it organise at {int(big):,} records?** Resolving a differently spelled supplier name to its canonical entity takes "
+                  f"{org['resolve_ms']['p50']} ms p50 / {org['resolve_ms']['p95']} ms p95 and lands on the right supplier {org['resolved_correctly']:.0%} of the time "
+                  f"(index-served candidates, then fuzzy scoring). An entity profile, everything the bank holds about one supplier grouped by type and current "
+                  f"as of now, takes {org['profile_ms']['p50']} ms p50 / {org['profile_ms']['p95']} ms p95 for {org['profile_records_p50']:.0f} records "
+                  f"(JSONB containment on `entity_ids` plus `mentions` edges). A digest of the whole company scope ({dg['company']['records']:,} records) takes "
+                  f"{dg['company']['ms']} ms and of one department ({dg['department']['records']:,} records) {dg['department']['ms']} ms, from the scope/type "
+                  f"index and the edge table alone.", ""]
     lines += ["### What this does and does not show", "",
               "* **Synthetic and templated.** Every record carries its supplier's name and the questions name the supplier, which is friendlier to entity-anchored "
               "lexical search than real documents, where a fee clause rarely repeats the supplier's name (the in-sample corpus above covers that case). "
@@ -190,7 +200,7 @@ def cost_storage_md(out: Path, docs: Path) -> str:
                       "| quantity | value |", "|---|---|",
                       f"| records / sections / documents | {ld['n_records']:,} / {ld['n_sections']:,} / {ld['n_documents']:,} |",
                       f"| `memory_records` table incl. indexes | {st['memory_records']['total_bytes'] / 1e9:.2f} GB ({st['memory_records']['total_bytes'] / ld['n_records']:,.0f} B per record) |",
-                      f"| of which HNSW index / GIN tsvector index | {st['ix_records_embedding_hnsw_bytes'] / 1e9:.2f} GB / {st['ix_records_tsv_bytes'] / 1e6:.0f} MB |",
+                      f"| of which HNSW index ({st.get('hnsw_kind', 'vector')}) / GIN tsvector index | {st['ix_records_embedding_hnsw_bytes'] / 1e9:.2f} GB / {st['ix_records_tsv_bytes'] / 1e6:.0f} MB |",
                       f"| `sections` table incl. indexes | {st['sections']['total_bytes'] / 1e9:.2f} GB ({st['sections']['total_bytes'] / ld['n_sections']:,.0f} B per section) |",
                       f"| `record_links` table incl. indexes | {st['record_links']['total_bytes'] / 1e6:.0f} MB |",
                       f"| load (binary COPY) / tsvectors / HNSW on records / all indexes | {ld['copy_seconds']} s / {ld['tsvector_seconds']} s / "

@@ -30,12 +30,39 @@ def normalise(name: str) -> str:
     return re.sub(r"\s+", " ", n)
 
 
-def candidates(session: Session, tenant_id: uuid.UUID, scope_id: uuid.UUID, rtype: RecordType) -> list[MemoryRecord]:
-    """Entity records visible from the scope's ancestor chain (inherited memory)."""
+def candidates(session: Session, tenant_id: uuid.UUID, scope_id: uuid.UUID, rtype: RecordType,
+               name: str | None = None, limit: int = 50) -> list[MemoryRecord]:
+    """Entity records visible from the scope's ancestor chain (inherited memory).
+
+    With ``name``, only the entities whose canonical name shares trigrams with it
+    (the GIN trigram index on ``summary``) or whose recorded aliases contain it
+    (the GIN index on ``keywords``, where aliases are kept normalised), most
+    similar first. Resolution then scores a few dozen rows instead of every
+    organisation the company has ever met."""
+    from sqlalchemy import cast, func, or_
+
     chain = [s.id for s in ancestors(session, scope_id)]
-    return list(session.scalars(select(MemoryRecord).where(
+    stmt = select(MemoryRecord).where(
         MemoryRecord.tenant_id == tenant_id, MemoryRecord.type == rtype, MemoryRecord.scope_id.in_(chain),
-        MemoryRecord.deleted_at.is_(None), MemoryRecord.superseded_by_id.is_(None))))
+        MemoryRecord.deleted_at.is_(None), MemoryRecord.superseded_by_id.is_(None))
+    if name:
+        key = normalise(name)
+        sim = func.similarity(MemoryRecord.summary, name)
+        stmt = (stmt.where(or_(MemoryRecord.summary.op("%")(name),
+                               MemoryRecord.keywords.op("&&")(cast([key], MemoryRecord.keywords.type))))
+                .order_by(sim.desc()).limit(limit))
+    return list(session.scalars(stmt))
+
+
+def remember_alias(ent: MemoryRecord, name: str) -> None:
+    """Record ``name`` as an alias of ``ent``: in the content for people, and in the
+    indexed keywords so the next resolution of that spelling is index-served."""
+    aliases = list((ent.content or {}).get("aliases", []))
+    if name != ent.summary and name not in aliases:
+        ent.content = {**(ent.content or {}), "aliases": aliases + [name]}
+    key = normalise(name)
+    if key and key not in (ent.keywords or []):
+        ent.keywords = list(ent.keywords or []) + [key]
 
 
 def resolve(session: Session, tenant_id: uuid.UUID, scope_id: uuid.UUID, name: str, rtype: RecordType,
@@ -44,7 +71,7 @@ def resolve(session: Session, tenant_id: uuid.UUID, scope_id: uuid.UUID, name: s
     ``matched`` | ``ambiguous`` | ``new``."""
     key = normalise(name)
     scored = []
-    for c in candidates(session, tenant_id, scope_id, rtype):
+    for c in candidates(session, tenant_id, scope_id, rtype, name=name):
         aliases = [c.summary] + list((c.content or {}).get("aliases", []))
         best = max(fuzz.token_sort_ratio(key, normalise(a)) for a in aliases)
         scored.append((best, c))
@@ -79,10 +106,7 @@ def attach_entities(session: Session, record: MemoryRecord, names: list[str], rt
                                     source_document_id=record.source_document_id, source_locations=record.source_locations,
                                     producing_agent=producing_agent, confidence=0.7)
         elif ent.id != record.id and record.type == rtype:
-            # a new mention with a slightly different spelling: remember the alias
-            aliases = list((ent.content or {}).get("aliases", []))
-            if name != ent.summary and name not in aliases:
-                ent.content = {**(ent.content or {}), "aliases": aliases + [name]}
+            remember_alias(ent, name)  # a new mention with a slightly different spelling
         if ent.id != record.id:
             link(session, record, ent, LinkKind.mentions)
             if str(ent.id) not in (record.entity_ids or []):

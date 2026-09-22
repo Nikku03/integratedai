@@ -138,6 +138,35 @@ of records addressable from its agent scope plus what it inherits; a project's
 Point-in-time queries filter on `valid_from <= t < valid_to` and
 `superseded_by_id IS NULL` for "current" facts.
 
+## D2. Organisation views (`cie.memory.organise`)
+
+The bank is browsable as well as searchable, from the records it already holds
+(nothing generated, every value a record, a count or an edge):
+
+* `entity_profile(entity)`: everything addressable about one organisation or
+  person, grouped by record type, newest first, current only unless history is
+  asked for, as of a date if given; with the documents involved, open questions
+  and recorded contradictions. Backed by JSONB containment on `entity_ids`
+  (GIN, `jsonb_path_ops`) and the `mentions` edges, so it costs the same at a
+  million records as at a thousand.
+* `document_card(document)`: what one document contributed: parties, people,
+  values, deadlines, obligations, risks, decisions, open questions,
+  superseded records, contradiction edges and the version chain.
+* `scope_digest(scope)`: what a department or project holds: record and
+  document counts by type from the scope/type index, the most mentioned
+  entities from the `mentions` edges, newest documents, conflicts.
+* `find_entities(q)`: entities by name or alias (trigram index on the
+  canonical name, keyword index on normalised aliases).
+
+Entity resolution (`cie.memory.entities`) scores only index-served candidates:
+names sharing trigrams with the mention, or whose recorded aliases contain
+it (aliases are kept normalised in the indexed `keywords`), so resolving a
+mention never loads every organisation the company has met.
+
+Exposed as `GET /memory/entities?q=`, `GET /memory/entities/{id}/profile`,
+`GET /documents/{id}/card`, `GET /scopes/{id}/digest`; all permission-filtered
+by the same predicate as search.
+
 ## E. Glyphs (`cie.memory.glyph`)
 
 A glyph is a typed, compact memory card stored as JSONB inside the record:
@@ -192,6 +221,14 @@ encodings that fail exact round-trip or searchability are rejected.
    LLM with items wrapped as untrusted data and drops claims the packet does
    not support.
 10. Raw pages are fetched only via `/sources/{document_id}/pages/{n}`.
+
+### Vector index precision
+
+With pgvector 0.7 or newer the HNSW indexes are built on `embedding::halfvec`
+(16-bit floats) by the `b7c8d9e0f1a2` migration: half the index size and a
+faster build; the scale benchmark reports the hit rate with it. Older pgvector
+keeps float32 indexes, and `cie.retrieval.vector` detects which kind the
+database has so the query expression matches the index.
 
 ## REM-inspired sparse graph (`cie.retrieval.graph`)
 

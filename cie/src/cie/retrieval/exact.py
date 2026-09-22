@@ -37,14 +37,17 @@ def lookup(session: Session, intent: Intent, query: str, base_filter, k: int = 3
                 hits[rid] = max(hits.get(rid, 0), 4.0)
     # entity names by trigram similarity against capitalised tokens in the query (the % operator uses the GIN trigram index)
     caps = _capitalised_spans(query)
+    unmatched: list[str] = []
     for name in caps:
         # cheap exact substring first (trigram GIN serves ILIKE); similarity only when nothing matches literally
         found = list(session.scalars(select(MemoryRecord.id).where(base_filter, MemoryRecord.type.in_(_ENTITY_TYPES),
                                                                     MemoryRecord.summary.ilike(f"%{name}%")).limit(5)))
         for rid in found:
             hits[rid] = max(hits.get(rid, 0), 2.9)  # locates an entity; not evidence for the question (support needs >= 3.0)
-        if found:
-            continue
+        if not found:
+            unmatched.append(name)
+    # fuzzy matching costs a trigram scan; spend it once, on the most specific unmatched name
+    for name in sorted(unmatched, key=lambda n: -len(n.split()))[:1]:
         sim = func.similarity(MemoryRecord.summary, name)
         stmt = (select(MemoryRecord.id, sim).where(base_filter, MemoryRecord.type.in_(_ENTITY_TYPES),
                                                    MemoryRecord.summary.op("%")(name))

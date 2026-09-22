@@ -252,11 +252,13 @@ class Retriever:
         matches = sum(case((c, 1), else_=0) for c in conds)  # documents matching more of the name rank first
         for n in nums:
             matches = matches + case((hay.op("~")(rf"\m{n}\M"), 1), else_=0)
-        stmt = (select(Document.id, matches).where(
-            Document.tenant_id == tenant_id, Document.deleted_at.is_(None), Document.scope_id.in_(allowed),
-            vis.sql_filter(Document.scope_id, Document.sensitivity), or_(*conds))
-            .order_by(matches.desc()).limit(40))
-        rows = self.session.execute(stmt).all()
+        base = (Document.tenant_id == tenant_id, Document.deleted_at.is_(None), Document.scope_id.in_(allowed),
+                vis.sql_filter(Document.scope_id, Document.sensitivity))
+        # every word of the name first: a handful of rows even when each word alone matches thousands of files;
+        # any word only when no file carries the whole name
+        rows = self.session.execute(select(Document.id, matches).where(*base, and_(*conds)).order_by(matches.desc()).limit(40)).all()
+        if not rows and len(conds) > 1:
+            rows = self.session.execute(select(Document.id, matches).where(*base, or_(*conds)).order_by(matches.desc()).limit(40)).all()
         if not rows:
             return []
         best = rows[0][1]

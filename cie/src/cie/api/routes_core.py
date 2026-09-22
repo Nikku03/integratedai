@@ -326,6 +326,51 @@ def list_records(scope_id: uuid.UUID | None = None, type: str | None = None, doc
     return [_rec_out(r) for r in rows if auth.visibility.can_read(r.scope_id, r.sensitivity, r.acl)]
 
 
+# ---------------------------------------------------------------- organisation views
+@router.get("/memory/entities", summary="Find entities (organisations, people) by name or alias")
+def find_entities(q: str = Query(min_length=2), type: str | None = None, limit: int = 10,
+                  auth: Auth = Depends(current_auth), session: Session = Depends(db)):
+    from cie.core.models import RecordType
+    from cie.memory import organise
+
+    rtype = RecordType(type) if type else None
+    return organise.find_entities(session, auth.tenant_id, auth.visibility, q, rtype, limit=min(limit, 50))
+
+
+@router.get("/memory/entities/{entity_id}/profile", summary="Everything the memory holds about one entity")
+def entity_profile(entity_id: uuid.UUID, at: datetime | None = None, include_history: bool = False, per_type: int = 5,
+                   auth: Auth = Depends(current_auth), session: Session = Depends(db)):
+    from cie.memory import organise
+
+    ent = _get_rec(session, auth, entity_id)
+    if ent.type not in organise.ENTITY_TYPES:
+        raise HTTPException(400, "record is not an entity")
+    out = organise.entity_profile(session, auth.tenant_id, auth.visibility, ent, at=at, include_history=include_history, per_type=per_type)
+    audit(session, tenant_id=auth.tenant_id, principal_id=auth.principal.id, action="entity.profile", resource_kind="record",
+          resource_id=ent.id, outcome="ok", details={"records": out["record_count"]})
+    session.commit()
+    return out
+
+
+@router.get("/documents/{document_id}/card", summary="What one document contributed to memory")
+def document_card(document_id: uuid.UUID, auth: Auth = Depends(current_auth), session: Session = Depends(db)):
+    from cie.memory import organise
+
+    return organise.document_card(session, auth.tenant_id, auth.visibility, _get_doc(session, auth, document_id))
+
+
+@router.get("/scopes/{scope_id}/digest", summary="What a scope's memory holds: counts, entities, newest documents, conflicts")
+def scope_digest(scope_id: uuid.UUID, at: datetime | None = None, auth: Auth = Depends(current_auth), session: Session = Depends(db)):
+    from cie.memory import organise
+
+    scope = session.get(Scope, scope_id)
+    if scope is None or scope.tenant_id != auth.tenant_id:
+        raise HTTPException(404, "scope not found")
+    if scope.id not in auth.visibility.scope_ids:
+        raise HTTPException(403, "no access to scope")
+    return organise.scope_digest(session, auth.tenant_id, auth.visibility, scope, at=at)
+
+
 # ---------------------------------------------------------------- search / answer
 @router.post("/search", response_model=S.PacketOut)
 def search(body: S.SearchIn, auth: Auth = Depends(current_auth), session: Session = Depends(db)):

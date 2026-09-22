@@ -12,6 +12,7 @@ URLs). Interactive docs at `/docs`; the machine-readable contract is
 | Documents | `GET /documents`, `GET /documents/{id}`, `GET /documents/{id}/versions`, `GET /documents/{id}/extraction` (OCR status), `GET /documents/{id}/flags` |
 | Jobs | `GET /jobs`, `GET /jobs/{id}`, `POST /jobs/run` (dev helper) |
 | Memory | `POST /memory/records`, `GET /memory/records`, `GET /memory/records/{id}`, `/history`, `/links`, `POST .../supersede`, `/contradict`, `/confirm`, `/extend`, `/link?kind=` |
+| Organisation views | `GET /memory/entities?q=&type=`, `GET /memory/entities/{id}/profile?at=&include_history=`, `GET /documents/{id}/card`, `GET /scopes/{id}/digest?at=` — what the bank holds about an entity, a document, a scope; permission-filtered |
 | Search | `POST /search` → evidence packet; `GET /evidence/{packet_id}` |
 | Answers | `POST /answer` (mode strict/assisted) → cited answer; `GET /answers/{id}` |
 | Sources | `GET /sources/{doc}/pages/{n}` (text + blocks + corrections), `GET /sources/{doc}/pages/{n}/image`, `GET /sources/{doc}/download` |

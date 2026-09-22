@@ -76,6 +76,15 @@ Stated plainly so nobody mistakes a scaffold for a finished capability.
   throughput under concurrent load and multi-tenant interference were not
   measured.
 * Token counts are estimates unless a provider reports usage.
+* Half-precision (halfvec) HNSW indexes need pgvector 0.7+; on older servers the
+  migration keeps float32 indexes, which are twice the size. The scale
+  benchmark's recall with halfvec is measured on normalised 384-d embeddings;
+  other models were not measured.
+* Organisation views aggregate records as they are: a supplier known under two
+  unresolved spellings has two profiles until the aliases are merged, and the
+  scope digest's "most mentioned" ranking counts `mentions` edges, so records
+  that reference an entity only through `entity_ids` (bulk-loaded data) do not
+  raise it.
 
 ## Security
 * API keys only (no OIDC), no rate limiting, TLS delegated to ingress, at-rest

@@ -186,6 +186,7 @@ def _load(conn: psycopg.Connection, tenant_id, scope_ids: list, n: int, embedder
         # records
         rec_ids: list[uuid.UUID] = []
         rec_doc: list[int] = []
+        rec_org: list[uuid.UUID | None] = []  # the document's organisation record each record mentions (None for the organisation itself)
         cols = ("id, tenant_id, scope_id, type, summary, content, detail, source_document_id, source_locations, event_time, valid_from, valid_to, recorded_at, "
                 "producing_agent, confidence, verification, sensitivity, acl, version, family_id, entity_ids, keywords, glyph, embedding, content_sha256")
         with cur.copy(f"COPY memory_records ({cols}) FROM STDIN WITH (FORMAT BINARY)") as cp:
@@ -197,18 +198,22 @@ def _load(conn: psycopg.Connection, tenant_id, scope_ids: list, n: int, embedder
                 sup = supplier_name(d)
                 short = short_name(sup)
                 tpls = _templates(rng, sup, short, f"{short} Master Services Agreement")
+                org_idx = next(j for j, tpl in enumerate(tpls) if tpl[0] == "organization")
+                org_rid = uuid.uuid4() if i + org_idx < n else None  # the organisation record exists only if the document is complete that far
                 for j, (t, summ, det, content, kws) in enumerate(tpls):
                     if i >= n:
                         break
-                    rid = uuid.uuid4()
+                    rid = org_rid if (j == org_idx and org_rid is not None) else uuid.uuid4()
                     rec_ids.append(rid)
                     rec_doc.append(d)
+                    rec_org.append(org_rid if j != org_idx else None)
                     base_idx = ((d % 400) * 12 + j) % len(tpl_vecs)
                     glyph = {"v": 1, "id": str(rid), "type": t, "what": summ[:120], "confidence": 0.7, "status": "current"}
+                    ents = [str(org_rid)] if (org_rid is not None and j != org_idx) else []
                     cp.write_row((rid, tenant_id, doc_scope[d], RecordType(t), summ[:400], Jsonb(content), det[:2000], doc_ids[d],
                                   Jsonb([{"page_no": 1 + j % 6, "bbox": [72.0, 100.0 + 20 * j, 540.0, 118.0 + 20 * j], "quote": summ[:120]}]),
                                   T0, T0, None, T0, "scale_generator", 0.7, VerificationStatus.unverified,
-                                  1, Jsonb({}), 1, uuid.uuid4(), Jsonb([]), kws, Jsonb(glyph), noisy(base_idx),
+                                  1, Jsonb({}), 1, uuid.uuid4(), Jsonb(ents), kws, Jsonb(glyph), noisy(base_idx),
                                   hashlib.sha256(f"{rid}".encode()).hexdigest()))
                     i += 1
                 d = (d + 1) % n_docs
@@ -234,6 +239,8 @@ def _load(conn: psycopg.Connection, tenant_id, scope_ids: list, n: int, embedder
             for idx in range(1, len(rec_ids)):
                 if rec_doc[idx] == rec_doc[idx - 1]:
                     cp.write_row((uuid.uuid4(), tenant_id, rec_ids[idx], rec_ids[idx - 1], LinkKind.relates_to, 0.5, Jsonb({}), T0))
+                if rec_org[idx] is not None:  # every record of a document mentions the document's organisation
+                    cp.write_row((uuid.uuid4(), tenant_id, rec_ids[idx], rec_org[idx], LinkKind.mentions, 1.0, Jsonb({}), T0))
                 if idx % 3 == 0 and idx >= 12 and rec_doc[idx] == rec_doc[idx - 12 + (idx % 12)]:
                     cp.write_row((uuid.uuid4(), tenant_id, rec_ids[idx], rec_ids[idx - (idx % 12)], LinkKind.part_of, 1.0, Jsonb({}), T0))
                 if idx % 50 == 0:
@@ -259,7 +266,27 @@ INDEXES = {
     "ix_sections_tsv": "CREATE INDEX ix_sections_tsv ON sections USING gin (tsv)",
     "ix_records_keywords": "CREATE INDEX ix_records_keywords ON memory_records USING gin (keywords)",
     "ix_records_summary_trgm": "CREATE INDEX ix_records_summary_trgm ON memory_records USING gin (summary gin_trgm_ops)",
+    "ix_records_entity_ids": "CREATE INDEX ix_records_entity_ids ON memory_records USING gin (entity_ids jsonb_path_ops)",
 }
+HALFVEC_INDEXES = {
+    "ix_records_embedding_hnsw": "CREATE INDEX ix_records_embedding_hnsw ON memory_records USING hnsw ((embedding::halfvec(384)) halfvec_cosine_ops)",
+    "ix_sections_embedding_hnsw": "CREATE INDEX ix_sections_embedding_hnsw ON sections USING hnsw ((embedding::halfvec(384)) halfvec_cosine_ops)",
+}
+
+
+def pgvector_version(conn: psycopg.Connection) -> tuple[int, int]:
+    row = conn.execute("SELECT extversion FROM pg_extension WHERE extname = 'vector'").fetchone()
+    parts = [int(x) for x in (row[0] if row else "0.0").split(".")[:2]]
+    return parts[0], parts[1]
+
+
+def index_ddl(conn: psycopg.Connection) -> dict[str, str]:
+    """The indexes the migration would build on this server: half-precision HNSW
+    (half the size, faster build) from pgvector 0.7 on, float32 HNSW before."""
+    ddl = dict(INDEXES)
+    if pgvector_version(conn) >= (0, 7):
+        ddl.update(HALFVEC_INDEXES)
+    return ddl
 
 
 def drop_indexes(conn: psycopg.Connection) -> None:
@@ -274,7 +301,7 @@ def build_indexes(conn: psycopg.Connection) -> dict[str, float]:
     with conn.cursor() as cur:
         cur.execute("SET maintenance_work_mem = '4GB'")
         cur.execute("SET max_parallel_maintenance_workers = 3")
-        for name, ddl in INDEXES.items():
+        for name, ddl in index_ddl(conn).items():
             t = time.perf_counter()
             cur.execute(ddl)
             conn.commit()
@@ -327,6 +354,47 @@ def measure(s, principal: Principal, scope_id, questions: list[dict], doc_ids: l
                     "warm_max_ms": _p(lat_warm, 1.0), "hit_at_20": round(hits / n_hit_q, 3) if n_hit_q else None, "timeouts": timeouts,
                     "stage_ms_p50": {k: _p(v, 0.5) for k, v in stage.items()}}
     return out
+
+
+def measure_organisation(s, tenant_id, admin: Principal, company_id, dept_id, doc_ids: list, n_names: int = 50, seed: int = 5) -> dict[str, Any]:
+    """Can the bank organise at this size? Times, against the loaded tenant:
+    * entity resolution of a differently spelled supplier name (index-served prefilter + fuzzy scoring),
+    * the entity profile of a supplier (everything the bank holds about it, grouped and current),
+    * the digest of the whole company scope and of one department (counts, top entities, newest documents, conflicts)."""
+    from cie.core.models import RecordType, Scope
+    from cie.governance.permissions import visible_scopes
+    from cie.memory import organise
+    from cie.memory.entities import resolve
+
+    vis = visible_scopes(s, admin)
+    rng = random.Random(seed + 11)
+    picks = [rng.randrange(len(doc_ids)) for _ in range(n_names)]
+    res_ms, matched = [], 0
+    for d in picks:
+        sup = supplier_name(d)
+        spelled = short_name(sup) + " " + {"Ltd": "Limited", "Inc": "Incorporated", "GmbH": "Gmbh", "LLC": "L.L.C.", "AG": "AG.", "SA": "S.A.",
+                                            "BV": "B.V.", "Corp": "Corporation"}.get(sup.rsplit(" ", 1)[1], sup.rsplit(" ", 1)[1])
+        t = time.perf_counter()
+        ent, status = resolve(s, tenant_id, company_id, spelled, RecordType.organization)
+        res_ms.append((time.perf_counter() - t) * 1000)
+        matched += int(status == "matched" and ent is not None and ent.source_document_id == doc_ids[d])
+    prof_ms, prof_records = [], []
+    for d in picks:
+        org = s.scalar(select(MemoryRecord).where(MemoryRecord.source_document_id == doc_ids[d], MemoryRecord.type == RecordType.organization))
+        t = time.perf_counter()
+        prof = organise.entity_profile(s, tenant_id, vis, org)
+        prof_ms.append((time.perf_counter() - t) * 1000)
+        prof_records.append(prof["record_count"])
+    digest = {}
+    for label, sid in (("company", company_id), ("department", dept_id)):
+        scope = s.get(Scope, sid)
+        t = time.perf_counter()
+        dg = organise.scope_digest(s, tenant_id, vis, scope)
+        digest[label] = {"ms": round((time.perf_counter() - t) * 1000, 1), "records": dg["records_total"], "documents": dg["documents"],
+                         "top_entity_mentions": dg["top_entities"][0]["mentions"] if dg["top_entities"] else 0}
+    s.rollback()
+    return {"resolve_ms": {"p50": _p(res_ms, 0.5), "p95": _p(res_ms, 0.95)}, "resolved_correctly": round(matched / n_names, 3),
+            "profile_ms": {"p50": _p(prof_ms, 0.5), "p95": _p(prof_ms, 0.95)}, "profile_records_p50": _p(prof_records, 0.5), "digest": digest}
 
 
 def run(out: Path, sizes: list[int], seed: int = 5) -> dict[str, Any]:
@@ -392,6 +460,7 @@ def run(out: Path, sizes: list[int], seed: int = 5) -> dict[str, Any]:
                 hnsw, gin = cur.fetchone()
                 sizes_sql["ix_records_embedding_hnsw_bytes"] = int(hnsw)
                 sizes_sql["ix_records_tsv_bytes"] = int(gin)
+                sizes_sql["hnsw_kind"] = "halfvec" if pgvector_version(conn) >= (0, 7) else "vector"
             size_rep["storage"] = sizes_sql
         questions = _q(random.Random(seed + 7), size_rep["load"]["n_documents"])
         with session_scope() as s:
@@ -415,6 +484,7 @@ def run(out: Path, sizes: list[int], seed: int = 5) -> dict[str, Any]:
             size_rep["counts"] = {"records": s.scalar(select(func.count(MemoryRecord.id)).where(MemoryRecord.tenant_id == tenant_id)),
                                   "sections": s.scalar(select(func.count(Section.id)).where(Section.tenant_id == tenant_id))}
             s.rollback()
+            size_rep["organisation"] = measure_organisation(s, tenant_id, admin, company_id, dept0_id, doc_ids, seed=seed)
         report["sizes"][str(n)] = size_rep
         previous_tenant = tenant_id
         out.mkdir(parents=True, exist_ok=True)
@@ -460,6 +530,7 @@ def remeasure(out: Path, tenant_prefix: str = "scale-1000000-", label: str = "10
             lat.append((time.perf_counter() - t) * 1000)
         size_rep["warm_metadata_lookup_ms"] = {"p50": _p(lat, 0.5), "p95": _p(lat, 0.95)}
         s.rollback()
+        size_rep["organisation"] = measure_organisation(s, tenant.id, admin, company.id, dept0.id, doc_ids, seed=seed)
     report["sizes"][label] = size_rep
     rep_path.write_text(json.dumps(report, indent=2, default=str))
     md = to_markdown(report)
@@ -478,7 +549,8 @@ def to_markdown(rep: dict) -> str:
         st = r["storage"]
         lines.append(f"| {n} | {r['load']['n_sections']:,} | {r['load']['copy_seconds']} | {r['load']['tsvector_seconds']} | "
                      f"{r['index_build_seconds'].get('ix_records_embedding_hnsw')} | {r['index_build_total_seconds']} | "
-                     f"{st['memory_records']['total_bytes'] / 1e9:.2f} GB | {st['ix_records_embedding_hnsw_bytes'] / 1e6:.0f} MB | {st['ix_records_tsv_bytes'] / 1e6:.0f} MB |")
+                     f"{st['memory_records']['total_bytes'] / 1e9:.2f} GB | {st['ix_records_embedding_hnsw_bytes'] / 1e6:.0f} MB ({st.get('hnsw_kind', 'vector')}) | "
+                     f"{st['ix_records_tsv_bytes'] / 1e6:.0f} MB |")
     lines += ["", "| records | principal | arm | cold p50 | cold p95 | warm p50 | warm p95 | warm max | hit@20 | timeouts |", "|---|---|---|---|---|---|---|---|---|---|"]
     for n, r in rep["sizes"].items():
         for who in ("admin@company", "analyst@department(20%)"):
@@ -488,6 +560,16 @@ def to_markdown(rep: dict) -> str:
     for n, r in rep["sizes"].items():
         st = r["admin@company"]["hybrid+graph(bounded)"]["stage_ms_p50"]
         lines.append(f"| {n} | " + ", ".join(f"{k}={v}" for k, v in st.items()) + f"; metadata lookup p95 {r['warm_metadata_lookup_ms']['p95']} ms |")
+    if any("organisation" in r for r in rep["sizes"].values()):
+        lines += ["", "| records | resolve name p50 / p95 ms | resolved to the right supplier | entity profile p50 / p95 ms | profile records (p50) | "
+                  "company digest ms (records) | department digest ms (records) |", "|---|---|---|---|---|---|---|"]
+        for n, r in rep["sizes"].items():
+            o = r.get("organisation")
+            if not o:
+                continue
+            dg = o["digest"]
+            lines.append(f"| {n} | {o['resolve_ms']['p50']} / {o['resolve_ms']['p95']} | {o['resolved_correctly']} | {o['profile_ms']['p50']} / {o['profile_ms']['p95']} | "
+                         f"{o['profile_records_p50']} | {dg['company']['ms']} ({dg['company']['records']:,}) | {dg['department']['ms']} ({dg['department']['records']:,}) |")
     return "\n".join(lines)
 
 
