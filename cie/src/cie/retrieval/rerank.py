@@ -54,7 +54,8 @@ _STOP = {"what", "when", "who", "which", "how", "does", "the", "and", "for", "wi
 
 
 def query_terms(query: str) -> list[str]:
-    return [w for w in re.findall(r"[a-z0-9]{3,}", query.lower()) if w not in _STOP]
+    """Content words (3+ letters) plus short numeric tokens, which are often part of a name ("Project 42")."""
+    return [w for w in re.findall(r"[a-z0-9]{3,}|\b\d{1,2}\b", query.lower()) if w not in _STOP]
 
 
 _GENERIC = {"supplier", "agreement", "company", "contract", "document", "party", "parties", "services", "service", "acme"}
@@ -73,7 +74,7 @@ def entity_terms(query: str) -> set[str]:
 
     out = set()
     for span in _capitalised_spans(query):
-        out.update(w.lower() for w in span.split() if len(w) >= 3)
+        out.update(w.lower() for w in span.split() if len(w) >= 3 or w.isdigit())
     return out
 
 

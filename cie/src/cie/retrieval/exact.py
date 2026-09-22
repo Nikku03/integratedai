@@ -38,6 +38,13 @@ def lookup(session: Session, intent: Intent, query: str, base_filter, k: int = 3
     # entity names by trigram similarity against capitalised tokens in the query (the % operator uses the GIN trigram index)
     caps = _capitalised_spans(query)
     for name in caps:
+        # cheap exact substring first (trigram GIN serves ILIKE); similarity only when nothing matches literally
+        found = list(session.scalars(select(MemoryRecord.id).where(base_filter, MemoryRecord.type.in_(_ENTITY_TYPES),
+                                                                    MemoryRecord.summary.ilike(f"%{name}%")).limit(5)))
+        for rid in found:
+            hits[rid] = max(hits.get(rid, 0), 2.9)  # locates an entity; not evidence for the question (support needs >= 3.0)
+        if found:
+            continue
         sim = func.similarity(MemoryRecord.summary, name)
         stmt = (select(MemoryRecord.id, sim).where(base_filter, MemoryRecord.type.in_(_ENTITY_TYPES),
                                                    MemoryRecord.summary.op("%")(name))
@@ -58,7 +65,7 @@ def lookup(session: Session, intent: Intent, query: str, base_filter, k: int = 3
 def _capitalised_spans(q: str) -> list[str]:
     import re
 
-    spans = re.findall(r"\b([A-Z][A-Za-z0-9&'\-]+(?:\s+(?:of|and|&|the)?\s*[A-Z][A-Za-z0-9&'\-\.]+){0,4})", q)
+    spans = re.findall(r"\b([A-Z][A-Za-z0-9&'\-]+(?:\s+(?:of|and|&|the)?\s*[A-Z][A-Za-z0-9&'\-\.]+){0,4}(?:\s+\d{1,4})?)", q)
     out = []
     for s in spans:
         s = s.strip()

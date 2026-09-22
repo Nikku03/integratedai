@@ -8,7 +8,7 @@ import uuid
 from collections import Counter
 from typing import Any
 
-from sqlalchemy import func, select
+from sqlalchemy import func, select, text
 from sqlalchemy.orm import Session
 
 from cie.core.models import MemoryRecord, Section
@@ -28,25 +28,44 @@ def _tsqueries(q: str):
     if '"' in q or " OR " in q or " -" in q:
         t = func.websearch_to_tsquery("english", q)
         return [t]
+    from cie.retrieval.rerank import _GENERIC
+
     terms = _terms(q)
     if not terms:
         return [func.plainto_tsquery("english", q)]
     tiers = [func.to_tsquery("english", " & ".join(terms))]
-    if len(terms) > 1:
-        tiers.append(func.to_tsquery("english", " | ".join(terms)))
+    informative = [t for t in terms if t not in _GENERIC]
+    if informative and len(informative) < len(terms):
+        tiers.append(func.to_tsquery("english", " & ".join(informative)))
+    if len(informative or terms) > 1:
+        tiers.append(func.to_tsquery("english", " | ".join(informative or terms)))
     return tiers
 
 
 def _search(session: Session, model, q: str, base_filter, k: int) -> list[tuple[uuid.UUID, float]]:
     out: list[tuple[uuid.UUID, float]] = []
     seen: set = set()
-    for tier, tsq in enumerate(_tsqueries(q)):
+    tiers = _tsqueries(q)
+    for tier, tsq in enumerate(tiers):
         rank = func.ts_rank_cd(model.tsv, tsq, 32)
         stmt = (select(model.id, rank).where(base_filter, model.tsv.op("@@")(tsq)).order_by(rank.desc()).limit(k))
-        for rid, sc in session.execute(stmt):
+        last = tier == len(tiers) - 1 and len(tiers) > 1
+        try:
+            if last:
+                # the partial-match tier ranks every row that shares a term; bound it so a common word cannot stall retrieval
+                session.execute(text("SAVEPOINT lex_or"))
+                session.execute(text("SET LOCAL statement_timeout = '1500ms'"))
+            rows = session.execute(stmt).all()
+            if last:
+                session.execute(text("SET LOCAL statement_timeout = 0"))
+                session.execute(text("RELEASE SAVEPOINT lex_or"))
+        except Exception:  # noqa: BLE001 - a bounded timeout is an accepted outcome here
+            session.execute(text("ROLLBACK TO SAVEPOINT lex_or"))
+            rows = []
+        for rid, sc in rows:
             if rid not in seen:
                 seen.add(rid)
-                out.append((rid, float(sc) + (1.0 if tier == 0 else 0.0)))  # full matches rank above partial ones
+                out.append((rid, float(sc) + (2.0 - tier) * 0.5))  # fuller matches rank above partial ones
         if len(out) >= max(5, k // 10):  # enough full-term matches: skip the expensive partial-match tier
             break
     return out[:k]

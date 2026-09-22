@@ -424,24 +424,70 @@ def run(out: Path, sizes: list[int], seed: int = 5) -> dict[str, Any]:
     return report
 
 
+def remeasure(out: Path, tenant_prefix: str = "scale-1000000-", label: str = "1000000 (after fixes)", seed: int = 5) -> dict:
+    """Re-run the measurement phase against an existing scale tenant (no reload)."""
+    settings = get_settings()
+    embedder = get_embedding_provider(settings)
+    rep_path = out / "bench_scale.json"
+    report = json.loads(rep_path.read_text()) if rep_path.exists() else {"embedding": getattr(embedder, "name", "?"), "sizes": {}, "postgres": {}}
+    with session_scope() as s:
+        tenant = s.scalars(select(Tenant).where(Tenant.name.like(tenant_prefix + "%")).order_by(Tenant.created_at.desc())).first()
+        if tenant is None:
+            raise SystemExit(f"no tenant matching {tenant_prefix}")
+        from cie.core.models import Scope
+
+        company = s.scalar(select(Scope).where(Scope.tenant_id == tenant.id, Scope.parent_id.is_(None)))
+        dept0 = s.scalar(select(Scope).where(Scope.tenant_id == tenant.id, Scope.name == DEPTS[0]))
+        admin = s.scalar(select(Principal).where(Principal.tenant_id == tenant.id, Principal.name == "admin"))
+        analyst = s.scalar(select(Principal).where(Principal.tenant_id == tenant.id, Principal.name == "analyst"))
+        docs = list(s.scalars(select(Document).where(Document.tenant_id == tenant.id)))
+        by_title = {d.title: d.id for d in docs}
+        doc_ids = [by_title.get(f"{short_name(supplier_name(i))} Master Services Agreement") for i in range(len(docs))]
+        questions = _q(random.Random(seed + 7), len(docs))
+        retriever = Retriever(s, settings, embedder=embedder)
+        arms = {"hybrid+graph(bounded)": {}, "hybrid(no graph)": {"use_graph": False}, "vector-only": {"use_lexical": False, "use_exact": False, "use_graph": False},
+                "lexical-only": {"use_vector": False, "use_exact": False, "use_graph": False}}
+        size_rep = {"load": report["sizes"].get(tenant_prefix.split("-")[1], {}).get("load", {"n_sections": "?"}), "storage": report["sizes"].get(tenant_prefix.split("-")[1], {}).get("storage", {}),
+                    "index_build_seconds": {}, "index_build_total_seconds": "-"}
+        size_rep["admin@company"] = measure(s, admin, company.id, questions, doc_ids, retriever, "admin", arms)
+        size_rep["analyst@department(20%)"] = measure(s, analyst, dept0.id, questions, doc_ids, retriever, "analyst",
+                                                      {"hybrid+graph(bounded)": {}, "vector-only": arms["vector-only"]}, visible=lambda d: d % 5 == 0)
+        lat = []
+        ids = list(s.scalars(select(MemoryRecord.id).where(MemoryRecord.tenant_id == tenant.id).limit(500)))
+        for i in range(300):
+            t = time.perf_counter()
+            s.get(MemoryRecord, ids[i % len(ids)])
+            lat.append((time.perf_counter() - t) * 1000)
+        size_rep["warm_metadata_lookup_ms"] = {"p50": _p(lat, 0.5), "p95": _p(lat, 0.95)}
+        s.rollback()
+    report["sizes"][label] = size_rep
+    rep_path.write_text(json.dumps(report, indent=2, default=str))
+    md = to_markdown(report)
+    (out / "bench_scale.md").write_text(md)
+    print(md)
+    return report
+
+
 def to_markdown(rep: dict) -> str:
     lines = [f"### Scale benchmark: memory bank and retrieval (embeddings={rep['embedding']}, pgvector {rep['postgres'].get('pgvector')}, "
              f"shared_buffers {rep['postgres'].get('shared_buffers')})", "",
              "| records | sections | load s | tsvector s | HNSW build s (records) | all indexes s | records table+idx | HNSW idx | GIN tsv idx |", "|---|---|---|---|---|---|---|---|---|"]
     for n, r in rep["sizes"].items():
+        if not r.get("index_build_seconds"):
+            continue  # re-measurement rows have no load/build phase
         st = r["storage"]
-        lines.append(f"| {int(n):,} | {r['load']['n_sections']:,} | {r['load']['copy_seconds']} | {r['load']['tsvector_seconds']} | "
+        lines.append(f"| {n} | {r['load']['n_sections']:,} | {r['load']['copy_seconds']} | {r['load']['tsvector_seconds']} | "
                      f"{r['index_build_seconds'].get('ix_records_embedding_hnsw')} | {r['index_build_total_seconds']} | "
                      f"{st['memory_records']['total_bytes'] / 1e9:.2f} GB | {st['ix_records_embedding_hnsw_bytes'] / 1e6:.0f} MB | {st['ix_records_tsv_bytes'] / 1e6:.0f} MB |")
     lines += ["", "| records | principal | arm | cold p50 | cold p95 | warm p50 | warm p95 | warm max | hit@20 | timeouts |", "|---|---|---|---|---|---|---|---|---|---|"]
     for n, r in rep["sizes"].items():
         for who in ("admin@company", "analyst@department(20%)"):
             for arm, v in r[who].items():
-                lines.append(f"| {int(n):,} | {who} | {arm} | {v['cold_p50_ms']} | {v['cold_p95_ms']} | {v['warm_p50_ms']} | {v['warm_p95_ms']} | {v['warm_max_ms']} | {v['hit_at_20']} | {v['timeouts']} |")
+                lines.append(f"| {n} | {who} | {arm} | {v['cold_p50_ms']} | {v['cold_p95_ms']} | {v['warm_p50_ms']} | {v['warm_p95_ms']} | {v['warm_max_ms']} | {v['hit_at_20']} | {v['timeouts']} |")
     lines += ["", "| records | stage (admin, hybrid, cold p50 ms) |", "|---|---|"]
     for n, r in rep["sizes"].items():
         st = r["admin@company"]["hybrid+graph(bounded)"]["stage_ms_p50"]
-        lines.append(f"| {int(n):,} | " + ", ".join(f"{k}={v}" for k, v in st.items()) + f"; metadata lookup p95 {r['warm_metadata_lookup_ms']['p95']} ms |")
+        lines.append(f"| {n} | " + ", ".join(f"{k}={v}" for k, v in st.items()) + f"; metadata lookup p95 {r['warm_metadata_lookup_ms']['p95']} ms |")
     return "\n".join(lines)
 
 
