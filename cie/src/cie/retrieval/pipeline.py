@@ -14,7 +14,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import and_, func, select
+from sqlalchemy import and_, func, select, text
 from sqlalchemy.orm import Session
 
 from cie.core.models import EvidencePacket, MemoryRecord, Metric, Principal, Section
@@ -134,8 +134,9 @@ class Retriever:
             t = time.perf_counter()
             seeds = {rid: v["score"] for rid, v in fused.items() if not isinstance(rid, tuple)}
             seeds = dict(sorted(seeds.items(), key=lambda kv: -kv[1])[:20])
-            n_records = s.scalar(select(func.count(MemoryRecord.id)).where(rec_filter)) or 0
-            budget = graph.budget_for(n_records, self.settings.graph_budget_coefficient)
+            # the budget only needs log2(N): use the planner's row estimate, never a COUNT(*) per query
+            n_records = int(s.execute(text("SELECT reltuples FROM pg_class WHERE relname = 'memory_records'")).scalar() or 0)
+            budget = graph.budget_for(max(n_records, 16), self.settings.graph_budget_coefficient)
             expanded = graph.expand(s, seeds, base_filter=rec_filter, cross_scope_filter=perm_only, budget=budget)
             timings["graph_ms"] = (time.perf_counter() - t) * 1000
 
