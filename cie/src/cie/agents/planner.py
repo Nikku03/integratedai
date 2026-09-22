@@ -28,6 +28,20 @@ class TaskSpec:
     query: str | None = None  # retrieval query for the evidence packet
 
 
+_FOCUS = {
+    "legal": "termination notice period liability indemnity clause obligations deadlines compliance risk",
+    "finance": "monthly fee penalty cap budget cost amount payment invoice spend",
+    "operations": "timeline deadline plan milestones dependencies tasks rollout transition",
+    "engineering": "requirements integration API system implementation technical dependencies prototype",
+}
+
+
+def _entities(objective: str) -> str:
+    from cie.retrieval.exact import _capitalised_spans
+
+    return " ".join(_capitalised_spans(objective))
+
+
 _TEMPLATES = {
     "legal": (re.compile(r"\b(contract|agreement|clause|terminat|liabilit|complian|legal|obligation|notice|penalt|indemn|risk)\w*", re.I),
               "Review the governing clauses, obligations, deadlines and legal risks relevant to the objective. Cite clause numbers and pages."),
@@ -59,7 +73,8 @@ class RulePlanner:
                 deps += [c for c in ("operations",) if c in chosen]
             risk = "high" if name in ("legal", "finance") else "medium"
             specs.append(TaskSpec(name, name, f"{name.title()} analysis", f"{brief} Objective: '{objective}'.",
-                                  depends_on=deps, risk_level=risk, priority=3, query=objective))
+                                  depends_on=deps, risk_level=risk, priority=3,
+                                  query=f"{_entities(objective)} {_FOCUS[name]}".strip()))
         specs.append(TaskSpec("synthesis", "synthesis", "Synthesize final answer",
                               f"Combine verified specialist outputs into one answer with evidence and uncertainty for: '{objective}'.",
                               depends_on=[s.key for s in specs], risk_level="medium", priority=9, query=objective))

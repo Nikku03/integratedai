@@ -20,6 +20,7 @@ class BlockRef:
     bbox: list[float]
     kind: str
     text: str
+    leading_heading: str | None = None
 
 
 @dataclass
@@ -67,6 +68,11 @@ def build_sections(blocks: list[BlockRef], target_tokens: int = 400, max_tokens:
     for b in blocks:
         if b.kind in ("header", "footer") and len(b.text) < 80:
             continue
+        lead = getattr(b, "leading_heading", None)
+        if lead and (cur.blocks or cur.title):
+            sections.append(cur)
+            cur = SectionDraft(title=lead.strip(), level=_level(lead))
+            cur_tokens = 0
         if b.kind == "heading":
             if cur.blocks or cur.title:
                 sections.append(cur)

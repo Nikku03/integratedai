@@ -24,6 +24,7 @@ DATE_RE = re.compile(
 MONEY_RE = re.compile(r"(?:(USD|EUR|GBP|INR|\$|€|£|₹)\s?)(\d{1,3}(?:,\d{3})+|\d+)(?:\.(\d{1,2}))?\s*(million|billion|thousand|m|bn|k)?\b", re.I)
 PCT_RE = re.compile(r"\b(\d{1,3}(?:\.\d+)?)\s?%")
 DEADLINE_RE = re.compile(r"\b(no later than|on or before|by|within\s+\d+\s+(?:business\s+)?days|deadline|due (?:on|by)|expires? on|terminat\w+ on)\b", re.I)
+DURATION_RE = re.compile(r"\b(\d{1,3})\s+(?:\(\d+\)\s+)?(?:business\s+|calendar\s+)?days\b", re.I)
 REQ_RE = re.compile(r"\b(shall|must|is required to|are required to|shall not|must not|may not)\b", re.I)
 DECISION_RE = re.compile(r"\b(decided|approved|resolved|agreed to|resolution|hereby approves|the board approved|elected to)\b", re.I)
 RISK_RE = re.compile(r"\b(risk|liabilit\w+|penalt\w+|indemnif\w+|breach|default|force majeure|terminat\w+ for cause|dispute)\b", re.I)
@@ -32,7 +33,7 @@ ORG_RE = re.compile(r"\b([A-Z][A-Za-z0-9&'\-]+(?:\s+[A-Z][A-Za-z0-9&'\-]+){0,4}\
 DEFINED_RE = re.compile(r"\(\s*(?:the\s+|hereinafter\s+)?[\"“]([A-Z][A-Za-z ]{1,40})[\"”]\s*\)")
 PERSON_RE = re.compile(r"\b(?:Mr\.|Ms\.|Mrs\.|Dr\.|Prof\.)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,2})\b|\bBy:\s*(?:/s/\s*)?([A-Z][a-z]+(?:\s+[A-Z]\.?)?(?:\s+[A-Z][a-z]+){1,2})\b|\bName:\s*([A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,2})\b")
 CLAUSE_TITLE_RE = re.compile(r"^(?:(?:Section|Article|Clause|Schedule|Exhibit)\s+)?(\d+(?:\.\d+)*|[IVXLC]+)[.):]?\s+(.{3,100})$", re.I)
-SENT_SPLIT = re.compile(r"(?<=[.;!?])\s+(?=[A-Z(\"“])")
+SENT_SPLIT = re.compile(r"(?<=[.;!?])\s+(?=[A-Z(\"“]|\d+(?:\.\d+)+\s)")
 METRIC_KEY_RE = re.compile(r"\b(revenue|net income|EBITDA|headcount|budget|cost|fee|price|total|amount|penalty|cap|limit|term|salary|margin|growth|churn)\b", re.I)
 
 
@@ -113,8 +114,18 @@ def derive_records(
     orgs_seen: set[str] = set()
     people_seen: set[str] = set()
     for section_id, sec in sections:
-        text = sec.text
         add = _Adder(drafts, max_per_type_per_section)
+        # header/footer blocks (page furniture, email headers) never join body sentences
+        body_blocks = [b for b in sec.blocks if b.kind not in ("header", "footer")]
+        text = "\n".join(([sec.title] if sec.title else []) + [b.text for b in body_blocks if b.text and b.kind != "heading"]).strip()
+        for hb in sec.blocks:
+            if hb.kind == "header" and hb.text.startswith(("From:", "Subject:", "To:")):
+                meta = dict(line.split(":", 1) for line in hb.text.splitlines() if ":" in line)
+                meta = {k.strip(): v.strip() for k, v in meta.items()}
+                when = parse_date(meta.get("Date", "")[5:16].replace(",", "")) if meta.get("Date") else None
+                add(RecordDraft("fact", f"Email from {meta.get('From', '?')} to {meta.get('To', '?')}: {meta.get('Subject', '')}"[:180],
+                                {"email": meta}, hb.text, _locate(hb.text, sec.blocks, section_id), keywords_for(hb.text, 6), 0.9,
+                                event_time=when))
 
         # Contract clause per numbered section
         if sec.title:
@@ -138,9 +149,14 @@ def derive_records(
             dates = [d for d in dates if d]
             first_date = dates[0] if dates else None
 
-            if DEADLINE_RE.search(sent) and first_date:
-                add(RecordDraft("deadline", _short(sent), {"date": first_date.isoformat(), "trigger": DEADLINE_RE.search(sent).group(0)},
-                                sent, locs, keywords_for(sent, 6), 0.75, event_time=first_date, valid_to=first_date))
+            duration = DURATION_RE.search(sent)
+            if DEADLINE_RE.search(sent) and (first_date or duration):
+                content: dict[str, Any] = {"trigger": DEADLINE_RE.search(sent).group(0)}
+                if first_date:
+                    content["date"] = first_date.isoformat()
+                if duration:
+                    content["duration_days"] = int(duration.group(1))
+                add(RecordDraft("deadline", _short(sent), content, sent, locs, keywords_for(sent, 6), 0.75, event_time=first_date))
             if REQ_RE.search(sent):
                 add(RecordDraft("requirement", _short(sent), {"modal": REQ_RE.search(sent).group(0).lower()},
                                 sent, locs, keywords_for(sent, 6), 0.7, event_time=first_date))

@@ -15,7 +15,18 @@ from cie.core.models import MemoryRecord, Section
 
 
 def _tsquery(q: str):
-    return func.websearch_to_tsquery("english", q)
+    """OR of the query's content terms (BM25-like recall); ts_rank_cd rewards
+    records that match more of them. Falls back to websearch syntax when the
+    query carries quotes or operators."""
+    from cie.retrieval.rerank import query_terms
+
+    if '"' in q or " OR " in q or " -" in q:
+        return func.websearch_to_tsquery("english", q)
+    terms = [re.sub(r"[^a-z0-9]", "", t) for t in query_terms(q)]
+    terms = [t for t in terms if t]
+    if not terms:
+        return func.plainto_tsquery("english", q)
+    return func.to_tsquery("english", " | ".join(terms))
 
 
 def search_records(session: Session, q: str, base_filter, k: int = 50, at=None) -> list[tuple[uuid.UUID, float]]:

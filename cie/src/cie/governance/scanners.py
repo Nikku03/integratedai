@@ -102,6 +102,19 @@ def _redact(s: str) -> str:
     return s[:2] + "*" * (len(s) - 4) + s[-2:]
 
 
+def redact_injections(text: str, marker: str = "[redacted: suspected prompt injection]") -> str:
+    """Replace sentences that match an injection pattern. Used on packet text so
+    flagged instructions are neither quoted in answers nor shown to a model;
+    the source viewer still shows the original page."""
+    if not text:
+        return text
+    parts = re.split(r"(?<=[.!?])\s+", text)
+    out = []
+    for part in parts:
+        out.append(marker if any(p.search(part) for p in _INJECTION_PATTERNS) else part)
+    return " ".join(out)
+
+
 def wrap_untrusted(text: str, source: str) -> str:
     """Envelope for any retrieved text passed to a model: data, never instructions."""
     safe = text.replace("</untrusted_document>", "</untrusted_document >")

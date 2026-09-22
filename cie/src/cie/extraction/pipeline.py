@@ -124,7 +124,7 @@ def run_extraction(
                                   .order_by(Block.page_no, Block.order_index)))
     corrected = {c.block_id: c.corrected_text for c in session.scalars(
         select(Correction).where(Correction.document_id == document.id))}
-    refs = [BlockRef(b.id, b.page_no, b.bbox, b.kind, corrected.get(b.id, b.text)) for b in blocks]
+    refs = [BlockRef(b.id, b.page_no, b.bbox, b.kind, corrected.get(b.id, b.text), (b.content or {}).get("leading_heading")) for b in blocks]
     drafts = build_sections(refs, settings.section_target_tokens, settings.section_max_tokens)
 
     session.execute(delete(Section).where(Section.extraction_id == extraction.id))
@@ -226,7 +226,8 @@ def _derive(session: Session, document: Document, extraction: Extraction, sectio
         rec = create_record(
             session, tenant_id=document.tenant_id, scope_id=document.scope_id, type=d.type, summary=d.summary,
             content=d.content, detail=d.detail, source_document_id=document.id, source_locations=d.source_locations,
-            event_time=d.event_time, valid_from=d.valid_from, valid_to=d.valid_to, producing_agent="rule_extractor_v1",
+            event_time=d.event_time or document.file_created_at, valid_from=d.valid_from or document.file_created_at,
+            valid_to=d.valid_to, producing_agent="rule_extractor_v1",
             confidence=d.confidence, sensitivity=document.sensitivity, acl=document.acl, keywords=d.keywords,
             embedding=vec,
         )

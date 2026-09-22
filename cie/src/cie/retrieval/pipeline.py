@@ -45,8 +45,8 @@ class Retriever:
 
     # ------------------------------------------------------------------
     def retrieve(self, query: str, principal: Principal, scope_id: uuid.UUID, *, filters: dict | None = None,
-                 k: int = 50, at: datetime | None = None, use_graph: bool = True, use_vector: bool = True,
-                 use_lexical: bool = True, use_sections: bool = True, max_records: int | None = None,
+                 k: int = 80, at: datetime | None = None, use_graph: bool = True, use_vector: bool = True,
+                 use_lexical: bool = True, use_sections: bool = True, use_exact: bool = True, max_records: int | None = None,
                  min_records: int | None = None, token_budget: int | None = None) -> RetrievalResult:
         t0 = time.perf_counter()
         s = self.session
@@ -69,7 +69,7 @@ class Retriever:
 
         # 1–3. exact
         t = time.perf_counter()
-        exact_hits = exact.lookup(s, intent, query, rec_filter, k=min(k, 30))
+        exact_hits = exact.lookup(s, intent, query, rec_filter, k=min(k, 30)) if use_exact else []
         timings["exact_ms"] = (time.perf_counter() - t) * 1000
 
         # 4. lexical ∥ vector
@@ -80,14 +80,29 @@ class Retriever:
             if use_sections:
                 lists["lex_sec"] = [(("sec", i), sc) for i, sc in lexical.search_sections(s, query, sec_filter, k)]
             timings["lexical_ms"] = (time.perf_counter() - t) * 1000
+        qvec = self.embedder.embed([query])[0] if use_vector else None
         if use_vector:
             t = time.perf_counter()
-            qvec = self.embedder.embed([query])[0]
             lists["vec_rec"] = vector.search_records(s, qvec, rec_filter, k)
             if use_sections:
                 lists["vec_sec"] = [(("sec", i), sc) for i, sc in vector.search_sections(s, qvec, sec_filter, k)]
             timings["vector_ms"] = (time.perf_counter() - t) * 1000
-        fused = fusion.rrf(lists, weights={"exact": 2.0, "lex_rec": 1.0, "vec_rec": 1.0, "lex_sec": 0.8, "vec_sec": 0.8})
+        # named documents/suppliers: templated files tie on text, so search the named documents explicitly
+        named_docs = self._named_documents(query, principal.tenant_id, allowed, vis)
+        if named_docs:
+            t = time.perf_counter()
+            doc_rec = and_(rec_filter, MemoryRecord.source_document_id.in_(named_docs))
+            doc_sec = and_(sec_filter, Section.document_id.in_(named_docs))
+            kd = max(k, 300)  # the named-document pool is small; do not let ties cut it
+            if use_lexical:
+                lists["lex_doc"] = lexical.search_records(s, query, doc_rec, kd)
+                if use_sections:
+                    lists["lex_doc_sec"] = [(("sec", i), sc) for i, sc in lexical.search_sections(s, query, doc_sec, kd)]
+            if use_vector:
+                lists["vec_doc"] = vector.search_records(s, qvec, doc_rec, kd)
+            timings["named_docs_ms"] = (time.perf_counter() - t) * 1000
+        fused = fusion.rrf(lists, weights={"exact": 2.0, "lex_rec": 1.0, "vec_rec": 1.0, "lex_sec": 0.8, "vec_sec": 0.8,
+                                           "lex_doc": 1.5, "vec_doc": 1.5, "lex_doc_sec": 1.2})
 
         # 5. graph expansion
         expanded: list[graph.Expanded] = []
@@ -123,8 +138,19 @@ class Retriever:
         # defence in depth: per-record ACL check in Python as well as SQL
         cands = [c for c in cands if c.record is None or vis.can_read(c.record.scope_id, c.record.sensitivity, c.record.acl)]
 
-        # 6. rerank
-        ranked = rerank.rerank(cands, intent, query)
+        # 6. rerank (document titles/types let a named supplier disambiguate similar files and demote drafts)
+        doc_ids = {c.record.source_document_id if c.record is not None else c.section.document_id for c in cands}
+        doc_ids.discard(None)
+        titles: dict = {}
+        doc_types: dict = {}
+        if doc_ids:
+            from cie.core.models import Document
+
+            rows = s.execute(select(Document.id, Document.title, Document.original_filename, Document.doc_type)
+                             .where(Document.id.in_(list(doc_ids)))).all()
+            titles = {d_id: f"{title} {fname}" for d_id, title, fname, _ in rows}
+            doc_types = {d_id: (dt or "") for d_id, _, _, dt in rows}
+        ranked = rerank.rerank(cands, intent, query, doc_titles=titles, doc_types=doc_types)
 
         # 7. contradictions
         conflicts, extra = contradictions.find(s, [c.record.id for c in ranked if c.record is not None][:max_records or self.settings.packet_max_records], rec_filter)
@@ -137,7 +163,8 @@ class Retriever:
         latency = (time.perf_counter() - t0) * 1000
         trace = {"timings_ms": timings, "graph_budget": budget, "expanded": len(expanded), "candidates": len(cands),
                  "lists": {k_: len(v) for k_, v in lists.items()}, "as_of": at.isoformat() if at else None,
-                 "embedding_provider": getattr(self.embedder, "name", "?"), "scopes_allowed": len(allowed)}
+                 "embedding_provider": getattr(self.embedder, "name", "?"), "scopes_allowed": len(allowed),
+                 "arms": {"exact": use_exact, "lexical": use_lexical, "vector": use_vector, "graph": use_graph}}
         pk = packet.build(s, tenant_id=principal.tenant_id, principal_id=principal.id, query=query, intent=intent.kind,
                           scope_ids=allowed, filters=filters, ranked=ranked, conflicts=conflicts,
                           min_records=min_records or self.settings.packet_min_records,
@@ -167,6 +194,23 @@ class Retriever:
             self.session.add(Metric(tenant_id=principal.tenant_id, name=name, value=float(val), labels={"mode": result.mode}))
         result.answer_id = row.id  # type: ignore[attr-defined]
         return result, res
+
+    def _named_documents(self, query: str, tenant_id: uuid.UUID, allowed: list[uuid.UUID], vis: Visibility) -> list[uuid.UUID]:
+        """Documents whose title or filename carries a capitalised name from the query."""
+        from cie.core.models import Document
+
+        ents = [e for e in rerank.entity_terms(query) if len(e) >= 4]
+        if not ents:
+            return []
+        stmt = select(Document.id, Document.title, Document.original_filename).where(
+            Document.tenant_id == tenant_id, Document.deleted_at.is_(None), Document.scope_id.in_(allowed),
+            vis.sql_filter(Document.scope_id, Document.sensitivity))
+        out = []
+        for d_id, title, fname in self.session.execute(stmt):
+            hay = f"{title} {fname}".lower()
+            if any(e in hay for e in ents):
+                out.append(d_id)
+        return out[:20]
 
     # ------------------------------------------------------------------
     @staticmethod

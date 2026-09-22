@@ -1,0 +1,93 @@
+# Local development stack for the Company Intelligence Engine.
+#   docker compose up -d
+#   docker compose exec api cie migrate
+#   docker compose exec api cie bootstrap --tenant acme --company "Acme" --admin admin   # prints an API key
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: cie
+      POSTGRES_PASSWORD: cie
+      POSTGRES_DB: cie
+    ports: ["5432:5432"]
+    volumes: ["pgdata:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cie"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    ports: ["6379:6379"]
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports: ["9000:9000", "9001:9001"]
+    volumes: ["miniodata:/data"]
+
+  api:
+    build: .
+    depends_on:
+      postgres: { condition: service_healthy }
+      minio: { condition: service_started }
+    environment: &cie_env
+      CIE_DATABASE_URL: postgresql+psycopg://cie:cie@postgres:5432/cie
+      CIE_VAULT_BACKEND: s3
+      CIE_S3_ENDPOINT: http://minio:9000
+      CIE_S3_BUCKET: cie-vault
+      CIE_S3_ACCESS_KEY: minioadmin
+      CIE_S3_SECRET_KEY: minioadmin
+      CIE_REDIS_URL: redis://redis:6379/0
+      CIE_EMBEDDING_PROVIDER: fastembed
+      CIE_EMBEDDING_MODEL: BAAI/bge-small-en-v1.5
+      CIE_LLM_PROVIDER: ${CIE_LLM_PROVIDER:-none}
+      CIE_LLM_MODEL: ${CIE_LLM_MODEL:-claude-sonnet-5}
+      CIE_OCR_BACKEND: ${CIE_OCR_BACKEND:-auto}
+      CIE_UNLIMITED_OCR_URL: ${CIE_UNLIMITED_OCR_URL:-}
+      CIE_ENCRYPTION_KEY: ${CIE_ENCRYPTION_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+    ports: ["8000:8000"]
+    volumes: ["models:/models", "vaultdata:/data"]
+    command: sh -c "cie migrate && cie serve --host 0.0.0.0 --port 8000"
+
+  worker:
+    build: .
+    depends_on:
+      postgres: { condition: service_healthy }
+    environment: *cie_env
+    volumes: ["models:/models", "vaultdata:/data"]
+    command: cie worker --poll 2
+    deploy:
+      replicas: 2
+
+  dashboard:
+    build: ./dashboard
+    depends_on: [api]
+    ports: ["5173:80"]
+    environment:
+      VITE_API_BASE: http://localhost:8000/api
+
+  # Optional GPU OCR server for baidu/Unlimited-OCR (requires NVIDIA runtime).
+  # Enable with: docker compose --profile ocr up -d  and set CIE_UNLIMITED_OCR_URL=http://unlimited-ocr:8000
+  unlimited-ocr:
+    image: vllm/vllm-openai:unlimited-ocr
+    profiles: ["ocr"]
+    command: ["--model", "baidu/Unlimited-OCR", "--served-model-name", "Unlimited-OCR", "--max-model-len", "32768"]
+    ports: ["10000:8000"]
+    deploy:
+      resources:
+        reservations:
+          devices: [{ driver: nvidia, count: 1, capabilities: [gpu] }]
+
+volumes:
+  pgdata: {}
+  miniodata: {}
+  models: {}
+  vaultdata: {}

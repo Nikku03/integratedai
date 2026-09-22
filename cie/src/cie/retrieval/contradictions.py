@@ -20,8 +20,9 @@ def find(session: Session, ids: list[uuid.UUID], base_filter) -> tuple[dict[uuid
     missing: set[uuid.UUID] = set()
     idset = set(ids)
     for e in edges:
-        conflicts.setdefault(e.src_id, []).append(e.dst_id)
-        conflicts.setdefault(e.dst_id, []).append(e.src_id)
+        for x, y in ((e.src_id, e.dst_id), (e.dst_id, e.src_id)):
+            if y not in conflicts.setdefault(x, []):
+                conflicts[x].append(y)
         for x in (e.src_id, e.dst_id):
             if x not in idset:
                 missing.add(x)

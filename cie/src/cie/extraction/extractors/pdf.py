@@ -64,6 +64,7 @@ class PdfExtractor:
             ocr_page.page_no = page_no
             ocr_page.width, ocr_page.height = width, height
             ocr_page.image_png = png
+            classify_ocr_blocks(ocr_page.blocks)
             return ocr_page
 
         blocks.extend(self._tables(page))
@@ -144,6 +145,26 @@ class PdfExtractor:
             out.append(ExtractedBlock("figure", bbox, "", content={"width": info.get("width"),
                                                                     "height": info.get("height")}))
         return out
+
+
+def classify_ocr_blocks(blocks: list[ExtractedBlock]) -> None:
+    """OCR engines return plain text blocks. Recover headings (numbered or
+    all-caps single lines), signature lines and formulas by text shape alone."""
+    for b in blocks:
+        text = b.text.strip()
+        if not text or b.kind != "text":
+            continue
+        first, _, rest = text.partition("\n")
+        if not rest and len(first) < 100 and (_NUMBERED.match(first) or (first.isupper() and 3 < len(first) < 80)) and not first.endswith("."):
+            b.kind = "heading"
+        elif rest and len(first) < 80 and _NUMBERED.match(first) and not first.endswith("."):
+            # heading glued to its first paragraph by the OCR block grouping: split it
+            b.kind = "text"
+            b.content = {**(b.content or {}), "leading_heading": first}
+        elif _SIG_RE.search(text) and len(text) < 200:
+            b.kind = "signature"
+        elif _FORMULA_RE.search(text) and len(text) < 300:
+            b.kind = "formula"
 
 
 def _median(xs: list[float]) -> float:
