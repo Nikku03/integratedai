@@ -197,6 +197,8 @@ ARMS: dict[str, dict[str, Any]] = {
     "hybrid": {"use_graph": False},
     "hybrid+graph(unbounded)": {"use_graph": True, "coef": 10_000.0},
     "hybrid+graph(bounded, REM)": {"use_graph": True},
+    "hybrid+cliques(topological)": {"use_graph": True, "graph_mode": "cliques"},
+    "hybrid+cliques+bonus": {"use_graph": True, "graph_mode": "cliques+bonus"},
 }
 
 
@@ -259,7 +261,7 @@ def _run_arm(s: Session, world: World, qas: list[QA], arm: str, cfg: dict, embed
                 result = extractive(pk, intent)
             else:
                 t0 = time.perf_counter()
-                res = retriever.retrieve(q.question, principal, scope_id, **{k: v for k, v in cfg.items() if k.startswith("use_")})
+                res = retriever.retrieve(q.question, principal, scope_id, **{k: v for k, v in cfg.items() if k.startswith("use_") or k == "graph_mode"})
                 lat = (time.perf_counter() - t0) * 1000
                 pk, intent = res.packet, res.intent
                 result = extractive(pk, intent)

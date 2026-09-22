@@ -63,16 +63,20 @@ def find_entities(session: Session, tenant_id: uuid.UUID, vis: Visibility, q: st
 def _referencing(session: Session, tenant_id: uuid.UUID, vis: Visibility, entity: MemoryRecord, at: datetime | None,
                  include_history: bool, limit: int):
     """Records that carry the entity in ``entity_ids`` (JSONB containment, GIN-indexed)
-    or point at it with a ``mentions`` edge (indexed by destination)."""
+    or point at it with a ``mentions`` edge (indexed by destination). Two index-served
+    queries, merged here: an OR of the two conditions makes the planner scan the table."""
     eid = str(entity.id)
     mentioned = select(RecordLink.src_id).where(RecordLink.dst_id == entity.id, RecordLink.kind == LinkKind.mentions)
-    stmt = (select(MemoryRecord).options(*_LIGHT)
-            .where(*_visible(vis, tenant_id), MemoryRecord.id != entity.id,
-                   or_(MemoryRecord.entity_ids.contains([eid]), MemoryRecord.id.in_(mentioned))))
-    if not include_history:
-        stmt = current_only(stmt, at).where(MemoryRecord.superseded_by_id.is_(None))
-    stmt = stmt.order_by(MemoryRecord.valid_from.desc().nulls_last(), MemoryRecord.recorded_at.desc()).limit(limit)
-    return [r for r in session.scalars(stmt) if vis.can_read(r.scope_id, r.sensitivity, r.acl)]
+    out: dict[uuid.UUID, MemoryRecord] = {}
+    for cond in (MemoryRecord.entity_ids.contains([eid]), MemoryRecord.id.in_(mentioned)):
+        stmt = select(MemoryRecord).options(*_LIGHT).where(*_visible(vis, tenant_id), MemoryRecord.id != entity.id, cond)
+        if not include_history:
+            stmt = current_only(stmt, at).where(MemoryRecord.superseded_by_id.is_(None))
+        for r in session.scalars(stmt.limit(limit)):
+            if r.id not in out and vis.can_read(r.scope_id, r.sensitivity, r.acl):
+                out[r.id] = r
+    recs = sorted(out.values(), key=lambda r: ((r.valid_from or r.recorded_at).timestamp(), r.recorded_at.timestamp()), reverse=True)
+    return recs[:limit]
 
 
 def entity_profile(session: Session, tenant_id: uuid.UUID, vis: Visibility, entity: MemoryRecord,
@@ -141,12 +145,32 @@ def document_card(session: Session, tenant_id: uuid.UUID, vis: Visibility, docum
             "versions": [{"id": str(i), "version": v, "ingested_at": t} for i, v, t in versions]}
 
 
+_DIGEST_TTL = 60.0
+_digest_cache: dict[tuple, tuple[float, dict[str, Any]]] = {}
+
+
 def scope_digest(session: Session, tenant_id: uuid.UUID, vis: Visibility, scope: Scope, at: datetime | None = None,
-                 top: int = 10) -> dict[str, Any]:
+                 top: int = 10, cache: bool = True) -> dict[str, Any]:
     """What a scope's memory holds: record and document counts by type, the most
     mentioned entities, the newest documents, open questions and recorded conflicts.
-    Counts come from the scope/type index; the entity ranking from the ``mentions``
-    edges, so no record text is read."""
+    The counts and the entity ranking aggregate every record and edge in the scope
+    (parallel scans, about half a second per million records), so a digest is kept
+    for a minute per (scope, visibility): it is a dashboard aggregate, not a lookup."""
+    import time
+
+
+    key = (str(session.get_bind().url), str(tenant_id), str(scope.id), at, tuple(sorted(str(x) for x in vis.scope_ids)), top)
+    hit = _digest_cache.get(key)
+    if cache and hit and time.monotonic() - hit[0] < _DIGEST_TTL:
+        return hit[1]
+    out = _scope_digest(session, tenant_id, vis, scope, at, top)
+    if len(_digest_cache) > 256:
+        _digest_cache.clear()
+    _digest_cache[key] = (time.monotonic(), out)
+    return out
+
+
+def _scope_digest(session: Session, tenant_id: uuid.UUID, vis: Visibility, scope: Scope, at: datetime | None, top: int) -> dict[str, Any]:
     from cie.memory.scopes import descendants
 
     scope_ids = [s for s in [scope.id] + [d.id for d in descendants(session, scope)] if s in vis.scope_ids]

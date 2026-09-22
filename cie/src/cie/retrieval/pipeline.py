@@ -68,7 +68,10 @@ class Retriever:
     def retrieve(self, query: str, principal: Principal, scope_id: uuid.UUID, *, filters: dict | None = None,
                  k: int = 80, at: datetime | None = None, use_graph: bool = True, use_vector: bool = True,
                  use_lexical: bool = True, use_sections: bool = True, use_exact: bool = True, max_records: int | None = None,
-                 min_records: int | None = None, token_budget: int | None = None) -> RetrievalResult:
+                 min_records: int | None = None, token_budget: int | None = None, graph_mode: str = "rem") -> RetrievalResult:
+        """``graph_mode``: ``rem`` (bounded-horizon expansion), ``cliques`` (the topological
+        recruitment cascade in its place) or ``cliques+bonus`` (cascade plus a rerank bonus
+        for records inside high-dimensional activated simplices)."""
         t0 = time.perf_counter()
         s = self.session
         filters = filters or {}
@@ -127,9 +130,11 @@ class Retriever:
         fused = fusion.rrf(lists, weights={"exact": 2.0, "lex_rec": 1.0, "vec_rec": 1.0, "lex_sec": 0.8, "vec_sec": 0.8,
                                            "lex_doc": 1.5, "vec_doc": 1.5, "lex_doc_sec": 1.2})
 
-        # 5. graph expansion
-        expanded: list[graph.Expanded] = []
+        # 5. graph expansion (REM horizons) or topological recruitment (clique cascade)
+        expanded: list = []
         budget = 0
+        topo_features: dict = {}
+        topo_stats: dict = {}
         if use_graph:
             t = time.perf_counter()
             seeds = {rid: v["score"] for rid, v in fused.items() if not isinstance(rid, tuple)}
@@ -137,7 +142,14 @@ class Retriever:
             # the budget only needs log2(N): use the planner's row estimate, never a COUNT(*) per query
             n_records = int(s.execute(text("SELECT reltuples FROM pg_class WHERE relname = 'memory_records'")).scalar() or 0)
             budget = graph.budget_for(max(n_records, 16), self.settings.graph_budget_coefficient)
-            expanded = graph.expand(s, seeds, base_filter=rec_filter, cross_scope_filter=perm_only, budget=budget)
+            if graph_mode.startswith("cliques"):
+                from cie.topology import cascade
+
+                recruited, cx, topo_features = cascade.recruit(s, seeds, base_filter=rec_filter, cross_scope_filter=perm_only, budget=budget)
+                expanded = [graph.Expanded(r.record_id, r.stage, r.via, f"clique{r.dim}:{r.kind}", r.score) for r in recruited]
+                topo_stats = cx.stats()
+            else:
+                expanded = graph.expand(s, seeds, base_filter=rec_filter, cross_scope_filter=perm_only, budget=budget)
             timings["graph_ms"] = (time.perf_counter() - t) * 1000
 
         # materialise candidates
@@ -165,6 +177,11 @@ class Retriever:
                 seen.add(e.record_id)
         # defence in depth: per-record ACL check in Python as well as SQL
         cands = [c for c in cands if c.record is None or vis.can_read(c.record.scope_id, c.record.sensitivity, c.record.acl)]
+        if topo_features:
+            for c in cands:
+                f = topo_features.get(c.id)
+                if f:
+                    c.clique_dim, c.sink_of, c.source_of = f["dim"], f["sink_of"], f["source_of"]
 
         timings["materialise_ms"] = (time.perf_counter() - t) * 1000
         t = time.perf_counter()
@@ -180,7 +197,7 @@ class Retriever:
                              .where(Document.id.in_(list(doc_ids)))).all()
             titles = {d_id: f"{title} {fname}" for d_id, title, fname, _ in rows}
             doc_types = {d_id: (dt or "") for d_id, _, _, dt in rows}
-        ranked = rerank.rerank(cands, intent, query, doc_titles=titles, doc_types=doc_types)
+        ranked = rerank.rerank(cands, intent, query, doc_titles=titles, doc_types=doc_types, clique_bonus=graph_mode == "cliques+bonus")
 
         timings["rerank_ms"] = (time.perf_counter() - t) * 1000
         t = time.perf_counter()
@@ -201,7 +218,8 @@ class Retriever:
         trace = {"timings_ms": timings, "graph_budget": budget, "expanded": len(expanded), "candidates": len(cands),
                  "lists": {k_: len(v) for k_, v in lists.items()}, "as_of": at.isoformat() if at else None,
                  "embedding_provider": getattr(self.embedder, "name", "?"), "scopes_allowed": len(allowed),
-                 "arms": {"exact": use_exact, "lexical": use_lexical, "vector": use_vector, "graph": use_graph}}
+                 "arms": {"exact": use_exact, "lexical": use_lexical, "vector": use_vector, "graph": use_graph, "graph_mode": graph_mode},
+                 "topology": topo_stats}
         pk = packet.build(s, tenant_id=principal.tenant_id, principal_id=principal.id, query=query, intent=intent.kind,
                           scope_ids=allowed, filters=filters, ranked=ranked, conflicts=conflicts,
                           min_records=min_records or self.settings.packet_min_records,

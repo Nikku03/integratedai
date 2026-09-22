@@ -30,6 +30,9 @@ class Candidate:
     final: float = 0.0
     support: float = 0.0  # model-independent evidence strength in [0, 1]
     reasons: dict[str, float] = field(default_factory=dict)
+    clique_dim: int = 0  # highest-dimensional activated simplex the record belongs to (topological arm)
+    sink_of: int = 0
+    source_of: int = 0
 
     @property
     def id(self):
@@ -144,7 +147,7 @@ def support_of(c: Candidate, query: str, weights: dict[str, float] | None = None
 
 
 def rerank(cands: list[Candidate], intent: Intent, query: str = "", now: datetime | None = None,
-           hub_threshold: int = 40, doc_titles: dict[Any, str] | None = None,
+           hub_threshold: int = 40, clique_bonus: bool = False, doc_titles: dict[Any, str] | None = None,
            doc_types: dict[Any, str] | None = None, vector_threshold: float = 0.8) -> list[Candidate]:
     now = now or utcnow()
     doc_types = doc_types or {}
@@ -204,6 +207,9 @@ def rerank(cands: list[Candidate], intent: Intent, query: str = "", now: datetim
             reasons["section"] = -0.05
         if c.horizon:
             reasons["graph_horizon"] = -0.08 * c.horizon
+        if clique_bonus and c.clique_dim:
+            # mutual connectivity with other activated records: a coherent cluster of evidence, not a lone hit
+            reasons["clique"] = round(0.04 * min(c.clique_dim, 5) * bonus_scale, 4)
         c.reasons = reasons
         c.final = sum(reasons.values())
     return sorted(cands, key=lambda c: -c.final)

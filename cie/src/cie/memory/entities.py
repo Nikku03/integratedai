@@ -78,8 +78,14 @@ def candidates(session: Session, tenant_id: uuid.UUID, scope_id: uuid.UUID, rtyp
     if name:
         key = normalise(name)
         sim = func.similarity(MemoryRecord.summary, name)
+        if key:
+            # the literal normalised name first: the trigram index serves ILIKE with a handful of rows,
+            # where similarity alone would pull every namesake sharing two words
+            rows = list(session.scalars(stmt.where(MemoryRecord.summary.ilike(f"%{key}%")).order_by(sim.desc()).limit(limit)))
+            if rows:
+                return rows
         stmt = (stmt.where(or_(MemoryRecord.summary.op("%")(name),
-                               MemoryRecord.keywords.op("&&")(cast([key], MemoryRecord.keywords.type))))
+                               MemoryRecord.keywords.op("&&")(cast([key or name.lower()], MemoryRecord.keywords.type))))
                 .order_by(sim.desc()).limit(limit))
     return list(session.scalars(stmt))
 
