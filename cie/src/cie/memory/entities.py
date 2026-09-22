@@ -21,13 +21,23 @@ from cie.core.models import LinkKind, MemoryRecord, RecordType
 from cie.memory.records import create_record, link
 from cie.memory.scopes import ancestors
 
-_SUFFIX = re.compile(r"\b(inc|ltd|llc|l\.l\.c|gmbh|corp|corporation|limited|plc|s\.a|b\.v|ag|co)\.?$", re.I)
+_SUFFIX = re.compile(r"\b(inc|incorporated|ltd|limited|llc|llp|lp|pllc|gmbh|ug|ag|kg|se|corp|corporation|company|co|plc|sa|sas|sarl|"
+                     r"spa|srl|bv|nv|ab|oy|pty|pte|kk)$", re.I)
+_DOTTED = re.compile(r"\b(?:[a-z]\.){2,}", re.I)  # L.L.C., S.A., B.V.
 
 
 def normalise(name: str) -> str:
-    n = re.sub(r"[^\w\s]", " ", name.lower())
-    n = _SUFFIX.sub("", n.strip()).strip()
-    return re.sub(r"\s+", " ", n)
+    """Case, punctuation and corporate suffixes removed: "Northwind Logistics Co. Ltd."
+    and "NORTHWIND LOGISTICS" are the same key; "L.L.C." and "LLC" too."""
+    n = _DOTTED.sub(lambda m: m.group().replace(".", ""), name.lower())
+    n = re.sub(r"[^\w\s]", " ", n)
+    n = re.sub(r"\s+", " ", n).strip()
+    for _ in range(2):  # "Co. Ltd." carries two
+        stripped = _SUFFIX.sub("", n).strip()
+        if stripped == n or not stripped:
+            break
+        n = stripped
+    return n
 
 
 def candidate_scope_ids(session: Session, scope_id: uuid.UUID, rtype: RecordType) -> list[uuid.UUID] | None:

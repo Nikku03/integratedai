@@ -95,3 +95,13 @@ def test_document_card_and_scope_digest(session, world, vault, embedder):
     outsider = visible_scopes(session, world.outsider)  # finance only
     empty = organise.scope_digest(session, world.tenant.id, outsider, world.company)
     assert empty["records_by_type"] == {} and empty["documents"] == 0
+
+
+def test_normalise_handles_dotted_and_stacked_suffixes():
+    from cie.memory.entities import normalise
+
+    assert normalise("Northwind Logistics L.L.C.") == normalise("Northwind Logistics LLC") == "northwind logistics"
+    assert normalise("Contoso Medical S.A.") == normalise("Contoso Medical SA") == "contoso medical"
+    assert normalise("Fourth Coffee Co. Ltd.") == "fourth coffee"
+    assert normalise("Jane Smith") == "jane smith"
+    assert normalise("Company") == "company"  # a bare suffix word stays a name rather than becoming empty

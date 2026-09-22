@@ -134,7 +134,7 @@ def scale_section(out: Path) -> list[str]:
                   f"{ha['warm_p50_ms']} ms, p95 {ha['warm_p95_ms']} ms, hit@20 {ha['hit_at_20']} (lexical stage p50 {lb.get('stage_ms_p50', {}).get('lexical_ms', '?')} → "
                   f"{ha['stage_ms_p50'].get('lexical_ms', '?')} ms; lexical-only hit@20 {lb.get('hit_at_20', '?')} → {la.get('hit_at_20', '?')}). "
                   f"The tables above are the complete re-run with the fixed code; the first run is kept in `docs/benchmarks/scale_first_run.md`.", ""]
-    org = b.get("organisation")
+    org = (sizes.get(f"{big} (re-measured)") or b).get("organisation")  # a re-measurement carries later resolution fixes
     if org:
         dg = org["digest"]
         lines += [f"**Can it organise at {int(big):,} records?** Resolving a differently spelled supplier name to its canonical entity takes "
