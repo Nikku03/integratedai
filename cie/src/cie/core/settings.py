@@ -51,6 +51,10 @@ class Settings(BaseSettings):
     packet_max_records: int = 100
     packet_token_budget: int = 12000
     graph_budget_coefficient: float = 4.0  # expansion budget = ceil(coef * log2(N))
+    dynamic_memory: bool = False  # wire records that fire together in answers (cie.topology.dynamic)
+    dynamic_max_fired: int = 6
+    dynamic_min_support: float = 0.5
+    dynamic_max_degree: int = 12
     section_target_tokens: int = 400
     section_max_tokens: int = 900
 

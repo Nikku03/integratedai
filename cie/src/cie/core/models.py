@@ -455,6 +455,7 @@ class LinkKind(str, enum.Enum):
     assigned_to = "assigned_to"
     derived_from = "derived_from"
     shortcut = "shortcut"  # long-range edge, only with justification
+    coactivated = "coactivated"  # formed by the bank itself when records fire together (cie.topology.dynamic)
 
 
 class RecordLink(Base):

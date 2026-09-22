@@ -242,6 +242,14 @@ class Retriever:
         else:
             result = extractive(res.packet, res.intent)
         row = persist(self.session, res.packet, result, principal.id, query)
+        if self.settings.dynamic_memory and result.status in ("answered", "conflict"):
+            from cie.topology import dynamic
+
+            fired = dynamic.fired_records(res.packet.items, result.citations, max_fired=self.settings.dynamic_max_fired,
+                                          min_support=self.settings.dynamic_min_support,
+                                          max_docs=2 if result.status == "conflict" else (3 if res.intent.kind == "compare" else 1))
+            res.trace["dynamic"] = dynamic.observe(self.session, tenant_id=principal.tenant_id, principal_id=principal.id, fired=fired,
+                                                   query=query, max_degree=self.settings.dynamic_max_degree)
         audit(self.session, tenant_id=principal.tenant_id, principal_id=principal.id, action="answer",
               resource_kind="answer", resource_id=row.id, details={"status": result.status, "mode": result.mode,
                                                                     "packet_id": str(res.packet.id)})

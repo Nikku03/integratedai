@@ -107,3 +107,20 @@ Stated plainly so nobody mistakes a scaffold for a finished capability.
 * The clique network is a rate-coded feed-forward model with sparse fixed fan-in
   and a reward-modulated Hebbian rule; it is not a spiking simulation and has no
   cavities.
+
+## Dynamic memory bank
+* Off by default (`CIE_DYNAMIC_MEMORY`). Wiring follows answers, so whoever asks
+  shapes the bank; a wrong answer wires wrong records together until decay and
+  pruning remove the link. Every wiring event is audited and `POST
+  /memory/shapes/reset` undoes all of it, but there is no per-principal policy
+  yet for who may teach the bank.
+* Links form inside the answer's document (two for conflicts, three for
+  comparisons); cross-document shapes therefore only come from answers that
+  legitimately span documents.
+* The synthetic scale generator wrote two copies of each record template into
+  two-thirds of the documents (records wrapped around the document list). The
+  10k/100k/1M rows in BENCHMARKS.md were measured on that corpus: hit@20 counts
+  either copy, so retrieval numbers stand, but each such document carries two
+  conflicting fee, penalty and notice values. The generator now writes exactly
+  twelve records per document; the next run (the Colab notebook included) uses
+  the clean corpus.

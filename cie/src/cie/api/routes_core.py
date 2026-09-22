@@ -371,6 +371,24 @@ def scope_digest(scope_id: uuid.UUID, at: datetime | None = None, auth: Auth = D
     return organise.scope_digest(session, auth.tenant_id, auth.visibility, scope, at=at)
 
 
+@router.get("/memory/shapes", summary="The shapes the bank has formed from use: dynamic links, simplices, cavities")
+def memory_shapes(limit: int = 20, auth: Auth = Depends(current_auth), session: Session = Depends(db)):
+    from cie.topology import dynamic
+
+    return dynamic.shapes(session, auth.tenant_id, auth.visibility, limit=min(limit, 100))
+
+
+@router.post("/memory/shapes/reset", summary="Remove every dynamic link (admin)")
+def memory_shapes_reset(auth: Auth = Depends(current_auth), session: Session = Depends(db)):
+    from cie.topology import dynamic
+
+    if not auth.visibility.is_admin:
+        raise HTTPException(403, "admin only")
+    n = dynamic.reset(session, auth.tenant_id, auth.principal.id)
+    session.commit()
+    return {"removed": n}
+
+
 # ---------------------------------------------------------------- search / answer
 @router.post("/search", response_model=S.PacketOut)
 def search(body: S.SearchIn, auth: Auth = Depends(current_auth), session: Session = Depends(db)):

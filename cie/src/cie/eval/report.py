@@ -83,6 +83,7 @@ def benchmarks_md(out: Path, docs: Path) -> str:
                   + "all 300 pages stored with per-page confidence, completeness check passed, and the question about clause 177 was answered with a citation to page 177."]
     lines += scale_section(out)
     lines += topology_section(out)
+    lines += dynamic_section(out)
     lines += ["", "## Glyph encoding benchmark", "", glyph, "", "## Graph topology benchmark (Ramanujan/expander vs sparse justified graph)", "", graph, "",
               "## Multi-agent simulation", "", sim]
     text = "\n".join(lines)
@@ -289,6 +290,35 @@ def topology_section(out: Path) -> list[str]:
               "dependencies), so its simplices are small and alike; real extracted graphs are irregular and the in-sample corpus is the only such graph measured.",
               "* The reranker dataset is drawn from one synthetic tenant with templated questions; a model that wins here has learnt this corpus, not company documents.",
               "* The Hebbian rule is a three-factor reward-modulated approximation of STDP on rate units, not a spiking simulation.", ""]
+    return lines
+
+
+def dynamic_section(out: Path) -> list[str]:
+    """Dynamic bank (forms links and shapes from use) vs static (docs/TOPOLOGY.md)."""
+    rep = _load(out / "dynamic" / "bench_dynamic.json")
+    md_path = out / "dynamic" / "bench_dynamic.md"
+    if not rep or not md_path.exists():
+        return []
+    lines = ["", "## Dynamic memory bank (forms new connections and shapes from use) vs the static bank", "",
+             "Design and gating rules in `docs/TOPOLOGY.md`. The bank answered the learning questions several times with wiring on; the re-worded and "
+             "unseen sets ask whether what it wired helps beyond the exact questions it saw.", "", md_path.read_text().strip(), ""]
+    verdicts = []
+    for arm, sets in rep["static"].items():
+        deltas = []
+        for name in ("learning", "reworded", "unseen"):
+            a, b = sets[name], rep["dynamic"][arm][name]
+            deltas.append(f"{name} MRR {a['mrr']} → {b['mrr']} (hit@5 {a['hit_at_5']} → {b['hit_at_5']})")
+        verdicts.append(f"**{arm}.** " + "; ".join(deltas) + ".")
+    sh = rep["shapes"]
+    verdicts.append(f"**Shapes.** {rep['use']['answers']} answers left {sh['dynamic_links']} dynamic links over {sh['records']} records, simplices up to "
+                    f"dimension {sh['max_dim']} ({sh['simplices_by_dim']}), {sh['cavities']} cavities; wiring added "
+                    f"{rep['use']['answer_plus_wiring_ms_p50']} ms p50 to an answer including retrieval.")
+    lines += ["### Reading", ""] + [f"* {v}" for v in verdicts] + ["",
+              "### Caveats", "",
+              "* The learning questions are already answered perfectly by the static bank on this corpus, so the dynamic bank can only show gains on re-worded "
+              "or unseen questions, or for a weaker reader; a corpus where the static bank fails on repeated questions would be the sharper test.",
+              "* Shapes here are built from templated documents whose records co-fire in the same pattern for every supplier; real documents would give "
+              "more varied simplices and, through comparison and conflict answers, cross-document ones.", ""]
     return lines
 
 

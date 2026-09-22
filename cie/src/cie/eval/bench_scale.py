@@ -143,7 +143,7 @@ def _load(conn: psycopg.Connection, tenant_id, scope_ids: list, n: int, embedder
     from psycopg.types.string import StrBinaryDumperVarchar
 
     conn.adapters.register_dumper(str, StrBinaryDumperVarchar)  # keywords is varchar[]; binary arrays carry the element oid
-    n_docs = max(1, n // 20)
+    n_docs = max(1, n // 12)  # twelve records per document, no document written twice
     n_secs = max(1, n // 4)
     # template vectors from the real model
     tpl_texts = []

@@ -51,6 +51,9 @@ Organisation views (entity profile, document card, scope digest) are under
 The topological memory bank (Blue Brain cliques and cavities, `docs/TOPOLOGY.md`)
 is a retrieval arm (`graph_mode="cliques"`) compared against the standard bank by
 `python -m cie.eval.bench_topology`.
+The dynamic bank (`CIE_DYNAMIC_MEMORY=true`) forms new links and shapes from the
+answers it gives; `GET /memory/shapes` shows them, `python -m cie.eval.bench_dynamic`
+measures them against the static bank.
 Scale benchmark of the memory bank and retrieval at 10k / 100k / 1M records:
 `python -m cie.eval.bench_scale` (results in `docs/BENCHMARKS.md`; add
 `--remeasure` to measure again the tenants an earlier run loaded, without the

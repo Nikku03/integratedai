@@ -64,11 +64,50 @@ reranker to weigh.
    back-propagation, and against the hand-written reranker. Metrics: AUC, hit@1,
    hit@5, MRR on the test queries; parameters; training time.
 
+## The dynamic bank: forming new connections and shapes
+
+The static bank only gets links at ingest (autolink, entity mentions, versions,
+contradictions). `cie.topology.dynamic` lets it form links from its own use,
+the structural counterpart of STDP:
+
+* **Fire together, wire together, in context.** When an answer is produced, the
+  records it cites and the packet's best-supported records *from the answer's own
+  document* (two documents for a conflict answer, three for a comparison) are the
+  records that fired. Every pair among them gets a `coactivated` link if none
+  exists, oriented from the lower-ranked record to the higher-ranked one, so the
+  record that answered is the sink of the simplex the group forms.
+* **Potentiation, decay, pruning.** A pair that fires again is potentiated
+  towards a cap; the other dynamic links of the fired records decay; links that
+  fade below a floor are removed, and a record keeps at most a fixed number of
+  dynamic links (the weakest go), so the graph stays sparse.
+* **Shapes.** Repeated use turns a frequently co-used group into a full directed
+  simplex with the answer as its sink; groups sharing records form larger
+  complexes, and cycles no simplex fills are the bank's cavities.
+  `GET /memory/shapes` reports the dynamic links, simplices by dimension,
+  cavities and the strongest maximal simplices with their sinks;
+  `POST /memory/shapes/reset` removes every dynamic link. Every wiring event is
+  audited; dynamic links carry `evidence.dynamic`.
+* **The document gate matters.** Without it (the first version) a question about
+  one supplier's penalty wired the similar penalty clauses of five other
+  suppliers into a 5-simplex: shortcuts between companies that have nothing to do
+  with each other. What fires together in the answer's context is what is wired.
+* Retrieval uses the dynamic links like any other: horizon 1 in the REM expansion
+  and as ordinary links for the clique cascade. `CIE_DYNAMIC_MEMORY=true` turns
+  wiring on; it is off by default until it wins on measurement.
+
+`python -m cie.eval.bench_dynamic` measures it on the largest loaded tenant:
+three question sets on the same documents (the learning questions, the same
+questions re-worded, unseen questions), each measured before use, then after the
+learning questions have been answered several times with wiring on, for the
+standard arm, the clique arm and a deliberately weak reader (vector-only plus
+graph); the shapes formed are reported and then removed.
+
 ## How to run
 
 ```
 python -m cie.eval.bench_scale --remeasure 1000000     # retrieval arms incl. cliques, on the loaded 1M tenant
 python -m cie.eval.bench_topology                      # plasticity + clique network vs MLP, writes eval_out/topology
+python -m cie.eval.bench_dynamic                       # dynamic bank vs static, writes eval_out/dynamic
 python -m cie.eval.report                              # regenerates docs/BENCHMARKS.md with the topology section
 ```
 

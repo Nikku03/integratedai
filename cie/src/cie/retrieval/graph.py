@@ -23,7 +23,7 @@ from cie.core.models import LinkKind, MemoryRecord, RecordLink
 
 HORIZON_KINDS: dict[int, set[LinkKind]] = {
     1: {LinkKind.depends_on, LinkKind.part_of, LinkKind.supersedes, LinkKind.contradicts, LinkKind.confirms,
-        LinkKind.extends},
+        LinkKind.extends, LinkKind.coactivated},
     2: {LinkKind.relates_to, LinkKind.mentions, LinkKind.precedes, LinkKind.assigned_to, LinkKind.derived_from},
     3: {LinkKind.causes, LinkKind.shortcut, LinkKind.relates_to, LinkKind.depends_on},
 }
