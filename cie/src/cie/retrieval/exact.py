@@ -68,9 +68,13 @@ def _capitalised_spans(q: str) -> list[str]:
 
 
 def by_ids(session: Session, ids: list[uuid.UUID]) -> dict[uuid.UUID, MemoryRecord]:
+    """Load candidate records without their embeddings and tsvectors (never read back by retrieval)."""
+    from sqlalchemy.orm import defer
+
     if not ids:
         return {}
-    return {r.id: r for r in session.scalars(select(MemoryRecord).where(MemoryRecord.id.in_(ids)))}
+    stmt = select(MemoryRecord).where(MemoryRecord.id.in_(ids)).options(defer(MemoryRecord.embedding), defer(MemoryRecord.tsv))
+    return {r.id: r for r in session.scalars(stmt)}
 
 
 _ = (String,)

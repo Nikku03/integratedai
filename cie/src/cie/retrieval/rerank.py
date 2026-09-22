@@ -167,7 +167,7 @@ def rerank(cands: list[Candidate], intent: Intent, query: str = "", now: datetim
             matched = sum(1 for e in ents if e in title)
             if matched:
                 # scales with how much of the name matches: "Northwind Logistics" beats "Northwind Freight"
-                reasons["document_affinity"] = round(0.3 * bonus_scale * (0.5 + 0.5 * matched / len(ents)), 4)
+                reasons["document_affinity"] = round(0.3 * bonus_scale * (matched / len(ents)) ** 2, 4)
             elif any(e in text for e in ents):
                 reasons["entity_affinity"] = round(0.15 * bonus_scale, 4)
             elif targeted:

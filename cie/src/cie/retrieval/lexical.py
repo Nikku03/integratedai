@@ -14,34 +14,50 @@ from sqlalchemy.orm import Session
 from cie.core.models import MemoryRecord, Section
 
 
-def _tsquery(q: str):
-    """OR of the query's content terms (BM25-like recall); ts_rank_cd rewards
-    records that match more of them. Falls back to websearch syntax when the
-    query carries quotes or operators."""
+def _terms(q: str) -> list[str]:
     from cie.retrieval.rerank import query_terms
 
+    return [t for t in (re.sub(r"[^a-z0-9]", "", x) for x in query_terms(q)) if t]
+
+
+def _tsqueries(q: str):
+    """Two-tier lexical query. Tier 1: AND of the content terms (a GIN
+    intersection, cheap at any scale). Tier 2, only when tier 1 finds fewer
+    than half of k: OR of the terms ranked by ts_rank_cd (BM25-like recall,
+    but it ranks every partial match and grows with the corpus)."""
     if '"' in q or " OR " in q or " -" in q:
-        return func.websearch_to_tsquery("english", q)
-    terms = [re.sub(r"[^a-z0-9]", "", t) for t in query_terms(q)]
-    terms = [t for t in terms if t]
+        t = func.websearch_to_tsquery("english", q)
+        return [t]
+    terms = _terms(q)
     if not terms:
-        return func.plainto_tsquery("english", q)
-    return func.to_tsquery("english", " | ".join(terms))
+        return [func.plainto_tsquery("english", q)]
+    tiers = [func.to_tsquery("english", " & ".join(terms))]
+    if len(terms) > 1:
+        tiers.append(func.to_tsquery("english", " | ".join(terms)))
+    return tiers
+
+
+def _search(session: Session, model, q: str, base_filter, k: int) -> list[tuple[uuid.UUID, float]]:
+    out: list[tuple[uuid.UUID, float]] = []
+    seen: set = set()
+    for tier, tsq in enumerate(_tsqueries(q)):
+        rank = func.ts_rank_cd(model.tsv, tsq, 32)
+        stmt = (select(model.id, rank).where(base_filter, model.tsv.op("@@")(tsq)).order_by(rank.desc()).limit(k))
+        for rid, sc in session.execute(stmt):
+            if rid not in seen:
+                seen.add(rid)
+                out.append((rid, float(sc) + (1.0 if tier == 0 else 0.0)))  # full matches rank above partial ones
+        if len(out) >= max(5, k // 10):  # enough full-term matches: skip the expensive partial-match tier
+            break
+    return out[:k]
 
 
 def search_records(session: Session, q: str, base_filter, k: int = 50, at=None) -> list[tuple[uuid.UUID, float]]:
-    tsq = _tsquery(q)
-    rank = func.ts_rank_cd(MemoryRecord.tsv, tsq, 32)
-    stmt = (select(MemoryRecord.id, rank).where(base_filter, MemoryRecord.tsv.op("@@")(tsq))
-            .order_by(rank.desc()).limit(k))
-    return [(r[0], float(r[1])) for r in session.execute(stmt)]
+    return _search(session, MemoryRecord, q, base_filter, k)
 
 
 def search_sections(session: Session, q: str, base_filter, k: int = 50) -> list[tuple[uuid.UUID, float]]:
-    tsq = _tsquery(q)
-    rank = func.ts_rank_cd(Section.tsv, tsq, 32)
-    stmt = (select(Section.id, rank).where(base_filter, Section.tsv.op("@@")(tsq)).order_by(rank.desc()).limit(k))
-    return [(r[0], float(r[1])) for r in session.execute(stmt)]
+    return _search(session, Section, q, base_filter, k)
 
 
 class BM25Index:

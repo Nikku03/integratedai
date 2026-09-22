@@ -144,7 +144,10 @@ class Retriever:
         rec_ids = [rid for rid in fused if not isinstance(rid, tuple)] + [e.record_id for e in expanded]
         sec_ids = [rid[1] for rid in fused if isinstance(rid, tuple)]
         recs = exact.by_ids(s, rec_ids)
-        secs = {x.id: x for x in s.scalars(select(Section).where(Section.id.in_(sec_ids)))} if sec_ids else {}
+        from sqlalchemy.orm import defer
+
+        secs = {x.id: x for x in s.scalars(select(Section).where(Section.id.in_(sec_ids))
+                                           .options(defer(Section.embedding), defer(Section.tsv)))} if sec_ids else {}
         degrees = graph.degree(s, list(recs))
         cands: list[rerank.Candidate] = []
         for rid, v in fused.items():
@@ -239,12 +242,15 @@ class Retriever:
         ents = [e for e in rerank.entity_terms(query) if len(e) >= 4]
         if not ents:
             return []
+        from sqlalchemy import case
+
         pats = [f"%{e}%" for e in ents[:5]]
+        hay = func.concat(Document.title, " ", Document.original_filename)
+        matches = sum(case((hay.ilike(p), 1), else_=0) for p in pats)  # documents matching more of the name rank first
         stmt = (select(Document.id).where(
             Document.tenant_id == tenant_id, Document.deleted_at.is_(None), Document.scope_id.in_(allowed),
-            vis.sql_filter(Document.scope_id, Document.sensitivity),
-            or_(*[Document.title.ilike(p) for p in pats], *[Document.original_filename.ilike(p) for p in pats]))
-            .limit(20))
+            vis.sql_filter(Document.scope_id, Document.sensitivity), or_(*[hay.ilike(p) for p in pats]))
+            .order_by(matches.desc()).limit(20))
         return list(self.session.scalars(stmt))
 
     # ------------------------------------------------------------------

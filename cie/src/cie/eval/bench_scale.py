@@ -346,7 +346,15 @@ def run(out: Path, sizes: list[int], seed: int = 5) -> dict[str, Any]:
         with session_scope() as s:
             if previous_tenant is not None:
                 t = time.perf_counter()
-                for tbl in ("record_links", "memory_records", "sections", "extractions", "documents", "blobs", "grants", "principals", "scopes"):
+                s.execute(text("DELETE FROM blocks WHERE document_id IN (SELECT id FROM documents WHERE tenant_id = :t)"), {"t": previous_tenant})
+                s.execute(text("DELETE FROM corrections WHERE document_id IN (SELECT id FROM documents WHERE tenant_id = :t)"), {"t": previous_tenant})
+                s.execute(text("DELETE FROM pages WHERE document_id IN (SELECT id FROM documents WHERE tenant_id = :t)"), {"t": previous_tenant})
+                for tbl in ("audit_log", "metrics", "answers", "evidence_packets", "agent_messages", "ledger_entries", "task_dependencies_x",
+                            "tasks", "projects", "agent_scorecards", "agents", "approvals", "deletion_requests", "record_links", "memory_records",
+                            "sections", "extractions", "documents", "blobs", "grants", "roles", "principals", "scopes"):
+                    if tbl == "task_dependencies_x":
+                        s.execute(text("DELETE FROM task_dependencies WHERE task_id IN (SELECT id FROM tasks WHERE tenant_id = :t)"), {"t": previous_tenant})
+                        continue
                     s.execute(text(f"DELETE FROM {tbl} WHERE tenant_id = :t"), {"t": previous_tenant})
                 s.execute(text("DELETE FROM tenants WHERE id = :t"), {"t": previous_tenant})
                 s.commit()
