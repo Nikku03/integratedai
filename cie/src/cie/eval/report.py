@@ -139,9 +139,13 @@ def scale_section(out: Path) -> list[str]:
               "Vector-only hit@20 is low because the 384-d model cannot tell 50,000 near-identical contracts apart; that is a property of templated data as much as of the model.",
               "* **Names that are prefixes of other names stay ambiguous.** \"Alpine Cloud\" matches every \"Alpine Cloud N\" supplier equally; the exact-name document "
               "ties with its namesakes and can fall outside the top 20. This is the remaining systematic miss.",
+              "* **\"vector-only\" still narrows to the named documents.** That arm disables the exact, lexical and graph stages, but the document-name search "
+              "(trigram index on titles and filenames) still restricts one of its candidate lists to the documents the question names; its rise between the two 1M rows "
+              "is the document-name fix, not the embedding model.",
               "* **Timeouts are reported, not hidden.** A bounded tier that times out returns nothing for that tier; the `timeouts` column counts questions whose whole retrieval "
               "exceeded the 60 s statement timeout (cold cache after a database restart).",
-              "* **One machine, one tenant, no concurrency.** Latencies are single-client; throughput under concurrent load was not measured.", ""]
+              "* **One machine, one tenant, no concurrency.** Latencies are single-client; throughput under concurrent load was not measured. The re-measured 1M row "
+              "shared the machine with a three-minute run of the test suite, so its cold p95 is, if anything, pessimistic.", ""]
     return lines
 
 
@@ -177,6 +181,22 @@ def cost_storage_md(out: Path, docs: Path) -> str:
                   f"| records (350k × {per_rec:,.0f} B) | {350_000 * per_rec / 1e9:.1f} GB |",
                   f"| raw vault (450k sections ≈ 60k pages × {raw / max(counts['pages'], 1):,.0f} B/page measured on PDFs with embedded fonts) | {60_000 * raw / max(counts['pages'], 1) / 1e9:.1f} GB |",
                   "", "This fits one PostgreSQL instance with room; HNSW build time and index memory, not disk, are the first limits (see ROADMAP.md)."]
+        scale = _load(out / "scale" / "bench_scale.json")
+        big = max((k for k, v in (scale or {}).get("sizes", {}).items() if v.get("index_build_seconds")), key=lambda k: int(k), default=None)
+        if big:
+            b = scale["sizes"][big]
+            st, ld = b["storage"], b["load"]
+            lines += ["", f"## Measured at {int(big):,} synthetic records", "",
+                      "| quantity | value |", "|---|---|",
+                      f"| records / sections / documents | {ld['n_records']:,} / {ld['n_sections']:,} / {ld['n_documents']:,} |",
+                      f"| `memory_records` table incl. indexes | {st['memory_records']['total_bytes'] / 1e9:.2f} GB ({st['memory_records']['total_bytes'] / ld['n_records']:,.0f} B per record) |",
+                      f"| of which HNSW index / GIN tsvector index | {st['ix_records_embedding_hnsw_bytes'] / 1e9:.2f} GB / {st['ix_records_tsv_bytes'] / 1e6:.0f} MB |",
+                      f"| `sections` table incl. indexes | {st['sections']['total_bytes'] / 1e9:.2f} GB ({st['sections']['total_bytes'] / ld['n_sections']:,.0f} B per section) |",
+                      f"| `record_links` table incl. indexes | {st['record_links']['total_bytes'] / 1e6:.0f} MB |",
+                      f"| load (binary COPY) / tsvectors / HNSW on records / all indexes | {ld['copy_seconds']} s / {ld['tsvector_seconds']} s / "
+                      f"{b['index_build_seconds']['ix_records_embedding_hnsw']} s / {b['index_build_total_seconds']} s |", "",
+                      "Synthetic records are shorter than extracted ones (no page-level provenance, small glyphs), so the per-row figure is a floor; the "
+                      "per-row figure from the extracted corpus above is the better estimate for real documents. Retrieval latency at this size is in BENCHMARKS.md."]
         main = bench["arms"]["hybrid+graph(bounded, REM)"]
         fc = bench["full-context"]
         adm = fc.get("admin", {})
