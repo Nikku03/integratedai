@@ -207,7 +207,7 @@ def run(out: Path, tenant_prefix: str = "scale-1000000-", n_docs: int = 40, n_qu
         ds = build_dataset(s, retriever, admin, company, doc_ids, n_questions=n_questions)
         report["dataset"] = {k: ds[k] for k in ("features", "n_questions", "n_rows", "positives")}
         s.rollback()
-    report["reranker_models"] = compare_models(ds)
+    report["reranker_models"] = compare_models(ds, epochs=15)
     out.mkdir(parents=True, exist_ok=True)
     (out / "bench_topology.json").write_text(json.dumps(report, indent=2, default=str))
     md = to_markdown(report)

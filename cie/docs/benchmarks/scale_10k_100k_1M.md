@@ -1,41 +1,50 @@
-### Scale benchmark: memory bank and retrieval (embeddings=fastembed, pgvector 0.6.0, shared_buffers 2GB)
+### Scale benchmark: memory bank and retrieval (embeddings=fastembed, pgvector 0.8.1, shared_buffers 2GB)
 
 | records | sections | load s | tsvector s | HNSW build s (records) | all indexes s | records table+idx | HNSW idx | GIN tsv idx |
 |---|---|---|---|---|---|---|---|---|
-| 10000 | 2,500 | 132.8 | 1.3 | 4.9 | 8.2 | 0.20 GB | 52 MB | 1 MB |
-| 100000 | 25,000 | 61.2 | 13.7 | 15.7 | 25.5 | 0.80 GB | 242 MB | 4 MB |
-| 1000000 | 250,000 | 229.6 | 144.7 | 132.3 | 191.2 | 6.71 GB | 2085 MB | 25 MB |
+| 10000 | 2,500 | 64.2 | 1.4 | 2.2 | 3.5 | 0.06 GB | 12 MB (halfvec) | 0 MB |
+| 100000 | 25,000 | 83.8 | 15.5 | 21.8 | 31.2 | 0.60 GB | 117 MB (halfvec) | 4 MB |
+| 1000000 | 250,000 | 296.5 | 141.8 | 301.8 | 391.6 | 5.85 GB | 1170 MB (halfvec) | 28 MB |
 
-| records | principal | arm | cold p50 | cold p95 | warm p50 | warm p95 | warm max | hit@20 | timeouts |
-|---|---|---|---|---|---|---|---|---|---|
-| 10000 | admin@company | hybrid+graph(bounded) | 346.9 | 410.6 | 337.3 | 419.7 | 442.9 | 0.88 | 0 |
-| 10000 | admin@company | hybrid(no graph) | 338.4 | 405.8 | 333.4 | 403.8 | 424.4 | 0.88 | 0 |
-| 10000 | admin@company | vector-only | 152.1 | 197.6 | 149.0 | 201.8 | 212.1 | 0.88 | 0 |
-| 10000 | admin@company | lexical-only | 223.7 | 293.1 | 221.7 | 275.7 | 307.1 | 1.0 | 0 |
-| 10000 | analyst@department(20%) | hybrid+graph(bounded) | 160.0 | 217.1 | 159.3 | 233.6 | 316.1 | 1.0 | 0 |
-| 10000 | analyst@department(20%) | vector-only | 94.8 | 139.4 | 87.8 | 143.3 | 157.4 | 0.9 | 0 |
-| 100000 | admin@company | hybrid+graph(bounded) | 565.7 | 981.7 | 595.6 | 1011.1 | 1102.8 | 0.84 | 0 |
-| 100000 | admin@company | hybrid(no graph) | 591.8 | 1046.3 | 676.7 | 1306.1 | 1448.2 | 0.84 | 0 |
-| 100000 | admin@company | vector-only | 173.7 | 275.9 | 158.1 | 263.9 | 281.2 | 0.8 | 0 |
-| 100000 | admin@company | lexical-only | 456.8 | 1052.2 | 506.2 | 994.4 | 1499.1 | 0.86 | 0 |
-| 100000 | analyst@department(20%) | hybrid+graph(bounded) | 654.3 | 1238.3 | 595.5 | 742.9 | 834.2 | 0.75 | 0 |
-| 100000 | analyst@department(20%) | vector-only | 255.7 | 320.3 | 247.3 | 328.0 | 363.5 | 0.75 | 0 |
-| 1000000 | admin@company | hybrid+graph(bounded) | 2164.5 | 6344.6 | 2173.6 | 6175.6 | 6437.5 | 0.22 | 0 |
-| 1000000 | admin@company | hybrid(no graph) | 1739.2 | 5740.7 | 1789.8 | 5749.9 | 6216.5 | 0.22 | 0 |
-| 1000000 | admin@company | vector-only | 266.2 | 411.0 | 261.0 | 401.3 | 468.7 | 0.14 | 0 |
-| 1000000 | admin@company | lexical-only | 1267.6 | 5261.0 | 1251.2 | 5255.8 | 5551.2 | 0.26 | 0 |
-| 1000000 | analyst@department(20%) | hybrid+graph(bounded) | 3025.9 | 4092.0 | 3192.0 | 4691.6 | 5942.7 | 0.2 | 0 |
-| 1000000 | analyst@department(20%) | vector-only | 192.1 | 305.6 | 191.9 | 315.2 | 366.5 | 0.0 | 0 |
-| 1000000 (after fixes) | admin@company | hybrid+graph(bounded) | 370.2 | 909.8 | 241.8 | 581.7 | 845.9 | 0.98 | 0 |
-| 1000000 (after fixes) | admin@company | hybrid(no graph) | 245.9 | 557.4 | 231.9 | 549.3 | 791.8 | 0.98 | 0 |
-| 1000000 (after fixes) | admin@company | vector-only | 122.7 | 187.6 | 119.8 | 202.8 | 465.6 | 0.94 | 0 |
-| 1000000 (after fixes) | admin@company | lexical-only | 127.6 | 182.4 | 121.0 | 183.2 | 286.6 | 0.98 | 0 |
-| 1000000 (after fixes) | analyst@department(20%) | hybrid+graph(bounded) | 606.3 | 1070.8 | 579.4 | 782.0 | 1147.5 | 1.0 | 0 |
-| 1000000 (after fixes) | analyst@department(20%) | vector-only | 104.2 | 159.9 | 108.7 | 149.9 | 377.1 | 0.8 | 0 |
+| records | principal | arm | cold p50 | cold p95 | warm p50 | warm p95 | warm max | hit@20 | MRR | timeouts | topology (p50: nodes / max dim / cavities) |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 10000 | admin@company | hybrid+graph(bounded) | 214.2 | 311.2 | 213.3 | 296.6 | 371.1 | 1.0 | - | 0 | - |
+| 10000 | admin@company | hybrid(no graph) | 199.3 | 292.8 | 200.6 | 276.4 | 333.2 | 1.0 | - | 0 | - |
+| 10000 | admin@company | vector-only | 112.7 | 150.6 | 98.7 | 163.9 | 237.2 | 0.88 | - | 0 | - |
+| 10000 | admin@company | lexical-only | 128.3 | 180.0 | 128.6 | 198.6 | 246.0 | 1.0 | - | 0 | - |
+| 10000 | analyst@department(20%) | hybrid+graph(bounded) | 171.9 | 262.2 | 175.2 | 264.8 | 299.6 | 1.0 | - | 0 | - |
+| 10000 | analyst@department(20%) | vector-only | 102.7 | 165.5 | 99.8 | 179.3 | 210.7 | 0.9 | - | 0 | - |
+| 100000 | admin@company | hybrid+graph(bounded) | 283.4 | 397.4 | 280.3 | 400.3 | 474.5 | 1.0 | - | 0 | - |
+| 100000 | admin@company | hybrid(no graph) | 271.9 | 382.4 | 270.2 | 392.3 | 432.5 | 1.0 | - | 0 | - |
+| 100000 | admin@company | vector-only | 108.2 | 197.8 | 104.8 | 178.7 | 244.4 | 0.86 | - | 0 | - |
+| 100000 | admin@company | lexical-only | 183.9 | 275.3 | 177.0 | 251.4 | 347.9 | 1.0 | - | 0 | - |
+| 100000 | analyst@department(20%) | hybrid+graph(bounded) | 294.6 | 387.4 | 271.6 | 376.9 | 545.9 | 1.0 | - | 0 | - |
+| 100000 | analyst@department(20%) | vector-only | 143.1 | 225.8 | 148.9 | 243.1 | 273.2 | 0.812 | - | 0 | - |
+| 1000000 | admin@company | hybrid+graph(bounded) | 300.5 | 710.4 | 265.2 | 586.4 | 697.9 | 0.98 | - | 0 | - |
+| 1000000 | admin@company | hybrid(no graph) | 257.2 | 552.2 | 255.4 | 526.6 | 586.9 | 0.98 | - | 0 | - |
+| 1000000 | admin@company | vector-only | 128.2 | 233.1 | 128.8 | 221.9 | 322.6 | 0.94 | - | 0 | - |
+| 1000000 | admin@company | lexical-only | 127.1 | 289.8 | 124.4 | 279.5 | 326.7 | 0.98 | - | 0 | - |
+| 1000000 | analyst@department(20%) | hybrid+graph(bounded) | 654.8 | 771.5 | 672.7 | 836.5 | 914.6 | 1.0 | - | 0 | - |
+| 1000000 | analyst@department(20%) | vector-only | 148.6 | 246.9 | 146.0 | 243.7 | 320.2 | 0.8 | - | 0 | - |
+| 1000000 (re-measured) | admin@company | hybrid+graph(bounded) | 275.6 | 539.9 | 267.0 | 552.2 | 649.2 | 0.98 | 0.893 | 0 | - |
+| 1000000 (re-measured) | admin@company | hybrid(no graph) | 262.1 | 537.6 | 250.0 | 535.3 | 642.3 | 0.98 | 0.893 | 0 | - |
+| 1000000 (re-measured) | admin@company | vector-only | 132.1 | 207.0 | 127.8 | 220.6 | 444.0 | 0.94 | 0.823 | 0 | - |
+| 1000000 (re-measured) | admin@company | lexical-only | 120.8 | 235.3 | 123.1 | 224.7 | 493.4 | 0.98 | 0.9 | 0 | - |
+| 1000000 (re-measured) | admin@company | hybrid+cliques(topological) | 254.1 | 541.4 | 254.0 | 534.0 | 709.5 | 0.98 | 0.893 | 0 | 80 / 2 / 0 |
+| 1000000 (re-measured) | admin@company | hybrid+cliques+bonus | 255.7 | 547.1 | 248.8 | 550.1 | 748.3 | 0.98 | 0.893 | 0 | 81 / 2 / 0 |
+| 1000000 (re-measured) | analyst@department(20%) | hybrid+graph(bounded) | 578.7 | 770.2 | 564.0 | 787.3 | 1016.6 | 1.0 | 0.767 | 0 | - |
+| 1000000 (re-measured) | analyst@department(20%) | vector-only | 148.8 | 198.1 | 143.0 | 184.3 | 378.5 | 0.8 | 0.624 | 0 | - |
 
 | records | stage (admin, hybrid, cold p50 ms) |
 |---|---|
-| 10000 | exact_ms=10.2, lexical_ms=106.5, embed_ms=10.0, vector_ms=49.6, named_docs_ms=20.7, graph_ms=15.9, materialise_ms=52.3, rerank_ms=44.3, contradictions_ms=7.1, packet_ms=12.2; metadata lookup p95 1.5 ms |
-| 100000 | exact_ms=46.5, lexical_ms=266.8, embed_ms=12.8, vector_ms=15.6, named_docs_ms=20.6, graph_ms=45.2, materialise_ms=46.5, rerank_ms=39.9, contradictions_ms=7.1, packet_ms=12.3; metadata lookup p95 1.8 ms |
-| 1000000 | exact_ms=392.1, lexical_ms=993.5, embed_ms=16.8, vector_ms=26.7, named_docs_ms=33.9, graph_ms=393.5, materialise_ms=59.8, rerank_ms=46.6, contradictions_ms=13.0, packet_ms=13.1; metadata lookup p95 3.6 ms |
-| 1000000 (after fixes) | exact_ms=36.2, lexical_ms=36.5, embed_ms=14.4, vector_ms=25.2, named_docs_ms=89.0, graph_ms=9.5, materialise_ms=18.9, rerank_ms=24.0, contradictions_ms=6.1, packet_ms=16.3; metadata lookup p95 1.2 ms |
+| 10000 | exact_ms=5.0, lexical_ms=45.9, embed_ms=7.2, vector_ms=19.7, named_docs_ms=19.4, graph_ms=8.4, materialise_ms=33.2, rerank_ms=30.1, contradictions_ms=5.3, packet_ms=14.7; metadata lookup p95 1.5 ms |
+| 100000 | exact_ms=11.7, lexical_ms=87.0, embed_ms=11.3, vector_ms=22.1, named_docs_ms=23.4, graph_ms=8.5, materialise_ms=32.5, rerank_ms=31.6, contradictions_ms=9.0, packet_ms=14.5; metadata lookup p95 1.9 ms |
+| 1000000 | exact_ms=13.6, lexical_ms=45.4, embed_ms=14.0, vector_ms=46.1, named_docs_ms=30.4, graph_ms=10.7, materialise_ms=32.1, rerank_ms=29.3, contradictions_ms=17.9, packet_ms=14.1; metadata lookup p95 1.8 ms |
+| 1000000 (re-measured) | exact_ms=15.1, lexical_ms=46.2, embed_ms=15.2, vector_ms=41.5, named_docs_ms=29.6, graph_ms=8.5, materialise_ms=27.7, rerank_ms=29.8, contradictions_ms=9.4, packet_ms=13.9; metadata lookup p95 1.2 ms |
+
+| records | resolve name p50 / p95 ms | resolved to the right supplier | entity profile p50 / p95 ms | profile records (p50) | company digest ms (records) | department digest ms (records) |
+|---|---|---|---|---|---|---|
+| 10000 | 9.2 / 14.0 | 0.94 | 16.4 / 22.6 | 11 | 55.6 (10,000) | 24.9 (2,004) |
+| 100000 | 35.4 / 72.8 | 0.9 | 50.4 / 55.2 | 11 | 182.4 (100,000) | 108.3 (20,004) |
+| 1000000 | 447.2 / 1383.5 | 0.88 | 588.8 / 622.8 | 11 | 1852.6 (1,000,000) | 1211.7 (200,004) |
+| 1000000 (re-measured) | 10.6 / 19.3 | 1.0 | 6.2 / 7.7 | 11 | 2249.8 (1,000,000) | 866.2 (200,004) |

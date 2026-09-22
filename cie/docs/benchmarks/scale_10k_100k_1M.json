@@ -1,9 +1,5 @@
 {
   "embedding": "fastembed",
-  "postgres": {
-    "shared_buffers": "2GB",
-    "pgvector": "0.6.0"
-  },
   "sizes": {
     "10000": {
       "load": {
@@ -11,339 +7,573 @@
         "n_sections": 2500,
         "n_documents": 500,
         "n_edges_approx": 13500,
-        "copy_seconds": 132.8,
-        "template_embed_seconds": 131.0,
-        "tsvector_seconds": 1.3
+        "copy_seconds": 64.2,
+        "template_embed_seconds": 62.1,
+        "tsvector_seconds": 1.4
       },
       "index_build_seconds": {
-        "ix_records_embedding_hnsw": 4.9,
-        "ix_sections_embedding_hnsw": 1.5,
-        "ix_records_tsv": 0.1,
+        "ix_records_embedding_hnsw": 2.2,
+        "ix_sections_embedding_hnsw": 0.7,
+        "ix_records_tsv": 0.0,
         "ix_sections_tsv": 0.0,
-        "ix_records_keywords": 0.1,
-        "ix_records_summary_trgm": 0.5
+        "ix_records_keywords": 0.0,
+        "ix_records_summary_trgm": 0.2,
+        "ix_records_entity_ids": 0.0
       },
-      "index_build_total_seconds": 8.2,
+      "index_build_total_seconds": 3.5,
       "storage": {
         "memory_records": {
-          "total_bytes": 196648960,
-          "heap_bytes": 57376768,
-          "index_bytes": 139272192
+          "total_bytes": 59162624,
+          "heap_bytes": 23748608,
+          "index_bytes": 35414016
         },
         "sections": {
-          "total_bytes": 43843584,
-          "heap_bytes": 12132352,
-          "index_bytes": 31711232
+          "total_bytes": 14032896,
+          "heap_bytes": 4456448,
+          "index_bytes": 9576448
         },
         "record_links": {
-          "total_bytes": 15933440,
-          "heap_bytes": 6561792,
-          "index_bytes": 9371648
+          "total_bytes": 6848512,
+          "heap_bytes": 3178496,
+          "index_bytes": 3670016
         },
         "documents": {
-          "total_bytes": 3440640,
-          "heap_bytes": 516096,
-          "index_bytes": 2924544
+          "total_bytes": 1073152,
+          "heap_bytes": 139264,
+          "index_bytes": 933888
         },
-        "ix_records_embedding_hnsw_bytes": 51666944,
-        "ix_records_tsv_bytes": 1425408
+        "ix_records_embedding_hnsw_bytes": 11714560,
+        "ix_records_tsv_bytes": 450560,
+        "hnsw_kind": "halfvec"
       },
       "admin@company": {
         "hybrid+graph(bounded)": {
-          "cold_p50_ms": 346.9,
-          "cold_p95_ms": 410.6,
-          "warm_p50_ms": 337.3,
-          "warm_p95_ms": 419.7,
-          "warm_max_ms": 442.9,
-          "hit_at_20": 0.88,
+          "cold_p50_ms": 214.2,
+          "cold_p95_ms": 311.2,
+          "warm_p50_ms": 213.3,
+          "warm_p95_ms": 296.6,
+          "warm_max_ms": 371.1,
+          "hit_at_20": 1.0,
           "timeouts": 0,
           "stage_ms_p50": {
-            "exact_ms": 10.2,
-            "lexical_ms": 106.5,
-            "embed_ms": 10.0,
-            "vector_ms": 49.6,
-            "named_docs_ms": 20.7,
-            "graph_ms": 15.9,
-            "materialise_ms": 52.3,
-            "rerank_ms": 44.3,
-            "contradictions_ms": 7.1,
-            "packet_ms": 12.2
+            "exact_ms": 5.0,
+            "lexical_ms": 45.9,
+            "embed_ms": 7.2,
+            "vector_ms": 19.7,
+            "named_docs_ms": 19.4,
+            "graph_ms": 8.4,
+            "materialise_ms": 33.2,
+            "rerank_ms": 30.1,
+            "contradictions_ms": 5.3,
+            "packet_ms": 14.7
           }
         },
         "hybrid(no graph)": {
-          "cold_p50_ms": 338.4,
-          "cold_p95_ms": 405.8,
-          "warm_p50_ms": 333.4,
-          "warm_p95_ms": 403.8,
-          "warm_max_ms": 424.4,
-          "hit_at_20": 0.88,
+          "cold_p50_ms": 199.3,
+          "cold_p95_ms": 292.8,
+          "warm_p50_ms": 200.6,
+          "warm_p95_ms": 276.4,
+          "warm_max_ms": 333.2,
+          "hit_at_20": 1.0,
           "timeouts": 0,
           "stage_ms_p50": {
-            "exact_ms": 9.7,
-            "lexical_ms": 105.8,
-            "embed_ms": 12.8,
-            "vector_ms": 45.2,
-            "named_docs_ms": 20.6,
-            "materialise_ms": 53.7,
-            "rerank_ms": 44.4,
-            "contradictions_ms": 7.3,
-            "packet_ms": 12.7
+            "exact_ms": 4.8,
+            "lexical_ms": 45.1,
+            "embed_ms": 7.4,
+            "vector_ms": 20.3,
+            "named_docs_ms": 18.8,
+            "materialise_ms": 32.2,
+            "rerank_ms": 29.8,
+            "contradictions_ms": 5.2,
+            "packet_ms": 14.1
           }
         },
         "vector-only": {
-          "cold_p50_ms": 152.1,
-          "cold_p95_ms": 197.6,
-          "warm_p50_ms": 149.0,
-          "warm_p95_ms": 201.8,
-          "warm_max_ms": 212.1,
+          "cold_p50_ms": 112.7,
+          "cold_p95_ms": 150.6,
+          "warm_p50_ms": 98.7,
+          "warm_p95_ms": 163.9,
+          "warm_max_ms": 237.2,
           "hit_at_20": 0.88,
           "timeouts": 0,
           "stage_ms_p50": {
             "exact_ms": 0.0,
-            "embed_ms": 13.4,
-            "vector_ms": 43.6,
-            "named_docs_ms": 5.5,
-            "materialise_ms": 33.1,
-            "rerank_ms": 23.7,
-            "contradictions_ms": 7.1,
-            "packet_ms": 11.8
+            "embed_ms": 10.3,
+            "vector_ms": 22.4,
+            "named_docs_ms": 3.1,
+            "materialise_ms": 18.7,
+            "rerank_ms": 17.2,
+            "contradictions_ms": 5.2,
+            "packet_ms": 15.7
           }
         },
         "lexical-only": {
-          "cold_p50_ms": 223.7,
-          "cold_p95_ms": 293.1,
-          "warm_p50_ms": 221.7,
-          "warm_p95_ms": 275.7,
-          "warm_max_ms": 307.1,
+          "cold_p50_ms": 128.3,
+          "cold_p95_ms": 180.0,
+          "warm_p50_ms": 128.6,
+          "warm_p95_ms": 198.6,
+          "warm_max_ms": 246.0,
           "hit_at_20": 1.0,
           "timeouts": 0,
           "stage_ms_p50": {
             "exact_ms": 0.0,
-            "lexical_ms": 106.4,
+            "lexical_ms": 43.2,
             "embed_ms": 0.0,
-            "named_docs_ms": 15.5,
-            "materialise_ms": 36.2,
-            "rerank_ms": 30.0,
-            "contradictions_ms": 7.0,
+            "named_docs_ms": 16.2,
+            "materialise_ms": 16.9,
+            "rerank_ms": 15.3,
+            "contradictions_ms": 4.5,
+            "packet_ms": 14.2
+          }
+        }
+      },
+      "analyst@department(20%)": {
+        "hybrid+graph(bounded)": {
+          "cold_p50_ms": 171.9,
+          "cold_p95_ms": 262.2,
+          "warm_p50_ms": 175.2,
+          "warm_p95_ms": 264.8,
+          "warm_max_ms": 299.6,
+          "hit_at_20": 1.0,
+          "timeouts": 0,
+          "stage_ms_p50": {
+            "exact_ms": 8.4,
+            "lexical_ms": 19.6,
+            "embed_ms": 8.3,
+            "vector_ms": 18.1,
+            "named_docs_ms": 15.8,
+            "graph_ms": 7.5,
+            "materialise_ms": 28.4,
+            "rerank_ms": 28.5,
+            "contradictions_ms": 5.1,
+            "packet_ms": 13.2
+          }
+        },
+        "vector-only": {
+          "cold_p50_ms": 102.7,
+          "cold_p95_ms": 165.5,
+          "warm_p50_ms": 99.8,
+          "warm_p95_ms": 179.3,
+          "warm_max_ms": 210.7,
+          "hit_at_20": 0.9,
+          "timeouts": 0,
+          "stage_ms_p50": {
+            "exact_ms": 0.0,
+            "embed_ms": 7.1,
+            "vector_ms": 17.1,
+            "named_docs_ms": 3.1,
+            "materialise_ms": 21.6,
+            "rerank_ms": 17.2,
+            "contradictions_ms": 4.9,
+            "packet_ms": 14.4
+          }
+        }
+      },
+      "warm_metadata_lookup_ms": {
+        "p50": 1.2,
+        "p95": 1.5
+      },
+      "counts": {
+        "records": 10000,
+        "sections": 2500
+      },
+      "organisation": {
+        "resolve_ms": {
+          "p50": 9.2,
+          "p95": 14.0
+        },
+        "resolved_correctly": 0.94,
+        "profile_ms": {
+          "p50": 16.4,
+          "p95": 22.6
+        },
+        "profile_records_p50": 11,
+        "digest": {
+          "company": {
+            "ms": 55.6,
+            "records": 10000,
+            "documents": 500,
+            "top_entity_mentions": 11
+          },
+          "department": {
+            "ms": 24.9,
+            "records": 2004,
+            "documents": 100,
+            "top_entity_mentions": 11
+          }
+        }
+      }
+    },
+    "100000": {
+      "delete_previous_seconds": 7.2,
+      "load": {
+        "n_records": 100000,
+        "n_sections": 25000,
+        "n_documents": 5000,
+        "n_edges_approx": 135000,
+        "copy_seconds": 83.8,
+        "template_embed_seconds": 61.6,
+        "tsvector_seconds": 15.5
+      },
+      "index_build_seconds": {
+        "ix_records_embedding_hnsw": 21.8,
+        "ix_sections_embedding_hnsw": 4.7,
+        "ix_records_tsv": 0.5,
+        "ix_sections_tsv": 0.1,
+        "ix_records_keywords": 0.2,
+        "ix_records_summary_trgm": 1.9,
+        "ix_records_entity_ids": 0.1
+      },
+      "index_build_total_seconds": 31.2,
+      "storage": {
+        "memory_records": {
+          "total_bytes": 596090880,
+          "heap_bytes": 241188864,
+          "index_bytes": 354902016
+        },
+        "sections": {
+          "total_bytes": 131440640,
+          "heap_bytes": 44720128,
+          "index_bytes": 86720512
+        },
+        "record_links": {
+          "total_bytes": 67493888,
+          "heap_bytes": 27295744,
+          "index_bytes": 40198144
+        },
+        "documents": {
+          "total_bytes": 10035200,
+          "heap_bytes": 1376256,
+          "index_bytes": 8658944
+        },
+        "ix_records_embedding_hnsw_bytes": 117039104,
+        "ix_records_tsv_bytes": 4038656,
+        "hnsw_kind": "halfvec"
+      },
+      "admin@company": {
+        "hybrid+graph(bounded)": {
+          "cold_p50_ms": 283.4,
+          "cold_p95_ms": 397.4,
+          "warm_p50_ms": 280.3,
+          "warm_p95_ms": 400.3,
+          "warm_max_ms": 474.5,
+          "hit_at_20": 1.0,
+          "timeouts": 0,
+          "stage_ms_p50": {
+            "exact_ms": 11.7,
+            "lexical_ms": 87.0,
+            "embed_ms": 11.3,
+            "vector_ms": 22.1,
+            "named_docs_ms": 23.4,
+            "graph_ms": 8.5,
+            "materialise_ms": 32.5,
+            "rerank_ms": 31.6,
+            "contradictions_ms": 9.0,
+            "packet_ms": 14.5
+          }
+        },
+        "hybrid(no graph)": {
+          "cold_p50_ms": 271.9,
+          "cold_p95_ms": 382.4,
+          "warm_p50_ms": 270.2,
+          "warm_p95_ms": 392.3,
+          "warm_max_ms": 432.5,
+          "hit_at_20": 1.0,
+          "timeouts": 0,
+          "stage_ms_p50": {
+            "exact_ms": 11.7,
+            "lexical_ms": 82.0,
+            "embed_ms": 7.7,
+            "vector_ms": 21.4,
+            "named_docs_ms": 22.1,
+            "materialise_ms": 30.9,
+            "rerank_ms": 31.5,
+            "contradictions_ms": 8.9,
+            "packet_ms": 14.3
+          }
+        },
+        "vector-only": {
+          "cold_p50_ms": 108.2,
+          "cold_p95_ms": 197.8,
+          "warm_p50_ms": 104.8,
+          "warm_p95_ms": 178.7,
+          "warm_max_ms": 244.4,
+          "hit_at_20": 0.86,
+          "timeouts": 0,
+          "stage_ms_p50": {
+            "exact_ms": 0.0,
+            "embed_ms": 7.9,
+            "vector_ms": 20.0,
+            "named_docs_ms": 2.8,
+            "materialise_ms": 17.5,
+            "rerank_ms": 17.5,
+            "contradictions_ms": 8.3,
+            "packet_ms": 14.4
+          }
+        },
+        "lexical-only": {
+          "cold_p50_ms": 183.9,
+          "cold_p95_ms": 275.3,
+          "warm_p50_ms": 177.0,
+          "warm_p95_ms": 251.4,
+          "warm_max_ms": 347.9,
+          "hit_at_20": 1.0,
+          "timeouts": 0,
+          "stage_ms_p50": {
+            "exact_ms": 0.0,
+            "lexical_ms": 82.8,
+            "embed_ms": 0.0,
+            "named_docs_ms": 18.9,
+            "materialise_ms": 16.7,
+            "rerank_ms": 14.6,
+            "contradictions_ms": 7.4,
+            "packet_ms": 16.0
+          }
+        }
+      },
+      "analyst@department(20%)": {
+        "hybrid+graph(bounded)": {
+          "cold_p50_ms": 294.6,
+          "cold_p95_ms": 387.4,
+          "warm_p50_ms": 271.6,
+          "warm_p95_ms": 376.9,
+          "warm_max_ms": 545.9,
+          "hit_at_20": 1.0,
+          "timeouts": 0,
+          "stage_ms_p50": {
+            "exact_ms": 21.9,
+            "lexical_ms": 31.7,
+            "embed_ms": 14.7,
+            "vector_ms": 44.8,
+            "named_docs_ms": 22.6,
+            "graph_ms": 8.7,
+            "materialise_ms": 36.3,
+            "rerank_ms": 33.0,
+            "contradictions_ms": 9.4,
+            "packet_ms": 15.3
+          }
+        },
+        "vector-only": {
+          "cold_p50_ms": 143.1,
+          "cold_p95_ms": 225.8,
+          "warm_p50_ms": 148.9,
+          "warm_p95_ms": 243.1,
+          "warm_max_ms": 273.2,
+          "hit_at_20": 0.812,
+          "timeouts": 0,
+          "stage_ms_p50": {
+            "exact_ms": 0.0,
+            "embed_ms": 17.4,
+            "vector_ms": 42.9,
+            "named_docs_ms": 4.1,
+            "materialise_ms": 19.3,
+            "rerank_ms": 18.1,
+            "contradictions_ms": 8.2,
+            "packet_ms": 14.4
+          }
+        }
+      },
+      "warm_metadata_lookup_ms": {
+        "p50": 1.3,
+        "p95": 1.9
+      },
+      "counts": {
+        "records": 100000,
+        "sections": 25000
+      },
+      "organisation": {
+        "resolve_ms": {
+          "p50": 35.4,
+          "p95": 72.8
+        },
+        "resolved_correctly": 0.9,
+        "profile_ms": {
+          "p50": 50.4,
+          "p95": 55.2
+        },
+        "profile_records_p50": 11,
+        "digest": {
+          "company": {
+            "ms": 182.4,
+            "records": 100000,
+            "documents": 5000,
+            "top_entity_mentions": 11
+          },
+          "department": {
+            "ms": 108.3,
+            "records": 20004,
+            "documents": 1000,
+            "top_entity_mentions": 11
+          }
+        }
+      }
+    },
+    "1000000": {
+      "delete_previous_seconds": 1890.1,
+      "load": {
+        "n_records": 1000000,
+        "n_sections": 250000,
+        "n_documents": 50000,
+        "n_edges_approx": 1350000,
+        "copy_seconds": 296.5,
+        "template_embed_seconds": 63.1,
+        "tsvector_seconds": 141.8
+      },
+      "index_build_seconds": {
+        "ix_records_embedding_hnsw": 301.8,
+        "ix_sections_embedding_hnsw": 59.7,
+        "ix_records_tsv": 6.1,
+        "ix_sections_tsv": 1.0,
+        "ix_records_keywords": 2.7,
+        "ix_records_summary_trgm": 15.4,
+        "ix_records_entity_ids": 1.5
+      },
+      "index_build_total_seconds": 391.6,
+      "storage": {
+        "memory_records": {
+          "total_bytes": 5853691904,
+          "heap_bytes": 2418352128,
+          "index_bytes": 3435339776
+        },
+        "sections": {
+          "total_bytes": 1259675648,
+          "heap_bytes": 448086016,
+          "index_bytes": 811589632
+        },
+        "record_links": {
+          "total_bytes": 669278208,
+          "heap_bytes": 271613952,
+          "index_bytes": 397664256
+        },
+        "documents": {
+          "total_bytes": 39370752,
+          "heap_bytes": 14188544,
+          "index_bytes": 25182208
+        },
+        "ix_records_embedding_hnsw_bytes": 1170300928,
+        "ix_records_tsv_bytes": 28426240,
+        "hnsw_kind": "halfvec"
+      },
+      "admin@company": {
+        "hybrid+graph(bounded)": {
+          "cold_p50_ms": 300.5,
+          "cold_p95_ms": 710.4,
+          "warm_p50_ms": 265.2,
+          "warm_p95_ms": 586.4,
+          "warm_max_ms": 697.9,
+          "hit_at_20": 0.98,
+          "timeouts": 0,
+          "stage_ms_p50": {
+            "exact_ms": 13.6,
+            "lexical_ms": 45.4,
+            "embed_ms": 14.0,
+            "vector_ms": 46.1,
+            "named_docs_ms": 30.4,
+            "graph_ms": 10.7,
+            "materialise_ms": 32.1,
+            "rerank_ms": 29.3,
+            "contradictions_ms": 17.9,
+            "packet_ms": 14.1
+          }
+        },
+        "hybrid(no graph)": {
+          "cold_p50_ms": 257.2,
+          "cold_p95_ms": 552.2,
+          "warm_p50_ms": 255.4,
+          "warm_p95_ms": 526.6,
+          "warm_max_ms": 586.9,
+          "hit_at_20": 0.98,
+          "timeouts": 0,
+          "stage_ms_p50": {
+            "exact_ms": 14.1,
+            "lexical_ms": 42.3,
+            "embed_ms": 12.9,
+            "vector_ms": 31.9,
+            "named_docs_ms": 31.4,
+            "materialise_ms": 26.5,
+            "rerank_ms": 29.1,
+            "contradictions_ms": 10.3,
+            "packet_ms": 13.8
+          }
+        },
+        "vector-only": {
+          "cold_p50_ms": 128.2,
+          "cold_p95_ms": 233.1,
+          "warm_p50_ms": 128.8,
+          "warm_p95_ms": 221.9,
+          "warm_max_ms": 322.6,
+          "hit_at_20": 0.94,
+          "timeouts": 0,
+          "stage_ms_p50": {
+            "exact_ms": 0.0,
+            "embed_ms": 11.2,
+            "vector_ms": 32.1,
+            "named_docs_ms": 3.4,
+            "materialise_ms": 18.8,
+            "rerank_ms": 17.6,
+            "contradictions_ms": 9.4,
+            "packet_ms": 14.0
+          }
+        },
+        "lexical-only": {
+          "cold_p50_ms": 127.1,
+          "cold_p95_ms": 289.8,
+          "warm_p50_ms": 124.4,
+          "warm_p95_ms": 279.5,
+          "warm_max_ms": 326.7,
+          "hit_at_20": 0.98,
+          "timeouts": 0,
+          "stage_ms_p50": {
+            "exact_ms": 0.0,
+            "lexical_ms": 42.6,
+            "embed_ms": 0.0,
+            "named_docs_ms": 27.1,
+            "materialise_ms": 8.0,
+            "rerank_ms": 10.5,
+            "contradictions_ms": 1.7,
             "packet_ms": 13.3
           }
         }
       },
       "analyst@department(20%)": {
         "hybrid+graph(bounded)": {
-          "cold_p50_ms": 160.0,
-          "cold_p95_ms": 217.1,
-          "warm_p50_ms": 159.3,
-          "warm_p95_ms": 233.6,
-          "warm_max_ms": 316.1,
+          "cold_p50_ms": 654.8,
+          "cold_p95_ms": 771.5,
+          "warm_p50_ms": 672.7,
+          "warm_p95_ms": 836.5,
+          "warm_max_ms": 914.6,
           "hit_at_20": 1.0,
           "timeouts": 0,
           "stage_ms_p50": {
-            "exact_ms": 6.3,
-            "lexical_ms": 25.8,
-            "embed_ms": 5.8,
-            "vector_ms": 12.1,
-            "named_docs_ms": 11.2,
-            "graph_ms": 8.4,
-            "materialise_ms": 28.5,
-            "rerank_ms": 25.8,
-            "contradictions_ms": 6.9,
-            "packet_ms": 12.1
+            "exact_ms": 412.6,
+            "lexical_ms": 29.9,
+            "embed_ms": 14.1,
+            "vector_ms": 40.4,
+            "named_docs_ms": 37.0,
+            "graph_ms": 7.7,
+            "materialise_ms": 28.1,
+            "rerank_ms": 28.9,
+            "contradictions_ms": 10.9,
+            "packet_ms": 15.2
           }
         },
         "vector-only": {
-          "cold_p50_ms": 94.8,
-          "cold_p95_ms": 139.4,
-          "warm_p50_ms": 87.8,
-          "warm_p95_ms": 143.3,
-          "warm_max_ms": 157.4,
-          "hit_at_20": 0.9,
-          "timeouts": 0,
-          "stage_ms_p50": {
-            "exact_ms": 0.0,
-            "embed_ms": 7.4,
-            "vector_ms": 12.3,
-            "named_docs_ms": 3.1,
-            "materialise_ms": 20.4,
-            "rerank_ms": 16.0,
-            "contradictions_ms": 6.9,
-            "packet_ms": 12.2
-          }
-        }
-      },
-      "warm_metadata_lookup_ms": {
-        "p50": 1.1,
-        "p95": 1.5
-      },
-      "counts": {
-        "records": 10000,
-        "sections": 2500
-      }
-    },
-    "100000": {
-      "delete_previous_seconds": 59.9,
-      "load": {
-        "n_records": 100000,
-        "n_sections": 25000,
-        "n_documents": 5000,
-        "n_edges_approx": 135000,
-        "copy_seconds": 61.2,
-        "template_embed_seconds": 45.6,
-        "tsvector_seconds": 13.7
-      },
-      "index_build_seconds": {
-        "ix_records_embedding_hnsw": 15.7,
-        "ix_sections_embedding_hnsw": 3.9,
-        "ix_records_tsv": 1.5,
-        "ix_sections_tsv": 0.9,
-        "ix_records_keywords": 0.2,
-        "ix_records_summary_trgm": 1.9
-      },
-      "index_build_total_seconds": 25.5,
-      "storage": {
-        "memory_records": {
-          "total_bytes": 799145984,
-          "heap_bytes": 262897664,
-          "index_bytes": 536248320
-        },
-        "sections": {
-          "total_bytes": 183353344,
-          "heap_bytes": 52043776,
-          "index_bytes": 131309568
-        },
-        "record_links": {
-          "total_bytes": 48889856,
-          "heap_bytes": 20193280,
-          "index_bytes": 28696576
-        },
-        "documents": {
-          "total_bytes": 10715136,
-          "heap_bytes": 1761280,
-          "index_bytes": 8953856
-        },
-        "ix_records_embedding_hnsw_bytes": 241778688,
-        "ix_records_tsv_bytes": 4276224
-      },
-      "admin@company": {
-        "hybrid+graph(bounded)": {
-          "cold_p50_ms": 565.7,
-          "cold_p95_ms": 981.7,
-          "warm_p50_ms": 595.6,
-          "warm_p95_ms": 1011.1,
-          "warm_max_ms": 1102.8,
-          "hit_at_20": 0.84,
-          "timeouts": 0,
-          "stage_ms_p50": {
-            "exact_ms": 46.5,
-            "lexical_ms": 266.8,
-            "embed_ms": 12.8,
-            "vector_ms": 15.6,
-            "named_docs_ms": 20.6,
-            "graph_ms": 45.2,
-            "materialise_ms": 46.5,
-            "rerank_ms": 39.9,
-            "contradictions_ms": 7.1,
-            "packet_ms": 12.3
-          }
-        },
-        "hybrid(no graph)": {
-          "cold_p50_ms": 591.8,
-          "cold_p95_ms": 1046.3,
-          "warm_p50_ms": 676.7,
-          "warm_p95_ms": 1306.1,
-          "warm_max_ms": 1448.2,
-          "hit_at_20": 0.84,
-          "timeouts": 0,
-          "stage_ms_p50": {
-            "exact_ms": 53.4,
-            "lexical_ms": 287.8,
-            "embed_ms": 14.8,
-            "vector_ms": 19.5,
-            "named_docs_ms": 22.6,
-            "materialise_ms": 50.4,
-            "rerank_ms": 44.7,
-            "contradictions_ms": 7.8,
-            "packet_ms": 14.2
-          }
-        },
-        "vector-only": {
-          "cold_p50_ms": 173.7,
-          "cold_p95_ms": 275.9,
-          "warm_p50_ms": 158.1,
-          "warm_p95_ms": 263.9,
-          "warm_max_ms": 281.2,
+          "cold_p50_ms": 148.6,
+          "cold_p95_ms": 246.9,
+          "warm_p50_ms": 146.0,
+          "warm_p95_ms": 243.7,
+          "warm_max_ms": 320.2,
           "hit_at_20": 0.8,
           "timeouts": 0,
           "stage_ms_p50": {
             "exact_ms": 0.0,
-            "embed_ms": 14.0,
-            "vector_ms": 21.7,
-            "named_docs_ms": 7.5,
-            "materialise_ms": 42.3,
-            "rerank_ms": 28.0,
-            "contradictions_ms": 8.1,
-            "packet_ms": 16.0
-          }
-        },
-        "lexical-only": {
-          "cold_p50_ms": 456.8,
-          "cold_p95_ms": 1052.2,
-          "warm_p50_ms": 506.2,
-          "warm_p95_ms": 994.4,
-          "warm_max_ms": 1499.1,
-          "hit_at_20": 0.86,
-          "timeouts": 0,
-          "stage_ms_p50": {
-            "exact_ms": 0.0,
-            "lexical_ms": 313.7,
-            "embed_ms": 0.0,
-            "named_docs_ms": 18.7,
-            "materialise_ms": 41.6,
-            "rerank_ms": 32.0,
-            "contradictions_ms": 7.5,
-            "packet_ms": 15.7
-          }
-        }
-      },
-      "analyst@department(20%)": {
-        "hybrid+graph(bounded)": {
-          "cold_p50_ms": 654.3,
-          "cold_p95_ms": 1238.3,
-          "warm_p50_ms": 595.5,
-          "warm_p95_ms": 742.9,
-          "warm_max_ms": 834.2,
-          "hit_at_20": 0.75,
-          "timeouts": 0,
-          "stage_ms_p50": {
-            "exact_ms": 29.4,
-            "lexical_ms": 229.7,
-            "embed_ms": 16.5,
-            "vector_ms": 127.4,
-            "named_docs_ms": 28.2,
-            "graph_ms": 27.8,
-            "materialise_ms": 68.9,
-            "rerank_ms": 57.0,
-            "contradictions_ms": 8.6,
-            "packet_ms": 14.8
-          }
-        },
-        "vector-only": {
-          "cold_p50_ms": 255.7,
-          "cold_p95_ms": 320.3,
-          "warm_p50_ms": 247.3,
-          "warm_p95_ms": 328.0,
-          "warm_max_ms": 363.5,
-          "hit_at_20": 0.75,
-          "timeouts": 0,
-          "stage_ms_p50": {
-            "exact_ms": 0.0,
-            "embed_ms": 17.5,
-            "vector_ms": 117.7,
-            "named_docs_ms": 7.1,
-            "materialise_ms": 40.9,
-            "rerank_ms": 28.7,
-            "contradictions_ms": 7.8,
-            "packet_ms": 14.2
+            "embed_ms": 14.8,
+            "vector_ms": 34.6,
+            "named_docs_ms": 14.7,
+            "materialise_ms": 20.0,
+            "rerank_ms": 15.4,
+            "contradictions_ms": 8.9,
+            "packet_ms": 14.6
           }
         }
       },
@@ -352,320 +582,296 @@
         "p95": 1.8
       },
       "counts": {
-        "records": 100000,
-        "sections": 25000
+        "records": 1000000,
+        "sections": 250000
+      },
+      "organisation": {
+        "resolve_ms": {
+          "p50": 447.2,
+          "p95": 1383.5
+        },
+        "resolved_correctly": 0.88,
+        "profile_ms": {
+          "p50": 588.8,
+          "p95": 622.8
+        },
+        "profile_records_p50": 11,
+        "digest": {
+          "company": {
+            "ms": 1852.6,
+            "records": 1000000,
+            "documents": 50000,
+            "top_entity_mentions": 11
+          },
+          "department": {
+            "ms": 1211.7,
+            "records": 200004,
+            "documents": 10000,
+            "top_entity_mentions": 11
+          }
+        }
       }
     },
-    "1000000": {
-      "delete_previous_seconds": 1314.2,
+    "1000000 (re-measured)": {
       "load": {
         "n_records": 1000000,
         "n_sections": 250000,
         "n_documents": 50000,
         "n_edges_approx": 1350000,
-        "copy_seconds": 229.6,
-        "template_embed_seconds": 53.7,
-        "tsvector_seconds": 144.7
+        "copy_seconds": 296.5,
+        "template_embed_seconds": 63.1,
+        "tsvector_seconds": 141.8
       },
-      "index_build_seconds": {
-        "ix_records_embedding_hnsw": 132.3,
-        "ix_sections_embedding_hnsw": 31.7,
-        "ix_records_tsv": 8.6,
-        "ix_sections_tsv": 1.1,
-        "ix_records_keywords": 2.5,
-        "ix_records_summary_trgm": 13.2
-      },
-      "index_build_total_seconds": 191.2,
       "storage": {
         "memory_records": {
-          "total_bytes": 6705856512,
-          "heap_bytes": 2327429120,
-          "index_bytes": 4378427392
+          "total_bytes": 5853691904,
+          "heap_bytes": 2418352128,
+          "index_bytes": 3435339776
         },
         "sections": {
-          "total_bytes": 1512333312,
-          "heap_bytes": 455458816,
-          "index_bytes": 1056874496
+          "total_bytes": 1259675648,
+          "heap_bytes": 448086016,
+          "index_bytes": 811589632
         },
         "record_links": {
-          "total_bytes": 377864192,
-          "heap_bytes": 153362432,
-          "index_bytes": 224501760
+          "total_bytes": 669278208,
+          "heap_bytes": 271613952,
+          "index_bytes": 397664256
         },
         "documents": {
-          "total_bytes": 39632896,
-          "heap_bytes": 14565376,
-          "index_bytes": 25067520
+          "total_bytes": 39370752,
+          "heap_bytes": 14188544,
+          "index_bytes": 25182208
         },
-        "ix_records_embedding_hnsw_bytes": 2084790272,
-        "ix_records_tsv_bytes": 24649728
+        "ix_records_embedding_hnsw_bytes": 1170300928,
+        "ix_records_tsv_bytes": 28426240,
+        "hnsw_kind": "halfvec"
       },
-      "admin@company": {
-        "hybrid+graph(bounded)": {
-          "cold_p50_ms": 2164.5,
-          "cold_p95_ms": 6344.6,
-          "warm_p50_ms": 2173.6,
-          "warm_p95_ms": 6175.6,
-          "warm_max_ms": 6437.5,
-          "hit_at_20": 0.22,
-          "timeouts": 0,
-          "stage_ms_p50": {
-            "exact_ms": 392.1,
-            "lexical_ms": 993.5,
-            "embed_ms": 16.8,
-            "vector_ms": 26.7,
-            "named_docs_ms": 33.9,
-            "graph_ms": 393.5,
-            "materialise_ms": 59.8,
-            "rerank_ms": 46.6,
-            "contradictions_ms": 13.0,
-            "packet_ms": 13.1
-          }
-        },
-        "hybrid(no graph)": {
-          "cold_p50_ms": 1739.2,
-          "cold_p95_ms": 5740.7,
-          "warm_p50_ms": 1789.8,
-          "warm_p95_ms": 5749.9,
-          "warm_max_ms": 6216.5,
-          "hit_at_20": 0.22,
-          "timeouts": 0,
-          "stage_ms_p50": {
-            "exact_ms": 390.8,
-            "lexical_ms": 986.9,
-            "embed_ms": 18.7,
-            "vector_ms": 27.2,
-            "named_docs_ms": 26.3,
-            "materialise_ms": 55.6,
-            "rerank_ms": 46.0,
-            "contradictions_ms": 8.7,
-            "packet_ms": 13.8
-          }
-        },
-        "vector-only": {
-          "cold_p50_ms": 266.2,
-          "cold_p95_ms": 411.0,
-          "warm_p50_ms": 261.0,
-          "warm_p95_ms": 401.3,
-          "warm_max_ms": 468.7,
-          "hit_at_20": 0.14,
-          "timeouts": 0,
-          "stage_ms_p50": {
-            "exact_ms": 0.0,
-            "embed_ms": 16.9,
-            "vector_ms": 22.6,
-            "named_docs_ms": 8.0,
-            "materialise_ms": 34.3,
-            "rerank_ms": 22.1,
-            "contradictions_ms": 8.3,
-            "packet_ms": 13.0
-          }
-        },
-        "lexical-only": {
-          "cold_p50_ms": 1267.6,
-          "cold_p95_ms": 5261.0,
-          "warm_p50_ms": 1251.2,
-          "warm_p95_ms": 5255.8,
-          "warm_max_ms": 5551.2,
-          "hit_at_20": 0.26,
-          "timeouts": 0,
-          "stage_ms_p50": {
-            "exact_ms": 0.0,
-            "lexical_ms": 994.7,
-            "embed_ms": 0.0,
-            "named_docs_ms": 18.8,
-            "materialise_ms": 25.2,
-            "rerank_ms": 25.2,
-            "contradictions_ms": 8.2,
-            "packet_ms": 14.3
-          }
-        }
-      },
-      "analyst@department(20%)": {
-        "hybrid+graph(bounded)": {
-          "cold_p50_ms": 3025.9,
-          "cold_p95_ms": 4092.0,
-          "warm_p50_ms": 3192.0,
-          "warm_p95_ms": 4691.6,
-          "warm_max_ms": 5942.7,
-          "hit_at_20": 0.2,
-          "timeouts": 0,
-          "stage_ms_p50": {
-            "exact_ms": 405.9,
-            "lexical_ms": 2175.3,
-            "embed_ms": 14.8,
-            "vector_ms": 23.7,
-            "named_docs_ms": 49.2,
-            "graph_ms": 194.8,
-            "materialise_ms": 60.3,
-            "rerank_ms": 46.4,
-            "contradictions_ms": 8.7,
-            "packet_ms": 14.1
-          }
-        },
-        "vector-only": {
-          "cold_p50_ms": 192.1,
-          "cold_p95_ms": 305.6,
-          "warm_p50_ms": 191.9,
-          "warm_p95_ms": 315.2,
-          "warm_max_ms": 366.5,
-          "hit_at_20": 0.0,
-          "timeouts": 0,
-          "stage_ms_p50": {
-            "exact_ms": 0.0,
-            "embed_ms": 16.5,
-            "vector_ms": 23.1,
-            "named_docs_ms": 17.0,
-            "materialise_ms": 37.8,
-            "rerank_ms": 19.8,
-            "contradictions_ms": 8.0,
-            "packet_ms": 14.0
-          }
-        }
-      },
-      "warm_metadata_lookup_ms": {
-        "p50": 2.0,
-        "p95": 3.6
-      },
-      "counts": {
-        "records": 1000000,
-        "sections": 250000
-      }
-    },
-    "1000000 (after fixes)": {
-      "load": {
-        "n_sections": "?"
-      },
-      "storage": {},
       "index_build_seconds": {},
       "index_build_total_seconds": "-",
       "admin@company": {
         "hybrid+graph(bounded)": {
-          "cold_p50_ms": 370.2,
-          "cold_p95_ms": 909.8,
-          "warm_p50_ms": 241.8,
-          "warm_p95_ms": 581.7,
-          "warm_max_ms": 845.9,
+          "cold_p50_ms": 275.6,
+          "cold_p95_ms": 539.9,
+          "warm_p50_ms": 267.0,
+          "warm_p95_ms": 552.2,
+          "warm_max_ms": 649.2,
           "hit_at_20": 0.98,
           "timeouts": 0,
+          "mrr": 0.893,
           "stage_ms_p50": {
-            "exact_ms": 36.2,
-            "lexical_ms": 36.5,
-            "embed_ms": 14.4,
-            "vector_ms": 25.2,
-            "named_docs_ms": 89.0,
-            "graph_ms": 9.5,
-            "materialise_ms": 18.9,
-            "rerank_ms": 24.0,
-            "contradictions_ms": 6.1,
-            "packet_ms": 16.3
-          }
+            "exact_ms": 15.1,
+            "lexical_ms": 46.2,
+            "embed_ms": 15.2,
+            "vector_ms": 41.5,
+            "named_docs_ms": 29.6,
+            "graph_ms": 8.5,
+            "materialise_ms": 27.7,
+            "rerank_ms": 29.8,
+            "contradictions_ms": 9.4,
+            "packet_ms": 13.9
+          },
+          "topology_p50": {}
         },
         "hybrid(no graph)": {
-          "cold_p50_ms": 245.9,
-          "cold_p95_ms": 557.4,
-          "warm_p50_ms": 231.9,
-          "warm_p95_ms": 549.3,
-          "warm_max_ms": 791.8,
+          "cold_p50_ms": 262.1,
+          "cold_p95_ms": 537.6,
+          "warm_p50_ms": 250.0,
+          "warm_p95_ms": 535.3,
+          "warm_max_ms": 642.3,
           "hit_at_20": 0.98,
           "timeouts": 0,
+          "mrr": 0.893,
           "stage_ms_p50": {
-            "exact_ms": 26.4,
-            "lexical_ms": 35.4,
-            "embed_ms": 15.4,
-            "vector_ms": 23.1,
-            "named_docs_ms": 17.8,
-            "materialise_ms": 17.9,
-            "rerank_ms": 24.4,
-            "contradictions_ms": 5.0,
-            "packet_ms": 16.4
-          }
+            "exact_ms": 13.0,
+            "lexical_ms": 41.9,
+            "embed_ms": 12.0,
+            "vector_ms": 34.5,
+            "named_docs_ms": 31.4,
+            "materialise_ms": 32.6,
+            "rerank_ms": 29.8,
+            "contradictions_ms": 9.1,
+            "packet_ms": 14.2
+          },
+          "topology_p50": {}
         },
         "vector-only": {
-          "cold_p50_ms": 122.7,
-          "cold_p95_ms": 187.6,
-          "warm_p50_ms": 119.8,
-          "warm_p95_ms": 202.8,
-          "warm_max_ms": 465.6,
+          "cold_p50_ms": 132.1,
+          "cold_p95_ms": 207.0,
+          "warm_p50_ms": 127.8,
+          "warm_p95_ms": 220.6,
+          "warm_max_ms": 444.0,
           "hit_at_20": 0.94,
           "timeouts": 0,
+          "mrr": 0.823,
           "stage_ms_p50": {
             "exact_ms": 0.0,
-            "embed_ms": 15.0,
-            "vector_ms": 22.9,
-            "named_docs_ms": 3.6,
-            "materialise_ms": 10.9,
-            "rerank_ms": 12.3,
-            "contradictions_ms": 2.4,
-            "packet_ms": 14.6
-          }
+            "embed_ms": 13.1,
+            "vector_ms": 33.2,
+            "named_docs_ms": 3.5,
+            "materialise_ms": 19.9,
+            "rerank_ms": 18.1,
+            "contradictions_ms": 9.2,
+            "packet_ms": 14.8
+          },
+          "topology_p50": {}
         },
         "lexical-only": {
-          "cold_p50_ms": 127.6,
-          "cold_p95_ms": 182.4,
-          "warm_p50_ms": 121.0,
-          "warm_p95_ms": 183.2,
-          "warm_max_ms": 286.6,
+          "cold_p50_ms": 120.8,
+          "cold_p95_ms": 235.3,
+          "warm_p50_ms": 123.1,
+          "warm_p95_ms": 224.7,
+          "warm_max_ms": 493.4,
           "hit_at_20": 0.98,
           "timeouts": 0,
+          "mrr": 0.9,
           "stage_ms_p50": {
             "exact_ms": 0.0,
-            "lexical_ms": 35.3,
+            "lexical_ms": 42.7,
             "embed_ms": 0.0,
-            "named_docs_ms": 15.8,
-            "materialise_ms": 8.3,
+            "named_docs_ms": 26.5,
+            "materialise_ms": 8.1,
             "rerank_ms": 11.0,
-            "contradictions_ms": 1.6,
-            "packet_ms": 13.5
+            "contradictions_ms": 1.7,
+            "packet_ms": 13.4
+          },
+          "topology_p50": {}
+        },
+        "hybrid+cliques(topological)": {
+          "cold_p50_ms": 254.1,
+          "cold_p95_ms": 541.4,
+          "warm_p50_ms": 254.0,
+          "warm_p95_ms": 534.0,
+          "warm_max_ms": 709.5,
+          "hit_at_20": 0.98,
+          "timeouts": 0,
+          "mrr": 0.893,
+          "stage_ms_p50": {
+            "exact_ms": 14.4,
+            "lexical_ms": 44.3,
+            "embed_ms": 13.8,
+            "vector_ms": 33.2,
+            "named_docs_ms": 29.9,
+            "graph_ms": 10.5,
+            "materialise_ms": 27.0,
+            "rerank_ms": 30.1,
+            "contradictions_ms": 9.3,
+            "packet_ms": 14.1
+          },
+          "topology_p50": {
+            "nodes": 80,
+            "max_dim": 2,
+            "betti1": 0
+          }
+        },
+        "hybrid+cliques+bonus": {
+          "cold_p50_ms": 255.7,
+          "cold_p95_ms": 547.1,
+          "warm_p50_ms": 248.8,
+          "warm_p95_ms": 550.1,
+          "warm_max_ms": 748.3,
+          "hit_at_20": 0.98,
+          "timeouts": 0,
+          "mrr": 0.893,
+          "stage_ms_p50": {
+            "exact_ms": 13.9,
+            "lexical_ms": 44.4,
+            "embed_ms": 16.9,
+            "vector_ms": 32.0,
+            "named_docs_ms": 29.2,
+            "graph_ms": 9.9,
+            "materialise_ms": 26.3,
+            "rerank_ms": 29.8,
+            "contradictions_ms": 9.4,
+            "packet_ms": 14.5
+          },
+          "topology_p50": {
+            "nodes": 81,
+            "max_dim": 2,
+            "betti1": 0
           }
         }
       },
       "analyst@department(20%)": {
         "hybrid+graph(bounded)": {
-          "cold_p50_ms": 606.3,
-          "cold_p95_ms": 1070.8,
-          "warm_p50_ms": 579.4,
-          "warm_p95_ms": 782.0,
-          "warm_max_ms": 1147.5,
+          "cold_p50_ms": 578.7,
+          "cold_p95_ms": 770.2,
+          "warm_p50_ms": 564.0,
+          "warm_p95_ms": 787.3,
+          "warm_max_ms": 1016.6,
           "hit_at_20": 1.0,
           "timeouts": 0,
+          "mrr": 0.767,
           "stage_ms_p50": {
-            "exact_ms": 396.1,
-            "lexical_ms": 32.9,
-            "embed_ms": 17.3,
-            "vector_ms": 32.1,
-            "named_docs_ms": 38.8,
-            "graph_ms": 8.0,
-            "materialise_ms": 23.1,
-            "rerank_ms": 23.0,
-            "contradictions_ms": 9.0,
-            "packet_ms": 16.1
-          }
+            "exact_ms": 405.9,
+            "lexical_ms": 29.2,
+            "embed_ms": 14.6,
+            "vector_ms": 39.9,
+            "named_docs_ms": 37.5,
+            "graph_ms": 7.6,
+            "materialise_ms": 28.1,
+            "rerank_ms": 28.9,
+            "contradictions_ms": 9.7,
+            "packet_ms": 15.1
+          },
+          "topology_p50": {}
         },
         "vector-only": {
-          "cold_p50_ms": 104.2,
-          "cold_p95_ms": 159.9,
-          "warm_p50_ms": 108.7,
-          "warm_p95_ms": 149.9,
-          "warm_max_ms": 377.1,
+          "cold_p50_ms": 148.8,
+          "cold_p95_ms": 198.1,
+          "warm_p50_ms": 143.0,
+          "warm_p95_ms": 184.3,
+          "warm_max_ms": 378.5,
           "hit_at_20": 0.8,
           "timeouts": 0,
+          "mrr": 0.624,
           "stage_ms_p50": {
             "exact_ms": 0.0,
-            "embed_ms": 13.4,
-            "vector_ms": 20.6,
-            "named_docs_ms": 3.2,
-            "materialise_ms": 14.3,
-            "rerank_ms": 9.6,
-            "contradictions_ms": 7.4,
-            "packet_ms": 15.1
-          }
+            "embed_ms": 14.1,
+            "vector_ms": 36.2,
+            "named_docs_ms": 14.9,
+            "materialise_ms": 20.6,
+            "rerank_ms": 15.8,
+            "contradictions_ms": 9.1,
+            "packet_ms": 15.0
+          },
+          "topology_p50": {}
         }
       },
       "warm_metadata_lookup_ms": {
-        "p50": 1.0,
+        "p50": 0.8,
         "p95": 1.2
+      },
+      "organisation": {
+        "resolve_ms": {
+          "p50": 10.6,
+          "p95": 19.3
+        },
+        "resolved_correctly": 1.0,
+        "profile_ms": {
+          "p50": 6.2,
+          "p95": 7.7
+        },
+        "profile_records_p50": 11,
+        "digest": {
+          "company": {
+            "ms": 2249.8,
+            "records": 1000000,
+            "documents": 50000,
+            "top_entity_mentions": 11
+          },
+          "department": {
+            "ms": 866.2,
+            "records": 200004,
+            "documents": 10000,
+            "top_entity_mentions": 11
+          }
+        }
       }
     }
+  },
+  "postgres": {
+    "shared_buffers": "2GB",
+    "pgvector": "0.8.1"
   }
 }
