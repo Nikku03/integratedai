@@ -42,7 +42,7 @@ from cie.vault.service import VaultService
 
 
 def _pdf():
-    from tests.fixtures import CONTRACT_SECTIONS, make_pdf  # reuse the synthetic contract
+    from cie.eval.synth import CONTRACT_SECTIONS, make_pdf  # reuse the synthetic contract
 
     amended = CONTRACT_SECTIONS[:3] + [("3. Fees", ["3.1 The Supplier shall be paid a monthly fee of USD 140,000 for the Services after Amendment 1.",
                                                     "3.2 The total fees under this Agreement shall not exceed $4,500,000."])] + CONTRACT_SECTIONS[4:]

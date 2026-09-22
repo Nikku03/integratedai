@@ -15,7 +15,7 @@ from cie.retrieval.rerank import Candidate
 
 def record_item(r: MemoryRecord, c: Candidate | None, conflicts: dict, detail_chars: int = 600) -> dict[str, Any]:
     return {
-        "id": str(r.id), "kind": "record", "type": r.type.value, "summary": r.summary,
+        "id": str(r.id), "kind": "record", "type": r.type.value, "summary": redact_injections(r.summary),
         "detail": redact_injections((r.detail or "")[:detail_chars]), "content": r.content,
         "document_id": str(r.source_document_id) if r.source_document_id else None,
         "citations": [{**loc, "quote": redact_injections(loc.get("quote") or "")} for loc in (r.source_locations or [])],

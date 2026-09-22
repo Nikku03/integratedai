@@ -150,24 +150,47 @@ encodings that fail exact round-trip or searchability are rejected.
 
 ## F. Hybrid retrieval (`cie.retrieval`)
 
-`RetrievalPipeline.run(query, principal, scope, filters)`:
+`Retriever.retrieve(query, principal, scope, filters)`:
 
-1. `intent.classify` (exact-id, entity, definition, temporal, comparison,
-   list, open question) – rule based, LLM optional.
-2. `scopes.resolve` – company/department/project/agent scope set and time
-   window; permission filter is applied in SQL, never after the fact.
-3. `exact.lookup` – ids, clause numbers, entity names (trigram), keywords.
-4. `lexical.search` (Postgres FTS, `ts_rank_cd`) ∥ `vector.search` (pgvector
-   cosine, HNSW) over sections and records; reciprocal-rank fusion.
-5. `graph.expand` – bounded BFS with three horizons; budget `⌈c·log2 N⌉`.
-6. `rerank` – fused score × recency × verification × type prior × hub penalty;
-   superseded records are demoted but retained when the query is temporal.
-7. `contradictions.check` – pulls the other side of every `contradicts` edge.
-8. `packet.build` – 20–100 records inside a token budget, stored in
-   `evidence_packets` with the full trace so any answer is reproducible.
-9. `answer` – strict mode is extractive (each sentence quotes a record and
-   cites it); assisted mode calls the LLM and then verifies every claim
-   against the packet, dropping unsupported claims.
+1. `intent.classify` (exact-id, exact-field, entity, definition, temporal,
+   comparison, list, open) plus hints: clause numbers, quoted phrases, record
+   type hints, an `as of` date, whether history is wanted.
+2. Scope and permission resolution: addressable scopes of the query scope ∩
+   scopes visible to the principal; the permission predicate and the
+   point-in-time predicate (`valid_from ≤ t < valid_to`, not superseded unless
+   history is asked for) are compiled into one SQL filter used by every search.
+3. `exact.lookup`: record ids, clause numbers, quoted phrases, entity names
+   (trigram), keyword overlap.
+4. Lexical (PostgreSQL FTS, OR of content terms ranked by `ts_rank_cd`) ∥
+   vector (pgvector cosine, HNSW) over records and sections. When the query
+   names a document or supplier that appears in a file title, an extra search
+   restricted to those documents is added, because templated files tie on text
+   and the named file's clause would otherwise be cut at the candidate limit.
+   Reciprocal-rank fusion merges all lists.
+5. `graph.expand`: bounded BFS over the sparse record graph with three horizons
+   and budget `⌈c·log2 N⌉`; neighbours outside the query scope are deferred to
+   horizon 3 and admitted only if the principal may read them.
+6. `rerank`: every candidate gets an **evidence support** score in [0, 1]:
+   IDF-weighted coverage of the question's informative terms (entity names and
+   generic words excluded, whole-word prefix matching, terms absent from every
+   candidate excluded from the denominator; if no informative term is present
+   anywhere support is 0 for all). Vector similarity is deliberately not
+   support: neural cosine is high for related text that does not answer the
+   question. Final score = fused rank × (0.35 + 0.65·support) + support-scaled
+   bonuses (type hint match, document/entity affinity) + verification and
+   confidence terms − penalties (superseded unless history asked, document
+   stubs, drafts unless asked, entity records for non-entity questions, hubs,
+   graph distance, other documents when a document is named).
+7. `contradictions.check` pulls the other side of every `contradicts` edge.
+8. `packet.build`: 20–100 records within a token budget; flagged
+   prompt-injection sentences are redacted in packet text; the packet and its
+   trace are stored so any answer can be reproduced.
+9. `answer`: strict mode is extractive (value + quote for exact-field
+   questions, summary + quoted detail otherwise; a `conflict` status when a
+   leading record has a contradiction partner in the packet; `insufficient
+   evidence` when no leading item has support ≥ 0.34). Assisted mode calls the
+   LLM with items wrapped as untrusted data and drops claims the packet does
+   not support.
 10. Raw pages are fetched only via `/sources/{document_id}/pages/{n}`.
 
 ## REM-inspired sparse graph (`cie.retrieval.graph`)

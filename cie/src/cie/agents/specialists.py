@@ -80,7 +80,7 @@ class ExtractiveStrategy:
         wanted = _ROLE_TYPES.get(agent.role)
         items = [it for it in packet.items if it.get("kind") == "record" and not it.get("superseded")
                  and (wanted is None or it.get("type") in wanted)]
-        items = [it for it in items if (it.get("support") or 0) >= 0.2 or it.get("horizon")]
+        items = [it for it in items if (it.get("support") or 0) >= 0.15 or it.get("horizon")]
         findings: list[Finding] = []
         for it in items[:max_findings]:
             val = (it.get("content") or {}).get("value") or (it.get("content") or {}).get("date")

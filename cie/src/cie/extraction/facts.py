@@ -188,8 +188,11 @@ def derive_records(
                 name = next(g for g in pmn.groups() if g)
                 if name not in people_seen:
                     people_seen.add(name)
-                    add(RecordDraft("person", name, {"name": name, "context": _short(sent)}, sent, locs,
-                                    keywords_for(name, 3), 0.65, entity_names=[name]))
+                    signatory = bool(re.match(r"\s*By:", sent)) or "signatur" in sent.lower()
+                    detail = (f"Signed by {name} (signatory). {sent}" if signatory else sent)
+                    add(RecordDraft("person", name, {"name": name, "context": _short(sent), "role": "signatory" if signatory else None},
+                                    detail, locs, keywords_for(name, 3) + (["signed", "signatory"] if signatory else []), 0.65,
+                                    entity_names=[name]))
             for dm in DEFINED_RE.finditer(sent):
                 term = dm.group(1).strip()
                 add(RecordDraft("fact", f'Defined term "{term}"', {"defined_term": term, "definition": _short(sent)},

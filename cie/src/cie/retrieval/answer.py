@@ -96,7 +96,7 @@ def extractive(packet: EvidencePacket, intent: Intent, min_score: float = 0.25, 
 
     # conflict: one of the leading records contradicts something in the packet
     by_id = {it["id"]: it for it in packet.items}
-    conflicted = next((it for it in items[:4] if it.get("conflicts_with") and (it.get("support") or 0) >= min_support
+    conflicted = next((it for it in items[:8] if it.get("conflicts_with") and (it.get("support") or 0) >= min_support
                        and any(x in by_id for x in it["conflicts_with"])), None)
     if conflicted is not None:
         top = conflicted
@@ -118,6 +118,9 @@ def extractive(packet: EvidencePacket, intent: Intent, min_score: float = 0.25, 
             parts.append(f"{val} [1]. Source: \"{(top.get('citations') or [{}])[0].get('quote', top['summary'])[:220]}\" [1].")
         else:
             parts.append(f"{top['summary']} [1].")
+            detail = re.sub(r"\s+", " ", top.get("detail") or "").strip()
+            if detail and detail[:60] != top["summary"][:60]:
+                parts.append(f"\"{detail[:320]}\" [1].")
         n = 2
         for it in items[1:3]:
             if it.get("score", 0) >= min_score * 0.8 and (it.get("support") or 0) >= min_support:

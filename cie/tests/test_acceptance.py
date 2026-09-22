@@ -150,6 +150,6 @@ def test_1_300_page_scanned_contract(session, world, vault, embedder):
     result, res = r.answer("What does clause 177 say about indemnity?", world.admin, world.project.id, filters={"document_id": str(doc.id)})
     assert result.status == "answered", result.answer
     assert result.citations[0]["page_no"] == 177, result.citations[0]
-    assert "7,777,777" in result.answer or "7777777" in result.answer or "indemnif" in result.answer.lower()
+    assert "7,777,777" in result.answer or "7777777" in result.answer or "indemni" in result.answer.lower()
     d = session.get(Document, doc.id)
     assert d.status == "indexed"

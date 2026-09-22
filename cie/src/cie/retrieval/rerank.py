@@ -61,7 +61,9 @@ _GENERIC = {"supplier", "agreement", "company", "contract", "document", "party",
 
 
 def _key(t: str) -> str:
-    return t[:5] if len(t) > 5 else t
+    """Prefix key so inflections match ('payments'~'payment', 'terminate'~'termination')
+    without conflating short stems ('receive' vs 'receipt')."""
+    return t[:6] if len(t) > 6 else t
 
 
 def entity_terms(query: str) -> set[str]:
@@ -75,11 +77,26 @@ def entity_terms(query: str) -> set[str]:
     return out
 
 
-def coverage(query: str, text: str, weights: dict[str, float] | None = None, exclude: set[str] | None = None) -> float:
-    """Weighted fraction of query content words present in ``text`` (5-char
-    prefix match so 'payments' matches 'payment'). Weights are IDF over the
-    candidate pool so common words count less; entity/generic terms are
-    excluded when other content terms exist. Independent of the embedding model."""
+def prefix_index(text: str) -> set[str]:
+    """Word-prefix set (lengths 3..6) so query terms match whole-word inflections
+    but never substrings inside other words ('rating' must not match 'Operating')."""
+    out: set[str] = set()
+    for w in re.findall(r"[a-z0-9]+", text.lower()):
+        for k in range(3, 7):
+            if len(w) >= k:
+                out.add(w[:k])
+    return out
+
+
+def coverage(query: str, text: str | set[str], weights: dict[str, float] | None = None, exclude: set[str] | None = None,
+             present: set[str] | None = None) -> float:
+    """Weighted fraction of the query's *informative* content words present in
+    ``text``. Weights are IDF over the candidate pool; entity and generic terms
+    are excluded when other content terms exist. Terms that no candidate
+    contains at all (``present`` given and term not in it) are left out of the
+    denominator: they cannot discriminate between candidates. If *no*
+    informative term is present anywhere the question is unanswerable from the
+    pool and coverage is 0 for every candidate. Independent of the embedding model."""
     terms = query_terms(query)
     exclude = exclude or set()
     content = [t for t in terms if t not in exclude and t not in _GENERIC]
@@ -87,10 +104,14 @@ def coverage(query: str, text: str, weights: dict[str, float] | None = None, exc
         terms = content
     if not terms:
         return 1.0
-    hay = text.lower()
+    if present is not None:
+        terms = [t for t in terms if t in present]
+        if not terms:
+            return 0.0
+    hay = text if isinstance(text, set) else prefix_index(text)
     w = weights or {}
     tw = sorted((w.get(t, 1.0) for t in terms), reverse=True)
-    total = sum(tw[:6])  # a record covering the six most informative terms counts as full support
+    total = sum(tw[:6])  # a record covering the six most informative present terms counts as full support
     hit = sum(w.get(t, 1.0) for t in terms if _key(t) in hay)
     return min(1.0, hit / total) if total else 0.0
 
@@ -101,41 +122,42 @@ def _text_of(c: Candidate) -> str:
     return f"{c.section.title or ''} {c.section.text}"
 
 
-def idf_weights(query: str, cands: list[Candidate]) -> dict[str, float]:
+def idf_weights(query: str, cands: list[Candidate], indexes: list[set[str]] | None = None) -> tuple[dict[str, float], set[str]]:
+    """IDF per query term over the candidate pool, and the set of terms present in at least one candidate."""
     terms = query_terms(query)
     n = max(len(cands), 1)
-    texts = [_text_of(c).lower() for c in cands]
-    return {t: math.log(1.0 + n / (1 + sum(1 for x in texts if _key(t) in x))) for t in terms}
+    idx = indexes if indexes is not None else [prefix_index(_text_of(c)) for c in cands]
+    df = {t: sum(1 for x in idx if _key(t) in x) for t in terms}
+    return {t: math.log(1.0 + n / (1 + df[t])) for t in terms}, {t for t, d in df.items() if d > 0}
 
 
-def support_of(c: Candidate, query: str, weights: dict[str, float] | None = None, exclude: set[str] | None = None) -> float:
-    text = _text_of(c)
-    cov = coverage(query, text, weights, exclude)
+def support_of(c: Candidate, query: str, weights: dict[str, float] | None = None, exclude: set[str] | None = None,
+               present: set[str] | None = None, index: set[str] | None = None) -> float:
+    """Evidence support in [0, 1]: exact-lookup hit or informative-term coverage.
+    Vector similarity is deliberately *not* support: neural cosine scores are
+    high for topically related text that does not answer the question, which
+    is exactly the failure mode that produces confident wrong answers."""
+    cov = coverage(query, index if index is not None else _text_of(c), weights, exclude, present)
     exact = 1.0 if "exact" in c.sources and c.sources["exact"][1] >= 3.0 else 0.0
-    vec = 0.0
-    for name in ("vec_rec", "vec_sec"):
-        if name in c.sources:
-            sim = float(c.sources[name][1])
-            if sim >= 0.6:  # only trust high cosine similarity as support on its own
-                vec = max(vec, sim)
-    return max(exact, cov, vec)
+    return max(exact, cov)
 
 
 def rerank(cands: list[Candidate], intent: Intent, query: str = "", now: datetime | None = None,
            hub_threshold: int = 40, doc_titles: dict[Any, str] | None = None,
-           doc_types: dict[Any, str] | None = None) -> list[Candidate]:
+           doc_types: dict[Any, str] | None = None, vector_threshold: float = 0.8) -> list[Candidate]:
     now = now or utcnow()
     doc_types = doc_types or {}
     asks_draft = "draft" in query.lower()
     max_fused = max((c.fused for c in cands), default=1.0) or 1.0
-    weights = idf_weights(query, cands) if query else {}
+    indexes = [prefix_index(_text_of(c)) for c in cands]
+    weights, present = idf_weights(query, cands, indexes) if query else ({}, set())
     ents = entity_terms(query) if query else set()
     doc_titles = doc_titles or {}
     # does any candidate's document carry a name from the query? then the query targets specific documents
     targeted = bool(ents) and any(any(e in (doc_titles.get(_doc_id(c)) or "").lower() for e in ents) for c in cands)
-    for c in cands:
+    for c, index in zip(cands, indexes, strict=True):
         base = c.fused / max_fused
-        c.support = round(support_of(c, query, weights, ents), 3) if query else 1.0
+        c.support = round(support_of(c, query, weights, ents, present, index), 3) if query else 1.0
         # retrieval rank and bonuses matter only insofar as the item actually covers the question
         reasons = {"fused": round(base * (0.35 + 0.65 * c.support), 4)}
         bonus_scale = 0.3 + 0.7 * c.support
@@ -147,9 +169,12 @@ def rerank(cands: list[Candidate], intent: Intent, query: str = "", now: datetim
             elif any(e in text for e in ents):
                 reasons["entity_affinity"] = round(0.15 * bonus_scale, 4)
             elif targeted:
-                reasons["other_document"] = -0.3
-        if doc_types.get(_doc_id(c), "").lower() in ("draft", "superseded", "template") and not asks_draft:
+                reasons["other_document"] = -0.1  # mild: the named entity may be a topic, not the file holding the answer
+        is_draft = doc_types.get(_doc_id(c), "").lower() in ("draft", "superseded", "template")
+        if is_draft and not asks_draft:
             reasons["draft_document"] = -0.3
+        elif is_draft and asks_draft:
+            reasons["draft_requested"] = 0.3
         if c.record is not None:
             r = c.record
             if intent.type_hints and r.type.value in intent.type_hints:
@@ -166,7 +191,7 @@ def rerank(cands: list[Candidate], intent: Intent, query: str = "", now: datetim
             if c.degree > hub_threshold:
                 reasons["hub_penalty"] = -0.1 * math.log10(c.degree / hub_threshold + 1)
             if r.type.value == "document":
-                reasons["document_record"] = -0.15  # prefer specific facts over whole-document stubs
+                reasons["document_record"] = -0.35  # prefer specific facts over whole-document stubs
         else:
             reasons["section"] = -0.05
         if c.horizon:

@@ -31,10 +31,11 @@ class SectionDraft:
 
     @property
     def text(self) -> str:
+        body = [b.text for b in self.blocks if b.text and b.kind != "heading"]
         parts = []
-        if self.title:
+        if self.title and not (body and body[0].lstrip().startswith(self.title.strip())):
             parts.append(self.title)
-        parts.extend(b.text for b in self.blocks if b.text and b.kind != "heading")
+        parts.extend(body)
         return "\n".join(parts).strip()
 
     @property

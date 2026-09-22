@@ -18,7 +18,7 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from typing import Any
 
-from tests.fixtures import make_pdf, rasterize_pdf
+from cie.eval.synth import make_pdf, rasterize_pdf
 
 SUPPLIERS = [("Northwind Logistics Ltd.", "Northwind"), ("Contoso Freight GmbH", "Contoso"), ("Fabrikam Robotics Inc.", "Fabrikam"),
              ("Tailspin Analytics LLC", "Tailspin"), ("Woodgrove Facilities plc", "Woodgrove"), ("Adatum Cloud Services Ltd.", "Adatum")]

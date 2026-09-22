@@ -29,10 +29,10 @@ class TaskSpec:
 
 
 _FOCUS = {
-    "legal": "termination notice period liability indemnity clause obligations deadlines compliance risk",
-    "finance": "monthly fee penalty cap budget cost amount payment invoice spend",
-    "operations": "timeline deadline plan milestones dependencies tasks rollout transition",
-    "engineering": "requirements integration API system implementation technical dependencies prototype",
+    "legal": "termination notice period liability indemnity clause obligations compliance risk breach",
+    "finance": "monthly fee penalty cap budget cost amount payment invoice spend total",
+    "operations": "term months notice days deliver schedule date deadline timeline plan milestones transition",
+    "engineering": "services system integration API requirements technical automation implementation prototype deliver",
 }
 
 

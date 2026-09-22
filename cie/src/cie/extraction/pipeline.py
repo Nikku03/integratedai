@@ -197,7 +197,9 @@ def _derive(session: Session, document: Document, extraction: Extraction, sectio
         summary=document.title, detail=(section_rows[0][1].text[:1500] if section_rows else ""),
         content={"filename": document.original_filename, "version": document.version, "pages": extraction.page_count,
                  "doc_type": document.doc_type, "language": extraction.language, "family_id": str(document.family_id)},
-        source_document_id=document.id, source_locations=[{"page_no": first_page, "bbox": None, "quote": document.title}],
+        source_document_id=document.id,
+        source_locations=[{"page_no": first_page, "bbox": None,
+                           "quote": (section_rows[0][1].blocks[0].text[:200] if section_rows and section_rows[0][1].blocks else document.title)}],
         event_time=document.file_created_at, valid_from=document.file_created_at, producing_agent="ingest",
         confidence=1.0, sensitivity=document.sensitivity, acl=document.acl,
         keywords=keywords_for(document.title + " " + (section_rows[0][1].text if section_rows else ""), 10),
@@ -222,6 +224,10 @@ def _derive(session: Session, document: Document, extraction: Extraction, sectio
                 if len(locs) < 20:
                     ent.source_locations = locs + [{**d.source_locations[0], "document_id": str(document.id)}]
                 entities[name] = ent
+                fact = _entity_fact(session, document, d, ent, vec)
+                if fact is not None:
+                    created.append(fact)
+                    n += 1
                 continue
         rec = create_record(
             session, tenant_id=document.tenant_id, scope_id=document.scope_id, type=d.type, summary=d.summary,
@@ -238,6 +244,29 @@ def _derive(session: Session, document: Document, extraction: Extraction, sectio
                 entities[d.content.get("name", d.summary)] = rec
     autolink(session, doc_rec, created, entities)
     return n
+
+
+def _entity_fact(session: Session, document: Document, d, ent: MemoryRecord, vec) -> MemoryRecord | None:
+    """The entity exists once; *this document's* relationship to it is a fact of its own
+    (signatory, party), so 'who signed X' resolves to the right document."""
+    ctx = (d.content or {}).get("context", "") or d.detail
+    role = (d.content or {}).get("role")
+    if d.type == "person" and role == "signatory":
+        summary = f"{ent.summary} signed {document.title}"
+        detail = f"Signed by {ent.summary} (signatory) in {document.title}. {ctx}"
+        kws = ["signed", "signatory", *ent.summary.lower().split()]
+    elif d.type == "organization" and any(w in ctx.lower() for w in ("between", "entered into", "party", "parties")):
+        summary = f"{ent.summary} is a party to {document.title}"
+        detail = f"{ent.summary} is a party to {document.title}. {ctx}"
+        kws = ["party", *ent.summary.lower().split()]
+    else:
+        return None
+    rec = create_record(session, tenant_id=document.tenant_id, scope_id=document.scope_id, type=RecordType.fact, summary=summary[:200],
+                        content={"entity_id": str(ent.id), "role": role or "party", "document": document.title}, detail=detail[:1500],
+                        source_document_id=document.id, source_locations=d.source_locations, event_time=document.file_created_at,
+                        valid_from=document.file_created_at, producing_agent="rule_extractor_v1", confidence=0.7,
+                        sensitivity=document.sensitivity, acl=document.acl, keywords=kws[:8], entity_ids=[str(ent.id)], embedding=vec)
+    return rec
 
 
 def documents_needing_extraction(session: Session, tenant_id: uuid.UUID) -> list[Document]:

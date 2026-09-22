@@ -297,17 +297,21 @@ def _run_arm(s: Session, world: World, qas: list[QA], arm: str, cfg: dict, embed
             exact_n += 1
             good = status == "answered" and any(sub in answer for sub in q.expected_substrings) and not any(f in answer for f in q.forbidden_substrings)
             exact_ok += int(good)
+        bad_cites = []
         if result and result.status in ("answered", "conflict"):
             for c in result.citations:
                 cite_n += 1
-                cite_ok += int(_citation_ok(s, c))
+                ok = _citation_ok(s, c)
+                cite_ok += int(ok)
+                if not ok:
+                    bad_cites.append({"kind": c.get("kind"), "type": c.get("type"), "page_no": c.get("page_no"), "quote": (c.get("quote") or "")[:100]})
         if q.kind == "permission" and q.principal != "admin":
             restricted_ids = {str(d.id) for k, d in world.docs.items() if k == "hr_restricted"}
             leaks += sum(1 for it in items if it.get("document_id") in restricted_ids)
             leaks += sum(1 for f in q.forbidden_substrings if f in answer)
         per_q.append({"qid": q.qid, "kind": q.kind, "expected": q.expected_status, "got": status, "correct": (status == q.expected_status) and
                       (q.expected_status != "answered" or any(sub in answer for sub in q.expected_substrings)), "latency_ms": round(lat, 1),
-                      "packet_items": len(items), "answer": answer[:160]})
+                      "packet_items": len(items), "answer": answer[:160], "bad_citations": bad_cites})
     n = len(qas)
     return {"recall@20": round(statistics.mean(recalls), 4) if recalls else None, "exact_field_accuracy": round(exact_ok / exact_n, 4) if exact_n else None,
             "exact_n": exact_n, "citation_correctness": round(cite_ok / cite_n, 4) if cite_n else None, "citations_checked": cite_n,
