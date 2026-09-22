@@ -93,3 +93,17 @@ Stated plainly so nobody mistakes a scaffold for a finished capability.
 ## Dashboard
 * Built and type-checked but not exercised against a running API in this
   build (no browser session). Endpoint wiring follows `docs/openapi.json`.
+
+## Topological memory bank (docs/TOPOLOGY.md)
+* Cliques and cavities are computed on the tissue a query activates (its seeds and
+  their bounded one-hop neighbourhood), never on the whole bank; a cavity is a
+  per-query statistic, not a stored memory trace.
+* The record graph's link direction (detail to context) is the reverse of a
+  circuit's, so simplex sinks are documents, clauses and entities; the cascade
+  recruits along them, the rerank bonus ignores direction.
+* Plasticity changes link weights in place from what packets used; it is run only
+  by the benchmark, which restores the weights. Enabling it in production needs a
+  policy for who may teach the bank and an audit of every weight change.
+* The clique network is a rate-coded feed-forward model with sparse fixed fan-in
+  and a reward-modulated Hebbian rule; it is not a spiking simulation and has no
+  cavities.

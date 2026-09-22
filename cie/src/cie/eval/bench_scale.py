@@ -327,6 +327,8 @@ def measure(s, principal: Principal, scope_id, questions: list[dict], doc_ids: l
     for arm, cfg in arms.items():
         lat_cold, lat_warm, hits, n_hit_q, stage = [], [], 0, 0, {}
         timeouts = 0
+        topo: dict[str, list] = {}
+        rr = []
         for rep in range(3):
             for q in questions:
                 try:
@@ -344,15 +346,22 @@ def measure(s, principal: Principal, scope_id, questions: list[dict], doc_ids: l
                 if res is not None and rep == 0:
                     for k, v in res.trace["timings_ms"].items():
                         stage.setdefault(k, []).append(v)
+                    for tk, tv in (res.trace.get("topology") or {}).items():
+                        if tk in ("max_dim", "betti1", "nodes"):
+                            topo.setdefault(tk, []).append(tv)
                     if q["doc"] is not None and visible(q["doc"]):
                         n_hit_q += 1
                         target = doc_str[q["doc"]]
-                        if any(it.get("document_id") == target and it.get("type") == q["type"] for it in res.packet.items[:20]):
+                        pos = next((i for i, it in enumerate(res.packet.items) if it.get("document_id") == target and it.get("type") == q["type"]), None)
+                        if pos is not None and pos < 20:
                             hits += 1
+                        rr.append(1.0 / (pos + 1) if pos is not None else 0.0)
                 s.rollback()  # do not keep benchmark packets/audit rows
         out[arm] = {"cold_p50_ms": _p(lat_cold, 0.5), "cold_p95_ms": _p(lat_cold, 0.95), "warm_p50_ms": _p(lat_warm, 0.5), "warm_p95_ms": _p(lat_warm, 0.95),
                     "warm_max_ms": _p(lat_warm, 1.0), "hit_at_20": round(hits / n_hit_q, 3) if n_hit_q else None, "timeouts": timeouts,
-                    "stage_ms_p50": {k: _p(v, 0.5) for k, v in stage.items()}}
+                    "mrr": round(sum(rr) / len(rr), 3) if rr else None,
+                    "stage_ms_p50": {k: _p(v, 0.5) for k, v in stage.items()},
+                    "topology_p50": {k: _p(v, 0.5) for k, v in topo.items()}}
     return out
 
 
@@ -468,7 +477,8 @@ def run(out: Path, sizes: list[int], seed: int = 5) -> dict[str, Any]:
             analyst = s.scalar(select(Principal).where(Principal.tenant_id == tenant_id, Principal.name == "analyst"))
             retriever = Retriever(s, settings, embedder=embedder)
             arms = {"hybrid+graph(bounded)": {}, "hybrid(no graph)": {"use_graph": False}, "vector-only": {"use_lexical": False, "use_exact": False, "use_graph": False},
-                    "lexical-only": {"use_vector": False, "use_exact": False, "use_graph": False}}
+                    "lexical-only": {"use_vector": False, "use_exact": False, "use_graph": False},
+                    "hybrid+cliques(topological)": {"graph_mode": "cliques"}, "hybrid+cliques+bonus": {"graph_mode": "cliques+bonus"}}
             size_rep["admin@company"] = measure(s, admin, company_id, questions, doc_ids, retriever, "admin", arms)
             size_rep["analyst@department(20%)"] = measure(s, analyst, dept0_id, questions, doc_ids, retriever, "analyst",
                                                           {"hybrid+graph(bounded)": {}, "vector-only": arms["vector-only"]}, visible=lambda d: d % 5 == 0)
@@ -516,7 +526,8 @@ def remeasure(out: Path, tenant_prefix: str = "scale-1000000-", label: str = "10
         questions = _q(random.Random(seed + 7), len(docs))
         retriever = Retriever(s, settings, embedder=embedder)
         arms = {"hybrid+graph(bounded)": {}, "hybrid(no graph)": {"use_graph": False}, "vector-only": {"use_lexical": False, "use_exact": False, "use_graph": False},
-                "lexical-only": {"use_vector": False, "use_exact": False, "use_graph": False}}
+                "lexical-only": {"use_vector": False, "use_exact": False, "use_graph": False},
+                "hybrid+cliques(topological)": {"graph_mode": "cliques"}, "hybrid+cliques+bonus": {"graph_mode": "cliques+bonus"}}
         size_rep = {"load": report["sizes"].get(tenant_prefix.split("-")[1], {}).get("load", {"n_sections": "?"}), "storage": report["sizes"].get(tenant_prefix.split("-")[1], {}).get("storage", {}),
                     "index_build_seconds": {}, "index_build_total_seconds": "-"}
         size_rep["admin@company"] = measure(s, admin, company.id, questions, doc_ids, retriever, "admin", arms)
@@ -551,11 +562,15 @@ def to_markdown(rep: dict) -> str:
                      f"{r['index_build_seconds'].get('ix_records_embedding_hnsw')} | {r['index_build_total_seconds']} | "
                      f"{st['memory_records']['total_bytes'] / 1e9:.2f} GB | {st['ix_records_embedding_hnsw_bytes'] / 1e6:.0f} MB ({st.get('hnsw_kind', 'vector')}) | "
                      f"{st['ix_records_tsv_bytes'] / 1e6:.0f} MB |")
-    lines += ["", "| records | principal | arm | cold p50 | cold p95 | warm p50 | warm p95 | warm max | hit@20 | timeouts |", "|---|---|---|---|---|---|---|---|---|---|"]
+    lines += ["", "| records | principal | arm | cold p50 | cold p95 | warm p50 | warm p95 | warm max | hit@20 | MRR | timeouts | topology (p50: nodes / max dim / cavities) |",
+              "|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for n, r in rep["sizes"].items():
         for who in ("admin@company", "analyst@department(20%)"):
             for arm, v in r[who].items():
-                lines.append(f"| {n} | {who} | {arm} | {v['cold_p50_ms']} | {v['cold_p95_ms']} | {v['warm_p50_ms']} | {v['warm_p95_ms']} | {v['warm_max_ms']} | {v['hit_at_20']} | {v['timeouts']} |")
+                tp = v.get("topology_p50") or {}
+                tps = f"{tp.get('nodes')} / {tp.get('max_dim')} / {tp.get('betti1')}" if tp else "-"
+                lines.append(f"| {n} | {who} | {arm} | {v['cold_p50_ms']} | {v['cold_p95_ms']} | {v['warm_p50_ms']} | {v['warm_p95_ms']} | {v['warm_max_ms']} | "
+                             f"{v['hit_at_20']} | {v.get('mrr', '-')} | {v['timeouts']} | {tps} |")
     lines += ["", "| records | stage (admin, hybrid, cold p50 ms) |", "|---|---|"]
     for n, r in rep["sizes"].items():
         st = r["admin@company"]["hybrid+graph(bounded)"]["stage_ms_p50"]

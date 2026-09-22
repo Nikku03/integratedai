@@ -82,6 +82,7 @@ def benchmarks_md(out: Path, docs: Path) -> str:
                   f"`pytest -m slow -k 300_page`: **{status}**. " + (f"Wall time {m.group(2)} including rasterisation at 110 dpi and Tesseract OCR of 300 pages; " if m else "")
                   + "all 300 pages stored with per-page confidence, completeness check passed, and the question about clause 177 was answered with a citation to page 177."]
     lines += scale_section(out)
+    lines += topology_section(out)
     lines += ["", "## Glyph encoding benchmark", "", glyph, "", "## Graph topology benchmark (Ramanujan/expander vs sparse justified graph)", "", graph, "",
               "## Multi-agent simulation", "", sim]
     text = "\n".join(lines)
@@ -246,3 +247,48 @@ def main(out: Path = Path("eval_out"), docs: Path = Path("docs")) -> None:
 
 if __name__ == "__main__":  # pragma: no cover
     main()
+
+
+def topology_section(out: Path) -> list[str]:
+    """Topological memory bank vs standard, plasticity, clique network vs deep network (docs/TOPOLOGY.md)."""
+    rep = _load(out / "topology" / "bench_topology.json")
+    md_path = out / "topology" / "bench_topology.md"
+    if not rep or not md_path.exists():
+        return []
+    lines = ["", "## Topological memory bank (Blue Brain cliques and cavities) vs the standard bank", "",
+             "The mapping, the design of the three comparisons and what does not map are in `docs/TOPOLOGY.md`. Every number below is measured on the "
+             "largest loaded scale tenant and the in-sample corpus; the arms share questions, budget and hardware.", "",
+             md_path.read_text().strip(), ""]
+    arms = rep.get("retrieval_arms") or {}
+    std, topo, bonus = arms.get("hybrid+graph(bounded)"), arms.get("hybrid+cliques(topological)"), arms.get("hybrid+cliques+bonus")
+    verdicts = []
+    if std and topo:
+        d_hit = (topo["hit_at_20"] or 0) - (std["hit_at_20"] or 0)
+        d_mrr = (topo.get("mrr") or 0) - (std.get("mrr") or 0)
+        d_ms = topo["warm_p50_ms"] - std["warm_p50_ms"]
+        verdicts.append(f"**Retrieval.** Replacing the REM expansion by the clique cascade changes hit@20 by {d_hit:+.3f} and MRR by {d_mrr:+.3f} "
+                        f"at a warm p50 cost of {d_ms:+.0f} ms per query"
+                        + (f"; the rerank bonus changes MRR by {(bonus.get('mrr') or 0) - (std.get('mrr') or 0):+.3f}." if bonus else "."))
+    pl = rep.get("plasticity")
+    if pl:
+        for mode, v in pl["arms"].items():
+            bt, at = v["before"]["test"], v["after"]["test"]
+            btr, atr = v["before"]["train"], v["after"]["train"]
+            verdicts.append(f"**Plasticity ({mode}).** After learning from {pl['train_questions']} questions, the same questions move from MRR {btr['mrr']} to {atr['mrr']} "
+                            f"and unseen questions about the same documents from {bt['mrr']} to {at['mrr']} (hit@20 {bt['hit_at_20']} → {at['hit_at_20']}); "
+                            f"graph stage {v['before']['test']['graph_ms_p50']} → {v['after']['test']['graph_ms_p50']} ms.")
+    m = rep.get("reranker_models")
+    if m:
+        best = max(m["models"].items(), key=lambda kv: (kv[1]["mrr"], kv[1]["auc"]))
+        verdicts.append(f"**Clique network vs deep network.** On unseen-document queries the best reranker is *{best[0]}* (MRR {best[1]['mrr']}, AUC {best[1]['auc']}); "
+                        + "; ".join(f"{k}: MRR {v['mrr']}, AUC {v['auc']}, {v['params']:,} parameters" for k, v in m["models"].items()) + ".")
+    if verdicts:
+        lines += ["### Reading", ""] + [f"* {v}" for v in verdicts] + [""]
+    lines += ["### Caveats", "",
+              "* The record graph's direction (detail → context) is the reverse of a circuit's (input → output), so simplex sinks are documents, clauses and "
+              "entities; the cascade recruits along them but the rerank bonus is direction-neutral. Whether that is the right reading is exactly what the arms test.",
+              "* The synthetic scale corpus has a regular link structure (a chain per document, a part-of edge every third record, a mentions edge per record, rare cross-document "
+              "dependencies), so its simplices are small and alike; real extracted graphs are irregular and the in-sample corpus is the only such graph measured.",
+              "* The reranker dataset is drawn from one synthetic tenant with templated questions; a model that wins here has learnt this corpus, not company documents.",
+              "* The Hebbian rule is a three-factor reward-modulated approximation of STDP on rate units, not a spiking simulation.", ""]
+    return lines

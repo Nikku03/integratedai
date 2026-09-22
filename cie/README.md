@@ -48,6 +48,9 @@ acceptance test: `pytest -m slow`. Benchmarks: `cie bench all`; multi-agent
 simulation: `cie simulate`; the end-to-end vertical slice: `cie demo`.
 Organisation views (entity profile, document card, scope digest) are under
 `/api/memory/entities`, `/api/documents/{id}/card` and `/api/scopes/{id}/digest`.
+The topological memory bank (Blue Brain cliques and cavities, `docs/TOPOLOGY.md`)
+is a retrieval arm (`graph_mode="cliques"`) compared against the standard bank by
+`python -m cie.eval.bench_topology`.
 Scale benchmark of the memory bank and retrieval at 10k / 100k / 1M records:
 `python -m cie.eval.bench_scale` (results in `docs/BENCHMARKS.md`; add
 `--remeasure` to measure again the tenants an earlier run loaded, without the

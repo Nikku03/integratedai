@@ -67,3 +67,23 @@ def test_clique_cascade_retrieval_keeps_answers_and_reports_topology(session, wo
     assert top_rem & top_topo, "the cascade must not lose the records the standard pipeline ranks first"
     assert any(c.clique_dim >= 1 for c in topo.ranked), "activated records carry their clique dimension"
     assert any("clique" in c.reasons for c in topo.ranked)
+
+
+@pytest.mark.db
+def test_plasticity_potentiates_used_links_and_restores(session, world):
+    from cie.core.models import LinkKind, RecordType
+    from cie.memory.records import create_record, link
+    from cie.topology import plasticity
+
+    t = world.tenant.id
+    a, b, c = (create_record(session, tenant_id=t, scope_id=world.project.id, type=RecordType.fact, summary=f"r{i}", content={}, detail="x")
+               for i in range(3))
+    ab = link(session, a, b, LinkKind.relates_to)
+    bc = link(session, b, c, LinkKind.relates_to)
+    session.flush()
+    w_ab, w_bc = float(ab.weight), float(bc.weight)
+    upd = plasticity.stdp_update(session, fired=[a.id, b.id], traversed=[(b.id, c.id)])
+    assert upd["potentiated"] == 1 and upd["depressed"] == 1
+    assert float(ab.weight) > w_ab and float(bc.weight) < w_bc
+    assert plasticity.restore(session, upd["previous"]) == 2
+    assert float(ab.weight) == w_ab and float(bc.weight) == w_bc

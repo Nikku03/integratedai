@@ -219,7 +219,7 @@ class Retriever:
                  "lists": {k_: len(v) for k_, v in lists.items()}, "as_of": at.isoformat() if at else None,
                  "embedding_provider": getattr(self.embedder, "name", "?"), "scopes_allowed": len(allowed),
                  "arms": {"exact": use_exact, "lexical": use_lexical, "vector": use_vector, "graph": use_graph, "graph_mode": graph_mode},
-                 "topology": topo_stats}
+                 "topology": topo_stats, "edges_used": [(str(e.via), str(e.record_id)) for e in expanded]}
         pk = packet.build(s, tenant_id=principal.tenant_id, principal_id=principal.id, query=query, intent=intent.kind,
                           scope_ids=allowed, filters=filters, ranked=ranked, conflicts=conflicts,
                           min_records=min_records or self.settings.packet_min_records,
