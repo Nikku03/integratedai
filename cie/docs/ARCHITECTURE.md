@@ -158,10 +158,13 @@ The bank is browsable as well as searchable, from the records it already holds
 * `find_entities(q)`: entities by name or alias (trigram index on the
   canonical name, keyword index on normalised aliases).
 
-Entity resolution (`cie.memory.entities`) scores only index-served candidates:
-names sharing trigrams with the mention, or whose recorded aliases contain
-it (aliases are kept normalised in the indexed `keywords`), so resolving a
-mention never loads every organisation the company has met.
+Entity resolution (`cie.memory.entities`) is company-wide for organisations
+(a supplier first met by one project is the same supplier elsewhere) and
+department-wide for people. It scores only index-served candidates: names
+sharing trigrams with the mention, or whose recorded aliases contain it
+(aliases are kept normalised in the indexed `keywords`); an exact normalised
+match wins outright, so "Northwind Logistics 37 Ltd" is never confused with
+"Northwind Logistics 3 Ltd" by a fuzzy score.
 
 Exposed as `GET /memory/entities?q=`, `GET /memory/entities/{id}/profile`,
 `GET /documents/{id}/card`, `GET /scopes/{id}/digest`; all permission-filtered

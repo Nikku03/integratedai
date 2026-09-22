@@ -1,10 +1,10 @@
 """Entity resolution: canonical person/organization records and mention edges.
 
-Names are normalised (case, punctuation, corporate suffixes) and matched with
-RapidFuzz against existing entity records in the addressable scope tree
-(company-wide for organizations, department-wide for people). A confident
-match links the new record with a ``mentions`` edge instead of creating a
-duplicate entity. Ambiguous names (two candidates above threshold with no
+Names are normalised (case, punctuation, corporate suffixes) and matched against
+existing entity records, company-wide for organizations and department-wide for
+people: an exact normalised match wins outright, otherwise RapidFuzz scores the
+index-served candidates. A confident match links the new record with a
+``mentions`` edge instead of creating a duplicate entity. Ambiguous names (two candidates above threshold with no
 clear winner) are recorded as an ``open_question`` rather than guessed.
 """
 
@@ -30,9 +30,27 @@ def normalise(name: str) -> str:
     return re.sub(r"\s+", " ", n)
 
 
+def candidate_scope_ids(session: Session, scope_id: uuid.UUID, rtype: RecordType) -> list[uuid.UUID] | None:
+    """Where a canonical entity may live. Organisations are company-wide (``None``:
+    every scope of the tenant), because a supplier first met by one project is the
+    same supplier when another project meets it. People are department-wide: the
+    scope's ancestor chain plus the subtree of its nearest department."""
+    if rtype == RecordType.organization:
+        return None
+    from cie.core.models import ScopeKind
+    from cie.memory.scopes import descendants
+
+    chain = ancestors(session, scope_id)
+    ids = {s.id for s in chain}
+    dept = next((s for s in chain if s.kind == ScopeKind.department), chain[-1] if chain else None)
+    if dept is not None:
+        ids |= {dept.id} | {d.id for d in descendants(session, dept)}
+    return list(ids)
+
+
 def candidates(session: Session, tenant_id: uuid.UUID, scope_id: uuid.UUID, rtype: RecordType,
                name: str | None = None, limit: int = 50) -> list[MemoryRecord]:
-    """Entity records visible from the scope's ancestor chain (inherited memory).
+    """Entity records the mention may resolve to (see ``candidate_scope_ids``).
 
     With ``name``, only the entities whose canonical name shares trigrams with it
     (the GIN trigram index on ``summary``) or whose recorded aliases contain it
@@ -41,10 +59,12 @@ def candidates(session: Session, tenant_id: uuid.UUID, scope_id: uuid.UUID, rtyp
     organisation the company has ever met."""
     from sqlalchemy import cast, func, or_
 
-    chain = [s.id for s in ancestors(session, scope_id)]
     stmt = select(MemoryRecord).where(
-        MemoryRecord.tenant_id == tenant_id, MemoryRecord.type == rtype, MemoryRecord.scope_id.in_(chain),
+        MemoryRecord.tenant_id == tenant_id, MemoryRecord.type == rtype,
         MemoryRecord.deleted_at.is_(None), MemoryRecord.superseded_by_id.is_(None))
+    scope_ids = candidate_scope_ids(session, scope_id, rtype)
+    if scope_ids is not None:
+        stmt = stmt.where(MemoryRecord.scope_id.in_(scope_ids))
     if name:
         key = normalise(name)
         sim = func.similarity(MemoryRecord.summary, name)
@@ -73,7 +93,10 @@ def resolve(session: Session, tenant_id: uuid.UUID, scope_id: uuid.UUID, name: s
     scored = []
     for c in candidates(session, tenant_id, scope_id, rtype, name=name):
         aliases = [c.summary] + list((c.content or {}).get("aliases", []))
-        best = max(fuzz.token_sort_ratio(key, normalise(a)) for a in aliases)
+        normalised = [normalise(a) for a in aliases]
+        if key and key in normalised:
+            return c, "matched"  # the same name once suffixes and punctuation are gone: never ambiguous
+        best = max(fuzz.token_sort_ratio(key, a) for a in normalised)
         scored.append((best, c))
     scored.sort(key=lambda t: -t[0])
     if not scored or scored[0][0] < threshold:

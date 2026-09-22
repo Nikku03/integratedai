@@ -101,9 +101,10 @@ def scale_section(out: Path) -> list[str]:
     if not loaded:
         return []
     big = max(loaded, key=lambda k: int(k))
-    after = next((k for k in sizes if k.startswith(big) and k != big), None)
+    first = _load(out / "scale" / "bench_scale_original_run.json") or {}
     b = sizes[big]
-    hb = b["admin@company"]["hybrid+graph(bounded)"]
+    before = first.get("sizes", {}).get(big)  # the first, pre-fix run of the same size, kept for the record
+    hb = (before or b)["admin@company"]["hybrid+graph(bounded)"]
     lines = ["", "## Scale benchmark: memory bank and retrieval at 10k, 100k and 1M records", "",
              "`python -m cie.eval.bench_scale` loads a synthetic tenant of N typed records (12 per document: fees, penalties, notice periods, "
              "terms, liability caps, decisions, parties, signatories, open questions, notes), N/4 sections and about 1.35 edges per record through "
@@ -118,11 +119,11 @@ def scale_section(out: Path) -> list[str]:
               f"{b['index_build_total_seconds']} s; the records table takes {st['memory_records']['total_bytes'] / 1e9:.1f} GB with indexes "
               f"({st['ix_records_embedding_hnsw_bytes'] / 1e9:.1f} GB HNSW, {st['ix_records_tsv_bytes'] / 1e6:.0f} MB GIN), sections {st['sections']['total_bytes'] / 1e9:.1f} GB, "
               f"edges {st['record_links']['total_bytes'] / 1e6:.0f} MB. Warm metadata lookup p95 {b['warm_metadata_lookup_ms']['p95']} ms.", ""]
-    if after:
-        a = sizes[after]
+    if before:
+        a = b
         ha = a["admin@company"]["hybrid+graph(bounded)"]
         la = a["admin@company"].get("lexical-only", {})
-        lb = b["admin@company"].get("lexical-only", {})
+        lb = before["admin@company"].get("lexical-only", {})
         lines += [f"**The first {int(big):,}-record run failed the latency target and most questions** (hybrid warm p50 {hb['warm_p50_ms']} ms, p95 {hb['warm_p95_ms']} ms, "
                   f"hit@20 {hb['hit_at_20']}). The stage timings named the causes, all in the retrieval code rather than in PostgreSQL: a `COUNT(*)` per query to size the "
                   f"graph budget, an unbounded OR full-text tier that ranked every row sharing a common word, a trigram similarity fallback over every entity summary, "
@@ -132,8 +133,8 @@ def scale_section(out: Path) -> list[str]:
                   f"best-match-only documents; bounded trigram fallback; embeddings and tsvectors never read back) the same tenant re-measured at hybrid warm p50 "
                   f"{ha['warm_p50_ms']} ms, p95 {ha['warm_p95_ms']} ms, hit@20 {ha['hit_at_20']} (lexical stage p50 {lb.get('stage_ms_p50', {}).get('lexical_ms', '?')} → "
                   f"{ha['stage_ms_p50'].get('lexical_ms', '?')} ms; lexical-only hit@20 {lb.get('hit_at_20', '?')} → {la.get('hit_at_20', '?')}). "
-                  f"The 10k and 100k rows are from the first run and were not re-measured; their latencies are upper bounds for the fixed code.", ""]
-    org = (sizes.get(after) if after else b).get("organisation") or b.get("organisation")
+                  f"The tables above are the complete re-run with the fixed code; the first run is kept in `docs/benchmarks/scale_first_run.md`.", ""]
+    org = b.get("organisation")
     if org:
         dg = org["digest"]
         lines += [f"**Can it organise at {int(big):,} records?** Resolving a differently spelled supplier name to its canonical entity takes "
