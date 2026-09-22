@@ -498,4 +498,11 @@ def main(out: Path, sizes: list[int] | None = None) -> dict:
 if __name__ == "__main__":  # pragma: no cover
     import sys
 
-    main(Path("eval_out/scale"), [int(x) for x in sys.argv[1:]] or None)
+    argv = sys.argv[1:]
+    if "--remeasure" in argv:
+        # re-run only the measurement phase against tenants an earlier run loaded (no reload, no index build)
+        argv.remove("--remeasure")
+        for n in [int(x) for x in argv] or [1_000_000]:
+            remeasure(Path("eval_out/scale"), tenant_prefix=f"scale-{n}-", label=f"{n} (re-measured)")
+    else:
+        main(Path("eval_out/scale"), [int(x) for x in argv] or None)
