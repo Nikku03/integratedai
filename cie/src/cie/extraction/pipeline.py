@@ -243,6 +243,10 @@ def _derive(session: Session, document: Document, extraction: Extraction, sectio
             if d.type in ("organization", "person"):
                 entities[d.content.get("name", d.summary)] = rec
     autolink(session, doc_rec, created, entities)
+    if document.previous_version_id is not None:
+        from cie.memory.records import supersede_previous_version
+
+        supersede_previous_version(session, document.previous_version_id, document.id, document.file_created_at)
     return n
 
 

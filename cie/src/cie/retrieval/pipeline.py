@@ -37,6 +37,27 @@ class RetrievalResult:
     trace: dict[str, Any]
 
 
+def _pull_partners(ranked, conflicts):
+    """Place every recorded contradiction partner directly after the highest-ranked
+    item it contradicts, so the packet budget can never separate the two sides.
+    Order within the rest of the list is preserved."""
+    pos = {c.record.id: i for i, c in enumerate(ranked) if c.record is not None}
+    moved: set = set()
+    out = []
+    for c in ranked:
+        if c.record is not None and c.record.id in moved:
+            continue
+        out.append(c)
+        if c.record is None:
+            continue
+        for pid in conflicts.get(c.record.id, []):
+            j = pos.get(pid)
+            if j is not None and j > pos[c.record.id] and pid not in moved:
+                out.append(ranked[j])
+                moved.add(pid)
+    return out
+
+
 class Retriever:
     def __init__(self, session: Session, settings: Settings | None = None, embedder: EmbeddingProvider | None = None):
         self.session = session
@@ -156,8 +177,11 @@ class Retriever:
         conflicts, extra = contradictions.find(s, [c.record.id for c in ranked if c.record is not None][:max_records or self.settings.packet_max_records], rec_filter)
         for r in extra:
             if r.id not in seen and vis.can_read(r.scope_id, r.sensitivity, r.acl):
-                ranked.append(rerank.Candidate(r, None, 0.0, {"contradiction": (0, 0.0)}, horizon=1, via="contradicts"))
+                partner = rerank.Candidate(r, None, 0.0, {"contradiction": (0, 0.0)}, horizon=1, via="contradicts")
+                partner.support = 1.0  # it is the other side of a recorded contradiction with an item that has support
+                ranked.append(partner)
                 seen.add(r.id)
+        ranked = _pull_partners(ranked, conflicts)
 
         # 8. packet
         latency = (time.perf_counter() - t0) * 1000

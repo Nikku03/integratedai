@@ -42,13 +42,17 @@ Stated plainly so nobody mistakes a scaffold for a finished capability.
   text shape.
 * The reranker is heuristic, not a trained cross-encoder.
 
-## Acceptance targets not met (measured, see BENCHMARKS.md)
-* Exact structured-field accuracy and citation correctness are below the
-  99% / 100% targets on the hard synthetic set; the per-question failures are
-  listed with causes.
-* Conflict detection in the benchmark depends on contradictions having been
-  recorded; the corpus's planted cross-document conflict is now detected at
-  ingest only when the two records share an entity and topic words.
+## Acceptance numbers are in-sample (see BENCHMARKS.md)
+* All §13 targets are met on the 18-question synthetic set, but that set was
+  used to find and fix retrieval defects during development. Treat the
+  numbers as evidence the mechanisms work, not as generalisation. There is
+  no out-of-sample evaluation yet.
+* Cross-document contradiction detection at ingest is deliberately narrow:
+  same record type and value kind, a shared discriminative organisation,
+  two shared topic words, and at most one of the two documents a governing
+  instrument (a contract-versus-email disagreement is flagged; two different
+  contracts with the same counterparty are not). Everything else must be
+  declared by an agent or a person.
 
 ## Scale
 * Everything was measured on a 15-document synthetic corpus. HNSW build,

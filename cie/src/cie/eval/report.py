@@ -41,7 +41,15 @@ def benchmarks_md(out: Path, docs: Path) -> str:
         lines.append(f"| Unauthorized results in access-control questions | 0 | {main['permission_leaks']} | {'yes' if main['permission_leaks'] == 0 else '**no**'} |")
         lines.append(f"| Insufficient-evidence questions answered as such | all | {main['insufficient_evidence_detection']:.0%} | {'yes' if main['insufficient_evidence_detection'] == 1 else '**no**'} |")
         lines.append(f"| Planted cross-document conflict reported as conflict | all | {main['conflict_detection']:.0%} | {'yes' if main['conflict_detection'] == 1 else '**no**'} |")
-        lines += ["", "Unsupported factual claims in strict mode: 0 by construction (every sentence of an extractive answer is a "
+        lines += ["", "### Caveats that matter more than the table", "",
+                  f"* **In-sample.** The {bench['questions']} questions were used while the retrieval scoring was being fixed; every failure they exposed "
+                  "was corrected until they passed. They demonstrate the mechanisms work, not generalisation. An out-of-sample set is the first roadmap item for evaluation.",
+                  f"* **Small corpus.** {bench['docs']} documents, {bench['storage']['counts']['pages']} pages. On a corpus this size an evidence packet "
+                  f"(~{bench['arms']['hybrid+graph(bounded, REM)']['packet_tokens_avg']:.0f} tokens) is not smaller than the whole corpus a principal can read; the packet only pays off at scale.",
+                  "* **Graph expansion shows no gain here.** Hybrid, hybrid+graph and the bounded REM arm score identically because the questions rarely need "
+                  "graph neighbours that lexical/vector search misses; the synthetic graph benchmark below shows where bounded expansion does help.",
+                  "* **Extractive answers only.** No LLM was available; assisted mode and LLM agent strategies are untested against a live model.", ""]
+        lines += ["Unsupported factual claims in strict mode: 0 by construction (every sentence of an extractive answer is a "
                   "record summary or a quote of a record's text with a citation); the assisted mode's claim verifier was tested with a fake provider only.", "",
                   "### Retrieval arms", "",
                   f"{bench['docs']} documents (contracts in three versions, a noisy scanned contract, a prompt-injected contract, a finance memo with a table, "
@@ -95,20 +103,22 @@ def cost_storage_md(out: Path, docs: Path) -> str:
                   f"| documents / pages / sections / records | {counts['documents']} / {counts['pages']} / {counts['sections']} / {counts['records']} |",
                   f"| raw vault bytes (deduplicated blobs) | {raw:,} ({raw / 1e6:.1f} MB) |",
                   f"| raw bytes per page | {raw / max(counts['pages'], 1):,.0f} |"]
-        for t, b in tb.items():
-            lines.append(f"| `{t}` table incl. indexes (whole database, all benchmark tenants) | {b:,} |")
-        per_rec = tb["memory_records"] / max(1, counts["records"])
-        per_sec = tb["sections"] / max(1, counts["sections"])
-        lines += ["", f"The `memory_records` table currently costs about {per_rec:,.0f} bytes per record and `sections` about {per_sec:,.0f} bytes per section "
-                  "(384-d float32 embedding = 1,536 bytes each, plus tsvector, JSONB glyph and provenance). These per-unit figures include every tenant ever written to the "
-                  "benchmark database, so they overstate a clean deployment.", "",
+        pr = st.get("bytes_per_row", {})
+        for t in tb:
+            lines.append(f"| `{t}` table incl. indexes, bytes per row (database-wide) | {pr.get(t) or 'n/a'} |")
+        per_rec = pr.get("memory_records") or tb["memory_records"] / max(1, counts["records"])
+        per_sec = pr.get("sections") or tb["sections"] / max(1, counts["sections"])
+        lines += ["", f"A memory record costs about {per_rec:,.0f} bytes on disk and a section about {per_sec:,.0f} bytes, indexes included "
+                  "(384-d float32 embedding = 1,536 bytes each, HNSW and GIN index entries, tsvector, JSONB glyph and provenance). "
+                  "Evidence packets are the largest growing table because every search stores its full packet for reproducibility; they can be "
+                  "expired by retention policy.", "",
                   "## Projection to a 200-million-token project memory", "",
                   "Assuming ~350 tokens per section and ~120 tokens per record (measured averages on this corpus are of that order), 200M addressable tokens ≈ "
                   "450k sections + 350k records:", "",
                   "| component | estimate |", "|---|---|",
                   f"| sections (450k × {per_sec:,.0f} B) | {450_000 * per_sec / 1e9:.1f} GB |",
                   f"| records (350k × {per_rec:,.0f} B) | {350_000 * per_rec / 1e9:.1f} GB |",
-                  f"| raw vault (450k sections ≈ 60k pages × {raw / max(counts['pages'], 1):,.0f} B) | {60_000 * raw / max(counts['pages'], 1) / 1e9:.1f} GB |",
+                  f"| raw vault (450k sections ≈ 60k pages × {raw / max(counts['pages'], 1):,.0f} B/page measured on PDFs with embedded fonts) | {60_000 * raw / max(counts['pages'], 1) / 1e9:.1f} GB |",
                   "", "This fits one PostgreSQL instance with room; HNSW build time and index memory, not disk, are the first limits (see ROADMAP.md)."]
         main = bench["arms"]["hybrid+graph(bounded, REM)"]
         fc = bench["full-context"]

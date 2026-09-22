@@ -68,11 +68,12 @@ services:
       replicas: 2
 
   dashboard:
-    build: ./dashboard
+    build:
+      context: ./dashboard
+      args:
+        VITE_API_BASE: ${CIE_DASHBOARD_API_BASE:-http://localhost:8000/api}  # baked into the bundle at build time
     depends_on: [api]
     ports: ["5173:80"]
-    environment:
-      VITE_API_BASE: http://localhost:8000/api
 
   # Optional GPU OCR server for baidu/Unlimited-OCR (requires NVIDIA runtime).
   # Enable with: docker compose --profile ocr up -d  and set CIE_UNLIMITED_OCR_URL=http://unlimited-ocr:8000

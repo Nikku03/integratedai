@@ -24,7 +24,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from sqlalchemy import func, select
+from sqlalchemy import func, select, text
 from sqlalchemy.orm import Session
 
 from cie.agents.providers import estimate_cost
@@ -104,37 +104,18 @@ def ingest_corpus(s: Session, docs: list[SynthDoc], *, embedder, ocr, tag: str =
 
 
 def _supersede_versions(s: Session, docs: dict[str, Document], synth: list[SynthDoc]) -> None:
-    """Records derived from an older document version are superseded by the
-    matching records (same type + clause/metric name) of the newest version."""
-    from cie.memory.records import supersede
+    """Version supersession happens in the ingestion pipeline (records.supersede_previous_version);
+    this re-applies it idempotently so the benchmark does not depend on ingest order."""
+    from cie.memory.records import supersede_previous_version
 
     by_family: dict[str, list[SynthDoc]] = {}
     for d in synth:
         if d.family:
             by_family.setdefault(d.family, []).append(d)
-    for fam, versions in by_family.items():
+    for versions in by_family.values():
         versions.sort(key=lambda x: x.version)
         for old, new in zip(versions, versions[1:], strict=False):
-            old_recs = list(s.scalars(select(MemoryRecord).where(MemoryRecord.source_document_id == docs[old.key].id)))
-            new_recs = list(s.scalars(select(MemoryRecord).where(MemoryRecord.source_document_id == docs[new.key].id)))
-            new_by_key = {_rec_key(r): r for r in new_recs}
-            for r in old_recs:
-                k = _rec_key(r)
-                if k and k in new_by_key and new_by_key[k].id != r.id and r.superseded_by_id is None:
-                    supersede(s, r, new_by_key[k], at=docs[new.key].file_created_at, justification=f"new version of {fam}")
-
-
-def _rec_key(r: MemoryRecord) -> str | None:
-    c = r.content or {}
-    if r.type.value == "contract_clause":
-        return f"clause:{c.get('clause_number')}"
-    if r.type.value == "metric":
-        return f"metric:{c.get('name')}:{c.get('currency', c.get('unit'))}"
-    if r.type.value == "document":
-        return "document"
-    if r.type.value in ("deadline", "requirement", "risk", "decision"):
-        return f"{r.type.value}:{r.summary[:40]}"
-    return None
+            supersede_previous_version(s, docs[old.key].id, docs[new.key].id, docs[new.key].file_created_at)
 
 
 # ---------------------------------------------------------------- metrics helpers
@@ -327,13 +308,16 @@ def _run_arm(s: Session, world: World, qas: list[QA], arm: str, cfg: dict, embed
 def _storage(s: Session, tid) -> dict[str, Any]:
     raw = s.execute(select(func.count(Blob.id), func.coalesce(func.sum(Blob.size_bytes), 0)).where(Blob.tenant_id == tid)).one()
     sizes = {}
+    per_row = {}
     for table in ("pages", "blocks", "sections", "memory_records", "record_links", "evidence_packets"):
         sizes[table] = int(s.execute(func.pg_total_relation_size(table)).scalar() or 0)
+        rows = int(s.execute(text(f"SELECT count(*) FROM {table}")).scalar() or 0)
+        per_row[table] = round(sizes[table] / rows, 1) if rows else None
     counts = {"documents": s.scalar(select(func.count(Document.id)).where(Document.tenant_id == tid)),
               "pages": s.scalar(select(func.count(Page.id)).join(Document, Document.id == Page.document_id).where(Document.tenant_id == tid)),
               "sections": s.scalar(select(func.count(Section.id)).where(Section.tenant_id == tid)),
               "records": s.scalar(select(func.count(MemoryRecord.id)).where(MemoryRecord.tenant_id == tid))}
-    return {"raw_blobs": int(raw[0]), "raw_bytes": int(raw[1]), "table_bytes_total_db": sizes, "counts": counts}
+    return {"raw_blobs": int(raw[0]), "raw_bytes": int(raw[1]), "table_bytes_total_db": sizes, "bytes_per_row": per_row, "counts": counts}
 
 
 def to_markdown(rep: dict) -> str:

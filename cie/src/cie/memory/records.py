@@ -181,6 +181,46 @@ def current_only(stmt, at: datetime | None = None):
     )
 
 
+def version_key(r: MemoryRecord) -> str | None:
+    """Identity of a record across versions of the same document (clause number,
+    metric name, deadline/requirement text prefix). None = not versioned."""
+    c = r.content or {}
+    t = r.type.value
+    if t == "contract_clause":
+        return f"clause:{c.get('clause_number')}"
+    if t == "metric":
+        return f"metric:{c.get('name')}:{c.get('currency', c.get('unit'))}"
+    if t == "document":
+        return "document"
+    if t in ("deadline", "requirement", "risk", "decision", "fact"):
+        return f"{t}:{r.summary[:40]}"
+    return None
+
+
+def supersede_previous_version(session: Session, old_document_id: uuid.UUID, new_document_id: uuid.UUID,
+                               at: datetime | None) -> int:
+    """When a new version of a document is ingested, every record derived from the
+    previous version whose version key reappears in the new version is superseded
+    by the new record. Records that vanished stay current (a clause removed is not
+    'replaced'); a person can supersede them explicitly."""
+    old = list(session.scalars(select(MemoryRecord).where(MemoryRecord.source_document_id == old_document_id,
+                                                          MemoryRecord.superseded_by_id.is_(None), MemoryRecord.deleted_at.is_(None))))
+    new = list(session.scalars(select(MemoryRecord).where(MemoryRecord.source_document_id == new_document_id,
+                                                          MemoryRecord.deleted_at.is_(None))))
+    new_by_key: dict[str, MemoryRecord] = {}
+    for r in new:
+        k = version_key(r)
+        if k and k not in new_by_key:
+            new_by_key[k] = r
+    n = 0
+    for r in old:
+        k = version_key(r)
+        if k and k in new_by_key and new_by_key[k].id != r.id:
+            supersede(session, r, new_by_key[k], at=at, justification="new document version")
+            n += 1
+    return n
+
+
 def history(session: Session, family_id: uuid.UUID) -> list[MemoryRecord]:
     return list(session.scalars(select(MemoryRecord).where(MemoryRecord.family_id == family_id)
                                 .order_by(MemoryRecord.version)))

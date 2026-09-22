@@ -176,6 +176,9 @@ def detect_cross_document_contradictions(session: Session, records: list[MemoryR
                 continue
             if p_doc.family_id == my_doc.family_id:
                 continue  # versions of one document are supersessions, not contradictions
+            governing = ("contract", "agreement", "policy", "amendment")
+            if (my_doc.doc_type or "").lower() in governing and (p_doc.doc_type or "").lower() in governing:
+                continue  # two executed instruments are separate documents, not a contradiction about one of them
             if p.source_document_id not in doc_ents:
                 doc_ents[p.source_document_id] = _doc_entities(session, p.source_document_id)
             p_ents = set(p.entity_ids or [])
@@ -189,5 +192,6 @@ def detect_cross_document_contradictions(session: Session, records: list[MemoryR
                 continue
             contradict(session, r, p, f"{r.type.value} disagrees across documents: {val} vs {pv}", producing_agent="autolink_v1")
             n += 1
-            break
+            if n >= 3 * (len(records) or 1):
+                break
     return n
