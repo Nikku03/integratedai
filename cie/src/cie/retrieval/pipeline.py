@@ -101,7 +101,9 @@ class Retriever:
             if use_sections:
                 lists["lex_sec"] = [(("sec", i), sc) for i, sc in lexical.search_sections(s, query, sec_filter, k)]
             timings["lexical_ms"] = (time.perf_counter() - t) * 1000
+        t = time.perf_counter()
         qvec = self.embedder.embed([query])[0] if use_vector else None
+        timings["embed_ms"] = (time.perf_counter() - t) * 1000
         if use_vector:
             t = time.perf_counter()
             lists["vec_rec"] = vector.search_records(s, qvec, rec_filter, k)
@@ -138,6 +140,7 @@ class Retriever:
             timings["graph_ms"] = (time.perf_counter() - t) * 1000
 
         # materialise candidates
+        t = time.perf_counter()
         rec_ids = [rid for rid in fused if not isinstance(rid, tuple)] + [e.record_id for e in expanded]
         sec_ids = [rid[1] for rid in fused if isinstance(rid, tuple)]
         recs = exact.by_ids(s, rec_ids)
@@ -159,6 +162,8 @@ class Retriever:
         # defence in depth: per-record ACL check in Python as well as SQL
         cands = [c for c in cands if c.record is None or vis.can_read(c.record.scope_id, c.record.sensitivity, c.record.acl)]
 
+        timings["materialise_ms"] = (time.perf_counter() - t) * 1000
+        t = time.perf_counter()
         # 6. rerank (document titles/types let a named supplier disambiguate similar files and demote drafts)
         doc_ids = {c.record.source_document_id if c.record is not None else c.section.document_id for c in cands}
         doc_ids.discard(None)
@@ -173,6 +178,8 @@ class Retriever:
             doc_types = {d_id: (dt or "") for d_id, _, _, dt in rows}
         ranked = rerank.rerank(cands, intent, query, doc_titles=titles, doc_types=doc_types)
 
+        timings["rerank_ms"] = (time.perf_counter() - t) * 1000
+        t = time.perf_counter()
         # 7. contradictions
         conflicts, extra = contradictions.find(s, [c.record.id for c in ranked if c.record is not None][:max_records or self.settings.packet_max_records], rec_filter)
         for r in extra:
@@ -183,6 +190,8 @@ class Retriever:
                 seen.add(r.id)
         ranked = _pull_partners(ranked, conflicts)
 
+        timings["contradictions_ms"] = (time.perf_counter() - t) * 1000
+        t = time.perf_counter()
         # 8. packet
         latency = (time.perf_counter() - t0) * 1000
         trace = {"timings_ms": timings, "graph_budget": budget, "expanded": len(expanded), "candidates": len(cands),
@@ -194,6 +203,7 @@ class Retriever:
                           min_records=min_records or self.settings.packet_min_records,
                           max_records=max_records or self.settings.packet_max_records,
                           token_budget=token_budget or self.settings.packet_token_budget, trace=trace, latency_ms=latency)
+        pk.trace["timings_ms"]["packet_ms"] = (time.perf_counter() - t) * 1000
         audit(s, tenant_id=principal.tenant_id, principal_id=principal.id, action="search", resource_kind="evidence_packet",
               resource_id=pk.id, details={"query": query, "scope_id": str(scope_id), "items": len(pk.items)})
         s.add(Metric(tenant_id=principal.tenant_id, name="retrieval_latency_ms", value=latency,
@@ -220,21 +230,22 @@ class Retriever:
         return result, res
 
     def _named_documents(self, query: str, tenant_id: uuid.UUID, allowed: list[uuid.UUID], vis: Visibility) -> list[uuid.UUID]:
-        """Documents whose title or filename carries a capitalised name from the query."""
+        """Documents whose title or filename carries a capitalised name from the query
+        (trigram-indexed ILIKE, never a scan of every document)."""
+        from sqlalchemy import or_
+
         from cie.core.models import Document
 
         ents = [e for e in rerank.entity_terms(query) if len(e) >= 4]
         if not ents:
             return []
-        stmt = select(Document.id, Document.title, Document.original_filename).where(
+        pats = [f"%{e}%" for e in ents[:5]]
+        stmt = (select(Document.id).where(
             Document.tenant_id == tenant_id, Document.deleted_at.is_(None), Document.scope_id.in_(allowed),
-            vis.sql_filter(Document.scope_id, Document.sensitivity))
-        out = []
-        for d_id, title, fname in self.session.execute(stmt):
-            hay = f"{title} {fname}".lower()
-            if any(e in hay for e in ents):
-                out.append(d_id)
-        return out[:20]
+            vis.sql_filter(Document.scope_id, Document.sensitivity),
+            or_(*[Document.title.ilike(p) for p in pats], *[Document.original_filename.ilike(p) for p in pats]))
+            .limit(20))
+        return list(self.session.scalars(stmt))
 
     # ------------------------------------------------------------------
     @staticmethod
