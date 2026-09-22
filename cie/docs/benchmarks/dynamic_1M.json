@@ -1,0 +1,424 @@
+{
+  "tenant_prefix": "scale-1000000-",
+  "documents": 40,
+  "rounds": 3,
+  "questions": {
+    "learning": 120,
+    "reworded": 120,
+    "unseen": 120
+  },
+  "static": {
+    "hybrid+graph(REM)": {
+      "learning": {
+        "hit_at_5": 1.0,
+        "hit_at_20": 1.0,
+        "mrr": 1.0,
+        "p50_ms": 752.0,
+        "p95_ms": 11592.7
+      },
+      "reworded": {
+        "hit_at_5": 1.0,
+        "hit_at_20": 1.0,
+        "mrr": 1.0,
+        "p50_ms": 263.9,
+        "p95_ms": 466.1
+      },
+      "unseen": {
+        "hit_at_5": 1.0,
+        "hit_at_20": 1.0,
+        "mrr": 0.799,
+        "p50_ms": 340.4,
+        "p95_ms": 564.4
+      }
+    },
+    "hybrid+cliques+bonus": {
+      "learning": {
+        "hit_at_5": 1.0,
+        "hit_at_20": 1.0,
+        "mrr": 1.0,
+        "p50_ms": 247.8,
+        "p95_ms": 384.8
+      },
+      "reworded": {
+        "hit_at_5": 1.0,
+        "hit_at_20": 1.0,
+        "mrr": 1.0,
+        "p50_ms": 230.3,
+        "p95_ms": 392.0
+      },
+      "unseen": {
+        "hit_at_5": 1.0,
+        "hit_at_20": 1.0,
+        "mrr": 0.799,
+        "p50_ms": 276.0,
+        "p95_ms": 468.2
+      }
+    },
+    "weak reader: vector-only+graph": {
+      "learning": {
+        "hit_at_5": 1.0,
+        "hit_at_20": 1.0,
+        "mrr": 0.996,
+        "p50_ms": 125.5,
+        "p95_ms": 160.3
+      },
+      "reworded": {
+        "hit_at_5": 1.0,
+        "hit_at_20": 1.0,
+        "mrr": 1.0,
+        "p50_ms": 129.6,
+        "p95_ms": 183.5
+      },
+      "unseen": {
+        "hit_at_5": 0.758,
+        "hit_at_20": 0.917,
+        "mrr": 0.714,
+        "p50_ms": 138.3,
+        "p95_ms": 305.6
+      }
+    }
+  },
+  "use": {
+    "formed": 396,
+    "potentiated": 775,
+    "pruned": 0,
+    "answers": 360,
+    "answer_plus_wiring_ms_p50": 233.5,
+    "seconds": 95.4
+  },
+  "shapes": {
+    "dynamic_links": 396,
+    "records": 320,
+    "simplices_by_dim": {
+      "1": 396,
+      "2": 236,
+      "3": 73,
+      "4": 11,
+      "5": 1
+    },
+    "max_dim": 5,
+    "cavities": 0,
+    "max_degree": 5,
+    "truncated": false,
+    "shapes": [
+      {
+        "dimension": 5,
+        "sink": {
+          "id": "9dc45966-acb3-4536-8e8c-5f8a2741cfc9",
+          "type": "deadline",
+          "summary": "2.2 Either party may terminate this Agreement by giving no later than 120 days written notice.",
+          "document_id": "7e96efc1-dc3d-4245-a959-ebd955a999cc"
+        },
+        "source": {
+          "id": "c3fe99c4-9e91-47ee-ab31-8a2366cbd24f",
+          "type": "risk",
+          "summary": "4.1 The Supplier's aggregate liability shall be limited to the fees paid in the twelve months preceding the claim.",
+          "document_id": "7e96efc1-dc3d-4245-a959-ebd955a999cc"
+        },
+        "members": [
+          {
+            "id": "c3fe99c4-9e91-47ee-ab31-8a2366cbd24f",
+            "type": "risk",
+            "summary": "4.1 The Supplier's aggregate liability shall be limited to the fees paid in the twelve months preceding the claim.",
+            "document_id": "7e96efc1-dc3d-4245-a959-ebd955a999cc"
+          },
+          {
+            "id": "05aedf93-0862-4c03-8dfe-cadbf0094814",
+            "type": "decision",
+            "summary": "The board approved the Consolidated Cloud 11 engagement on 26 January 2025.",
+            "document_id": "7e96efc1-dc3d-4245-a959-ebd955a999cc"
+          },
+          {
+            "id": "63f21d24-1ba5-4724-8ce2-a9e7806cbc3d",
+            "type": "open_question",
+            "summary": "Failover region for the Consolidated Cloud 11 integration is TBD.",
+            "document_id": "7e96efc1-dc3d-4245-a959-ebd955a999cc"
+          },
+          {
+            "id": "d77d407a-bdbd-4747-b642-fd36d70d9e4a",
+            "type": "fact",
+            "summary": "Consolidated Cloud 11 note: party services supplier services services agreement",
+            "document_id": "7e96efc1-dc3d-4245-a959-ebd955a999cc"
+          },
+          {
+            "id": "4f134e6b-f452-4466-94ca-ccaf2435b247",
+            "type": "deadline",
+            "summary": "2.2 Either party may terminate this Agreement by giving no later than 30 days written notice.",
+            "document_id": "7e96efc1-dc3d-4245-a959-ebd955a999cc"
+          },
+          {
+            "id": "9dc45966-acb3-4536-8e8c-5f8a2741cfc9",
+            "type": "deadline",
+            "summary": "2.2 Either party may terminate this Agreement by giving no later than 120 days written notice.",
+            "document_id": "7e96efc1-dc3d-4245-a959-ebd955a999cc"
+          }
+        ],
+        "strength": 13.68
+      },
+      {
+        "dimension": 4,
+        "sink": {
+          "id": "b74fd814-e150-413f-8471-3eb7953e008b",
+          "type": "deadline",
+          "summary": "2.2 Either party may terminate this Agreement by giving no later than 60 days written notice.",
+          "document_id": "4c490d50-7a55-47ac-bec3-b11b46c28064"
+        },
+        "source": {
+          "id": "06bd743b-c4c6-4de0-ab4a-3b9757d2014e",
+          "type": "fact",
+          "summary": "Contoso Facilities 65 note: services services services withholding supplier services",
+          "document_id": "4c490d50-7a55-47ac-bec3-b11b46c28064"
+        },
+        "members": [
+          {
+            "id": "06bd743b-c4c6-4de0-ab4a-3b9757d2014e",
+            "type": "fact",
+            "summary": "Contoso Facilities 65 note: services services services withholding supplier services",
+            "document_id": "4c490d50-7a55-47ac-bec3-b11b46c28064"
+          },
+          {
+            "id": "f1819fc1-2ae2-45be-810a-ae687ac9c29b",
+            "type": "decision",
+            "summary": "The board approved the Contoso Facilities 65 engagement on 13 June 2025.",
+            "document_id": "4c490d50-7a55-47ac-bec3-b11b46c28064"
+          },
+          {
+            "id": "38fb57c3-ede0-4aa0-af84-0c51b2e628dd",
+            "type": "risk",
+            "summary": "4.1 The Supplier's aggregate liability shall be limited to the fees paid in the twelve months preceding the claim.",
+            "document_id": "4c490d50-7a55-47ac-bec3-b11b46c28064"
+          },
+          {
+            "id": "b5d966a7-0ef9-4f8f-9189-7fa7ceb8a0ab",
+            "type": "deadline",
+            "summary": "2.2 Either party may terminate this Agreement by giving no later than 30 days written notice.",
+            "document_id": "4c490d50-7a55-47ac-bec3-b11b46c28064"
+          },
+          {
+            "id": "b74fd814-e150-413f-8471-3eb7953e008b",
+            "type": "deadline",
+            "summary": "2.2 Either party may terminate this Agreement by giving no later than 60 days written notice.",
+            "document_id": "4c490d50-7a55-47ac-bec3-b11b46c28064"
+          }
+        ],
+        "strength": 9.12
+      },
+      {
+        "dimension": 4,
+        "sink": {
+          "id": "5d0e711f-47b3-42d0-8c51-0b41a75d0c05",
+          "type": "deadline",
+          "summary": "2.2 Either party may terminate this Agreement by giving no later than 60 days written notice.",
+          "document_id": "bd888bc0-3601-4d87-b7c0-2c9cb4e815f4"
+        },
+        "source": {
+          "id": "13eb06a3-15d8-4d2b-ad25-58024c8ed84e",
+          "type": "decision",
+          "summary": "The board approved the Tailspin Freight 5 engagement on 3 March 2025.",
+          "document_id": "bd888bc0-3601-4d87-b7c0-2c9cb4e815f4"
+        },
+        "members": [
+          {
+            "id": "13eb06a3-15d8-4d2b-ad25-58024c8ed84e",
+            "type": "decision",
+            "summary": "The board approved the Tailspin Freight 5 engagement on 3 March 2025.",
+            "document_id": "bd888bc0-3601-4d87-b7c0-2c9cb4e815f4"
+          },
+          {
+            "id": "93a282b5-790d-49a9-9b79-b4a1cb49b0c4",
+            "type": "decision",
+            "summary": "The board approved the Tailspin Freight 5 engagement on 12 March 2025.",
+            "document_id": "bd888bc0-3601-4d87-b7c0-2c9cb4e815f4"
+          },
+          {
+            "id": "8bf28576-6378-42d0-a22d-b82f6690093d",
+            "type": "fact",
+            "summary": "Tailspin Freight 5 note: company services supplier services services services",
+            "document_id": "bd888bc0-3601-4d87-b7c0-2c9cb4e815f4"
+          },
+          {
+            "id": "85f5ba8c-bd73-42a6-a7a8-80c86128adf5",
+            "type": "deadline",
+            "summary": "2.2 Either party may terminate this Agreement by giving no later than 90 days written notice.",
+            "document_id": "bd888bc0-3601-4d87-b7c0-2c9cb4e815f4"
+          },
+          {
+            "id": "5d0e711f-47b3-42d0-8c51-0b41a75d0c05",
+            "type": "deadline",
+            "summary": "2.2 Either party may terminate this Agreement by giving no later than 60 days written notice.",
+            "document_id": "bd888bc0-3601-4d87-b7c0-2c9cb4e815f4"
+          }
+        ],
+        "strength": 9.12
+      },
+      {
+        "dimension": 4,
+        "sink": {
+          "id": "908c85f9-0664-41a5-bc19-17f0c1bd8243",
+          "type": "deadline",
+          "summary": "2.2 Either party may terminate this Agreement by giving no later than 30 days written notice.",
+          "document_id": "07652f49-81e5-4ae6-90db-d2e4ac14d487"
+        },
+        "source": {
+          "id": "a3334d73-4784-4ebe-973d-cc7e9e83856d",
+          "type": "risk",
+          "summary": "4.1 The Supplier's aggregate liability shall be limited to the fees paid in the twelve months preceding the claim.",
+          "document_id": "07652f49-81e5-4ae6-90db-d2e4ac14d487"
+        },
+        "members": [
+          {
+            "id": "a3334d73-4784-4ebe-973d-cc7e9e83856d",
+            "type": "risk",
+            "summary": "4.1 The Supplier's aggregate liability shall be limited to the fees paid in the twelve months preceding the claim.",
+            "document_id": "07652f49-81e5-4ae6-90db-d2e4ac14d487"
+          },
+          {
+            "id": "1a8c1d8c-fac6-49f8-a1c9-7bb6eb5b6387",
+            "type": "open_question",
+            "summary": "Failover region for the Blue Logistics 59 integration is TBD.",
+            "document_id": "07652f49-81e5-4ae6-90db-d2e4ac14d487"
+          },
+          {
+            "id": "9713e971-2b4a-473a-880d-ba9e7f87aea4",
+            "type": "risk",
+            "summary": "4.1 The Supplier's aggregate liability shall be limited to the fees paid in the twelve months preceding the claim.",
+            "document_id": "07652f49-81e5-4ae6-90db-d2e4ac14d487"
+          },
+          {
+            "id": "cb27bb2e-ffcc-4086-9e9d-a92f2715000d",
+            "type": "deadline",
+            "summary": "2.2 Either party may terminate this Agreement by giving no later than 45 days written notice.",
+            "document_id": "07652f49-81e5-4ae6-90db-d2e4ac14d487"
+          },
+          {
+            "id": "908c85f9-0664-41a5-bc19-17f0c1bd8243",
+            "type": "deadline",
+            "summary": "2.2 Either party may terminate this Agreement by giving no later than 30 days written notice.",
+            "document_id": "07652f49-81e5-4ae6-90db-d2e4ac14d487"
+          }
+        ],
+        "strength": 9.12
+      },
+      {
+        "dimension": 4,
+        "sink": {
+          "id": "1deefed4-9c48-4a7d-b3d3-b04420dea498",
+          "type": "deadline",
+          "summary": "2.2 Either party may terminate this Agreement by giving no later than 45 days written notice.",
+          "document_id": "532bf5ff-3755-4cba-8758-5b593548575c"
+        },
+        "source": {
+          "id": "bfb9cccf-bc50-4ed8-b197-abda8fce1cde",
+          "type": "risk",
+          "summary": "4.1 The Supplier's aggregate liability shall be limited to the fees paid in the twelve months preceding the claim.",
+          "document_id": "532bf5ff-3755-4cba-8758-5b593548575c"
+        },
+        "members": [
+          {
+            "id": "bfb9cccf-bc50-4ed8-b197-abda8fce1cde",
+            "type": "risk",
+            "summary": "4.1 The Supplier's aggregate liability shall be limited to the fees paid in the twelve months preceding the claim.",
+            "document_id": "532bf5ff-3755-4cba-8758-5b593548575c"
+          },
+          {
+            "id": "27de9112-5e91-4261-86ad-6958c973baa4",
+            "type": "fact",
+            "summary": "Margie Textiles 17 note: agreement supplier services services services services",
+            "document_id": "532bf5ff-3755-4cba-8758-5b593548575c"
+          },
+          {
+            "id": "292216a6-b4b3-4982-8587-cee9088b80b8",
+            "type": "fact",
+            "summary": "Margie Textiles 17 note: services company company payment services services",
+            "document_id": "532bf5ff-3755-4cba-8758-5b593548575c"
+          },
+          {
+            "id": "90ac4a5d-d653-4ab2-93fd-aa41006790bd",
+            "type": "deadline",
+            "summary": "2.2 Either party may terminate this Agreement by giving no later than 90 days written notice.",
+            "document_id": "532bf5ff-3755-4cba-8758-5b593548575c"
+          },
+          {
+            "id": "1deefed4-9c48-4a7d-b3d3-b04420dea498",
+            "type": "deadline",
+            "summary": "2.2 Either party may terminate this Agreement by giving no later than 45 days written notice.",
+            "document_id": "532bf5ff-3755-4cba-8758-5b593548575c"
+          }
+        ],
+        "strength": 9.12
+      }
+    ]
+  },
+  "dynamic": {
+    "hybrid+graph(REM)": {
+      "learning": {
+        "hit_at_5": 1.0,
+        "hit_at_20": 1.0,
+        "mrr": 1.0,
+        "p50_ms": 243.7,
+        "p95_ms": 411.6
+      },
+      "reworded": {
+        "hit_at_5": 1.0,
+        "hit_at_20": 1.0,
+        "mrr": 1.0,
+        "p50_ms": 226.6,
+        "p95_ms": 387.5
+      },
+      "unseen": {
+        "hit_at_5": 1.0,
+        "hit_at_20": 1.0,
+        "mrr": 0.797,
+        "p50_ms": 264.3,
+        "p95_ms": 551.9
+      }
+    },
+    "hybrid+cliques+bonus": {
+      "learning": {
+        "hit_at_5": 1.0,
+        "hit_at_20": 1.0,
+        "mrr": 1.0,
+        "p50_ms": 231.5,
+        "p95_ms": 407.3
+      },
+      "reworded": {
+        "hit_at_5": 1.0,
+        "hit_at_20": 1.0,
+        "mrr": 1.0,
+        "p50_ms": 237.3,
+        "p95_ms": 387.3
+      },
+      "unseen": {
+        "hit_at_5": 1.0,
+        "hit_at_20": 1.0,
+        "mrr": 0.799,
+        "p50_ms": 264.3,
+        "p95_ms": 564.2
+      }
+    },
+    "weak reader: vector-only+graph": {
+      "learning": {
+        "hit_at_5": 1.0,
+        "hit_at_20": 1.0,
+        "mrr": 0.996,
+        "p50_ms": 133.5,
+        "p95_ms": 162.7
+      },
+      "reworded": {
+        "hit_at_5": 1.0,
+        "hit_at_20": 1.0,
+        "mrr": 1.0,
+        "p50_ms": 135.5,
+        "p95_ms": 165.0
+      },
+      "unseen": {
+        "hit_at_5": 0.758,
+        "hit_at_20": 0.917,
+        "mrr": 0.714,
+        "p50_ms": 139.5,
+        "p95_ms": 294.9
+      }
+    }
+  },
+  "reset_removed": 396
+}
