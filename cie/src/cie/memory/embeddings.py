@@ -68,6 +68,29 @@ class FastEmbedProvider:
         return out
 
 
+class SentenceTransformersProvider:
+    """PyTorch sentence-transformers model, on CUDA when available (Colab GPU path).
+    Same model family as fastembed's default, so vectors are 384-d and normalised."""
+
+    name = "sentence_transformers"
+
+    def __init__(self, model: str, cache_dir: str, dim: int):
+        import torch
+        from sentence_transformers import SentenceTransformer
+
+        self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        self.model_name = model
+        self.dim = dim
+        self._model = SentenceTransformer(model, device=self.device, cache_folder=cache_dir)
+        self.name = f"sentence_transformers[{self.device}]"
+
+    def embed(self, texts: list[str]) -> list[list[float]]:
+        arr = self._model.encode(texts, batch_size=256, normalize_embeddings=True, convert_to_numpy=True, show_progress_bar=False)
+        if arr.shape[1] != self.dim:
+            raise ValueError(f"embedding dim {arr.shape[1]} != configured {self.dim}")
+        return arr.tolist()
+
+
 class OpenAIEmbedding:
     name = "openai"
 
@@ -93,6 +116,8 @@ def _cached_provider(provider: str, model: str, cache_dir: str, dim: int, key: s
 
             structlog.get_logger(__name__).warning("fastembed unavailable, using hashed embeddings", error=str(e))
             return HashedEmbedding(dim)
+    if provider == "sentence_transformers":
+        return SentenceTransformersProvider(model, cache_dir, dim)
     if provider == "openai":
         return OpenAIEmbedding(key, model, dim)
     return HashedEmbedding(dim)

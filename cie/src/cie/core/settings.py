@@ -28,7 +28,7 @@ class Settings(BaseSettings):
     s3_secret_key: str = "minioadmin"
     encryption_key: str = ""  # base64 32-byte key; empty disables at-rest encryption
 
-    embedding_provider: Literal["fastembed", "hashed", "openai"] = "fastembed"
+    embedding_provider: Literal["fastembed", "hashed", "openai", "sentence_transformers"] = "fastembed"
     embedding_model: str = "BAAI/bge-small-en-v1.5"
     embedding_dim: int = 384
     model_cache: Path = Path("./.models")
