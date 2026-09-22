@@ -1,0 +1,203 @@
+{
+  "tenant_prefix": "scale-1000000-",
+  "retrieval_arms": {
+    "hybrid+graph(bounded)": {
+      "cold_p50_ms": 275.6,
+      "cold_p95_ms": 539.9,
+      "warm_p50_ms": 267.0,
+      "warm_p95_ms": 552.2,
+      "warm_max_ms": 649.2,
+      "hit_at_20": 0.98,
+      "timeouts": 0,
+      "mrr": 0.893,
+      "topology_p50": {}
+    },
+    "hybrid+cliques(topological)": {
+      "cold_p50_ms": 254.1,
+      "cold_p95_ms": 541.4,
+      "warm_p50_ms": 254.0,
+      "warm_p95_ms": 534.0,
+      "warm_max_ms": 709.5,
+      "hit_at_20": 0.98,
+      "timeouts": 0,
+      "mrr": 0.893,
+      "topology_p50": {
+        "nodes": 80,
+        "max_dim": 2,
+        "betti1": 0
+      }
+    },
+    "hybrid+cliques+bonus": {
+      "cold_p50_ms": 255.7,
+      "cold_p95_ms": 547.1,
+      "warm_p50_ms": 248.8,
+      "warm_p95_ms": 550.1,
+      "warm_max_ms": 748.3,
+      "hit_at_20": 0.98,
+      "timeouts": 0,
+      "mrr": 0.893,
+      "topology_p50": {
+        "nodes": 81,
+        "max_dim": 2,
+        "betti1": 0
+      }
+    }
+  },
+  "retrieval_arms_source": "1000000 (re-measured)",
+  "plasticity": {
+    "documents": 40,
+    "train_questions": 120,
+    "test_questions": 120,
+    "arms": {
+      "rem": {
+        "before": {
+          "train": {
+            "hit_at_20": 1.0,
+            "mrr": 1.0,
+            "p50_ms": 251.6,
+            "graph_ms_p50": 8.1
+          },
+          "test": {
+            "hit_at_20": 1.0,
+            "mrr": 0.79,
+            "p50_ms": 270.8,
+            "graph_ms_p50": 8.5
+          }
+        },
+        "after": {
+          "train": {
+            "hit_at_20": 1.0,
+            "mrr": 1.0,
+            "p50_ms": 249.0,
+            "graph_ms_p50": 8.0
+          },
+          "test": {
+            "hit_at_20": 1.0,
+            "mrr": 0.79,
+            "p50_ms": 271.9,
+            "graph_ms_p50": 8.3
+          }
+        },
+        "links_potentiated": 92,
+        "links_depressed": 761
+      },
+      "cliques": {
+        "before": {
+          "train": {
+            "hit_at_20": 1.0,
+            "mrr": 1.0,
+            "p50_ms": 248.7,
+            "graph_ms_p50": 9.4
+          },
+          "test": {
+            "hit_at_20": 1.0,
+            "mrr": 0.79,
+            "p50_ms": 256.6,
+            "graph_ms_p50": 10.4
+          }
+        },
+        "after": {
+          "train": {
+            "hit_at_20": 1.0,
+            "mrr": 1.0,
+            "p50_ms": 246.5,
+            "graph_ms_p50": 9.6
+          },
+          "test": {
+            "hit_at_20": 1.0,
+            "mrr": 0.79,
+            "p50_ms": 273.0,
+            "graph_ms_p50": 10.8
+          }
+        },
+        "links_potentiated": 89,
+        "links_depressed": 610
+      }
+    }
+  },
+  "dataset": {
+    "features": [
+      "fused",
+      "support",
+      "exact",
+      "lex_rec",
+      "vec_rec",
+      "lex_doc",
+      "vec_doc",
+      "lex_sec",
+      "vec_sec",
+      "graph",
+      "horizon",
+      "log_degree",
+      "document_affinity",
+      "entity_affinity",
+      "other_document",
+      "type_match",
+      "verification",
+      "confidence",
+      "recency",
+      "hub_penalty",
+      "draft_document",
+      "clique_dim",
+      "sink_of",
+      "source_of",
+      "q_betti1",
+      "q_max_dim",
+      "q_nodes",
+      "is_record"
+    ],
+    "n_questions": 240,
+    "n_rows": 34975,
+    "positives": 618
+  },
+  "reranker_models": {
+    "train_rows": 21058,
+    "test_rows": 13917,
+    "test_queries": 98,
+    "models": {
+      "heuristic reranker (hand-written)": {
+        "params": 0,
+        "train_seconds": 0.0,
+        "rule": "none",
+        "auc": 0.806,
+        "queries": 98,
+        "hit@1": 0.827,
+        "hit@5": 1.0,
+        "mrr": 0.895
+      },
+      "clique network / backprop": {
+        "params": 2513,
+        "train_seconds": 3.41,
+        "epochs": 15,
+        "rule": "backprop (Adam, weighted BCE)",
+        "auc": 0.995,
+        "queries": 98,
+        "hit@1": 0.827,
+        "hit@5": 1.0,
+        "mrr": 0.898
+      },
+      "clique network / Hebbian (local)": {
+        "params": 2513,
+        "train_seconds": 3.17,
+        "epochs": 10,
+        "rule": "reward-modulated Hebbian (local, three-factor)",
+        "auc": 0.959,
+        "queries": 98,
+        "hit@1": 0.827,
+        "hit@5": 1.0,
+        "mrr": 0.895
+      },
+      "deep MLP (4x64) / backprop": {
+        "params": 14401,
+        "train_seconds": 3.24,
+        "epochs": 15,
+        "rule": "backprop (Adam, weighted BCE)",
+        "auc": 0.999,
+        "queries": 98,
+        "hit@1": 1.0,
+        "hit@5": 1.0,
+        "mrr": 1.0
+      }
+    }
+  }
+}

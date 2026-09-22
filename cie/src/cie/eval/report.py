@@ -245,8 +245,6 @@ def main(out: Path = Path("eval_out"), docs: Path = Path("docs")) -> None:
     print("wrote", docs / "BENCHMARKS.md", docs / "COST_STORAGE.md")
 
 
-if __name__ == "__main__":  # pragma: no cover
-    main()
 
 
 def topology_section(out: Path) -> list[str]:
@@ -292,3 +290,7 @@ def topology_section(out: Path) -> list[str]:
               "* The reranker dataset is drawn from one synthetic tenant with templated questions; a model that wins here has learnt this corpus, not company documents.",
               "* The Hebbian rule is a three-factor reward-modulated approximation of STDP on rate units, not a spiking simulation.", ""]
     return lines
+
+
+if __name__ == "__main__":  # pragma: no cover
+    main()

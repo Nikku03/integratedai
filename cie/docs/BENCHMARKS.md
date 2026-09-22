@@ -9,8 +9,8 @@ All numbers below were produced by `cie bench`, `cie simulate` and `pytest -m sl
 | Exact structured-field accuracy | ≥ 99% | 100.0% | yes |
 | Citation correctness | ≥ 100% | 100.0% | yes |
 | Retrieval recall@20 | ≥ 90% | 96.7% | yes |
-| Warm metadata lookup p95 | < 100 ms | 0.73 ms | yes |
-| Full retrieval + rerank p95 | < 2000 ms | 192.51 ms | yes |
+| Warm metadata lookup p95 | < 100 ms | 0.84 ms | yes |
+| Full retrieval + rerank p95 | < 2000 ms | 140.77 ms | yes |
 | Unauthorized results in access-control questions | 0 | 0 | yes |
 | Insufficient-evidence questions answered as such | all | 100% | yes |
 | Planted cross-document conflict reported as conflict | all | 100% | yes |
@@ -18,7 +18,7 @@ All numbers below were produced by `cie bench`, `cie simulate` and `pytest -m sl
 ### Caveats that matter more than the table
 
 * **In-sample.** The 18 questions were used while the retrieval scoring was being fixed; every failure they exposed was corrected until they passed. They demonstrate the mechanisms work, not generalisation. An out-of-sample set is the first roadmap item for evaluation.
-* **Small corpus.** 15 documents, 72 pages. On a corpus this size an evidence packet (~4164 tokens) is not smaller than the whole corpus a principal can read; the packet only pays off at scale.
+* **Small corpus.** 15 documents, 72 pages. On a corpus this size an evidence packet (~4178 tokens) is not smaller than the whole corpus a principal can read; the packet only pays off at scale.
 * **Graph expansion shows no gain here.** Hybrid, hybrid+graph and the bounded REM arm score identically because the questions rarely need graph neighbours that lexical/vector search misses; the synthetic graph benchmark below shows where bounded expansion does help.
 * **Extractive answers only.** No LLM was available; assisted mode and LLM agent strategies are untested against a live model.
 
@@ -30,17 +30,19 @@ Unsupported factual claims in strict mode: 0 by construction (every sentence of 
 
 | arm | recall@20 | exact-field acc | citation correctness | status acc | insufficient-evidence det. | conflict det. | permission leaks | p50 ms | p95 ms | packet tokens |
 |---|---|---|---|---|---|---|---|---|---|---|
-| vector-only | 0.9667 | 1.0 (n=14) | 1.0 (n=51) | 1.0 | 1.0 | 1.0 | 0 | 81.61 | 146.59 | 4156.3 |
-| bm25-only | 0.9 | 0.7143 (n=14) | 1.0 (n=51) | 0.9444 | 1.0 | 0.0 | 0 | 75.59 | 119.22 | 2155.4 |
-| hybrid | 0.9667 | 1.0 (n=14) | 1.0 (n=50) | 1.0 | 1.0 | 1.0 | 0 | 109.46 | 175.22 | 4163.7 |
-| hybrid+graph(unbounded) | 0.9667 | 1.0 (n=14) | 1.0 (n=50) | 1.0 | 1.0 | 1.0 | 0 | 116.78 | 153.77 | 4163.7 |
-| hybrid+graph(bounded, REM) | 0.9667 | 1.0 (n=14) | 1.0 (n=50) | 1.0 | 1.0 | 1.0 | 0 | 113.8 | 192.51 | 4163.7 |
+| vector-only | 0.9667 | 1.0 (n=14) | 1.0 (n=51) | 1.0 | 1.0 | 1.0 | 0 | 66.36 | 113.32 | 4159.8 |
+| bm25-only | 0.9333 | 0.7857 (n=14) | 1.0 (n=51) | 0.9444 | 1.0 | 0.0 | 0 | 75.84 | 124.38 | 2155.4 |
+| hybrid | 0.9667 | 1.0 (n=14) | 1.0 (n=50) | 1.0 | 1.0 | 1.0 | 0 | 99.23 | 160.78 | 4178.2 |
+| hybrid+graph(unbounded) | 0.9667 | 1.0 (n=14) | 1.0 (n=50) | 1.0 | 1.0 | 1.0 | 0 | 104.29 | 130.84 | 4178.2 |
+| hybrid+graph(bounded, REM) | 0.9667 | 1.0 (n=14) | 1.0 (n=50) | 1.0 | 1.0 | 1.0 | 0 | 97.62 | 140.77 | 4178.2 |
+| hybrid+cliques(topological) | 0.9667 | 1.0 (n=14) | 1.0 (n=50) | 1.0 | 1.0 | 1.0 | 0 | 112.96 | 171.96 | 4178.2 |
+| hybrid+cliques+bonus | 0.9667 | 1.0 (n=14) | 1.0 (n=51) | 1.0 | 1.0 | 1.0 | 0 | 115.58 | 165.91 | 4176.1 |
 
 **Full-context prompting** (not run: no model available; this is what a model would have to hold per question):
 
-- admin: ~4,546 tokens per question; est. $0.0181 per question at claude-sonnet-5 list prices vs 4164 packet tokens for the hybrid arm
-- analyst: ~4,286 tokens per question; est. $0.0174 per question at claude-sonnet-5 list prices vs 4164 packet tokens for the hybrid arm
-- finance_reader: ~141 tokens per question; est. $0.0049 per question at claude-sonnet-5 list prices vs 4164 packet tokens for the hybrid arm
+- admin: ~4,546 tokens per question; est. $0.0181 per question at claude-sonnet-5 list prices vs 4178 packet tokens for the hybrid arm
+- analyst: ~4,286 tokens per question; est. $0.0174 per question at claude-sonnet-5 list prices vs 4178 packet tokens for the hybrid arm
+- finance_reader: ~141 tokens per question; est. $0.0049 per question at claude-sonnet-5 list prices vs 4178 packet tokens for the hybrid arm
 
 ### Remaining failures (hybrid + bounded graph)
 
@@ -54,51 +56,62 @@ Unsupported factual claims in strict mode: 0 by construction (every sentence of 
 
 `python -m cie.eval.bench_scale` loads a synthetic tenant of N typed records (12 per document: fees, penalties, notice periods, terms, liability caps, decisions, parties, signatories, open questions, notes), N/4 sections and about 1.35 edges per record through binary COPY, builds the indexes, then runs 60 templated questions (50 with a known target document and record type, 10 unanswerable) through the full retrieval pipeline as an admin over the whole company and as an analyst confined to one department (20% of the data). `hit@20` is whether the target document's record of the expected type is in the top 20 of the packet; it measures retrieval, not answer wording. Cold = first pass after the load, warm = second pass. Hardware as above (4 vCPU, no GPU, embeddings on CPU).
 
-### Scale benchmark: memory bank and retrieval (embeddings=fastembed, pgvector 0.6.0, shared_buffers 2GB)
+### Scale benchmark: memory bank and retrieval (embeddings=fastembed, pgvector 0.8.1, shared_buffers 2GB)
 
 | records | sections | load s | tsvector s | HNSW build s (records) | all indexes s | records table+idx | HNSW idx | GIN tsv idx |
 |---|---|---|---|---|---|---|---|---|
-| 10000 | 2,500 | 132.8 | 1.3 | 4.9 | 8.2 | 0.20 GB | 52 MB | 1 MB |
-| 100000 | 25,000 | 61.2 | 13.7 | 15.7 | 25.5 | 0.80 GB | 242 MB | 4 MB |
-| 1000000 | 250,000 | 229.6 | 144.7 | 132.3 | 191.2 | 6.71 GB | 2085 MB | 25 MB |
+| 10000 | 2,500 | 64.2 | 1.4 | 2.2 | 3.5 | 0.06 GB | 12 MB (halfvec) | 0 MB |
+| 100000 | 25,000 | 83.8 | 15.5 | 21.8 | 31.2 | 0.60 GB | 117 MB (halfvec) | 4 MB |
+| 1000000 | 250,000 | 296.5 | 141.8 | 301.8 | 391.6 | 5.85 GB | 1170 MB (halfvec) | 28 MB |
 
-| records | principal | arm | cold p50 | cold p95 | warm p50 | warm p95 | warm max | hit@20 | timeouts |
-|---|---|---|---|---|---|---|---|---|---|
-| 10000 | admin@company | hybrid+graph(bounded) | 346.9 | 410.6 | 337.3 | 419.7 | 442.9 | 0.88 | 0 |
-| 10000 | admin@company | hybrid(no graph) | 338.4 | 405.8 | 333.4 | 403.8 | 424.4 | 0.88 | 0 |
-| 10000 | admin@company | vector-only | 152.1 | 197.6 | 149.0 | 201.8 | 212.1 | 0.88 | 0 |
-| 10000 | admin@company | lexical-only | 223.7 | 293.1 | 221.7 | 275.7 | 307.1 | 1.0 | 0 |
-| 10000 | analyst@department(20%) | hybrid+graph(bounded) | 160.0 | 217.1 | 159.3 | 233.6 | 316.1 | 1.0 | 0 |
-| 10000 | analyst@department(20%) | vector-only | 94.8 | 139.4 | 87.8 | 143.3 | 157.4 | 0.9 | 0 |
-| 100000 | admin@company | hybrid+graph(bounded) | 565.7 | 981.7 | 595.6 | 1011.1 | 1102.8 | 0.84 | 0 |
-| 100000 | admin@company | hybrid(no graph) | 591.8 | 1046.3 | 676.7 | 1306.1 | 1448.2 | 0.84 | 0 |
-| 100000 | admin@company | vector-only | 173.7 | 275.9 | 158.1 | 263.9 | 281.2 | 0.8 | 0 |
-| 100000 | admin@company | lexical-only | 456.8 | 1052.2 | 506.2 | 994.4 | 1499.1 | 0.86 | 0 |
-| 100000 | analyst@department(20%) | hybrid+graph(bounded) | 654.3 | 1238.3 | 595.5 | 742.9 | 834.2 | 0.75 | 0 |
-| 100000 | analyst@department(20%) | vector-only | 255.7 | 320.3 | 247.3 | 328.0 | 363.5 | 0.75 | 0 |
-| 1000000 | admin@company | hybrid+graph(bounded) | 2164.5 | 6344.6 | 2173.6 | 6175.6 | 6437.5 | 0.22 | 0 |
-| 1000000 | admin@company | hybrid(no graph) | 1739.2 | 5740.7 | 1789.8 | 5749.9 | 6216.5 | 0.22 | 0 |
-| 1000000 | admin@company | vector-only | 266.2 | 411.0 | 261.0 | 401.3 | 468.7 | 0.14 | 0 |
-| 1000000 | admin@company | lexical-only | 1267.6 | 5261.0 | 1251.2 | 5255.8 | 5551.2 | 0.26 | 0 |
-| 1000000 | analyst@department(20%) | hybrid+graph(bounded) | 3025.9 | 4092.0 | 3192.0 | 4691.6 | 5942.7 | 0.2 | 0 |
-| 1000000 | analyst@department(20%) | vector-only | 192.1 | 305.6 | 191.9 | 315.2 | 366.5 | 0.0 | 0 |
-| 1000000 (after fixes) | admin@company | hybrid+graph(bounded) | 370.2 | 909.8 | 241.8 | 581.7 | 845.9 | 0.98 | 0 |
-| 1000000 (after fixes) | admin@company | hybrid(no graph) | 245.9 | 557.4 | 231.9 | 549.3 | 791.8 | 0.98 | 0 |
-| 1000000 (after fixes) | admin@company | vector-only | 122.7 | 187.6 | 119.8 | 202.8 | 465.6 | 0.94 | 0 |
-| 1000000 (after fixes) | admin@company | lexical-only | 127.6 | 182.4 | 121.0 | 183.2 | 286.6 | 0.98 | 0 |
-| 1000000 (after fixes) | analyst@department(20%) | hybrid+graph(bounded) | 606.3 | 1070.8 | 579.4 | 782.0 | 1147.5 | 1.0 | 0 |
-| 1000000 (after fixes) | analyst@department(20%) | vector-only | 104.2 | 159.9 | 108.7 | 149.9 | 377.1 | 0.8 | 0 |
+| records | principal | arm | cold p50 | cold p95 | warm p50 | warm p95 | warm max | hit@20 | MRR | timeouts | topology (p50: nodes / max dim / cavities) |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 10000 | admin@company | hybrid+graph(bounded) | 214.2 | 311.2 | 213.3 | 296.6 | 371.1 | 1.0 | - | 0 | - |
+| 10000 | admin@company | hybrid(no graph) | 199.3 | 292.8 | 200.6 | 276.4 | 333.2 | 1.0 | - | 0 | - |
+| 10000 | admin@company | vector-only | 112.7 | 150.6 | 98.7 | 163.9 | 237.2 | 0.88 | - | 0 | - |
+| 10000 | admin@company | lexical-only | 128.3 | 180.0 | 128.6 | 198.6 | 246.0 | 1.0 | - | 0 | - |
+| 10000 | analyst@department(20%) | hybrid+graph(bounded) | 171.9 | 262.2 | 175.2 | 264.8 | 299.6 | 1.0 | - | 0 | - |
+| 10000 | analyst@department(20%) | vector-only | 102.7 | 165.5 | 99.8 | 179.3 | 210.7 | 0.9 | - | 0 | - |
+| 100000 | admin@company | hybrid+graph(bounded) | 283.4 | 397.4 | 280.3 | 400.3 | 474.5 | 1.0 | - | 0 | - |
+| 100000 | admin@company | hybrid(no graph) | 271.9 | 382.4 | 270.2 | 392.3 | 432.5 | 1.0 | - | 0 | - |
+| 100000 | admin@company | vector-only | 108.2 | 197.8 | 104.8 | 178.7 | 244.4 | 0.86 | - | 0 | - |
+| 100000 | admin@company | lexical-only | 183.9 | 275.3 | 177.0 | 251.4 | 347.9 | 1.0 | - | 0 | - |
+| 100000 | analyst@department(20%) | hybrid+graph(bounded) | 294.6 | 387.4 | 271.6 | 376.9 | 545.9 | 1.0 | - | 0 | - |
+| 100000 | analyst@department(20%) | vector-only | 143.1 | 225.8 | 148.9 | 243.1 | 273.2 | 0.812 | - | 0 | - |
+| 1000000 | admin@company | hybrid+graph(bounded) | 300.5 | 710.4 | 265.2 | 586.4 | 697.9 | 0.98 | - | 0 | - |
+| 1000000 | admin@company | hybrid(no graph) | 257.2 | 552.2 | 255.4 | 526.6 | 586.9 | 0.98 | - | 0 | - |
+| 1000000 | admin@company | vector-only | 128.2 | 233.1 | 128.8 | 221.9 | 322.6 | 0.94 | - | 0 | - |
+| 1000000 | admin@company | lexical-only | 127.1 | 289.8 | 124.4 | 279.5 | 326.7 | 0.98 | - | 0 | - |
+| 1000000 | analyst@department(20%) | hybrid+graph(bounded) | 654.8 | 771.5 | 672.7 | 836.5 | 914.6 | 1.0 | - | 0 | - |
+| 1000000 | analyst@department(20%) | vector-only | 148.6 | 246.9 | 146.0 | 243.7 | 320.2 | 0.8 | - | 0 | - |
+| 1000000 (re-measured) | admin@company | hybrid+graph(bounded) | 275.6 | 539.9 | 267.0 | 552.2 | 649.2 | 0.98 | 0.893 | 0 | - |
+| 1000000 (re-measured) | admin@company | hybrid(no graph) | 262.1 | 537.6 | 250.0 | 535.3 | 642.3 | 0.98 | 0.893 | 0 | - |
+| 1000000 (re-measured) | admin@company | vector-only | 132.1 | 207.0 | 127.8 | 220.6 | 444.0 | 0.94 | 0.823 | 0 | - |
+| 1000000 (re-measured) | admin@company | lexical-only | 120.8 | 235.3 | 123.1 | 224.7 | 493.4 | 0.98 | 0.9 | 0 | - |
+| 1000000 (re-measured) | admin@company | hybrid+cliques(topological) | 254.1 | 541.4 | 254.0 | 534.0 | 709.5 | 0.98 | 0.893 | 0 | 80 / 2 / 0 |
+| 1000000 (re-measured) | admin@company | hybrid+cliques+bonus | 255.7 | 547.1 | 248.8 | 550.1 | 748.3 | 0.98 | 0.893 | 0 | 81 / 2 / 0 |
+| 1000000 (re-measured) | analyst@department(20%) | hybrid+graph(bounded) | 578.7 | 770.2 | 564.0 | 787.3 | 1016.6 | 1.0 | 0.767 | 0 | - |
+| 1000000 (re-measured) | analyst@department(20%) | vector-only | 148.8 | 198.1 | 143.0 | 184.3 | 378.5 | 0.8 | 0.624 | 0 | - |
 
 | records | stage (admin, hybrid, cold p50 ms) |
 |---|---|
-| 10000 | exact_ms=10.2, lexical_ms=106.5, embed_ms=10.0, vector_ms=49.6, named_docs_ms=20.7, graph_ms=15.9, materialise_ms=52.3, rerank_ms=44.3, contradictions_ms=7.1, packet_ms=12.2; metadata lookup p95 1.5 ms |
-| 100000 | exact_ms=46.5, lexical_ms=266.8, embed_ms=12.8, vector_ms=15.6, named_docs_ms=20.6, graph_ms=45.2, materialise_ms=46.5, rerank_ms=39.9, contradictions_ms=7.1, packet_ms=12.3; metadata lookup p95 1.8 ms |
-| 1000000 | exact_ms=392.1, lexical_ms=993.5, embed_ms=16.8, vector_ms=26.7, named_docs_ms=33.9, graph_ms=393.5, materialise_ms=59.8, rerank_ms=46.6, contradictions_ms=13.0, packet_ms=13.1; metadata lookup p95 3.6 ms |
-| 1000000 (after fixes) | exact_ms=36.2, lexical_ms=36.5, embed_ms=14.4, vector_ms=25.2, named_docs_ms=89.0, graph_ms=9.5, materialise_ms=18.9, rerank_ms=24.0, contradictions_ms=6.1, packet_ms=16.3; metadata lookup p95 1.2 ms |
+| 10000 | exact_ms=5.0, lexical_ms=45.9, embed_ms=7.2, vector_ms=19.7, named_docs_ms=19.4, graph_ms=8.4, materialise_ms=33.2, rerank_ms=30.1, contradictions_ms=5.3, packet_ms=14.7; metadata lookup p95 1.5 ms |
+| 100000 | exact_ms=11.7, lexical_ms=87.0, embed_ms=11.3, vector_ms=22.1, named_docs_ms=23.4, graph_ms=8.5, materialise_ms=32.5, rerank_ms=31.6, contradictions_ms=9.0, packet_ms=14.5; metadata lookup p95 1.9 ms |
+| 1000000 | exact_ms=13.6, lexical_ms=45.4, embed_ms=14.0, vector_ms=46.1, named_docs_ms=30.4, graph_ms=10.7, materialise_ms=32.1, rerank_ms=29.3, contradictions_ms=17.9, packet_ms=14.1; metadata lookup p95 1.8 ms |
+| 1000000 (re-measured) | exact_ms=15.1, lexical_ms=46.2, embed_ms=15.2, vector_ms=41.5, named_docs_ms=29.6, graph_ms=8.5, materialise_ms=27.7, rerank_ms=29.8, contradictions_ms=9.4, packet_ms=13.9; metadata lookup p95 1.2 ms |
 
-**At 1,000,000 records** (250,000 sections, 50,000 documents): load 229.6 s, tsvectors 144.7 s, HNSW build on records 132.3 s, all indexes 191.2 s; the records table takes 6.7 GB with indexes (2.1 GB HNSW, 25 MB GIN), sections 1.5 GB, edges 378 MB. Warm metadata lookup p95 3.6 ms.
+| records | resolve name p50 / p95 ms | resolved to the right supplier | entity profile p50 / p95 ms | profile records (p50) | company digest ms (records) | department digest ms (records) |
+|---|---|---|---|---|---|---|
+| 10000 | 9.2 / 14.0 | 0.94 | 16.4 / 22.6 | 11 | 55.6 (10,000) | 24.9 (2,004) |
+| 100000 | 35.4 / 72.8 | 0.9 | 50.4 / 55.2 | 11 | 182.4 (100,000) | 108.3 (20,004) |
+| 1000000 | 447.2 / 1383.5 | 0.88 | 588.8 / 622.8 | 11 | 1852.6 (1,000,000) | 1211.7 (200,004) |
+| 1000000 (re-measured) | 10.6 / 19.3 | 1.0 | 6.2 / 7.7 | 11 | 2249.8 (1,000,000) | 866.2 (200,004) |
 
-**The first 1,000,000-record run failed the latency target and most questions** (hybrid warm p50 2173.6 ms, p95 6175.6 ms, hit@20 0.22). The stage timings named the causes, all in the retrieval code rather than in PostgreSQL: a `COUNT(*)` per query to size the graph budget, an unbounded OR full-text tier that ranked every row sharing a common word, a trigram similarity fallback over every entity summary, a document-name search that concatenated two indexed columns (so neither trigram index applied) and dropped the numeral that told namesakes apart, and candidate lists cut at ties. After the fixes (row estimate from `pg_class`; four lexical tiers with an entity-anchored tier and a partial-match tier restricted to lexemes the planner statistics show are rare, bounded by a statement timeout; per-column trigram search with whole-word numerals and best-match-only documents; bounded trigram fallback; embeddings and tsvectors never read back) the same tenant re-measured at hybrid warm p50 241.8 ms, p95 581.7 ms, hit@20 0.98 (lexical stage p50 994.7 → 36.5 ms; lexical-only hit@20 0.26 → 0.98). The 10k and 100k rows are from the first run and were not re-measured; their latencies are upper bounds for the fixed code.
+**At 1,000,000 records** (250,000 sections, 50,000 documents): load 296.5 s, tsvectors 141.8 s, HNSW build on records 301.8 s, all indexes 391.6 s; the records table takes 5.9 GB with indexes (1.2 GB HNSW, 28 MB GIN), sections 1.3 GB, edges 669 MB. Warm metadata lookup p95 1.8 ms.
+
+**The first 1,000,000-record run failed the latency target and most questions** (hybrid warm p50 2173.6 ms, p95 6175.6 ms, hit@20 0.22). The stage timings named the causes, all in the retrieval code rather than in PostgreSQL: a `COUNT(*)` per query to size the graph budget, an unbounded OR full-text tier that ranked every row sharing a common word, a trigram similarity fallback over every entity summary, a document-name search that concatenated two indexed columns (so neither trigram index applied) and dropped the numeral that told namesakes apart, and candidate lists cut at ties. After the fixes (row estimate from `pg_class`; four lexical tiers with an entity-anchored tier and a partial-match tier restricted to lexemes the planner statistics show are rare, bounded by a statement timeout; per-column trigram search with whole-word numerals and best-match-only documents; bounded trigram fallback; embeddings and tsvectors never read back) the same tenant re-measured at hybrid warm p50 265.2 ms, p95 586.4 ms, hit@20 0.98 (lexical stage p50 994.7 → 45.4 ms; lexical-only hit@20 0.26 → 0.98). The tables above are the complete re-run with the fixed code; the first run is kept in `docs/benchmarks/scale_first_run.md`.
+
+**Can it organise at 1,000,000 records?** Resolving a differently spelled supplier name to its canonical entity takes 10.6 ms p50 / 19.3 ms p95 and lands on the right supplier 100% of the time (index-served candidates, then fuzzy scoring). An entity profile, everything the bank holds about one supplier grouped by type and current as of now, takes 6.2 ms p50 / 7.7 ms p95 for 11 records (JSONB containment on `entity_ids` plus `mentions` edges). A digest of the whole company scope (1,000,000 records) takes 2249.8 ms and of one department (200,004 records) 866.2 ms, from the scope/type index and the edge table alone.
 
 ### What this does and does not show
 
@@ -107,6 +120,53 @@ Unsupported factual claims in strict mode: 0 by construction (every sentence of 
 * **"vector-only" still narrows to the named documents.** That arm disables the exact, lexical and graph stages, but the document-name search (trigram index on titles and filenames) still restricts one of its candidate lists to the documents the question names; its rise between the two 1M rows is the document-name fix, not the embedding model.
 * **Timeouts are reported, not hidden.** A bounded tier that times out returns nothing for that tier; the `timeouts` column counts questions whose whole retrieval exceeded the 60 s statement timeout (cold cache after a database restart).
 * **One machine, one tenant, no concurrency.** Latencies are single-client; throughput under concurrent load was not measured. The re-measured 1M row shared the machine with a three-minute run of the test suite, so its cold p95 is, if anything, pessimistic.
+
+
+## Topological memory bank (Blue Brain cliques and cavities) vs the standard bank
+
+The mapping, the design of the three comparisons and what does not map are in `docs/TOPOLOGY.md`. Every number below is measured on the largest loaded scale tenant and the in-sample corpus; the arms share questions, budget and hardware.
+
+### Topological memory bank vs standard (largest loaded tenant)
+
+Retrieval arms (admin over the whole company, from `bench_scale` row `1000000 (re-measured)`):
+
+| arm | warm p50 ms | warm p95 ms | hit@20 | MRR | topology p50 (nodes / max dim / cavities) |
+|---|---|---|---|---|---|
+| hybrid+graph(bounded) | 267.0 | 552.2 | 0.98 | 0.893 | - |
+| hybrid+cliques(topological) | 254.0 | 534.0 | 0.98 | 0.893 | 80 / 2 / 0 |
+| hybrid+cliques+bonus | 248.8 | 550.1 | 0.98 | 0.893 | 81 / 2 / 0 |
+
+Plasticity (STDP-like): 40 documents, 120 learning questions, 120 unseen questions about the same documents; links potentiated/depressed from what the packets used; weights restored afterwards.
+
+| arm | set | hit@20 before → after | MRR before → after | p50 ms before → after | graph stage p50 ms before → after | links +/− |
+|---|---|---|---|---|---|---|
+| rem | same questions | 1.0 → 1.0 | 1.0 → 1.0 | 251.6 → 249.0 | 8.1 → 8.0 | 92 / 761 |
+| rem | unseen questions, same documents | 1.0 → 1.0 | 0.79 → 0.79 | 270.8 → 271.9 | 8.5 → 8.3 | 92 / 761 |
+| cliques | same questions | 1.0 → 1.0 | 1.0 → 1.0 | 248.7 → 246.5 | 9.4 → 9.6 | 89 / 610 |
+| cliques | unseen questions, same documents | 1.0 → 1.0 | 0.79 → 0.79 | 256.6 → 273.0 | 10.4 → 10.8 | 89 / 610 |
+
+Learned reranker on retrieval traces: 240 questions, 34,975 candidate rows (618 positives), 28 features; split by document (21,058 training rows, 13,917 test rows over 98 unseen-document queries).
+
+| model | parameters | learning rule | train s | AUC (test) | hit@1 | hit@5 | MRR |
+|---|---|---|---|---|---|---|---|
+| heuristic reranker (hand-written) | 0 | none | 0.0 | 0.806 | 0.827 | 1.0 | 0.895 |
+| clique network / backprop | 2,513 | backprop (Adam, weighted BCE) | 3.41 | 0.995 | 0.827 | 1.0 | 0.898 |
+| clique network / Hebbian (local) | 2,513 | reward-modulated Hebbian (local, three-factor) | 3.17 | 0.959 | 0.827 | 1.0 | 0.895 |
+| deep MLP (4x64) / backprop | 14,401 | backprop (Adam, weighted BCE) | 3.24 | 0.999 | 1.0 | 1.0 | 1.0 |
+
+### Reading
+
+* **Retrieval.** Replacing the REM expansion by the clique cascade changes hit@20 by +0.000 and MRR by +0.000 at a warm p50 cost of -13 ms per query; the rerank bonus changes MRR by +0.000.
+* **Plasticity (rem).** After learning from 120 questions, the same questions move from MRR 1.0 to 1.0 and unseen questions about the same documents from 0.79 to 0.79 (hit@20 1.0 → 1.0); graph stage 8.5 → 8.3 ms.
+* **Plasticity (cliques).** After learning from 120 questions, the same questions move from MRR 1.0 to 1.0 and unseen questions about the same documents from 0.79 to 0.79 (hit@20 1.0 → 1.0); graph stage 10.4 → 10.8 ms.
+* **Clique network vs deep network.** On unseen-document queries the best reranker is *deep MLP (4x64) / backprop* (MRR 1.0, AUC 0.999); heuristic reranker (hand-written): MRR 0.895, AUC 0.806, 0 parameters; clique network / backprop: MRR 0.898, AUC 0.995, 2,513 parameters; clique network / Hebbian (local): MRR 0.895, AUC 0.959, 2,513 parameters; deep MLP (4x64) / backprop: MRR 1.0, AUC 0.999, 14,401 parameters.
+
+### Caveats
+
+* The record graph's direction (detail → context) is the reverse of a circuit's (input → output), so simplex sinks are documents, clauses and entities; the cascade recruits along them but the rerank bonus is direction-neutral. Whether that is the right reading is exactly what the arms test.
+* The synthetic scale corpus has a regular link structure (a chain per document, a part-of edge every third record, a mentions edge per record, rare cross-document dependencies), so its simplices are small and alike; real extracted graphs are irregular and the in-sample corpus is the only such graph measured.
+* The reranker dataset is drawn from one synthetic tenant with templated questions; a model that wins here has learnt this corpus, not company documents.
+* The Hebbian rule is a three-factor reward-modulated approximation of STDP on rate units, not a spiking simulation.
 
 
 ## Glyph encoding benchmark

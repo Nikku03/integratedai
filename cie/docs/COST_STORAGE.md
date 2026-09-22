@@ -9,14 +9,14 @@ Measured on the synthetic evaluation corpus in this build; projections are arith
 | documents / pages / sections / records | 15 / 72 / 73 / 289 |
 | raw vault bytes (deduplicated blobs) | 12,756,178 (12.8 MB) |
 | raw bytes per page | 177,169 |
-| `pages` table incl. indexes, bytes per row (database-wide) | 699.9 |
-| `blocks` table incl. indexes, bytes per row (database-wide) | 367.4 |
-| `sections` table incl. indexes, bytes per row (database-wide) | 5886.9 |
-| `memory_records` table incl. indexes, bytes per row (database-wide) | 6528.8 |
-| `record_links` table incl. indexes, bytes per row (database-wide) | 331.1 |
-| `evidence_packets` table incl. indexes, bytes per row (database-wide) | 33205.1 |
+| `pages` table incl. indexes, bytes per row (database-wide) | 1137.8 |
+| `blocks` table incl. indexes, bytes per row (database-wide) | 479.9 |
+| `sections` table incl. indexes, bytes per row (database-wide) | 5891.5 |
+| `memory_records` table incl. indexes, bytes per row (database-wide) | 10785.7 |
+| `record_links` table incl. indexes, bytes per row (database-wide) | 358.2 |
+| `evidence_packets` table incl. indexes, bytes per row (database-wide) | 31766.8 |
 
-A memory record costs about 6,529 bytes on disk and a section about 5,887 bytes, indexes included (384-d float32 embedding = 1,536 bytes each, HNSW and GIN index entries, tsvector, JSONB glyph and provenance). Evidence packets are the largest growing table because every search stores its full packet for reproducibility; they can be expired by retention policy.
+A memory record costs about 10,786 bytes on disk and a section about 5,892 bytes, indexes included (384-d float32 embedding = 1,536 bytes each, HNSW and GIN index entries, tsvector, JSONB glyph and provenance). Evidence packets are the largest growing table because every search stores its full packet for reproducibility; they can be expired by retention policy.
 
 ## Projection to a 200-million-token project memory
 
@@ -24,8 +24,8 @@ Assuming ~350 tokens per section and ~120 tokens per record (measured averages o
 
 | component | estimate |
 |---|---|
-| sections (450k × 5,887 B) | 2.6 GB |
-| records (350k × 6,529 B) | 2.3 GB |
+| sections (450k × 5,892 B) | 2.7 GB |
+| records (350k × 10,786 B) | 3.8 GB |
 | raw vault (450k sections ≈ 60k pages × 177,169 B/page measured on PDFs with embedded fonts) | 10.6 GB |
 
 This fits one PostgreSQL instance with room; HNSW build time and index memory, not disk, are the first limits (see ROADMAP.md).
@@ -35,11 +35,11 @@ This fits one PostgreSQL instance with room; HNSW build time and index memory, n
 | quantity | value |
 |---|---|
 | records / sections / documents | 1,000,000 / 250,000 / 50,000 |
-| `memory_records` table incl. indexes | 6.71 GB (6,706 B per record) |
-| of which HNSW index / GIN tsvector index | 2.08 GB / 25 MB |
-| `sections` table incl. indexes | 1.51 GB (6,049 B per section) |
-| `record_links` table incl. indexes | 378 MB |
-| load (binary COPY) / tsvectors / HNSW on records / all indexes | 229.6 s / 144.7 s / 132.3 s / 191.2 s |
+| `memory_records` table incl. indexes | 5.85 GB (5,854 B per record) |
+| of which HNSW index (halfvec) / GIN tsvector index | 1.17 GB / 28 MB |
+| `sections` table incl. indexes | 1.26 GB (5,039 B per section) |
+| `record_links` table incl. indexes | 669 MB |
+| load (binary COPY) / tsvectors / HNSW on records / all indexes | 296.5 s / 141.8 s / 301.8 s / 391.6 s |
 
 Synthetic records are shorter than extracted ones (no page-level provenance, small glyphs), so the per-row figure is a floor; the per-row figure from the extracted corpus above is the better estimate for real documents. Retrieval latency at this size is in BENCHMARKS.md.
 
@@ -48,14 +48,14 @@ Synthetic records are shorter than extracted ones (no page-level provenance, sma
 | approach | tokens sent to the model per question | est. cost at claude-sonnet-5 list price |
 |---|---|---|
 | full context (everything the admin can read) | ~4,546 | $0.0181 |
-| hybrid evidence packet (this system, assisted mode) | ~4,164 | $0.0170 |
+| hybrid evidence packet (this system, assisted mode) | ~4,178 | $0.0170 |
 | strict extractive mode (this system, default) | 0 | $0 |
 
 The corpus is small, so full context is still cheap in absolute terms; the ratio is what scales. At 200M tokens the full-context approach is impossible (no model holds it) while the packet stays at a few thousand tokens.
 
 ## Latency and compute
 
-Retrieval + rerank p50/p95: 113.8 / 192.51 ms on CPU with the embedding model warm; warm metadata lookup p95 0.73 ms. Ingestion of the corpus took 19.5 s including OCR of the scanned document (Tesseract ≈ 0.5 s per page at 110–150 dpi on one core).
+Retrieval + rerank p50/p95: 97.62 / 140.77 ms on CPU with the embedding model warm; warm metadata lookup p95 0.84 ms. Ingestion of the corpus took 17.2 s including OCR of the scanned document (Tesseract ≈ 0.5 s per page at 110–150 dpi on one core).
 
 ## Multi-agent run
 
