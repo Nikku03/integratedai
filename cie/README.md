@@ -46,6 +46,9 @@ cie worker &                            # processes ingestion and agent jobs
 Tests (needs a `cie_test` database): `pytest -m "not slow"`; the 300-page OCR
 acceptance test: `pytest -m slow`. Benchmarks: `cie bench all`; multi-agent
 simulation: `cie simulate`; the end-to-end vertical slice: `cie demo`.
+Scale benchmark of the memory bank and retrieval at 10k / 100k / 1M records:
+`python -m cie.eval.bench_scale` (results in `docs/BENCHMARKS.md`), or the
+notebook `notebooks/scale_benchmark_colab.ipynb` on Colab with a GPU.
 
 ## Configuration
 

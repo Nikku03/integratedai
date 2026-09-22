@@ -154,8 +154,11 @@ def rerank(cands: list[Candidate], intent: Intent, query: str = "", now: datetim
     weights, present = idf_weights(query, cands, indexes) if query else ({}, set())
     ents = entity_terms(query) if query else set()
     doc_titles = doc_titles or {}
-    # does any candidate's document carry a name from the query? then the query targets specific documents
-    targeted = bool(ents) and any(any(e in (doc_titles.get(_doc_id(c)) or "").lower() for e in ents) for c in cands)
+    # does any candidate's document carry a name from the query? then the query targets specific documents;
+    # if some document carries the *whole* name, partial namesakes count as other documents
+    title_matches = {c.id: sum(1 for e in ents if e in (doc_titles.get(_doc_id(c)) or "").lower()) for c in cands} if ents else {}
+    best_match = max(title_matches.values(), default=0)
+    targeted = best_match > 0
     for c, index in zip(cands, indexes, strict=True):
         base = c.fused / max_fused
         c.support = round(support_of(c, query, weights, ents, present, index), 3) if query else 1.0
@@ -163,14 +166,16 @@ def rerank(cands: list[Candidate], intent: Intent, query: str = "", now: datetim
         reasons = {"fused": round(base * (0.35 + 0.65 * c.support), 4)}
         bonus_scale = 0.3 + 0.7 * c.support
         if ents:
-            title = (doc_titles.get(_doc_id(c)) or "").lower()
             text = _text_of(c).lower()
-            matched = sum(1 for e in ents if e in title)
-            if matched:
+            matched = title_matches.get(c.id, 0)
+            if matched and matched == best_match:
                 # scales with how much of the name matches: "Northwind Logistics" beats "Northwind Freight"
                 reasons["document_affinity"] = round(0.3 * bonus_scale * (matched / len(ents)) ** 2, 4)
-            elif any(e in text for e in ents):
-                reasons["entity_affinity"] = round(0.15 * bonus_scale, 4)
+            elif matched or any(e in text for e in ents):
+                if matched and best_match == len(ents):
+                    reasons["other_document"] = -0.1  # a namesake of the fully named document
+                else:
+                    reasons["entity_affinity"] = round(0.15 * bonus_scale, 4)
             elif targeted:
                 reasons["other_document"] = -0.1  # mild: the named entity may be a topic, not the file holding the answer
         is_draft = doc_types.get(_doc_id(c), "").lower() in ("draft", "superseded", "template")

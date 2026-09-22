@@ -55,9 +55,26 @@ Stated plainly so nobody mistakes a scaffold for a finished capability.
   declared by an agent or a person.
 
 ## Scale
-* Everything was measured on a 15-document synthetic corpus. HNSW build,
-  full-text index size and graph expansion at millions of records are
-  projected in COST_STORAGE.md, not measured.
+* Quality was measured on a 15-document synthetic corpus. Latency, storage
+  and hit@20 were measured on synthetic tenants of 10k, 100k and 1M typed
+  records (`python -m cie.eval.bench_scale`, tables in BENCHMARKS.md); the
+  1M row was re-measured after the fixes it forced, the 10k and 100k rows
+  were not. The scale corpus is templated: every record names its supplier,
+  which favours entity-anchored lexical search over what real documents
+  offer, and its questions are templated too.
+* At 1M records a name that is a prefix of other names ("Alpine Cloud" among
+  "Alpine Cloud 1…124") is ambiguous: the exact-name document ties with its
+  namesakes in the document-name search and in full-text rank, and can fall
+  outside the top 20.
+* The partial-match full-text tier drops lexemes that planner statistics
+  expect in more than 5,000 rows and is bounded by a 1.5 s statement
+  timeout; the trigram entity fallback is bounded by 400 ms. A bounded tier
+  that times out contributes nothing for that question, and this is counted,
+  not hidden. Statistics come from `ANALYZE`; a table that was never
+  analysed has none, and the tier then runs over every term.
+* Single client, one tenant per run, one machine (4 vCPU, no GPU):
+  throughput under concurrent load and multi-tenant interference were not
+  measured.
 * Token counts are estimates unless a provider reports usage.
 
 ## Security

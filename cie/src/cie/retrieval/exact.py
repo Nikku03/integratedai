@@ -49,7 +49,19 @@ def lookup(session: Session, intent: Intent, query: str, base_filter, k: int = 3
         stmt = (select(MemoryRecord.id, sim).where(base_filter, MemoryRecord.type.in_(_ENTITY_TYPES),
                                                    MemoryRecord.summary.op("%")(name))
                 .order_by(sim.desc()).limit(5))
-        for rid, s in session.execute(stmt):
+        # fuzzy matching over every entity summary is bounded: on a cold cache at a million rows it can take seconds
+        from sqlalchemy import text as _text
+
+        try:
+            session.execute(_text("SAVEPOINT ent_sim"))
+            session.execute(_text("SET LOCAL statement_timeout = '400ms'"))
+            rows = session.execute(stmt).all()
+            session.execute(_text("SET LOCAL statement_timeout = 0"))
+            session.execute(_text("RELEASE SAVEPOINT ent_sim"))
+        except Exception:  # noqa: BLE001 - the bound is the point
+            session.execute(_text("ROLLBACK TO SAVEPOINT ent_sim"))
+            rows = []
+        for rid, s in rows:
             if float(s) > 0.35:
                 hits[rid] = max(hits.get(rid, 0), 2.0 + float(s))
     # keyword overlap (GIN index on the keywords array)
@@ -68,10 +80,18 @@ def _capitalised_spans(q: str) -> list[str]:
     spans = re.findall(r"\b([A-Z][A-Za-z0-9&'\-]+(?:\s+(?:of|and|&|the)?\s*[A-Z][A-Za-z0-9&'\-\.]+){0,4}(?:\s+\d{1,4})?)", q)
     out = []
     for s in spans:
-        s = s.strip()
+        words = s.split()
+        while words and (words[0].lower() in _DATE_WORDS or words[0].isdigit()):
+            words = words[1:]  # "March 1" is a date, not a name; "May Northwind ..." still names Northwind
+        s = " ".join(words)
         if len(s) > 3 and s.lower() not in ("what", "when", "who", "which", "how", "list", "compare", "does", "is"):
             out.append(s)
     return out[:5]
+
+
+_DATE_WORDS = {"january", "february", "march", "april", "may", "june", "july", "august", "september", "october",
+               "november", "december", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday",
+               "jan", "feb", "mar", "apr", "jun", "jul", "aug", "sep", "sept", "oct", "nov", "dec"}
 
 
 def by_ids(session: Session, ids: list[uuid.UUID]) -> dict[uuid.UUID, MemoryRecord]:

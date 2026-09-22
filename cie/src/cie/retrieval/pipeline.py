@@ -97,9 +97,9 @@ class Retriever:
         lists: dict[str, list] = {"exact": exact_hits}
         if use_lexical:
             t = time.perf_counter()
-            lists["lex_rec"] = lexical.search_records(s, query, rec_filter, k)
+            lists["lex_rec"] = lexical.search_records(s, query, rec_filter, k, tenant_id=principal.tenant_id)
             if use_sections:
-                lists["lex_sec"] = [(("sec", i), sc) for i, sc in lexical.search_sections(s, query, sec_filter, k)]
+                lists["lex_sec"] = [(("sec", i), sc) for i, sc in lexical.search_sections(s, query, sec_filter, k, tenant_id=principal.tenant_id)]
             timings["lexical_ms"] = (time.perf_counter() - t) * 1000
         t = time.perf_counter()
         qvec = self.embedder.embed([query])[0] if use_vector else None
@@ -118,9 +118,9 @@ class Retriever:
             doc_sec = and_(sec_filter, Section.document_id.in_(named_docs))
             kd = max(k, 300)  # the named-document pool is small; do not let ties cut it
             if use_lexical:
-                lists["lex_doc"] = lexical.search_records(s, query, doc_rec, kd)
+                lists["lex_doc"] = lexical.search_records(s, query, doc_rec, kd, tenant_id=principal.tenant_id)
                 if use_sections:
-                    lists["lex_doc_sec"] = [(("sec", i), sc) for i, sc in lexical.search_sections(s, query, doc_sec, kd)]
+                    lists["lex_doc_sec"] = [(("sec", i), sc) for i, sc in lexical.search_sections(s, query, doc_sec, kd, tenant_id=principal.tenant_id)]
             if use_vector:
                 lists["vec_doc"] = vector.search_records(s, qvec, doc_rec, kd)
             timings["named_docs_ms"] = (time.perf_counter() - t) * 1000
@@ -234,25 +234,34 @@ class Retriever:
         return result, res
 
     def _named_documents(self, query: str, tenant_id: uuid.UUID, allowed: list[uuid.UUID], vis: Visibility) -> list[uuid.UUID]:
-        """Documents whose title or filename carries a capitalised name from the query
-        (trigram-indexed ILIKE, never a scan of every document)."""
-        from sqlalchemy import or_
+        """Documents whose title or filename carries a capitalised name from the query.
+        Words go through the trigram-indexed ILIKE on each column (never a scan of every
+        document); numerals in a name ("Project 37") count only as whole words, so a
+        namesake ("Project 3") does not tie with the named file."""
+        from sqlalchemy import case, or_
 
         from cie.core.models import Document
 
-        ents = [e for e in rerank.entity_terms(query) if len(e) >= 4]
-        if not ents:
+        ents = sorted(rerank.entity_terms(query))
+        words = [e for e in ents if len(e) >= 4 and not e.isdigit()][:5]
+        nums = [e for e in ents if e.isdigit()][:3]
+        if not words:
             return []
-        from sqlalchemy import case
-
-        pats = [f"%{e}%" for e in ents[:5]]
+        conds = [or_(Document.title.ilike(f"%{w}%"), Document.original_filename.ilike(f"%{w}%")) for w in words]
         hay = func.concat(Document.title, " ", Document.original_filename)
-        matches = sum(case((hay.ilike(p), 1), else_=0) for p in pats)  # documents matching more of the name rank first
-        stmt = (select(Document.id).where(
+        matches = sum(case((c, 1), else_=0) for c in conds)  # documents matching more of the name rank first
+        for n in nums:
+            matches = matches + case((hay.op("~")(rf"\m{n}\M"), 1), else_=0)
+        stmt = (select(Document.id, matches).where(
             Document.tenant_id == tenant_id, Document.deleted_at.is_(None), Document.scope_id.in_(allowed),
-            vis.sql_filter(Document.scope_id, Document.sensitivity), or_(*[hay.ilike(p) for p in pats]))
-            .order_by(matches.desc()).limit(20))
-        return list(self.session.scalars(stmt))
+            vis.sql_filter(Document.scope_id, Document.sensitivity), or_(*conds))
+            .order_by(matches.desc()).limit(40))
+        rows = self.session.execute(stmt).all()
+        if not rows:
+            return []
+        best = rows[0][1]
+        # only the best-matching documents: if one file carries the whole name, its namesakes are other documents
+        return [d_id for d_id, m in rows if m == best][:20]
 
     # ------------------------------------------------------------------
     @staticmethod

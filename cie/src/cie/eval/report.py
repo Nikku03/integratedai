@@ -81,11 +81,68 @@ def benchmarks_md(out: Path, docs: Path) -> str:
         lines += ["", "## 300-page scanned contract (acceptance test 1)", "",
                   f"`pytest -m slow -k 300_page`: **{status}**. " + (f"Wall time {m.group(2)} including rasterisation at 110 dpi and Tesseract OCR of 300 pages; " if m else "")
                   + "all 300 pages stored with per-page confidence, completeness check passed, and the question about clause 177 was answered with a citation to page 177."]
+    lines += scale_section(out)
     lines += ["", "## Glyph encoding benchmark", "", glyph, "", "## Graph topology benchmark (Ramanujan/expander vs sparse justified graph)", "", graph, "",
               "## Multi-agent simulation", "", sim]
     text = "\n".join(lines)
     (docs / "BENCHMARKS.md").write_text(text)
     return text
+
+
+def scale_section(out: Path) -> list[str]:
+    """Memory bank + retrieval at 10k / 100k / 1M records (``python -m cie.eval.bench_scale``),
+    with the 1M row re-measured after the fixes it forced. Numbers come from the JSON only."""
+    rep = _load(out / "scale" / "bench_scale.json")
+    md_path = out / "scale" / "bench_scale.md"
+    if not rep or not md_path.exists():
+        return []
+    sizes = rep["sizes"]
+    loaded = [k for k, v in sizes.items() if v.get("index_build_seconds")]
+    if not loaded:
+        return []
+    big = max(loaded, key=lambda k: int(k))
+    after = next((k for k in sizes if k.startswith(big) and k != big), None)
+    b = sizes[big]
+    hb = b["admin@company"]["hybrid+graph(bounded)"]
+    lines = ["", "## Scale benchmark: memory bank and retrieval at 10k, 100k and 1M records", "",
+             "`python -m cie.eval.bench_scale` loads a synthetic tenant of N typed records (12 per document: fees, penalties, notice periods, "
+             "terms, liability caps, decisions, parties, signatories, open questions, notes), N/4 sections and about 1.35 edges per record through "
+             "binary COPY, builds the indexes, then runs 60 templated questions (50 with a known target document and record type, 10 unanswerable) "
+             "through the full retrieval pipeline as an admin over the whole company and as an analyst confined to one department (20% of the data). "
+             "`hit@20` is whether the target document's record of the expected type is in the top 20 of the packet; it measures retrieval, not answer wording. "
+             "Cold = first pass after the load, warm = second pass. Hardware as above (4 vCPU, no GPU, embeddings on CPU).", "",
+             md_path.read_text().strip(), ""]
+    st = b["storage"]
+    lines += [f"**At {int(big):,} records** ({b['load']['n_sections']:,} sections, {b['load']['n_documents']:,} documents): load {b['load']['copy_seconds']} s, "
+              f"tsvectors {b['load']['tsvector_seconds']} s, HNSW build on records {b['index_build_seconds']['ix_records_embedding_hnsw']} s, all indexes "
+              f"{b['index_build_total_seconds']} s; the records table takes {st['memory_records']['total_bytes'] / 1e9:.1f} GB with indexes "
+              f"({st['ix_records_embedding_hnsw_bytes'] / 1e9:.1f} GB HNSW, {st['ix_records_tsv_bytes'] / 1e6:.0f} MB GIN), sections {st['sections']['total_bytes'] / 1e9:.1f} GB, "
+              f"edges {st['record_links']['total_bytes'] / 1e6:.0f} MB. Warm metadata lookup p95 {b['warm_metadata_lookup_ms']['p95']} ms.", ""]
+    if after:
+        a = sizes[after]
+        ha = a["admin@company"]["hybrid+graph(bounded)"]
+        la = a["admin@company"].get("lexical-only", {})
+        lb = b["admin@company"].get("lexical-only", {})
+        lines += [f"**The first {int(big):,}-record run failed the latency target and most questions** (hybrid warm p50 {hb['warm_p50_ms']} ms, p95 {hb['warm_p95_ms']} ms, "
+                  f"hit@20 {hb['hit_at_20']}). The stage timings named the causes, all in the retrieval code rather than in PostgreSQL: a `COUNT(*)` per query to size the "
+                  f"graph budget, an unbounded OR full-text tier that ranked every row sharing a common word, a trigram similarity fallback over every entity summary, "
+                  f"a document-name search that concatenated two indexed columns (so neither trigram index applied) and dropped the numeral that told namesakes apart, "
+                  f"and candidate lists cut at ties. After the fixes (row estimate from `pg_class`; four lexical tiers with an entity-anchored tier and a partial-match tier "
+                  f"restricted to lexemes the planner statistics show are rare, bounded by a statement timeout; per-column trigram search with whole-word numerals and "
+                  f"best-match-only documents; bounded trigram fallback; embeddings and tsvectors never read back) the same tenant re-measured at hybrid warm p50 "
+                  f"{ha['warm_p50_ms']} ms, p95 {ha['warm_p95_ms']} ms, hit@20 {ha['hit_at_20']} (lexical stage p50 {lb.get('stage_ms_p50', {}).get('lexical_ms', '?')} → "
+                  f"{ha['stage_ms_p50'].get('lexical_ms', '?')} ms; lexical-only hit@20 {lb.get('hit_at_20', '?')} → {la.get('hit_at_20', '?')}). "
+                  f"The 10k and 100k rows are from the first run and were not re-measured; their latencies are upper bounds for the fixed code.", ""]
+    lines += ["### What this does and does not show", "",
+              "* **Synthetic and templated.** Every record carries its supplier's name and the questions name the supplier, which is friendlier to entity-anchored "
+              "lexical search than real documents, where a fee clause rarely repeats the supplier's name (the in-sample corpus above covers that case). "
+              "Vector-only hit@20 is low because the 384-d model cannot tell 50,000 near-identical contracts apart; that is a property of templated data as much as of the model.",
+              "* **Names that are prefixes of other names stay ambiguous.** \"Alpine Cloud\" matches every \"Alpine Cloud N\" supplier equally; the exact-name document "
+              "ties with its namesakes and can fall outside the top 20. This is the remaining systematic miss.",
+              "* **Timeouts are reported, not hidden.** A bounded tier that times out returns nothing for that tier; the `timeouts` column counts questions whose whole retrieval "
+              "exceeded the 60 s statement timeout (cold cache after a database restart).",
+              "* **One machine, one tenant, no concurrency.** Latencies are single-client; throughput under concurrent load was not measured.", ""]
+    return lines
 
 
 def cost_storage_md(out: Path, docs: Path) -> str:
