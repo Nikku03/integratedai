@@ -1,0 +1,13 @@
+.venv/
+.models/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.cie_data/
+dashboard/node_modules/
+dashboard/dist/
+eval_out/
+*.log
+.env

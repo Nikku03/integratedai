@@ -1,0 +1,66 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cie"
+version = "0.1.0"
+description = "Company Intelligence Engine: organizational memory and multi-agent operating system"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+    "sqlalchemy>=2.0",
+    "psycopg[binary]>=3.1",
+    "pgvector>=0.3",
+    "alembic>=1.13",
+    "pydantic>=2.7",
+    "pydantic-settings>=2.3",
+    "httpx>=0.27",
+    "pymupdf>=1.24",
+    "pytesseract>=0.3.10",
+    "pillow>=10",
+    "numpy>=1.26",
+    "msgpack>=1.0",
+    "orjson>=3.10",
+    "python-multipart>=0.0.9",
+    "structlog>=24",
+    "rapidfuzz>=3.6",
+    "reportlab>=4.0",
+    "cryptography>=42",
+    "python-magic>=0.4.27",
+    "python-docx>=1.1",
+    "openpyxl>=3.1",
+    "python-pptx>=0.6.23",
+]
+
+[project.optional-dependencies]
+embeddings = ["fastembed>=0.3"]
+providers = ["anthropic>=0.30", "openai>=1.30", "google-genai>=1.0"]
+s3 = ["boto3>=1.34"]
+redis = ["redis>=5"]
+columnar = ["pyarrow>=14"]
+dev = ["pytest>=8", "pytest-asyncio>=0.23", "ruff>=0.4"]
+
+[project.scripts]
+cie = "cie.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "slow: long-running acceptance tests (300-page OCR, benchmarks)",
+    "db: requires PostgreSQL with pgvector",
+]
+filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = ["E501", "B008", "UP042"]

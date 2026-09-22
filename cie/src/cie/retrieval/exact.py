@@ -1,0 +1,74 @@
+"""Exact lookups: ids, clause numbers, entity names, keywords, quoted phrases."""
+
+from __future__ import annotations
+
+import uuid
+
+from sqlalchemy import String, cast, func, or_, select
+from sqlalchemy.orm import Session
+
+from cie.core.models import MemoryRecord, RecordType
+from cie.retrieval.intent import Intent
+
+_ENTITY_TYPES = [RecordType.person, RecordType.organization, RecordType.entity, RecordType.project]
+
+
+def lookup(session: Session, intent: Intent, query: str, base_filter, k: int = 30) -> list[tuple[uuid.UUID, float]]:
+    hits: dict[uuid.UUID, float] = {}
+    if intent.record_ids:
+        for rid in session.scalars(select(MemoryRecord.id).where(base_filter, MemoryRecord.id.in_(intent.record_ids))):
+            hits[rid] = 10.0
+    for num in intent.clause_numbers:
+        stmt = select(MemoryRecord.id).where(base_filter, MemoryRecord.type == RecordType.contract_clause,
+                                             MemoryRecord.content["clause_number"].astext == num)
+        for rid in session.scalars(stmt.limit(k)):
+            hits[rid] = max(hits.get(rid, 0), 5.0)
+        # clauses nested under a section (e.g. 2.2 inside "2. Term")
+        stmt2 = select(MemoryRecord.id).where(base_filter, MemoryRecord.detail.ilike(f"%{num} %"))
+        for rid in session.scalars(stmt2.limit(k)):
+            hits[rid] = max(hits.get(rid, 0), 3.0)
+    for phrase in intent.quoted:
+        stmt = select(MemoryRecord.id).where(base_filter, or_(MemoryRecord.summary.ilike(f"%{phrase}%"),
+                                                              MemoryRecord.detail.ilike(f"%{phrase}%")))
+        for rid in session.scalars(stmt.limit(k)):
+            hits[rid] = max(hits.get(rid, 0), 4.0)
+    # entity names by trigram similarity against capitalised tokens in the query
+    caps = _capitalised_spans(query)
+    for name in caps:
+        sim = func.similarity(MemoryRecord.summary, name)
+        stmt = (select(MemoryRecord.id, sim).where(base_filter, MemoryRecord.type.in_(_ENTITY_TYPES), sim > 0.35)
+                .order_by(sim.desc()).limit(5))
+        for rid, s in session.execute(stmt):
+            hits[rid] = max(hits.get(rid, 0), 2.0 + float(s))
+    # keyword overlap
+    kws = [w.lower() for w in query.split() if len(w) > 3][:8]
+    if kws:
+        overlap = func.cardinality(func.array(select(func.unnest(MemoryRecord.keywords)).where(
+            func.unnest(MemoryRecord.keywords).in_(kws)).scalar_subquery()))
+        _ = overlap  # array intersection via && operator is cheaper:
+        stmt = (select(MemoryRecord.id).where(base_filter, MemoryRecord.keywords.op("&&")(cast(kws, MemoryRecord.keywords.type)))
+                .limit(k))
+        for rid in session.scalars(stmt):
+            hits[rid] = max(hits.get(rid, 0), 1.0)
+    return sorted(hits.items(), key=lambda kv: -kv[1])[:k]
+
+
+def _capitalised_spans(q: str) -> list[str]:
+    import re
+
+    spans = re.findall(r"\b([A-Z][A-Za-z0-9&'\-]+(?:\s+(?:of|and|&|the)?\s*[A-Z][A-Za-z0-9&'\-\.]+){0,4})", q)
+    out = []
+    for s in spans:
+        s = s.strip()
+        if len(s) > 3 and s.lower() not in ("what", "when", "who", "which", "how", "list", "compare", "does", "is"):
+            out.append(s)
+    return out[:5]
+
+
+def by_ids(session: Session, ids: list[uuid.UUID]) -> dict[uuid.UUID, MemoryRecord]:
+    if not ids:
+        return {}
+    return {r.id: r for r in session.scalars(select(MemoryRecord).where(MemoryRecord.id.in_(ids)))}
+
+
+_ = (String,)

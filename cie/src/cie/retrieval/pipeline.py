@@ -1,0 +1,196 @@
+"""The hybrid retrieval pipeline.
+
+    classify intent → resolve scopes + permissions → exact lookup
+    → lexical ∥ vector (records and sections) → RRF fusion
+    → bounded graph expansion → rerank → contradiction check
+    → evidence packet → (optional) cited answer
+"""
+
+from __future__ import annotations
+
+import time
+import uuid
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Any
+
+from sqlalchemy import and_, func, select
+from sqlalchemy.orm import Session
+
+from cie.core.models import EvidencePacket, MemoryRecord, Metric, Principal, Section
+from cie.core.settings import Settings, get_settings
+from cie.governance.audit import audit
+from cie.governance.permissions import AccessDenied, Visibility, visible_scopes
+from cie.memory.embeddings import EmbeddingProvider, get_embedding_provider
+from cie.memory.records import current_only
+from cie.memory.scopes import addressable_scope_ids
+from cie.retrieval import contradictions, exact, fusion, graph, lexical, packet, rerank, vector
+from cie.retrieval.answer import AnswerResult, assisted, extractive, persist
+from cie.retrieval.intent import Intent, classify
+
+
+@dataclass
+class RetrievalResult:
+    packet: EvidencePacket
+    intent: Intent
+    ranked: list[rerank.Candidate]
+    trace: dict[str, Any]
+
+
+class Retriever:
+    def __init__(self, session: Session, settings: Settings | None = None, embedder: EmbeddingProvider | None = None):
+        self.session = session
+        self.settings = settings or get_settings()
+        self.embedder = embedder or get_embedding_provider(self.settings)
+
+    # ------------------------------------------------------------------
+    def retrieve(self, query: str, principal: Principal, scope_id: uuid.UUID, *, filters: dict | None = None,
+                 k: int = 50, at: datetime | None = None, use_graph: bool = True, use_vector: bool = True,
+                 use_lexical: bool = True, use_sections: bool = True, max_records: int | None = None,
+                 min_records: int | None = None, token_budget: int | None = None) -> RetrievalResult:
+        t0 = time.perf_counter()
+        s = self.session
+        filters = filters or {}
+        intent = classify(query)
+        at = at or intent.as_of
+        vis = visible_scopes(s, principal)
+        requested = addressable_scope_ids(s, scope_id)
+        allowed = [sid for sid in requested if sid in vis.scope_ids]
+        if not allowed:
+            audit(s, tenant_id=principal.tenant_id, principal_id=principal.id, action="search", resource_kind="scope",
+                  resource_id=scope_id, details={"query": query}, outcome="denied")
+            raise AccessDenied("principal has no visible scopes under the requested scope")
+        rec_filter, perm_only = self._record_filter(vis, allowed, principal.tenant_id, intent, at, filters)
+        sec_filter = and_(Section.tenant_id == principal.tenant_id, Section.scope_id.in_(allowed),
+                          vis.sql_filter(Section.scope_id, Section.sensitivity))
+        if filters.get("document_id"):
+            sec_filter = and_(sec_filter, Section.document_id == uuid.UUID(str(filters["document_id"])))
+        timings: dict[str, float] = {}
+
+        # 1–3. exact
+        t = time.perf_counter()
+        exact_hits = exact.lookup(s, intent, query, rec_filter, k=min(k, 30))
+        timings["exact_ms"] = (time.perf_counter() - t) * 1000
+
+        # 4. lexical ∥ vector
+        lists: dict[str, list] = {"exact": exact_hits}
+        if use_lexical:
+            t = time.perf_counter()
+            lists["lex_rec"] = lexical.search_records(s, query, rec_filter, k)
+            if use_sections:
+                lists["lex_sec"] = [(("sec", i), sc) for i, sc in lexical.search_sections(s, query, sec_filter, k)]
+            timings["lexical_ms"] = (time.perf_counter() - t) * 1000
+        if use_vector:
+            t = time.perf_counter()
+            qvec = self.embedder.embed([query])[0]
+            lists["vec_rec"] = vector.search_records(s, qvec, rec_filter, k)
+            if use_sections:
+                lists["vec_sec"] = [(("sec", i), sc) for i, sc in vector.search_sections(s, qvec, sec_filter, k)]
+            timings["vector_ms"] = (time.perf_counter() - t) * 1000
+        fused = fusion.rrf(lists, weights={"exact": 2.0, "lex_rec": 1.0, "vec_rec": 1.0, "lex_sec": 0.8, "vec_sec": 0.8})
+
+        # 5. graph expansion
+        expanded: list[graph.Expanded] = []
+        budget = 0
+        if use_graph:
+            t = time.perf_counter()
+            seeds = {rid: v["score"] for rid, v in fused.items() if not isinstance(rid, tuple)}
+            seeds = dict(sorted(seeds.items(), key=lambda kv: -kv[1])[:20])
+            n_records = s.scalar(select(func.count(MemoryRecord.id)).where(rec_filter)) or 0
+            budget = graph.budget_for(n_records, self.settings.graph_budget_coefficient)
+            expanded = graph.expand(s, seeds, base_filter=rec_filter, cross_scope_filter=perm_only, budget=budget)
+            timings["graph_ms"] = (time.perf_counter() - t) * 1000
+
+        # materialise candidates
+        rec_ids = [rid for rid in fused if not isinstance(rid, tuple)] + [e.record_id for e in expanded]
+        sec_ids = [rid[1] for rid in fused if isinstance(rid, tuple)]
+        recs = exact.by_ids(s, rec_ids)
+        secs = {x.id: x for x in s.scalars(select(Section).where(Section.id.in_(sec_ids)))} if sec_ids else {}
+        degrees = graph.degree(s, list(recs))
+        cands: list[rerank.Candidate] = []
+        for rid, v in fused.items():
+            if isinstance(rid, tuple):
+                if rid[1] in secs:
+                    cands.append(rerank.Candidate(None, secs[rid[1]], v["score"], v["sources"]))
+            elif rid in recs:
+                cands.append(rerank.Candidate(recs[rid], None, v["score"], v["sources"], degree=degrees.get(rid, 0)))
+        seen = {c.id for c in cands}
+        for e in expanded:
+            if e.record_id in recs and e.record_id not in seen:
+                cands.append(rerank.Candidate(recs[e.record_id], None, e.score * 0.5, {"graph": (e.horizon, e.score)},
+                                              horizon=e.horizon, via=f"{e.kind}:{e.via}", degree=degrees.get(e.record_id, 0)))
+                seen.add(e.record_id)
+        # defence in depth: per-record ACL check in Python as well as SQL
+        cands = [c for c in cands if c.record is None or vis.can_read(c.record.scope_id, c.record.sensitivity, c.record.acl)]
+
+        # 6. rerank
+        ranked = rerank.rerank(cands, intent, query)
+
+        # 7. contradictions
+        conflicts, extra = contradictions.find(s, [c.record.id for c in ranked if c.record is not None][:max_records or self.settings.packet_max_records], rec_filter)
+        for r in extra:
+            if r.id not in seen and vis.can_read(r.scope_id, r.sensitivity, r.acl):
+                ranked.append(rerank.Candidate(r, None, 0.0, {"contradiction": (0, 0.0)}, horizon=1, via="contradicts"))
+                seen.add(r.id)
+
+        # 8. packet
+        latency = (time.perf_counter() - t0) * 1000
+        trace = {"timings_ms": timings, "graph_budget": budget, "expanded": len(expanded), "candidates": len(cands),
+                 "lists": {k_: len(v) for k_, v in lists.items()}, "as_of": at.isoformat() if at else None,
+                 "embedding_provider": getattr(self.embedder, "name", "?"), "scopes_allowed": len(allowed)}
+        pk = packet.build(s, tenant_id=principal.tenant_id, principal_id=principal.id, query=query, intent=intent.kind,
+                          scope_ids=allowed, filters=filters, ranked=ranked, conflicts=conflicts,
+                          min_records=min_records or self.settings.packet_min_records,
+                          max_records=max_records or self.settings.packet_max_records,
+                          token_budget=token_budget or self.settings.packet_token_budget, trace=trace, latency_ms=latency)
+        audit(s, tenant_id=principal.tenant_id, principal_id=principal.id, action="search", resource_kind="evidence_packet",
+              resource_id=pk.id, details={"query": query, "scope_id": str(scope_id), "items": len(pk.items)})
+        s.add(Metric(tenant_id=principal.tenant_id, name="retrieval_latency_ms", value=latency,
+                     labels={"intent": intent.kind, "graph": use_graph}))
+        s.add(Metric(tenant_id=principal.tenant_id, name="packet_tokens", value=pk.token_estimate, labels={}))
+        return RetrievalResult(pk, intent, ranked, trace)
+
+    # ------------------------------------------------------------------
+    def answer(self, query: str, principal: Principal, scope_id: uuid.UUID, *, mode: str = "strict",
+               provider=None, **kw) -> tuple[AnswerResult, RetrievalResult]:
+        res = self.retrieve(query, principal, scope_id, **kw)
+        if mode == "assisted" and provider is not None:
+            result = assisted(res.packet, res.intent, provider, strict=self.settings.strict_evidence_mode)
+        else:
+            result = extractive(res.packet, res.intent)
+        row = persist(self.session, res.packet, result, principal.id, query)
+        audit(self.session, tenant_id=principal.tenant_id, principal_id=principal.id, action="answer",
+              resource_kind="answer", resource_id=row.id, details={"status": result.status, "mode": result.mode,
+                                                                    "packet_id": str(res.packet.id)})
+        for name, val in (("answer_tokens_in", result.tokens_in), ("answer_tokens_out", result.tokens_out),
+                          ("answer_cost_usd", result.cost_usd), ("answer_latency_ms", result.latency_ms)):
+            self.session.add(Metric(tenant_id=principal.tenant_id, name=name, value=float(val), labels={"mode": result.mode}))
+        result.answer_id = row.id  # type: ignore[attr-defined]
+        return result, res
+
+    # ------------------------------------------------------------------
+    @staticmethod
+    def _record_filter(vis: Visibility, allowed: list[uuid.UUID], tenant_id: uuid.UUID, intent: Intent,
+                       at: datetime | None, filters: dict):
+        """Returns (scoped_filter, permission_only_filter). Both apply tenant,
+        permission, deletion and time rules; only the first restricts scopes."""
+        f = and_(MemoryRecord.tenant_id == tenant_id,
+                 vis.sql_filter(MemoryRecord.scope_id, MemoryRecord.sensitivity), MemoryRecord.deleted_at.is_(None))
+        if filters.get("types"):
+            from cie.core.models import RecordType
+
+            f = and_(f, MemoryRecord.type.in_([RecordType(t) for t in filters["types"]]))
+        if filters.get("document_id"):
+            f = and_(f, MemoryRecord.source_document_id == uuid.UUID(str(filters["document_id"])))
+        if filters.get("verified_only"):
+            from cie.core.models import VerificationStatus
+
+            f = and_(f, MemoryRecord.verification == VerificationStatus.verified)
+        if at is not None:
+            stmt = current_only(select(MemoryRecord.id), at)
+            f = and_(f, *stmt.whereclause.clauses)  # type: ignore[union-attr]
+        elif not intent.include_history and not filters.get("include_history"):
+            # current facts only: not superseded, valid now
+            stmt = current_only(select(MemoryRecord.id))
+            f = and_(f, *stmt.whereclause.clauses)  # type: ignore[union-attr]
+        return and_(f, MemoryRecord.scope_id.in_(allowed)), f
