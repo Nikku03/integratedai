@@ -38,7 +38,9 @@ from cie.extraction.facts import derive_records, keywords_for
 from cie.extraction.registry import extractor_for
 from cie.extraction.sectioning import BlockRef, build_sections
 from cie.governance.scanners import scan_text
+from cie.memory.autolink import autolink
 from cie.memory.embeddings import EmbeddingProvider, get_embedding_provider
+from cie.memory.entities import resolve
 from cie.memory.records import create_record
 from cie.memory.text import tsvector_expr
 from cie.vault.service import VaultService
@@ -201,12 +203,26 @@ def _derive(session: Session, document: Document, extraction: Extraction, sectio
         keywords=keywords_for(document.title + " " + (section_rows[0][1].text if section_rows else ""), 10),
         embedder=embedder,
     )
-    _ = doc_rec
     if not drafts:
         return 1
     vectors = embedder.embed([f"{d.type}: {d.summary}\n{d.detail[:1200]}" for d in drafts])
     n = 1
+    created: list[MemoryRecord] = [doc_rec]
+    entities: dict[str, MemoryRecord] = {}
     for d, vec in zip(drafts, vectors, strict=False):
+        if d.type in ("organization", "person"):
+            name = d.content.get("name", d.summary)
+            ent, status = resolve(session, document.tenant_id, document.scope_id, name, RecordType(d.type))
+            if status == "matched" and ent is not None:
+                # inherit the canonical entity instead of duplicating it; keep the alias and the new evidence
+                aliases = list((ent.content or {}).get("aliases", []))
+                if name != ent.summary and name not in aliases:
+                    ent.content = {**(ent.content or {}), "aliases": aliases + [name]}
+                locs = list(ent.source_locations or [])
+                if len(locs) < 20:
+                    ent.source_locations = locs + [{**d.source_locations[0], "document_id": str(document.id)}]
+                entities[name] = ent
+                continue
         rec = create_record(
             session, tenant_id=document.tenant_id, scope_id=document.scope_id, type=d.type, summary=d.summary,
             content=d.content, detail=d.detail, source_document_id=document.id, source_locations=d.source_locations,
@@ -216,6 +232,10 @@ def _derive(session: Session, document: Document, extraction: Extraction, sectio
         )
         if rec is not None:
             n += 1
+            created.append(rec)
+            if d.type in ("organization", "person"):
+                entities[d.content.get("name", d.summary)] = rec
+    autolink(session, doc_rec, created, entities)
     return n
 
 

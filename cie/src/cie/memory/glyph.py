@@ -107,8 +107,8 @@ def build_glyph(record: Any, edges: list[Any], scope_names: dict[str, str | None
         contradictions=contras[:16],
         confidence=round(float(record.confidence), 3),
         verification=record.verification.value,
-        evidence=[EvidencePointer(document_id=str(record.source_document_id) if record.source_document_id else None,
-                                  **{k: v for k, v in loc.items() if k in EvidencePointer.model_fields})
+        evidence=[EvidencePointer(**{"document_id": str(record.source_document_id) if record.source_document_id else None,
+                                     **{k: v for k, v in loc.items() if k in EvidencePointer.model_fields}})
                   for loc in (record.source_locations or [])[:4]],
         keywords=list(record.keywords or [])[:12],
     )
