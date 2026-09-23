@@ -37,17 +37,20 @@ class RetrievalResult:
     trace: dict[str, Any]
 
 
-# records that stand for a whole document or a whole thing are always candidates for vector search
+# records that stand for a whole document or a whole thing compete in vector search at full weight
 VECTOR_ALWAYS = (RecordType.document, RecordType.person, RecordType.organization, RecordType.entity, RecordType.project,
                  RecordType.contradiction)
 
 
+TYPED_VECTOR_WEIGHT = 0.5  # fusion weight of typed records the question does not ask for (same as the weak keyword list)
+
+
 def vector_record_types(intent: Intent) -> list[RecordType]:
-    """Record types the record-vector list considers for this question. A typed record (a one-line task, metric or
-    risk) is short, so it sits close to many questions that merely share its phrasing, and on a document question it
-    outranks the section that answers; it competes on meaning only when the question asks for its type ("who",
-    "deadline", "decided", "risk", ...). It is still found by exact and keyword search and, through its document,
-    by graph expansion."""
+    """Record types that compete in vector search at full weight for this question. A typed record (a one-line task,
+    metric or risk) is short, so it sits close to many questions that merely share its phrasing, and on a document
+    question it outranks the section that answers. It competes at full weight when the question asks for its type
+    ("who", "deadline", "decided", "risk", ...); otherwise it is fused from a separate list at half weight, so it can
+    still add evidence (the classifier's hints are keyword patterns and miss paraphrases) without leading."""
     hinted = []
     for t in intent.type_hints:
         try:
@@ -132,7 +135,9 @@ class Retriever:
         timings["embed_ms"] = (time.perf_counter() - t) * 1000
         if use_vector:
             t = time.perf_counter()
-            lists["vec_rec"] = vector.search_records(s, qvec, and_(rec_filter, MemoryRecord.type.in_(vector_record_types(intent))), k)
+            full_types = vector_record_types(intent)
+            lists["vec_rec"] = vector.search_records(s, qvec, and_(rec_filter, MemoryRecord.type.in_(full_types)), k)
+            lists["vec_typed"] = vector.search_records(s, qvec, and_(rec_filter, MemoryRecord.type.not_in(full_types)), k)
             if use_sections:
                 lists["vec_sec"] = [(("sec", i), sc) for i, sc in vector.search_sections(s, qvec, sec_filter, k)]
             timings["vector_ms"] = (time.perf_counter() - t) * 1000
@@ -152,7 +157,7 @@ class Retriever:
             timings["named_docs_ms"] = (time.perf_counter() - t) * 1000
         # records and sections fuse on equal terms: which of them carries the evidence depends on the corpus
         # (typed records in contracts, chunks in tickets and threads); the reranker's type and document reasons decide after
-        fused = fusion.rrf(lists, weights={"exact": 2.0, "keywords": 0.5, "lex_rec": 1.0, "vec_rec": 1.0, "lex_sec": 1.0, "vec_sec": 1.0,
+        fused = fusion.rrf(lists, weights={"exact": 2.0, "keywords": 0.5, "lex_rec": 1.0, "vec_rec": 1.0, "vec_typed": TYPED_VECTOR_WEIGHT, "lex_sec": 1.0, "vec_sec": 1.0,
                                            "lex_doc": 1.5, "vec_doc": 1.5, "lex_doc_sec": 1.5})
 
         # 5. graph expansion (REM horizons) or topological recruitment (clique cascade)
