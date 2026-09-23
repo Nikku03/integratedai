@@ -97,7 +97,10 @@ class Retriever:
         timings["exact_ms"] = (time.perf_counter() - t) * 1000
 
         # 4. lexical ∥ vector
-        lists: dict[str, list] = {"exact": exact_hits}
+        # exact matches (ids, clause numbers, quoted phrases, entity names) are strong evidence; a keyword-array overlap
+        # (the exact stage's 1.0 hits) is weak evidence and must not ride on the exact list's weight
+        lists: dict[str, list] = {"exact": [(rid, sc) for rid, sc in exact_hits if sc >= 2.0],
+                                  "keywords": [(rid, sc) for rid, sc in exact_hits if sc < 2.0]}
         if use_lexical:
             t = time.perf_counter()
             lists["lex_rec"] = lexical.search_records(s, query, rec_filter, k, tenant_id=principal.tenant_id)
@@ -127,8 +130,10 @@ class Retriever:
             if use_vector:
                 lists["vec_doc"] = vector.search_records(s, qvec, doc_rec, kd)
             timings["named_docs_ms"] = (time.perf_counter() - t) * 1000
-        fused = fusion.rrf(lists, weights={"exact": 2.0, "lex_rec": 1.0, "vec_rec": 1.0, "lex_sec": 0.8, "vec_sec": 0.8,
-                                           "lex_doc": 1.5, "vec_doc": 1.5, "lex_doc_sec": 1.2})
+        # records and sections fuse on equal terms: which of them carries the evidence depends on the corpus
+        # (typed records in contracts, chunks in tickets and threads); the reranker's type and document reasons decide after
+        fused = fusion.rrf(lists, weights={"exact": 2.0, "keywords": 0.5, "lex_rec": 1.0, "vec_rec": 1.0, "lex_sec": 1.0, "vec_sec": 1.0,
+                                           "lex_doc": 1.5, "vec_doc": 1.5, "lex_doc_sec": 1.5})
 
         # 5. graph expansion (REM horizons) or topological recruitment (clique cascade)
         expanded: list = []
