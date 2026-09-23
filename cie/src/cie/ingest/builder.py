@@ -57,6 +57,7 @@ _SPEAKER = re.compile(r"^\s*[\w .'()\-]{1,40}:\s+(?=\S)")
 _HEADER_LINE = re.compile(r"^\s*(from|to|cc|bcc|date|subject|sent|re|fwd)\s*:", re.I)
 _MD = re.compile(r"[#*_`>|]+")
 _BULLET = re.compile(r"^\s*(?:[-*•]|\d+[.)])\s+")
+_QUOTE_ATTRIBUTION = re.compile(r"^\s*On\b.{5,160}\bwrote:?\s*$")
 _OWNER = re.compile(r"^\s*(?:owner\s*[:=]\s*)?([A-Z][a-z]+(?:\s+[A-Z][a-z'\-]+){1,2})\s*(?:[-–—:]|\()\s*")
 _SENT = re.compile(r"(?<=[.!?])\s+(?=[A-Z0-9\"“(])")
 
@@ -125,10 +126,17 @@ def clean_line(s: str) -> str:
     return re.sub(r"\s+", " ", s).strip(" -–—:")
 
 
+def is_header(line: str) -> bool:
+    """An e-mail header or quote-attribution line, also when a list bullet or quote marker precedes it
+    (a message list renders as '- From: ...')."""
+    raw = _BULLET.sub("", line).lstrip("> ")
+    return bool(_HEADER_LINE.match(raw) or _QUOTE_ATTRIBUTION.match(raw))
+
+
 def sentences(text: str, limit: int = 400) -> list[str]:
     out = []
     for line in text.splitlines():
-        if not line.strip() or _HEADER_LINE.match(line) or line.strip().startswith(("---", "===", "```")):
+        if not line.strip() or is_header(line) or line.strip().startswith(("---", "===", "```")):
             continue
         line = clean_line(_BULLET.sub("", line))
         for s in _SENT.split(line):
@@ -248,6 +256,27 @@ def _mentions(text: str, names: list[str]) -> list[str]:
     return [n for n in names if n.lower() in low]
 
 
+def _norm(text: str) -> str:
+    return " ".join(clean_line(ln) for ln in text.splitlines() if ln.strip())
+
+
+def _section_of(text: str, candidates: list[int] | None, sections: list[tuple[str, str, str]], norm: list[str] | None = None) -> int | None:
+    """The section that holds ``text``: searched among the field's own sections first, then all of them (on cleaned
+    text, the form rule records quote). A field that has no section (metadata only) gives None, not section 0."""
+    if not candidates:
+        return None
+    probe = re.sub(r"\s+", " ", clean_line(text))[:50]
+    if probe:
+        for i in candidates:
+            if probe in (norm[i] if norm else _norm(sections[i][1])):
+                return i
+        if norm:
+            for i, st in enumerate(norm):
+                if probe in st:
+                    return i
+    return candidates[0]
+
+
 def build(doc: SourceDoc) -> DocMemory:
     display = doc.title
     if doc.source == "slack" or len(doc.title.split()) <= 2:
@@ -274,21 +303,28 @@ def build(doc: SourceDoc) -> DocMemory:
         header_bits.append("tags: " + ", ".join(doc.tags[:12]))
     header = " | ".join(header_bits)
     sections: list[tuple[str, str, str]] = []
-    details: list[str] = []
+    field_secs: dict[str, list[int]] = {}  # body field -> the sections holding its text
+    details: list[tuple[str, str]] = []
     main_field = doc.fields[0][0] if doc.fields else None
     for f, text in doc.fields:
         if not text:
             continue
         if len(text) < SHORT_FIELD and f != main_field:
-            details.append(f"{pretty(f)}: {text}")
+            details.append((f, f"{pretty(f)}: {text}"))
             continue
         sec_title = doc.title if f == main_field else f"{doc.title} — {pretty(f)}"
         for c in chunk(text):
+            field_secs.setdefault(f, []).append(len(sections))
             sections.append((sec_title[:300], c, f"{sec_title}\n{c}"))
     if details:
-        body = "\n".join(details)
+        body = "\n".join(t for _, t in details)
+        first_detail = len(sections)
         for c in chunk(body):
             sections.append((f"{doc.title} — Details"[:300], c, f"{doc.title} — Details\n{c}"))
+        for f, t in details:
+            probe = t[:60]
+            at = next((i for i in range(first_detail, len(sections)) if probe in sections[i][1]), first_detail)
+            field_secs.setdefault(f, []).append(at)
     if not sections:
         sections.append((doc.title[:300], doc.title, doc.title))
     t0, s0, e0 = sections[0]
@@ -320,11 +356,6 @@ def build(doc: SourceDoc) -> DocMemory:
     # typed records from structured fields (body or metadata)
     seen: set[str] = set()
     field_values: dict[str, Any] = {**{k: v for k, v in doc.meta.items() if k in TYPED_FIELDS}, **{f: t for f, t in doc.fields if f in TYPED_FIELDS}}
-    sec_of_field = {}
-    for i, (st, _, _) in enumerate(sections):
-        for f, _ in doc.fields:
-            if st.endswith("— " + pretty(f)):
-                sec_of_field.setdefault(f, i)
     for f, value in field_values.items():
         rtype, label = TYPED_FIELDS[f]
         for item in _items(value):
@@ -338,7 +369,7 @@ def build(doc: SourceDoc) -> DocMemory:
             records.append(RecOut(
                 type=rtype, summary=summ, detail=f"{label} ({doc.title}): {item}",
                 content={"field": f, "label": label, **extra}, keywords=keywords_for(item, 6), confidence=0.85,
-                embed=f"{label}: {item}", section=sec_of_field.get(f, 0), event_time=when,
+                embed=f"{label}: {item}", section=_section_of(item, field_secs.get(f), sections), event_time=when,
                 mentions=_mentions(item, names) + ([extra["owner"]] if extra.get("owner") and extra["owner"] not in names else [])))
             if len(records) >= MAX_RECORDS:
                 break
@@ -346,15 +377,18 @@ def build(doc: SourceDoc) -> DocMemory:
     # rule-extracted records over sentence-aligned paragraphs of the body (never over overlapping chunks, whose
     # first sentence is a fragment); code and data snippets are not prose and are skipped
     counts: Counter = Counter()
+    norm_secs: list[str] = []
     for f, text in doc.fields:
         if len(records) >= MAX_RECORDS or f in TYPED_FIELDS:
             continue
-        paras = [clean_line(ln) for ln in text.splitlines() if ln.strip() and not _HEADER_LINE.match(ln) and _prose(ln)]
+        paras = [clean_line(ln) for ln in text.splitlines() if ln.strip() and not is_header(ln) and _prose(ln)]
+        if not norm_secs:
+            norm_secs = [_norm(st) for _t, st, _e in sections]
         block = BlockRef(block_id=None, page_no=1, bbox=None, kind="paragraph", text="\n".join(paras)[:12000])
         for d in derive_records([(f, SectionDraft(title=None, level=1, blocks=[block]))], document_title=doc.title, doc_type=None):
             if d.type not in RULE_CAPS or counts[d.type] >= RULE_CAPS[d.type]:
                 continue
-            si = next((i for i, (_t, st, _e) in enumerate(sections) if d.detail[:50] in st.replace("\n", " ")), 0)
+            si = _section_of(d.detail, field_secs.get(f), sections, norm=norm_secs)
             key = d.detail.lower()[:80]
             if key in seen or any(key[:40] in s for s in seen):
                 continue

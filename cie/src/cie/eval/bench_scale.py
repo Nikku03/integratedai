@@ -267,6 +267,7 @@ INDEXES = {
     "ix_records_keywords": "CREATE INDEX ix_records_keywords ON memory_records USING gin (keywords)",
     "ix_records_summary_trgm": "CREATE INDEX ix_records_summary_trgm ON memory_records USING gin (summary gin_trgm_ops)",
     "ix_records_entity_ids": "CREATE INDEX ix_records_entity_ids ON memory_records USING gin (entity_ids jsonb_path_ops)",
+    "ix_sections_trgm": "CREATE INDEX ix_sections_trgm ON sections USING gin (title gin_trgm_ops)",
 }
 HALFVEC_INDEXES = {
     "ix_records_embedding_hnsw": "CREATE INDEX ix_records_embedding_hnsw ON memory_records USING hnsw ((embedding::halfvec(384)) halfvec_cosine_ops)",
@@ -296,7 +297,16 @@ def drop_indexes(conn: psycopg.Connection) -> None:
     conn.commit()
 
 
-def build_indexes(conn: psycopg.Connection) -> dict[str, float]:
+def ensure_indexes(conn: psycopg.Connection) -> dict[str, float]:
+    """Build any of the shared indexes that are missing (a load that died after dropping them); returns build times."""
+    present = {r[0] for r in conn.execute("SELECT indexname FROM pg_indexes WHERE schemaname = current_schema()")}
+    missing = {n: d for n, d in index_ddl(conn).items() if n not in present}
+    if not missing:
+        return {}
+    return build_indexes(conn, only=missing)
+
+
+def build_indexes(conn: psycopg.Connection, only: dict[str, str] | None = None) -> dict[str, float]:
     import os
 
     times = {}
@@ -304,9 +314,9 @@ def build_indexes(conn: psycopg.Connection) -> dict[str, float]:
         # large machines (a Colab A100 VM) build much faster with more memory and workers; defaults suit a 4-core box
         cur.execute(f"SET maintenance_work_mem = '{os.environ.get('CIE_INDEX_BUILD_MEM', '4GB')}'")
         cur.execute(f"SET max_parallel_maintenance_workers = {int(os.environ.get('CIE_INDEX_BUILD_WORKERS', '3'))}")
-        for name, ddl in index_ddl(conn).items():
+        for name, ddl in (only or index_ddl(conn)).items():
             t = time.perf_counter()
-            cur.execute(ddl)
+            cur.execute(ddl.replace("CREATE INDEX ", "CREATE INDEX IF NOT EXISTS ", 1))
             conn.commit()
             times[name] = round(time.perf_counter() - t, 1)
         cur.execute("ANALYZE memory_records")

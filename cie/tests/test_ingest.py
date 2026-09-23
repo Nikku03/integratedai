@@ -9,8 +9,9 @@ from pathlib import Path
 import pytest
 from sqlalchemy import select
 
-from cie.ingest.builder import build, chunk
-from cie.ingest.sources import person_name, read
+from cie.ingest.builder import build, chunk, sentences
+from cie.ingest.bulk import _conflicting_sentences
+from cie.ingest.sources import own_keys, person_name, read, sensitivity_of
 
 TICKET = {
     "key": "ENG-101", "team": "engineering", "title": "Stabilise KV cache eviction under burst load", "status": "In Progress", "priority": "P1",
@@ -82,6 +83,57 @@ def test_code_is_not_prose_for_rule_extraction(tmp_path):
     assert reqs and all("{" not in r and "|" not in r for r in reqs)
 
 
+def test_sensitivity_labels_default_to_restricted_unless_open():
+    assert sensitivity_of({"confidentiality": "internal"}) == 1 and sensitivity_of({}) == 1
+    for label in ("restricted", "Restricted (customer-sensitive)", "restricted (security/legal/customer-sensitive)", "confidential",
+                  "private", "team-only", "leadership-only", "something new"):
+        assert sensitivity_of({"confidentiality": label}) == 2, label
+    assert sensitivity_of({"confidentiality": "internal", "visibility": "private"}) == 2, "the strictest label wins"
+
+
+def test_nul_characters_are_stripped_and_pr_numbers_need_a_repo(tmp_path):
+    obj = {**TICKET, "description": "Stack trace\u0000 ends here. The cap is 64 pages."}
+    p = _write(tmp_path, "linear/eng/nul.json", obj)  # json.dumps writes the NUL as the \u0000 escape exports carry
+    doc = read(p, "linear/eng/nul.json")
+    assert all("\x00" not in t for _, t in doc.fields) and "ends here" in doc.body
+    assert own_keys("github", "github/pr.json", {"pr_number": 42}) == [], "PR #42 exists in every repository"
+    assert own_keys("github", "github/pr.json", {"pr_number": 42, "repo": "redwood/router"}) == ["pr:redwood-router#42"]
+
+
+def test_mail_headers_never_become_sentences_or_summaries(tmp_path):
+    text = ("- From: Karthik Iyer <karthik@redwood.com>\n- To: Soojin Lee <soojin@redwood.com>\n"
+            "- On Tue, Jun 16, 2026 at 08:22 AM Soojin Lee <soojin.lee@redwood.com> wrote:\n"
+            "- As discussed, the pilot moves to the dedicated pool next week.")
+    ss = sentences(text)
+    assert ss == ["As discussed, the pilot moves to the dedicated pool next week."], ss
+    mail = {"thread_id": "t-1", "mailbox_owner": "Soojin Lee", "subject": "Pilot move", "title_field_name": "subject",
+            "content_field_names": ["messages"], "messages": [text.replace("- ", "")], "dataset_doc_uuid": "dsid_" + "e" * 32}
+    mem = build(read(_write(tmp_path, "gmail/t-1.json", mail), "gmail/t-1.json"))
+    assert "@" not in mem.summary and "wrote" not in mem.summary, mem.summary
+
+
+def test_records_cite_the_section_that_holds_them(tmp_path):
+    obj = {**TICKET, "acceptance_criteria": "Eviction p99 stays under 250 ms at 2x burst.",  # short field: the Details section
+           "content_field_names": ["description", "action_items", "root_cause", "acceptance_criteria"],
+           "risks": ["Cap too low for long contexts"]}  # metadata only: no section
+    mem = build(read(_write(tmp_path, "linear/eng/eng-7.json", obj), "linear/eng/eng-7.json"))
+    for r in mem.records[1:]:
+        if r.section is not None:
+            probe = r.detail.split(": ", 1)[-1][:30] if r.content.get("field") else r.detail[:30]
+            assert probe.split()[0] in mem.sections[r.section][1], (r.type, r.summary, r.section)
+    crit = next(r for r in mem.records if r.content.get("field") == "acceptance_criteria")
+    assert mem.sections[crit.section][0].endswith("— Details")
+    risk = next(r for r in mem.records if r.content.get("field") == "risks")
+    assert risk.section is None, "a metadata-only field has no section to cite"
+
+
+def test_identifiers_are_not_conflicting_numbers():
+    assert _conflicting_sentences(["See PR #123 which fixes the retry loop in the billing worker queue"],
+                                  ["See PR #456 which fixes the retry loop in the billing worker queue"]) == []
+    assert _conflicting_sentences(["The p95 latency for the checkout flow dropped to 380ms after rollout"],
+                                  ["The p95 latency for the checkout flow dropped to 450ms after rollout"])
+
+
 def test_chunks_overlap_and_cover():
     text = ". ".join(f"Sentence number {i} about eviction" for i in range(200))
     parts = chunk(text, 500, 60)
@@ -103,16 +155,25 @@ def test_bulk_loader_links_entities_projects_and_contradictions(session, world, 
     c = {**TICKET, "key": "ENG-103", "dataset_doc_uuid": "dsid_" + "d" * 32, "title": "Unrelated billing export", "project": "billing",
          "summary": "Monthly invoices are exported as CSV.", "description": "Invoices are exported monthly.", "dependencies": ["ENG-101"],
          "labels": ["billing"], "linked_issues": [], "action_items": [], "root_cause": ""}
-    mems = [build(read(_write(tmp_path, f"linear/eng/{o['key']}.json", o), f"linear/eng/{o['key']}.json")) for o in (a, b, c)]
+    # the same key on an unrelated record (identifiers collide in real exports), and a restricted record in another department
+    # that names Omar and a person nobody else names
+    e = {**c, "dataset_doc_uuid": "dsid_" + "f" * 32, "title": "Office plants watering rota", "project": None, "dependencies": [],
+         "summary": "Plants are watered on Fridays.", "description": "The rota rotates weekly.\u0000", "labels": []}
+    d = {"key": "SEC-9", "title": "Customer breach review", "created_at": "2026-02-03", "creator": "Lena Ortiz", "assignee": "Omar Haddad",
+         "confidentiality": "restricted (customer-sensitive)", "description": "Review of the incident with the affected customer.",
+         "title_field_name": "title", "content_field_names": ["description"], "dataset_doc_uuid": "dsid_" + "9" * 32}
+    files = [(f"linear/eng/{o['key']}.json", o) for o in (a, b, c)] + [("linear/eng/ENG-103-plants.json", e), ("jira/sec/SEC-9.json", d)]
+    mems = [build(read(_write(tmp_path, rel, o), rel)) for rel, o in files]
     url = TEST_URL.replace("postgresql+psycopg://", "postgresql://")
-    loader = BulkLoader(url, tenant_id=world.tenant.id, company_id=world.company.id, scope_ids={"linear": world.legal.id},
+    loader = BulkLoader(url, tenant_id=world.tenant.id, company_id=world.company.id, scope_ids={"linear": world.legal.id, "jira": world.finance.id},
                         embedder=CachedEmbedder(HashedEmbedding(384), tmp_path / "cache.sqlite"))
     loader.write_batch(mems)
     stats = loader.finish()
     loader.close()
     session.expire_all()
     docs = {d.extra["dsid"]: d for d in session.scalars(select(Document).where(Document.tenant_id == world.tenant.id))}
-    assert len(docs) == 3
+    assert len(docs) == 5 and stats.get("documents_failed", 0) == 0
+    assert all(":" in d.original_filename and "/" not in d.original_filename for d in docs.values()), "the export path never becomes a filename"
     recs = list(session.scalars(select(MemoryRecord).where(MemoryRecord.tenant_id == world.tenant.id)))
     card = {r.source_document_id: r for r in recs if r.type == RecordType.document}
     ra, rb, rc = (card[docs[x].id] for x in ("dsid_" + "a" * 32, "dsid_" + "c" * 32, "dsid_" + "d" * 32))
@@ -120,17 +181,30 @@ def test_bulk_loader_links_entities_projects_and_contradictions(session, world, 
     assert (ra.id, rb.id, LinkKind.depends_on) in links, "ENG-101 depends on ENG-102"
     assert (rc.id, ra.id, LinkKind.depends_on) in links
     people = [r for r in recs if r.type == RecordType.person]
-    assert sorted(p.summary for p in people) == ["Maya Chen", "Omar Haddad"], "one entity per person, company-wide"
+    assert sorted(p.summary for p in people) == ["Lena Ortiz", "Maya Chen", "Omar Haddad"], "one entity per person, company-wide"
     omar = next(p for p in people if p.summary == "Omar Haddad")
-    assert omar.content["documents"] == 3 and (ra.id, omar.id, LinkKind.mentions) in links and str(omar.id) in ra.entity_ids
+    assert omar.sensitivity == 1 and (ra.id, omar.id, LinkKind.mentions) in links and str(omar.id) in ra.entity_ids
+    assert omar.content["documents"] == 4, "the company-wide profile counts only company-wide documents (not the restricted review)"
+    lena = next(p for p in people if p.summary == "Lena Ortiz")
+    assert lena.sensitivity == 2, "a person known only from a restricted document is restricted"
+    rd = card[docs["dsid_" + "9" * 32].id]
+    assert rd.sensitivity == 2 and docs["dsid_" + "9" * 32].sensitivity == 2
+    re_ = card[docs["dsid_" + "f" * 32].id]
+    assert not any(k == LinkKind.references for s_, d_, k in links if {s_, d_} == {rc.id, re_.id}), "a shared key alone does not make one object"
+    tasks = [r for r in recs if r.type == RecordType.task and r.event_time is not None]
+    assert tasks and all(t.valid_from is None for t in tasks), "a due date is not the moment a task becomes true"
     projects = [r for r in recs if r.type == RecordType.project]
     assert {p.content["name"] for p in projects} == {"runtime-stability", "billing"}
     assert any(k == LinkKind.relates_to for s_, d_, k in links if {s_, d_} == {ra.id, rb.id}), "same-project siblings are chained"
-    # a and b are near-duplicates that disagree on the latency target: a disputed fact on each side and a contradiction record
-    assert stats["near_duplicate_pairs"] == 1 and stats["contradictions"] >= 1
+    # a and b are near-duplicates that disagree on the latency target: a disputed fact on each side and, since both live in
+    # one scope, a contradiction record quoting both; the documents themselves are not marked as contradicting
+    assert stats["near_duplicate_pairs"] >= 1 and stats["contradictions"] >= 1
     contradiction = next(r for r in recs if r.type == RecordType.contradiction)
     assert "250" in contradiction.detail and "400" in contradiction.detail
-    assert (ra.id, rb.id, LinkKind.contradicts) in links, "the two documents contradict each other"
+    facts = {r.id: r for r in recs if r.type == RecordType.fact and "conflict_with_record" in (r.content or {})}
+    assert facts and all(str(r.id) not in r.detail and r.scope_id == world.legal.id for r in facts.values())
+    assert any((x, y, LinkKind.contradicts) in links for x in facts for y in facts)
+    assert all(k != LinkKind.contradicts for s_, d_, k in links if {s_, d_} == {ra.id, rb.id})
     assert all(r.tsv is not None for r in recs), "every record is searchable"
     cached = CachedEmbedder(HashedEmbedding(384), tmp_path / "cache.sqlite")
     cached.embed([mems[0].records[0].embed])

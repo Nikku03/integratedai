@@ -16,10 +16,12 @@ import math
 import uuid
 from dataclasses import dataclass
 
-from sqlalchemy import or_, select
+from sqlalchemy import bindparam, select, text
+from sqlalchemy.dialects.postgresql import ARRAY, UUID
 from sqlalchemy.orm import Session
+from sqlalchemy.types import String
 
-from cie.core.models import LinkKind, MemoryRecord, RecordLink
+from cie.core.models import LinkKind, MemoryRecord, RecordLink, RecordType
 
 HORIZON_KINDS: dict[int, set[LinkKind]] = {
     1: {LinkKind.depends_on, LinkKind.part_of, LinkKind.supersedes, LinkKind.contradicts, LinkKind.confirms,
@@ -28,6 +30,23 @@ HORIZON_KINDS: dict[int, set[LinkKind]] = {
     3: {LinkKind.causes, LinkKind.shortcut, LinkKind.relates_to, LinkKind.depends_on},
 }
 _HORIZON_WEIGHT = {1: 1.0, 2: 0.6, 3: 0.4}
+# records that many others point at (a person, a customer, a project): as seeds they are followed at horizon 1 only,
+# since at horizon 2 their thousands of ``mentions`` edges would all tie and flood the candidates
+HUB_TYPES = {RecordType.person, RecordType.organization, RecordType.entity, RecordType.project}
+FETCH_FACTOR = 4  # edges fetched per frontier node and direction, before visited neighbours are skipped
+
+# the strongest edges of each frontier node, capped per node in SQL so a hub never loads its whole neighbourhood
+_EDGES = text("""
+SELECT e.src_id, e.dst_id, e.kind::text AS kind, e.weight, n.id AS node
+FROM unnest(:ids) AS n(id)
+CROSS JOIN LATERAL (
+  (SELECT src_id, dst_id, kind, weight FROM record_links
+    WHERE src_id = n.id AND kind::text = ANY(:kinds) ORDER BY weight DESC, created_at DESC LIMIT :cap)
+  UNION ALL
+  (SELECT src_id, dst_id, kind, weight FROM record_links
+    WHERE dst_id = n.id AND kind::text = ANY(:kinds) ORDER BY weight DESC, created_at DESC LIMIT :cap)
+) AS e
+""").bindparams(bindparam("ids", type_=ARRAY(UUID(as_uuid=True))), bindparam("kinds", type_=ARRAY(String)))
 
 
 @dataclass
@@ -52,6 +71,8 @@ def expand(session: Session, seeds: dict[uuid.UUID, float], *, base_filter, cros
     cross-project consequences (permission permitting)."""
     visited: set[uuid.UUID] = set(seeds)
     frontier: dict[uuid.UUID, float] = dict(seeds)
+    hubs = set(session.scalars(select(MemoryRecord.id).where(MemoryRecord.id.in_(list(seeds)), MemoryRecord.type.in_(HUB_TYPES)))) if seeds else set()
+    reactivated = {k: v for k, v in seeds.items() if k not in hubs}
     out: list[Expanded] = []
     deferred: dict[uuid.UUID, tuple[float, uuid.UUID, str]] = {}
     remaining = budget
@@ -62,21 +83,20 @@ def expand(session: Session, seeds: dict[uuid.UUID, float], *, base_filter, cros
         cand: dict[uuid.UUID, tuple[float, uuid.UUID, str]] = {}
         # the seeds stay active at every horizon: a horizon is a tier of edge kinds reached from what the query
         # activated, not only a hop count, so a seed's associative edges are followed even when its structural ones are not
-        frontier = {**{k: v for k, v in seeds.items() if h > 1}, **frontier}
+        if h > 1:
+            frontier = {**reactivated, **frontier}
         if frontier:
-            ids = list(frontier)
-            edges = list(session.scalars(select(RecordLink).where(
-                RecordLink.kind.in_(kinds), or_(RecordLink.src_id.in_(ids), RecordLink.dst_id.in_(ids)))))
+            rows = session.execute(_EDGES, {"ids": list(frontier), "kinds": sorted(k.value for k in kinds),
+                                            "cap": per_node_cap * FETCH_FACTOR}).all()
             per_node: dict[uuid.UUID, int] = {}
-            for e in sorted(edges, key=lambda e: -e.weight):
-                for src, dst in ((e.src_id, e.dst_id), (e.dst_id, e.src_id)):
-                    if src in frontier and dst not in visited:
-                        if per_node.get(src, 0) >= per_node_cap:
-                            continue
-                        s = frontier[src] * e.weight * _HORIZON_WEIGHT[h]
-                        if dst not in cand or cand[dst][0] < s:
-                            cand[dst] = (s, src, e.kind.value)
-                        per_node[src] = per_node.get(src, 0) + 1
+            for src_id, dst_id, kind, weight, node in sorted(rows, key=lambda r: -r.weight):
+                other = dst_id if src_id == node else src_id
+                if other in visited or other == node or per_node.get(node, 0) >= per_node_cap:
+                    continue
+                s = frontier[node] * weight * _HORIZON_WEIGHT[h]
+                if other not in cand or cand[other][0] < s:
+                    cand[other] = (s, node, kind)
+                per_node[node] = per_node.get(node, 0) + 1
         if h == max_horizon:
             for rid, v in deferred.items():
                 if rid not in visited and (rid not in cand or cand[rid][0] < v[0]):
@@ -89,8 +109,8 @@ def expand(session: Session, seeds: dict[uuid.UUID, float], *, base_filter, cros
         allowed = set(session.scalars(select(MemoryRecord.id).where(filt, MemoryRecord.id.in_(list(cand)))))
         if h < max_horizon:
             for rid, v in cand.items():
-                if rid not in allowed:
-                    deferred[rid] = v  # out of scope now; cross-scope candidate for the last horizon
+                if rid not in allowed and (rid not in deferred or deferred[rid][0] < v[0]):
+                    deferred[rid] = v  # out of scope now; cross-scope candidate for the last horizon (strongest route kept)
         picked = sorted(((rid, v) for rid, v in cand.items() if rid in allowed), key=lambda kv: -kv[1][0])[:remaining]
         frontier = {}
         for rid, (s, via, kind) in picked:

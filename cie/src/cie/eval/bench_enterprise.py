@@ -199,21 +199,47 @@ def load_full(url: str, root: Path, index: dict[str, str], dsids: list[str], emb
     near-duplicates and the facts they disagree on. Documents are built in worker
     processes while the main process embeds and writes; at most two batches per worker
     are in flight, so memory stays flat at any corpus size."""
-    from collections import deque
-    from concurrent.futures import ProcessPoolExecutor
-
     from cie.eval.bench_scale import build_indexes, drop_indexes
     from cie.ingest.bulk import BulkLoader, CachedEmbedder
 
     t0 = time.perf_counter()
     tenant_id, company_id, scope_ids = new_tenant(tenant_name)
     rebuild = len(dsids) > rebuild_indexes_above
+    cached = CachedEmbedder(embedder, cache)
+    loader = BulkLoader(url, tenant_id=tenant_id, company_id=company_id, scope_ids=scope_ids, embedder=cached, log=log)
     if rebuild:
         with psycopg.connect(url) as conn:
             log("  dropping vector/text indexes for the bulk load (rebuilt afterwards)")
             drop_indexes(conn)
-    cached = CachedEmbedder(embedder, cache)
-    loader = BulkLoader(url, tenant_id=tenant_id, company_id=company_id, scope_ids=scope_ids, embedder=cached, log=log)
+    index_build: dict[str, float] = {}
+    try:
+        stats, failed = _fill(loader, cached, root, index, dsids, batch=batch, workers=workers, t0=t0, log=log)
+    finally:  # the indexes are shared by every tenant: never leave them dropped, even when the load fails
+        loader.close()
+        if rebuild:
+            log("  rebuilding indexes ...")
+            with psycopg.connect(url) as conn:
+                index_build = build_indexes(conn)
+            log(f"  indexes rebuilt in {sum(index_build.values()):.0f} s")
+    records = sum(v for k, v in stats.items() if k.startswith("rec_"))
+    return {"tenant_id": str(tenant_id), "tenant_name": tenant_name, "company_id": str(company_id), "memory": "full",
+            "documents": stats.get("documents", 0), "failed": failed + stats.get("documents_failed", 0),
+            "sections": stats.get("sections", 0), "records": records, "records_by_type": {k[4:]: v for k, v in stats.items() if k.startswith("rec_")},
+            "links_by_kind": {k[5:]: v for k, v in stats.items() if k.startswith("link_")}, "entities": stats.get("entities", 0),
+            "restricted_entities": stats.get("restricted_entities", 0), "projects": stats.get("projects", 0),
+            "near_duplicate_pairs": stats.get("near_duplicate_pairs", 0), "contradictions": stats.get("contradictions", 0),
+            "contradiction_records": stats.get("contradiction_records", 0), "refs_unresolved": stats.get("refs_unresolved", 0),
+            "refs_ambiguous": stats.get("refs_ambiguous", 0), "same_key_collisions": stats.get("same_key_collisions", 0),
+            "load_seconds": round(time.perf_counter() - t0, 1), "embed_seconds": round(loader.t_embed, 1),
+            "embedding_cache_hits": cached.hits, "embedded_texts": cached.misses, "finish_seconds": stats.get("finish_seconds"),
+            "index_build_seconds": index_build}
+
+
+def _fill(loader, cached, root: Path, index: dict[str, str], dsids: list[str], *, batch: int, workers: int | None, t0: float,
+          log) -> tuple[dict[str, Any], int]:
+    from collections import deque
+    from concurrent.futures import ProcessPoolExecutor
+
     workers = workers or max(1, (os.cpu_count() or 2) - 1)
     rels = [index[d] for d in dsids]
     batches = [(str(root), rels[i:i + batch]) for i in range(0, len(rels), batch)]
@@ -238,24 +264,8 @@ def load_full(url: str, root: Path, index: dict[str, str], dsids: list[str], emb
                 log(f"  loaded {done:,}/{len(dsids):,} documents, {loader.stats['sections']:,} sections, "
                     f"{sum(v for k, v in loader.stats.items() if k.startswith('rec_')):,} records; {loader.t_embed:.0f} s embedding "
                     f"(cache hits {cached.hits:,}), {el:.0f} s total, ~{el / max(done, 1) * (len(dsids) - done) / 60:.0f} min left")
-    stats = loader.finish()
-    loader.close()
-    index_build: dict[str, float] = {}
-    if rebuild:
-        log("  rebuilding indexes ...")
-        with psycopg.connect(url) as conn:
-            index_build = build_indexes(conn)
-        log(f"  indexes rebuilt in {sum(index_build.values()):.0f} s")
-    records = sum(v for k, v in stats.items() if k.startswith("rec_"))
-    return {"tenant_id": str(tenant_id), "tenant_name": tenant_name, "company_id": str(company_id), "memory": "full",
-            "documents": stats.get("documents", 0), "failed": failed,
-            "sections": stats.get("sections", 0), "records": records, "records_by_type": {k[4:]: v for k, v in stats.items() if k.startswith("rec_")},
-            "links_by_kind": {k[5:]: v for k, v in stats.items() if k.startswith("link_")}, "entities": stats.get("entities", 0),
-            "projects": stats.get("projects", 0), "near_duplicate_pairs": stats.get("near_duplicate_pairs", 0),
-            "contradictions": stats.get("contradictions", 0), "refs_unresolved": stats.get("refs_unresolved", 0),
-            "load_seconds": round(time.perf_counter() - t0, 1), "embed_seconds": round(loader.t_embed, 1),
-            "embedding_cache_hits": cached.hits, "embedded_texts": cached.misses, "finish_seconds": stats.get("finish_seconds"),
-            "index_build_seconds": index_build}
+    log("  linking documents, near-duplicates, conflicting facts, entity profiles ...")
+    return loader.finish(), failed
 
 
 def load(url: str, root: Path, index: dict[str, str], dsids: list[str], embedder, *, tenant_name: str, batch: int = 64,
@@ -322,7 +332,9 @@ def load(url: str, root: Path, index: dict[str, str], dsids: list[str], embedder
                     cp.set_types(["uuid", "uuid", "uuid", "uuid", "int4", "text", "text", "text", "uuid", "int4", "jsonb", "text", "bool", "timestamptz",
                                   "jsonb", "text", "jsonb", "jsonb", "text", "timestamptz"])
                     for d, did, bid in zip(docs, doc_ids, blob_ids, strict=True):
-                        cp.write_row((did, tenant_id, bid, uuid.uuid4(), 1, d["title"][:500], d["rel"], "enterprise-rag-bench", scope_ids[d["source"]], 1, Jsonb({}),
+                        ident = d["meta"].get("key") or d["dsid"] or d["title"][:120]  # never the export path: it would steer retrieval
+                        cp.write_row((did, tenant_id, bid, uuid.uuid4(), 1, d["title"][:500], f"{d['source']}:{ident}"[:500], "enterprise-rag-bench",
+                                      scope_ids[d["source"]], 1, Jsonb({}),
                                       "default", False, _now(), Jsonb({"dsid": d["dsid"], "source": d["source"], **{k: v for k, v in list(d["meta"].items())[:20]}}),
                                       "indexed", Jsonb([]), Jsonb([]), d["source"], None))
                         doc_meta[did] = {"dsid": d["dsid"], "meta": d["meta"], "source": d["source"], "title": d["title"]}
@@ -419,10 +431,8 @@ def evaluate(session, retriever: Retriever, admin, company_id, questions: list[d
         mode = cfg.pop("mode", "strict")
         provider = None
         if mode == "assisted":
-            from cie.agents.providers import get_provider
-
-            provider = get_provider(retriever.settings)
-        spend = {"tokens_in": 0, "tokens_out": 0, "cost_usd": 0.0, "declined": 0}
+            provider = assisted_provider(retriever.settings)
+        spend = {"tokens_in": 0, "tokens_out": 0, "cost_usd": 0.0, "declined": 0, "cost_unknown": 0}
         per_cat: dict[str, dict[str, list]] = defaultdict(lambda: defaultdict(list))
         answers = []
         lat = []
@@ -435,6 +445,7 @@ def evaluate(session, retriever: Retriever, admin, company_id, questions: list[d
                 spend["tokens_in"] += result.tokens_in or 0
                 spend["tokens_out"] += result.tokens_out or 0
                 spend["cost_usd"] += result.cost_usd or 0.0
+                spend["cost_unknown"] += int(mode == "assisted" and bool(result.tokens_in) and not getattr(result, "cost_known", True))
                 spend["declined"] += "declined" in (result.mode or "")
                 ms = (time.perf_counter() - t) * 1000
                 docs: list[str] = []
@@ -447,16 +458,19 @@ def evaluate(session, retriever: Retriever, admin, company_id, questions: list[d
                             break
                 answer_text = result.answer
                 status = result.status
-            except Exception as e:  # noqa: BLE001 - a failed question is a result
+            except Exception as e:  # noqa: BLE001 - a failed question is a result (zero recall), never an abstention
                 session.rollback()
-                ms, docs, answer_text, status = 60_000.0, [], f"error: {e}"[:200], "error"
+                ms, docs, answer_text, status = 60_000.0, [], f"error: {type(e).__name__}: {e}"[:300], "error"
+                log(f"  [{arm}] question {q['question_id']} failed: {answer_text}")
             session.rollback()  # no packets, answers or audit rows from the benchmark stay behind
             lat.append(ms)
             cat = q["question_type"]
             c = per_cat[cat]
             c["n"].append(1)
             c["latency"].append(ms)
-            c["abstained"].append(1 if not docs else 0)
+            c["errors"].append(1 if status == "error" else 0)
+            if status != "error":
+                c["abstained"].append(1 if not docs else 0)
             if gold:
                 c["recall"].append(len(gold & set(docs)) / len(gold))
                 c["recall5"].append(len(gold & set(docs[:5])) / len(gold))
@@ -474,7 +488,7 @@ def evaluate(session, retriever: Retriever, admin, company_id, questions: list[d
         for cat, c in per_cat.items():
             summary[cat] = {"n": len(c["n"]), "recall@10": _mean(c["recall"]), "recall@5": _mean(c["recall5"]), "hit@1": _mean(c["hit1"]), "hit@5": _mean(c["hit5"]),
                             "hit@10": _mean(c["hit10"]), "mrr": _mean(c["rr"]), "all_gold_found": _mean(c["full"]), "extras@10": _mean(c["extras"]),
-                            "abstained": _mean(c["abstained"]), "p50_ms": _p(c["latency"], 0.5)}
+                            "abstained": _mean(c["abstained"]), "errors": sum(c["errors"]), "p50_ms": _p(c["latency"], 0.5)}
         with_gold = [c for cat, c in per_cat.items() if c["recall"]]
         overall = {"questions": len(questions), "with_gold": sum(len(c["recall"]) for c in with_gold),
                    "recall@10": _mean([x for c in with_gold for x in c["recall"]]), "recall@5": _mean([x for c in with_gold for x in c["recall5"]]),
@@ -483,10 +497,12 @@ def evaluate(session, retriever: Retriever, admin, company_id, questions: list[d
                    "all_gold_found": _mean([x for c in with_gold for x in c["full"]]),
                    "abstained_on_info_not_found": _mean(per_cat["info_not_found"]["abstained"]) if "info_not_found" in per_cat else None,
                    "false_abstentions": _mean([a for cat, c in per_cat.items() if c["recall"] for a in c["abstained"]]),
+                   "errors": sum(sum(c["errors"]) for c in per_cat.values()),
                    "p50_ms": _p(lat, 0.5), "p95_ms": _p(lat, 0.95)}
         if mode == "assisted":
             overall["answer_mode"] = "assisted"
-            overall["llm"] = {**spend, "cost_usd": round(spend["cost_usd"], 2), "model": getattr(provider, "model", None)}
+            overall["llm"] = {**spend, "cost_usd": round(spend["cost_usd"], 2), "model": getattr(provider, "model", None),
+                              "cost_complete": spend["cost_unknown"] == 0}
         results[arm] = {"overall": overall, "by_category": summary}
         out.mkdir(parents=True, exist_ok=True)
         safe = re.sub(r"[^a-z0-9]+", "_", arm.lower()).strip("_")
@@ -494,6 +510,37 @@ def evaluate(session, retriever: Retriever, admin, company_id, questions: list[d
         (out / f"answers_{safe}_detail.jsonl").write_text("\n".join(json.dumps(a) for a in answers) + "\n")
         log(f"[{arm}] recall@10 {overall['recall@10']} mrr {overall['mrr']} extras {overall['extras@10']} p50 {overall['p50_ms']} ms")
     return results
+
+
+def assisted_provider(settings):
+    """The model that composes answers; a run that asked for composed answers without one fails before loading anything."""
+    from cie.agents.providers import NoProvider, get_provider
+
+    provider = get_provider(settings)
+    if isinstance(provider, NoProvider):
+        raise SystemExit("--assisted needs a model: set CIE_LLM_PROVIDER (e.g. anthropic), CIE_LLM_MODEL and the provider's API key")
+    return provider
+
+
+def code_version() -> str:
+    """The commit the benchmark ran on (or the package version outside a checkout)."""
+    import subprocess
+
+    try:
+        sha = subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True, timeout=5,
+                             cwd=Path(__file__).resolve().parent).stdout.strip()
+        dirty = subprocess.run(["git", "status", "--porcelain", "--untracked-files=no"], capture_output=True, text=True, timeout=5,
+                               cwd=Path(__file__).resolve().parent).stdout.strip()
+        if sha:
+            return sha + ("+modified" if dirty else "")
+    except (OSError, subprocess.SubprocessError):
+        pass
+    from importlib.metadata import PackageNotFoundError, version
+
+    try:
+        return version("cie")
+    except PackageNotFoundError:
+        return "unknown"
 
 
 def _mean(xs):
@@ -505,8 +552,16 @@ def run(root: Path, out: Path, n_docs: int | None, questions_file: Path | None =
         entities: bool = True, reuse_tenant: str | None = None, n_questions: int | None = None, batch: int = 64, memory: str = "full",
         workers: int | None = None, log=print) -> dict[str, Any]:
     settings = get_settings()
+    if any((cfg or {}).get("mode") == "assisted" for cfg in (arms or ARMS).values()):
+        assisted_provider(settings)
     embedder = get_embedding_provider(settings)
     url = settings.database_url.replace("postgresql+psycopg://", "postgresql://")
+    from cie.eval.bench_scale import ensure_indexes
+
+    with psycopg.connect(url) as conn:
+        built = ensure_indexes(conn)  # an earlier run that died mid-load may have left them dropped
+        if built:
+            log(f"  rebuilt missing indexes: {built}")
     questions = [json.loads(line) for line in (questions_file or root / "questions.jsonl").read_text().splitlines() if line.strip()]
     if n_questions:
         questions = questions[:n_questions]
@@ -519,10 +574,13 @@ def run(root: Path, out: Path, n_docs: int | None, questions_file: Path | None =
                          f"{len(missing)} of {len(gold)} gold documents missing (clone https://github.com/onyx-dot-app/EnterpriseRAG-Bench, "
                          f"whose generated_data/sources holds the JSON records with their metadata)")
     report: dict[str, Any] = {"benchmark": "EnterpriseRAG-Bench (onyx-dot-app)", "corpus_documents": len(index), "questions": len(questions),
-                              "embedding": getattr(embedder, "name", "?")}
+                              "question_ids_sha1": hashlib.sha1(",".join(q["question_id"] for q in questions).encode()).hexdigest()[:12],
+                              "embedding": getattr(embedder, "name", "?"), "code_version": code_version()}
     if reuse_tenant:
         with session_scope() as s:
             tenant = s.scalar(select(Tenant).where(Tenant.name == reuse_tenant))
+            if tenant is None:
+                raise SystemExit(f"no tenant named {reuse_tenant!r} in this database")
             company = s.scalar(select(text("id")).select_from(text("scopes")).where(text("tenant_id = :t AND parent_id IS NULL")).params(t=tenant.id))
             report["load"] = {"tenant_id": str(tenant.id), "tenant_name": reuse_tenant, "company_id": str(company),
                               "documents": s.scalar(select(text("count(*)")).select_from(text("documents")).where(text("tenant_id = :t")).params(t=tenant.id)),
@@ -543,6 +601,7 @@ def run(root: Path, out: Path, n_docs: int | None, questions_file: Path | None =
         admin = s.scalar(select(Principal).where(Principal.tenant_id == tenant_id, Principal.name == "admin"))
         dsid_of = {str(d_id): extra.get("dsid") for d_id, extra in s.execute(select(Document.id, Document.extra).where(Document.tenant_id == tenant_id)).all()}
         report["haystack_documents"] = len(dsid_of)
+        report["haystack_sha1"] = hashlib.sha1(",".join(sorted(d for d in dsid_of.values() if d)).encode()).hexdigest()[:12]
         retriever = Retriever(s, settings, embedder=embedder)
         report["arms"] = evaluate(s, retriever, admin, company_id, questions, dsid_of, arms=arms or ARMS, out=out, log=log)
         s.rollback()
@@ -598,7 +657,11 @@ def main(argv: list[str] | None = None) -> dict:
     ap.add_argument("--assisted", action="store_true",
                     help="also compose answers with the configured model (CIE_LLM_PROVIDER / CIE_LLM_MODEL and its API key) on the default arm")
     a = ap.parse_args(argv)
-    arms = {k: v for k, v in ARMS.items() if not a.arms or k in a.arms.split(",")}
+    wanted = [x.strip() for x in a.arms.split(",") if x.strip()] if a.arms else list(ARMS)
+    unknown = [x for x in wanted if x not in ARMS]
+    if unknown or not wanted:
+        raise SystemExit(f"unknown arm(s) {unknown}; choose from: {', '.join(ARMS)}")
+    arms = {k: ARMS[k] for k in wanted}
     if a.assisted:
         arms[ASSISTED_ARM] = {"mode": "assisted"}
     return run(Path(a.root), Path(a.out), a.docs, arms=arms, entities=not a.no_entities, reuse_tenant=a.reuse_tenant, n_questions=a.questions,

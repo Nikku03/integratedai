@@ -23,6 +23,8 @@ from cie.core.settings import Settings, get_settings
 PRICES: dict[str, tuple[float, float]] = {  # USD per million tokens (input, output), list prices
     "claude-opus-5": (5.0, 25.0),
     "claude-sonnet-5": (2.0, 10.0),
+    "claude-opus-4-8": (5.0, 25.0),
+    "claude-sonnet-4-6": (3.0, 15.0),
     "claude-haiku-4-5": (1.0, 5.0),
     "claude-haiku-4-5-20251001": (1.0, 5.0),
     "gpt-4o": (2.5, 10.0),
@@ -43,10 +45,19 @@ class LLMResponse:
     usage_is_estimate: bool = False
     raw: dict = field(default_factory=dict)
     stop_reason: str | None = None  # "refusal" when the model declined; callers must not treat that as an answer
+    cost_known: bool = True  # False when no price is listed for the model: cost_usd is then 0 and must not be read as free
+
+
+def price_of(model: str) -> tuple[float, float] | None:
+    """List price of a model id, also for dated ids of a listed model ('claude-haiku-4-5-20251001'); None when unlisted."""
+    if model in PRICES:
+        return PRICES[model]
+    base = max((k for k in PRICES if model.startswith(k + "-")), key=len, default=None)
+    return PRICES[base] if base else None
 
 
 def estimate_cost(model: str, tokens_in: int, tokens_out: int) -> float:
-    pin, pout = PRICES.get(model, (0.0, 0.0))
+    pin, pout = price_of(model) or (0.0, 0.0)
     return round((tokens_in * pin + tokens_out * pout) / 1e6, 6)
 
 
@@ -113,8 +124,11 @@ class AnthropicProvider:
         text = "".join(b.text for b in r.content if getattr(b, "type", None) == "text")
         ti, to = r.usage.input_tokens, r.usage.output_tokens
         served_by = getattr(r, "model", None) or self.model
-        return LLMResponse(text, served_by, ti, to, (time.perf_counter() - t) * 1000, estimate_cost(served_by, ti, to),
-                           stop_reason=getattr(r, "stop_reason", None))
+        # a server-side fallback may serve a model missing from the price table: price it as the requested model and say so
+        priced_as = served_by if price_of(served_by) else self.model
+        return LLMResponse(text, served_by, ti, to, (time.perf_counter() - t) * 1000, estimate_cost(priced_as, ti, to),
+                           usage_is_estimate=priced_as != served_by, stop_reason=getattr(r, "stop_reason", None),
+                           cost_known=price_of(priced_as) is not None)
 
 
 class OpenAIProvider:
@@ -137,7 +151,7 @@ class OpenAIProvider:
         ti = r.usage.prompt_tokens if r.usage else 0
         to = r.usage.completion_tokens if r.usage else 0
         return LLMResponse(text, self.model, ti, to, (time.perf_counter() - t) * 1000, estimate_cost(self.model, ti, to),
-                           usage_is_estimate=r.usage is None)
+                           usage_is_estimate=r.usage is None, cost_known=price_of(self.model) is not None)
 
 
 class GeminiProvider:
@@ -162,7 +176,8 @@ class GeminiProvider:
         text = "".join(p.get("text", "") for c in j.get("candidates", []) for p in c.get("content", {}).get("parts", []))
         um = j.get("usageMetadata", {})
         ti, to = um.get("promptTokenCount", 0), um.get("candidatesTokenCount", 0)
-        return LLMResponse(text, self.model, ti, to, (time.perf_counter() - t) * 1000, estimate_cost(self.model, ti, to), raw=um)
+        return LLMResponse(text, self.model, ti, to, (time.perf_counter() - t) * 1000, estimate_cost(self.model, ti, to), raw=um,
+                           cost_known=price_of(self.model) is not None)
 
 
 def get_provider(settings: Settings | None = None) -> LLMProvider:

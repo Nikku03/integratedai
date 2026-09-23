@@ -192,9 +192,8 @@ def own_keys(source: str, rel: str, meta: dict[str, Any]) -> list[str]:
     if meta.get("key"):
         out.append(str(meta["key"]).upper())
     if source == "github" and meta.get("pr_number"):
-        if meta.get("repo"):
+        if meta.get("repo"):  # a pull request number alone is not an identifier: every repository has a #42
             out.append(f"pr:{slug(meta['repo'])}#{meta['pr_number']}")
-        out.append(f"pr:#{meta['pr_number']}")
     for k in ("meeting_id", "thread_id", "company_id", "crm_deal_id", "deal_id"):
         if meta.get(k):
             out.append(f"id:{str(meta[k]).lower()}")
@@ -225,13 +224,46 @@ def reference_keys(field_name: str, value: Any) -> list[str]:
     return out
 
 
+# ------------------------------------------------------------------ sensitivity
+# labels a system uses for "everyone in the company may read this"; any other label (restricted, confidential,
+# private, team-only, "restricted (customer-sensitive)", an unknown value) is treated as restricted
+OPEN_LABELS = {"internal", "company", "company-wide", "company-internal", "all-hands", "public", "external", "customer-facing",
+               "general", "open", "everyone", "shared", "unrestricted", "none", "normal", "standard"}
+SENSITIVITY_FIELDS = ("confidentiality", "visibility", "sensitivity", "privacy", "classification", "access_level")
+
+
+def sensitivity_of(meta: dict[str, Any]) -> int:
+    """1 (company-wide) or 2 (restricted), the most restrictive of the document's labels. Absent labels are 1."""
+    level = 1
+    for f in SENSITIVITY_FIELDS:
+        v = meta.get(f)
+        if v in (None, "", []) or isinstance(v, dict | list):
+            continue
+        label = str(v).strip().lower()
+        if label in OPEN_LABELS or slug(label) in OPEN_LABELS:
+            continue
+        level = 2
+    return level
+
+
+def strip_nul(v: Any) -> Any:
+    """PostgreSQL text and jsonb cannot hold U+0000; exported records occasionally do."""
+    if isinstance(v, str):
+        return v.replace("\x00", "") if "\x00" in v else v
+    if isinstance(v, list):
+        return [strip_nul(x) for x in v]
+    if isinstance(v, dict):
+        return {strip_nul(k): strip_nul(x) for k, x in v.items()}
+    return v
+
+
 # ------------------------------------------------------------------ readers
 def read(path: Path, rel: str) -> SourceDoc:
     return read_txt(path, rel) if path.suffix == ".txt" else read_json(path, rel)
 
 
 def read_txt(path: Path, rel: str) -> SourceDoc:
-    raw = path.read_text(errors="replace")
+    raw = strip_nul(path.read_text(errors="replace"))
     stem = path.stem
     dsid = stem.split("__", 1)[0] if stem.startswith("dsid_") else None
     lines = raw.strip().splitlines()
@@ -243,7 +275,9 @@ def read_txt(path: Path, rel: str) -> SourceDoc:
 
 
 def read_json(path: Path, rel: str) -> SourceDoc:
-    d = json.loads(path.read_text(errors="replace"))
+    d = strip_nul(json.loads(path.read_text(errors="replace")))
+    if not isinstance(d, dict):
+        raise ValueError(f"{rel}: expected one JSON object per record")
     title_field = d.get("title_field_name") or "title"
     content_fields = list(d.get("content_field_names") or [])
     if not content_fields:  # fall back to the long text fields
@@ -313,7 +347,6 @@ def read_json(path: Path, rel: str) -> SourceDoc:
         t = tag(title)
         if t:
             tags.insert(0, t)
-    conf = str(meta.get("confidentiality") or meta.get("visibility") or "").lower()
-    doc.sensitivity = 2 if conf in ("restricted", "confidential", "secret", "team-only") else 1
+    doc.sensitivity = sensitivity_of(meta)
     doc.tags = list(dict.fromkeys(tags))[:30]
     return doc

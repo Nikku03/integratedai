@@ -47,6 +47,7 @@ class AnswerResult:
     tokens_out: int = 0
     latency_ms: float = 0.0
     cost_usd: float = 0.0
+    cost_known: bool = True  # False when the model has no listed price (cost_usd then reads 0)
     usage_is_estimate: bool = True
 
 
@@ -168,12 +169,15 @@ def assisted(packet: EvidencePacket, intent: Intent, provider: LLMProvider, stri
         # the model declined: answer from the evidence alone rather than presenting an empty model answer
         fallback = extractive(packet, intent)
         fallback.mode = "extractive (model declined)"
+        fallback.model, fallback.tokens_in, fallback.tokens_out = r.model, r.tokens_in, r.tokens_out  # a declined call is still billed
+        fallback.latency_ms, fallback.cost_usd, fallback.cost_known = r.latency_ms, r.cost_usd, getattr(r, "cost_known", True)
+        fallback.usage_is_estimate = r.usage_is_estimate
         return fallback
     text = r.text.strip()
     if text.upper().startswith("INSUFFICIENT EVIDENCE"):
         return AnswerResult("Insufficient evidence (model).", "insufficient_evidence", [], 0.1, "assisted",
                             model=r.model, tokens_in=r.tokens_in, tokens_out=r.tokens_out, latency_ms=r.latency_ms,
-                            cost_usd=r.cost_usd, usage_is_estimate=r.usage_is_estimate)
+                            cost_usd=r.cost_usd, usage_is_estimate=r.usage_is_estimate, cost_known=getattr(r, "cost_known", True))
     kept, unsupported, cited_ns = [], [], set()
     for sent in re.split(r"(?<=[.!?])\s+", text):
         if not sent.strip():
@@ -195,7 +199,7 @@ def assisted(packet: EvidencePacket, intent: Intent, provider: LLMProvider, stri
     return AnswerResult(" ".join(kept) if kept else "No supported claims could be produced from the evidence.", status,
                         cites, max(conf, 0.0), "assisted", unsupported_claims=unsupported, model=r.model,
                         tokens_in=r.tokens_in, tokens_out=r.tokens_out, latency_ms=r.latency_ms, cost_usd=r.cost_usd,
-                        usage_is_estimate=r.usage_is_estimate)
+                        usage_is_estimate=r.usage_is_estimate, cost_known=getattr(r, "cost_known", True))
 
 
 def _supported(sentence: str, item: dict, min_overlap: float = 0.3) -> bool:

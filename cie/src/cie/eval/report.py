@@ -372,7 +372,21 @@ def memory_comparison(out: Path) -> list[str]:
         return []
     fo, co = full["arms"][arm]["overall"], chunks["arms"][arm]["overall"]
     ld = full.get("load", {})
+    # the comparison is only meaningful on the same haystack and the same questions: check, and say what was checked
+    same_docs = full.get("haystack_documents") == chunks.get("haystack_documents")
+    if full.get("haystack_sha1") and chunks.get("haystack_sha1"):
+        same_docs = same_docs and full["haystack_sha1"] == chunks["haystack_sha1"]
+    same_q = full.get("questions") == chunks.get("questions")
+    if full.get("question_ids_sha1") and chunks.get("question_ids_sha1"):
+        same_q = same_q and full["question_ids_sha1"] == chunks["question_ids_sha1"]
+    if not (same_docs and same_q):
+        return ["", "### Full memory bank vs chunks only", "",
+                f"Not compared: the two runs differ (haystack {chunks.get('haystack_documents')} vs {full.get('haystack_documents')} documents, "
+                f"{chunks.get('questions')} vs {full.get('questions')} questions).", ""]
+    versions = {chunks.get("code_version"), full.get("code_version")} - {None}
     lines = ["", f"### Full memory bank vs chunks only (same {full.get('haystack_documents', 0):,}-document haystack, same {full['questions']} questions, arm {arm})", ""]
+    if versions:
+        lines += [f"Code version: chunks {chunks.get('code_version', 'unrecorded')}, full {full.get('code_version', 'unrecorded')}.", ""]
     if ld.get("memory") == "full":
         lines += [f"The full memory bank added {ld['records']:,} memory records to {ld['sections']:,} sections "
                   f"({', '.join(f'{k} {v:,}' for k, v in sorted(ld['records_by_type'].items(), key=lambda kv: -kv[1])[:8])}), "
