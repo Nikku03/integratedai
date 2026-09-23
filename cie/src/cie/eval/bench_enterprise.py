@@ -151,8 +151,14 @@ def build_index(root: Path, cache: Path | None = None) -> dict[str, str]:
 
 # ------------------------------------------------------------------ load
 def load(url: str, root: Path, index: dict[str, str], dsids: list[str], embedder, *, tenant_name: str, batch: int = 64,
-         entities: bool = True, log=print) -> dict[str, Any]:
+         entities: bool = True, rebuild_indexes_above: int = 20_000, log=print) -> dict[str, Any]:
+    """Above ``rebuild_indexes_above`` documents the vector and text indexes are dropped
+    before the load and rebuilt after it (an insert into an HNSW index costs far more
+    than its share of a bulk build)."""
+    from cie.eval.bench_scale import build_indexes, drop_indexes
+
     t0 = time.perf_counter()
+    rebuild = len(dsids) > rebuild_indexes_above
     with session_scope() as s:
         tenant = Tenant(name=tenant_name)
         s.add(tenant)
@@ -169,8 +175,12 @@ def load(url: str, root: Path, index: dict[str, str], dsids: list[str], embedder
     n_sections = n_records = 0
     embed_s = 0.0
     T0 = None
+    index_build: dict[str, float] = {}
     with psycopg.connect(url) as conn:
         register_vector(conn)
+        if rebuild:
+            log("  dropping vector/text indexes for the bulk load (rebuilt afterwards)")
+            drop_indexes(conn)
         from psycopg.types.enum import EnumInfo, register_enum
         from psycopg.types.string import StrBinaryDumperVarchar
 
@@ -263,12 +273,16 @@ def load(url: str, root: Path, index: dict[str, str], dsids: list[str], embedder
             cur.execute("ANALYZE sections")
             cur.execute("ANALYZE documents")
         conn.commit()
+        if rebuild:
+            log("  rebuilding indexes ...")
+            index_build = build_indexes(conn)
+            log(f"  indexes rebuilt in {sum(index_build.values()):.0f} s: {index_build}")
     n_entities = 0
     if entities:
         n_entities = _link_entities(tenant_id, doc_meta, log)
     return {"tenant_id": str(tenant_id), "company_id": str(company_id), "documents": len(dsids), "sections": n_sections, "records": n_records,
             "entities": n_entities, "load_seconds": round(time.perf_counter() - t0, 1), "embed_seconds": round(embed_s, 1),
-            "embed_texts_per_s": round((n_sections + n_records) / max(embed_s, 1e-6), 1)}
+            "embed_texts_per_s": round((n_sections + n_records) / max(embed_s, 1e-6), 1), "index_build_seconds": index_build}
 
 
 def _link_entities(tenant_id, doc_meta: dict, log) -> int:
@@ -377,7 +391,7 @@ def _mean(xs):
 
 # ------------------------------------------------------------------ run
 def run(root: Path, out: Path, n_docs: int | None, questions_file: Path | None = None, arms: dict | None = None, seed: int = 5,
-        entities: bool = True, reuse_tenant: str | None = None, n_questions: int | None = None, log=print) -> dict[str, Any]:
+        entities: bool = True, reuse_tenant: str | None = None, n_questions: int | None = None, batch: int = 64, log=print) -> dict[str, Any]:
     settings = get_settings()
     embedder = get_embedding_provider(settings)
     url = settings.database_url.replace("postgresql+psycopg://", "postgresql://")
@@ -397,7 +411,7 @@ def run(root: Path, out: Path, n_docs: int | None, questions_file: Path | None =
     else:
         dsids = select_docs(index, questions, n_docs, seed)
         log(f"loading {len(dsids)} documents ({len({d for q in questions for d in q['expected_doc_ids']})} gold) into a new tenant ...")
-        report["load"] = load(url, sources_root, index, dsids, embedder, tenant_name=f"erb-{len(dsids)}-{uuid.uuid4().hex[:6]}", entities=entities, log=log)
+        report["load"] = load(url, sources_root, index, dsids, embedder, tenant_name=f"erb-{len(dsids)}-{uuid.uuid4().hex[:6]}", entities=entities, batch=batch, log=log)
         log(f"loaded: {report['load']}")
     with session_scope() as s:
         tenant_id = uuid.UUID(report["load"]["tenant_id"])
@@ -446,9 +460,10 @@ def main(argv: list[str] | None = None) -> dict:
     ap.add_argument("--no-entities", action="store_true")
     ap.add_argument("--reuse-tenant", default=None, help="evaluate an already loaded tenant by name instead of loading")
     ap.add_argument("--arms", default=None, help="comma-separated arm names (default: all)")
+    ap.add_argument("--batch", type=int, default=64, help="documents per load batch (256 is right for a GPU embedder)")
     a = ap.parse_args(argv)
     arms = {k: v for k, v in ARMS.items() if not a.arms or k in a.arms.split(",")}
-    return run(Path(a.root), Path(a.out), a.docs, arms=arms, entities=not a.no_entities, reuse_tenant=a.reuse_tenant, n_questions=a.questions)
+    return run(Path(a.root), Path(a.out), a.docs, arms=arms, entities=not a.no_entities, reuse_tenant=a.reuse_tenant, n_questions=a.questions, batch=a.batch)
 
 
 if __name__ == "__main__":  # pragma: no cover
