@@ -202,7 +202,9 @@ def rerank(cands: list[Candidate], intent: Intent, query: str = "", now: datetim
             if c.degree > hub_threshold:
                 reasons["hub_penalty"] = -0.1 * math.log10(c.degree / hub_threshold + 1)
             if r.type.value == "document":
-                reasons["document_record"] = -0.35  # prefer specific facts over whole-document stubs
+                # prefer specific facts over whole-document stubs; a document record that carries an extracted summary and tags
+                # is a memory card of the document and is penalised less
+                reasons["document_record"] = -0.15 if (r.content or {}).get("summary") else -0.35
         else:
             reasons["section"] = -0.05
         if c.horizon:

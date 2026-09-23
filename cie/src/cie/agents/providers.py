@@ -20,9 +20,10 @@ from typing import Protocol
 from cie.core.settings import Settings, get_settings
 
 # USD per 1M tokens (input, output). Estimates; update from provider pricing pages.
-PRICES: dict[str, tuple[float, float]] = {
-    "claude-sonnet-5": (3.0, 15.0),
-    "claude-opus-5": (15.0, 75.0),
+PRICES: dict[str, tuple[float, float]] = {  # USD per million tokens (input, output), list prices
+    "claude-opus-5": (5.0, 25.0),
+    "claude-sonnet-5": (2.0, 10.0),
+    "claude-haiku-4-5": (1.0, 5.0),
     "claude-haiku-4-5-20251001": (1.0, 5.0),
     "gpt-4o": (2.5, 10.0),
     "gpt-4o-mini": (0.15, 0.6),
@@ -41,6 +42,7 @@ class LLMResponse:
     cost_usd: float
     usage_is_estimate: bool = False
     raw: dict = field(default_factory=dict)
+    stop_reason: str | None = None  # "refusal" when the model declined; callers must not treat that as an answer
 
 
 def estimate_cost(model: str, tokens_in: int, tokens_out: int) -> float:
@@ -97,13 +99,22 @@ class AnthropicProvider:
         self.client = anthropic.Anthropic(api_key=api_key)
         self.model = model
 
-    def complete(self, system: str, user: str, max_tokens: int = 1024) -> LLMResponse:
+    def complete(self, system: str, user: str, max_tokens: int = 16000) -> LLMResponse:
+        """One grounded completion. Current models think by default and thinking counts against
+        ``max_tokens``, so the ceiling is generous (a short answer still costs only what it uses).
+        A refusal is reported through ``stop_reason``, never as answer text. On models that
+        support it, a declined request is re-run on a fallback model server-side (beta)."""
         t = time.perf_counter()
-        r = self.client.messages.create(model=self.model, max_tokens=max_tokens, system=system,
-                                        messages=[{"role": "user", "content": user}])
-        text = "".join(getattr(b, "text", "") for b in r.content)
+        kw = {"model": self.model, "max_tokens": max(max_tokens, 16000), "system": system, "messages": [{"role": "user", "content": user}]}
+        try:
+            r = self.client.beta.messages.create(betas=["server-side-fallback-2026-07-01"], fallbacks="default", **kw)
+        except TypeError:  # an SDK release without the fallbacks parameter
+            r = self.client.messages.create(**kw)
+        text = "".join(b.text for b in r.content if getattr(b, "type", None) == "text")
         ti, to = r.usage.input_tokens, r.usage.output_tokens
-        return LLMResponse(text, self.model, ti, to, (time.perf_counter() - t) * 1000, estimate_cost(self.model, ti, to))
+        served_by = getattr(r, "model", None) or self.model
+        return LLMResponse(text, served_by, ti, to, (time.perf_counter() - t) * 1000, estimate_cost(served_by, ti, to),
+                           stop_reason=getattr(r, "stop_reason", None))
 
 
 class OpenAIProvider:

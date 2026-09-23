@@ -150,7 +150,7 @@ def _confidence(item: dict, score: float, support: int) -> float:
 
 
 def assisted(packet: EvidencePacket, intent: Intent, provider: LLMProvider, strict: bool = True,
-             max_tokens: int = 700) -> AnswerResult:
+             max_tokens: int = 16000) -> AnswerResult:
     items = packet.items
     if not items:
         return extractive(packet, intent)
@@ -164,6 +164,11 @@ def assisted(packet: EvidencePacket, intent: Intent, provider: LLMProvider, stri
         lines.append(f"[{i}]{flag} " + wrap_untrusted(body[:1500], src))
     user = f"Question: {packet.query}\n\nEvidence items:\n" + "\n\n".join(lines)
     r: LLMResponse = provider.complete(SYSTEM_PROMPT, user, max_tokens=max_tokens)
+    if getattr(r, "stop_reason", None) == "refusal":
+        # the model declined: answer from the evidence alone rather than presenting an empty model answer
+        fallback = extractive(packet, intent)
+        fallback.mode = "extractive (model declined)"
+        return fallback
     text = r.text.strip()
     if text.upper().startswith("INSUFFICIENT EVIDENCE"):
         return AnswerResult("Insufficient evidence (model).", "insufficient_evidence", [], 0.1, "assisted",

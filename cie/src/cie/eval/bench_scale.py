@@ -297,10 +297,13 @@ def drop_indexes(conn: psycopg.Connection) -> None:
 
 
 def build_indexes(conn: psycopg.Connection) -> dict[str, float]:
+    import os
+
     times = {}
     with conn.cursor() as cur:
-        cur.execute("SET maintenance_work_mem = '4GB'")
-        cur.execute("SET max_parallel_maintenance_workers = 3")
+        # large machines (a Colab A100 VM) build much faster with more memory and workers; defaults suit a 4-core box
+        cur.execute(f"SET maintenance_work_mem = '{os.environ.get('CIE_INDEX_BUILD_MEM', '4GB')}'")
+        cur.execute(f"SET max_parallel_maintenance_workers = {int(os.environ.get('CIE_INDEX_BUILD_WORKERS', '3'))}")
         for name, ddl in index_ddl(conn).items():
             t = time.perf_counter()
             cur.execute(ddl)

@@ -53,6 +53,12 @@ def engine():
         conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
         conn.execute(text("CREATE EXTENSION IF NOT EXISTS pg_trgm"))
     Base.metadata.create_all(eng)
+    # create_all does not add values to an enum type that already exists; keep the test database in step with the models
+    from cie.core.models import LinkKind
+
+    with eng.connect().execution_options(isolation_level="AUTOCOMMIT") as conn:
+        for kind in LinkKind:
+            conn.execute(text(f"ALTER TYPE link_kind ADD VALUE IF NOT EXISTS '{kind.value}'"))
     return eng
 
 

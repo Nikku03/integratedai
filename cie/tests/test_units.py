@@ -109,7 +109,7 @@ def test_sectioning_and_fact_derivation_keep_provenance():
 
 
 def test_provider_cost_estimate_and_fake_provider():
-    assert providers.estimate_cost("claude-sonnet-5", 1_000_000, 0) == 3.0
+    assert providers.estimate_cost("claude-sonnet-5", 1_000_000, 0) == 2.0  # list price, USD per million input tokens
     fake = providers.FakeProvider({"hello": "world"})
     r = fake.complete("sys", "say hello")
     assert r.text == "world" and r.usage_is_estimate and fake.calls

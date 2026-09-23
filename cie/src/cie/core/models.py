@@ -456,6 +456,8 @@ class LinkKind(str, enum.Enum):
     derived_from = "derived_from"
     shortcut = "shortcut"  # long-range edge, only with justification
     coactivated = "coactivated"  # formed by the bank itself when records fire together (cie.topology.dynamic)
+    references = "references"  # one document explicitly cites another (ticket key, PR, page, CRM id)
+    near_duplicate = "near_duplicate"  # two documents say nearly the same thing (possibly with different facts)
 
 
 class RecordLink(Base):

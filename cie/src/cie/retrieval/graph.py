@@ -23,7 +23,7 @@ from cie.core.models import LinkKind, MemoryRecord, RecordLink
 
 HORIZON_KINDS: dict[int, set[LinkKind]] = {
     1: {LinkKind.depends_on, LinkKind.part_of, LinkKind.supersedes, LinkKind.contradicts, LinkKind.confirms,
-        LinkKind.extends, LinkKind.coactivated},
+        LinkKind.extends, LinkKind.coactivated, LinkKind.references, LinkKind.near_duplicate},
     2: {LinkKind.relates_to, LinkKind.mentions, LinkKind.precedes, LinkKind.assigned_to, LinkKind.derived_from},
     3: {LinkKind.causes, LinkKind.shortcut, LinkKind.relates_to, LinkKind.depends_on},
 }
@@ -60,6 +60,9 @@ def expand(session: Session, seeds: dict[uuid.UUID, float], *, base_filter, cros
             break
         kinds = HORIZON_KINDS[h]
         cand: dict[uuid.UUID, tuple[float, uuid.UUID, str]] = {}
+        # the seeds stay active at every horizon: a horizon is a tier of edge kinds reached from what the query
+        # activated, not only a hop count, so a seed's associative edges are followed even when its structural ones are not
+        frontier = {**{k: v for k, v in seeds.items() if h > 1}, **frontier}
         if frontier:
             ids = list(frontier)
             edges = list(session.scalars(select(RecordLink).where(

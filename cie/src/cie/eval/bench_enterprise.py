@@ -58,19 +58,19 @@ ENTITY_FIELDS = {"person": ["author", "owner", "creator", "assignee", "reporter"
 ARMS = {"hybrid+graph(REM)": {}, "hybrid+cliques+bonus": {"graph_mode": "cliques+bonus"},
         "vector-only": {"use_lexical": False, "use_exact": False, "use_graph": False},
         "lexical-only": {"use_vector": False, "use_exact": False, "use_graph": False}}
+ASSISTED_ARM = "hybrid+graph(REM), composed answers"  # added by --assisted: the default arm with answers composed by the configured model
 
 
 # ------------------------------------------------------------------ corpus
 def read_doc(path: Path) -> dict[str, Any]:
-    d = json.loads(path.read_text())
-    title_field = d.get("title_field_name") or "title"
-    content_fields = d.get("content_field_names") or ["content"]
-    title = str(d.get(title_field) or path.stem)
-    content = "\n\n".join(str(d.get(f) or "") for f in content_fields if d.get(f))
+    """Title, body and flat metadata of one exported record (JSON or plain-text layout)."""
+    from cie.ingest.sources import read
+
+    d = read(path, path.name)
     meta = {k: (v if isinstance(v, str | int | float | bool) else ", ".join(map(str, v)) if isinstance(v, list) and len(v) <= 12 else None)
-            for k, v in d.items() if k not in content_fields and k not in (title_field, "title_field_name", "content_field_names", "dataset_doc_uuid")}
+            for k, v in d.meta.items()}
     meta = {k: str(v)[:200] for k, v in meta.items() if v not in (None, "", [])}
-    return {"dsid": d.get("dataset_doc_uuid"), "title": title, "content": content, "meta": meta, "raw_keys": list(d.keys())}
+    return {"dsid": d.dsid, "title": d.title, "content": d.body, "meta": meta, "raw_keys": list(d.meta.keys())}
 
 
 _SOURCE_HINTS = [("channel", "slack"), ("thread_ts", "slack"), ("mailbox_owner", "gmail"), ("thread_id", "gmail"), ("pr_number", "github"), ("repo", "github"),
@@ -134,27 +134,130 @@ def build_index(root: Path, cache: Path | None = None, must_contain: set[str] | 
     index is used only if it holds every id in ``must_contain`` (the gold documents):
     a cache written before the corpus was in place would otherwise silence the run."""
     if cache and cache.exists():
-        cached = json.loads(cache.read_text()).get("index", {})
-        if cached and (not must_contain or must_contain <= set(cached)):
+        blob = json.loads(cache.read_text())
+        cached = blob.get("index", {})
+        same_root = blob.get("root") == str(root.resolve())
+        sample = list(cached.values())[:: max(1, len(cached) // 20)][:20]
+        if cached and same_root and all((root / r).exists() for r in sample) and (not must_contain or must_contain <= set(cached)):
             return cached
-        log(f"  cached index at {cache} is empty or incomplete; rescanning {root}")
+        log(f"  cached index at {cache} is empty, incomplete or for another corpus location; rescanning {root}")
     index = {}
     for dirpath, _, files in os.walk(root):
         for name in files:
+            p = Path(dirpath) / name
+            if name.endswith(".txt") and name.startswith("dsid_"):  # plain-text release layout: the id is in the file name
+                index[name[:37]] = str(p.relative_to(root))
+                continue
             if not name.endswith(".json"):
                 continue
-            p = Path(dirpath) / name
             raw = p.read_bytes()
             i = raw.find(b"dsid_")
             if i >= 0:
                 index[raw[i:i + 37].decode()] = str(p.relative_to(root))
     if cache and index:
         cache.parent.mkdir(parents=True, exist_ok=True)
-        cache.write_text(json.dumps({"index": index}))
+        cache.write_text(json.dumps({"root": str(root.resolve()), "index": index}))
     return index
 
 
 # ------------------------------------------------------------------ load
+def new_tenant(tenant_name: str) -> tuple[uuid.UUID, uuid.UUID, dict[str, uuid.UUID]]:
+    """A tenant with one company scope, a department scope per source system and an admin."""
+    with session_scope() as s:
+        tenant = Tenant(name=tenant_name)
+        s.add(tenant)
+        s.flush()
+        company = create_scope(s, tenant.id, ScopeKind.company, "Redwood Inference")
+        scopes = {src: create_scope(s, tenant.id, ScopeKind.department, src, company) for src in SOURCES + ["unknown"]}
+        admin = Principal(tenant_id=tenant.id, kind=PrincipalKind.user, name="admin")
+        s.add(admin)
+        s.flush()
+        grant_role(s, tenant_id=tenant.id, principal=admin, role=ensure_role(s, tenant.id, "admin", Permission.admin, 4), scope=company)
+        s.commit()
+        return tenant.id, company.id, {src: sc.id for src, sc in scopes.items()}
+
+
+def _build_batch(args: tuple[str, list[str]]) -> tuple[list, int]:
+    """Worker: read and build the memory of a batch of documents (no database)."""
+    from cie.ingest.builder import build
+    from cie.ingest.sources import read
+
+    root, rels = args
+    out, failed = [], 0
+    for rel in rels:
+        try:
+            out.append(build(read(Path(root) / rel, rel)))
+        except Exception:  # noqa: BLE001 - one malformed export must not stop a 500k-document load
+            failed += 1
+    return out, failed
+
+
+def load_full(url: str, root: Path, index: dict[str, str], dsids: list[str], embedder, *, tenant_name: str, batch: int = 64,
+              workers: int | None = None, cache: Path | None = None, rebuild_indexes_above: int = 20_000, log=print) -> dict[str, Any]:
+    """The full memory bank (cie.ingest): field-aware sections, extractive summaries and tags,
+    typed records, company-wide entities and projects, cross-document references,
+    near-duplicates and the facts they disagree on. Documents are built in worker
+    processes while the main process embeds and writes; at most two batches per worker
+    are in flight, so memory stays flat at any corpus size."""
+    from collections import deque
+    from concurrent.futures import ProcessPoolExecutor
+
+    from cie.eval.bench_scale import build_indexes, drop_indexes
+    from cie.ingest.bulk import BulkLoader, CachedEmbedder
+
+    t0 = time.perf_counter()
+    tenant_id, company_id, scope_ids = new_tenant(tenant_name)
+    rebuild = len(dsids) > rebuild_indexes_above
+    if rebuild:
+        with psycopg.connect(url) as conn:
+            log("  dropping vector/text indexes for the bulk load (rebuilt afterwards)")
+            drop_indexes(conn)
+    cached = CachedEmbedder(embedder, cache)
+    loader = BulkLoader(url, tenant_id=tenant_id, company_id=company_id, scope_ids=scope_ids, embedder=cached, log=log)
+    workers = workers or max(1, (os.cpu_count() or 2) - 1)
+    rels = [index[d] for d in dsids]
+    batches = [(str(root), rels[i:i + batch]) for i in range(0, len(rels), batch)]
+    failed = done = 0
+    with ProcessPoolExecutor(max_workers=workers) as ex:
+        pending: deque = deque()
+        it = iter(batches)
+        for b in it:
+            pending.append(ex.submit(_build_batch, b))
+            if len(pending) >= 2 * workers:
+                break
+        while pending:
+            mems, f = pending.popleft().result()
+            nxt = next(it, None)
+            if nxt is not None:
+                pending.append(ex.submit(_build_batch, nxt))
+            loader.write_batch(mems)
+            failed += f
+            done += len(mems) + f
+            if done % (batch * 20) < batch or not pending:
+                el = time.perf_counter() - t0
+                log(f"  loaded {done:,}/{len(dsids):,} documents, {loader.stats['sections']:,} sections, "
+                    f"{sum(v for k, v in loader.stats.items() if k.startswith('rec_')):,} records; {loader.t_embed:.0f} s embedding "
+                    f"(cache hits {cached.hits:,}), {el:.0f} s total, ~{el / max(done, 1) * (len(dsids) - done) / 60:.0f} min left")
+    stats = loader.finish()
+    loader.close()
+    index_build: dict[str, float] = {}
+    if rebuild:
+        log("  rebuilding indexes ...")
+        with psycopg.connect(url) as conn:
+            index_build = build_indexes(conn)
+        log(f"  indexes rebuilt in {sum(index_build.values()):.0f} s")
+    records = sum(v for k, v in stats.items() if k.startswith("rec_"))
+    return {"tenant_id": str(tenant_id), "tenant_name": tenant_name, "company_id": str(company_id), "memory": "full",
+            "documents": stats.get("documents", 0), "failed": failed,
+            "sections": stats.get("sections", 0), "records": records, "records_by_type": {k[4:]: v for k, v in stats.items() if k.startswith("rec_")},
+            "links_by_kind": {k[5:]: v for k, v in stats.items() if k.startswith("link_")}, "entities": stats.get("entities", 0),
+            "projects": stats.get("projects", 0), "near_duplicate_pairs": stats.get("near_duplicate_pairs", 0),
+            "contradictions": stats.get("contradictions", 0), "refs_unresolved": stats.get("refs_unresolved", 0),
+            "load_seconds": round(time.perf_counter() - t0, 1), "embed_seconds": round(loader.t_embed, 1),
+            "embedding_cache_hits": cached.hits, "embedded_texts": cached.misses, "finish_seconds": stats.get("finish_seconds"),
+            "index_build_seconds": index_build}
+
+
 def load(url: str, root: Path, index: dict[str, str], dsids: list[str], embedder, *, tenant_name: str, batch: int = 64,
          entities: bool = True, rebuild_indexes_above: int = 20_000, log=print) -> dict[str, Any]:
     """Above ``rebuild_indexes_above`` documents the vector and text indexes are dropped
@@ -164,19 +267,7 @@ def load(url: str, root: Path, index: dict[str, str], dsids: list[str], embedder
 
     t0 = time.perf_counter()
     rebuild = len(dsids) > rebuild_indexes_above
-    with session_scope() as s:
-        tenant = Tenant(name=tenant_name)
-        s.add(tenant)
-        s.flush()
-        company = create_scope(s, tenant.id, ScopeKind.company, "Redwood Inference")
-        scopes = {src: create_scope(s, tenant.id, ScopeKind.department, src, company) for src in SOURCES}
-        admin = Principal(tenant_id=tenant.id, kind=PrincipalKind.user, name="admin")
-        s.add(admin)
-        s.flush()
-        grant_role(s, tenant_id=tenant.id, principal=admin, role=ensure_role(s, tenant.id, "admin", Permission.admin, 4), scope=company)
-        s.commit()
-        tenant_id, company_id = tenant.id, company.id
-        scope_ids = {src: sc.id for src, sc in scopes.items()}
+    tenant_id, company_id, scope_ids = new_tenant(tenant_name)
     n_sections = n_records = 0
     embed_s = 0.0
     T0 = None
@@ -200,7 +291,7 @@ def load(url: str, root: Path, index: dict[str, str], dsids: list[str], embedder
             for dsid in group:
                 rel = index[dsid]
                 d = read_doc(root / rel)
-                d["rel"], d["source"] = rel, infer_source(rel, dict.fromkeys(d.pop("raw_keys")))
+                d["rel"], d["source"] = rel, infer_source(rel, dict.fromkeys(d.pop("raw_keys")))  # noqa: E501
                 docs.append(d)
             # texts to embed: each section (title + chunk) and the document record (source, title, opening)
             sec_texts, sec_ref = [], []
@@ -324,6 +415,14 @@ def evaluate(session, retriever: Retriever, admin, company_id, questions: list[d
              out: Path, log=print) -> dict[str, Any]:
     results: dict[str, Any] = {}
     for arm, cfg in arms.items():
+        cfg = dict(cfg)
+        mode = cfg.pop("mode", "strict")
+        provider = None
+        if mode == "assisted":
+            from cie.agents.providers import get_provider
+
+            provider = get_provider(retriever.settings)
+        spend = {"tokens_in": 0, "tokens_out": 0, "cost_usd": 0.0, "declined": 0}
         per_cat: dict[str, dict[str, list]] = defaultdict(lambda: defaultdict(list))
         answers = []
         lat = []
@@ -332,7 +431,11 @@ def evaluate(session, retriever: Retriever, admin, company_id, questions: list[d
             t = time.perf_counter()
             try:
                 session.execute(text("SET LOCAL statement_timeout = '60s'"))
-                result, res = retriever.answer(q["question"], admin, company_id, **cfg)
+                result, res = retriever.answer(q["question"], admin, company_id, mode=mode, provider=provider, **cfg)
+                spend["tokens_in"] += result.tokens_in or 0
+                spend["tokens_out"] += result.tokens_out or 0
+                spend["cost_usd"] += result.cost_usd or 0.0
+                spend["declined"] += "declined" in (result.mode or "")
                 ms = (time.perf_counter() - t) * 1000
                 docs: list[str] = []
                 if result.status != "insufficient_evidence":
@@ -381,6 +484,9 @@ def evaluate(session, retriever: Retriever, admin, company_id, questions: list[d
                    "abstained_on_info_not_found": _mean(per_cat["info_not_found"]["abstained"]) if "info_not_found" in per_cat else None,
                    "false_abstentions": _mean([a for cat, c in per_cat.items() if c["recall"] for a in c["abstained"]]),
                    "p50_ms": _p(lat, 0.5), "p95_ms": _p(lat, 0.95)}
+        if mode == "assisted":
+            overall["answer_mode"] = "assisted"
+            overall["llm"] = {**spend, "cost_usd": round(spend["cost_usd"], 2), "model": getattr(provider, "model", None)}
         results[arm] = {"overall": overall, "by_category": summary}
         out.mkdir(parents=True, exist_ok=True)
         safe = re.sub(r"[^a-z0-9]+", "_", arm.lower()).strip("_")
@@ -396,7 +502,8 @@ def _mean(xs):
 
 # ------------------------------------------------------------------ run
 def run(root: Path, out: Path, n_docs: int | None, questions_file: Path | None = None, arms: dict | None = None, seed: int = 5,
-        entities: bool = True, reuse_tenant: str | None = None, n_questions: int | None = None, batch: int = 64, log=print) -> dict[str, Any]:
+        entities: bool = True, reuse_tenant: str | None = None, n_questions: int | None = None, batch: int = 64, memory: str = "full",
+        workers: int | None = None, log=print) -> dict[str, Any]:
     settings = get_settings()
     embedder = get_embedding_provider(settings)
     url = settings.database_url.replace("postgresql+psycopg://", "postgresql://")
@@ -409,19 +516,26 @@ def run(root: Path, out: Path, n_docs: int | None, questions_file: Path | None =
     missing = gold - set(index)
     if not index or missing:
         raise SystemExit(f"corpus not found or incomplete under {sources_root}: {len(index):,} documents indexed, "
-                         f"{len(missing)} of {len(gold)} gold documents missing (download the benchmark's all_documents.zip into that folder)")
+                         f"{len(missing)} of {len(gold)} gold documents missing (clone https://github.com/onyx-dot-app/EnterpriseRAG-Bench, "
+                         f"whose generated_data/sources holds the JSON records with their metadata)")
     report: dict[str, Any] = {"benchmark": "EnterpriseRAG-Bench (onyx-dot-app)", "corpus_documents": len(index), "questions": len(questions),
                               "embedding": getattr(embedder, "name", "?")}
     if reuse_tenant:
         with session_scope() as s:
             tenant = s.scalar(select(Tenant).where(Tenant.name == reuse_tenant))
             company = s.scalar(select(text("id")).select_from(text("scopes")).where(text("tenant_id = :t AND parent_id IS NULL")).params(t=tenant.id))
-            report["load"] = {"tenant_id": str(tenant.id), "company_id": str(company), "documents": s.scalar(select(text("count(*)")).select_from(text("documents")).where(text("tenant_id = :t")).params(t=tenant.id)),
+            report["load"] = {"tenant_id": str(tenant.id), "tenant_name": reuse_tenant, "company_id": str(company),
+                              "documents": s.scalar(select(text("count(*)")).select_from(text("documents")).where(text("tenant_id = :t")).params(t=tenant.id)),
                               "reused": True}
     else:
         dsids = select_docs(index, questions, n_docs, seed)
         log(f"loading {len(dsids)} documents ({len({d for q in questions for d in q['expected_doc_ids']})} gold) into a new tenant ...")
-        report["load"] = load(url, sources_root, index, dsids, embedder, tenant_name=f"erb-{len(dsids)}-{uuid.uuid4().hex[:6]}", entities=entities, batch=batch, log=log)
+        if memory == "full":
+            report["load"] = load_full(url, sources_root, index, dsids, embedder, tenant_name=f"erbfull-{len(dsids)}-{uuid.uuid4().hex[:6]}",
+                                       batch=batch, workers=workers, cache=out / "emb_cache.sqlite", log=log)
+        else:
+            report["load"] = load(url, sources_root, index, dsids, embedder, tenant_name=f"erb-{len(dsids)}-{uuid.uuid4().hex[:6]}",
+                                  entities=entities, batch=batch, log=log)
         log(f"loaded: {report['load']}")
     with session_scope() as s:
         tenant_id = uuid.UUID(report["load"]["tenant_id"])
@@ -444,7 +558,14 @@ def to_markdown(rep: dict[str, Any]) -> str:
     ld = rep["load"]
     lines = [f"### EnterpriseRAG-Bench through CIE (haystack {rep.get('haystack_documents', ld.get('documents')):,} of {rep['corpus_documents']:,} documents, "
              f"{rep['questions']} questions, embeddings={rep['embedding']})", ""]
-    if not ld.get("reused"):
+    if not ld.get("reused") and ld.get("memory") == "full":
+        lines += [f"Load (full memory bank): {ld['documents']:,} documents → {ld['sections']:,} sections and {ld['records']:,} memory records "
+                  f"({', '.join(f'{k} {v:,}' for k, v in sorted(ld['records_by_type'].items(), key=lambda kv: -kv[1]))}); "
+                  f"{ld['entities']:,} people and companies, {ld['projects']:,} projects; links: "
+                  f"{', '.join(f'{k} {v:,}' for k, v in sorted(ld['links_by_kind'].items(), key=lambda kv: -kv[1]))}; "
+                  f"{ld['near_duplicate_pairs']:,} near-duplicate document pairs, {ld['contradictions']:,} conflicting facts; "
+                  f"{ld['load_seconds']} s ({ld['embed_seconds']} s embedding).", ""]
+    elif not ld.get("reused"):
         lines += [f"Load: {ld['documents']:,} documents → {ld['sections']:,} sections, {ld['records']:,} document records, {ld['entities']:,} entity links; "
                   f"{ld['load_seconds']} s ({ld['embed_seconds']} s embedding, {ld['embed_texts_per_s']} texts/s).", ""]
     lines += ["| arm | doc recall@10 | recall@5 | MRR | hit@1 | hit@10 | all gold found | extra docs@10 | abstained on info-not-found | false abstentions | p50 / p95 ms |",
@@ -471,9 +592,17 @@ def main(argv: list[str] | None = None) -> dict:
     ap.add_argument("--reuse-tenant", default=None, help="evaluate an already loaded tenant by name instead of loading")
     ap.add_argument("--arms", default=None, help="comma-separated arm names (default: all)")
     ap.add_argument("--batch", type=int, default=64, help="documents per load batch (256 is right for a GPU embedder)")
+    ap.add_argument("--memory", choices=["full", "chunks"], default="full",
+                    help="full: the full memory bank (summaries, tags, typed records, entities, projects, references, contradictions); chunks: sections only")
+    ap.add_argument("--workers", type=int, default=None, help="document-building processes (default: CPUs - 1)")
+    ap.add_argument("--assisted", action="store_true",
+                    help="also compose answers with the configured model (CIE_LLM_PROVIDER / CIE_LLM_MODEL and its API key) on the default arm")
     a = ap.parse_args(argv)
     arms = {k: v for k, v in ARMS.items() if not a.arms or k in a.arms.split(",")}
-    return run(Path(a.root), Path(a.out), a.docs, arms=arms, entities=not a.no_entities, reuse_tenant=a.reuse_tenant, n_questions=a.questions, batch=a.batch)
+    if a.assisted:
+        arms[ASSISTED_ARM] = {"mode": "assisted"}
+    return run(Path(a.root), Path(a.out), a.docs, arms=arms, entities=not a.no_entities, reuse_tenant=a.reuse_tenant, n_questions=a.questions,
+               batch=a.batch, memory=a.memory, workers=a.workers)
 
 
 if __name__ == "__main__":  # pragma: no cover
