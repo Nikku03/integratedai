@@ -353,11 +353,44 @@ def enterprise_section(out: Path) -> list[str]:
         if weak:
             lines.append("* **Weakest categories:** " + "; ".join(f"{c} (recall@10 {v['recall@10']}, n={v['n']})" for c, v in weak) + ".")
         lines.append("")
+    lines += memory_comparison(out)
     lines += ["### Caveats", "",
               "* Extractive answers quote records and sections; the benchmark's correctness judge expects a composed answer, so judged correctness will lag document recall.",
               "* Extra documents are counted against the gold set only; the benchmark's judge may relabel some as valid.",
               "* The corpus is generated (by design of the benchmark); it is out of sample for CIE, which is the point.", ""]
     return lines
+
+
+def memory_comparison(out: Path) -> list[str]:
+    """Full memory bank (eval_out/enterprise_full) against chunks only (eval_out/enterprise) on the same haystack."""
+    full = _load(out / "enterprise_full" / "bench_enterprise.json")
+    chunks = _load(out / "enterprise" / "bench_enterprise.json")
+    if not full or not chunks:
+        return []
+    arm = "hybrid+graph(REM)"
+    if arm not in full.get("arms", {}) or arm not in chunks.get("arms", {}):
+        return []
+    fo, co = full["arms"][arm]["overall"], chunks["arms"][arm]["overall"]
+    ld = full.get("load", {})
+    lines = ["", f"### Full memory bank vs chunks only (same {full.get('haystack_documents', 0):,}-document haystack, same {full['questions']} questions, arm {arm})", ""]
+    if ld.get("memory") == "full":
+        lines += [f"The full memory bank added {ld['records']:,} memory records to {ld['sections']:,} sections "
+                  f"({', '.join(f'{k} {v:,}' for k, v in sorted(ld['records_by_type'].items(), key=lambda kv: -kv[1])[:8])}), "
+                  f"{ld['entities']:,} people and companies, {ld['projects']:,} projects, and links "
+                  f"({', '.join(f'{k} {v:,}' for k, v in sorted(ld['links_by_kind'].items(), key=lambda kv: -kv[1]))}); "
+                  f"{ld['near_duplicate_pairs']:,} near-duplicate pairs and {ld['contradictions']:,} conflicting facts.", ""]
+    lines += ["| metric | chunks only | full memory bank |", "|---|---|---|"]
+    for key, label in (("recall@10", "document recall@10"), ("recall@5", "document recall@5"), ("mrr", "MRR"), ("hit@1", "right document first"),
+                       ("all_gold_found", "all gold documents found"), ("extras@10", "extra documents in top 10"),
+                       ("abstained_on_info_not_found", "abstained when the answer is not in the corpus"), ("false_abstentions", "abstained on answerable questions"),
+                       ("p50_ms", "latency p50 ms"), ("p95_ms", "latency p95 ms")):
+        lines.append(f"| {label} | {co.get(key)} | {fo.get(key)} |")
+    lines += ["", "| category | n | recall@10 chunks → full | MRR chunks → full | all gold found chunks → full |", "|---|---|---|---|---|"]
+    for cat, fc in full["arms"][arm]["by_category"].items():
+        cc = chunks["arms"][arm]["by_category"].get(cat, {})
+        lines.append(f"| {cat} | {fc['n']} | {cc.get('recall@10')} → {fc.get('recall@10')} | {cc.get('mrr')} → {fc.get('mrr')} | "
+                     f"{cc.get('all_gold_found')} → {fc.get('all_gold_found')} |")
+    return lines + [""]
 
 
 if __name__ == "__main__":  # pragma: no cover

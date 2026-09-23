@@ -170,6 +170,15 @@ Exposed as `GET /memory/entities?q=`, `GET /memory/entities/{id}/profile`,
 `GET /documents/{id}/card`, `GET /scopes/{id}/digest`; all permission-filtered
 by the same predicate as search.
 
+## D3. Structured-source ingestion (`cie.ingest`)
+
+Exported records from company systems (chat, e-mail, tickets, pull requests,
+wiki, drive, CRM, meetings) are turned into the full memory bank at bulk speed:
+field-aware sections, memory cards (extractive summary, tags, people, companies,
+project, identifiers), typed records from structured fields and prose, company-wide
+entities and projects, cross-document references, near-duplicates and the facts
+they disagree on. Details and the measurement in `docs/MEMORY_BANK.md`.
+
 ## E. Glyphs (`cie.memory.glyph`)
 
 A glyph is a typed, compact memory card stored as JSONB inside the record:

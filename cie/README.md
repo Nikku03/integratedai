@@ -56,6 +56,8 @@ answers it gives; `GET /memory/shapes` shows them, `python -m cie.eval.bench_dyn
 measures them against the static bank.
 Out-of-sample test on EnterpriseRAG-Bench (512k-document company corpus, 500
 questions): `python -m cie.eval.bench_enterprise --root <checkout> --docs N`
+(`--memory full` builds the full memory bank described in `docs/MEMORY_BANK.md`;
+`--memory chunks` loads sections only)
 (results in `docs/BENCHMARKS.md`; answers files for the benchmark's LLM judge in
 `eval_out/enterprise`).
 Scale benchmark of the memory bank and retrieval at 10k / 100k / 1M records:
