@@ -17,7 +17,7 @@ from typing import Any
 from sqlalchemy import and_, func, select, text
 from sqlalchemy.orm import Session
 
-from cie.core.models import EvidencePacket, MemoryRecord, Metric, Principal, Section
+from cie.core.models import EvidencePacket, MemoryRecord, Metric, Principal, RecordType, Section
 from cie.core.settings import Settings, get_settings
 from cie.governance.audit import audit
 from cie.governance.permissions import AccessDenied, Visibility, visible_scopes
@@ -35,6 +35,26 @@ class RetrievalResult:
     intent: Intent
     ranked: list[rerank.Candidate]
     trace: dict[str, Any]
+
+
+# records that stand for a whole document or a whole thing are always candidates for vector search
+VECTOR_ALWAYS = (RecordType.document, RecordType.person, RecordType.organization, RecordType.entity, RecordType.project,
+                 RecordType.contradiction)
+
+
+def vector_record_types(intent: Intent) -> list[RecordType]:
+    """Record types the record-vector list considers for this question. A typed record (a one-line task, metric or
+    risk) is short, so it sits close to many questions that merely share its phrasing, and on a document question it
+    outranks the section that answers; it competes on meaning only when the question asks for its type ("who",
+    "deadline", "decided", "risk", ...). It is still found by exact and keyword search and, through its document,
+    by graph expansion."""
+    hinted = []
+    for t in intent.type_hints:
+        try:
+            hinted.append(RecordType(t))
+        except ValueError:
+            continue
+    return list(dict.fromkeys([*VECTOR_ALWAYS, *hinted]))
 
 
 def _pull_partners(ranked, conflicts):
@@ -112,7 +132,7 @@ class Retriever:
         timings["embed_ms"] = (time.perf_counter() - t) * 1000
         if use_vector:
             t = time.perf_counter()
-            lists["vec_rec"] = vector.search_records(s, qvec, rec_filter, k)
+            lists["vec_rec"] = vector.search_records(s, qvec, and_(rec_filter, MemoryRecord.type.in_(vector_record_types(intent))), k)
             if use_sections:
                 lists["vec_sec"] = [(("sec", i), sc) for i, sc in vector.search_sections(s, qvec, sec_filter, k)]
             timings["vector_ms"] = (time.perf_counter() - t) * 1000
