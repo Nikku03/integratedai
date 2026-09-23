@@ -66,6 +66,29 @@ afterwards with memory and workers sized to the machine (`CIE_INDEX_BUILD_MEM`,
 cores). They are rebuilt even when the load fails, and any that are missing are
 rebuilt when a run starts.
 
+## What it measured (EnterpriseRAG-Bench, 5,000-document haystack, 500 questions)
+
+Same haystack, same questions, same code version, evaluated back to back (tables in
+`docs/BENCHMARKS.md`, raw results in `docs/benchmarks/enterprise_rag_bench_5k*.json`).
+The full memory bank organises the corpus (5,146 people and companies, 327 projects,
+28,722 typed records, 430 cross-document references, 45 near-duplicate pairs, 13
+conflicting facts), but **it does not improve document retrieval on this benchmark**:
+recall@10 0.848 against 0.857 for chunks only, MRR 0.719 against 0.738. It helps
+keyword search (lexical-only recall@10 0.703 against 0.672) and abstains less on
+answerable questions (0.011 against 0.032); it loses on multi-document project and
+constrained questions.
+
+The cause, traced question by question: records the rule extractor derives from chat
+and ticket prose (it was built for contracts) are noisy, metrics above all (6,269, the
+largest type). When a question contains a word that hints a type ("budget" hints
+metric, "decide" hints decision), those short records compete at full weight and
+outrank sections of the relevant documents that cover the question far better. Two
+measured fixes are in: typed records the question does not ask for are fused at half
+weight (vector-only MRR 0.733 to 0.744), and vector search keeps its recall under
+tenant and permission filters (iterative HNSW scans). The next step is a
+conversational-text extractor, or a support threshold for typed records in the
+reranker; both belong on a held-out question set, not on these 500.
+
 ## How to run
 
 ```

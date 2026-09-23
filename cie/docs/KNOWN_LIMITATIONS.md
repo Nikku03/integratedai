@@ -149,6 +149,11 @@ Stated plainly so nobody mistakes a scaffold for a finished capability.
   that differ in a quantity; a disagreement stated in words ("approved" vs
   "rejected") is not detected. People, companies and projects are recognised
   from metadata fields and task owners, not from free text.
+* The full memory bank does not yet improve document retrieval over chunks on this
+  benchmark (recall@10 0.848 vs 0.857, MRR 0.719 vs 0.738 on the 5k haystack): the
+  rule extractor, built for contracts, turns chat and ticket prose into noisy metric
+  and decision records that outrank better-matching sections when a question hints
+  their type. See docs/MEMORY_BANK.md, "What it measured".
 * Across department scopes a contradiction is kept as two disputed facts with no
   combined record, so a reader who may see only one side is told nothing about
   the other document; one who may see both gets both through the link.

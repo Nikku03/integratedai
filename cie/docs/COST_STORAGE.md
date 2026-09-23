@@ -9,14 +9,14 @@ Measured on the synthetic evaluation corpus in this build; projections are arith
 | documents / pages / sections / records | 15 / 72 / 73 / 289 |
 | raw vault bytes (deduplicated blobs) | 12,756,178 (12.8 MB) |
 | raw bytes per page | 177,169 |
-| `pages` table incl. indexes, bytes per row (database-wide) | 853.3 |
-| `blocks` table incl. indexes, bytes per row (database-wide) | 411.3 |
-| `sections` table incl. indexes, bytes per row (database-wide) | 4404.6 |
-| `memory_records` table incl. indexes, bytes per row (database-wide) | 7618.0 |
-| `record_links` table incl. indexes, bytes per row (database-wide) | 328.7 |
-| `evidence_packets` table incl. indexes, bytes per row (database-wide) | 32193.1 |
+| `pages` table incl. indexes, bytes per row (database-wide) | 682.7 |
+| `blocks` table incl. indexes, bytes per row (database-wide) | 361.8 |
+| `sections` table incl. indexes, bytes per row (database-wide) | 3740.6 |
+| `memory_records` table incl. indexes, bytes per row (database-wide) | 6390.5 |
+| `record_links` table incl. indexes, bytes per row (database-wide) | 307.2 |
+| `evidence_packets` table incl. indexes, bytes per row (database-wide) | 32194.9 |
 
-A memory record costs about 7,618 bytes on disk and a section about 4,405 bytes, indexes included (384-d float32 embedding = 1,536 bytes each, HNSW and GIN index entries, tsvector, JSONB glyph and provenance). Evidence packets are the largest growing table because every search stores its full packet for reproducibility; they can be expired by retention policy.
+A memory record costs about 6,390 bytes on disk and a section about 3,741 bytes, indexes included (384-d float32 embedding = 1,536 bytes each, HNSW and GIN index entries, tsvector, JSONB glyph and provenance). Evidence packets are the largest growing table because every search stores its full packet for reproducibility; they can be expired by retention policy.
 
 ## Projection to a 200-million-token project memory
 
@@ -24,8 +24,8 @@ Assuming ~350 tokens per section and ~120 tokens per record (measured averages o
 
 | component | estimate |
 |---|---|
-| sections (450k × 4,405 B) | 2.0 GB |
-| records (350k × 7,618 B) | 2.7 GB |
+| sections (450k × 3,741 B) | 1.7 GB |
+| records (350k × 6,390 B) | 2.2 GB |
 | raw vault (450k sections ≈ 60k pages × 177,169 B/page measured on PDFs with embedded fonts) | 10.6 GB |
 
 This fits one PostgreSQL instance with room; HNSW build time and index memory, not disk, are the first limits (see ROADMAP.md).
@@ -47,15 +47,15 @@ Synthetic records are shorter than extracted ones (no page-level provenance, sma
 
 | approach | tokens sent to the model per question | est. cost at claude-sonnet-5 list price |
 |---|---|---|
-| full context (everything the admin can read) | ~4,546 | $0.0181 |
-| hybrid evidence packet (this system, assisted mode) | ~4,199 | $0.0171 |
+| full context (everything the admin can read) | ~4,546 | $0.0121 |
+| hybrid evidence packet (this system, assisted mode) | ~4,242 | $0.0115 |
 | strict extractive mode (this system, default) | 0 | $0 |
 
 The corpus is small, so full context is still cheap in absolute terms; the ratio is what scales. At 200M tokens the full-context approach is impossible (no model holds it) while the packet stays at a few thousand tokens.
 
 ## Latency and compute
 
-Retrieval + rerank p50/p95: 104.82 / 181.64 ms on CPU with the embedding model warm; warm metadata lookup p95 0.59 ms. Ingestion of the corpus took 221.0 s including OCR of the scanned document (Tesseract ≈ 0.5 s per page at 110–150 dpi on one core).
+Retrieval + rerank p50/p95: 110.82 / 159.42 ms on CPU with the embedding model warm; warm metadata lookup p95 0.75 ms. Ingestion of the corpus took 15.9 s including OCR of the scanned document (Tesseract ≈ 0.5 s per page at 110–150 dpi on one core).
 
 ## Multi-agent run
 
@@ -74,8 +74,11 @@ Strategy `extractive` (no model calls, so cost is 0); token figures are the esti
 
 | model | $/M input | $/M output |
 |---|---|---|
-| claude-sonnet-5 | 3.0 | 15.0 |
-| claude-opus-5 | 15.0 | 75.0 |
+| claude-opus-5 | 5.0 | 25.0 |
+| claude-sonnet-5 | 2.0 | 10.0 |
+| claude-opus-4-8 | 5.0 | 25.0 |
+| claude-sonnet-4-6 | 3.0 | 15.0 |
+| claude-haiku-4-5 | 1.0 | 5.0 |
 | claude-haiku-4-5-20251001 | 1.0 | 5.0 |
 | gpt-4o | 2.5 | 10.0 |
 | gpt-4o-mini | 0.15 | 0.6 |

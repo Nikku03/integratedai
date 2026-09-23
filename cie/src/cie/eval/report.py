@@ -332,8 +332,10 @@ def enterprise_section(out: Path) -> list[str]:
     lines = ["", "## EnterpriseRAG-Bench (out-of-sample company corpus)", "",
              "[EnterpriseRAG-Bench](https://github.com/onyx-dot-app/EnterpriseRAG-Bench) simulates a company with about 512k documents from nine systems "
              "(Slack, Gmail, Linear, Google Drive, HubSpot, Fireflies, GitHub, Jira, Confluence) and 500 questions in ten categories with gold document ids and "
-             "gold answers. Nothing in CIE was tuned on it. Documents are loaded through `cie.eval.bench_enterprise` (chunked sections, one document record, "
-             "people and companies from the metadata resolved into entities); questions run through the full retrieval pipeline in strict extractive mode; "
+             "gold answers. It was not used to build CIE, but it is no longer fully out of sample: failures it exposed led to general fixes "
+             "(fusion biases, filtered vector search, the weight of typed records in vector search), each also checked on the synthetic contract set. "
+             "The table below is the chunks-only baseline, loaded through `cie.eval.bench_enterprise --memory chunks` (chunked sections and one "
+             "document record per document); the full memory bank follows. Questions run through the full retrieval pipeline in strict extractive mode; "
              "the returned document set is the distinct documents of the evidence packet in rank order (at most 10), empty when the answer is insufficient evidence. "
              "Document recall, MRR and extra documents are computed here exactly as the benchmark defines them (without the judge's 'valid' relabelling, so "
              "extra-document counts are upper bounds); correctness and completeness need the benchmark's LLM judge, for which the answers files are written.", "",

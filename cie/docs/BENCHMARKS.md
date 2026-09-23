@@ -9,8 +9,8 @@ All numbers below were produced by `cie bench`, `cie simulate` and `pytest -m sl
 | Exact structured-field accuracy | ≥ 99% | 100.0% | yes |
 | Citation correctness | ≥ 100% | 100.0% | yes |
 | Retrieval recall@20 | ≥ 90% | 96.7% | yes |
-| Warm metadata lookup p95 | < 100 ms | 0.59 ms | yes |
-| Full retrieval + rerank p95 | < 2000 ms | 181.64 ms | yes |
+| Warm metadata lookup p95 | < 100 ms | 0.75 ms | yes |
+| Full retrieval + rerank p95 | < 2000 ms | 159.42 ms | yes |
 | Unauthorized results in access-control questions | 0 | 0 | yes |
 | Insufficient-evidence questions answered as such | all | 100% | yes |
 | Planted cross-document conflict reported as conflict | all | 100% | yes |
@@ -18,7 +18,7 @@ All numbers below were produced by `cie bench`, `cie simulate` and `pytest -m sl
 ### Caveats that matter more than the table
 
 * **In-sample.** The 18 questions were used while the retrieval scoring was being fixed; every failure they exposed was corrected until they passed. They demonstrate the mechanisms work, not generalisation. An out-of-sample set is the first roadmap item for evaluation.
-* **Small corpus.** 15 documents, 72 pages. On a corpus this size an evidence packet (~4199 tokens) is not smaller than the whole corpus a principal can read; the packet only pays off at scale.
+* **Small corpus.** 15 documents, 72 pages. On a corpus this size an evidence packet (~4242 tokens) is not smaller than the whole corpus a principal can read; the packet only pays off at scale.
 * **Graph expansion shows no gain here.** Hybrid, hybrid+graph and the bounded REM arm score identically because the questions rarely need graph neighbours that lexical/vector search misses; the synthetic graph benchmark below shows where bounded expansion does help.
 * **Extractive answers only.** No LLM was available; assisted mode and LLM agent strategies are untested against a live model.
 
@@ -30,19 +30,19 @@ Unsupported factual claims in strict mode: 0 by construction (every sentence of 
 
 | arm | recall@20 | exact-field acc | citation correctness | status acc | insufficient-evidence det. | conflict det. | permission leaks | p50 ms | p95 ms | packet tokens |
 |---|---|---|---|---|---|---|---|---|---|---|
-| vector-only | 0.9667 | 1.0 (n=14) | 1.0 (n=51) | 1.0 | 1.0 | 1.0 | 0 | 73.74 | 159.87 | 4177.8 |
-| bm25-only | 0.9333 | 0.7857 (n=14) | 1.0 (n=51) | 0.9444 | 1.0 | 0.0 | 0 | 51.81 | 78.94 | 2155.4 |
-| hybrid | 0.9667 | 1.0 (n=14) | 1.0 (n=51) | 1.0 | 1.0 | 1.0 | 0 | 106.49 | 141.41 | 4199.2 |
-| hybrid+graph(unbounded) | 0.9667 | 1.0 (n=14) | 1.0 (n=51) | 1.0 | 1.0 | 1.0 | 0 | 101.25 | 136.12 | 4199.4 |
-| hybrid+graph(bounded, REM) | 0.9667 | 1.0 (n=14) | 1.0 (n=51) | 1.0 | 1.0 | 1.0 | 0 | 104.82 | 181.64 | 4199.4 |
-| hybrid+cliques(topological) | 0.9667 | 1.0 (n=14) | 1.0 (n=51) | 1.0 | 1.0 | 1.0 | 0 | 111.43 | 209.13 | 4199.2 |
-| hybrid+cliques+bonus | 0.9667 | 1.0 (n=14) | 1.0 (n=51) | 1.0 | 1.0 | 1.0 | 0 | 111.8 | 137.99 | 4190.6 |
+| vector-only | 0.9667 | 1.0 (n=14) | 1.0 (n=50) | 1.0 | 1.0 | 1.0 | 0 | 76.99 | 124.47 | 4247.6 |
+| bm25-only | 0.9 | 0.7143 (n=14) | 1.0 (n=51) | 0.9444 | 1.0 | 0.0 | 0 | 67.23 | 82.5 | 2155.3 |
+| hybrid | 0.9667 | 1.0 (n=14) | 1.0 (n=51) | 1.0 | 1.0 | 1.0 | 0 | 106.54 | 150.51 | 4242.1 |
+| hybrid+graph(unbounded) | 0.9667 | 1.0 (n=14) | 1.0 (n=51) | 1.0 | 1.0 | 1.0 | 0 | 108.43 | 149.54 | 4243.8 |
+| hybrid+graph(bounded, REM) | 0.9667 | 1.0 (n=14) | 1.0 (n=51) | 1.0 | 1.0 | 1.0 | 0 | 110.82 | 159.42 | 4242.1 |
+| hybrid+cliques(topological) | 0.9667 | 1.0 (n=14) | 1.0 (n=51) | 1.0 | 1.0 | 1.0 | 0 | 122.06 | 223.73 | 4242.1 |
+| hybrid+cliques+bonus | 0.9667 | 1.0 (n=14) | 1.0 (n=51) | 1.0 | 1.0 | 1.0 | 0 | 122.74 | 157.81 | 4226.8 |
 
 **Full-context prompting** (not run: no model available; this is what a model would have to hold per question):
 
-- admin: ~4,546 tokens per question; est. $0.0181 per question at claude-sonnet-5 list prices vs 4199 packet tokens for the hybrid arm
-- analyst: ~4,286 tokens per question; est. $0.0174 per question at claude-sonnet-5 list prices vs 4199 packet tokens for the hybrid arm
-- finance_reader: ~141 tokens per question; est. $0.0049 per question at claude-sonnet-5 list prices vs 4199 packet tokens for the hybrid arm
+- admin: ~4,546 tokens per question; est. $0.0121 per question at claude-sonnet-5 list prices vs 4242 packet tokens for the hybrid arm
+- analyst: ~4,286 tokens per question; est. $0.0116 per question at claude-sonnet-5 list prices vs 4242 packet tokens for the hybrid arm
+- finance_reader: ~141 tokens per question; est. $0.0033 per question at claude-sonnet-5 list prices vs 4242 packet tokens for the hybrid arm
 
 ### Remaining failures (hybrid + bounded graph)
 
@@ -124,38 +124,73 @@ Unsupported factual claims in strict mode: 0 by construction (every sentence of 
 
 ## EnterpriseRAG-Bench (out-of-sample company corpus)
 
-[EnterpriseRAG-Bench](https://github.com/onyx-dot-app/EnterpriseRAG-Bench) simulates a company with about 512k documents from nine systems (Slack, Gmail, Linear, Google Drive, HubSpot, Fireflies, GitHub, Jira, Confluence) and 500 questions in ten categories with gold document ids and gold answers. Nothing in CIE was tuned on it. Documents are loaded through `cie.eval.bench_enterprise` (chunked sections, one document record, people and companies from the metadata resolved into entities); questions run through the full retrieval pipeline in strict extractive mode; the returned document set is the distinct documents of the evidence packet in rank order (at most 10), empty when the answer is insufficient evidence. Document recall, MRR and extra documents are computed here exactly as the benchmark defines them (without the judge's 'valid' relabelling, so extra-document counts are upper bounds); correctness and completeness need the benchmark's LLM judge, for which the answers files are written.
+[EnterpriseRAG-Bench](https://github.com/onyx-dot-app/EnterpriseRAG-Bench) simulates a company with about 512k documents from nine systems (Slack, Gmail, Linear, Google Drive, HubSpot, Fireflies, GitHub, Jira, Confluence) and 500 questions in ten categories with gold document ids and gold answers. It was not used to build CIE, but it is no longer fully out of sample: failures it exposed led to general fixes (fusion biases, filtered vector search, the weight of typed records in vector search), each also checked on the synthetic contract set. The table below is the chunks-only baseline, loaded through `cie.eval.bench_enterprise --memory chunks` (chunked sections and one document record per document); the full memory bank follows. Questions run through the full retrieval pipeline in strict extractive mode; the returned document set is the distinct documents of the evidence packet in rank order (at most 10), empty when the answer is insufficient evidence. Document recall, MRR and extra documents are computed here exactly as the benchmark defines them (without the judge's 'valid' relabelling, so extra-document counts are upper bounds); correctness and completeness need the benchmark's LLM judge, for which the answers files are written.
 
 ### EnterpriseRAG-Bench through CIE (haystack 5,000 of 511,958 documents, 500 questions, embeddings=fastembed)
 
+Load: 5,000 documents → 31,927 sections, 5,000 document records, 0 entity links; 551.3 s (459.9 s embedding, 80.3 texts/s).
+
 | arm | doc recall@10 | recall@5 | MRR | hit@1 | hit@10 | all gold found | extra docs@10 | abstained on info-not-found | false abstentions | p50 / p95 ms |
 |---|---|---|---|---|---|---|---|---|---|---|
-| hybrid+graph(REM) | 0.837 | 0.796 | 0.716 | 0.632 | 0.866 | 0.806 | 8.309 | 0.25 | 0.043 | 227.0 / 1057.2 |
-| hybrid+cliques+bonus | 0.845 | 0.797 | 0.717 | 0.632 | 0.877 | 0.811 | 8.36 | 0.2 | 0.036 | 224.9 / 1115.5 |
-| vector-only | 0.837 | 0.806 | 0.76 | 0.691 | 0.872 | 0.802 | 8.521 | 0.15 | 0.026 | 105.5 / 160.5 |
-| lexical-only | 0.675 | 0.615 | 0.583 | 0.513 | 0.715 | 0.628 | 8.643 | 0.25 | 0.028 | 127.1 / 969.8 |
+| hybrid+graph(REM) | 0.857 | 0.808 | 0.738 | 0.655 | 0.885 | 0.821 | 8.379 | 0.05 | 0.032 | 469.8 / 1301.2 |
+| hybrid+cliques+bonus | 0.857 | 0.808 | 0.738 | 0.655 | 0.885 | 0.821 | 8.379 | 0.05 | 0.032 | 460.6 / 1293.5 |
+| vector-only | 0.855 | 0.818 | 0.78 | 0.717 | 0.887 | 0.817 | 8.551 | 0.05 | 0.019 | 287.2 / 342.1 |
+| lexical-only | 0.672 | 0.61 | 0.581 | 0.515 | 0.711 | 0.628 | 8.643 | 0.25 | 0.028 | 191.2 / 1020.2 |
 
 By category (hybrid+graph(REM)):
 
 | category | n | doc recall@10 | MRR | hit@1 | hit@10 | all gold found | extra docs@10 | abstained | p50 ms |
 |---|---|---|---|---|---|---|---|---|---|
-| basic | 175 | 0.943 | 0.772 | 0.674 | 0.943 | 0.943 | 8.817 | 0.023 | 223.2 |
-| semantic | 125 | 0.632 | 0.412 | 0.296 | 0.632 | 0.632 | 8.488 | 0.088 | 213.5 |
-| intra_document_reasoning | 40 | 1.0 | 0.937 | 0.9 | 1 | 1 | 8.925 | 0 | 231.2 |
-| project_related | 40 | 0.812 | 0.885 | 0.825 | 0.975 | 0.575 | 6.225 | 0.025 | 277.8 |
-| constrained | 30 | 0.967 | 0.884 | 0.833 | 0.967 | 0.967 | 8.533 | 0 | 310.1 |
-| conflicting_info | 20 | 0.95 | 0.925 | 0.9 | 0.95 | 0.95 | 7.55 | 0.05 | 238.7 |
-| completeness | 20 | 0.552 | 0.768 | 0.7 | 0.9 | 0.3 | 6.3 | 0.05 | 267.5 |
-| miscellaneous | 20 | 0.9 | 0.842 | 0.8 | 0.9 | 0.9 | 8.1 | 0.1 | 180.7 |
-| high_level | 10 | None | None | None | None | None | None | 0.3 | 242.3 |
-| info_not_found | 20 | None | None | None | None | None | None | 0.25 | 233.0 |
+| basic | 175 | 0.949 | 0.801 | 0.714 | 0.949 | 0.949 | 8.869 | 0.017 | 448.6 |
+| semantic | 125 | 0.688 | 0.449 | 0.336 | 0.688 | 0.688 | 8.672 | 0.064 | 476.9 |
+| intra_document_reasoning | 40 | 1.0 | 0.886 | 0.8 | 1 | 1 | 8.925 | 0 | 470.3 |
+| project_related | 40 | 0.82 | 0.909 | 0.875 | 0.975 | 0.55 | 6.125 | 0.025 | 481.0 |
+| constrained | 30 | 0.967 | 0.901 | 0.867 | 0.967 | 0.967 | 8.5 | 0 | 602.2 |
+| conflicting_info | 20 | 0.925 | 0.95 | 0.95 | 0.95 | 0.9 | 7.5 | 0.05 | 471.8 |
+| completeness | 20 | 0.571 | 0.733 | 0.6 | 0.9 | 0.3 | 6.2 | 0.05 | 528.8 |
+| miscellaneous | 20 | 0.95 | 0.892 | 0.85 | 0.95 | 0.95 | 8.55 | 0.05 | 397.5 |
+| high_level | 10 | None | None | None | None | None | None | 0.5 | 461.1 |
+| info_not_found | 20 | None | None | None | None | None | None | 0.05 | 475.4 |
 
 ### Reading
 
 * **Haystack.** 5,000 of 511,958 documents (every gold document plus a stratified sample); a smaller haystack has fewer distractors, so these numbers are optimistic relative to the full corpus until the full run is done.
-* **hybrid+graph(REM).** Document recall@10 0.837, MRR 0.716, first document right 63% of the time, 8.309 extra documents per question on average; abstained on 25% of the questions whose answer is not in the corpus and wrongly abstained on 4% of the answerable ones; p50 227.0 ms.
+* **hybrid+graph(REM).** Document recall@10 0.857, MRR 0.738, first document right 66% of the time, 8.379 extra documents per question on average; abstained on 5% of the questions whose answer is not in the corpus and wrongly abstained on 3% of the answerable ones; p50 469.8 ms.
 
-* **Weakest categories:** completeness (recall@10 0.552, n=20); semantic (recall@10 0.632, n=125); project_related (recall@10 0.812, n=40).
+* **Weakest categories:** completeness (recall@10 0.571, n=20); semantic (recall@10 0.688, n=125); project_related (recall@10 0.82, n=40).
+
+
+### Full memory bank vs chunks only (same 5,000-document haystack, same 500 questions, arm hybrid+graph(REM))
+
+Code version: chunks bb659e5, full bb659e5.
+
+The full memory bank added 28,722 memory records to 33,200 sections (metric 6,269, document 5,000, person 3,947, risk 3,362, requirement 3,260, task 1,758, decision 1,494, deadline 1,206), 5,146 people and companies, 327 projects, and links (part_of 18,630, mentions 16,373, references 388, relates_to 48, near_duplicate 45, depends_on 42, contradicts 26); 45 near-duplicate pairs and 13 conflicting facts.
+
+| metric | chunks only | full memory bank |
+|---|---|---|
+| document recall@10 | 0.857 | 0.848 |
+| document recall@5 | 0.808 | 0.78 |
+| MRR | 0.738 | 0.719 |
+| right document first | 0.655 | 0.63 |
+| all gold documents found | 0.821 | 0.8 |
+| extra documents in top 10 | 8.379 | 8.66 |
+| abstained when the answer is not in the corpus | 0.05 | 0.05 |
+| abstained on answerable questions | 0.032 | 0.011 |
+| latency p50 ms | 469.8 | 549.4 |
+| latency p95 ms | 1301.2 | 1883.1 |
+
+| category | n | recall@10 chunks → full | MRR chunks → full | all gold found chunks → full |
+|---|---|---|---|---|
+| basic | 175 | 0.949 → 0.96 | 0.801 → 0.784 | 0.949 → 0.96 |
+| semantic | 125 | 0.688 → 0.688 | 0.449 → 0.438 | 0.688 → 0.688 |
+| intra_document_reasoning | 40 | 1.0 → 0.975 | 0.886 → 0.833 | 1 → 0.975 |
+| project_related | 40 | 0.82 → 0.74 | 0.909 → 0.91 | 0.55 → 0.375 |
+| constrained | 30 | 0.967 → 0.883 | 0.901 → 0.853 | 0.967 → 0.8 |
+| conflicting_info | 20 | 0.925 → 0.975 | 0.95 → 0.967 | 0.9 → 0.95 |
+| completeness | 20 | 0.571 → 0.552 | 0.733 → 0.636 | 0.3 → 0.3 |
+| miscellaneous | 20 | 0.95 → 0.95 | 0.892 → 0.925 | 0.95 → 0.95 |
+| high_level | 10 | None → None | None → None | None → None |
+| info_not_found | 20 | None → None | None → None | None → None |
 
 ### Caveats
 
