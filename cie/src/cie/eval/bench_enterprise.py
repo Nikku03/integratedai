@@ -390,7 +390,8 @@ def load(url: str, root: Path, index: dict[str, str], dsids: list[str], embedder
     n_entities = 0
     if entities:
         n_entities = _link_entities(tenant_id, doc_meta, log)
-    return {"tenant_id": str(tenant_id), "company_id": str(company_id), "documents": len(dsids), "sections": n_sections, "records": n_records,
+    return {"tenant_id": str(tenant_id), "tenant_name": tenant_name, "company_id": str(company_id), "memory": "chunks", "documents": len(dsids),
+            "sections": n_sections, "records": n_records,
             "entities": n_entities, "load_seconds": round(time.perf_counter() - t0, 1), "embed_seconds": round(embed_s, 1),
             "embed_texts_per_s": round((n_sections + n_records) / max(embed_s, 1e-6), 1), "index_build_seconds": index_build}
 
@@ -587,6 +588,11 @@ def run(root: Path, out: Path, n_docs: int | None, questions_file: Path | None =
             report["load"] = {"tenant_id": str(tenant.id), "tenant_name": reuse_tenant, "company_id": str(company),
                               "documents": s.scalar(select(text("count(*)")).select_from(text("documents")).where(text("tenant_id = :t")).params(t=tenant.id)),
                               "reused": True}
+        # keep what the load of this tenant reported (sections, records, links), when an earlier run in this folder loaded it
+        prior_file = out / "bench_enterprise.json"
+        prior = json.loads(prior_file.read_text()).get("load", {}) if prior_file.exists() else {}
+        if prior.get("tenant_id") == report["load"]["tenant_id"]:
+            report["load"] = {**prior, **report["load"], "reused": True}
     else:
         dsids = select_docs(index, questions, n_docs, seed)
         log(f"loading {len(dsids)} documents ({len({d for q in questions for d in q['expected_doc_ids']})} gold) into a new tenant ...")
@@ -619,14 +625,14 @@ def to_markdown(rep: dict[str, Any]) -> str:
     ld = rep["load"]
     lines = [f"### EnterpriseRAG-Bench through CIE (haystack {rep.get('haystack_documents', ld.get('documents')):,} of {rep['corpus_documents']:,} documents, "
              f"{rep['questions']} questions, embeddings={rep['embedding']})", ""]
-    if not ld.get("reused") and ld.get("memory") == "full":
+    if ld.get("memory") == "full" and "records_by_type" in ld:
         lines += [f"Load (full memory bank): {ld['documents']:,} documents → {ld['sections']:,} sections and {ld['records']:,} memory records "
                   f"({', '.join(f'{k} {v:,}' for k, v in sorted(ld['records_by_type'].items(), key=lambda kv: -kv[1]))}); "
                   f"{ld['entities']:,} people and companies, {ld['projects']:,} projects; links: "
                   f"{', '.join(f'{k} {v:,}' for k, v in sorted(ld['links_by_kind'].items(), key=lambda kv: -kv[1]))}; "
                   f"{ld['near_duplicate_pairs']:,} near-duplicate document pairs, {ld['contradictions']:,} conflicting facts; "
                   f"{ld['load_seconds']} s ({ld['embed_seconds']} s embedding).", ""]
-    elif not ld.get("reused"):
+    elif "embed_texts_per_s" in ld:
         lines += [f"Load: {ld['documents']:,} documents → {ld['sections']:,} sections, {ld['records']:,} document records, {ld['entities']:,} entity links; "
                   f"{ld['load_seconds']} s ({ld['embed_seconds']} s embedding, {ld['embed_texts_per_s']} texts/s).", ""]
     lines += ["| arm | doc recall@10 | recall@5 | MRR | hit@1 | hit@10 | all gold found | extra docs@10 | abstained on info-not-found | false abstentions | p50 / p95 ms |",
