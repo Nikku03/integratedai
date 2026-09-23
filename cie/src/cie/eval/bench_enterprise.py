@@ -269,14 +269,16 @@ def _fill(loader, cached, root: Path, index: dict[str, str], dsids: list[str], *
 
 
 def load(url: str, root: Path, index: dict[str, str], dsids: list[str], embedder, *, tenant_name: str, batch: int = 64,
-         entities: bool = True, rebuild_indexes_above: int = 20_000, log=print) -> dict[str, Any]:
+         entities: bool = True, rebuild_indexes_above: int = 20_000, cache: Path | None = None, log=print) -> dict[str, Any]:
     """Above ``rebuild_indexes_above`` documents the vector and text indexes are dropped
     before the load and rebuilt after it (an insert into an HNSW index costs far more
     than its share of a bulk build)."""
     from cie.eval.bench_scale import build_indexes, drop_indexes
+    from cie.ingest.bulk import CachedEmbedder
 
     t0 = time.perf_counter()
     rebuild = len(dsids) > rebuild_indexes_above
+    embedder = CachedEmbedder(embedder, cache) if cache is not None else embedder
     tenant_id, company_id, scope_ids = new_tenant(tenant_name)
     n_sections = n_records = 0
     embed_s = 0.0
@@ -550,7 +552,7 @@ def _mean(xs):
 # ------------------------------------------------------------------ run
 def run(root: Path, out: Path, n_docs: int | None, questions_file: Path | None = None, arms: dict | None = None, seed: int = 5,
         entities: bool = True, reuse_tenant: str | None = None, n_questions: int | None = None, batch: int = 64, memory: str = "full",
-        workers: int | None = None, log=print) -> dict[str, Any]:
+        workers: int | None = None, cache: Path | None = None, log=print) -> dict[str, Any]:
     settings = get_settings()
     if any((cfg or {}).get("mode") == "assisted" for cfg in (arms or ARMS).values()):
         assisted_provider(settings)
@@ -590,10 +592,10 @@ def run(root: Path, out: Path, n_docs: int | None, questions_file: Path | None =
         log(f"loading {len(dsids)} documents ({len({d for q in questions for d in q['expected_doc_ids']})} gold) into a new tenant ...")
         if memory == "full":
             report["load"] = load_full(url, sources_root, index, dsids, embedder, tenant_name=f"erbfull-{len(dsids)}-{uuid.uuid4().hex[:6]}",
-                                       batch=batch, workers=workers, cache=out / "emb_cache.sqlite", log=log)
+                                       batch=batch, workers=workers, cache=cache or out / "emb_cache.sqlite", log=log)
         else:
             report["load"] = load(url, sources_root, index, dsids, embedder, tenant_name=f"erb-{len(dsids)}-{uuid.uuid4().hex[:6]}",
-                                  entities=entities, batch=batch, log=log)
+                                  entities=entities, batch=batch, cache=cache or out / "emb_cache.sqlite", log=log)
         log(f"loaded: {report['load']}")
     with session_scope() as s:
         tenant_id = uuid.UUID(report["load"]["tenant_id"])
@@ -654,6 +656,7 @@ def main(argv: list[str] | None = None) -> dict:
     ap.add_argument("--memory", choices=["full", "chunks"], default="full",
                     help="full: the full memory bank (summaries, tags, typed records, entities, projects, references, contradictions); chunks: sections only")
     ap.add_argument("--workers", type=int, default=None, help="document-building processes (default: CPUs - 1)")
+    ap.add_argument("--cache", default=None, help="embedding cache file (default: <out>/emb_cache.sqlite); share one across runs to embed each text once")
     ap.add_argument("--assisted", action="store_true",
                     help="also compose answers with the configured model (CIE_LLM_PROVIDER / CIE_LLM_MODEL and its API key) on the default arm")
     a = ap.parse_args(argv)
@@ -665,7 +668,7 @@ def main(argv: list[str] | None = None) -> dict:
     if a.assisted:
         arms[ASSISTED_ARM] = {"mode": "assisted"}
     return run(Path(a.root), Path(a.out), a.docs, arms=arms, entities=not a.no_entities, reuse_tenant=a.reuse_tenant, n_questions=a.questions,
-               batch=a.batch, memory=a.memory, workers=a.workers)
+               batch=a.batch, memory=a.memory, workers=a.workers, cache=Path(a.cache) if a.cache else None)
 
 
 if __name__ == "__main__":  # pragma: no cover

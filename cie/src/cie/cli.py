@@ -13,13 +13,27 @@ from cie.core.logging import configure_logging
 from cie.core.settings import get_settings
 
 
+def alembic_dir() -> Path:
+    """The directory holding alembic.ini and the migrations: $CIE_ALEMBIC_DIR, the working directory, or the source
+    checkout this module was loaded from (a regular, non-editable install puts the module in site-packages)."""
+    import os
+
+    candidates = [Path(os.environ["CIE_ALEMBIC_DIR"])] if os.environ.get("CIE_ALEMBIC_DIR") else []
+    candidates += [Path.cwd(), Path(__file__).resolve().parents[2]]
+    for c in candidates:
+        if (c / "alembic.ini").exists() and (c / "alembic").is_dir():
+            return c
+    raise SystemExit("alembic.ini not found: run from the cie checkout or set CIE_ALEMBIC_DIR to it")
+
+
 def cmd_migrate(args) -> None:
     from alembic.config import Config
 
     from alembic import command
 
-    cfg = Config(str(Path(__file__).resolve().parents[2] / "alembic.ini"))
-    cfg.set_main_option("script_location", str(Path(__file__).resolve().parents[2] / "alembic"))
+    base = alembic_dir()
+    cfg = Config(str(base / "alembic.ini"))
+    cfg.set_main_option("script_location", str(base / "alembic"))
     cfg.set_main_option("sqlalchemy.url", get_settings().database_url)
     command.upgrade(cfg, "head")
     print("migrated to head")

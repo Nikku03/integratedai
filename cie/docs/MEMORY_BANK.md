@@ -13,41 +13,58 @@ that memory is measured against plain chunk search on EnterpriseRAG-Bench.
 | sections | the body cut into ~1,000-character chunks, one run per body field ("Description", "Root cause", "Acceptance criteria"); short fields gathered into one "Details" section; the first section carries a metadata header (source, project, company, people, status, tags) for lexical search | the export's body fields |
 | memory card | the document record: an extractive summary (the document's own summary field if it has one, else the two sentences most central to its vocabulary), tags, people with roles, companies, project, identifiers, dates; embedded as title + summary + tags | the export's metadata and body |
 | tags | the system's own labels and categorical fields (labels, components, status, priority, stage, channel, space, team, repo, region, ...) plus up to six key phrases | metadata, body |
-| typed records | tasks (with owner and due date), decisions, risks and blockers, open questions, requirements and acceptance criteria, root causes, resolutions and workarounds from structured fields; deadlines, decisions, requirements, risks, metrics and open questions from the rule extractor over sentence-aligned prose (code, JSON and tables are skipped) | structured list fields and prose |
+| typed records | tasks (with owner and due date), decisions, risks and blockers, open questions, requirements and acceptance criteria, root causes, resolutions and workarounds from structured fields; deadlines, decisions, requirements, risks, metrics and open questions from the rule extractor over sentence-aligned prose (code, JSON and tables are skipped). Each record cites the section that holds its text; one from a metadata-only field cites none. A record's date is its event (a due date, a meeting), not the moment it becomes true: only decisions and metrics take effect on their date, and never later than the load | structured list fields and prose |
 | numeric sentences | up to 16 sentences with numbers, kept only for contradiction detection | body |
 
 Nothing is generated: every summary sentence, tag and record quotes the document.
 Export artefacts that a real system would not have (`original_location`,
 `dataset_noise_document`, file paths) are dropped at read time so they can never
-steer retrieval.
+steer retrieval; a document's filename is `<source>:<its own identifier>`, never the
+export path. E-mail header and quote-attribution lines ("From: ...", "On Tue, ...
+wrote:") never become summary sentences or records. NUL characters, which
+PostgreSQL cannot store, are removed at read time.
+
+**Sensitivity.** A document is restricted (level 2) when its confidentiality,
+visibility, sensitivity or privacy field holds anything other than an open label
+(`internal`, `public`, `company`, ...): "restricted", "restricted
+(customer-sensitive)", "confidential", "private", "team-only" and any unknown label.
+Its sections and records carry the same level.
 
 ## What is stored across documents
 
 | structure | how | link kind |
 |---|---|---|
-| people and companies | one canonical record per normalised name, company-wide ("Priya Nair (Solutions Engineer)", "priya_nair" and "Priya Nair <priya@...>" are one person; "Acme AI Inc." and "Acme AI" one company); every record that names them gets a `mentions` link and their id in `entity_ids`; aggregate detail (documents, roles, sources, aliases) written at the end | `mentions` |
-| projects | one record per Linear project; documents are `part_of` it and chained in time order to their two nearest siblings | `part_of`, `relates_to` |
-| explicit references | ticket keys in dependency and link fields and in the body, pull-request URLs, wiki page paths, CRM account ids; an identifier carried by one to three documents (the same ticket in two systems, or two versions of it) resolves to all of them, one carried by more is ambiguous and is skipped rather than guessed | `depends_on`, `references` |
-| same identifier | documents that carry the same identifier are linked and checked for conflicting facts | `references` |
+| people and companies | one canonical record per normalised name, company-wide ("Priya Nair (Solutions Engineer)", "priya_nair" and "Priya Nair <priya@...>" are one person; "Acme AI Inc." and "Acme AI" one company); every record that names them gets a `mentions` link and their id in `entity_ids`; aggregate detail (documents, roles, sources, aliases) written at the end. The record takes the sensitivity of the least restricted document that names the person, and its aggregate counts only documents at that level, so a company-wide profile never reveals what a restricted document says | `mentions` |
+| projects | one record per Linear project, with the same sensitivity rule; documents are `part_of` it and chained in time order to their two nearest siblings | `part_of`, `relates_to` |
+| explicit references | ticket keys in dependency and link fields and in the body, repository-qualified pull requests, wiki page paths, CRM account ids. A key held by one document resolves to it. A key held by two or three documents resolves to all of them when they are one object (next row), otherwise to the holder whose memory card is most similar to the citing document's, and to none when no holder leads by a clear margin; a key held by more is ambiguous. An unresolved citation is better than a wrong edge | `depends_on`, `references` |
+| same identifier | documents that carry the same identifier are one object only when their titles match or their memory cards are nearly identical (cosine 0.92 within one system, 0.80 across systems); only then are they linked and checked for conflicting facts. Real exports reuse identifiers across unrelated records (in EnterpriseRAG-Bench about 19k same-key pairs are different objects), so a shared key alone links nothing | `references` |
 | near-duplicates | mutual nearest neighbours of memory-card embeddings with cosine at least 0.92 (a GPU matrix product on Colab) | `near_duplicate` |
-| contradictions | for near-duplicate and same-identifier pairs, sentences that say the same thing (word Jaccard at least 0.5, numbers ignored) with different numbers become a disputed `fact` in each document, `contradicts` edges between the facts and between the two documents, and a `contradiction` record citing both | `contradicts` |
+| contradictions | for near-duplicate and same-object pairs, sentences that say the same thing (word Jaccard at least 0.5) with different quantities (identifiers, links, clock times and versions ignored) become a disputed `fact` in each document, in that document's own scope and sensitivity, joined by `contradicts` edges whose text quotes neither side. A reader who may see both documents reaches the other side through the edge; anyone else does not. A `contradiction` record quoting both sides is written only when both documents share a scope, at the stricter sensitivity | `contradicts` |
 
 Retrieval follows the new kinds at graph horizon 1, and the query's seeds stay
 active at every horizon, so a retrieved ticket brings the tickets it depends on,
 the pages it cites and the near-duplicate that disagrees with it, within the same
-log(N) budget. A recorded contradiction pulls the other side into the packet next
-to the side that was retrieved.
+log(N) budget. People, companies and projects are hubs (a busy person is named by
+thousands of records), so as seeds they are followed at horizon 1 only, and every
+frontier node fetches at most a few of its strongest edges, capped in SQL. A
+recorded contradiction pulls the other side into the packet next to the side that
+was retrieved, when the reader may see it.
 
 ## How it runs at scale
 
 `cie.eval.bench_enterprise.load_full`: documents are read and built in worker
 processes (about 5 ms per document, pure Python); the main process embeds
 (sections, cards, typed records, new entities) through an on-disk cache and writes
-everything with binary COPY; at most two batches per worker are in flight, so memory
-stays flat. Above 20,000 documents the vector and text indexes are dropped before
-the load and rebuilt afterwards with memory and workers sized to the machine
-(`CIE_INDEX_BUILD_MEM`, `CIE_INDEX_BUILD_WORKERS`; the Colab notebook sets them from
-the VM's RAM and cores).
+everything with binary COPY into session staging tables, from which one
+`INSERT ... SELECT` per batch adds the text-search vector, so no pass rewrites the
+tables afterwards. At most two batches per worker are in flight, so memory stays
+flat. A batch the database rejects is retried document by document; a document that
+still fails is skipped, counted and logged, and nothing links to it. Above 20,000
+documents the vector and text indexes are dropped before the load and rebuilt
+afterwards with memory and workers sized to the machine (`CIE_INDEX_BUILD_MEM`,
+`CIE_INDEX_BUILD_WORKERS`; the Colab notebook sets them from the VM's RAM and
+cores). They are rebuilt even when the load fails, and any that are missing are
+rebuilt when a run starts.
 
 ## How to run
 

@@ -141,3 +141,14 @@ Stated plainly so nobody mistakes a scaffold for a finished capability.
   names. The "semantic" category (paraphrased questions with little word
   overlap) remains the weakest: that is an embedding-model limit (384-d
   bge-small) more than a pipeline one.
+* Full memory bank (docs/MEMORY_BANK.md): references between documents are
+  resolved only when unambiguous. The corpus reuses identifiers across unrelated
+  records, so a citation of a shared key goes to the most similar holder or to
+  none; some true references therefore stay unlinked. Contradictions are found
+  only between near-duplicate or same-object documents, and only for sentences
+  that differ in a quantity; a disagreement stated in words ("approved" vs
+  "rejected") is not detected. People, companies and projects are recognised
+  from metadata fields and task owners, not from free text.
+* Across department scopes a contradiction is kept as two disputed facts with no
+  combined record, so a reader who may see only one side is told nothing about
+  the other document; one who may see both gets both through the link.

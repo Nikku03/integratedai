@@ -113,7 +113,11 @@ def test_provider_cost_estimate_and_fake_provider():
     fake = providers.FakeProvider({"hello": "world"})
     r = fake.complete("sys", "say hello")
     assert r.text == "world" and r.usage_is_estimate and fake.calls
-    assert isinstance(providers.get_provider(), providers.NoProvider)
+    from cie.core.settings import Settings
+
+    assert isinstance(providers.get_provider(Settings(llm_provider="none")), providers.NoProvider)
+    assert providers.price_of("claude-haiku-4-5-20251001") == providers.PRICES["claude-haiku-4-5"]
+    assert providers.price_of("some-unlisted-model") is None
     assert len(HashedEmbedding(64).embed(["a b c"])[0]) == 64
 
 
