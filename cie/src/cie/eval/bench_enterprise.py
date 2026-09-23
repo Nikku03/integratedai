@@ -129,10 +129,15 @@ def select_docs(index: dict[str, str], questions: list[dict], n_docs: int | None
     return sorted(picked)
 
 
-def build_index(root: Path, cache: Path | None = None) -> dict[str, str]:
-    """dataset_doc_uuid -> path relative to ``root``, scanning every JSON once."""
+def build_index(root: Path, cache: Path | None = None, must_contain: set[str] | None = None, log=print) -> dict[str, str]:
+    """dataset_doc_uuid -> path relative to ``root``, scanning every JSON once. A cached
+    index is used only if it holds every id in ``must_contain`` (the gold documents):
+    a cache written before the corpus was in place would otherwise silence the run."""
     if cache and cache.exists():
-        return json.loads(cache.read_text())["index"]
+        cached = json.loads(cache.read_text()).get("index", {})
+        if cached and (not must_contain or must_contain <= set(cached)):
+            return cached
+        log(f"  cached index at {cache} is empty or incomplete; rescanning {root}")
     index = {}
     for dirpath, _, files in os.walk(root):
         for name in files:
@@ -143,7 +148,7 @@ def build_index(root: Path, cache: Path | None = None) -> dict[str, str]:
             i = raw.find(b"dsid_")
             if i >= 0:
                 index[raw[i:i + 37].decode()] = str(p.relative_to(root))
-    if cache:
+    if cache and index:
         cache.parent.mkdir(parents=True, exist_ok=True)
         cache.write_text(json.dumps({"index": index}))
     return index
@@ -399,7 +404,12 @@ def run(root: Path, out: Path, n_docs: int | None, questions_file: Path | None =
     if n_questions:
         questions = questions[:n_questions]
     sources_root = root / "generated_data" / "sources"
-    index = build_index(sources_root, cache=out / "index.json")
+    gold = {d for q in questions for d in q["expected_doc_ids"]}
+    index = build_index(sources_root, cache=out / "index.json", must_contain=gold, log=log)
+    missing = gold - set(index)
+    if not index or missing:
+        raise SystemExit(f"corpus not found or incomplete under {sources_root}: {len(index):,} documents indexed, "
+                         f"{len(missing)} of {len(gold)} gold documents missing (download the benchmark's all_documents.zip into that folder)")
     report: dict[str, Any] = {"benchmark": "EnterpriseRAG-Bench (onyx-dot-app)", "corpus_documents": len(index), "questions": len(questions),
                               "embedding": getattr(embedder, "name", "?")}
     if reuse_tenant:
