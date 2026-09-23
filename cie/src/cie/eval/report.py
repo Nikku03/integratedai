@@ -82,6 +82,7 @@ def benchmarks_md(out: Path, docs: Path) -> str:
                   f"`pytest -m slow -k 300_page`: **{status}**. " + (f"Wall time {m.group(2)} including rasterisation at 110 dpi and Tesseract OCR of 300 pages; " if m else "")
                   + "all 300 pages stored with per-page confidence, completeness check passed, and the question about clause 177 was answered with a citation to page 177."]
     lines += scale_section(out)
+    lines += enterprise_section(out)
     lines += topology_section(out)
     lines += dynamic_section(out)
     lines += ["", "## Glyph encoding benchmark", "", glyph, "", "## Graph topology benchmark (Ramanujan/expander vs sparse justified graph)", "", graph, "",
@@ -319,6 +320,43 @@ def dynamic_section(out: Path) -> list[str]:
               "or unseen questions, or for a weaker reader; a corpus where the static bank fails on repeated questions would be the sharper test.",
               "* Shapes here are built from templated documents whose records co-fire in the same pattern for every supplier; real documents would give "
               "more varied simplices and, through comparison and conflict answers, cross-document ones.", ""]
+    return lines
+
+
+def enterprise_section(out: Path) -> list[str]:
+    """EnterpriseRAG-Bench (onyx-dot-app): a real-shaped company corpus with gold documents, out of sample."""
+    rep = _load(out / "enterprise" / "bench_enterprise.json")
+    md_path = out / "enterprise" / "bench_enterprise.md"
+    if not rep or not md_path.exists():
+        return []
+    lines = ["", "## EnterpriseRAG-Bench (out-of-sample company corpus)", "",
+             "[EnterpriseRAG-Bench](https://github.com/onyx-dot-app/EnterpriseRAG-Bench) simulates a company with about 512k documents from nine systems "
+             "(Slack, Gmail, Linear, Google Drive, HubSpot, Fireflies, GitHub, Jira, Confluence) and 500 questions in ten categories with gold document ids and "
+             "gold answers. Nothing in CIE was tuned on it. Documents are loaded through `cie.eval.bench_enterprise` (chunked sections, one document record, "
+             "people and companies from the metadata resolved into entities); questions run through the full retrieval pipeline in strict extractive mode; "
+             "the returned document set is the distinct documents of the evidence packet in rank order (at most 10), empty when the answer is insufficient evidence. "
+             "Document recall, MRR and extra documents are computed here exactly as the benchmark defines them (without the judge's 'valid' relabelling, so "
+             "extra-document counts are upper bounds); correctness and completeness need the benchmark's LLM judge, for which the answers files are written.", "",
+             md_path.read_text().strip(), ""]
+    arms = rep.get("arms") or {}
+    first = next(iter(arms), None)
+    if first:
+        o = arms[first]["overall"]
+        lines += ["### Reading", "",
+                  f"* **Haystack.** {rep.get('haystack_documents', 0):,} of {rep['corpus_documents']:,} documents (every gold document plus a stratified sample); a smaller "
+                  "haystack has fewer distractors, so these numbers are optimistic relative to the full corpus until the full run is done.",
+                  f"* **{first}.** Document recall@10 {o['recall@10']}, MRR {o['mrr']}, first document right {o['hit@1']:.0%} of the time, "
+                  f"{o['extras@10']} extra documents per question on average; abstained on {o['abstained_on_info_not_found']:.0%} of the questions whose answer is "
+                  f"not in the corpus and wrongly abstained on {o['false_abstentions']:.0%} of the answerable ones; p50 {o['p50_ms']} ms.", ""]
+        cats = arms[first]["by_category"]
+        weak = sorted(((c, v) for c, v in cats.items() if v.get("recall@10") is not None), key=lambda kv: kv[1]["recall@10"])[:3]
+        if weak:
+            lines.append("* **Weakest categories:** " + "; ".join(f"{c} (recall@10 {v['recall@10']}, n={v['n']})" for c, v in weak) + ".")
+        lines.append("")
+    lines += ["### Caveats", "",
+              "* Extractive answers quote records and sections; the benchmark's correctness judge expects a composed answer, so judged correctness will lag document recall.",
+              "* Extra documents are counted against the gold set only; the benchmark's judge may relabel some as valid.",
+              "* The corpus is generated (by design of the benchmark); it is out of sample for CIE, which is the point.", ""]
     return lines
 
 
