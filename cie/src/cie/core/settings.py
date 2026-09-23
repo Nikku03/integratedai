@@ -51,6 +51,7 @@ class Settings(BaseSettings):
     packet_max_records: int = 100
     packet_token_budget: int = 12000
     graph_budget_coefficient: float = 4.0  # expansion budget = ceil(coef * log2(N))
+    named_document_max_matches: int = 5  # a capitalised name that matches more files than this is a topic, not a document name
     dynamic_memory: bool = False  # wire records that fire together in answers (cie.topology.dynamic)
     dynamic_max_fired: int = 6
     dynamic_min_support: float = 0.5

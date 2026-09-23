@@ -38,6 +38,7 @@ def _anchor(q: str, terms: list[str]) -> list[str]:
 
 
 COMMON_ROWS = 5000  # a lexeme expected in more rows than this is weight, not evidence: it does not discriminate
+PARTIAL_TERMS = 6  # the partial-match tier ORs at most this many terms, the rarest when statistics say which
 _STATS_TTL = 300.0
 _stats_cache: dict[tuple[str, str, str], tuple[float, dict[str, float]]] = {}
 _lexeme_cache: dict[str, str] = {}
@@ -124,6 +125,8 @@ def _tsqueries(q: str, session: Session | None = None, table: str = "memory_reco
         if expected:
             lx = lexemes(session, partial)
             partial = [t for t in partial if expected.get(lx.get(t, t), 0.0) < COMMON_ROWS]
+            partial = sorted(partial, key=lambda t: expected.get(lx.get(t, t), 0.0))  # rarest first
+    partial = partial[:PARTIAL_TERMS]  # a long question is not a longer OR: the rarest words carry it
     if len(partial) > 1 or (partial and partial != (informative or terms)):
         tiers.append((func.to_tsquery("english", " | ".join(partial)), "partial"))
     return tiers

@@ -202,7 +202,8 @@ class Retriever:
                              .where(Document.id.in_(list(doc_ids)))).all()
             titles = {d_id: f"{title} {fname}" for d_id, title, fname, _ in rows}
             doc_types = {d_id: (dt or "") for d_id, _, _, dt in rows}
-        ranked = rerank.rerank(cands, intent, query, doc_titles=titles, doc_types=doc_types, clique_bonus=graph_mode == "cliques+bonus")
+        ranked = rerank.rerank(cands, intent, query, doc_titles=titles if named_docs else {}, doc_types=doc_types,
+                               clique_bonus=graph_mode == "cliques+bonus")
 
         timings["rerank_ms"] = (time.perf_counter() - t) * 1000
         t = time.perf_counter()
@@ -294,7 +295,12 @@ class Retriever:
             return []
         best = rows[0][1]
         # only the best-matching documents: if one file carries the whole name, its namesakes are other documents
-        return [d_id for d_id, m in rows if m == best][:20]
+        docs = [d_id for d_id, m in rows if m == best]
+        # a name that identifies a document family matches a handful of files ("Northwind Logistics 37"); one that matches
+        # many ("AWS Marketplace", "Wi-Fi") is a topic, and restricting retrieval to files titled with it buries the answer
+        if len(docs) > self.settings.named_document_max_matches:
+            return []
+        return docs
 
     # ------------------------------------------------------------------
     @staticmethod
