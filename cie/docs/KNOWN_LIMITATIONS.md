@@ -124,3 +124,20 @@ Stated plainly so nobody mistakes a scaffold for a finished capability.
   conflicting fee, penalty and notice values. The generator now writes exactly
   twelve records per document; the next run (the Colab notebook included) uses
   the clean corpus.
+
+## EnterpriseRAG-Bench (out-of-sample company corpus)
+* Measured locally on a 5,000-document haystack (every gold document plus a
+  stratified sample of the 512k), so recall numbers are optimistic relative to
+  the full corpus; the Colab notebook runs the full corpus on a GPU.
+* Correctness and completeness need the benchmark's LLM judge; only document
+  recall, MRR, extra documents and abstention are computed here. Extra documents
+  are counted against the gold set without the judge's "valid" relabelling.
+* Extractive answers quote sections; the judge expects composed answers, so
+  judged correctness will lag document recall until an assisted-mode model is
+  in the loop.
+* The corpus exposed three biases tuned on contracts and now corrected:
+  keyword-array overlap rode on the exact-match weight, sections were discounted
+  against records in fusion, and capitalised topic words were treated as document
+  names. The "semantic" category (paraphrased questions with little word
+  overlap) remains the weakest: that is an embedding-model limit (384-d
+  bge-small) more than a pipeline one.
