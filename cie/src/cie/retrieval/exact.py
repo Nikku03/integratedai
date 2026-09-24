@@ -53,17 +53,9 @@ def lookup(session: Session, intent: Intent, query: str, base_filter, k: int = 3
                                                    MemoryRecord.summary.op("%")(name))
                 .order_by(sim.desc()).limit(5))
         # fuzzy matching over every entity summary is bounded: on a cold cache at a million rows it can take seconds
-        from sqlalchemy import text as _text
+        from cie.retrieval.bounded import run_bounded
 
-        try:
-            session.execute(_text("SAVEPOINT ent_sim"))
-            session.execute(_text("SET LOCAL statement_timeout = '400ms'"))
-            rows = session.execute(stmt).all()
-            session.execute(_text("SET LOCAL statement_timeout = 0"))
-            session.execute(_text("RELEASE SAVEPOINT ent_sim"))
-        except Exception:  # noqa: BLE001 - the bound is the point
-            session.execute(_text("ROLLBACK TO SAVEPOINT ent_sim"))
-            rows = []
+        rows = run_bounded(session, stmt, 400, name="ent_sim") or []
         for rid, s in rows:
             if float(s) > 0.35:
                 hits[rid] = max(hits.get(rid, 0), 2.0 + float(s))

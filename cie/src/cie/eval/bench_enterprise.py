@@ -589,8 +589,11 @@ def run(root: Path, out: Path, n_docs: int | None, questions_file: Path | None =
                               "documents": s.scalar(select(text("count(*)")).select_from(text("documents")).where(text("tenant_id = :t")).params(t=tenant.id)),
                               "reused": True}
         # keep what the load of this tenant reported (sections, records, links), when an earlier run in this folder loaded it
-        prior_file = out / "bench_enterprise.json"
-        prior = json.loads(prior_file.read_text()).get("load", {}) if prior_file.exists() else {}
+        prior: dict[str, Any] = {}
+        for f in (out / "load.json", out / "bench_enterprise.json"):
+            if f.exists() and not prior:
+                data = json.loads(f.read_text())
+                prior = data["load"] if "load" in data else data
         if prior.get("tenant_id") == report["load"]["tenant_id"]:
             report["load"] = {**prior, **report["load"], "reused": True}
     else:
@@ -603,6 +606,8 @@ def run(root: Path, out: Path, n_docs: int | None, questions_file: Path | None =
             report["load"] = load(url, sources_root, index, dsids, embedder, tenant_name=f"erb-{len(dsids)}-{uuid.uuid4().hex[:6]}",
                                   entities=entities, batch=batch, cache=cache or out / "emb_cache.sqlite", log=log)
         log(f"loaded: {report['load']}")
+        out.mkdir(parents=True, exist_ok=True)
+        (out / "load.json").write_text(json.dumps(report["load"], indent=2, default=str))  # kept even if the questions fail
     with session_scope() as s:
         tenant_id = uuid.UUID(report["load"]["tenant_id"])
         company_id = uuid.UUID(report["load"]["company_id"])

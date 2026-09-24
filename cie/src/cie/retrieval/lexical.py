@@ -13,6 +13,7 @@ from sqlalchemy import func, select, text
 from sqlalchemy.orm import Session
 
 from cie.core.models import MemoryRecord, Section
+from cie.retrieval.bounded import run_bounded
 
 
 def _terms(q: str) -> list[str]:
@@ -38,7 +39,9 @@ def _anchor(q: str, terms: list[str]) -> list[str]:
 
 
 COMMON_ROWS = 5000  # a lexeme expected in more rows than this is weight, not evidence: it does not discriminate
-PARTIAL_TERMS = 6  # the partial-match tier ORs at most this many terms, the rarest when statistics say which
+PARTIAL_TERMS = 6
+TIER_MS = 4000  # time limit of one full-match tier query
+PARTIAL_TIER_MS = 1500  # time limit of the partial (OR) tier  # the partial-match tier ORs at most this many terms, the rarest when statistics say which
 _STATS_TTL = 300.0
 _stats_cache: dict[tuple[str, str, str], tuple[float, dict[str, float]]] = {}
 _lexeme_cache: dict[str, str] = {}
@@ -142,18 +145,9 @@ def _search(session: Session, model, q: str, base_filter, k: int, tenant_id: uui
             break
         rank = func.ts_rank_cd(model.tsv, tsq, 32)
         stmt = (select(model.id, rank).where(base_filter, model.tsv.op("@@")(tsq)).order_by(rank.desc()).limit(k))
-        try:
-            if bounded:
-                # the partial-match tier ranks every row that shares a term; bound it so a common word cannot stall retrieval
-                session.execute(text("SAVEPOINT lex_or"))
-                session.execute(text("SET LOCAL statement_timeout = '1500ms'"))
-            rows = session.execute(stmt).all()
-            if bounded:
-                session.execute(text("SET LOCAL statement_timeout = 0"))
-                session.execute(text("RELEASE SAVEPOINT lex_or"))
-        except Exception:  # noqa: BLE001 - a bounded timeout is an accepted outcome here
-            session.execute(text("ROLLBACK TO SAVEPOINT lex_or"))
-            rows = []
+        # every tier ranks all rows that match it, which at millions of rows can take long for common words: each tier
+        # has its own time limit (the OR tier the tightest), and a tier that runs out contributes nothing
+        rows = run_bounded(session, stmt, PARTIAL_TIER_MS if bounded else TIER_MS, name="lex_tier") or []
         for rid, sc in rows:
             if rid not in seen:
                 seen.add(rid)
