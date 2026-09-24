@@ -579,6 +579,8 @@ def run(root: Path, out: Path, n_docs: int | None, questions_file: Path | None =
     report: dict[str, Any] = {"benchmark": "EnterpriseRAG-Bench (onyx-dot-app)", "corpus_documents": len(index), "questions": len(questions),
                               "question_ids_sha1": hashlib.sha1(",".join(q["question_id"] for q in questions).encode()).hexdigest()[:12],
                               "embedding": getattr(embedder, "name", "?"), "code_version": code_version()}
+    if reuse_tenant == "auto":
+        reuse_tenant = find_loaded_tenant(select_docs(index, questions, n_docs, seed), memory, log=log)
     if reuse_tenant:
         with session_scope() as s:
             tenant = s.scalar(select(Tenant).where(Tenant.name == reuse_tenant))
@@ -605,6 +607,7 @@ def run(root: Path, out: Path, n_docs: int | None, questions_file: Path | None =
         else:
             report["load"] = load(url, sources_root, index, dsids, embedder, tenant_name=f"erb-{len(dsids)}-{uuid.uuid4().hex[:6]}",
                                   entities=entities, batch=batch, cache=cache or out / "emb_cache.sqlite", log=log)
+        report["load"]["code_version"] = report["code_version"]
         log(f"loaded: {report['load']}")
         out.mkdir(parents=True, exist_ok=True)
         (out / "load.json").write_text(json.dumps(report["load"], indent=2, default=str))  # kept even if the questions fail
@@ -624,6 +627,27 @@ def run(root: Path, out: Path, n_docs: int | None, questions_file: Path | None =
     (out / "bench_enterprise.md").write_text(md)
     print(md)
     return report
+
+
+def find_loaded_tenant(dsids: list[str], memory: str, log=print) -> str | None:
+    """The most recent tenant in this database that already holds exactly this haystack as this kind of memory bank
+    (full: ``erbfull-<n>-*``, chunks: ``erb-<n>-*``), so a run that stopped after its load re-asks the questions instead
+    of loading again. A load that died part-way holds fewer documents and is never picked."""
+    prefix = f"{'erbfull' if memory == 'full' else 'erb'}-{len(dsids)}-"
+    want = set(dsids)
+    with session_scope() as s:
+        rows = s.execute(text("SELECT t.id, t.name, (SELECT count(*) FROM documents d WHERE d.tenant_id = t.id) FROM tenants t "
+                              "WHERE t.name LIKE :p ORDER BY t.created_at DESC"), {"p": prefix + "%"}).all()
+        for tid, name, n in rows:
+            if n != len(dsids):
+                continue
+            have = {d for (d,) in s.execute(text("SELECT extra->>'dsid' FROM documents WHERE tenant_id = :t"), {"t": tid})}
+            if have == want:
+                log(f"reusing the memory bank already loaded in this database: {name} ({n:,} documents); "
+                    f"pass --reuse-tenant '' to load a new one")
+                return name
+    log("no loaded memory bank holds this haystack yet: loading one")
+    return None
 
 
 def to_markdown(rep: dict[str, Any]) -> str:
@@ -661,7 +685,8 @@ def main(argv: list[str] | None = None) -> dict:
     ap.add_argument("--docs", type=int, default=None, help="haystack size (every gold document plus a stratified sample); default: the whole corpus")
     ap.add_argument("--questions", type=int, default=None, help="only the first N questions (smoke tests)")
     ap.add_argument("--no-entities", action="store_true")
-    ap.add_argument("--reuse-tenant", default=None, help="evaluate an already loaded tenant by name instead of loading")
+    ap.add_argument("--reuse-tenant", default=None,
+                    help="evaluate an already loaded tenant by name instead of loading; 'auto' reuses one that holds this exact haystack, if any")
     ap.add_argument("--arms", default=None, help="comma-separated arm names (default: all)")
     ap.add_argument("--batch", type=int, default=64, help="documents per load batch (256 is right for a GPU embedder)")
     ap.add_argument("--memory", choices=["full", "chunks"], default="full",
