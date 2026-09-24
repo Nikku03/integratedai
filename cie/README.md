@@ -70,7 +70,10 @@ on Colab with a GPU.
 
 See `.env.example`. Notable switches: `CIE_LLM_PROVIDER` (`none` = strict
 extractive answers; `anthropic|openai|gemini|local` enable assisted answers and
-LLM agent strategies), `CIE_EMBEDDING_PROVIDER` (`fastembed` local ONNX model,
+LLM agent strategies; `local` is any OpenAI-compatible server such as Ollama running
+Llama 3.1 8B or Llama 3.2 3B, set with `CIE_LLM_MODEL` and `CIE_LLM_BASE_URL`, and gets
+deterministic, length-bounded generation and a budgeted share of the evidence,
+`CIE_LLM_LOCAL_EVIDENCE_CHARS`), `CIE_EMBEDDING_PROVIDER` (`fastembed` local ONNX model,
 `hashed` no-model fallback, `openai`), `CIE_OCR_BACKEND` (`auto`, `tesseract`,
 `unlimited_ocr` with `CIE_UNLIMITED_OCR_URL` pointing at a vLLM/SGLang server),
 `CIE_ENCRYPTION_KEY` (AES-GCM at rest for the vault).

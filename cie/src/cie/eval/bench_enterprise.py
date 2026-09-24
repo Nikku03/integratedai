@@ -435,7 +435,7 @@ def evaluate(session, retriever: Retriever, admin, company_id, questions: list[d
         provider = None
         if mode == "assisted":
             provider = assisted_provider(retriever.settings)
-        spend = {"tokens_in": 0, "tokens_out": 0, "cost_usd": 0.0, "declined": 0, "cost_unknown": 0}
+        spend = {"tokens_in": 0, "tokens_out": 0, "cost_usd": 0.0, "declined": 0, "unverifiable": 0, "citations_attributed": 0, "cost_unknown": 0}
         per_cat: dict[str, dict[str, list]] = defaultdict(lambda: defaultdict(list))
         answers = []
         lat = []
@@ -450,6 +450,8 @@ def evaluate(session, retriever: Retriever, admin, company_id, questions: list[d
                 spend["cost_usd"] += result.cost_usd or 0.0
                 spend["cost_unknown"] += int(mode == "assisted" and bool(result.tokens_in) and not getattr(result, "cost_known", True))
                 spend["declined"] += "declined" in (result.mode or "")
+                spend["unverifiable"] += "not verifiable" in (result.mode or "")  # the model's answer was replaced by the extractive one
+                spend["citations_attributed"] += getattr(result, "citations_attributed", 0)
                 ms = (time.perf_counter() - t) * 1000
                 docs: list[str] = []
                 if result.status != "insufficient_evidence":

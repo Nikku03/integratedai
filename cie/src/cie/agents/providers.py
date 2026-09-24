@@ -103,6 +103,7 @@ class FakeProvider:
 
 class AnthropicProvider:
     name = "anthropic"
+    evidence_budget_chars: int | None = None  # a long-context model takes the whole evidence packet
 
     def __init__(self, api_key: str, model: str):
         import anthropic
@@ -132,24 +133,39 @@ class AnthropicProvider:
 
 
 class OpenAIProvider:
+    """The OpenAI API, or with ``base_url`` any OpenAI-compatible server running an open model locally (Ollama,
+    vLLM, llama.cpp): then generation is deterministic (temperature 0) and bounded, the evidence given to the model
+    is budgeted (``evidence_budget_chars``), and the cost is zero."""
+
     name = "openai"
 
-    def __init__(self, api_key: str, model: str, base_url: str | None = None):
+    def __init__(self, api_key: str, model: str, base_url: str | None = None, *, max_output_tokens: int = 1024,
+                 evidence_chars: int | None = None):
         from openai import OpenAI
 
-        self.client = OpenAI(api_key=api_key or "none", base_url=base_url or None)
+        self.client = OpenAI(api_key=api_key or "none", base_url=base_url or None, timeout=600)
         self.model = model
-        if base_url:
+        self.local = bool(base_url)
+        self.max_output_tokens = max_output_tokens
+        self.evidence_budget_chars = evidence_chars if self.local else None
+        if self.local:
             self.name = "local"
 
     def complete(self, system: str, user: str, max_tokens: int = 1024) -> LLMResponse:
         t = time.perf_counter()
+        kw: dict = {}
+        if self.local:
+            max_tokens = min(max_tokens, self.max_output_tokens)  # callers size max_tokens for thinking models
+            kw["temperature"] = 0
         r = self.client.chat.completions.create(model=self.model, max_tokens=max_tokens,
                                                 messages=[{"role": "system", "content": system},
-                                                          {"role": "user", "content": user}])
+                                                          {"role": "user", "content": user}], **kw)
         text = r.choices[0].message.content or ""
         ti = r.usage.prompt_tokens if r.usage else 0
         to = r.usage.completion_tokens if r.usage else 0
+        if self.local:  # runs on our own hardware: no per-token price
+            return LLMResponse(text, self.model, ti, to, (time.perf_counter() - t) * 1000, 0.0, usage_is_estimate=r.usage is None,
+                               stop_reason=getattr(r.choices[0], "finish_reason", None))
         return LLMResponse(text, self.model, ti, to, (time.perf_counter() - t) * 1000, estimate_cost(self.model, ti, to),
                            usage_is_estimate=r.usage is None, cost_known=price_of(self.model) is not None)
 
@@ -187,7 +203,8 @@ def get_provider(settings: Settings | None = None) -> LLMProvider:
     if s.llm_provider == "openai":
         return OpenAIProvider(s.openai_api_key, s.llm_model)
     if s.llm_provider == "local":
-        return OpenAIProvider("none", s.llm_model, s.llm_base_url or "http://localhost:11434/v1")
+        return OpenAIProvider("none", s.llm_model, s.llm_base_url or "http://localhost:11434/v1",
+                              max_output_tokens=s.llm_local_max_output_tokens, evidence_chars=s.llm_local_evidence_chars)
     if s.llm_provider == "gemini":
         return GeminiProvider(s.gemini_api_key, s.llm_model)
     if s.llm_provider == "fake":

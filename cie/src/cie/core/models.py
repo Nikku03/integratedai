@@ -659,7 +659,7 @@ class Answer(Base):
     answer: Mapped[str] = mapped_column(Text)
     citations: Mapped[list[Any]] = mapped_column(JSONB, default=list)
     confidence: Mapped[float] = mapped_column(Float, default=0.0)
-    mode: Mapped[str] = mapped_column(String(16))  # strict|assisted
+    mode: Mapped[str] = mapped_column(String(64))  # strict|assisted|extractive (model declined)|extractive (model answer not verifiable)
     status: Mapped[str] = mapped_column(String(32))  # answered|insufficient_evidence|conflict
     model: Mapped[str | None] = mapped_column(String(100))
     prompt_version: Mapped[str | None] = mapped_column(String(100))

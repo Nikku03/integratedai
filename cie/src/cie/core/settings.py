@@ -37,6 +37,10 @@ class Settings(BaseSettings):
     llm_model: str = "claude-sonnet-5"
     llm_base_url: str = ""  # for local OpenAI-compatible servers
     llm_max_output_tokens: int = 2048
+    # a local open model (Ollama, vLLM) has a small context and follows long prompts poorly: give it the best evidence
+    # items up to this many characters (about 6k tokens) and let it answer in at most this many tokens
+    llm_local_evidence_chars: int = 24000
+    llm_local_max_output_tokens: int = 1024
 
     ocr_backend: Literal["auto", "pymupdf", "tesseract", "unlimited_ocr"] = "auto"
     ocr_dpi: int = 200
