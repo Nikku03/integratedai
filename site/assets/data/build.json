@@ -18,65 +18,60 @@
     "hatch": 0.42,
     "tone0": 0.45,
     "ink": 1.0,
-    "l0": 0.02,
-    "clay_range": [
-     0.54,
-     0.46
-    ],
-    "clay_gamma": 0.72,
-    "clay_ao": 0.5,
+    "l0": 0.03,
     "dim_exposure": 0.47,
     "dim_lamp": 0.45,
-    "dim_sat": 0.5
+    "dim_sat": 0.5,
+    "clay_range": [
+     0.74,
+     0.24
+    ],
+    "clay_gamma": 0.5
    },
    "regions": [
     {
-     "id": "roof",
+     "id": "floor",
      "group": "shell",
      "poly": [
       [
        0,
-       0
-      ],
-      [
-       1,
-       0
-      ],
-      [
-       1,
-       0.25
-      ],
-      [
-       0.88,
-       0.24
-      ],
-      [
-       0.73,
-       0.3
-      ],
-      [
-       0.62,
-       0.31
-      ],
-      [
-       0.45,
-       0.285
-      ],
-      [
-       0.33,
-       0.25
-      ],
-      [
-       0.26,
-       0.21
+       0.75
       ],
       [
        0.13,
-       0.165
+       0.74
+      ],
+      [
+       0.34,
+       0.7
+      ],
+      [
+       0.45,
+       0.66
+      ],
+      [
+       0.66,
+       0.615
+      ],
+      [
+       0.72,
+       0.6
+      ],
+      [
+       0.86,
+       0.595
+      ],
+      [
+       1,
+       0.6
+      ],
+      [
+       1,
+       1
       ],
       [
        0,
-       0.15
+       1
       ]
      ]
     },
@@ -177,8 +172,58 @@
      ]
     },
     {
-     "id": "stair",
+     "id": "roof",
      "group": "shell",
+     "poly": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       1,
+       0.25
+      ],
+      [
+       0.88,
+       0.24
+      ],
+      [
+       0.73,
+       0.3
+      ],
+      [
+       0.62,
+       0.31
+      ],
+      [
+       0.45,
+       0.285
+      ],
+      [
+       0.33,
+       0.25
+      ],
+      [
+       0.26,
+       0.21
+      ],
+      [
+       0.13,
+       0.165
+      ],
+      [
+       0,
+       0.15
+      ]
+     ]
+    },
+    {
+     "id": "stair",
+     "group": "fit",
      "poly": [
       [
        0.395,
@@ -231,242 +276,46 @@
      ]
     },
     {
-     "id": "floor",
-     "group": "shell",
+     "id": "counter",
+     "group": "fit",
      "poly": [
       [
        0,
-       0.75
+       0.53
       ],
       [
-       0.13,
-       0.74
+       0.145,
+       0.53
       ],
       [
-       0.34,
-       0.7
+       0.145,
+       0.625
       ],
       [
-       0.45,
-       0.66
+       0.25,
+       0.625
       ],
       [
-       0.66,
-       0.615
+       0.365,
+       0.635
       ],
       [
-       0.72,
-       0.6
-      ],
-      [
-       0.86,
-       0.595
-      ],
-      [
-       1,
-       0.6
-      ],
-      [
-       1,
-       1
-      ],
-      [
-       0,
-       1
-      ]
-     ]
-    },
-    {
-     "id": "f-floor",
-     "group": "finish",
-     "poly": [
-      [
-       0,
-       0.75
-      ],
-      [
-       0.13,
-       0.74
-      ],
-      [
-       0.34,
-       0.7
-      ],
-      [
-       0.45,
-       0.66
-      ],
-      [
-       0.66,
-       0.615
-      ],
-      [
-       0.72,
-       0.6
-      ],
-      [
-       0.86,
-       0.595
-      ],
-      [
-       1,
-       0.6
-      ],
-      [
-       1,
-       1
-      ],
-      [
-       0,
-       1
-      ]
-     ]
-    },
-    {
-     "id": "f-brick",
-     "group": "finish",
-     "poly": [
-      [
-       0,
-       0.15
-      ],
-      [
-       0.13,
-       0.165
-      ],
-      [
-       0.26,
-       0.21
-      ],
-      [
-       0.265,
-       0.72
+       0.365,
+       0.78
       ],
       [
        0.2,
-       0.73
-      ],
-      [
-       0.13,
-       0.74
+       0.835
       ],
       [
        0,
-       0.75
+       0.87
       ]
      ]
     },
     {
-     "id": "f-steel",
-     "group": "finish",
-     "poly": [
-      [
-       0.395,
-       0.615
-      ],
-      [
-       0.55,
-       0.47
-      ],
-      [
-       0.625,
-       0.405
-      ],
-      [
-       0.8,
-       0.33
-      ],
-      [
-       1,
-       0.33
-      ],
-      [
-       1,
-       0.395
-      ],
-      [
-       0.8,
-       0.395
-      ],
-      [
-       0.75,
-       0.425
-      ],
-      [
-       0.64,
-       0.44
-      ],
-      [
-       0.57,
-       0.53
-      ],
-      [
-       0.47,
-       0.64
-      ],
-      [
-       0.43,
-       0.665
-      ]
-     ]
-    },
-    {
-     "id": "f-paint",
-     "group": "finish",
-     "poly": [
-      [
-       0,
-       0
-      ],
-      [
-       1,
-       0
-      ],
-      [
-       1,
-       0.6
-      ],
-      [
-       0.86,
-       0.595
-      ],
-      [
-       0.72,
-       0.6
-      ],
-      [
-       0.66,
-       0.615
-      ],
-      [
-       0.45,
-       0.66
-      ],
-      [
-       0.34,
-       0.7
-      ],
-      [
-       0.265,
-       0.72
-      ],
-      [
-       0.26,
-       0.21
-      ],
-      [
-       0.13,
-       0.165
-      ],
-      [
-       0,
-       0.15
-      ]
-     ]
-    },
-    {
-     "id": "f-bench",
-     "group": "finish",
+     "id": "bench",
+     "group": "fit",
      "poly": [
       [
        0.705,
@@ -487,28 +336,6 @@
       [
        0.705,
        0.645
-      ]
-     ]
-    },
-    {
-     "id": "fridges",
-     "group": "fit",
-     "poly": [
-      [
-       0,
-       0.5
-      ],
-      [
-       0.14,
-       0.5
-      ],
-      [
-       0.14,
-       0.745
-      ],
-      [
-       0,
-       0.76
       ]
      ]
     },
@@ -567,6 +394,44 @@
      ]
     },
     {
+     "id": "tables-mid",
+     "group": "fit",
+     "poly": [
+      [
+       0.53,
+       0.745
+      ],
+      [
+       0.655,
+       0.74
+      ],
+      [
+       0.665,
+       0.77
+      ],
+      [
+       0.7,
+       0.78
+      ],
+      [
+       0.7,
+       0.92
+      ],
+      [
+       0.64,
+       0.93
+      ],
+      [
+       0.62,
+       0.83
+      ],
+      [
+       0.53,
+       0.82
+      ]
+     ]
+    },
+    {
      "id": "tables-right",
      "group": "fit",
      "poly": [
@@ -613,44 +478,6 @@
       [
        0.745,
        0.7
-      ]
-     ]
-    },
-    {
-     "id": "tables-mid",
-     "group": "fit",
-     "poly": [
-      [
-       0.53,
-       0.745
-      ],
-      [
-       0.655,
-       0.74
-      ],
-      [
-       0.665,
-       0.77
-      ],
-      [
-       0.7,
-       0.78
-      ],
-      [
-       0.7,
-       0.92
-      ],
-      [
-       0.64,
-       0.93
-      ],
-      [
-       0.62,
-       0.83
-      ],
-      [
-       0.53,
-       0.82
       ]
      ]
     },
@@ -1207,15 +1034,15 @@
      ],
      [
       "Week 4 · Strip-out and making good",
-      "Brick cleaned back, trusses painted, the stair and mezzanine made safe. Everything stays white until it’s decided."
+      "Brick cleaned back, trusses painted, the mezzanine made safe. Everything stays white until it’s decided."
      ],
      [
-      "Weeks 6–8 · Floor, brick, paint",
-      "Screed polished, brick sealed, walls in a warm white that holds the morning light."
+      "Weeks 6–9 · Joinery and FF&E",
+      "The steel stair goes in first, then the counter and the bench. Planters next, and the tables work round them."
      ],
      [
-      "Weeks 9–11 · Joinery and FF&E",
-      "Planters go in first, then the tables work round them. Beech tops, steel chairs, a pine counter."
+      "Weeks 10–11 · Floor, brick, paint",
+      "Screed polished, brick sealed, walls in a warm white that holds the morning light. Beech tops, a pine counter."
      ],
      [
       "Week 12 · Lighting and commissioning",
@@ -1265,9 +1092,165 @@
     "tone0": 0.55,
     "ink": 1.0,
     "dim_exposure": 0.5,
-    "dim_sat": 0.5
+    "dim_sat": 0.5,
+    "l0": 0.02,
+    "clay_range": [
+     0.8,
+     0.18
+    ],
+    "clay_gamma": 0.55
    },
    "regions": [
+    {
+     "id": "floor",
+     "group": "shell",
+     "poly": [
+      [
+       0.25,
+       0.93
+      ],
+      [
+       0.3,
+       0.78
+      ],
+      [
+       0.66,
+       0.77
+      ],
+      [
+       0.72,
+       0.78
+      ],
+      [
+       0.9,
+       0.78
+      ],
+      [
+       1,
+       0.8
+      ],
+      [
+       1,
+       1
+      ],
+      [
+       0.25,
+       1
+      ]
+     ]
+    },
+    {
+     "id": "walls",
+     "group": "shell",
+     "poly": [
+      [
+       0.02,
+       0.28
+      ],
+      [
+       0.28,
+       0.3
+      ],
+      [
+       0.28,
+       0.41
+      ],
+      [
+       0.61,
+       0.4
+      ],
+      [
+       0.61,
+       0.43
+      ],
+      [
+       0.665,
+       0.44
+      ],
+      [
+       0.72,
+       0.44
+      ],
+      [
+       0.8,
+       0.43
+      ],
+      [
+       0.8,
+       0.4
+      ],
+      [
+       1,
+       0.4
+      ],
+      [
+       1,
+       0.8
+      ],
+      [
+       0.9,
+       0.78
+      ],
+      [
+       0.72,
+       0.78
+      ],
+      [
+       0.66,
+       0.77
+      ],
+      [
+       0.3,
+       0.78
+      ],
+      [
+       0.25,
+       0.93
+      ],
+      [
+       0.02,
+       0.93
+      ]
+     ]
+    },
+    {
+     "id": "column",
+     "group": "shell",
+     "poly": [
+      [
+       0.61,
+       0.35
+      ],
+      [
+       0.8,
+       0.35
+      ],
+      [
+       0.8,
+       0.43
+      ],
+      [
+       0.72,
+       0.44
+      ],
+      [
+       0.72,
+       1
+      ],
+      [
+       0.655,
+       1
+      ],
+      [
+       0.665,
+       0.44
+      ],
+      [
+       0.61,
+       0.43
+      ]
+     ]
+    },
     {
      "id": "arcade",
      "group": "shell",
@@ -1351,44 +1334,6 @@
       [
        0.01,
        0.28
-      ]
-     ]
-    },
-    {
-     "id": "column",
-     "group": "shell",
-     "poly": [
-      [
-       0.61,
-       0.35
-      ],
-      [
-       0.8,
-       0.35
-      ],
-      [
-       0.8,
-       0.43
-      ],
-      [
-       0.72,
-       0.44
-      ],
-      [
-       0.72,
-       1
-      ],
-      [
-       0.655,
-       1
-      ],
-      [
-       0.665,
-       0.44
-      ],
-      [
-       0.61,
-       0.43
       ]
      ]
     },
@@ -1497,464 +1442,6 @@
      ]
     },
     {
-     "id": "walls",
-     "group": "shell",
-     "poly": [
-      [
-       0.02,
-       0.28
-      ],
-      [
-       0.28,
-       0.3
-      ],
-      [
-       0.28,
-       0.41
-      ],
-      [
-       0.61,
-       0.4
-      ],
-      [
-       0.61,
-       0.43
-      ],
-      [
-       0.665,
-       0.44
-      ],
-      [
-       0.72,
-       0.44
-      ],
-      [
-       0.8,
-       0.43
-      ],
-      [
-       0.8,
-       0.4
-      ],
-      [
-       1,
-       0.4
-      ],
-      [
-       1,
-       0.8
-      ],
-      [
-       0.9,
-       0.78
-      ],
-      [
-       0.72,
-       0.78
-      ],
-      [
-       0.66,
-       0.77
-      ],
-      [
-       0.3,
-       0.78
-      ],
-      [
-       0.25,
-       0.93
-      ],
-      [
-       0.02,
-       0.93
-      ]
-     ]
-    },
-    {
-     "id": "floor",
-     "group": "shell",
-     "poly": [
-      [
-       0.25,
-       0.93
-      ],
-      [
-       0.3,
-       0.78
-      ],
-      [
-       0.66,
-       0.77
-      ],
-      [
-       0.72,
-       0.78
-      ],
-      [
-       0.9,
-       0.78
-      ],
-      [
-       1,
-       0.8
-      ],
-      [
-       1,
-       1
-      ],
-      [
-       0.25,
-       1
-      ]
-     ]
-    },
-    {
-     "id": "f-floor",
-     "group": "finish",
-     "poly": [
-      [
-       0.25,
-       0.93
-      ],
-      [
-       0.3,
-       0.78
-      ],
-      [
-       0.66,
-       0.77
-      ],
-      [
-       0.72,
-       0.78
-      ],
-      [
-       0.9,
-       0.78
-      ],
-      [
-       1,
-       0.8
-      ],
-      [
-       1,
-       1
-      ],
-      [
-       0.25,
-       1
-      ]
-     ]
-    },
-    {
-     "id": "f-panel",
-     "group": "finish",
-     "poly": [
-      [
-       0.02,
-       0.28
-      ],
-      [
-       0.28,
-       0.3
-      ],
-      [
-       0.28,
-       0.72
-      ],
-      [
-       0.02,
-       0.72
-      ]
-     ]
-    },
-    {
-     "id": "f-glaze",
-     "group": "finish",
-     "poly": [
-      [
-       0.28,
-       0.41
-      ],
-      [
-       0.61,
-       0.4
-      ],
-      [
-       0.61,
-       0.43
-      ],
-      [
-       0.665,
-       0.44
-      ],
-      [
-       0.72,
-       0.44
-      ],
-      [
-       0.8,
-       0.43
-      ],
-      [
-       0.8,
-       0.4
-      ],
-      [
-       1,
-       0.4
-      ],
-      [
-       1,
-       0.64
-      ],
-      [
-       0.72,
-       0.66
-      ],
-      [
-       0.66,
-       0.77
-      ],
-      [
-       0.3,
-       0.78
-      ],
-      [
-       0.28,
-       0.72
-      ]
-     ]
-    },
-    {
-     "id": "f-ceiling",
-     "group": "finish",
-     "poly": [
-      [
-       0.05,
-       0.17
-      ],
-      [
-       0.12,
-       0.08
-      ],
-      [
-       0.2,
-       0.03
-      ],
-      [
-       0.3,
-       0.005
-      ],
-      [
-       0.4,
-       0.005
-      ],
-      [
-       0.5,
-       0.04
-      ],
-      [
-       0.56,
-       0.1
-      ],
-      [
-       0.6,
-       0.2
-      ],
-      [
-       0.63,
-       0.3
-      ],
-      [
-       0.64,
-       0.35
-      ],
-      [
-       0.61,
-       0.35
-      ],
-      [
-       0.61,
-       0.4
-      ],
-      [
-       0.28,
-       0.41
-      ],
-      [
-       0.28,
-       0.3
-      ],
-      [
-       0.02,
-       0.28
-      ]
-     ]
-    },
-    {
-     "id": "f-ceiling-r",
-     "group": "finish",
-     "poly": [
-      [
-       0.75,
-       0.35
-      ],
-      [
-       0.76,
-       0.25
-      ],
-      [
-       0.8,
-       0.15
-      ],
-      [
-       0.86,
-       0.07
-      ],
-      [
-       0.92,
-       0.02
-      ],
-      [
-       1,
-       0
-      ],
-      [
-       1,
-       0.4
-      ],
-      [
-       0.8,
-       0.4
-      ]
-     ]
-    },
-    {
-     "id": "f-arcade",
-     "group": "finish",
-     "poly": [
-      [
-       0,
-       0.3
-      ],
-      [
-       0,
-       0
-      ],
-      [
-       1,
-       0
-      ],
-      [
-       0.97,
-       0.0
-      ],
-      [
-       0.92,
-       0.02
-      ],
-      [
-       0.86,
-       0.07
-      ],
-      [
-       0.8,
-       0.15
-      ],
-      [
-       0.76,
-       0.25
-      ],
-      [
-       0.75,
-       0.35
-      ],
-      [
-       0.64,
-       0.35
-      ],
-      [
-       0.63,
-       0.3
-      ],
-      [
-       0.6,
-       0.2
-      ],
-      [
-       0.56,
-       0.1
-      ],
-      [
-       0.5,
-       0.04
-      ],
-      [
-       0.4,
-       0.005
-      ],
-      [
-       0.3,
-       0.005
-      ],
-      [
-       0.2,
-       0.03
-      ],
-      [
-       0.12,
-       0.08
-      ],
-      [
-       0.05,
-       0.17
-      ],
-      [
-       0.01,
-       0.28
-      ]
-     ]
-    },
-    {
-     "id": "f-column",
-     "group": "finish",
-     "poly": [
-      [
-       0.61,
-       0.35
-      ],
-      [
-       0.8,
-       0.35
-      ],
-      [
-       0.8,
-       0.43
-      ],
-      [
-       0.72,
-       0.44
-      ],
-      [
-       0.72,
-       1
-      ],
-      [
-       0.655,
-       1
-      ],
-      [
-       0.665,
-       0.44
-      ],
-      [
-       0.61,
-       0.43
-      ]
-     ]
-    },
-    {
      "id": "booths",
      "group": "fit",
      "poly": [
@@ -1981,6 +1468,76 @@
       [
        0.23,
        0.95
+      ]
+     ]
+    },
+    {
+     "id": "banquette",
+     "group": "fit",
+     "poly": [
+      [
+       0.78,
+       0.63
+      ],
+      [
+       1,
+       0.63
+      ],
+      [
+       1,
+       0.75
+      ],
+      [
+       0.9,
+       0.745
+      ],
+      [
+       0.78,
+       0.72
+      ]
+     ]
+    },
+    {
+     "id": "station",
+     "group": "fit",
+     "poly": [
+      [
+       0.72,
+       0.66
+      ],
+      [
+       0.82,
+       0.655
+      ],
+      [
+       0.82,
+       0.79
+      ],
+      [
+       0.72,
+       0.8
+      ]
+     ]
+    },
+    {
+     "id": "counter",
+     "group": "fit",
+     "poly": [
+      [
+       0.9,
+       0.74
+      ],
+      [
+       1,
+       0.74
+      ],
+      [
+       1,
+       1
+      ],
+      [
+       0.9,
+       1
       ]
      ]
     },
@@ -2015,54 +1572,6 @@
      ]
     },
     {
-     "id": "station",
-     "group": "fit",
-     "poly": [
-      [
-       0.72,
-       0.66
-      ],
-      [
-       0.82,
-       0.655
-      ],
-      [
-       0.82,
-       0.79
-      ],
-      [
-       0.72,
-       0.8
-      ]
-     ]
-    },
-    {
-     "id": "banquette",
-     "group": "fit",
-     "poly": [
-      [
-       0.78,
-       0.63
-      ],
-      [
-       1,
-       0.63
-      ],
-      [
-       1,
-       0.75
-      ],
-      [
-       0.9,
-       0.745
-      ],
-      [
-       0.78,
-       0.72
-      ]
-     ]
-    },
-    {
      "id": "tables-r",
      "group": "fit",
      "poly": [
@@ -2089,28 +1598,6 @@
       [
        0.745,
        0.8
-      ]
-     ]
-    },
-    {
-     "id": "counter",
-     "group": "fit",
-     "poly": [
-      [
-       0.9,
-       0.74
-      ],
-      [
-       1,
-       0.74
-      ],
-      [
-       1,
-       1
-      ],
-      [
-       0.9,
-       1
       ]
      ]
     },
@@ -2514,12 +2001,12 @@
       "Ceiling roses restored, arches re-run in lime plaster, columns stripped back to the iron."
      ],
      [
-      "Weeks 7–9 · Floors and panelling",
-      "Boards sanded and oiled dark, walnut on the booth wall, the shopfront reglazed."
+      "Weeks 7–10 · Booths, tables, the station",
+      "Booths on the blind wall. The service station sits behind the column, so the floor team never crosses the room."
      ],
      [
-      "Weeks 10–12 · Booths, tables, the station",
-      "Green booths on the wall. The service station sits behind the column, so the floor team never crosses the room."
+      "Weeks 11–12 · Floors and panelling",
+      "Boards sanded and oiled dark, walnut on the booth wall, green leather on the booths, the shopfront reglazed."
      ],
      [
       "Week 13 · Lighting",
@@ -2576,44 +2063,54 @@
      1.1
     ],
     "dim_sat": 0.5,
+    "clay_ao": 0.16,
     "clay_range": [
-     0.7,
-     0.3
-    ],
-    "clay_gamma": 0.5
+     0.85,
+     0.13
+    ]
    },
    "regions": [
     {
-     "id": "ceiling",
+     "id": "floor",
      "group": "shell",
      "poly": [
       [
        0,
-       0
+       0.93
       ],
       [
        1,
-       0
+       0.93
       ],
       [
        1,
-       0.27
-      ],
-      [
-       0.87,
-       0.25
-      ],
-      [
-       0.5,
-       0.2
-      ],
-      [
-       0.25,
-       0.2
+       1
       ],
       [
        0,
-       0.19
+       1
+      ]
+     ]
+    },
+    {
+     "id": "bar",
+     "group": "shell",
+     "poly": [
+      [
+       0,
+       0.53
+      ],
+      [
+       1,
+       0.53
+      ],
+      [
+       1,
+       0.945
+      ],
+      [
+       0,
+       0.945
       ]
      ]
     },
@@ -2674,52 +2171,8 @@
      ]
     },
     {
-     "id": "bar",
+     "id": "ceiling",
      "group": "shell",
-     "poly": [
-      [
-       0,
-       0.53
-      ],
-      [
-       1,
-       0.53
-      ],
-      [
-       1,
-       0.945
-      ],
-      [
-       0,
-       0.945
-      ]
-     ]
-    },
-    {
-     "id": "floor",
-     "group": "shell",
-     "poly": [
-      [
-       0,
-       0.93
-      ],
-      [
-       1,
-       0.93
-      ],
-      [
-       1,
-       1
-      ],
-      [
-       0,
-       1
-      ]
-     ]
-    },
-    {
-     "id": "f-ceiling",
-     "group": "finish",
      "poly": [
       [
        0,
@@ -2748,116 +2201,6 @@
       [
        0,
        0.19
-      ]
-     ]
-    },
-    {
-     "id": "f-walls",
-     "group": "finish",
-     "poly": [
-      [
-       0,
-       0.19
-      ],
-      [
-       0.25,
-       0.2
-      ],
-      [
-       0.25,
-       0.54
-      ],
-      [
-       0,
-       0.54
-      ]
-     ]
-    },
-    {
-     "id": "f-walls-r",
-     "group": "finish",
-     "poly": [
-      [
-       0.87,
-       0.25
-      ],
-      [
-       1,
-       0.27
-      ],
-      [
-       1,
-       0.54
-      ],
-      [
-       0.87,
-       0.54
-      ]
-     ]
-    },
-    {
-     "id": "f-front",
-     "group": "finish",
-     "poly": [
-      [
-       0,
-       0.56
-      ],
-      [
-       1,
-       0.56
-      ],
-      [
-       1,
-       0.945
-      ],
-      [
-       0,
-       0.945
-      ]
-     ]
-    },
-    {
-     "id": "f-top",
-     "group": "finish",
-     "poly": [
-      [
-       0,
-       0.53
-      ],
-      [
-       1,
-       0.53
-      ],
-      [
-       1,
-       0.567
-      ],
-      [
-       0,
-       0.567
-      ]
-     ]
-    },
-    {
-     "id": "f-floor",
-     "group": "finish",
-     "poly": [
-      [
-       0,
-       0.93
-      ],
-      [
-       1,
-       0.93
-      ],
-      [
-       1,
-       1
-      ],
-      [
-       0,
-       1
       ]
      ]
     },
@@ -3476,12 +2819,12 @@
       "Counter framed in steel, the back-bar wall lined and levelled, the ceiling battened out."
      ],
      [
-      "Weeks 6–8 · Veneers and stone",
-      "Walnut on the front and across the ceiling, and a honed marble top that takes a knock."
+      "Weeks 6–8 · Back-bar and stools",
+      "The back-bar shelves go up, three pendants are hung, and three stools are set at 750 mm."
      ],
      [
-      "Weeks 9–10 · Back-bar and stools",
-      "Shelves lit from behind, glass by glass. Three stools at 750 mm, in green velvet."
+      "Weeks 9–10 · Veneers and stone",
+      "Walnut on the front and across the ceiling, a honed marble top that takes a knock, green velvet on the stools."
      ],
      [
       "Week 11 · Scenes",
@@ -3512,13 +2855,162 @@
      0.55
     ],
     "card": "right"
-   }
+   },
+   "flat": [
+    {
+     "poly": [
+      [
+       0.245,
+       0.215
+      ],
+      [
+       0.87,
+       0.215
+      ],
+      [
+       0.87,
+       0.535
+      ],
+      [
+       0.245,
+       0.535
+      ]
+     ],
+     "blur": [
+      3,
+      70
+     ]
+    },
+    {
+     "poly": [
+      [
+       0.0,
+       0.3
+      ],
+      [
+       0.12,
+       0.3
+      ],
+      [
+       0.12,
+       0.53
+      ],
+      [
+       0.0,
+       0.53
+      ]
+     ],
+     "blur": [
+      10,
+      20
+     ]
+    },
+    {
+     "poly": [
+      [
+       0.245,
+       0.125
+      ],
+      [
+       0.33,
+       0.125
+      ],
+      [
+       0.335,
+       0.2
+      ],
+      [
+       0.3,
+       0.235
+      ],
+      [
+       0.27,
+       0.235
+      ],
+      [
+       0.24,
+       0.2
+      ]
+     ],
+     "blur": [
+      2,
+      2
+     ],
+     "k": 0.6
+    },
+    {
+     "poly": [
+      [
+       0.54,
+       0.125
+      ],
+      [
+       0.62,
+       0.125
+      ],
+      [
+       0.625,
+       0.2
+      ],
+      [
+       0.59,
+       0.24
+      ],
+      [
+       0.565,
+       0.24
+      ],
+      [
+       0.535,
+       0.2
+      ]
+     ],
+     "blur": [
+      2,
+      2
+     ],
+     "k": 0.6
+    },
+    {
+     "poly": [
+      [
+       0.825,
+       0.125
+      ],
+      [
+       0.905,
+       0.125
+      ],
+      [
+       0.91,
+       0.2
+      ],
+      [
+       0.88,
+       0.24
+      ],
+      [
+       0.855,
+       0.24
+      ],
+      [
+       0.82,
+       0.2
+      ]
+     ],
+     "blur": [
+      2,
+      2
+     ],
+     "k": 0.6
+    }
+   ]
   }
  ],
  "copy": {
   "eyebrow": "The build",
   "headline": "From the first line to <em>opening night</em>.",
-  "body": "Scroll, and each room builds itself: the plan, the sketch, the shell, the finishes, the fit-out, the lights. A café at eight, a restaurant at two, a bar at eleven. One team from the first drawing to the first service.",
+  "body": "Scroll, and each room builds itself: the plan, the sketch, the shell, the joinery, the finishes, the lights. A café at eight, a restaurant at two, a bar at eleven. One team from the first drawing to the first service.",
   "srSummary": "The build: a café, a restaurant and a bar, each shown in seven stages from the first drawing to opening night. At the end of the café you can take the corner table to see our services. You can skip the build at any time.",
   "rmNote": "Motion is reduced on your device, so each build is shown as three stills: the drawing, the shell and the finished room.",
   "skip": "Skip the build",
@@ -3526,8 +3018,8 @@
    "The drawing",
    "The sketch",
    "The shell",
-   "Materials",
-   "Furniture & fittings",
+   "Joinery & fit-out",
+   "Finishes",
    "Lights on",
    "Open"
   ],

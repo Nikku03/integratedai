@@ -5,11 +5,17 @@ Every venue starts from ONE finished photograph. Each stage of the build is a re
 same photograph, so the layers line up pixel for pixel and the last stage is the real room:
 
     sketch  pencil perspective on paper (difference-of-Gaussians line work + tone hatching)
-    clay    an untextured white model of the room (edge-preserving flatten, high key)
-    dim     the room before the lights come on (bloom removed, highlights pulled, cool)
+    shell   the white model before the fit-out: joinery and furniture only set out (a faint outline)
+    clay    the white model with its fit-out: L0-flat card planes, high key, the sketch's lines drawn on
+    dim     the finishes in working light, before the lights come on (bloom removed, highlights pulled, cool)
     lit     the finished photograph
 
+Regions (build.json): "shell" polygons are structure (the empty model rises over the sketch, feathered
+~3% of the width); "fit" polygons are joinery and fit-out (solid over their outline, feathered beyond it,
+where shell and clay are the same pixels); "flat" polygons flatten fine texture (bottles) into plain planes.
+
     python3 tools/build_layers.py images [venue ...]   # assets/img/build/<venue>-<layer>-{1920,960}.webp
+    python3 tools/build_layers.py images --clay        # only re-render shell + clay (and the masks)
     python3 tools/build_layers.py html                 # partials/build.html from assets/data/build.json
     python3 tools/build_layers.py preview [venue ...]  # grid + region overlays (to OUT_PREVIEW) for placing polygons
 
@@ -310,6 +316,7 @@ def line_work(rgb: np.ndarray, P: dict, W: int = 1920) -> tuple[np.ndarray, np.n
     free = free * (0.8 + 0.2 * noise(h, w, 60 * sc, 21))
     free = np.clip(gauss(free, 0.55 * sc) * P.get("weight", 2.0), 0, 1) * P.get("free", 0.62)
     lines = np.maximum(ruled * P.get("rule", 0.95), free)
+    line_work.parts = (ruled * P.get("rule", 0.95), free)
     return lines, S
 
 
@@ -343,10 +350,10 @@ def strokes(tone: np.ndarray, P: dict, sc: float, seed=5) -> np.ndarray:
     return gauss(a, 0.45 * sc)
 
 
-def render_sketch(rgb: np.ndarray, P: dict, W: int) -> np.ndarray:
+def render_sketch(rgb: np.ndarray, P: dict, W: int, lw=None) -> np.ndarray:
     h, w = rgb.shape[:2]
     sc = W / 1920
-    lines, S = line_work(rgb, P, W)
+    lines, S = lw if lw is not None else line_work(rgb, P, W)
     # tone relative to this photo's own range: 1 = darkest
     lo, hi = np.percentile(S, P.get("tone_pct", [3, 60]))
     tone = 1 - np.clip((S - lo) / (hi - lo), 0, 1)
@@ -381,31 +388,133 @@ def l0_smooth(I: np.ndarray, lam: float, kappa: float = 2.0, beta_max: float = 1
     return S
 
 
-def render_clay(rgb: np.ndarray, P: dict, W: int) -> np.ndarray:
+def blur1(a: np.ndarray, s: float, axis: int) -> np.ndarray:
+    """Gaussian-ish blur along one axis: three box passes (cumulative sums), any sigma, fast."""
+    if s <= 0.5:
+        return a
+    r = max(1, int(round((math.sqrt(4 * s * s + 1) - 1) / 2)))
+    out = a
+    for _ in range(3):
+        pad = [(0, 0)] * a.ndim
+        pad[axis] = (r + 1, r)
+        c = np.cumsum(np.pad(out, pad, mode="edge"), axis=axis, dtype=np.float64)
+        n = out.shape[axis]
+        hi = [slice(None)] * a.ndim; hi[axis] = slice(2 * r + 1, 2 * r + 1 + n)
+        lo = [slice(None)] * a.ndim; lo[axis] = slice(0, n)
+        out = ((c[tuple(hi)] - c[tuple(lo)]) / (2 * r + 1)).astype(np.float32)
+    return out
+
+
+def clay_tone(rgb: np.ndarray, P: dict, W: int, flats=()) -> tuple[np.ndarray, np.ndarray]:
+    """The white model's shading in [0,1] (before colour and line work), and the flattened areas.
+    A white model has no materials: walnut, steel, brick and leaves are all the same card. So each plane keeps
+    only a small, compressed share of its own value (L0-flattened: flat planes, crisp edges). Fine texture that
+    would turn to blobs (the bottles on a back-bar) is authored as a flat area: one plain plane in the room's light."""
     sc = W / 1920
     L = luma(rgb)
-    # work at half size (faster, and flatter), then lift back with the full-size edges
-    half = np.asarray(Image.fromarray(L, mode="F").resize((L.shape[1] // 2, L.shape[0] // 2), Image.BILINEAR), np.float32)
+    h, w = L.shape
+    half = np.asarray(Image.fromarray(L, mode="F").resize((w // 2, h // 2), Image.BILINEAR), np.float32)
     F = l0_smooth(half, P.get("l0", 0.012))
-    F = np.asarray(Image.fromarray(F, mode="F").resize((L.shape[1], L.shape[0]), Image.BICUBIC), np.float32)
-    F = guided(L, F, max(1, int(3 * sc)), 1e-3)            # snap the edges back to the full-size photo
+    F = guided(L, np.asarray(Image.fromarray(F, mode="F").resize((w, h), Image.BICUBIC), np.float32), max(1, int(3 * sc)), 1e-3)
+    flat = np.zeros((h, w), np.float32)
+    for f in flats:
+        m = gauss(poly_grow(f["poly"], w, h, 0), f.get("soft", 0.004) * w)
+        sy, sx = f.get("blur", [4, 60])
+        Fb = blur1(blur1(F, sy * sc, 0), sx * sc, 1)
+        F = F * (1 - m) + Fb * m
+        flat = np.maximum(flat, m * f.get("k", 1.0))
     lo, hi = np.percentile(F, [1.0, 99.5])
-    t = np.clip((F - lo) / (hi - lo), 0, 1) ** P.get("clay_gamma", 0.55)
-    base, span = P.get("clay_range", [0.66, 0.34])
+    t = (np.clip((F - lo) / (hi - lo), 0, 1) ** P.get("clay_gamma", 0.6)).astype(np.float32)
+    base, span = P.get("clay_range", [0.8, 0.18])
     shade = base + span * t
-    # a whisper of occlusion where planes meet, and the model's edges
-    ao = np.clip(gauss(F, 24 * sc) - F, 0, 1) * P.get("clay_ao", 0.35)
+    ao = np.clip(gauss(F, 24 * sc) - F, 0, 1) * P.get("clay_ao", 0.22)
     shade = shade - ao
-    lines, _ = line_work(rgb, P, W)
-    shade = shade * (1 - np.clip(lines, 0, 1) * P.get("clay_lines", 0.16))
-    # a soft skylight from above, the way a model is photographed
-    y = np.linspace(0, 1, L.shape[0], dtype=np.float32)[:, None]
+    y = np.linspace(0, 1, h, dtype=np.float32)[:, None]
     shade = shade * (1.0 + P.get("clay_sky", 0.03) * (0.5 - y))
+    return shade.astype(np.float32), flat
+
+
+def clay_colour(shade: np.ndarray) -> np.ndarray:
     warm = CLAY[None, None, :]
     cool = np.array([0.90, 0.915, 0.93], np.float32)[None, None, :]
     k = np.clip((1 - shade[..., None]) * 2.2, 0, 1)            # shadows go a touch cooler, like card under daylight
-    col = shade[..., None] * (warm * (1 - k * 0.5) + cool * k * 0.5)
-    return np.clip(col, 0, 1)
+    return np.clip(shade[..., None] * (warm * (1 - k * 0.5) + cool * k * 0.5), 0, 1)
+
+
+def clay_ink(col: np.ndarray, lines: np.ndarray, P: dict) -> np.ndarray:
+    """The sketch's line work multiplied over the card: the model's edges are drawn."""
+    ink = np.clip(lines, 0, 1)[..., None] * P.get("clay_lines", 0.85)
+    return col * (1 - ink * (1 - GRAPHITE[None, None, :]))
+
+
+def clay_lines(parts, flat: np.ndarray, P: dict) -> np.ndarray:
+    """Ruled lines in full; freehand ones fade out over the flat areas, so the bottles don't come back as doodles."""
+    ruled, free = parts
+    return np.maximum(ruled, free * (1 - flat * P.get("flat_lines", 0.85)) * P.get("clay_free", 0.85))
+
+
+def push_pull(a: np.ndarray, k: np.ndarray) -> np.ndarray:
+    """Fill where k is 0 from where it is 1 (k in [0,1]): a smooth membrane, via a push-pull pyramid."""
+    a, k = a.astype(np.float32), k.astype(np.float32)
+    h, w = k.shape
+    if h <= 3 or w <= 3:
+        m = (a * k[..., None]).sum((0, 1)) / max(k.sum(), 1e-6)
+        return np.broadcast_to(m, a.shape).astype(np.float32)
+    ph, pw = h % 2, w % 2
+    ka = np.pad(k, ((0, ph), (0, pw)), mode="edge")
+    aa = np.pad(a * k[..., None], ((0, ph), (0, pw), (0, 0)), mode="edge")
+    H2, W2 = ka.shape[0] // 2, ka.shape[1] // 2
+    k2 = ka.reshape(H2, 2, W2, 2).sum((1, 3))
+    a2 = aa.reshape(H2, 2, W2, 2, -1).sum((1, 3))
+    c = push_pull(a2 / np.maximum(k2, 1e-6)[..., None], np.clip(k2, 0, 1))
+    up = np.stack([np.asarray(Image.fromarray(np.ascontiguousarray(c[..., i]), mode="F").resize((W2 * 2, H2 * 2), Image.BILINEAR), np.float32)
+                   for i in range(c.shape[-1])], -1)[:h, :w]
+    return a * k[..., None] + up * (1 - k[..., None])
+
+
+def poly_grow(poly, w, h, r, ss=2) -> np.ndarray:
+    """A polygon grown by r px (round joins), anti-aliased, as [0,1] at w x h."""
+    im = Image.new("L", (w * ss, h * ss), 0)
+    d = ImageDraw.Draw(im)
+    pts = [(x * w * ss, y * h * ss) for x, y in poly]
+    d.polygon(pts, fill=255)
+    R = r * ss
+    if R >= 1:
+        d.line(pts + [pts[0]], fill=255, width=int(round(2 * R)), joint="curve")
+        for x, y in pts:
+            d.ellipse((x - R, y - R, x + R, y + R), fill=255)
+    return np.asarray(im.resize((w, h), Image.BILINEAR), np.float32) / 255
+
+
+GHOST = (0.006, 0.004)      # the fit-out's ghost in the empty shell: grown by, and feathered by (fractions of the width)
+
+
+def fit_ghost(v: dict, w: int, h: int) -> np.ndarray:
+    """Where the fit-out will stand, soft-edged: in the empty shell it is only set out (a faint outline)."""
+    g, s = GHOST
+    m = np.zeros((h, w), np.float32)
+    for r in v["regions"]:
+        if r["group"] == "fit":
+            m = np.maximum(m, poly_grow(r["poly"], w, h, g * w))
+    return np.clip(gauss(m, s * w), 0, 1)
+
+
+def render_clay(rgb: np.ndarray, P: dict, W: int, v: dict, parts) -> tuple[np.ndarray, np.ndarray]:
+    """(clay, shell): the white model with its fit-out, and the same model before the fit-out: the joinery
+    and furniture are only set out there (the walls and floor carried through, a faint outline), so each
+    piece can be set down in its place."""
+    sc = W / 1920
+    shade, flat = clay_tone(rgb, P, W, v.get("flat", []))
+    lines = clay_lines(parts, flat, P)
+    clay = clay_ink(clay_colour(shade), lines, P)
+    h, w = shade.shape
+    G = fit_ghost(v, w, h)
+    known = (G < 0.01).astype(np.float32)
+    filled = push_pull(shade[..., None], known)[..., 0]
+    filled = gauss(filled, 4 * sc) * (1 - known) + filled * known
+    empty = shade * (1 - G) + (filled * 0.6 + shade * 0.4) * G
+    shell = clay_ink(clay_colour(empty), lines * (1 - G * (1 - P.get("ghost_lines", 0.28))), P)
+    return clay, shell
 
 
 def lamp_mask(h: int, w: int, lamps: list, sc: float) -> np.ndarray:
@@ -444,66 +553,30 @@ def render_dim(rgb: np.ndarray, P: dict, W: int, lamps=()) -> np.ndarray:
 MASK_W = 640
 
 
-def poly_mask(poly, w, h) -> np.ndarray:
-    im = Image.new("L", (w * 2, h * 2), 0)
-    ImageDraw.Draw(im).polygon([(x * w * 2, y * h * 2) for x, y in poly], fill=255)
-    return np.asarray(im.resize((w, h), Image.BILINEAR), np.float32) / 255
-
-
-def colour_key(rgb: np.ndarray, key: str) -> np.ndarray:
-    r, g, b = rgb[..., 0], rgb[..., 1], rgb[..., 2]
-    mx, mn = rgb.max(-1), rgb.min(-1)
-    sat = (mx - mn) / (mx + 1e-4)
-    if key == "green":           # leaves: green-dominant and saturated, or deep shadow among them
-        k = ((g > r * 1.02) & (g > b * 1.02) & (sat > 0.14)) | ((mx < 0.22) & (g >= r))
-    elif key == "dark":          # dark joinery, steel, silhouettes
-        k = luma(rgb) < 0.2
-    elif key == "warm":          # timber, amber glass
-        k = (r > g * 1.08) & (r > b * 1.25) & (sat > 0.2)
-    elif key == "stuff":         # anything that isn't smooth floor or plain wall: furniture, bottles, stools
-        L = luma(rgb)
-        sd = np.sqrt(np.clip(box(L * L, 2) - box(L, 2) ** 2, 0, None))
-        cd = np.abs(rgb - gauss(rgb, 5)).sum(-1)
-        k = (smoothstep(0.02, 0.05, sd) + smoothstep(0.08, 0.16, cd)) > 0.5
-        k = maxf(k.astype(np.float32), 5)
-        k = 1 - maxf(1 - k, 3)                 # close small gaps (chair backs, table tops)
-        return gauss(k, 1.0)
-    elif key == "contrast":      # an object against a textured wall (the bike on the brick)
-        L = luma(rgb)
-        k = np.abs(L - gauss(L, 6)) > 0.13
-    else:
-        raise SystemExit(f"unknown key {key}")
-    k = maxf(k.astype(np.float32), 3)       # grow a little so leaf edges are inside
-    return gauss(k, 0.8)
-
-
 def region_masks(v: dict) -> dict:
-    """Soft masks at MASK_W for every region. Finish regions exclude everything the fit-out will bring in,
-    so the walls can take their finish while the furniture in front of them is still white card."""
+    """Soft masks at MASK_W. Shell regions (structure) reveal the empty white model over the sketch, feathered
+    wide (about 3% of the frame) so no edge reads as a cut. Fit regions (joinery and fit-out) are solid over
+    the hole cut for them in the empty shell and feather out beyond it, where the empty shell and the full
+    model are the same pixels: set down, a piece covers its hole exactly and its feather never shows.
+    A later piece owns any overlap with an earlier one."""
     im = Image.open(SRC / v["src"]).convert("RGB")
     w, h = MASK_W, round(im.height * MASK_W / im.width)
-    rgb = to_f(im.resize((w, h), Image.LANCZOS))
-    feather = v.get("render", {}).get("feather", 1.6)
-    out = {}
-    fit_all = np.zeros((h, w), np.float32)
+    R = v.get("render", {})
+    fe = R.get("feather", 0.011) * w               # gaussian sigma: 10-90% over ~2.8% of the width
+    hole = (GHOST[0] + 3 * GHOST[1]) * w           # the ghost's full reach in the empty shell
+    out, cores = {}, {}
     for r in v["regions"]:
-        m = poly_mask(r["poly"], w, h)
-        if r.get("key"):
-            m = m * colour_key(rgb, r["key"])
-        out[r["id"]] = m
-        if r["group"] == "fit":
-            fit_all = np.maximum(fit_all, m)
-    # finishes and fit-out share a hard edge (so, stacked, they cover each other exactly: no white seam);
-    # every other edge is feathered
-    for r in v["regions"]:
-        m = out[r["id"]]
-        if r["group"] == "finish":          # grown a pixel so neighbouring finishes overlap instead of leaving a seam
-            m = np.clip(gauss(maxf(m, 3), feather), 0, 1) * (1 - fit_all)
-        elif r["group"] == "fit":           # grown a pixel so it covers the soft rim of the hole it drops into
-            m = np.clip(gauss(maxf(m, 3), 0.35), 0, 1)
+        if r["group"] == "shell":
+            m = gauss(poly_grow(r["poly"], w, h, 1.2 * fe), fe)
         else:
-            m = np.clip(gauss(m, feather), 0, 1)
-        out[r["id"]] = m
+            core = poly_grow(r["poly"], w, h, hole + 0.004 * w)
+            m = np.maximum(core, gauss(poly_grow(r["poly"], w, h, hole + 0.004 * w + 2.5 * fe), fe))
+            cores[r["id"]] = core
+        out[r["id"]] = np.clip(m, 0, 1)
+    fits = [r["id"] for r in v["regions"] if r["group"] == "fit"]
+    for i, rid in enumerate(fits):
+        for later in fits[i + 1:]:
+            out[rid] = out[rid] * (1 - cores[later])
     return out
 
 
@@ -517,6 +590,7 @@ def write_masks(v: dict) -> dict:
         if not len(xs):
             continue
         pad = 2
+        m = np.where(m > 0.004, m, 0)
         x0, x1 = max(0, xs.min() - pad), min(w, xs.max() + pad + 1)
         y0, y1 = max(0, ys.min() - pad), min(h, ys.max() + pad + 1)
         crop = m[y0:y1, x0:x1]
@@ -552,23 +626,33 @@ def images(ids):
             continue
         for W in WIDTHS:
             rgb = load(v, W)
+            only_clay = "--clay" in sys.argv          # re-render just the white model (shell + clay)
             if W == 1920:
-                sk = render_sketch(rgb, P, W)
-                cl = render_clay(rgb, P, W)
-                dm = render_dim(rgb, P, W, [g for g in v.get("glows", []) if g.get("lamp", True)])
-                cache = {"sketch": sk, "clay": cl, "dim": dm}
+                lw = line_work(rgb, P, W)
+                cl, sh = render_clay(rgb, P, W, v, line_work.parts)
+                cache = {"shell": sh, "clay": cl}
+                if not only_clay:
+                    cache["sketch"] = render_sketch(rgb, P, W, lw)
+                    cache["dim"] = render_dim(rgb, P, W, [g for g in v.get("glows", []) if g.get("lamp", True)])
             else:
                 # the phone set is resampled from the 1920 renders so it matches them exactly
                 cache = {k: np.asarray(to_im(a).resize((W, rgb.shape[0]), Image.LANCZOS), np.float32) / 255 for k, a in cache.items()}
                 # thin lines lose weight when halved; give the graphite a little back
-                sk = cache["sketch"]
-                g = 1 - (luma(sk) / luma(PAPER[None, None, :]))
-                g = np.clip(g * 1.25, 0, 1)
-                cache["sketch"] = PAPER[None, None, :] * (1 - g[..., None]) + GRAPHITE[None, None, :] * g[..., None]
-            q = {"sketch": 80, "clay": 78, "dim": 76}
+                # the white model's drawn edges too: a light unsharp mask keeps them crisp at half size
+                for k in ("shell", "clay"):
+                    c = cache[k]
+                    cache[k] = np.clip(c + 0.7 * (c - gauss(c, 1.2)), 0, 1)
+                if "sketch" in cache:
+                    sk = cache["sketch"]
+                    g = 1 - (luma(sk) / luma(PAPER[None, None, :]))
+                    g = np.clip(g * 1.25, 0, 1)
+                    cache["sketch"] = PAPER[None, None, :] * (1 - g[..., None]) + GRAPHITE[None, None, :] * g[..., None]
+            q = {"sketch": 80, "shell": 80, "clay": 80, "dim": 76}
             for k, a in cache.items():
                 p = save(a, v["id"], k, W, q[k])
                 print(f"  {p.relative_to(SITE)}  {p.stat().st_size // 1024} KB")
+            if only_clay:
+                continue
             p = save(rgb, v["id"], "lit", W, 82)
             print(f"  {p.relative_to(SITE)}  {p.stat().st_size // 1024} KB")
 
@@ -755,17 +839,21 @@ def venue_html(v: dict, C: dict) -> str:
         if r["id"] not in meta["boxes"]:
             continue
         x, y, w, h = meta["boxes"][r["id"]]
-        src = "clay" if r["group"] == "shell" else "dim"
+        src = "shell" if r["group"] == "shell" else "clay"
         regs.append((r["group"], f'<div class="build__reg build__reg--{src}" data-g="{r["group"]}" data-m="{vid}-m-{r["id"]}.webp" '
                      f'style="--x:{_n(x)};--y:{_n(y)};--w:{_n(w)};--h:{_n(h)}"><i></i></div>'))
     grp = lambda g: "".join(h for gg, h in regs if gg == g)
     glows = "".join(f'<i class="build__glow{" build__glow--" + g["c"] if g.get("c") else ""}" style="--x:{_n(g["x"])};--y:{_n(g["y"])};--r:{_n(g["r"])}"></i>'
                     for g in v.get("glows", []))
+    # the image box, bottom to top: the sketch and the ruler's lines; the shell (structure regions, then the whole
+    # empty model); the fit-out (each piece, then the whole model); the finishes (one soft sweep); the lit room; glows
     box = (f'<div class="build__box" data-box aria-hidden="true">'
            f'<div class="build__layer" data-layer="sketch"></div>'
            f'<svg class="build__rule" viewBox="0 0 {Wm} {Hm}" preserveAspectRatio="none" focusable="false">{rule}</svg>'
-           f'{grp("shell")}<div class="build__layer" data-layer="clay"></div>{grp("finish")}{grp("fit")}'
-           f'<div class="build__layer" data-layer="dim"></div><div class="build__layer" data-layer="lit"></div>'
+           f'{grp("shell")}<div class="build__layer" data-layer="shell"></div>'
+           f'{grp("fit")}<div class="build__layer" data-layer="clay"></div>'
+           f'<div class="build__sweep" data-sweep><div class="build__layer" data-layer="dim"></div></div>'
+           f'<div class="build__layer" data-layer="lit"></div>'
            f'<div class="build__glows">{glows}</div></div>')
     end = c["end"]
     if end["kind"] == "cafe":
@@ -858,7 +946,7 @@ def preview(ids):
         font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 18)
     except OSError:
         font = ImageFont.load_default()
-    cols = {"shell": (255, 60, 60), "finish": (255, 170, 0), "fit": (40, 140, 255)}
+    cols = {"shell": (255, 60, 60), "fit": (40, 140, 255)}
     for v in data["venues"]:
         if ids and v["id"] not in ids:
             continue

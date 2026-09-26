@@ -5,9 +5,11 @@
  *
  * Each venue is a tall track with a sticky 100svh stage (no ScrollTrigger pin) and ONE scrubbed
  * timeline: 01 the drawing (plan strokes draw themselves) → 02 the sketch (paper, the ruler's lines,
- * then the pencil drawing) → 03 the shell (white model, structure first) → 04 materials (finishes,
- * region by region) → 05 furniture & fittings (each piece drops into place) → 06 lights on (the
- * lamps come up, the room warms) → 07 open (the real photograph, the end title and its action).
+ * then the pencil drawing) → 03 the shell (the empty white model rises over the sketch, structure
+ * first) → 04 joinery & fit-out (each piece is set down in white card, so the frame stays one
+ * monochrome model) → 05 finishes (the real materials wash across the whole room in one soft
+ * sweep) → 06 lights on (the lamps come up, the room warms) → 07 open (the real photograph, the end
+ * title and its action).
  * Every layer is a rendering of the same photograph, so they line up to the pixel.
  *
  * Only opacity, transform and clip-path move. Layers load (and decode) a screen ahead, and are
@@ -22,13 +24,15 @@
   const $ = (s, r = d) => r.querySelector(s);
   const $$ = (s, r = d) => Array.from(r.querySelectorAll(s));
   const phoneMQ = w.matchMedia("(max-width: 600px)");
-  const LAYERS = ["sketch", "clay", "dim", "lit"];
+  const LAYERS = ["sketch", "shell", "clay", "dim", "lit"];
 
   // stage boundaries on the timeline (seconds of timeline time; the scroll maps onto them)
-  const T = { sketch: 1.6, shell: 2.9, finish: 4.0, fit: 5.1, lights: 6.3, open: 7.4, end: 9.0 };
-  const STARTS = [0, T.sketch, T.shell, T.finish, T.fit, T.lights, T.open];
+  const T = { sketch: 1.6, shell: 2.9, fit: 4.0, finish: 5.1, lights: 6.3, open: 7.4, end: 9.0 };
+  const STARTS = [0, T.sketch, T.shell, T.fit, T.finish, T.lights, T.open];
+  const SWEEP = 1.0;                                    // the finishes' sweep, in timeline seconds
   // when a layer has fully covered what's under it (so the covered parts can stop painting)
-  const PAST = [["plan", 2.02], ["sketch", 2.82], ["clay", 3.96], ["dim", 6.22], ["lit", 7.12]];
+  const PAST = [["plan", 2.02], ["sketch", 2.82], ["shell", T.fit - 0.02], ["clay", T.finish - 0.02],
+    ["dim", T.finish + 0.08 + SWEEP], ["lit", T.lights + 0.82]];
 
   /* ---------------------------------------------------------------- loading */
   function urls(v, root) {
@@ -71,6 +75,7 @@
     const rulePaths = $$("path", rule);
     const regs = (g) => $$(`.build__reg[data-g="${g}"]`, v);
     const glows = $$(".build__glow", v);
+    const sweep = $("[data-sweep]", v);
     const scrim = $("[data-scrim]", v);
     const end = $("[data-end]", v);
     const endParts = Array.from(end.children);
@@ -115,18 +120,24 @@
     tl.to(L.sketch, { opacity: 1, duration: 0.35, ease: "power1.inOut" }, T.sketch + 0.85);
     tl.to(rule, { opacity: 0, duration: 0.15 }, T.sketch + 1.12);
 
-    /* 03 — the shell: structure first, then the rest of the white model */
-    tl.to(regs("shell"), { opacity: 1, duration: 0.22, ease: "power1.inOut", stagger: 0.15 }, T.shell + 0.08);
-    tl.to(L.clay, { opacity: 1, duration: 0.2 }, T.finish - 0.26);
+    /* 03 — the shell: the empty white model rises over the sketch, structure first (floor, walls, roof) */
+    const shell = regs("shell");
+    tl.fromTo(shell, { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.3, ease: "power2.out", stagger: (0.8 - 0.3) / Math.max(1, shell.length - 1) }, T.shell + 0.06);
+    tl.to(L.shell, { opacity: 1, duration: 0.12 }, T.fit - 0.16);
 
-    /* 04 — materials: finishes take over, region by region (the fit-out stays white card) */
-    const fin = regs("finish");
-    tl.to(fin, { opacity: 1, duration: 0.24, ease: "power1.inOut", stagger: (0.86 - 0.24) / Math.max(1, fin.length - 1) }, T.finish + 0.08);
-
-    /* 05 — furniture & fittings: each piece is set down (a 14px drop and a fade) */
+    /* 04 — joinery & fit-out: each piece is set down in white card over its outline (a 14px drop and a fade) */
     const fit = regs("fit");
     tl.fromTo(fit, { opacity: 0, y: -14 }, { opacity: 1, y: 0, duration: 0.26, ease: "power2.out", stagger: (0.84 - 0.26) / Math.max(1, fit.length - 1) }, T.fit + 0.08);
-    tl.to(L.dim, { opacity: 1, duration: 0.2 }, T.lights - 0.28);
+    tl.to(L.clay, { opacity: 1, duration: 0.1 }, T.finish - 0.14);
+
+    /* 05 — finishes: the real materials wash across the whole room in one broad, feathered sweep. The sweep
+       slides right while the photograph inside it slides left by the same distance, so only the soft edge moves */
+    if (sweep) {
+      const pic = sweep.firstElementChild;
+      tl.set(sweep, { opacity: 1 }, T.finish + 0.06);
+      tl.fromTo(sweep, { xPercent: -100 }, { xPercent: 0, duration: SWEEP, ease: "power1.inOut" }, T.finish + 0.08);
+      tl.fromTo(pic, { xPercent: 150 }, { xPercent: 0, duration: SWEEP, ease: "power1.inOut" }, T.finish + 0.08);
+    }
 
     /* 06 — lights on: the lamps come up one by one, the room warms, then settles to the photograph */
     tl.to(glows, { opacity: 1, duration: 0.1, ease: "power2.out", stagger: { amount: 0.3 } }, T.lights + 0.08);
