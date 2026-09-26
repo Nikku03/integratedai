@@ -57,6 +57,10 @@ class Settings(BaseSettings):
     graph_budget_coefficient: float = 4.0  # expansion budget = ceil(coef * log2(N))
     named_document_max_matches: int = 5  # a capitalised name that matches more files than this is a topic, not a document name
     dynamic_memory: bool = False  # wire records that fire together in answers (cie.topology.dynamic)
+    # REM (cie.rem): the conventional typed traversal is the default; the priority policy and routing shortcuts are
+    # opt-in until the benchmark in docs/REM.md shows they help without regressions
+    rem_policy_enabled: bool = False
+    rem_routing_enabled: bool = False
     dynamic_max_fired: int = 6
     dynamic_min_support: float = 0.5
     dynamic_max_degree: int = 12

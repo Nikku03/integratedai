@@ -26,6 +26,11 @@ def handle(session: Session, job: Job, **deps) -> dict:
             raise RuntimeError("document not found")
         out = run_extraction(session, doc, job=job, **{k: v for k, v in deps.items() if k in ("vault", "embedder", "settings", "ocr")})
         return {"sections": out.sections, "records": out.records, "completeness": out.completeness}
+    if job.kind == "rem_change":
+        from cie.memory.embeddings import get_embedding_provider
+        from cie.rem.change import process_event
+
+        return process_event(session, uuid.UUID(job.payload["event_id"]), embedder=deps.get("embedder") or get_embedding_provider())
     if job.kind == "agent_task":
         from cie.agents.runtime import run_task_job
 

@@ -110,6 +110,16 @@ def cmd_simulate(args) -> None:
     run_simulation(out_dir=Path(args.out))
 
 
+def cmd_rem(args) -> None:
+    import json
+
+    from cie.rem import cli as rem_cli
+
+    out = getattr(rem_cli, args.rem_cmd.replace("-", "_"))(args)
+    if out is not None:
+        print(json.dumps(out, indent=2, default=str))
+
+
 def main(argv: list[str] | None = None) -> int:
     configure_logging(get_settings().log_level)
     ap = argparse.ArgumentParser(prog="cie")
@@ -139,6 +149,37 @@ def main(argv: list[str] | None = None) -> int:
     sm = sub.add_parser("simulate", help="multi-agent simulation")
     sm.add_argument("--out", default="eval_out/simulation")
     sm.set_defaults(fn=cmd_simulate)
+    rm = sub.add_parser("rem", help="REM: dependency exploration, evidence selection, change impact")
+    rsub = rm.add_subparsers(dest="rem_cmd", required=True)
+    r = rsub.add_parser("ingest", help="load a bundle of source records into a tenant's graph")
+    r.add_argument("bundle")
+    r.add_argument("--tenant", required=True)
+    r = rsub.add_parser("query", help="query mode")
+    r.add_argument("--tenant", required=True)
+    r.add_argument("--principal", required=True)
+    r.add_argument("--question", required=True)
+    r.add_argument("--policy", default="traversal", choices=["search", "traversal", "rem", "rem+routing"])
+    r.add_argument("--limits", default="{}", help="JSON, e.g. '{\"max_tokens\": 2000}'")
+    r.add_argument("--projects", default="", help="comma-separated project keys")
+    r = rsub.add_parser("change", help="submit (and process) a change event")
+    r.add_argument("--tenant", required=True)
+    r.add_argument("--kind", required=True)
+    r.add_argument("--payload", required=True, help="path to a JSON file")
+    r.add_argument("--key", required=True, help="idempotency key")
+    r.add_argument("--queue", action="store_true", help="enqueue for the worker instead of processing now")
+    r = rsub.add_parser("replay", help="re-apply a tenant's events, in order, into a new tenant and compare the impacts")
+    r.add_argument("--tenant", required=True)
+    r.add_argument("--into", default=None)
+    r = rsub.add_parser("demo", help="supplier-delay demonstration (fictional data)")
+    r.add_argument("--out", default="eval_out/rem_demo.json")
+    r = rsub.add_parser("bench", help="REM benchmarks: change impact and evidence on the controlled dataset; retrieval on ERB")
+    r.add_argument("which", choices=["dependency", "erb", "all"])
+    r.add_argument("--out", default="eval_out/rem_bench")
+    r.add_argument("--split", default="dev", choices=["dev", "heldout"])
+    r.add_argument("--erb-tenant", default=None)
+    r.add_argument("--erb-root", default=None)
+    r.add_argument("--questions", type=int, default=0)
+    rm.set_defaults(fn=cmd_rem)
     args = ap.parse_args(argv)
     args.fn(args)
     return 0

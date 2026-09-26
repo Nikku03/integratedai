@@ -746,3 +746,7 @@ __all__ = [name for name in dir() if not name.startswith("_")]
 
 # Keep unused-import linters quiet for names re-exported through __all__.
 _ = (JSON, text)
+
+
+# REM graph tables live in their own module; importing it registers them with Base.metadata.
+from cie.rem import models as _rem_models  # noqa: E402,F401
