@@ -1,0 +1,357 @@
+{
+  "split": "dev",
+  "seeds": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "change": {
+    "events": 48,
+    "impact_detection": {
+      "A": {
+        "precision": 0.006,
+        "recall": 0.031,
+        "tp": 9,
+        "fp": 1514,
+        "fn": 283
+      },
+      "B": {
+        "precision": 0.331,
+        "recall": 0.962,
+        "tp": 281,
+        "fp": 569,
+        "fn": 11
+      },
+      "C": {
+        "precision": 0.99,
+        "recall": 1.0,
+        "tp": 292,
+        "fp": 3,
+        "fn": 0
+      }
+    },
+    "C_excluding_hypothesis_flagged": {
+      "precision": 1.0,
+      "recall": 0.986,
+      "tp": 288,
+      "fp": 0,
+      "fn": 4
+    },
+    "C_hypothesis_flagged": {
+      "correct": 4,
+      "wrong": 3
+    },
+    "incorrect_propagation_per_event": {
+      "A": 31.54,
+      "B": 11.85,
+      "C": 0.06
+    },
+    "C_impact_class_accuracy": 0.99,
+    "C_covered_identified": "16/16",
+    "current_assessment": {
+      "C": {
+        "stale": 0,
+        "missed": 8,
+        "flagged": 218,
+        "stale_rate": 0.0
+      },
+      "B": {
+        "stale": 354,
+        "missed": 0,
+        "flagged": 580,
+        "stale_rate": 0.61
+      }
+    },
+    "latency_ms": {
+      "C_detect": {
+        "p50": 26.4,
+        "p95": 153.1
+      },
+      "C_ops": {
+        "p50": 12.5,
+        "p95": 79.6
+      },
+      "B": {
+        "p50": 22.3,
+        "p95": 36.5
+      },
+      "A": {
+        "p50": 17.7,
+        "p95": 26.0
+      }
+    },
+    "db_calls_p50": {
+      "C": 17,
+      "B": 6
+    },
+    "visited_p50": {
+      "C": 8,
+      "B": 18
+    },
+    "C_incomplete_events": 0,
+    "D": "identical to C: change rules never read routing shortcuts"
+  },
+  "query": {
+    "tight": {
+      "A": {
+        "questions": 36,
+        "evidence_recall": 0.552,
+        "evidence_precision": 0.605,
+        "project_recall": 1.0,
+        "project_precision": 0.832,
+        "answer_exact": 0.625,
+        "citation_support": 1.0,
+        "incomplete": 0,
+        "unauthorized_disclosures": 0,
+        "latency_ms_p50": 50.5,
+        "latency_ms_p95": 69.0,
+        "visited_p50": 10,
+        "db_calls_p50": 8,
+        "tokens_p50": 24,
+        "model_calls": 0
+      },
+      "B": {
+        "questions": 36,
+        "evidence_recall": 0.85,
+        "evidence_precision": 0.366,
+        "project_recall": 1.0,
+        "project_precision": 0.499,
+        "answer_exact": 0.125,
+        "citation_support": 1.0,
+        "incomplete": 36,
+        "unauthorized_disclosures": 0,
+        "latency_ms_p50": 68.9,
+        "latency_ms_p95": 98.4,
+        "visited_p50": 36,
+        "db_calls_p50": 14,
+        "tokens_p50": 290,
+        "model_calls": 0
+      },
+      "C": {
+        "questions": 36,
+        "evidence_recall": 0.717,
+        "evidence_precision": 0.337,
+        "project_recall": 1.0,
+        "project_precision": 0.575,
+        "answer_exact": 0.25,
+        "citation_support": 1.0,
+        "incomplete": 36,
+        "unauthorized_disclosures": 0,
+        "latency_ms_p50": 69.2,
+        "latency_ms_p95": 98.4,
+        "visited_p50": 25,
+        "db_calls_p50": 10,
+        "tokens_p50": 268,
+        "model_calls": 0
+      },
+      "D": {
+        "questions": 36,
+        "evidence_recall": 0.638,
+        "evidence_precision": 0.197,
+        "project_recall": 1.0,
+        "project_precision": 0.33,
+        "answer_exact": 0.0,
+        "citation_support": 1.0,
+        "incomplete": 36,
+        "unauthorized_disclosures": 0,
+        "latency_ms_p50": 89.0,
+        "latency_ms_p95": 120.6,
+        "visited_p50": 45,
+        "db_calls_p50": 13,
+        "tokens_p50": 344,
+        "model_calls": 0
+      }
+    },
+    "medium": {
+      "A": {
+        "questions": 36,
+        "evidence_recall": 0.552,
+        "evidence_precision": 0.605,
+        "project_recall": 1.0,
+        "project_precision": 0.832,
+        "answer_exact": 0.625,
+        "citation_support": 1.0,
+        "incomplete": 0,
+        "unauthorized_disclosures": 0,
+        "latency_ms_p50": 49.8,
+        "latency_ms_p95": 65.2,
+        "visited_p50": 10,
+        "db_calls_p50": 8,
+        "tokens_p50": 24,
+        "model_calls": 0
+      },
+      "B": {
+        "questions": 36,
+        "evidence_recall": 0.98,
+        "evidence_precision": 0.16,
+        "project_recall": 1.0,
+        "project_precision": 0.369,
+        "answer_exact": 0.0,
+        "citation_support": 1.0,
+        "incomplete": 34,
+        "unauthorized_disclosures": 0,
+        "latency_ms_p50": 112.4,
+        "latency_ms_p95": 134.5,
+        "visited_p50": 66,
+        "db_calls_p50": 20,
+        "tokens_p50": 633,
+        "model_calls": 0
+      },
+      "C": {
+        "questions": 36,
+        "evidence_recall": 0.975,
+        "evidence_precision": 0.172,
+        "project_recall": 1.0,
+        "project_precision": 0.34,
+        "answer_exact": 0.0,
+        "citation_support": 1.0,
+        "incomplete": 34,
+        "unauthorized_disclosures": 0,
+        "latency_ms_p50": 124.2,
+        "latency_ms_p95": 227.4,
+        "visited_p50": 64,
+        "db_calls_p50": 20,
+        "tokens_p50": 547,
+        "model_calls": 0
+      },
+      "D": {
+        "questions": 36,
+        "evidence_recall": 0.876,
+        "evidence_precision": 0.114,
+        "project_recall": 1.0,
+        "project_precision": 0.302,
+        "answer_exact": 0.0,
+        "citation_support": 1.0,
+        "incomplete": 36,
+        "unauthorized_disclosures": 0,
+        "latency_ms_p50": 142.9,
+        "latency_ms_p95": 223.5,
+        "visited_p50": 88,
+        "db_calls_p50": 23,
+        "tokens_p50": 978,
+        "model_calls": 0
+      }
+    },
+    "loose": {
+      "A": {
+        "questions": 36,
+        "evidence_recall": 0.552,
+        "evidence_precision": 0.605,
+        "project_recall": 1.0,
+        "project_precision": 0.832,
+        "answer_exact": 0.625,
+        "citation_support": 1.0,
+        "incomplete": 0,
+        "unauthorized_disclosures": 0,
+        "latency_ms_p50": 51.1,
+        "latency_ms_p95": 73.8,
+        "visited_p50": 10,
+        "db_calls_p50": 8,
+        "tokens_p50": 24,
+        "model_calls": 0
+      },
+      "B": {
+        "questions": 36,
+        "evidence_recall": 0.98,
+        "evidence_precision": 0.126,
+        "project_recall": 1.0,
+        "project_precision": 0.324,
+        "answer_exact": 0.0,
+        "citation_support": 1.0,
+        "incomplete": 0,
+        "unauthorized_disclosures": 0,
+        "latency_ms_p50": 149.7,
+        "latency_ms_p95": 246.0,
+        "visited_p50": 87,
+        "db_calls_p50": 27,
+        "tokens_p50": 730,
+        "model_calls": 0
+      },
+      "C": {
+        "questions": 36,
+        "evidence_recall": 0.98,
+        "evidence_precision": 0.126,
+        "project_recall": 1.0,
+        "project_precision": 0.324,
+        "answer_exact": 0.0,
+        "citation_support": 1.0,
+        "incomplete": 0,
+        "unauthorized_disclosures": 0,
+        "latency_ms_p50": 180.0,
+        "latency_ms_p95": 296.8,
+        "visited_p50": 87,
+        "db_calls_p50": 30,
+        "tokens_p50": 730,
+        "model_calls": 0
+      },
+      "D": {
+        "questions": 36,
+        "evidence_recall": 0.992,
+        "evidence_precision": 0.045,
+        "project_recall": 1.0,
+        "project_precision": 0.302,
+        "answer_exact": 0.0,
+        "citation_support": 1.0,
+        "incomplete": 0,
+        "unauthorized_disclosures": 0,
+        "latency_ms_p50": 727.6,
+        "latency_ms_p95": 881.5,
+        "visited_p50": 233,
+        "db_calls_p50": 180,
+        "tokens_p50": 2883,
+        "model_calls": 0
+      }
+    }
+  },
+  "stale_cached_results": {
+    "cached_results": 10,
+    "used_an_outdated_version": 10,
+    "marked_stale": 10,
+    "served_stale_unmarked": 0
+  },
+  "build": [
+    {
+      "seed": 1,
+      "ops": 765,
+      "build_s": 7.59,
+      "rem_bytes": 1359872
+    },
+    {
+      "seed": 2,
+      "ops": 633,
+      "build_s": 6.74,
+      "rem_bytes": 966656
+    },
+    {
+      "seed": 3,
+      "ops": 678,
+      "build_s": 6.47,
+      "rem_bytes": 1064960
+    },
+    {
+      "seed": 4,
+      "ops": 815,
+      "build_s": 8.11,
+      "rem_bytes": 1277952
+    }
+  ],
+  "routing_overlay": [
+    {
+      "edges": 1230,
+      "build_s": 0.21
+    },
+    {
+      "edges": 1090,
+      "build_s": 0.16
+    },
+    {
+      "edges": 1134,
+      "build_s": 0.31
+    },
+    {
+      "edges": 1318,
+      "build_s": 0.17
+    }
+  ]
+}

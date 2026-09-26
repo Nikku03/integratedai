@@ -157,3 +157,18 @@ Stated plainly so nobody mistakes a scaffold for a finished capability.
 * Across department scopes a contradiction is kept as two disputed facts with no
   combined record, so a reader who may see only one side is told nothing about
   the other document; one who may see both gets both through the link.
+
+## REM
+
+* The change rules encode explicit business definitions (supply exposure, dependents, penalty clauses, derived
+  content, unblocking, contract change, deletion, revocation). Consequences outside those rules are not detected,
+  and missing or wrong relationships in the source data are invisible to them.
+* R1 does not allocate stock between milestones of one project that need the same product.
+* The REM priority policy is off by default: on EnterpriseRAG-Bench it lowered precision and MRR relative to
+  search order. Routing shortcuts showed no benefit.
+* REM record search has no vector index (sequential cosine scan). Passages copy section text and embeddings
+  instead of referencing them; at 5k documents the node-version table is 445 MB.
+* Open suggested tasks are updated in place (their wording at an old snapshot is not reproducible). Historical
+  stock rows are checked with the snapshot's permissions only. Stored aggregate counts are not re-filtered after
+  a revocation.
+

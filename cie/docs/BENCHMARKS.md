@@ -370,3 +370,12 @@ Contradictions recorded in ledger: 1. Ledger entries: 24 (chain valid: True).
 Restricted record leaked to agents: **False**.
 
 Synthesis confidence: 0.75; uncertainty items: 2; citations: 22.
+
+## REM (dependency exploration, evidence selection, change impact)
+
+See `docs/REM_RESULTS.md`. Four arms were compared on a controlled versioned dependency dataset (independent oracle,
+dev/held-out) and on EnterpriseRAG-Bench (5k tenant, dev/held-out): search, typed traversal, the REM priority
+policy, and REM with routing shortcuts. Change-mode rules beat typed reachability (held-out impact precision 0.991
+vs 0.258, recall 1.000 vs 0.934). The REM priority policy did not beat typed traversal on ERB and is off by
+default. Routing shortcuts gave no gain.
+

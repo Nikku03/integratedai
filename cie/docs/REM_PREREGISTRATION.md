@@ -47,3 +47,16 @@ v3 also changed baseline B (the strict limit applies to every arm), which is why
    given company.
 4. **Numerical REM inference**: no such engine exists in the inspected repositories, so there is nothing to retain.
 5. Any metric that regresses on held-out is reported as a regression, not explained away.
+
+## Outcome (added after the held-out runs)
+
+| Rule | Result |
+|---|---|
+| 1. REM priority policy as default | **Not met.** Controlled dataset, tight budget: +0.021 evidence recall (+0.033 on the frozen code), +0.015 precision, p95 within bounds; medium and loose within tolerance: passed. ERB, 2k budget: +0.003 evidence recall, −0.074 precision: failed. Typed traversal stays the default; the policy stays behind its flag. |
+| 2. Routing shortcuts | **Not met** on either dataset. Flag stays off. |
+| 3. Change-mode rules | **Met.** Held-out precision 0.991 vs 0.258 and recall 1.000 vs 0.934 for typed reachability; incorrect propagations 0.06 vs 16.35 per event. |
+| 5. Regressions | ERB: the REM policy lowers MRR (0.639 vs 0.738 at 2k) and evidence precision. Reported in `docs/REM_RESULTS.md`. |
+
+Held-out ERB numbers come from the frozen commit (a0d4662). Security fixes made after the review did not change
+the ranking path; a 40-question re-run on the final code gave the same aggregates. The controlled dataset was
+re-run on the final code. The only ranking change there is a search bug fix, and it did not change any decision.

@@ -1,0 +1,2283 @@
+{
+ "note": "Fictional demonstration data: every company, person, product and document is invented.",
+ "passed": true,
+ "checks": {
+  "finds_both_projects": {
+   "ok": true,
+   "projects": [
+    "aurora",
+    "borealis"
+   ]
+  },
+  "covered_vs_exposed": {
+   "ok": true,
+   "aurora-pilot": "covered",
+   "borealis-trial": "at_risk",
+   "aurora_project": null,
+   "borealis_project": "at_risk"
+  },
+  "chronology_without_deleting_history": {
+   "ok": true,
+   "resolution": {
+    "edge_id": "8c396fea-a41a-46e0-a3ea-01e59ea62a95",
+    "a": {
+     "id": "2a813fbf-f103-4702-befa-773155f1b615",
+     "type": "claim",
+     "key": "email-2026-10-02#qty",
+     "name": "Email: PO-1043 is 40 units",
+     "version": 1
+    },
+    "b": {
+     "id": "3a5b0e8f-0e31-4522-b5cf-a4fbf9264e39",
+     "type": "order",
+     "key": "PO-1043",
+     "name": "PO-1043",
+     "version": 2
+    },
+    "derivation": {
+     "attr": "qty",
+     "rule": "R0",
+     "claim_value": 40,
+     "record_value": 50,
+     "claim_version": 1,
+     "record_version": 2
+    },
+    "provenance": "rule",
+    "status": "resolved",
+    "current": {
+     "id": "3a5b0e8f-0e31-4522-b5cf-a4fbf9264e39",
+     "type": "order",
+     "key": "PO-1043",
+     "name": "PO-1043",
+     "version": 2
+    },
+    "history": {
+     "id": "2a813fbf-f103-4702-befa-773155f1b615",
+     "type": "claim",
+     "key": "email-2026-10-02#qty",
+     "name": "Email: PO-1043 is 40 units",
+     "version": 1
+    },
+    "why": "PO-1043 (dated 2026-10-20) is the later system-of-record statement; Email: PO-1043 is 40 units (dated 2026-10-02) is kept as history, not deleted.",
+    "requires": [
+     "2a813fbf-f103-4702-befa-773155f1b615",
+     "3a5b0e8f-0e31-4522-b5cf-a4fbf9264e39"
+    ]
+   },
+   "email_claim_still_stored": true
+  },
+  "every_conclusion_cites_evidence": {
+   "ok": true,
+   "impacts_without_sources": [],
+   "evidence_items": 15
+  },
+  "restricted_clause_not_exposed": {
+   "ok": true,
+   "leaked_to_ops": [],
+   "legal_sees_clause": true
+  },
+  "proposes_ops_finance_contract_tasks": {
+   "ok": true,
+   "admin_view": [
+    [
+     "finance",
+     "Estimate penalty exposure for Borealis field trial under Clause 9.2 late-delivery penalty"
+    ],
+    [
+     "legal",
+     "Review Field trial agreement C-77 (Clause 9.2 late-delivery penalty) for notice duties and remedies"
+    ],
+    [
+     "operations",
+     "Expedite or source 50 KX-7 controller board for Borealis field trial"
+    ],
+    [
+     "operations",
+     "Reserve 30 KX-7 controller board from stock for Aurora pilot build"
+    ]
+   ],
+   "ops_view": [
+    [
+     "operations",
+     "Expedite or source 50 KX-7 controller board for Borealis field trial"
+    ],
+    [
+     "operations",
+     "Reserve 30 KX-7 controller board from stock for Aurora pilot build"
+    ]
+   ],
+   "legal_view": [
+    [
+     "finance",
+     "Estimate penalty exposure for Borealis field trial under Clause 9.2 late-delivery penalty"
+    ],
+    [
+     "legal",
+     "Review Field trial agreement C-77 (Clause 9.2 late-delivery penalty) for notice duties and remedies"
+    ],
+    [
+     "operations",
+     "Expedite or source 50 KX-7 controller board for Borealis field trial"
+    ],
+    [
+     "operations",
+     "Reserve 30 KX-7 controller board from stock for Aurora pilot build"
+    ]
+   ]
+  },
+  "generated_summary_not_evidence": {
+   "ok": true,
+   "review_status": "invalidated"
+  },
+  "idempotent_event": {
+   "ok": true,
+   "same_event": true
+  },
+  "connected_is_not_affected": {
+   "ok": true,
+   "note": "the crew-training task is two hops away (blocked by installation; an unverified inferred link to PO-1043) and is not marked affected",
+   "reported_as_candidate_task": true
+  },
+  "updates_when_new_evidence_arrives": {
+   "ok": true,
+   "borealis-trial": "covered",
+   "open_tasks": [
+    [
+     "operations",
+     "Reserve 30 KX-7 controller board from stock for Aurora pilot build"
+    ],
+    [
+     "operations",
+     "Verify that Train Borealis site crew depends on PO-1043"
+    ]
+   ],
+   "earlier_ops_result_marked_stale": true,
+   "stale_reason": "records it used changed at seq 3 (event 97147c58-3264-4d48-bfe2-af35099fcaa5)"
+  },
+  "recount_exposes_aurora": {
+   "ok": true,
+   "aurora-pilot": "at_risk",
+   "open_tasks": [
+    [
+     "operations",
+     "Expedite or source 10 KX-7 controller board for Aurora pilot build"
+    ],
+    [
+     "operations",
+     "Verify that Train Borealis site crew depends on PO-1043"
+    ]
+   ]
+  }
+ },
+ "events": {
+  "setup": {
+   "event_id": "f20f73dc-7a8a-4f02-9d42-416ac0b6e6d3",
+   "seq": 1,
+   "status": "complete",
+   "stopping_reason": "no_more_triggers",
+   "impacts": 0,
+   "suggestions": 0,
+   "stale_results": 0,
+   "budget": {
+    "limits": {
+     "max_depth": 3,
+     "max_visited": 5000,
+     "max_tokens": 4000,
+     "max_db_calls": 2000,
+     "max_ms": 30000
+    },
+    "used": {
+     "depth": 0,
+     "visited": 26,
+     "tokens": 0,
+     "db_calls": 107,
+     "ms": 260.9,
+     "model_calls": 0
+    }
+   },
+   "rule_log": [
+    {
+     "rule": "R0",
+     "claim": "2a813fbf-f103-4702-befa-773155f1b615",
+     "record": "3a5b0e8f-0e31-4522-b5cf-a4fbf9264e39",
+     "attr": "qty",
+     "claim_value": 40,
+     "record_value": 50,
+     "chronology": 1
+    }
+   ]
+  },
+  "delay": {
+   "event_id": "25c44af6-3abf-4fa8-b3ba-2baa142d30ca",
+   "seq": 2,
+   "status": "complete",
+   "stopping_reason": "no_more_triggers",
+   "impacts": 6,
+   "suggestions": 4,
+   "stale_results": 1,
+   "budget": {
+    "limits": {
+     "max_depth": 3,
+     "max_visited": 5000,
+     "max_tokens": 4000,
+     "max_db_calls": 2000,
+     "max_ms": 30000
+    },
+    "used": {
+     "depth": 0,
+     "visited": 14,
+     "tokens": 0,
+     "db_calls": 43,
+     "ms": 79.4,
+     "model_calls": 0
+    }
+   },
+   "rule_log": [
+    {
+     "rule": "R1",
+     "target": "b7b926ea-829d-42c4-89f0-61169eb1c5d3",
+     "impact": "covered",
+     "reason": "Aurora pilot build (due 2026-11-20): PO-1042 (2026-12-03) now arrive late, but stock and on-time orders cover 30 KX-7 controller board."
+    },
+    {
+     "rule": "R4",
+     "target": "a510b67c-254e-4336-a321-05338774a85c",
+     "impact": "invalidated",
+     "reason": "Generated content Weekly supply status summary (generated) is out of date: PO-1042 changed."
+    },
+    {
+     "rule": "R0",
+     "claim": "2a813fbf-f103-4702-befa-773155f1b615",
+     "record": "3a5b0e8f-0e31-4522-b5cf-a4fbf9264e39",
+     "attr": "qty",
+     "claim_value": 40,
+     "record_value": 50,
+     "chronology": 1
+    },
+    {
+     "rule": "R1",
+     "target": "36b1e5db-6ff7-4c4e-b9c5-32e44176b40c",
+     "impact": "at_risk",
+     "reason": "Borealis field trial (due 2026-11-15): KX-7 controller board: needs 50, stock 0 plus on-time orders 0, shortfall 50. Late: PO-1043 (2026-12-03)."
+    },
+    {
+     "rule": "R2",
+     "target": "0928c86e-3990-4f4b-87ee-fa58103b5d9d",
+     "impact": "needs_review",
+     "reason": "Install Borealis field units depends on Borealis field trial, which is at risk."
+    },
+    {
+     "rule": "R2",
+     "target": "efb5bc5a-2715-4e16-98f8-135f3c39c08b",
+     "impact": "at_risk",
+     "reason": "Project Borealis depends on Borealis field trial, which is at risk."
+    },
+    {
+     "rule": "R3",
+     "target": "69cab3cc-1fb4-43eb-8b70-b3f65a2c417d",
+     "impact": "needs_review",
+     "reason": "Borealis field trial is at risk and is governed by Clause 9.2 late-delivery penalty in Field trial agreement C-77."
+    }
+   ]
+  },
+  "alternative_order": {
+   "event_id": "97147c58-3264-4d48-bfe2-af35099fcaa5",
+   "seq": 3,
+   "status": "complete",
+   "stopping_reason": "no_more_triggers",
+   "impacts": 1,
+   "suggestions": 0,
+   "stale_results": 3,
+   "budget": {
+    "limits": {
+     "max_depth": 3,
+     "max_visited": 5000,
+     "max_tokens": 4000,
+     "max_db_calls": 2000,
+     "max_ms": 30000
+    },
+    "used": {
+     "depth": 0,
+     "visited": 5,
+     "tokens": 0,
+     "db_calls": 20,
+     "ms": 36.2,
+     "model_calls": 0
+    }
+   },
+   "rule_log": [
+    {
+     "rule": "R1",
+     "target": "36b1e5db-6ff7-4c4e-b9c5-32e44176b40c",
+     "impact": "covered",
+     "reason": "Borealis field trial (due 2026-11-15): PO-1043 (2026-12-03) now arrive late, but stock and on-time orders cover 50 KX-7 controller board."
+    }
+   ]
+  },
+  "alt_document": {
+   "event_id": "7234c1a4-1eca-4a46-8228-69a81ba1706e",
+   "seq": 4,
+   "status": "complete",
+   "stopping_reason": "no_more_triggers",
+   "impacts": 0,
+   "suggestions": 0,
+   "stale_results": 0,
+   "budget": {
+    "limits": {
+     "max_depth": 3,
+     "max_visited": 5000,
+     "max_tokens": 4000,
+     "max_db_calls": 2000,
+     "max_ms": 30000
+    },
+    "used": {
+     "depth": 0,
+     "visited": 3,
+     "tokens": 0,
+     "db_calls": 7,
+     "ms": 8.7,
+     "model_calls": 0
+    }
+   },
+   "rule_log": []
+  },
+  "recount": {
+   "event_id": "772859d7-07d0-49b4-9da0-30079c308195",
+   "seq": 5,
+   "status": "complete",
+   "stopping_reason": "no_more_triggers",
+   "impacts": 3,
+   "suggestions": 1,
+   "stale_results": 1,
+   "budget": {
+    "limits": {
+     "max_depth": 3,
+     "max_visited": 5000,
+     "max_tokens": 4000,
+     "max_db_calls": 2000,
+     "max_ms": 30000
+    },
+    "used": {
+     "depth": 0,
+     "visited": 6,
+     "tokens": 0,
+     "db_calls": 14,
+     "ms": 22.6,
+     "model_calls": 0
+    }
+   },
+   "rule_log": [
+    {
+     "rule": "R1",
+     "target": "b7b926ea-829d-42c4-89f0-61169eb1c5d3",
+     "impact": "at_risk",
+     "reason": "Aurora pilot build (due 2026-11-20): KX-7 controller board: needs 30, stock 20 plus on-time orders 0, shortfall 10. Late: PO-1042 (2026-12-03)."
+    },
+    {
+     "rule": "R2",
+     "target": "2e98d90a-e64f-45be-a3cf-9d00ff5565f1",
+     "impact": "needs_review",
+     "reason": "Assemble Aurora pilot units depends on Aurora pilot build, which is at risk."
+    },
+    {
+     "rule": "R2",
+     "target": "d645374e-cce9-4379-89c3-4a0245b3b1dc",
+     "impact": "at_risk",
+     "reason": "Project Aurora depends on Aurora pilot build, which is at risk."
+    }
+   ]
+  }
+ },
+ "ops_query_after_delay": {
+  "status": "complete",
+  "stopping_reason": "frontier_exhausted",
+  "budget": {
+   "limits": {
+    "max_depth": 3,
+    "max_visited": 400,
+    "max_tokens": 4000,
+    "max_db_calls": 120,
+    "max_ms": 5000
+   },
+   "used": {
+    "depth": 2,
+    "visited": 23,
+    "tokens": 457,
+    "db_calls": 18,
+    "ms": 101.6,
+    "model_calls": 0
+   }
+  },
+  "snapshot_seq": 2,
+  "assessments": [
+   {
+    "impact_id": "dbbf9999-c47d-4e6e-89b4-bfc749796ee3",
+    "event_id": "25c44af6-3abf-4fa8-b3ba-2baa142d30ca",
+    "target": {
+     "id": "b7b926ea-829d-42c4-89f0-61169eb1c5d3",
+     "type": "milestone",
+     "key": "aurora-pilot",
+     "name": "Aurora pilot build"
+    },
+    "impact": "covered",
+    "rule": "R1",
+    "grade": 1.0,
+    "hypothesis": false,
+    "reason": "Aurora pilot build (due 2026-11-20): PO-1042 (2026-12-03) now arrive late, but stock and on-time orders cover 30 KX-7 controller board.",
+    "paths": [
+     [
+      {
+       "to": "b1f69780-c8e2-4c2b-83ba-56a5c9c608a3",
+       "from": "b7b926ea-829d-42c4-89f0-61169eb1c5d3",
+       "kind": "depends_on",
+       "edge_id": "f1b072ce-7a97-419b-a94e-12c3e623aeca",
+       "hypothesis": false,
+       "provenance": "explicit"
+      }
+     ]
+    ],
+    "evidence": [
+     {
+      "key": "aurora-pilot",
+      "name": "Aurora pilot build",
+      "type": "milestone",
+      "what": "due 2026-11-20 (+0 days slack)",
+      "node_id": "b7b926ea-829d-42c4-89f0-61169eb1c5d3",
+      "version": 1,
+      "authoritative": true,
+      "source_pointers": [
+       {
+        "record": "MS-AUR-3",
+        "system": "project_tracker"
+       }
+      ]
+     },
+     {
+      "key": "PO-1042",
+      "name": "PO-1042",
+      "type": "order",
+      "what": "30 KX-7 controller board promised 2026-12-03 (late)",
+      "node_id": "b1f69780-c8e2-4c2b-83ba-56a5c9c608a3",
+      "version": 2,
+      "authoritative": true,
+      "source_pointers": [
+       {
+        "record": "PO-1042",
+        "system": "erp",
+        "revision": 1
+       },
+       {
+        "passage": "kestrel-notice-2026-10-20#p1"
+       }
+      ]
+     },
+     {
+      "kind": "db_value",
+      "what": "40 KX-7 controller board on hand, 0 reserved",
+      "table": "rem_stock",
+      "holder": "d645374e-cce9-4379-89c3-4a0245b3b1dc",
+      "product": "kx7",
+      "requires": [
+       "ab307f22-0129-443b-8496-1f6547bc9232",
+       "d645374e-cce9-4379-89c3-4a0245b3b1dc"
+      ],
+      "source_pointers": [
+       {
+        "record": "WH-2/bin-14",
+        "system": "inventory",
+        "counted_on": "2026-10-10"
+       }
+      ]
+     }
+    ],
+    "details": {
+     "roots": [
+      "b7b926ea-829d-42c4-89f0-61169eb1c5d3"
+     ],
+     "products": [
+      {
+       "name": "KX-7 controller board",
+       "needed": 30.0,
+       "product": "kx7",
+       "shortfall": 0.0,
+       "late_orders": [
+        "PO-1042"
+       ],
+       "on_time_orders": [],
+       "available_stock": 40.0
+      }
+     ],
+     "effective_due": "2026-11-20",
+     "requires_scopes": [
+      [
+       "cdc521af-5555-4eb8-843c-f2bd5807568f",
+       1
+      ]
+     ]
+    },
+    "status": "candidate",
+    "superseded_by": null,
+    "created_seq": 2,
+    "requires": [
+     "ab307f22-0129-443b-8496-1f6547bc9232",
+     "b1f69780-c8e2-4c2b-83ba-56a5c9c608a3",
+     "b7b926ea-829d-42c4-89f0-61169eb1c5d3",
+     "d645374e-cce9-4379-89c3-4a0245b3b1dc"
+    ]
+   },
+   {
+    "impact_id": "589859ac-89c4-4b69-af65-4215787f015f",
+    "event_id": "25c44af6-3abf-4fa8-b3ba-2baa142d30ca",
+    "target": {
+     "id": "36b1e5db-6ff7-4c4e-b9c5-32e44176b40c",
+     "type": "milestone",
+     "key": "borealis-trial",
+     "name": "Borealis field trial"
+    },
+    "impact": "at_risk",
+    "rule": "R1",
+    "grade": 1.0,
+    "hypothesis": false,
+    "reason": "Borealis field trial (due 2026-11-15): KX-7 controller board: needs 50, stock 0 plus on-time orders 0, shortfall 50. Late: PO-1043 (2026-12-03).",
+    "paths": [
+     [
+      {
+       "to": "3a5b0e8f-0e31-4522-b5cf-a4fbf9264e39",
+       "from": "36b1e5db-6ff7-4c4e-b9c5-32e44176b40c",
+       "kind": "depends_on",
+       "edge_id": "7152cd2d-acd9-4825-afe6-8f0f676f8156",
+       "hypothesis": false,
+       "provenance": "explicit"
+      }
+     ]
+    ],
+    "evidence": [
+     {
+      "key": "borealis-trial",
+      "name": "Borealis field trial",
+      "type": "milestone",
+      "what": "due 2026-11-15 (+0 days slack)",
+      "node_id": "36b1e5db-6ff7-4c4e-b9c5-32e44176b40c",
+      "version": 1,
+      "authoritative": true,
+      "source_pointers": [
+       {
+        "record": "MS-BOR-2",
+        "system": "project_tracker"
+       }
+      ]
+     },
+     {
+      "key": "PO-1043",
+      "name": "PO-1043",
+      "type": "order",
+      "what": "50 KX-7 controller board promised 2026-12-03 (late)",
+      "node_id": "3a5b0e8f-0e31-4522-b5cf-a4fbf9264e39",
+      "version": 2,
+      "authoritative": true,
+      "source_pointers": [
+       {
+        "record": "PO-1043",
+        "system": "erp",
+        "revision": 2
+       },
+       {
+        "passage": "kestrel-notice-2026-10-20#p1"
+       }
+      ]
+     },
+     {
+      "kind": "db_value",
+      "what": "0 KX-7 controller board on hand, 0 reserved",
+      "table": "rem_stock",
+      "holder": "efb5bc5a-2715-4e16-98f8-135f3c39c08b",
+      "product": "kx7",
+      "requires": [
+       "ab307f22-0129-443b-8496-1f6547bc9232",
+       "efb5bc5a-2715-4e16-98f8-135f3c39c08b"
+      ],
+      "source_pointers": [
+       {
+        "record": "WH-3/bin-02",
+        "system": "inventory",
+        "counted_on": "2026-10-10"
+       }
+      ]
+     }
+    ],
+    "details": {
+     "roots": [
+      "36b1e5db-6ff7-4c4e-b9c5-32e44176b40c"
+     ],
+     "products": [
+      {
+       "name": "KX-7 controller board",
+       "needed": 50.0,
+       "product": "kx7",
+       "shortfall": 50.0,
+       "late_orders": [
+        "PO-1043"
+       ],
+       "on_time_orders": [],
+       "available_stock": 0.0
+      }
+     ],
+     "shortfall": 50.0,
+     "effective_due": "2026-11-15",
+     "requires_scopes": [
+      [
+       "dc09e86f-105a-4952-a1ce-9ddd0fa571c8",
+       1
+      ]
+     ]
+    },
+    "status": "candidate",
+    "superseded_by": null,
+    "created_seq": 2,
+    "requires": [
+     "36b1e5db-6ff7-4c4e-b9c5-32e44176b40c",
+     "3a5b0e8f-0e31-4522-b5cf-a4fbf9264e39",
+     "ab307f22-0129-443b-8496-1f6547bc9232",
+     "efb5bc5a-2715-4e16-98f8-135f3c39c08b"
+    ]
+   },
+   {
+    "impact_id": "baca53af-609d-42ff-9a9d-8ab3aca8cb42",
+    "event_id": "25c44af6-3abf-4fa8-b3ba-2baa142d30ca",
+    "target": {
+     "id": "0928c86e-3990-4f4b-87ee-fa58103b5d9d",
+     "type": "task",
+     "key": "borealis-install",
+     "name": "Install Borealis field units"
+    },
+    "impact": "needs_review",
+    "rule": "R2",
+    "grade": 1.0,
+    "hypothesis": false,
+    "reason": "Install Borealis field units depends on Borealis field trial, which is at risk.",
+    "paths": [
+     [
+      {
+       "to": "3a5b0e8f-0e31-4522-b5cf-a4fbf9264e39",
+       "from": "36b1e5db-6ff7-4c4e-b9c5-32e44176b40c",
+       "kind": "depends_on",
+       "edge_id": "7152cd2d-acd9-4825-afe6-8f0f676f8156",
+       "hypothesis": false,
+       "provenance": "explicit"
+      },
+      {
+       "to": "36b1e5db-6ff7-4c4e-b9c5-32e44176b40c",
+       "from": "0928c86e-3990-4f4b-87ee-fa58103b5d9d",
+       "kind": "depends_on",
+       "edge_id": "056e05c3-9ccf-4d9a-a703-9116b4f457a9",
+       "hypothesis": false,
+       "provenance": "explicit"
+      }
+     ]
+    ],
+    "evidence": [
+     {
+      "key": "borealis-trial",
+      "name": "Borealis field trial",
+      "type": "milestone",
+      "what": "milestone at risk",
+      "node_id": "36b1e5db-6ff7-4c4e-b9c5-32e44176b40c",
+      "version": 1,
+      "authoritative": true,
+      "source_pointers": [
+       {
+        "record": "MS-BOR-2",
+        "system": "project_tracker"
+       }
+      ]
+     }
+    ],
+    "details": {
+     "roots": [
+      "36b1e5db-6ff7-4c4e-b9c5-32e44176b40c"
+     ]
+    },
+    "status": "candidate",
+    "superseded_by": null,
+    "created_seq": 2,
+    "requires": [
+     "0928c86e-3990-4f4b-87ee-fa58103b5d9d",
+     "36b1e5db-6ff7-4c4e-b9c5-32e44176b40c",
+     "3a5b0e8f-0e31-4522-b5cf-a4fbf9264e39"
+    ]
+   },
+   {
+    "impact_id": "b43dcef3-b404-4c27-a6d0-f61b7426def4",
+    "event_id": "25c44af6-3abf-4fa8-b3ba-2baa142d30ca",
+    "target": {
+     "id": "efb5bc5a-2715-4e16-98f8-135f3c39c08b",
+     "type": "project",
+     "key": "borealis",
+     "name": "Project Borealis"
+    },
+    "impact": "at_risk",
+    "rule": "R2",
+    "grade": 1.0,
+    "hypothesis": false,
+    "reason": "Project Borealis depends on Borealis field trial, which is at risk.",
+    "paths": [
+     [
+      {
+       "to": "3a5b0e8f-0e31-4522-b5cf-a4fbf9264e39",
+       "from": "36b1e5db-6ff7-4c4e-b9c5-32e44176b40c",
+       "kind": "depends_on",
+       "edge_id": "7152cd2d-acd9-4825-afe6-8f0f676f8156",
+       "hypothesis": false,
+       "provenance": "explicit"
+      },
+      {
+       "to": "36b1e5db-6ff7-4c4e-b9c5-32e44176b40c",
+       "from": "efb5bc5a-2715-4e16-98f8-135f3c39c08b",
+       "kind": "depends_on",
+       "edge_id": "8dfb9527-3088-43da-8d8e-7d0c7b2b1a0c",
+       "hypothesis": false,
+       "provenance": "explicit"
+      }
+     ]
+    ],
+    "evidence": [
+     {
+      "key": "borealis-trial",
+      "name": "Borealis field trial",
+      "type": "milestone",
+      "what": "milestone at risk",
+      "node_id": "36b1e5db-6ff7-4c4e-b9c5-32e44176b40c",
+      "version": 1,
+      "authoritative": true,
+      "source_pointers": [
+       {
+        "record": "MS-BOR-2",
+        "system": "project_tracker"
+       }
+      ]
+     }
+    ],
+    "details": {
+     "roots": [
+      "36b1e5db-6ff7-4c4e-b9c5-32e44176b40c"
+     ]
+    },
+    "status": "candidate",
+    "superseded_by": null,
+    "created_seq": 2,
+    "requires": [
+     "36b1e5db-6ff7-4c4e-b9c5-32e44176b40c",
+     "3a5b0e8f-0e31-4522-b5cf-a4fbf9264e39",
+     "efb5bc5a-2715-4e16-98f8-135f3c39c08b"
+    ]
+   },
+   {
+    "impact_id": "31a80449-70fa-4c7a-a2a6-7813ae6fd198",
+    "event_id": "25c44af6-3abf-4fa8-b3ba-2baa142d30ca",
+    "target": {
+     "id": "a510b67c-254e-4336-a321-05338774a85c",
+     "type": "artifact",
+     "key": "status-2026-10-12",
+     "name": "Weekly supply status summary (generated)"
+    },
+    "impact": "invalidated",
+    "rule": "R4",
+    "grade": 1.0,
+    "hypothesis": false,
+    "reason": "Generated content Weekly supply status summary (generated) is out of date: PO-1042 changed.",
+    "paths": [
+     [
+      {
+       "to": "b1f69780-c8e2-4c2b-83ba-56a5c9c608a3",
+       "from": "a510b67c-254e-4336-a321-05338774a85c",
+       "kind": "derived_from",
+       "edge_id": "7fbbfd1b-6910-4f07-9abf-7167411a1105",
+       "hypothesis": false,
+       "provenance": "explicit"
+      }
+     ],
+     [
+      {
+       "to": "3a5b0e8f-0e31-4522-b5cf-a4fbf9264e39",
+       "from": "a510b67c-254e-4336-a321-05338774a85c",
+       "kind": "derived_from",
+       "edge_id": "149e39cb-bc39-44e2-a8c4-40539e04bebc",
+       "hypothesis": false,
+       "provenance": "explicit"
+      }
+     ]
+    ],
+    "evidence": [
+     {
+      "key": "PO-1042",
+      "name": "PO-1042",
+      "type": "order",
+      "what": "changed source",
+      "node_id": "b1f69780-c8e2-4c2b-83ba-56a5c9c608a3",
+      "version": 2,
+      "authoritative": true,
+      "source_pointers": [
+       {
+        "record": "PO-1042",
+        "system": "erp",
+        "revision": 1
+       },
+       {
+        "passage": "kestrel-notice-2026-10-20#p1"
+       }
+      ]
+     },
+     {
+      "key": "status-2026-10-12",
+      "name": "Weekly supply status summary (generated)",
+      "type": "artifact",
+      "what": "generated summary",
+      "node_id": "a510b67c-254e-4336-a321-05338774a85c",
+      "version": 1,
+      "authoritative": false,
+      "source_pointers": []
+     }
+    ],
+    "details": {},
+    "status": "candidate",
+    "superseded_by": null,
+    "created_seq": 2,
+    "requires": [
+     "3a5b0e8f-0e31-4522-b5cf-a4fbf9264e39",
+     "a510b67c-254e-4336-a321-05338774a85c",
+     "b1f69780-c8e2-4c2b-83ba-56a5c9c608a3"
+    ]
+   }
+  ],
+  "evidence": [
+   {
+    "evidence_id": "53581c11-4bc5-4acc-bb7b-b5ebe3a4f4fb@1",
+    "node": {
+     "id": "53581c11-4bc5-4acc-bb7b-b5ebe3a4f4fb",
+     "type": "document",
+     "key": "po-1042",
+     "name": "Purchase order PO-1042",
+     "version": 1
+    },
+    "text": "Purchase order PO-1042. Purchase order PO-1042 (Northwind Assembly, fictional)\n\nPO-1042: 30 units of KX-7 controller board from Kestrel Components, promised delivery 2026-11-01, for Project Aurora.",
+    "source_pointers": [
+     {
+      "sha256": "e2102a8f440b0df0590e696df0b4c098d2bc55fe432aab94ae501bbfd748a9a5",
+      "filename": "po-1042.txt",
+      "document_id": "fb88ff18-e910-4613-a2bd-662e2cc20bc4"
+     }
+    ],
+    "authoritative": true,
+    "root_sources": [
+     "doc:e2102a8f440b0df0"
+    ],
+    "reliability": 1.0,
+    "horizon": 0,
+    "path": [
+     {
+      "edge_id": "da39fa32-0ae1-4e69-a9b5-731ac64069f9",
+      "kind": "derived_from",
+      "provenance": "explicit",
+      "status": "asserted",
+      "from": "0836be57-bcfb-4451-8bae-0ddce93c760e",
+      "to": "53581c11-4bc5-4acc-bb7b-b5ebe3a4f4fb",
+      "direction": "out",
+      "hypothesis": false
+     }
+    ],
+    "tokens": 50,
+    "priority": {
+     "query_relevance": 0.7574,
+     "dependency_relevance": 0.5052,
+     "source_reliability": 1.0,
+     "temporal_applicability": 1.0,
+     "information_gain": 1.0,
+     "retrieval_cost": 0.011,
+     "redundancy": 0.0
+    },
+    "requires": [
+     "53581c11-4bc5-4acc-bb7b-b5ebe3a4f4fb",
+     "0836be57-bcfb-4451-8bae-0ddce93c760e",
+     "53581c11-4bc5-4acc-bb7b-b5ebe3a4f4fb"
+    ]
+   },
+   {
+    "evidence_id": "030c55ad-3452-48fb-a27e-b1ffa4f41147@1",
+    "node": {
+     "id": "030c55ad-3452-48fb-a27e-b1ffa4f41147",
+     "type": "document",
+     "key": "po-1043-rev2",
+     "name": "Purchase order PO-1043 revision 2",
+     "version": 1
+    },
+    "text": "Purchase order PO-1043 revision 2. Purchase order PO-1043, revision 2 (Northwind Assembly, fictional)\n\nPO-1043 revision 2: 50 units of KX-7 controller board from Kestrel Components, promised delivery 2026-11-05, for Project Borealis. T",
+    "source_pointers": [
+     {
+      "sha256": "cb9224baad8c77538c2f3c0ea1718b64c7492db28aba05af923941de0f4b8384",
+      "filename": "po-1043-rev2.txt",
+      "document_id": "5dd0fa3a-d2d5-4888-84d2-96ee18cf89b9"
+     }
+    ],
+    "authoritative": true,
+    "root_sources": [
+     "doc:cb9224baad8c7753"
+    ],
+    "reliability": 1.0,
+    "horizon": 0,
+    "path": [
+     {
+      "edge_id": "9be89b70-a9fb-4c0f-8ef7-bcca968ee5cd",
+      "kind": "derived_from",
+      "provenance": "explicit",
+      "status": "asserted",
+      "from": "788375fd-9268-4a08-89c6-a5e6f679ed59",
+      "to": "030c55ad-3452-48fb-a27e-b1ffa4f41147",
+      "direction": "out",
+      "hypothesis": false
+     }
+    ],
+    "tokens": 59,
+    "priority": {
+     "query_relevance": 0.7576,
+     "dependency_relevance": 0.5052,
+     "source_reliability": 1.0,
+     "temporal_applicability": 1.0,
+     "information_gain": 1.0,
+     "retrieval_cost": 0.0155,
+     "redundancy": 0.0
+    },
+    "requires": [
+     "030c55ad-3452-48fb-a27e-b1ffa4f41147",
+     "788375fd-9268-4a08-89c6-a5e6f679ed59",
+     "030c55ad-3452-48fb-a27e-b1ffa4f41147"
+    ]
+   },
+   {
+    "evidence_id": "b7b926ea-829d-42c4-89f0-61169eb1c5d3@1",
+    "node": {
+     "id": "b7b926ea-829d-42c4-89f0-61169eb1c5d3",
+     "type": "milestone",
+     "key": "aurora-pilot",
+     "name": "Aurora pilot build",
+     "version": 1
+    },
+    "text": "Aurora pilot build.",
+    "source_pointers": [
+     {
+      "record": "MS-AUR-3",
+      "system": "project_tracker"
+     }
+    ],
+    "authoritative": true,
+    "root_sources": [],
+    "reliability": 0.9,
+    "horizon": 1,
+    "path": [
+     {
+      "edge_id": "3d3dbc1a-7364-4fbd-a536-8d41bc179909",
+      "kind": "depends_on",
+      "provenance": "explicit",
+      "status": "asserted",
+      "from": "ab307f22-0129-443b-8496-1f6547bc9232",
+      "to": "b7b926ea-829d-42c4-89f0-61169eb1c5d3",
+      "direction": "in",
+      "hypothesis": false
+     }
+    ],
+    "tokens": 5,
+    "priority": {
+     "query_relevance": 0.6096,
+     "dependency_relevance": 0.663,
+     "source_reliability": 0.9,
+     "temporal_applicability": 1.0,
+     "information_gain": 1.0,
+     "retrieval_cost": 0.0013,
+     "redundancy": 0.0
+    },
+    "requires": [
+     "b7b926ea-829d-42c4-89f0-61169eb1c5d3",
+     "ab307f22-0129-443b-8496-1f6547bc9232",
+     "b7b926ea-829d-42c4-89f0-61169eb1c5d3"
+    ]
+   },
+   {
+    "evidence_id": "7045d493-f5b0-4a3d-8143-fd36889b7d22@1",
+    "node": {
+     "id": "7045d493-f5b0-4a3d-8143-fd36889b7d22",
+     "type": "document",
+     "key": "kestrel-notice-2026-10-20",
+     "name": "Kestrel delay notice, 2026-10-20",
+     "version": 1
+    },
+    "text": "Kestrel delay notice, 2026-10-20. From: logistics@kestrel.example (fictional)\nDate: 2026-10-20\n\nDue to a wafer shortage, all KX-7 controller board shipments are delayed; the new delivery date for open orders is 2026-12-03.",
+    "source_pointers": [
+     {
+      "sha256": "75dd5e7288ad29d1bd1ada9ed08aac14537aa6fd9d6cb3f601a9f8fbda929201",
+      "filename": "kestrel-notice-2026-10-20.txt",
+      "document_id": "f0caa835-1ffd-4694-a5ad-564a5c65113c"
+     }
+    ],
+    "authoritative": true,
+    "root_sources": [
+     "doc:75dd5e7288ad29d1"
+    ],
+    "reliability": 0.51,
+    "horizon": 0,
+    "path": [
+     {
+      "edge_id": "08871699-d06f-4503-ac60-2be375a3dce6",
+      "kind": "derived_from",
+      "provenance": "explicit",
+      "status": "asserted",
+      "from": "f77fe1d4-49e6-425b-8c9b-200cfb3091e9",
+      "to": "7045d493-f5b0-4a3d-8143-fd36889b7d22",
+      "direction": "out",
+      "hypothesis": false
+     }
+    ],
+    "tokens": 56,
+    "priority": {
+     "query_relevance": 0.8324,
+     "dependency_relevance": 0.555,
+     "source_reliability": 0.51,
+     "temporal_applicability": 1.0,
+     "information_gain": 1.0,
+     "retrieval_cost": 0.012,
+     "redundancy": 0.0
+    },
+    "requires": [
+     "7045d493-f5b0-4a3d-8143-fd36889b7d22",
+     "f77fe1d4-49e6-425b-8c9b-200cfb3091e9",
+     "7045d493-f5b0-4a3d-8143-fd36889b7d22"
+    ]
+   },
+   {
+    "evidence_id": "36b1e5db-6ff7-4c4e-b9c5-32e44176b40c@1",
+    "node": {
+     "id": "36b1e5db-6ff7-4c4e-b9c5-32e44176b40c",
+     "type": "milestone",
+     "key": "borealis-trial",
+     "name": "Borealis field trial",
+     "version": 1
+    },
+    "text": "Borealis field trial.",
+    "source_pointers": [
+     {
+      "record": "MS-BOR-2",
+      "system": "project_tracker"
+     }
+    ],
+    "authoritative": true,
+    "root_sources": [],
+    "reliability": 0.9,
+    "horizon": 1,
+    "path": [
+     {
+      "edge_id": "6b353b72-aafe-4386-bd9c-1bfd5725de26",
+      "kind": "depends_on",
+      "provenance": "explicit",
+      "status": "asserted",
+      "from": "ab307f22-0129-443b-8496-1f6547bc9232",
+      "to": "36b1e5db-6ff7-4c4e-b9c5-32e44176b40c",
+      "direction": "in",
+      "hypothesis": false
+     }
+    ],
+    "tokens": 6,
+    "priority": {
+     "query_relevance": 0.4545,
+     "dependency_relevance": 0.663,
+     "source_reliability": 0.9,
+     "temporal_applicability": 1.0,
+     "information_gain": 1.0,
+     "retrieval_cost": 0.0015,
+     "redundancy": 0.0
+    },
+    "requires": [
+     "36b1e5db-6ff7-4c4e-b9c5-32e44176b40c",
+     "ab307f22-0129-443b-8496-1f6547bc9232",
+     "36b1e5db-6ff7-4c4e-b9c5-32e44176b40c"
+    ]
+   },
+   {
+    "evidence_id": "b1f69780-c8e2-4c2b-83ba-56a5c9c608a3@2",
+    "node": {
+     "id": "b1f69780-c8e2-4c2b-83ba-56a5c9c608a3",
+     "type": "order",
+     "key": "PO-1042",
+     "name": "PO-1042",
+     "version": 2
+    },
+    "text": "PO-1042.",
+    "source_pointers": [
+     {
+      "record": "PO-1042",
+      "system": "erp",
+      "revision": 1
+     },
+     {
+      "passage": "kestrel-notice-2026-10-20#p1"
+     }
+    ],
+    "authoritative": true,
+    "root_sources": [],
+    "reliability": 1.0,
+    "horizon": 1,
+    "path": [
+     {
+      "edge_id": "3b6c0b6e-f0b2-4025-89d7-4af18749e01a",
+      "kind": "depends_on",
+      "provenance": "explicit",
+      "status": "asserted",
+      "from": "004712c6-a8eb-412f-8d4f-eaade27aeb36",
+      "to": "b1f69780-c8e2-4c2b-83ba-56a5c9c608a3",
+      "direction": "in",
+      "hypothesis": false
+     }
+    ],
+    "tokens": 2,
+    "priority": {
+     "query_relevance": 0.4647,
+     "dependency_relevance": 0.4283,
+     "source_reliability": 1.0,
+     "temporal_applicability": 1.0,
+     "information_gain": 1.0,
+     "retrieval_cost": 0.0005,
+     "redundancy": 0.0
+    },
+    "requires": [
+     "b1f69780-c8e2-4c2b-83ba-56a5c9c608a3",
+     "004712c6-a8eb-412f-8d4f-eaade27aeb36",
+     "b1f69780-c8e2-4c2b-83ba-56a5c9c608a3"
+    ]
+   },
+   {
+    "evidence_id": "5f43f37a-6713-4e12-9753-2aed34bcb891@1",
+    "node": {
+     "id": "5f43f37a-6713-4e12-9753-2aed34bcb891",
+     "type": "document",
+     "key": "email-2026-10-02",
+     "name": "Email from Kestrel sales, 2026-10-02",
+     "version": 1
+    },
+    "text": "Email from Kestrel sales, 2026-10-02. From: sales@kestrel.example (fictional)\nDate: 2026-10-02\n\nHi team, confirming PO-1043 for 40 units of KX-7, delivery on 2026-10-28.",
+    "source_pointers": [
+     {
+      "sha256": "eb17d93fffc957f15c7696eabe144aef8fef60d32a2262cc49c8afb803f3a44e",
+      "filename": "email-2026-10-02.txt",
+      "document_id": "e6972abd-7b9b-45ff-8aba-b1780599bf4d"
+     }
+    ],
+    "authoritative": true,
+    "root_sources": [
+     "doc:eb17d93fffc957f1"
+    ],
+    "reliability": 0.51,
+    "horizon": 0,
+    "path": [
+     {
+      "edge_id": "e43bd7b2-b8e8-459d-ba9c-6a959dedd207",
+      "kind": "derived_from",
+      "provenance": "explicit",
+      "status": "asserted",
+      "from": "14d5aa5f-dbcb-4927-be1d-b5e61260c0c4",
+      "to": "5f43f37a-6713-4e12-9753-2aed34bcb891",
+      "direction": "out",
+      "hypothesis": false
+     }
+    ],
+    "tokens": 43,
+    "priority": {
+     "query_relevance": 0.7219,
+     "dependency_relevance": 0.4174,
+     "source_reliability": 0.51,
+     "temporal_applicability": 1.0,
+     "information_gain": 1.0,
+     "retrieval_cost": 0.0083,
+     "redundancy": 0.0
+    },
+    "requires": [
+     "5f43f37a-6713-4e12-9753-2aed34bcb891",
+     "14d5aa5f-dbcb-4927-be1d-b5e61260c0c4",
+     "5f43f37a-6713-4e12-9753-2aed34bcb891"
+    ]
+   },
+   {
+    "evidence_id": "3a5b0e8f-0e31-4522-b5cf-a4fbf9264e39@2",
+    "node": {
+     "id": "3a5b0e8f-0e31-4522-b5cf-a4fbf9264e39",
+     "type": "order",
+     "key": "PO-1043",
+     "name": "PO-1043",
+     "version": 2
+    },
+    "text": "PO-1043.",
+    "source_pointers": [
+     {
+      "record": "PO-1043",
+      "system": "erp",
+      "revision": 2
+     },
+     {
+      "passage": "kestrel-notice-2026-10-20#p1"
+     }
+    ],
+    "authoritative": true,
+    "root_sources": [],
+    "reliability": 1.0,
+    "horizon": 1,
+    "path": [
+     {
+      "edge_id": "aad01b37-36fb-48b6-9a8a-5ce81b72d7e0",
+      "kind": "depends_on",
+      "provenance": "explicit",
+      "status": "asserted",
+      "from": "004712c6-a8eb-412f-8d4f-eaade27aeb36",
+      "to": "3a5b0e8f-0e31-4522-b5cf-a4fbf9264e39",
+      "direction": "in",
+      "hypothesis": false
+     }
+    ],
+    "tokens": 2,
+    "priority": {
+     "query_relevance": 0.4557,
+     "dependency_relevance": 0.4283,
+     "source_reliability": 1.0,
+     "temporal_applicability": 1.0,
+     "information_gain": 1.0,
+     "retrieval_cost": 0.0005,
+     "redundancy": 0.0
+    },
+    "requires": [
+     "3a5b0e8f-0e31-4522-b5cf-a4fbf9264e39",
+     "004712c6-a8eb-412f-8d4f-eaade27aeb36",
+     "3a5b0e8f-0e31-4522-b5cf-a4fbf9264e39"
+    ]
+   },
+   {
+    "evidence_id": "981d2880-3d9a-415b-94e3-5feab3e8b8e4@1",
+    "node": {
+     "id": "981d2880-3d9a-415b-94e3-5feab3e8b8e4",
+     "type": "document",
+     "key": "chat-2026-10-05",
+     "name": "Borealis site chat, 2026-10-05",
+     "version": 1
+    },
+    "text": "Borealis site chat, 2026-10-05. #borealis-site (fictional)\n\nCrew training can only start once the KX-7 boards from PO-1043 are on site.",
+    "source_pointers": [
+     {
+      "sha256": "c8cbc801fa95dd8385901f21b7178e7f25d78ab08811a3752b1ad48ac5eee8f1",
+      "filename": "chat-2026-10-05.txt",
+      "document_id": "52269d96-ed22-40de-b677-a5494a991e5d"
+     }
+    ],
+    "authoritative": true,
+    "root_sources": [
+     "doc:c8cbc801fa95dd83"
+    ],
+    "reliability": 0.425,
+    "horizon": 1,
+    "path": [
+     {
+      "edge_id": "bb60e3e1-49f7-4f7e-93a9-0db83ed2c11d",
+      "kind": "derived_from",
+      "provenance": "explicit",
+      "status": "asserted",
+      "from": "4b172820-443a-4cf5-90ad-ed021d449d8d",
+      "to": "981d2880-3d9a-415b-94e3-5feab3e8b8e4",
+      "direction": "out",
+      "hypothesis": false
+     }
+    ],
+    "tokens": 34,
+    "priority": {
+     "query_relevance": 0.6139,
+     "dependency_relevance": 0.274,
+     "source_reliability": 0.425,
+     "temporal_applicability": 1.0,
+     "information_gain": 1.0,
+     "retrieval_cost": 0.0065,
+     "redundancy": 0.0
+    },
+    "requires": [
+     "981d2880-3d9a-415b-94e3-5feab3e8b8e4",
+     "4b172820-443a-4cf5-90ad-ed021d449d8d",
+     "981d2880-3d9a-415b-94e3-5feab3e8b8e4"
+    ]
+   },
+   {
+    "evidence_id": "0836be57-bcfb-4451-8bae-0ddce93c760e@1",
+    "node": {
+     "id": "0836be57-bcfb-4451-8bae-0ddce93c760e",
+     "type": "passage",
+     "key": "po-1042#p1",
+     "name": "Purchase order PO-1042 \u00b61",
+     "version": 1
+    },
+    "text": "Purchase order PO-1042 \u00b61. PO-1042: 30 units of KX-7 controller board from Kestrel Components, promised delivery 2026-11-01, for Project Aurora.",
+    "source_pointers": [
+     {
+      "page": 1,
+      "quote": "PO-1042: 30 units of KX-7 controller board from Kestrel Components, promised delivery 2026-11-01, for Project Aurora.",
+      "sha256": null,
+      "char_end": 172,
+      "char_start": 55,
+      "section_id": "cb0102a7-b7be-457a-92ec-bab1a81bc8d7",
+      "document_id": "fb88ff18-e910-4613-a2bd-662e2cc20bc4"
+     }
+    ],
+    "authoritative": true,
+    "root_sources": [
+     "doc:e2102a8f440b0df0"
+    ],
+    "reliability": 1.0,
+    "horizon": 0,
+    "path": [
+     {
+      "edge_id": "3b6c0b6e-f0b2-4025-89d7-4af18749e01a",
+      "kind": "depends_on",
+      "provenance": "explicit",
+      "status": "asserted",
+      "from": "004712c6-a8eb-412f-8d4f-eaade27aeb36",
+      "to": "b1f69780-c8e2-4c2b-83ba-56a5c9c608a3",
+      "direction": "in",
+      "hypothesis": false
+     },
+     {
+      "edge_id": "ab4de64f-4fa9-4edc-a566-693fde7ee53c",
+      "kind": "supports",
+      "provenance": "explicit",
+      "status": "asserted",
+      "from": "b1f69780-c8e2-4c2b-83ba-56a5c9c608a3",
+      "to": "0836be57-bcfb-4451-8bae-0ddce93c760e",
+      "direction": "in",
+      "hypothesis": false
+     }
+    ],
+    "tokens": 36,
+    "priority": {
+     "query_relevance": 0.8024,
+     "dependency_relevance": 0.4491,
+     "source_reliability": 1.0,
+     "temporal_applicability": 1.0,
+     "information_gain": 0.0,
+     "retrieval_cost": 0.009,
+     "redundancy": 1.0
+    },
+    "requires": [
+     "0836be57-bcfb-4451-8bae-0ddce93c760e",
+     "004712c6-a8eb-412f-8d4f-eaade27aeb36",
+     "b1f69780-c8e2-4c2b-83ba-56a5c9c608a3",
+     "0836be57-bcfb-4451-8bae-0ddce93c760e"
+    ]
+   },
+   {
+    "evidence_id": "788375fd-9268-4a08-89c6-a5e6f679ed59@1",
+    "node": {
+     "id": "788375fd-9268-4a08-89c6-a5e6f679ed59",
+     "type": "passage",
+     "key": "po-1043-rev2#p1",
+     "name": "Purchase order PO-1043 revision 2 \u00b61",
+     "version": 1
+    },
+    "text": "Purchase order PO-1043 revision 2 \u00b61. PO-1043 revision 2: 50 units of KX-7 controller board from Kestrel Components, promised delivery 2026-11-05, for Project Borealis.",
+    "source_pointers": [
+     {
+      "page": 1,
+      "quote": "PO-1043 revision 2: 50 units of KX-7 controller board from Kestrel Components, promised delivery 2026-11-05, for Project Borealis.",
+      "sha256": null,
+      "char_end": 197,
+      "char_start": 67,
+      "section_id": "b5542fe5-1e07-4b94-9ef3-86961c131aac",
+      "document_id": "5dd0fa3a-d2d5-4888-84d2-96ee18cf89b9"
+     }
+    ],
+    "authoritative": true,
+    "root_sources": [
+     "doc:cb9224baad8c7753"
+    ],
+    "reliability": 1.0,
+    "horizon": 0,
+    "path": [
+     {
+      "edge_id": "aad01b37-36fb-48b6-9a8a-5ce81b72d7e0",
+      "kind": "depends_on",
+      "provenance": "explicit",
+      "status": "asserted",
+      "from": "004712c6-a8eb-412f-8d4f-eaade27aeb36",
+      "to": "3a5b0e8f-0e31-4522-b5cf-a4fbf9264e39",
+      "direction": "in",
+      "hypothesis": false
+     },
+     {
+      "edge_id": "994ea6b0-327c-4412-80e5-85e75c0818f9",
+      "kind": "supports",
+      "provenance": "explicit",
+      "status": "asserted",
+      "from": "3a5b0e8f-0e31-4522-b5cf-a4fbf9264e39",
+      "to": "788375fd-9268-4a08-89c6-a5e6f679ed59",
+      "direction": "in",
+      "hypothesis": false
+     }
+    ],
+    "tokens": 42,
+    "priority": {
+     "query_relevance": 0.7987,
+     "dependency_relevance": 0.4478,
+     "source_reliability": 1.0,
+     "temporal_applicability": 1.0,
+     "information_gain": 0.0,
+     "retrieval_cost": 0.0105,
+     "redundancy": 1.0
+    },
+    "requires": [
+     "788375fd-9268-4a08-89c6-a5e6f679ed59",
+     "004712c6-a8eb-412f-8d4f-eaade27aeb36",
+     "3a5b0e8f-0e31-4522-b5cf-a4fbf9264e39",
+     "788375fd-9268-4a08-89c6-a5e6f679ed59"
+    ]
+   },
+   {
+    "evidence_id": "f77fe1d4-49e6-425b-8c9b-200cfb3091e9@1",
+    "node": {
+     "id": "f77fe1d4-49e6-425b-8c9b-200cfb3091e9",
+     "type": "passage",
+     "key": "kestrel-notice-2026-10-20#p1",
+     "name": "Kestrel delay notice, 2026-10-20 \u00b61",
+     "version": 1
+    },
+    "text": "Kestrel delay notice, 2026-10-20 \u00b61. Due to a wafer shortage, all KX-7 controller board shipments are delayed; the new delivery date for open orders is 2026-12-03.",
+    "source_pointers": [
+     {
+      "page": 1,
+      "quote": "Due to a wafer shortage, all KX-7 controller board shipments are delayed; the new delivery date for open orders is 2026-12-03.",
+      "sha256": null,
+      "char_end": 187,
+      "char_start": 61,
+      "section_id": "68638c2a-2252-47af-b04e-bef048eff568",
+      "document_id": "f0caa835-1ffd-4694-a5ad-564a5c65113c"
+     }
+    ],
+    "authoritative": true,
+    "root_sources": [
+     "doc:75dd5e7288ad29d1"
+    ],
+    "reliability": 0.51,
+    "horizon": 0,
+    "path": [
+     {
+      "edge_id": "aad01b37-36fb-48b6-9a8a-5ce81b72d7e0",
+      "kind": "depends_on",
+      "provenance": "explicit",
+      "status": "asserted",
+      "from": "004712c6-a8eb-412f-8d4f-eaade27aeb36",
+      "to": "3a5b0e8f-0e31-4522-b5cf-a4fbf9264e39",
+      "direction": "in",
+      "hypothesis": false
+     },
+     {
+      "edge_id": "2a26eb9c-2e99-4659-898a-628ede34ce12",
+      "kind": "supports",
+      "provenance": "explicit",
+      "status": "asserted",
+      "from": "3a5b0e8f-0e31-4522-b5cf-a4fbf9264e39",
+      "to": "f77fe1d4-49e6-425b-8c9b-200cfb3091e9",
+      "direction": "in",
+      "hypothesis": false
+     }
+    ],
+    "tokens": 41,
+    "priority": {
+     "query_relevance": 0.8444,
+     "dependency_relevance": 0.48,
+     "source_reliability": 0.51,
+     "temporal_applicability": 1.0,
+     "information_gain": 0.0,
+     "retrieval_cost": 0.0103,
+     "redundancy": 1.0
+    },
+    "requires": [
+     "f77fe1d4-49e6-425b-8c9b-200cfb3091e9",
+     "004712c6-a8eb-412f-8d4f-eaade27aeb36",
+     "3a5b0e8f-0e31-4522-b5cf-a4fbf9264e39",
+     "f77fe1d4-49e6-425b-8c9b-200cfb3091e9"
+    ]
+   },
+   {
+    "evidence_id": "2a813fbf-f103-4702-befa-773155f1b615@1",
+    "node": {
+     "id": "2a813fbf-f103-4702-befa-773155f1b615",
+     "type": "claim",
+     "key": "email-2026-10-02#qty",
+     "name": "Email: PO-1043 is 40 units",
+     "version": 1
+    },
+    "text": "Email: PO-1043 is 40 units. confirming PO-1043 for 40 units of KX-7, delivery on 2026-10-28.",
+    "source_pointers": [
+     {
+      "page": 1,
+      "quote": "confirming PO-1043 for 40 units of KX-7, delivery on 2026-10-28.",
+      "sha256": null,
+      "char_end": 130,
+      "char_start": 66,
+      "section_id": "96d7c35a-bbdf-41b3-9cb9-64cc47a68cd6",
+      "document_id": "e6972abd-7b9b-45ff-8aba-b1780599bf4d"
+     }
+    ],
+    "authoritative": true,
+    "root_sources": [
+     "doc:eb17d93fffc957f1"
+    ],
+    "reliability": 0.51,
+    "horizon": 1,
+    "path": [
+     {
+      "edge_id": "e903456e-2a92-4bce-a979-fc271c419efe",
+      "kind": "derived_from",
+      "provenance": "explicit",
+      "status": "asserted",
+      "from": "14d5aa5f-dbcb-4927-be1d-b5e61260c0c4",
+      "to": "2a813fbf-f103-4702-befa-773155f1b615",
+      "direction": "in",
+      "hypothesis": false
+     }
+    ],
+    "tokens": 23,
+    "priority": {
+     "query_relevance": 0.6079,
+     "dependency_relevance": 0.4226,
+     "source_reliability": 0.51,
+     "temporal_applicability": 1.0,
+     "information_gain": 0.25,
+     "retrieval_cost": 0.0057,
+     "redundancy": 1.0
+    },
+    "requires": [
+     "2a813fbf-f103-4702-befa-773155f1b615",
+     "14d5aa5f-dbcb-4927-be1d-b5e61260c0c4",
+     "2a813fbf-f103-4702-befa-773155f1b615"
+    ]
+   },
+   {
+    "evidence_id": "14d5aa5f-dbcb-4927-be1d-b5e61260c0c4@1",
+    "node": {
+     "id": "14d5aa5f-dbcb-4927-be1d-b5e61260c0c4",
+     "type": "passage",
+     "key": "email-2026-10-02#qty:passage",
+     "name": "Email from Kestrel sales, 2026-10-02 (claim source)",
+     "version": 1
+    },
+    "text": "Email from Kestrel sales, 2026-10-02 (claim source). confirming PO-1043 for 40 units of KX-7, delivery on 2026-10-28.",
+    "source_pointers": [
+     {
+      "page": 1,
+      "quote": "confirming PO-1043 for 40 units of KX-7, delivery on 2026-10-28.",
+      "sha256": null,
+      "char_end": 130,
+      "char_start": 66,
+      "section_id": "96d7c35a-bbdf-41b3-9cb9-64cc47a68cd6",
+      "document_id": "e6972abd-7b9b-45ff-8aba-b1780599bf4d"
+     }
+    ],
+    "authoritative": true,
+    "root_sources": [
+     "doc:eb17d93fffc957f1"
+    ],
+    "reliability": 0.51,
+    "horizon": 0,
+    "path": [
+     {
+      "edge_id": "e903456e-2a92-4bce-a979-fc271c419efe",
+      "kind": "derived_from",
+      "provenance": "explicit",
+      "status": "asserted",
+      "from": "14d5aa5f-dbcb-4927-be1d-b5e61260c0c4",
+      "to": "2a813fbf-f103-4702-befa-773155f1b615",
+      "direction": "in",
+      "hypothesis": false
+     },
+     {
+      "edge_id": "e903456e-2a92-4bce-a979-fc271c419efe",
+      "kind": "derived_from",
+      "provenance": "explicit",
+      "status": "asserted",
+      "from": "2a813fbf-f103-4702-befa-773155f1b615",
+      "to": "14d5aa5f-dbcb-4927-be1d-b5e61260c0c4",
+      "direction": "out",
+      "hypothesis": false
+     }
+    ],
+    "tokens": 30,
+    "priority": {
+     "query_relevance": 0.7343,
+     "dependency_relevance": 0.1183,
+     "source_reliability": 0.51,
+     "temporal_applicability": 1.0,
+     "information_gain": 0.0,
+     "retrieval_cost": 0.0075,
+     "redundancy": 1.0
+    },
+    "requires": [
+     "14d5aa5f-dbcb-4927-be1d-b5e61260c0c4",
+     "14d5aa5f-dbcb-4927-be1d-b5e61260c0c4",
+     "2a813fbf-f103-4702-befa-773155f1b615"
+    ]
+   },
+   {
+    "evidence_id": "4b172820-443a-4cf5-90ad-ed021d449d8d@1",
+    "node": {
+     "id": "4b172820-443a-4cf5-90ad-ed021d449d8d",
+     "type": "passage",
+     "key": "chat-2026-10-05#p1",
+     "name": "Borealis site chat, 2026-10-05 \u00b61",
+     "version": 1
+    },
+    "text": "Borealis site chat, 2026-10-05 \u00b61. Crew training can only start once the KX-7 boards from PO-1043 are on site.",
+    "source_pointers": [
+     {
+      "page": 1,
+      "quote": "Crew training can only start once the KX-7 boards from PO-1043 are on site.",
+      "sha256": null,
+      "char_end": 102,
+      "char_start": 27,
+      "section_id": "cf1e59d4-74c3-447a-92bc-1a50a61eee25",
+      "document_id": "52269d96-ed22-40de-b677-a5494a991e5d"
+     }
+    ],
+    "authoritative": true,
+    "root_sources": [
+     "doc:c8cbc801fa95dd83"
+    ],
+    "reliability": 0.425,
+    "horizon": 0,
+    "path": [
+     {
+      "edge_id": "bb60e3e1-49f7-4f7e-93a9-0db83ed2c11d",
+      "kind": "derived_from",
+      "provenance": "explicit",
+      "status": "asserted",
+      "from": "4b172820-443a-4cf5-90ad-ed021d449d8d",
+      "to": "981d2880-3d9a-415b-94e3-5feab3e8b8e4",
+      "direction": "out",
+      "hypothesis": false
+     },
+     {
+      "edge_id": "bb60e3e1-49f7-4f7e-93a9-0db83ed2c11d",
+      "kind": "derived_from",
+      "provenance": "explicit",
+      "status": "asserted",
+      "from": "981d2880-3d9a-415b-94e3-5feab3e8b8e4",
+      "to": "4b172820-443a-4cf5-90ad-ed021d449d8d",
+      "direction": "in",
+      "hypothesis": false
+     }
+    ],
+    "tokens": 28,
+    "priority": {
+     "query_relevance": 0.6578,
+     "dependency_relevance": 0.0767,
+     "source_reliability": 0.425,
+     "temporal_applicability": 1.0,
+     "information_gain": 0.0,
+     "retrieval_cost": 0.007,
+     "redundancy": 1.0
+    },
+    "requires": [
+     "4b172820-443a-4cf5-90ad-ed021d449d8d",
+     "4b172820-443a-4cf5-90ad-ed021d449d8d",
+     "981d2880-3d9a-415b-94e3-5feab3e8b8e4"
+    ]
+   }
+  ],
+  "facts": [
+   {
+    "node": {
+     "id": "b7b926ea-829d-42c4-89f0-61169eb1c5d3",
+     "type": "milestone",
+     "key": "aurora-pilot",
+     "name": "Aurora pilot build",
+     "version": 1
+    },
+    "statement": "Aurora pilot build: due 2026-11-20",
+    "evidence_ids": [],
+    "source_pointers": [
+     {
+      "record": "MS-AUR-3",
+      "system": "project_tracker"
+     }
+    ],
+    "independent_sources": 0,
+    "requires": [
+     "b7b926ea-829d-42c4-89f0-61169eb1c5d3"
+    ]
+   },
+   {
+    "node": {
+     "id": "36b1e5db-6ff7-4c4e-b9c5-32e44176b40c",
+     "type": "milestone",
+     "key": "borealis-trial",
+     "name": "Borealis field trial",
+     "version": 1
+    },
+    "statement": "Borealis field trial: due 2026-11-15",
+    "evidence_ids": [],
+    "source_pointers": [
+     {
+      "record": "MS-BOR-2",
+      "system": "project_tracker"
+     }
+    ],
+    "independent_sources": 0,
+    "requires": [
+     "36b1e5db-6ff7-4c4e-b9c5-32e44176b40c"
+    ]
+   },
+   {
+    "node": {
+     "id": "2e98d90a-e64f-45be-a3cf-9d00ff5565f1",
+     "type": "task",
+     "key": "aurora-assembly",
+     "name": "Assemble Aurora pilot units",
+     "version": 1
+    },
+    "statement": "Assemble Aurora pilot units: status open",
+    "evidence_ids": [],
+    "source_pointers": [
+     {
+      "record": "T-311",
+      "system": "project_tracker"
+     }
+    ],
+    "independent_sources": 0,
+    "requires": [
+     "2e98d90a-e64f-45be-a3cf-9d00ff5565f1"
+    ]
+   },
+   {
+    "node": {
+     "id": "0928c86e-3990-4f4b-87ee-fa58103b5d9d",
+     "type": "task",
+     "key": "borealis-install",
+     "name": "Install Borealis field units",
+     "version": 1
+    },
+    "statement": "Install Borealis field units: status open",
+    "evidence_ids": [],
+    "source_pointers": [
+     {
+      "record": "T-402",
+      "system": "project_tracker"
+     }
+    ],
+    "independent_sources": 0,
+    "requires": [
+     "0928c86e-3990-4f4b-87ee-fa58103b5d9d"
+    ]
+   },
+   {
+    "node": {
+     "id": "b1f69780-c8e2-4c2b-83ba-56a5c9c608a3",
+     "type": "order",
+     "key": "PO-1042",
+     "name": "PO-1042",
+     "version": 2
+    },
+    "statement": "PO-1042: 30 x kx7 from kestrel, promised 2026-12-03 (status open, rev 2)",
+    "evidence_ids": [
+     "0836be57-bcfb-4451-8bae-0ddce93c760e@1",
+     "f77fe1d4-49e6-425b-8c9b-200cfb3091e9@1"
+    ],
+    "source_pointers": [
+     {
+      "record": "PO-1042",
+      "system": "erp",
+      "revision": 1
+     },
+     {
+      "passage": "kestrel-notice-2026-10-20#p1"
+     }
+    ],
+    "independent_sources": 2,
+    "requires": [
+     "b1f69780-c8e2-4c2b-83ba-56a5c9c608a3",
+     "0836be57-bcfb-4451-8bae-0ddce93c760e",
+     "f77fe1d4-49e6-425b-8c9b-200cfb3091e9"
+    ]
+   },
+   {
+    "node": {
+     "id": "3a5b0e8f-0e31-4522-b5cf-a4fbf9264e39",
+     "type": "order",
+     "key": "PO-1043",
+     "name": "PO-1043",
+     "version": 2
+    },
+    "statement": "PO-1043: 50 x kx7 from kestrel, promised 2026-12-03 (status open, rev 3)",
+    "evidence_ids": [
+     "788375fd-9268-4a08-89c6-a5e6f679ed59@1",
+     "f77fe1d4-49e6-425b-8c9b-200cfb3091e9@1"
+    ],
+    "source_pointers": [
+     {
+      "record": "PO-1043",
+      "system": "erp",
+      "revision": 2
+     },
+     {
+      "passage": "kestrel-notice-2026-10-20#p1"
+     }
+    ],
+    "independent_sources": 2,
+    "requires": [
+     "3a5b0e8f-0e31-4522-b5cf-a4fbf9264e39",
+     "788375fd-9268-4a08-89c6-a5e6f679ed59",
+     "f77fe1d4-49e6-425b-8c9b-200cfb3091e9"
+    ]
+   }
+  ],
+  "hypotheses": [
+   {
+    "node": {
+     "id": "a510b67c-254e-4336-a321-05338774a85c",
+     "type": "artifact",
+     "key": "status-2026-10-12",
+     "name": "Weekly supply status summary (generated)",
+     "version": 2
+    },
+    "statement": "Weekly supply status summary (generated). All KX-7 deliveries for Aurora and Borealis are on track for early November.",
+    "evidence_ids": [],
+    "source_pointers": [],
+    "independent_sources": 0,
+    "requires": [
+     "a510b67c-254e-4336-a321-05338774a85c"
+    ],
+    "kind": "generated_summary",
+    "note": "generated content: not evidence; check its sources",
+    "review_status": "invalidated"
+   },
+   {
+    "node": {
+     "id": "795c12ab-7f72-47db-87e0-c4f28b0b1446",
+     "type": "task",
+     "key": "borealis-training",
+     "name": "Train Borealis site crew",
+     "version": 1
+    },
+    "statement": "Train Borealis site crew: status open",
+    "evidence_ids": [],
+    "source_pointers": [
+     {
+      "record": "T-405",
+      "system": "project_tracker"
+     }
+    ],
+    "independent_sources": 0,
+    "requires": [
+     "795c12ab-7f72-47db-87e0-c4f28b0b1446",
+     "3a5b0e8f-0e31-4522-b5cf-a4fbf9264e39",
+     "795c12ab-7f72-47db-87e0-c4f28b0b1446"
+    ],
+    "kind": "reached_through_inferred_relationship",
+    "edges": [
+     {
+      "edge_id": "f4f4dc41-4911-478a-9d84-9f9c7e379c2e",
+      "kind": "depends_on",
+      "provenance": "inferred",
+      "status": "hypothesis",
+      "from": "3a5b0e8f-0e31-4522-b5cf-a4fbf9264e39",
+      "to": "795c12ab-7f72-47db-87e0-c4f28b0b1446",
+      "direction": "in",
+      "hypothesis": true
+     }
+    ]
+   },
+   {
+    "kind": "inferred_relationship",
+    "edge": {
+     "id": "f4f4dc41-4911-478a-9d84-9f9c7e379c2e",
+     "kind": "depends_on",
+     "from": {
+      "id": "795c12ab-7f72-47db-87e0-c4f28b0b1446",
+      "type": "task",
+      "key": "borealis-training",
+      "name": "Train Borealis site crew",
+      "version": 1
+     },
+     "to": {
+      "id": "3a5b0e8f-0e31-4522-b5cf-a4fbf9264e39",
+      "type": "order",
+      "key": "PO-1043",
+      "name": "PO-1043",
+      "version": 2
+     },
+     "derivation": {
+      "model": "relation-extractor (demo annotation)"
+     }
+    },
+    "requires": [
+     "795c12ab-7f72-47db-87e0-c4f28b0b1446",
+     "3a5b0e8f-0e31-4522-b5cf-a4fbf9264e39"
+    ]
+   }
+  ],
+  "contradictions": [
+   {
+    "edge_id": "8c396fea-a41a-46e0-a3ea-01e59ea62a95",
+    "a": {
+     "id": "2a813fbf-f103-4702-befa-773155f1b615",
+     "type": "claim",
+     "key": "email-2026-10-02#qty",
+     "name": "Email: PO-1043 is 40 units",
+     "version": 1
+    },
+    "b": {
+     "id": "3a5b0e8f-0e31-4522-b5cf-a4fbf9264e39",
+     "type": "order",
+     "key": "PO-1043",
+     "name": "PO-1043",
+     "version": 2
+    },
+    "derivation": {
+     "attr": "qty",
+     "rule": "R0",
+     "claim_value": 40,
+     "record_value": 50,
+     "claim_version": 1,
+     "record_version": 2
+    },
+    "provenance": "rule",
+    "status": "resolved",
+    "current": {
+     "id": "3a5b0e8f-0e31-4522-b5cf-a4fbf9264e39",
+     "type": "order",
+     "key": "PO-1043",
+     "name": "PO-1043",
+     "version": 2
+    },
+    "history": {
+     "id": "2a813fbf-f103-4702-befa-773155f1b615",
+     "type": "claim",
+     "key": "email-2026-10-02#qty",
+     "name": "Email: PO-1043 is 40 units",
+     "version": 1
+    },
+    "why": "PO-1043 (dated 2026-10-20) is the later system-of-record statement; Email: PO-1043 is 40 units (dated 2026-10-02) is kept as history, not deleted.",
+    "requires": [
+     "2a813fbf-f103-4702-befa-773155f1b615",
+     "3a5b0e8f-0e31-4522-b5cf-a4fbf9264e39"
+    ]
+   }
+  ],
+  "missing_evidence": [
+   {
+    "about": {
+     "id": "795c12ab-7f72-47db-87e0-c4f28b0b1446",
+     "type": "task",
+     "key": "borealis-training",
+     "name": "Train Borealis site crew",
+     "version": 1
+    },
+    "what": "inferred relationship depends_on -> PO-1043 is unverified",
+    "suggested_search": "Train Borealis site crew PO-1043",
+    "requires": [
+     "795c12ab-7f72-47db-87e0-c4f28b0b1446",
+     "3a5b0e8f-0e31-4522-b5cf-a4fbf9264e39"
+    ]
+   }
+  ],
+  "suggested_tasks": [
+   {
+    "suggestion_id": "f21b9536-f062-410f-a229-1835b0cc6708",
+    "title": "Expedite or source 50 KX-7 controller board for Borealis field trial",
+    "capability": "operations",
+    "reason": "Borealis field trial (due 2026-11-15): KX-7 controller board: needs 50, stock 0 plus on-time orders 0, shortfall 50. Late: PO-1043 (2026-12-03).",
+    "priority": 0.9,
+    "targets": [
+     "36b1e5db-6ff7-4c4e-b9c5-32e44176b40c",
+     "ab307f22-0129-443b-8496-1f6547bc9232",
+     "3a5b0e8f-0e31-4522-b5cf-a4fbf9264e39"
+    ],
+    "rule": "R1",
+    "dedupe_key": "R1:expedite:borealis-trial:kx7",
+    "event_id": "25c44af6-3abf-4fa8-b3ba-2baa142d30ca",
+    "requires": [
+     "36b1e5db-6ff7-4c4e-b9c5-32e44176b40c",
+     "3a5b0e8f-0e31-4522-b5cf-a4fbf9264e39",
+     "ab307f22-0129-443b-8496-1f6547bc9232",
+     "efb5bc5a-2715-4e16-98f8-135f3c39c08b"
+    ]
+   },
+   {
+    "suggestion_id": "6618b4a1-b16a-4564-aaa2-51c02f49a257",
+    "title": "Verify that Train Borealis site crew depends on PO-1043",
+    "capability": "operations",
+    "reason": "inferred relationship used in this result",
+    "priority": 0.6,
+    "targets": [
+     "795c12ab-7f72-47db-87e0-c4f28b0b1446",
+     "3a5b0e8f-0e31-4522-b5cf-a4fbf9264e39"
+    ],
+    "rule": "query:verify_inferred",
+    "dedupe_key": "Q:verify:f4f4dc41-4911-478a-9d84-9f9c7e379c2e",
+    "event_id": null,
+    "requires": [
+     "3a5b0e8f-0e31-4522-b5cf-a4fbf9264e39",
+     "795c12ab-7f72-47db-87e0-c4f28b0b1446"
+    ]
+   },
+   {
+    "suggestion_id": "545e5509-b32a-441c-8a3d-bc48c0b5c34f",
+    "title": "Reserve 30 KX-7 controller board from stock for Aurora pilot build",
+    "capability": "operations",
+    "reason": "Aurora pilot build (due 2026-11-20): PO-1042 (2026-12-03) now arrive late, but stock and on-time orders cover 30 KX-7 controller board.",
+    "priority": 0.5,
+    "targets": [
+     "b7b926ea-829d-42c4-89f0-61169eb1c5d3",
+     "ab307f22-0129-443b-8496-1f6547bc9232"
+    ],
+    "rule": "R1",
+    "dedupe_key": "R1:reserve:aurora-pilot:kx7",
+    "event_id": "25c44af6-3abf-4fa8-b3ba-2baa142d30ca",
+    "requires": [
+     "ab307f22-0129-443b-8496-1f6547bc9232",
+     "b1f69780-c8e2-4c2b-83ba-56a5c9c608a3",
+     "b7b926ea-829d-42c4-89f0-61169eb1c5d3",
+     "d645374e-cce9-4379-89c3-4a0245b3b1dc"
+    ]
+   }
+  ],
+  "candidate_affected": {
+   "projects": [
+    {
+     "id": "efb5bc5a-2715-4e16-98f8-135f3c39c08b",
+     "type": "project",
+     "key": "borealis",
+     "name": "Project Borealis",
+     "version": 1,
+     "assessment": "at_risk",
+     "reason": "Project Borealis depends on Borealis field trial, which is at risk.",
+     "paths": [
+      [
+       {
+        "edge_id": "6b353b72-aafe-4386-bd9c-1bfd5725de26",
+        "kind": "depends_on",
+        "provenance": "explicit",
+        "status": "asserted",
+        "from": "ab307f22-0129-443b-8496-1f6547bc9232",
+        "to": "36b1e5db-6ff7-4c4e-b9c5-32e44176b40c",
+        "direction": "in",
+        "hypothesis": false
+       },
+       {
+        "edge_id": "8dfb9527-3088-43da-8d8e-7d0c7b2b1a0c",
+        "kind": "depends_on",
+        "provenance": "explicit",
+        "status": "asserted",
+        "from": "36b1e5db-6ff7-4c4e-b9c5-32e44176b40c",
+        "to": "efb5bc5a-2715-4e16-98f8-135f3c39c08b",
+        "direction": "in",
+        "hypothesis": false
+       }
+      ]
+     ],
+     "requires": [
+      "36b1e5db-6ff7-4c4e-b9c5-32e44176b40c",
+      "3a5b0e8f-0e31-4522-b5cf-a4fbf9264e39",
+      "ab307f22-0129-443b-8496-1f6547bc9232",
+      "efb5bc5a-2715-4e16-98f8-135f3c39c08b"
+     ]
+    },
+    {
+     "id": "d645374e-cce9-4379-89c3-4a0245b3b1dc",
+     "type": "project",
+     "key": "aurora",
+     "name": "Project Aurora",
+     "version": 1,
+     "assessment": null,
+     "reason": null,
+     "paths": [
+      [
+       {
+        "edge_id": "3d3dbc1a-7364-4fbd-a536-8d41bc179909",
+        "kind": "depends_on",
+        "provenance": "explicit",
+        "status": "asserted",
+        "from": "ab307f22-0129-443b-8496-1f6547bc9232",
+        "to": "b7b926ea-829d-42c4-89f0-61169eb1c5d3",
+        "direction": "in",
+        "hypothesis": false
+       },
+       {
+        "edge_id": "de4cdebe-d62f-4f30-a931-b2a8e2a1fe3a",
+        "kind": "depends_on",
+        "provenance": "explicit",
+        "status": "asserted",
+        "from": "b7b926ea-829d-42c4-89f0-61169eb1c5d3",
+        "to": "d645374e-cce9-4379-89c3-4a0245b3b1dc",
+        "direction": "in",
+        "hypothesis": false
+       }
+      ]
+     ],
+     "requires": [
+      "ab307f22-0129-443b-8496-1f6547bc9232",
+      "b7b926ea-829d-42c4-89f0-61169eb1c5d3",
+      "d645374e-cce9-4379-89c3-4a0245b3b1dc"
+     ]
+    }
+   ],
+   "tasks": [
+    {
+     "id": "2e98d90a-e64f-45be-a3cf-9d00ff5565f1",
+     "type": "task",
+     "key": "aurora-assembly",
+     "name": "Assemble Aurora pilot units",
+     "version": 1,
+     "status": "open",
+     "assessment": null,
+     "paths": [
+      [
+       {
+        "edge_id": "3d3dbc1a-7364-4fbd-a536-8d41bc179909",
+        "kind": "depends_on",
+        "provenance": "explicit",
+        "status": "asserted",
+        "from": "ab307f22-0129-443b-8496-1f6547bc9232",
+        "to": "b7b926ea-829d-42c4-89f0-61169eb1c5d3",
+        "direction": "in",
+        "hypothesis": false
+       },
+       {
+        "edge_id": "cc816a52-a00b-44dc-a945-be0ffe6d1faa",
+        "kind": "depends_on",
+        "provenance": "explicit",
+        "status": "asserted",
+        "from": "b7b926ea-829d-42c4-89f0-61169eb1c5d3",
+        "to": "2e98d90a-e64f-45be-a3cf-9d00ff5565f1",
+        "direction": "in",
+        "hypothesis": false
+       }
+      ]
+     ],
+     "requires": [
+      "2e98d90a-e64f-45be-a3cf-9d00ff5565f1",
+      "ab307f22-0129-443b-8496-1f6547bc9232",
+      "b7b926ea-829d-42c4-89f0-61169eb1c5d3"
+     ]
+    },
+    {
+     "id": "0928c86e-3990-4f4b-87ee-fa58103b5d9d",
+     "type": "task",
+     "key": "borealis-install",
+     "name": "Install Borealis field units",
+     "version": 1,
+     "status": "open",
+     "assessment": "needs_review",
+     "paths": [
+      [
+       {
+        "edge_id": "6b353b72-aafe-4386-bd9c-1bfd5725de26",
+        "kind": "depends_on",
+        "provenance": "explicit",
+        "status": "asserted",
+        "from": "ab307f22-0129-443b-8496-1f6547bc9232",
+        "to": "36b1e5db-6ff7-4c4e-b9c5-32e44176b40c",
+        "direction": "in",
+        "hypothesis": false
+       },
+       {
+        "edge_id": "056e05c3-9ccf-4d9a-a703-9116b4f457a9",
+        "kind": "depends_on",
+        "provenance": "explicit",
+        "status": "asserted",
+        "from": "36b1e5db-6ff7-4c4e-b9c5-32e44176b40c",
+        "to": "0928c86e-3990-4f4b-87ee-fa58103b5d9d",
+        "direction": "in",
+        "hypothesis": false
+       }
+      ]
+     ],
+     "requires": [
+      "0928c86e-3990-4f4b-87ee-fa58103b5d9d",
+      "36b1e5db-6ff7-4c4e-b9c5-32e44176b40c",
+      "3a5b0e8f-0e31-4522-b5cf-a4fbf9264e39",
+      "ab307f22-0129-443b-8496-1f6547bc9232"
+     ]
+    },
+    {
+     "id": "795c12ab-7f72-47db-87e0-c4f28b0b1446",
+     "type": "task",
+     "key": "borealis-training",
+     "name": "Train Borealis site crew",
+     "version": 1,
+     "status": "open",
+     "assessment": null,
+     "paths": [
+      [
+       {
+        "edge_id": "aad01b37-36fb-48b6-9a8a-5ce81b72d7e0",
+        "kind": "depends_on",
+        "provenance": "explicit",
+        "status": "asserted",
+        "from": "004712c6-a8eb-412f-8d4f-eaade27aeb36",
+        "to": "3a5b0e8f-0e31-4522-b5cf-a4fbf9264e39",
+        "direction": "in",
+        "hypothesis": false
+       },
+       {
+        "edge_id": "f4f4dc41-4911-478a-9d84-9f9c7e379c2e",
+        "kind": "depends_on",
+        "provenance": "inferred",
+        "status": "hypothesis",
+        "from": "3a5b0e8f-0e31-4522-b5cf-a4fbf9264e39",
+        "to": "795c12ab-7f72-47db-87e0-c4f28b0b1446",
+        "direction": "in",
+        "hypothesis": true
+       }
+      ],
+      [
+       {
+        "edge_id": "6b353b72-aafe-4386-bd9c-1bfd5725de26",
+        "kind": "depends_on",
+        "provenance": "explicit",
+        "status": "asserted",
+        "from": "ab307f22-0129-443b-8496-1f6547bc9232",
+        "to": "36b1e5db-6ff7-4c4e-b9c5-32e44176b40c",
+        "direction": "in",
+        "hypothesis": false
+       },
+       {
+        "edge_id": "056e05c3-9ccf-4d9a-a703-9116b4f457a9",
+        "kind": "depends_on",
+        "provenance": "explicit",
+        "status": "asserted",
+        "from": "36b1e5db-6ff7-4c4e-b9c5-32e44176b40c",
+        "to": "0928c86e-3990-4f4b-87ee-fa58103b5d9d",
+        "direction": "in",
+        "hypothesis": false
+       },
+       {
+        "edge_id": "2be99650-1dae-4988-b9aa-e4eb9297c301",
+        "kind": "blocks",
+        "provenance": "explicit",
+        "status": "asserted",
+        "from": "0928c86e-3990-4f4b-87ee-fa58103b5d9d",
+        "to": "795c12ab-7f72-47db-87e0-c4f28b0b1446",
+        "direction": "out",
+        "hypothesis": false
+       }
+      ]
+     ],
+     "requires": [
+      "004712c6-a8eb-412f-8d4f-eaade27aeb36",
+      "0928c86e-3990-4f4b-87ee-fa58103b5d9d",
+      "36b1e5db-6ff7-4c4e-b9c5-32e44176b40c",
+      "3a5b0e8f-0e31-4522-b5cf-a4fbf9264e39",
+      "795c12ab-7f72-47db-87e0-c4f28b0b1446",
+      "ab307f22-0129-443b-8496-1f6547bc9232"
+     ]
+    }
+   ]
+  }
+ }
+}
