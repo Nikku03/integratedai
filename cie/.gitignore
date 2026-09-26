@@ -11,3 +11,4 @@ dashboard/dist/
 eval_out/
 *.log
 .env
+data/bluebrain/*.json
