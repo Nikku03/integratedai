@@ -2989,10 +2989,9 @@
       "text": "Every finish on a sample board first. Then one fixed price for the design and the build."
      },
      {
-      "kind": "client",
-      "label": "In their words",
-      "text": "They designed the bar for the night we actually have, not the one in the mood board. And then they built it.",
-      "cite": "Owner, Stillroom",
+      "kind": "craft",
+      "label": "Scenes, not switches",
+      "text": "The lighting is set as three scenes: early, full and last orders. Staff press one button, not twelve.",
       "action": {
        "label": "Read the project",
        "href": "work/stillroom.html"
@@ -4006,10 +4005,9 @@
       "text": "Every finish on a sample board first. Then one fixed price for the design and the build."
      },
      {
-      "kind": "client",
-      "label": "In their words",
-      "text": "Our customers touch everything. For the first time, we want them to.",
-      "cite": "Director, Dhaaga",
+      "kind": "craft",
+      "label": "Lit for the cloth",
+      "text": "Light on the rails and the mirrors, never on the floor. Every colour reads true at 3,000 K.",
       "action": {
        "label": "Read the project",
        "href": "work/dhaaga.html"

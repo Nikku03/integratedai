@@ -6,7 +6,7 @@
  * data-attribute effects · refresh strategy · page-transition fallback.
  *
  * Load order (every tag `defer`, so execution order = document order):
- *   gsap → ScrollTrigger → SplitText → [Flip, CustomEase] → lenis → motion.js → [scrub.js] → page script
+ *   gsap → ScrollTrigger → SplitText → [Flip, CustomEase] → lenis → motion.js → page script
  * Page scripts register with   Motion.page("home", (env) => { ...; return cleanup })
  * Custom effects register with Motion.effect("name", (el, env) => { ...; return cleanup })
  * and are applied to every [data-name] element.

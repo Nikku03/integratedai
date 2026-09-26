@@ -10,7 +10,7 @@ Encode a clip for the site: WebM (VP9) + MP4 (H.264), a 4:5 phone crop, and post
 
 Writes assets/video/NAME.webm|.mp4, NAME-sm.webm|.mp4 (4:5 crop, for phones) and
 assets/video/posters/NAME-poster.jpg, NAME-sm-poster.jpg. Replacing a clip that already exists
-(e.g. cafe-walk) needs no page edits. --grade "<ffmpeg filters>" replaces the site's colour grade;
+(e.g. hero-cafe) needs no page edits. --grade "<ffmpeg filters>" replaces the site's colour grade;
 --out DIR writes somewhere else first (to compare before replacing). Requires ffmpeg on the PATH
 (or FFMPEG=/path/to/ffmpeg).
 """

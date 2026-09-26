@@ -123,13 +123,14 @@ To add a new photo, use a new slug, then print ready-to-paste markup (size reser
 
 ### Video
 ```bash
-python3 tools/encode_video.py walk-in.mov restaurant-walk --scrub --length 12   # a sector page's walk-in clip
+python3 tools/encode_video.py our-cafe.mov hero-cafe --loop --length 9            # a sector page's hero film
 python3 tools/encode_video.py pour.mov loop-latte --loop --start 2 --length 8     # an ambient loop
 ```
 Replacing a clip with the same name needs no page edits. Needs ffmpeg. Add `--grade "<ffmpeg filters>"` to use your
-own colour grade, and `--out DIR` to compare before replacing. The four walk-in clips are the sector heroes:
-`cafe-walk` (the studio's own), `restaurant-walk`, `bar-walk`, `retail-walk`. The best replacement for each is your own
-10–14s steady walk into a finished room.
+own colour grade, and `--out DIR` to compare before replacing. The sector heroes are `hero-cafe` (cut from the studio's
+own café walk-in), `hero-restaurant`, `hero-bar` and `hero-retail`: seamless loops whose last second crossfades into the
+first. The best replacement for each is your own steady 10–14s walk into a finished room, chosen so its end and start
+look alike. (`--scrub` encodes, with a keyframe every 8 frames, are for film that plays as you scroll.)
 
 ### Motion, briefly
 Add attributes, not code:
