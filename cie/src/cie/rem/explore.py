@@ -42,6 +42,7 @@ HORIZON_KINDS = {
 }
 POLICIES = ("search", "traversal", "rem", "rem+routing")
 BATCH = 8  # nodes expanded per database round trip, identical for every policy
+MAX_HORIZON = 3  # H3 is the last horizon; records found there are never expanded
 PER_NODE = 60  # edges followed per node per expansion; a cut node makes the result incomplete
 MAX_PATHS = 4
 # what may be returned as evidence: source text, and statements from systems of record with exact pointers
@@ -185,8 +186,13 @@ class Explorer:
         stop = None
         if self.policy != "search":
             stop = self._expand_all()
+        elif self._full:
+            stop = "budget:max_visited"
         self.budget.tick(self.r.counter.db_calls)
         frontier = self._frontier_items()
+        if stop is None and any(v.hop >= self.budget.limits.max_depth for v in self.visits.values() if not v.expanded
+                                and v.hop < MAX_HORIZON) and self.policy != "search":
+            stop = "budget:max_depth"  # a depth below the horizon design (H3) left records unexpanded
         if stop is None and self.truncated:
             stop = "fanout_cap"
         status = "complete" if stop is None else "incomplete"
@@ -271,8 +277,10 @@ class Explorer:
 
     # ------------------------------------------------------------------ resume
     def _frontier_items(self) -> list[dict[str, Any]]:
+        """Unexpanded records within the horizon design (H0-H2 can still be expanded), including those a lower depth
+        limit held back, so that a resume with a larger budget continues from them."""
         return [{"node": str(v.node.id), "hop": v.hop, "via": v.via, "qrel": v.qrel, "paths": v.paths, "anchor": v.anchor}
-                for v in self._pending()]
+                for v in self.visits.values() if not v.expanded and v.hop < MAX_HORIZON]
 
     def resume(self, state: dict[str, Any]) -> None:
         """Reload a saved exploration: visited records are marked expanded, the frontier is re-admitted with its
@@ -289,16 +297,23 @@ class Explorer:
                 v = Visit(node=n, hop=0, via="resumed", qrel=self._qrel(n), expanded=True, order=next(self._order))
                 self._score(v)
                 self.visits[n.id] = v
+        path_ids = {uuid.UUID(x) for f in state.get("frontier", []) for p in f.get("paths", []) for st in p
+                    for x in (st.get("from"), st.get("to")) if x}
+        seen = set(views) | set(self.r.nodes(path_ids - set(views))) if path_ids else set(views)
         for f in state.get("frontier", []):
             n = views.get(uuid.UUID(f["node"]))
             if n is not None and n.id not in self.visits:
-                v = Visit(node=n, hop=int(f["hop"]), via=f["via"], qrel=float(f["qrel"]), paths=f.get("paths", []),
+                # a saved path through a record the requester can no longer see is dropped with that record
+                paths = [p for p in f.get("paths", []) if all(uuid.UUID(x) in seen for st in p for x in (st.get("from"), st.get("to")) if x)]
+                if f.get("paths") and not paths:
+                    continue
+                v = Visit(node=n, hop=int(f["hop"]), via=f["via"], qrel=float(f["qrel"]), paths=paths,
                           order=next(self._order), anchor=float(f.get("anchor", 1.0)))
                 self._score(v)
                 self.visits[n.id] = v
 
     def state(self) -> dict[str, Any]:
-        return {"expanded": [str(k) for k, v in self.visits.items() if v.expanded or v.hop >= self.budget.limits.max_depth],
+        return {"expanded": [str(k) for k, v in self.visits.items() if v.expanded or v.hop >= MAX_HORIZON],
                 "frontier": self._frontier_items(), "start_groups": [str(x) for x in self._start_groups],
                 "covered": {k: sorted(v) for k, v in self._covered.items()}}
 

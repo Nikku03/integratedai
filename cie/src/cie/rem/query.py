@@ -30,7 +30,7 @@ from cie.rem.budget import Budget, Limits, est_tokens
 from cie.rem.change import visible_impacts
 from cie.rem.explore import Exploration, Explorer, pack_evidence
 from cie.rem.models import RemNode, RemNodeVersion, RemResult, RemResultDep, RemSuggestion
-from cie.rem.store import GraphReader, NodeView, _at
+from cie.rem.store import GraphReader, NodeView, _at, or_terms
 
 STATEMENT_TYPES = ("fact", "claim", "order", "milestone", "task", "requirement", "contract", "decision", "risk", "invoice",
                    "artifact")
@@ -117,9 +117,16 @@ def run_query(session: Session, tenant_id: uuid.UUID, visibility: Visibility | N
         status, reason = "incomplete", "budget:max_tokens"
     out.update({"status": status, "stopping_reason": reason, "budget": budget.report()})
     if req.save:
+        # every record the output reveals is a dependency, so a change to any of them marks the result stale
+        deps = {v.node.id: v.node.version for v in visits}
+        extra = {uuid.UUID(i) for i in requires_of(out)} - set(deps)
+        if extra:
+            found = reader.nodes(extra)
+            found.update(reader.nodes_latest(extra - set(found)))
+            deps.update({k: v.version for k, v in found.items()})
         _save(session, tenant_id, principal_id, req, out, {"exploration": exp.trace, "evidence_selection": [
             {"node": str(v.node.id), "score": v.score, "components": v.comps.as_dict() if v.comps else None} for v in chosen]},
-            explorer.state(), [(v.node.id, v.node.version) for v in visits], reader.seq, result_id, parent)
+            explorer.state(), list(deps.items()), reader.seq, result_id, parent)
     return out
 
 
@@ -140,13 +147,12 @@ def _start_hits(reader: GraphReader, req: QueryRequest, qvec) -> list[tuple[Node
 
 
 def _aggregate(reader: GraphReader, question: str) -> dict[str, Any]:
-    words = " or ".join(re.findall(r"[A-Za-z0-9][A-Za-z0-9\-]{2,}", question)) or question
-    tq = func.websearch_to_tsquery("english", words)
+    tq = func.websearch_to_tsquery("english", or_terms(question))
     stmt = (select(RemNode.type, func.count()).join(RemNodeVersion, RemNodeVersion.node_id == RemNode.id)
             .where(RemNodeVersion.tenant_id == reader.tenant_id, _at(RemNodeVersion, reader.seq), RemNodeVersion.tsv.op("@@")(tq))
             .group_by(RemNode.type))
     if reader.vis is not None:
-        stmt = stmt.where(reader.vis.sql_filter(RemNodeVersion.scope_id, RemNodeVersion.sensitivity))
+        stmt = stmt.where(reader._visible_filter())  # scope, clearance and ACL: no existence oracle through counts
     counts = {t: int(c) for t, c in reader._run(stmt, label="aggregate")}
     return {"status": "routed", "stopping_reason": "aggregate_routed_to_database",
             "aggregate": {"matching_records_by_type": counts,
@@ -162,11 +168,12 @@ def _assemble(session: Session, reader: GraphReader, exp: Exploration, visits, c
     supports: dict[uuid.UUID, list[uuid.UUID]] = {}
     superseded: dict[uuid.UUID, uuid.UUID] = {}
     for e in edges.values():
-        if e.kind == "supports":
+        src_ok = e.src in by_id and by_id[e.src].node.authoritative and not e.hypothesis
+        if e.kind == "supports" and src_ok:  # generated text and unverified inferred links never support a fact
             supports.setdefault(e.dst, []).append(e.src)
-        elif e.kind == "derived_from" and e.src in by_id and by_id[e.src].node.type == "passage":
+        elif e.kind == "derived_from" and src_ok and by_id[e.src].node.type == "passage":
             supports.setdefault(e.dst, []).append(e.src)  # the passage a record's text comes from
-        elif e.kind == "supersedes":
+        elif e.kind == "supersedes" and not e.hypothesis:
             superseded[e.dst] = e.src
 
     entities = [{**_node_ref(v.node), "horizon": v.hop, "via": v.via, "score": v.score, "priority": v.comps.as_dict() if v.comps else None,
@@ -204,13 +211,14 @@ def _assemble(session: Session, reader: GraphReader, exp: Exploration, visits, c
         elif n.type == "claim" and n.verification != "verified":
             hypotheses.append({**item, "kind": "unverified_claim"})
         elif hyp_edges:
-            hypotheses.append({**item, "kind": "reached_through_inferred_relationship", "edges": hyp_edges})
+            hypotheses.append({**item, "kind": "reached_through_inferred_relationship", "edges": hyp_edges,
+                               "requires": item["requires"] + _path_ids([hyp_edges])})
         elif n.source_pointers or sup:
             facts.append(item)
     for e in edges.values():
         if e.hypothesis and e.src in by_id and e.dst in by_id:
             hypotheses.append({"kind": "inferred_relationship", "edge": {"id": str(e.id), "kind": e.kind, "from": _node_ref(by_id[e.src].node),
-                               "to": _node_ref(by_id[e.dst].node), "derivation": e.derivation},
+                               "to": _node_ref(by_id[e.dst].node), "derivation": _derivation(e.derivation)},
                                "requires": [str(e.src), str(e.dst)]})
 
     contradictions = []
@@ -231,7 +239,7 @@ def _assemble(session: Session, reader: GraphReader, exp: Exploration, visits, c
                        "why": f"{cur.name} is the later authoritative statement; {old.name} is kept as history."}
             else:
                 res = {"status": "unresolved", "why": "neither statement is a later system-of-record statement"}
-        contradictions.append({"edge_id": str(e.id), "a": _node_ref(a), "b": _node_ref(b), "derivation": e.derivation,
+        contradictions.append({"edge_id": str(e.id), "a": _node_ref(a), "b": _node_ref(b), "derivation": _derivation(e.derivation),
                                "provenance": e.provenance, **res, "requires": [str(a.id), str(b.id)]})
 
     missing = []
@@ -266,11 +274,16 @@ def _assemble(session: Session, reader: GraphReader, exp: Exploration, visits, c
     target_ids = set(by_id) | set(projects)
     assessments, stored_tasks = visible_impacts(session, reader, target_ids=target_ids)
     assessed = {(a["target"]["id"]): a for a in assessments}
-    cand_projects = [{**_node_ref(p), "assessment": assessed.get(str(p.id), {}).get("impact"),
-                      "reason": assessed.get(str(p.id), {}).get("reason"),
-                      "paths": by_id[p.id].paths if p.id in by_id else [], "requires": [str(p.id)]} for p in projects.values()]
+    cand_projects = []
+    for p in projects.values():
+        a = assessed.get(str(p.id), {})
+        paths = by_id[p.id].paths if p.id in by_id else []
+        cand_projects.append({**_node_ref(p), "assessment": a.get("impact"), "reason": a.get("reason"), "paths": paths,
+                              "requires": sorted({str(p.id)} | set(_path_ids(paths)) | set(a.get("requires", [])))})
     cand_tasks = [{**_node_ref(v.node), "status": v.node.attrs.get("status", "open"), "assessment": assessed.get(str(v.node.id), {}).get("impact"),
-                   "paths": v.paths, "requires": [str(v.node.id)] + _path_ids(v.paths)} for v in visits if v.node.type == "task"]
+                   "paths": v.paths, "requires": sorted({str(v.node.id)} | set(_path_ids(v.paths))
+                                                        | set(assessed.get(str(v.node.id), {}).get("requires", [])))}
+                  for v in visits if v.node.type == "task"]
     rel_targets = {str(i) for i in target_ids}
     tasks, seen = [], set()
     for t in [t for t in stored_tasks if set(t["targets"]) & rel_targets] + _query_tasks(hypotheses, contradictions, missing):
@@ -282,6 +295,14 @@ def _assemble(session: Session, reader: GraphReader, exp: Exploration, visits, c
             "contradictions": contradictions, "missing_evidence": missing, "suggested_tasks": tasks,
             "routing": {"shortcuts_followed": exp.routing_hops,
                         "note": "routing shortcuts are navigation only; they are not relationships, evidence or access"}}
+
+
+DERIVATION_FIELDS = ("rule", "model", "attr", "claim_value", "record_value", "claim_version", "record_version", "link", "extractor", "why")
+
+
+def _derivation(d: dict[str, Any] | None) -> dict[str, Any]:
+    """Only named, non-free-text fields of a derivation are shown (free text or keys may name other records)."""
+    return {k: v for k, v in (d or {}).items() if k in DERIVATION_FIELDS}
 
 
 def _path_ids(paths) -> list[str]:
@@ -344,7 +365,8 @@ def _save(session, tenant_id, principal_id, req: QueryRequest, out, trace, state
 def redact(output: dict[str, Any], visible: set[str]) -> dict[str, Any]:
     """Re-apply the permission filter to a stored output: drop every item that reveals a record not in ``visible``."""
     def ok(item) -> bool:
-        return not isinstance(item, dict) or all(r in visible for r in item.get("requires", []))
+        # fail closed: an item that does not say what it reveals is not shown
+        return isinstance(item, dict) and "requires" in item and all(r in visible for r in item["requires"])
 
     out = dict(output)
     for k in ("entities", "evidence", "facts", "hypotheses", "contradictions", "missing_evidence", "suggested_tasks", "assessments"):
@@ -357,7 +379,7 @@ def redact(output: dict[str, Any], visible: set[str]) -> dict[str, Any]:
 
 
 def _impact_ok(a: dict[str, Any], visible: set[str]) -> bool:
-    ids = {a["target"]["id"]}
+    ids = {a["target"]["id"]} | set(a.get("requires", []))
     for p in a.get("paths", []):
         for s in p:
             ids |= {s.get("from"), s.get("to")} - {None}
@@ -378,6 +400,7 @@ def requires_of(output: dict[str, Any]) -> set[str]:
             ids |= set(y.get("requires", []))
     for a in output.get("assessments", []) or []:
         ids.add(a["target"]["id"])
+        ids |= set(a.get("requires", []))
         for p in a.get("paths", []):
             for s in p:
                 ids |= {s.get("from"), s.get("to")} - {None}

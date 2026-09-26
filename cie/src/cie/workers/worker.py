@@ -30,7 +30,9 @@ def handle(session: Session, job: Job, **deps) -> dict:
         from cie.memory.embeddings import get_embedding_provider
         from cie.rem.change import process_event
 
-        return process_event(session, uuid.UUID(job.payload["event_id"]), embedder=deps.get("embedder") or get_embedding_provider())
+        summary = process_event(session, uuid.UUID(job.payload["event_id"]), embedder=deps.get("embedder") or get_embedding_provider())
+        # job results are readable by every principal of the tenant: no names, reasons or counts here
+        return {"event_id": job.payload["event_id"], "seq": summary.get("seq"), "status": summary.get("status")}
     if job.kind == "agent_task":
         from cie.agents.runtime import run_task_job
 

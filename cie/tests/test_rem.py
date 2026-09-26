@@ -388,3 +388,135 @@ def test_impacts_on_deleted_records_stay_visible_to_those_allowed(session, world
     assert any(i["impact"] == "at_risk" and i["target"]["key"] == "m1" for i in cur), "a path through a deleted order is history, not a secret"
     outsider = GraphReader(session, world.tenant.id, visible_scopes(session, world.outsider))
     assert visible_impacts(session, outsider)[0] == [], "records in scopes the reader cannot see stay hidden, deleted or not"
+
+
+# ------------------------------------------------------------------------------------------------ review regressions
+def _editor(session, world, scope):
+    from cie.core.models import Permission, Principal, PrincipalKind
+    from cie.governance.permissions import ensure_role, grant_role
+
+    p = Principal(tenant_id=world.tenant.id, kind=PrincipalKind.user, name=f"editor-{uuid.uuid4().hex[:4]}", attributes={})
+    session.add(p)
+    session.flush()
+    grant_role(session, tenant_id=world.tenant.id, principal=p, role=ensure_role(session, world.tenant.id, "editor", Permission.write, 2),
+               scope=scope)
+    return p
+
+
+def _as(session, world, principal, ops, key=None):
+    ev, _ = submit_event(session, world.tenant.id, kind="ops", payload={"ops": ops}, idempotency_key=key or uuid.uuid4().hex,
+                         principal_id=principal.id)
+    return ev, process_event(session, ev.id)
+
+
+def test_writers_cannot_touch_records_outside_their_scopes(session, world, embedder):
+    apply(session, world, [node("fact", "fin", "Finance fact", scope="Finance"), node("fact", "leg", "Legal fact", scope="Legal", sensitivity=2)],
+          embedder=embedder)
+    ed = _editor(session, world, world.finance)
+    ev, s = _as(session, world, ed, [{"op": "revise_node", "ref": ["fact", "fin"], "attrs": {"x": 1}}])
+    assert ev.status == "done"
+    for ops in ([{"op": "revise_node", "ref": ["fact", "leg"], "attrs": {"x": 1}}],
+                [{"op": "restrict_node", "ref": ["fact", "leg"], "scope": "Finance", "sensitivity": 1}],
+                [node("fact", "leg", "Legal fact", scope="Finance")],
+                [{"op": "delete_node", "ref": ["fact", "leg"]}],
+                [edge(("fact", "fin"), "depends_on", ("fact", "leg"))]):
+        ev, s = _as(session, world, ed, ops)
+        assert ev.status == "rejected" and s["status"] == "rejected", ops
+    leg = GraphReader(session, world.tenant.id, None).node_by_key("fact", "leg")
+    assert leg.version == 1 and leg.scope_id == world.legal.id, "nothing was applied"
+
+
+def test_references_cannot_cross_tenants(session, world, embedder):
+    from cie.core.models import Tenant
+
+    other = Tenant(name=f"other-{uuid.uuid4().hex[:4]}")
+    session.add(other)
+    session.flush()
+    apply(session, world, [node("fact", "mine", "Mine")], embedder=embedder)
+    theirs = GraphReader(session, world.tenant.id, None).node_by_key("fact", "mine").id
+    ev, _ = submit_event(session, other.id, kind="ops", payload={"ops": [{"op": "delete_node", "ref": str(theirs)}]}, idempotency_key="x")
+    with pytest.raises(ValueError, match="unknown record"):
+        process_event(session, ev.id)
+
+
+def test_old_snapshots_respect_later_restrictions(session, world, embedder):
+    _, s1 = apply(session, world, [node("fact", "x", "Quarterly margin figure", scope="Finance")], embedder=embedder)
+    xid = GraphReader(session, world.tenant.id, None).node_by_key("fact", "x").id
+    apply(session, world, [{"op": "restrict_node", "ref": ["fact", "x"], "scope": "Legal", "sensitivity": 2}])
+    out = run_query(session, world.tenant.id, visible_scopes(session, world.outsider),
+                    QueryRequest(question="quarterly margin", policy="traversal", snapshot_seq=s1["seq"], start_hits=[(xid, 1.0)]),
+                    embedder=embedder, principal_id=world.outsider.id)
+    assert out["entities"] == [] and "margin" not in str(out["entities"])
+    future = run_query(session, world.tenant.id, visible_scopes(session, world.admin), QueryRequest(question="margin", snapshot_seq=10**9),
+                       embedder=embedder, principal_id=world.admin.id)
+    assert future["snapshot_seq"] <= GraphReader(session, world.tenant.id, None).seq, "a snapshot cannot be in the future"
+
+
+def test_acl_deny_is_applied_in_sql_even_for_admins(session, world, embedder):
+    apply(session, world, [node("fact", "private", "Private salary band", acl={"deny": [str(world.admin.id)]}),
+                           node("fact", "public", "Public salary policy")], embedder=embedder)
+    r = GraphReader(session, world.tenant.id, visible_scopes(session, world.admin))
+    keys = {GraphReader(session, world.tenant.id, None).nodes([n])[n].key for n, _, _ in r.search("salary", None)}
+    assert keys == {"public"}
+
+
+def test_worker_job_results_carry_no_names(session, world, embedder):
+    from cie.core.models import Job
+    from cie.workers import queue
+    from cie.workers.worker import run_once
+
+    supply_world(session, world, embedder, stock=0)
+    ev, _ = submit_event(session, world.tenant.id, kind="supplier_delay", payload={"supplier": "s1", "new_date": "2026-12-01"},
+                         idempotency_key="queued")
+    queue.enqueue(session, world.tenant.id, "rem_change", {"event_id": str(ev.id)})
+    session.commit()
+    job = run_once(session, "w1", ["rem_change"])
+    result = session.get(Job, job.id).checkpoint.get("result", {})
+    assert set(result) <= {"event_id", "seq", "status"} and "Milestone" not in str(result)
+
+
+def test_every_record_a_task_names_is_required(session, world, embedder):
+    supply_world(session, world, embedder, stock=0)
+    delay(session, world)
+    r = GraphReader(session, world.tenant.id, None)
+    sugg = session.query(RemSuggestion).filter(RemSuggestion.tenant_id == world.tenant.id, RemSuggestion.rule_id == "R1").one()
+    assert {r.node_by_key("order", "o1").id, r.node_by_key("product", "widget").id, r.node_by_key("milestone", "m1").id} <= set(sugg.requires)
+    assert sugg.details["requires_scopes"], "the stock row's own scope is checked too"
+
+
+def test_restricting_a_source_restricts_its_generated_summary(session, world, embedder):
+    apply(session, world, [node("fact", "x", "Budget figure X", scope="Finance", source_pointers=[{"system": "erp"}]),
+                           node("artifact", "digest", "Finance digest", scope="Finance", authoritative=False, attrs={"source_system": "generated"}),
+                           edge(("artifact", "digest"), "derived_from", ("fact", "x"))], embedder=embedder)
+    apply(session, world, [{"op": "revise_node", "ref": ["fact", "x"], "attrs": {"v": 2}}])
+    # a scope change made by an ordinary revision is a restriction too
+    ev, _ = submit_event(session, world.tenant.id, kind="restrict", payload={"ref": ["fact", "x"], "scope": "Legal", "sensitivity": 2},
+                         idempotency_key="r")
+    process_event(session, ev.id)
+    outsider = GraphReader(session, world.tenant.id, visible_scopes(session, world.outsider))
+    assert outsider.node_by_key("artifact", "digest") is None, "the summary now has its source's access"
+
+
+def test_recreating_a_deleted_record_continues_its_versions(session, world, embedder):
+    apply(session, world, [node("task", "t", "Task")], embedder=embedder)
+    apply(session, world, [{"op": "delete_node", "ref": ["task", "t"]}])
+    apply(session, world, [node("task", "t", "Task again")])
+    assert GraphReader(session, world.tenant.id, None).node_by_key("task", "t").version == 2
+
+
+def test_search_accepts_any_text_and_depth_caps_are_reported(session, world, embedder):
+    apply(session, world, [node("task", f"t{i}", f"Chain task {i}") for i in range(4)]
+          + [edge(("task", f"t{i}"), "depends_on", ("task", f"t{i + 1}")) for i in range(3)], embedder=embedder)
+    vis = visible_scopes(session, world.admin)
+    out = run_query(session, world.tenant.id, vis, QueryRequest(question="status of http://host:8080/a?b=c & 'x' | !y:*"),
+                    embedder=embedder, principal_id=world.admin.id)
+    assert out["status"] in ("complete", "incomplete")
+    t0 = GraphReader(session, world.tenant.id, None).node_by_key("task", "t0").id
+    out = run_query(session, world.tenant.id, vis, QueryRequest(question="chain", policy="traversal", start_hits=[(t0, 1.0)],
+                                                                limits={"max_depth": 1}), embedder=embedder, principal_id=world.admin.id)
+    assert out["status"] == "incomplete" and out["stopping_reason"] == "budget:max_depth"
+
+
+def test_redaction_fails_closed():
+    out = redact({"entities": [{"id": "a", "requires": ["a"]}, {"id": "b"}], "suggested_tasks": [{"title": "t"}]}, {"a"})
+    assert out["entities"] == [{"id": "a", "requires": ["a"]}] and out["suggested_tasks"] == []

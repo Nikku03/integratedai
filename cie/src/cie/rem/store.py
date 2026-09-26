@@ -16,13 +16,15 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import time
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import and_, func, or_, select, text, update
+from sqlalchemy import Boolean, and_, cast, func, literal, or_, select, text, update
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Session
 
 from cie.governance.permissions import Visibility, _acl_allows
@@ -107,7 +109,12 @@ class GraphReader:
         self.tenant_id = tenant_id
         self.vis = visibility
         self.counter = counter or CallCounter()
-        self.seq = seq if seq is not None else current_seq(session, tenant_id, self.counter)
+        latest = current_seq(session, tenant_id, self.counter)
+        self.seq = latest if seq is None else max(0, min(int(seq), latest))  # a snapshot cannot be in the future
+        self.latest = latest
+        # reading the past: a record must be visible both as it was then and as it is now, so that a later
+        # restriction also hides its history
+        self.historical = self.seq < latest and visibility is not None
 
     # -------------------------------------------------------------- plumbing
     def _run(self, stmt, params: dict | None = None, label: str = ""):
@@ -120,12 +127,23 @@ class GraphReader:
         return rows
 
     def _visible_filter(self):
+        """Scope, clearance and ACL, all in SQL (the same rule as ``Visibility.can_read``, with no admin exception)."""
         if self.vis is None:
             return None
-        return self.vis.sql_filter(RemNodeVersion.scope_id, RemNodeVersion.sensitivity)
+        return and_(self.vis.sql_filter(RemNodeVersion.scope_id, RemNodeVersion.sensitivity), acl_filter(RemNodeVersion.acl, self.vis.principal_id))
 
     def _acl_ok(self, acl: dict | None) -> bool:
-        return self.vis is None or self.vis.is_admin or _acl_allows(acl, self.vis.principal_id)
+        return self.vis is None or _acl_allows(acl, self.vis.principal_id)
+
+    def _still_visible(self, ids) -> set[uuid.UUID]:
+        """For historical reads: the ids whose latest recorded version (deleted or not) the reader may see now."""
+        ids = list(dict.fromkeys(ids))
+        if not ids or not self.historical:
+            return set(ids)
+        last = (select(RemNodeVersion.id).where(RemNodeVersion.tenant_id == self.tenant_id, RemNodeVersion.node_id.in_(ids))
+                .distinct(RemNodeVersion.node_id).order_by(RemNodeVersion.node_id, RemNodeVersion.version.desc())).subquery()
+        stmt = select(RemNodeVersion.node_id).where(RemNodeVersion.id.in_(select(last.c.id)), self._visible_filter())
+        return {r[0] for r in self._run(stmt, label="still_visible")}
 
     @staticmethod
     def _view(nv: RemNodeVersion, node: RemNode, with_embedding: bool = False) -> NodeView:
@@ -150,6 +168,9 @@ class GraphReader:
         for nv, node in self._run(stmt, label=f"nodes[{len(ids)}]"):
             if self._acl_ok(nv.acl):
                 out[nv.node_id] = self._view(nv, node, with_embedding)
+        if self.historical and out:
+            now = self._still_visible(out)
+            out = {k: v for k, v in out.items() if k in now}
         return out
 
     def node_by_key(self, type_: str, key: str) -> NodeView | None:
@@ -160,7 +181,7 @@ class GraphReader:
             stmt = stmt.where(vf)
         rows = self._run(stmt, label="node_by_key")
         for nv, node in rows:
-            if self._acl_ok(nv.acl):
+            if self._acl_ok(nv.acl) and (not self.historical or nv.node_id in self._still_visible([nv.node_id])):
                 return self._view(nv, node, True)
         return None
 
@@ -171,21 +192,18 @@ class GraphReader:
         ids = [i for i in dict.fromkeys(ids)]
         if not ids:
             return {}
-        stmt = (select(RemNodeVersion, RemNode).join(RemNode, RemNode.id == RemNodeVersion.node_id)
-                .where(RemNodeVersion.tenant_id == self.tenant_id, RemNodeVersion.node_id.in_(ids), RemNodeVersion.sys_from <= self.seq)
-                .order_by(RemNodeVersion.node_id, RemNodeVersion.version.desc()))
+        last = (select(RemNodeVersion.id).where(RemNodeVersion.tenant_id == self.tenant_id, RemNodeVersion.node_id.in_(ids),
+                                                RemNodeVersion.sys_from <= self.seq)
+                .distinct(RemNodeVersion.node_id).order_by(RemNodeVersion.node_id, RemNodeVersion.version.desc())).subquery()
+        stmt = select(RemNodeVersion, RemNode).join(RemNode, RemNode.id == RemNodeVersion.node_id).where(RemNodeVersion.id.in_(select(last.c.id)))
         vf = self._visible_filter()
-        out: dict[uuid.UUID, NodeView] = {}
-        for nv, node in self._run(stmt, label=f"nodes_latest[{len(ids)}]"):
-            if nv.node_id in out:
-                continue
-            # the permission check applies to the version shown
-            if vf is not None and not self.vis.can_read(nv.scope_id, nv.sensitivity, nv.acl):
-                out[nv.node_id] = None  # type: ignore[assignment]
-                continue
-            if self._acl_ok(nv.acl):
-                out[nv.node_id] = self._view(nv, node)
-        return {k: v for k, v in out.items() if v is not None}
+        if vf is not None:
+            stmt = stmt.where(vf)  # the permission check applies to the version shown
+        out = {nv.node_id: self._view(nv, node) for nv, node in self._run(stmt, label=f"nodes_latest[{len(ids)}]")}
+        if self.historical and out:
+            now = self._still_visible(out)
+            out = {k: v for k, v in out.items() if k in now}
+        return out
 
     def visible_ids(self, ids) -> set[uuid.UUID]:
         return set(self.nodes(ids))
@@ -253,7 +271,8 @@ class GraphReader:
         for (row,) in self._run(stmt, label="stock"):
             out[row.holder_id] = {"on_hand": float(row.qty_on_hand), "reserved": float(row.qty_reserved or 0),
                                   "available": float(row.qty_on_hand) - float(row.qty_reserved or 0),
-                                  "source_pointers": list(row.source_pointers or []), "sys_from": row.sys_from}
+                                  "source_pointers": list(row.source_pointers or []), "sys_from": row.sys_from,
+                                  "scope_id": str(row.scope_id), "sensitivity": row.sensitivity}
         return out
 
     # -------------------------------------------------------------- search over the graph
@@ -265,13 +284,11 @@ class GraphReader:
         vf = self._visible_filter()
         if vf is not None:
             base.append(vf)
-        tq = func.websearch_to_tsquery("english", question)
-        or_q = func.to_tsquery("english", func.array_to_string(func.tsvector_to_array(func.to_tsvector("english", question)), " | "))
+        or_q = func.websearch_to_tsquery("english", or_terms(question))  # any term may match; never a syntax error
         rank = func.ts_rank_cd(RemNodeVersion.tsv, or_q, 32)
         stmt = select(RemNodeVersion.node_id, rank, RemNodeVersion.acl).where(*base, RemNodeVersion.tsv.op("@@")(or_q))
         if types:
             stmt = stmt.join(RemNode, RemNode.id == RemNodeVersion.node_id).where(RemNode.type.in_(types))
-        _ = tq
         rows = self._run(stmt.order_by(rank.desc()).limit(k), label="search_lexical")
         top = max((float(r[1]) for r in rows), default=0.0) or 1.0
         for nid, sc, acl in rows:
@@ -287,7 +304,25 @@ class GraphReader:
                     sim = 1.0 - float(d)
                     prev = out.get(nid, (0.0, ""))
                     out[nid] = (prev[0] + sim, "keyword+semantic" if prev[1] else "semantic")
+        if self.historical and out:
+            now = self._still_visible(out)
+            out = {k2: v for k2, v in out.items() if k2 in now}
         return sorted(((nid, round(sc, 4), how) for nid, (sc, how) in out.items()), key=lambda x: -x[1])[:k]
+
+
+def acl_filter(acl_col, principal_id: uuid.UUID):
+    """SQL form of ``_acl_allows``: not on the deny list, and on the allow list when one is given."""
+    pid = str(principal_id)
+    empty = cast(literal("[]"), JSONB)
+    deny = func.coalesce(acl_col.op("->")("deny"), empty)
+    allow = func.coalesce(acl_col.op("->")("allow"), empty)
+    return and_(~func.jsonb_exists(deny, pid, type_=Boolean), or_(func.jsonb_array_length(allow) == 0, func.jsonb_exists(allow, pid, type_=Boolean)))
+
+
+def or_terms(question: str) -> str:
+    """A web-search query that matches any of the question's words (websearch syntax cannot fail to parse)."""
+    words = re.findall(r"[A-Za-z0-9][A-Za-z0-9\-]*", question)
+    return " or ".join(w for w in words if w.lower() != "or") or "none"
 
 
 def current_seq(session: Session, tenant_id: uuid.UUID, counter: CallCounter | None = None) -> int:
@@ -321,7 +356,7 @@ class GraphWriter:
 
     def begin(self) -> int:
         self.s.execute(text("SELECT pg_advisory_xact_lock(hashtextextended(:t, 7))"), {"t": str(self.tenant_id)})
-        st = self.s.get(RemTenantState, self.tenant_id, with_for_update=True)
+        st = self.s.get(RemTenantState, self.tenant_id, with_for_update=True, populate_existing=True)
         if st is None:
             st = RemTenantState(tenant_id=self.tenant_id, last_seq=0)
             self.s.add(st)
@@ -340,7 +375,8 @@ class GraphWriter:
         return self.s.scalar(select(RemNode.id).where(RemNode.tenant_id == self.tenant_id, RemNode.type == type_, RemNode.key == key))
 
     def current(self, node_id: uuid.UUID) -> RemNodeVersion | None:
-        return self.s.scalar(select(RemNodeVersion).where(RemNodeVersion.node_id == node_id, RemNodeVersion.sys_to.is_(None)))
+        return self.s.scalar(select(RemNodeVersion).where(RemNodeVersion.tenant_id == self.tenant_id, RemNodeVersion.node_id == node_id,
+                                                          RemNodeVersion.sys_to.is_(None)))
 
     def upsert_node(self, type_: str, key: str, *, name: str, scope_id: uuid.UUID, summary: str = "", attrs: dict | None = None,
                     sensitivity: int = 1, acl: dict | None = None, project_ids=None, department_ids=None, source_pointers=None,
@@ -377,7 +413,12 @@ class GraphWriter:
                 self.s.add(node)
                 self.s.flush()
                 nid = node.id
-            changed, version, emb = ["created"], 1, None
+                version = 1
+            else:  # a deleted record created again: it continues its own version history
+                last = self.s.scalar(select(func.max(RemNodeVersion.version)).where(RemNodeVersion.node_id == nid))
+                version = int(last or 0) + 1
+                self.s.execute(update(RemNode).where(RemNode.id == nid).values(deleted_seq=None))
+            changed, emb = ["created"], None
         if emb is None and embed and self.embedder is not None:
             emb = self.embedder.embed([f"{name}. {summary or ''}"])[0]
         nv = RemNodeVersion(tenant_id=self.tenant_id, node_id=nid, version=version, sys_from=seq, name=name, summary=summary or "",
@@ -395,9 +436,9 @@ class GraphWriter:
     def revise(self, node_id: uuid.UUID, **changes) -> list[str]:
         """New version of an existing node with some fields changed (``attrs`` merges)."""
         cur = self.current(node_id)
-        if cur is None:
-            raise KeyError(node_id)
         node = self.s.get(RemNode, node_id)
+        if cur is None or node is None or node.tenant_id != self.tenant_id:
+            raise KeyError(node_id)
         attrs = {**(cur.attrs or {}), **(changes.pop("attrs", None) or {})}
         kw = {"name": cur.name, "summary": cur.summary, "attrs": attrs, "scope_id": cur.scope_id, "sensitivity": cur.sensitivity,
               "acl": cur.acl, "project_ids": cur.project_ids, "department_ids": cur.department_ids, "source_pointers": cur.source_pointers,
@@ -410,12 +451,14 @@ class GraphWriter:
     def delete_node(self, node_id: uuid.UUID) -> None:
         """Close the node and every edge touching it. History stays readable at earlier snapshots."""
         seq = self._need_seq()
-        self.s.execute(update(RemNodeVersion).where(RemNodeVersion.node_id == node_id, RemNodeVersion.sys_to.is_(None)).values(sys_to=seq))
-        self.s.execute(update(RemEdge).where(or_(RemEdge.src_id == node_id, RemEdge.dst_id == node_id), RemEdge.sys_to.is_(None))
-                       .values(sys_to=seq))
-        self.s.execute(update(RemRoutingEdge).where(or_(RemRoutingEdge.src_id == node_id, RemRoutingEdge.dst_id == node_id),
+        t = self.tenant_id
+        self.s.execute(update(RemNodeVersion).where(RemNodeVersion.tenant_id == t, RemNodeVersion.node_id == node_id,
+                                                    RemNodeVersion.sys_to.is_(None)).values(sys_to=seq))
+        self.s.execute(update(RemEdge).where(RemEdge.tenant_id == t, or_(RemEdge.src_id == node_id, RemEdge.dst_id == node_id),
+                                             RemEdge.sys_to.is_(None)).values(sys_to=seq))
+        self.s.execute(update(RemRoutingEdge).where(RemRoutingEdge.tenant_id == t, or_(RemRoutingEdge.src_id == node_id, RemRoutingEdge.dst_id == node_id),
                                                     RemRoutingEdge.sys_to.is_(None)).values(sys_to=seq))
-        self.s.execute(update(RemNode).where(RemNode.id == node_id).values(deleted_seq=seq))
+        self.s.execute(update(RemNode).where(RemNode.tenant_id == t, RemNode.id == node_id).values(deleted_seq=seq))
         self.changed.setdefault(node_id, []).append("deleted")
 
     # -------------------------------------------------------------- edges

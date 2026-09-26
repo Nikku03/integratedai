@@ -17,13 +17,22 @@ from datetime import UTC, datetime
 from typing import Any
 
 from sqlalchemy import select, update
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from cie.core.models import Scope
 from cie.governance.audit import audit
 from cie.rem import domain
 from cie.rem.budget import Budget, Limits
-from cie.rem.models import RemEvent, RemImpact, RemResult, RemResultDep, RemSuggestion
+from cie.rem.models import (
+    RemEvent,
+    RemImpact,
+    RemNode,
+    RemResult,
+    RemResultDep,
+    RemStock,
+    RemSuggestion,
+)
 from cie.rem.rules import RuleEngine, reachability_baseline
 from cie.rem.store import GraphReader, GraphWriter
 
@@ -32,6 +41,10 @@ EVENT_KINDS = ("ops", "supplier_delay", "stock_count", "task_status", "restrict"
 
 class IdempotencyConflict(ValueError):
     """The idempotency key was already used for a different payload."""
+
+
+class Unauthorized(PermissionError):
+    """The submitting principal may not write a record the event would create, change or delete."""
 
 
 def _digest(kind: str, payload: dict[str, Any]) -> str:
@@ -51,8 +64,17 @@ def submit_event(session: Session, tenant_id: uuid.UUID, *, kind: str, payload: 
         return ev, False
     ev = RemEvent(tenant_id=tenant_id, idempotency_key=idempotency_key, kind=kind, payload=payload, principal_id=principal_id,
                   status="queued", summary={"payload_sha256": digest})
-    session.add(ev)
-    session.flush()
+    try:
+        with session.begin_nested():  # a concurrent submit of the same key wins the race; return its event
+            session.add(ev)
+            session.flush()
+    except IntegrityError:
+        other = session.scalar(select(RemEvent).where(RemEvent.tenant_id == tenant_id, RemEvent.idempotency_key == idempotency_key))
+        if other is None:
+            raise
+        if (other.summary or {}).get("payload_sha256") not in (None, digest):
+            raise IdempotencyConflict(f"idempotency key {idempotency_key!r} was used for a different event") from None
+        return other, False
     return ev, True
 
 
@@ -65,23 +87,88 @@ def _scope_id(session: Session, tenant_id: uuid.UUID, scope: Any, cache: dict) -
         return cache[s]
     try:
         sid = uuid.UUID(s)
-    except ValueError:
-        sid = session.scalar(select(Scope.id).where(Scope.tenant_id == tenant_id, Scope.name == s))
-        if sid is None:
+        if session.scalar(select(Scope.id).where(Scope.tenant_id == tenant_id, Scope.id == sid)) is None:
+            raise ValueError(f"unknown scope {s!r}")
+    except ValueError as e:
+        if "unknown scope" in str(e):
+            raise
+        ids = session.scalars(select(Scope.id).where(Scope.tenant_id == tenant_id, Scope.name == s)).all()
+        if not ids:
             raise ValueError(f"unknown scope {s!r}") from None
+        if len(ids) > 1:
+            raise ValueError(f"scope name {s!r} is ambiguous in this tenant; use the scope id") from None
+        sid = ids[0]
     cache[s] = sid
     return sid
 
 
 def _ref(writer: GraphWriter, ref) -> uuid.UUID:
-    if isinstance(ref, uuid.UUID):
-        return ref
-    if isinstance(ref, str):
-        return uuid.UUID(ref)
+    if isinstance(ref, (uuid.UUID, str)):
+        nid = ref if isinstance(ref, uuid.UUID) else uuid.UUID(ref)
+        if writer.s.scalar(select(RemNode.id).where(RemNode.id == nid, RemNode.tenant_id == writer.tenant_id)) is None:
+            raise ValueError(f"unknown record {nid}")  # never another tenant's record
+        return nid
     nid = writer.node_id(ref[0], ref[1])
     if nid is None:
         raise ValueError(f"unknown record {ref[0]}:{ref[1]}")
     return nid
+
+
+def authorize_ops(session: Session, tenant_id: uuid.UUID, vis, ops: list[dict[str, Any]]) -> None:
+    """Raise ``Unauthorized`` unless ``vis`` may write every record the operations touch: the current scope of a record
+    that is changed, restricted or deleted, the scope a record is put in, both ends of a relationship, and the scope of
+    a stock row. ``vis`` None is the system itself (ingestion, replay)."""
+    if vis is None:
+        return
+    w = GraphWriter(session, tenant_id)
+    scopes: dict = {}
+    pending: dict[tuple[str, str], uuid.UUID] = {}
+
+    def need(scope_id, what: str) -> None:
+        if scope_id is None or not vis.can_write(scope_id):
+            raise Unauthorized(f"write access required for {what}")
+
+    def current_scope(ref, what: str):
+        if isinstance(ref, (list, tuple)) and tuple(ref) in pending:
+            return pending[tuple(ref)]
+        try:
+            nid = _ref(w, ref)
+        except ValueError:
+            raise Unauthorized(f"write access required for {what}") from None  # unknown and invisible look the same
+        cur = w.current(nid)
+        return cur.scope_id if cur is not None else None
+
+    for op in ops:
+        k = op.get("op")
+        if k == "upsert_node":
+            new = _scope_id(session, tenant_id, op["scope"], scopes)
+            need(new, f"{op['type']} {op['key']}")
+            nid = w.node_id(op["type"], op["key"])
+            cur = w.current(nid) if nid else None
+            if cur is not None:
+                need(cur.scope_id, f"{op['type']} {op['key']}")
+            pending[(op["type"], op["key"])] = new
+        elif k in ("revise_node", "delete_node", "restrict_node"):
+            need(current_scope(op["ref"], "the record"), "the record")
+            if k == "restrict_node" and "scope" in op:
+                need(_scope_id(session, tenant_id, op["scope"], scopes), "the new scope")
+            if k == "revise_node" and ({"authoritative", "verification"} & set(op)) and not vis.is_admin:
+                raise Unauthorized("only an administrator can change verification or authority")
+        elif k in ("upsert_edge", "close_edge"):
+            need(current_scope(op["src"], "the relationship's source"), "the relationship's source")
+            need(current_scope(op["dst"], "the relationship's target"), "the relationship's target")
+        elif k == "set_stock":
+            need(_scope_id(session, tenant_id, op["scope"], scopes), "the stock record")
+            try:
+                prod, holder = _ref(w, ["product", op["product"]]), _ref(w, op["holder"])
+            except ValueError:
+                raise Unauthorized("write access required for the stock record") from None
+            row = session.scalar(select(RemStock).where(RemStock.tenant_id == tenant_id, RemStock.product_id == prod,
+                                                        RemStock.holder_id == holder, RemStock.sys_to.is_(None)))
+            if row is not None:
+                need(row.scope_id, "the stock record")
+        else:
+            raise ValueError(f"unknown operation {k!r}")
 
 
 def translate(kind: str, payload: dict[str, Any], reader: GraphReader) -> list[dict[str, Any]]:
@@ -185,18 +272,39 @@ def apply_ops(session: Session, writer: GraphWriter, ops: list[dict[str, Any]]) 
 def process_event(session: Session, event_id: uuid.UUID, *, embedder=None, policy: str = "rules",
                   limits: dict[str, Any] | None = None) -> dict[str, Any]:
     """Apply one event and evaluate its consequences. ``policy`` 'rules' (REM) or 'reachability' (baseline B)."""
-    ev = session.get(RemEvent, event_id, with_for_update=True)
+    ev = session.get(RemEvent, event_id, with_for_update=True, populate_existing=True)
     if ev is None:
         raise KeyError(event_id)
-    if ev.status == "done":
+    if ev.status in ("done", "rejected"):
         return ev.summary
     ev.attempts = (ev.attempts or 0) + 1
+    vis = None
+    if ev.principal_id is not None:
+        from cie.core.models import Principal
+        from cie.governance.permissions import visible_scopes
+
+        principal = session.get(Principal, ev.principal_id)
+        vis = visible_scopes(session, principal) if principal is not None else None
+    savepoint = session.begin_nested()
     writer = GraphWriter(session, ev.tenant_id, embedder=embedder, event_id=ev.id)
     seq = writer.begin()
     prev = GraphReader(session, ev.tenant_id, None, seq=seq - 1)
     ops = translate(ev.kind, ev.payload, prev)
+    try:
+        authorize_ops(session, ev.tenant_id, vis, ops)  # checked again under the tenant lock, on the state it will change
+    except Unauthorized as e:
+        savepoint.rollback()  # nothing applied, no sequence number used
+        ev.status, ev.error, ev.processed_at = "rejected", str(e), datetime.now(UTC)
+        ev.summary = {**(ev.summary or {}), "status": "rejected", "error": str(e)}
+        audit(session, tenant_id=ev.tenant_id, principal_id=ev.principal_id, action="rem.change", resource_kind="rem_event",
+              resource_id=ev.id, details={"kind": ev.kind}, outcome="denied")
+        session.flush()
+        return ev.summary
     t_ops = time.perf_counter()
     deleted, restricted = apply_ops(session, writer, ops)
+    # any change of scope, clearance or access list is a restriction for summaries derived from the record
+    restricted += [k for k, f in writer.changed.items() if k not in restricted and "created" not in f
+                   and {"scope_id", "sensitivity", "acl"} & set(f)]
     op_changed = {str(k): sorted(set(v)) for k, v in writer.changed.items()}
     ops_ms = (time.perf_counter() - t_ops) * 1000
     t_rules = time.perf_counter()
@@ -236,6 +344,7 @@ def process_event(session: Session, event_id: uuid.UUID, *, embedder=None, polic
                   "rule_log": engine.log if engine else []}
     audit(session, tenant_id=ev.tenant_id, principal_id=ev.principal_id, action="rem.change", resource_kind="rem_event",
           resource_id=ev.id, details={"seq": seq, "kind": ev.kind, "impacts": len(impacts), "policy": policy})
+    savepoint.commit()
     session.flush()
     return ev.summary
 
@@ -251,8 +360,9 @@ def _persist(session: Session, ev: RemEvent, seq: int, drafts: dict, engine: Rul
     session.flush()
     if engine is None:
         return rows
-    # the supply assessment of every milestone re-evaluated here replaces earlier assessments that followed from it
-    roots = engine.evaluated_roots
+    # the supply assessment of every milestone re-evaluated here replaces earlier assessments that followed from it;
+    # not when the rules stopped on a budget, because the replacement may be incomplete
+    roots = engine.evaluated_roots if not engine.stop else set()
     if roots:
         new_by_target = {(r.target_id): r.id for r in rows}
         prior = session.scalars(select(RemImpact).where(RemImpact.tenant_id == ev.tenant_id, RemImpact.status == "candidate",
@@ -269,10 +379,15 @@ def _persist(session: Session, ev: RemEvent, seq: int, drafts: dict, engine: Rul
         if row is None:
             session.add(RemSuggestion(tenant_id=ev.tenant_id, dedupe_key=s.key, event_id=ev.id, title=s.title, capability=s.capability,
                                       target_ids=s.targets, reason=s.reason, priority=s.priority, status="suggested",
-                                      requires=sorted(s.requires, key=str), rule_id=s.rule_id, roots=sorted(s.roots), created_seq=seq))
+                                      requires=sorted(s.requires, key=str), rule_id=s.rule_id, roots=sorted(s.roots), created_seq=seq,
+                                      details={"requires_scopes": s.requires_scopes}))
         elif row.status != "suggested":
             row.status, row.superseded_seq, row.event_id, row.created_seq = "suggested", None, ev.id, seq
             row.title, row.reason, row.requires, row.roots = s.title, s.reason, sorted(s.requires, key=str), sorted(s.roots)
+            row.details = {"requires_scopes": s.requires_scopes}
+        else:  # still open: keep one task, with the current wording and what it now reveals
+            row.title, row.reason, row.requires = s.title, s.reason, sorted(set(row.requires) | s.requires, key=str)
+            row.details = {"requires_scopes": sorted({tuple(x) for x in (row.details or {}).get("requires_scopes", [])} | {tuple(x) for x in s.requires_scopes})}
     if roots:
         for row in session.scalars(select(RemSuggestion).where(RemSuggestion.tenant_id == ev.tenant_id, RemSuggestion.status == "suggested",
                                                                RemSuggestion.rule_id.in_(("R1", "R2", "R3")))):
@@ -324,21 +439,26 @@ def visible_impacts(session: Session, reader: GraphReader, event_id: uuid.UUID |
     visible = reader.nodes(need) if need else {}
     if set(need) - set(visible):  # records deleted since: judged on their last recorded version
         visible.update(reader.nodes_latest(set(need) - set(visible)))
+
+    def scopes_ok(details) -> bool:  # exact values (stock rows) carry their own scope and clearance
+        return reader.vis is None or all(reader.vis.can_read(uuid.UUID(sc), int(sens)) for sc, sens in (details or {}).get("requires_scopes", []))
+
     out = []
     for r in rows:
-        if not set(r.requires) <= set(visible):
+        if not set(r.requires) <= set(visible) or not scopes_ok(r.details):
             continue
         t = visible[r.target_id]
         out.append({"impact_id": str(r.id), "event_id": str(r.event_id), "target": {"id": str(t.id), "type": t.type, "key": t.key, "name": t.name},
                     "impact": r.impact, "rule": r.rule_id, "grade": r.confidence, "hypothesis": r.hypothesis, "reason": r.reason,
                     "paths": r.paths, "evidence": r.evidence, "details": r.details, "status": "candidate" if r.superseded_seq is None
                     or r.superseded_seq > s else "superseded", "superseded_by": str(r.superseded_by) if r.superseded_by else None,
-                    "created_seq": r.created_seq})
+                    "created_seq": r.created_seq, "requires": [str(n) for n in r.requires]})
     tasks = []
     for x in sorted(sugg, key=lambda x: -x.priority):
-        if not set(x.requires) <= set(visible):
+        if not set(x.requires) <= set(visible) or not scopes_ok(x.details):
             continue
         tasks.append({"suggestion_id": str(x.id), "title": x.title, "capability": x.capability, "reason": x.reason,
                       "priority": x.priority, "targets": [str(t) for t in x.target_ids], "rule": x.rule_id,
-                      "dedupe_key": x.dedupe_key, "event_id": str(x.event_id) if x.event_id else None})
+                      "dedupe_key": x.dedupe_key, "event_id": str(x.event_id) if x.event_id else None,
+                      "requires": sorted({str(n) for n in x.requires} | {str(t) for t in x.target_ids})})
     return out, tasks

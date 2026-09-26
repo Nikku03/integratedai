@@ -63,6 +63,7 @@ class SuggestionDraft:
     rule_id: str
     requires: set[uuid.UUID] = field(default_factory=set)
     roots: set[str] = field(default_factory=set)  # milestones whose supply assessment this follows from
+    requires_scopes: list[list[Any]] = field(default_factory=list)  # [scope, clearance] of exact values shown
 
 
 def _hop(kind: str, frm: uuid.UUID, to: uuid.UUID, edge_id=None, provenance: str = "explicit", hypothesis: bool = False):
@@ -157,6 +158,7 @@ class RuleEngine:
         if s.key in self.suggestions:
             self.suggestions[s.key].requires |= s.requires
             self.suggestions[s.key].roots |= s.roots
+            self.suggestions[s.key].requires_scopes += [x for x in s.requires_scopes if x not in self.suggestions[s.key].requires_scopes]
             return
         self.suggestions[s.key] = s
 
@@ -241,10 +243,21 @@ class RuleEngine:
                       [_hop(e.kind, dep.id, nid, e.id, e.provenance)])
 
     def _on_restricted(self, nid: uuid.UUID, path) -> None:
+        src = self.node(nid)
         for e, dep in self.neighbours(nid, "derived_from", "in"):
             if not dep.authoritative and self._once("R8", dep.id, str(nid)):
                 self._invalidate(dep, "a record it summarises became more restricted", "R8",
-                                 [_hop("derived_from", dep.id, nid, e.id, e.provenance)], source=self.node(nid))
+                                 [_hop("derived_from", dep.id, nid, e.id, e.provenance)], source=src)
+                if self.w is not None and src is not None:
+                    # generated text may carry the source's content: it gets the source's access, never wider
+                    cur = self.w.current(dep.id)
+                    self.w.revise(dep.id, scope_id=src.scope_id, sensitivity=max(dep.sensitivity, src.sensitivity),
+                                  acl=(cur.acl if cur is not None and cur.acl else None) or self._acl_of(nid))
+                    self._cache.pop(dep.id, None)
+
+    def _acl_of(self, nid: uuid.UUID) -> dict:
+        cur = self.w.current(nid) if self.w is not None else None
+        return dict(cur.acl or {}) if cur is not None else {}
 
     def _on_impact(self, nid: uuid.UUID, impact: str, path) -> None:
         n = self.node(nid)
@@ -320,6 +333,8 @@ class RuleEngine:
         base = path or ([_hop("depends_on", m.id, changed_order.id)] if changed_order else [])
         ev = [_ev(m, f"due {m.attrs.get('due_date')} (+{m.attrs.get('slack_days') or 0} days slack)")]
         inputs, hyp, per_product, late_all, short_all = [m], False, [], [], []
+        reveals: set[uuid.UUID] = {m.id} | ({holder} if holder else set())  # the reasons name all of these
+        stock_scopes: list[list[Any]] = []
         for need_edge, prod in needs:
             qty = float(need_edge.attrs.get("qty") or 0)
             if qty <= 0:
@@ -332,6 +347,9 @@ class RuleEngine:
             supply = avail + sum(float(o.attrs.get("qty") or 0) for _, o in on_time)
             hyp = hyp or any(e.hypothesis for e, _ in mine) or need_edge.hypothesis
             inputs += [o for _, o in mine]
+            reveals |= {prod.id} | {o.id for _, o in mine}
+            if stock is not None:
+                stock_scopes.append([stock["scope_id"], stock["sensitivity"]])
             ev += [_ev(o, f"{o.attrs.get('qty')} {prod.name} promised {o.attrs.get('promised_date')} "
                           f"({'late' if (e, o) in late else 'on time'})") for e, o in mine]
             if stock is not None:
@@ -347,8 +365,10 @@ class RuleEngine:
                 short_all.append(item)
         if not per_product:
             return
-        details = {**root, "effective_due": due.isoformat(),
+        details = {**root, "effective_due": due.isoformat(), "requires_scopes": stock_scopes,
                    "products": [{k: v for k, v in x.items() if k not in ("id", "late_ids")} for x in per_product]}
+        path_ids = {uuid.UUID(st[k]) for st in base for k in ("from", "to") if st.get(k)}
+        need_all = reveals | path_ids
         grade = _grade(inputs, hyp)
         late_names = ", ".join(sorted({f"{o.key} ({o.attrs.get('promised_date')})" for _, o in late_all}))
         if short_all:
@@ -357,23 +377,25 @@ class RuleEngine:
                               f"{x['needed'] - x['shortfall'] - x['available_stock']:g}, shortfall {x['shortfall']:g}" for x in short_all)
             why = f"{m.name} (due {due.isoformat()}): {parts}." + (f" Late: {late_names}." if late_names else "")
             self.emit(ImpactDraft(m.id, "needs_review" if hyp else "at_risk", "R1", why, grade, evidence=ev, hypothesis=hyp,
-                                  details={**details, "shortfall": sum(x["shortfall"] for x in short_all)}), base)
+                                  requires=set(need_all), details={**details, "shortfall": sum(x["shortfall"] for x in short_all)}), base)
             for x in short_all:
                 self.suggest(SuggestionDraft(f"R1:expedite:{m.key}:{x['product']}", f"Expedite or source {x['shortfall']:g} {x['name']} for {m.name}",
                                              "operations", [m.id, x["id"]] + x["late_ids"], why, 0.9, "R1",
-                                             {m.id, x["id"]} | set(x["late_ids"]), {str(m.id)}))
+                                             set(need_all), {str(m.id)}, list(stock_scopes)))
         elif late_all:
             why = (f"{m.name} (due {due.isoformat()}): {late_names} now arrive late, but stock and on-time orders cover "
                    + ", ".join(f"{x['needed']:g} {x['name']}" for x in per_product) + ".")
-            self.emit(ImpactDraft(m.id, "covered", "R1", why, grade, evidence=ev, hypothesis=hyp, details=details), base)
+            self.emit(ImpactDraft(m.id, "covered", "R1", why, grade, evidence=ev, hypothesis=hyp, requires=set(need_all),
+                                  details=details), base)
             for x in per_product:
                 if x["late_orders"] and x["available_stock"] > 0:
                     self.suggest(SuggestionDraft(f"R1:reserve:{m.key}:{x['product']}",
                                                  f"Reserve {min(x['needed'], x['available_stock']):g} {x['name']} from stock for {m.name}",
-                                                 "operations", [m.id, x["id"]], why, 0.5, "R1", {m.id, x["id"]}, {str(m.id)}))
+                                                 "operations", [m.id, x["id"]], why, 0.5, "R1", set(need_all), {str(m.id)},
+                                                 list(stock_scopes)))
         elif self._open_prior(m.id, "R1"):
             self.emit(ImpactDraft(m.id, "resolved", "R1", f"{m.name}: every need is covered by stock or orders arriving by {due.isoformat()}.",
-                                  grade, evidence=ev, hypothesis=hyp, details=details), base)
+                                  grade, evidence=ev, hypothesis=hyp, requires=set(need_all), details=details), base)
 
     def _open_prior(self, target: uuid.UUID, rule: str) -> bool:
         from sqlalchemy import select
@@ -422,10 +444,11 @@ class RuleEngine:
             self.emit(ImpactDraft(req.id, "needs_review", "R3", why, _grade([m, req], e.hypothesis),
                                   evidence=[_ev(req, "penalty requirement")] + [_ev(c, "contract") for c in contracts],
                                   hypothesis=e.hypothesis, details=dict(det)), path + [hop])
+            full = set(self.impacts[(req.id, "needs_review")].requires) | req_ids | {m.id}
             self.suggest(SuggestionDraft(f"R3:finance:{m.key}:{req.key}", f"Estimate penalty exposure for {m.name} under {req.name}",
-                                         "finance", [m.id, req.id], why, 0.8, "R3", {m.id} | req_ids, set(roots)))
+                                         "finance", [m.id, req.id], why, 0.8, "R3", set(full), set(roots)))
             self.suggest(SuggestionDraft(f"R3:legal:{m.key}:{req.key}", f"Review {cname} ({req.name}) for notice duties and remedies",
-                                         "legal", [req.id] + [c.id for c in contracts], why, 0.8, "R3", {m.id} | req_ids, set(roots)))
+                                         "legal", [req.id] + [c.id for c in contracts], why, 0.8, "R3", set(full), set(roots)))
 
     # ------------------------------------------------------------------ R4
     def r4_derived(self, n: NodeView, depth: int, path, why: str) -> None:
@@ -472,7 +495,7 @@ class RuleEngine:
             self.emit(ImpactDraft(g.id, "needs_review", "R6", why, _grade([c], e.hypothesis), evidence=[_ev(c, "changed terms")],
                                   hypothesis=e.hypothesis), [_hop("governed_by", g.id, c.id, e.id, e.provenance, e.hypothesis)])
             self.suggest(SuggestionDraft(f"R6:legal:{g.key}:{c.key}", f"Check {g.name} against the changed terms of {c.name}",
-                                         "legal", [g.id, c.id], why, 0.6, "R6", {g.id, c.id}))
+                                         "legal", [g.id, c.id], why, 0.6, "R6", set(self.impacts[(g.id, "needs_review")].requires) | {g.id, c.id}))
 
 
 def reachability_baseline(reader: GraphReader, changed: list[uuid.UUID], budget: Budget, max_depth: int = 3) -> dict[uuid.UUID, int]:

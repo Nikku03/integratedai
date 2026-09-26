@@ -58,7 +58,7 @@ def build_graph(session, tenant_id: uuid.UUID, log=print) -> dict[str, Any]:
               SELECT gen_random_uuid(), :t, n.id, 1, :seq, coalesce(d.title, d.original_filename), coalesce(d.extra->>'summary', ''),
                      jsonb_build_object('source_system', coalesce(d.extra->>'source', 'document'), 'tokens',
                                         (SELECT coalesce(sum(s.token_estimate), 0) FROM sections s WHERE s.document_id = d.id)),
-                     '{}', '{}', d.scope_id, d.sensitivity, '{}'::jsonb,
+                     '{}', '{}', d.scope_id, d.sensitivity, coalesce(d.acl, '{}'::jsonb),
                      jsonb_build_array(jsonb_build_object('document_id', d.id::text, 'filename', d.original_filename)),
                      ARRAY['doc:' || (d.extra->>'dsid')], 'unverified', true, now(),
                      (SELECT r.embedding FROM memory_records r WHERE r.source_document_id = d.id AND r.type = 'document' LIMIT 1),
@@ -75,7 +75,7 @@ def build_graph(session, tenant_id: uuid.UUID, log=print) -> dict[str, Any]:
               SELECT gen_random_uuid(), :t, n.id, 1, :seq, coalesce(s.title, d.title, d.original_filename), left(s.text, 1500),
                      jsonb_build_object('source_system', coalesce(d.extra->>'source', 'document'), 'tokens', s.token_estimate,
                                         'document', d.extra->>'dsid'),
-                     '{}', '{}', s.scope_id, s.sensitivity, '{}'::jsonb,
+                     '{}', '{}', s.scope_id, s.sensitivity, coalesce(d.acl, '{}'::jsonb),
                      jsonb_build_array(jsonb_build_object('document_id', d.id::text, 'section_id', s.id::text, 'page_start', s.page_start,
                                                           'page_end', s.page_end)),
                      ARRAY['doc:' || (d.extra->>'dsid')], 'unverified', true, now(), s.embedding, s.tsv
@@ -99,7 +99,7 @@ def build_graph(session, tenant_id: uuid.UUID, log=print) -> dict[str, Any]:
                    scope_id, sensitivity, acl, source_pointers, root_sources, verification, authoritative, recorded_at, embedding, tsv)
                SELECT gen_random_uuid(), :t, n.id, 1, :seq, left(r.summary, 300), left(r.detail, 1000),
                       jsonb_build_object('source_system', 'extracted', 'record_type', r.type::text, 'document', d.extra->>'dsid'),
-                      '{{}}', '{{}}', r.scope_id, r.sensitivity, '{{}}'::jsonb, r.source_locations,
+                      '{{}}', '{{}}', r.scope_id, r.sensitivity, coalesce(r.acl, '{{}}'::jsonb), r.source_locations,
                       ARRAY['doc:' || (d.extra->>'dsid')], 'unverified', true, now(), r.embedding, r.tsv
                {rec.replace("WHERE r.tenant_id", "JOIN rem_nodes n ON n.tenant_id = :t AND n.key = r.id::text WHERE r.tenant_id")}"""), p)
     x(text("ANALYZE rem_nodes"))

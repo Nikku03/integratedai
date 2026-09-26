@@ -54,6 +54,11 @@ is a retrieval arm (`graph_mode="cliques"`) compared against the standard bank b
 The dynamic bank (`CIE_DYNAMIC_MEMORY=true`) forms new links and shapes from the
 answers it gives; `GET /memory/shapes` shows them, `python -m cie.eval.bench_dynamic`
 measures them against the static bank.
+REM (`docs/REM.md`): dependency exploration, evidence selection and change-impact
+tracking over a versioned business graph in PostgreSQL — `POST /api/rem/query`,
+`POST /api/rem/changes`, `GET /api/rem/impacts/{event_id}`, `GET /api/rem/explanations/{result_id}`,
+`cie rem demo|ingest|query|change|replay|bench`; results against the baselines in
+`docs/REM_RESULTS.md`.
 Out-of-sample test on EnterpriseRAG-Bench (512k-document company corpus, 500
 questions): `python -m cie.eval.bench_enterprise --root <checkout> --docs N`
 (`--memory full` builds the full memory bank described in `docs/MEMORY_BANK.md`;
@@ -88,6 +93,7 @@ src/cie/memory      scopes, records (supersede/contradict/confirm/extend), glyph
 src/cie/retrieval   intent, exact, lexical, vector, fusion, bounded graph expansion, rerank, contradictions, packet, answer
 src/cie/agents      registry, scorecards, router, messages, ledger, planner, specialists, verification, head, providers
 src/cie/governance  permissions (RBAC+ABAC), audit, scanners, retention/deletion
+src/cie/rem         REM: versioned business graph, bounded exploration, change rules, evidence packets
 src/cie/workers     durable job queue and worker
 src/cie/api         FastAPI routes (core, agents, governance)
 src/cie/eval        synthetic corpus, benchmarks, simulation, demo

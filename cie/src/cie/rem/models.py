@@ -237,6 +237,7 @@ class RemSuggestion(Base):
     requires: Mapped[list[uuid.UUID]] = mapped_column(ARRAY(UUID(as_uuid=True)), default=list)  # every node it reveals
     rule_id: Mapped[str | None] = mapped_column(String(60))
     roots: Mapped[list[str]] = mapped_column(ARRAY(String(64)), default=list)  # milestones whose assessment it follows from
+    details: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict)  # requires_scopes: [scope, clearance] of exact values it shows
     created_seq: Mapped[int | None] = mapped_column(BigInteger)
     superseded_seq: Mapped[int | None] = mapped_column(BigInteger)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

@@ -78,26 +78,19 @@ def rem_query(body: QueryIn, auth: Auth = Depends(current_auth), session: Sessio
 
 
 def _check_write(session: Session, auth: Auth, body: ChangeIn) -> None:
-    """A change may only touch scopes the caller can write to."""
-    from sqlalchemy import select
+    """Refuse a change the caller may not make: the current scope of every record it changes, restricts or deletes,
+    the scope a record is put in, both ends of a relationship, and stock rows. Checked again by the worker under
+    the tenant lock, on the state the change will actually modify."""
+    from cie.rem.change import Unauthorized, authorize_ops, translate
+    from cie.rem.store import GraphReader
 
-    from cie.core.models import Scope
-
-    names = set()
-    for op in body.payload.get("ops", []) if isinstance(body.payload, dict) else []:
-        if op.get("scope"):
-            names.add(str(op["scope"]))
-    if body.payload.get("scope"):
-        names.add(str(body.payload["scope"]))
-    if not names and not any(auth.visibility.can_write(s) for s in auth.visibility.scope_ids):
-        raise HTTPException(403, "write access required")
-    for n in names:
-        try:
-            sid = uuid.UUID(n)
-        except ValueError:
-            sid = session.scalar(select(Scope.id).where(Scope.tenant_id == auth.tenant_id, Scope.name == n))
-        if sid is None or not auth.visibility.can_write(sid):
-            raise HTTPException(403, f"write access required on scope {n!r}")
+    try:
+        ops = translate(body.kind, body.payload, GraphReader(session, auth.tenant_id, None))
+        authorize_ops(session, auth.tenant_id, auth.visibility, ops)
+    except Unauthorized as e:
+        raise HTTPException(403, str(e)) from None
+    except (ValueError, KeyError) as e:
+        raise HTTPException(400, str(e)) from None
 
 
 @router.post("/changes", status_code=202)
@@ -122,6 +115,8 @@ def rem_change(body: ChangeIn, auth: Auth = Depends(current_auth), session: Sess
             process_event(session, ev.id, embedder=get_embedding_provider(settings))
         except ValueError as e:
             raise HTTPException(400, str(e)) from None
+        if ev.status == "rejected":
+            raise HTTPException(403, ev.error or "not allowed")
     elif created:
         job_id = str(queue.enqueue(session, auth.tenant_id, "rem_change", {"event_id": str(ev.id)}).id)
     return {"event_id": str(ev.id), "created": created, "status": ev.status, "seq": ev.seq, "job_id": job_id}
@@ -144,7 +139,9 @@ def rem_impacts(event_id: uuid.UUID, include_superseded: bool = False, auth: Aut
     seen = reader.nodes(changed) if changed else {}
     s = ev.summary or {}
     return {"event_id": str(ev.id), "kind": ev.kind, "status": ev.status, "seq": ev.seq, "snapshot_seq": reader.seq,
-            "processing": {k: s.get(k) for k in ("status", "stopping_reason", "budget", "policy")},
+            # budget counts include records the reader may not see, so only administrators get them
+            "processing": {k: s.get(k) for k in (("status", "stopping_reason", "budget", "policy") if auth.visibility.is_admin
+                                                 else ("status", "stopping_reason", "policy"))},
             "changed": [{"id": str(n.id), "type": n.type, "key": n.key, "name": n.name, "fields": s["changed"][str(n.id)]}
                         for n in seen.values()],
             "impacts": impacts, "suggested_tasks": tasks,
