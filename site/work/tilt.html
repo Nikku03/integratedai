@@ -45,7 +45,6 @@
     var off = [].filter.call(d.querySelectorAll(".case-hero__media, .case-next__media"), function (el) {
       var r = el.getBoundingClientRect(); return r.bottom <= 0 || r.top >= w.innerHeight;
     });
-    try { sessionStorage.setItem("vtdbg", JSON.stringify([].map.call(d.querySelectorAll(".case-hero__media, .case-next__media"), function (el) { var r = el.getBoundingClientRect(); return [el.className, Math.round(r.top), Math.round(r.bottom), w.innerHeight, w.scrollY]; }))); } catch (e) {}
     off.forEach(function (el) { el.style.viewTransitionName = "none"; });
     vt.finished.finally(function () { off.forEach(function (el) { el.style.viewTransitionName = ""; }); });
   }
