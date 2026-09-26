@@ -341,23 +341,6 @@
     }
   });
 
-  /* ---------------------------------------------------------------- keyboard users see everything
-     [data-reveal] content is visibility:hidden until it scrolls into view, and hidden
-     controls can't take focus, so Tab would skip them. On the first Tab, finish every
-     pending reveal that holds a control. (Proposed for motion.js: SP/build/requests/pages.md) */
-  const FOCUSABLE = "a[href], button, input, select, textarea, [tabindex]";
-  const finishReveals = (e) => {
-    if (e.key !== "Tab") return;
-    d.removeEventListener("keydown", finishReveals, true);
-    const gsap = w.gsap;
-    d.querySelectorAll('[data-reveal]:not([data-reveal="image"])').forEach((el) => {
-      if (!el.matches(FOCUSABLE) && !el.querySelector(FOCUSABLE)) return;
-      if (gsap) gsap.getTweensOf(el).forEach((t) => t.progress(1).kill());
-      el.style.visibility = "visible"; el.style.opacity = "1";
-    });
-  };
-  d.addEventListener("keydown", finishReveals, true);
-
   /* ---------------------------------------------------------------- boot */
   prefill();
   updateCount();

@@ -108,7 +108,13 @@
   // does the browser's native anchor/focus/scrollIntoView — ONE source of truth.
   // (Passing a JS offset as well doubled it: landed 128px instead of 64px.)
   Motion.scrollTo = (target, opts = {}) => {
-    if (Motion.lenis) return Motion.lenis.scrollTo(target, opts);
+    if (Motion.lenis) {
+      // Chrome's scroll anchoring can move window.scrollY after a layout change above the
+      // viewport without Lenis hearing about it; resync first or the jump lands short
+      const L = Motion.lenis;
+      if (Math.abs(L.animatedScroll - w.scrollY) > 1) L.scrollTo(w.scrollY, { immediate: true, force: true });
+      return L.scrollTo(target, opts);
+    }
     const reduce = w.matchMedia(MQ.reduce).matches;
     const behavior = opts.immediate || reduce ? "instant" : "smooth";
     if (typeof target === "number") w.scrollTo({ top: target + (opts.offset || 0), behavior });
@@ -133,23 +139,34 @@
   // data-reveal="image" → clip-path inset curtain + inner image settle (for .media figures)
   // data-reveal-group on a parent staggers its [data-reveal] children by 60ms in DOM order
   Motion.effect("reveal", (el) => {
+    const isImage = el.dataset.reveal === "image";
+    const img = isImage && el.querySelector(":scope > img, :scope > picture > img, :scope > video");
+    // no layout (inside display:none — tabs, accordions, filtered lists): a once-trigger here
+    // would measure 0/0, fire and kill itself mid-refresh (ScrollTrigger throws) → just show it
+    if (!el.getClientRects().length) return revealNow(el);
     const group = el.parentElement && el.parentElement.closest("[data-reveal-group]");
     const idx = group ? [...group.querySelectorAll(":scope [data-reveal]")].indexOf(el) : 0;
     const delay = (parseFloat(el.dataset.delay) || 0) + introDelayFor(el) + Math.max(0, idx) * 0.06;
-    if (el.dataset.reveal === "image") {
-      const img = el.querySelector(":scope > img, :scope > picture > img, :scope > video");
-      const tl = gsap.timeline({ scrollTrigger: { trigger: el, start: "top 88%", once: true }, delay,
-        onComplete: () => gsap.set(el, { clipPath: "none" }) });
-      tl.fromTo(el, { clipPath: "inset(8% 8% 8% 8%)" }, { clipPath: "inset(0% 0% 0% 0%)", duration: 1.2, ease: DRIFT }, 0);
-      if (img) tl.fromTo(img, { scale: 1.12 }, { scale: 1, duration: 1.4, ease: EASE, clearProps: "transform" }, 0);
+    const st = () => ({ trigger: el, start: "top 88%", once: true });
+    if (isImage) {
+      // two tweens, not a timeline: a timeline's ScrollTrigger refreshes lazily, and a page that
+      // boots scrolled down (history back) then threw inside ScrollTrigger when `once` killed it
+      gsap.fromTo(el, { clipPath: "inset(8% 8% 8% 8%)" }, { clipPath: "inset(0% 0% 0% 0%)", duration: 1.2, ease: DRIFT, delay,
+        scrollTrigger: st(), onComplete: () => { gsap.set(el, { clipPath: "none" }); el.setAttribute("data-revealed", ""); } });
+      if (img) gsap.fromTo(img, { scale: 1.12 }, { scale: 1, duration: 1.4, ease: EASE, delay, scrollTrigger: st() });
       return;
     }
     gsap.fromTo(el, { opacity: 0, y: 24 }, {
       opacity: 1, y: 0, duration: 1, ease: DRIFT, delay,
       clearProps: "transform",
-      scrollTrigger: { trigger: el, start: "top 88%", once: true },
+      onComplete: () => el.setAttribute("data-revealed", ""),
+      scrollTrigger: st(),
     });
   });
+  function revealNow(el) {
+    el.setAttribute("data-revealed", "");
+    gsap.set(el, el.dataset.reveal === "image" ? { clipPath: "none" } : { opacity: 1 });
+  }
 
   // data-count="64" [data-count-suffix="+"] → counts up once in view (tabular numerals)
   Motion.effect("count", (el) => {
@@ -164,7 +181,7 @@
 
   // data-split[="lines"]  → masked line reveal; re-splits on font load / width change
   Motion.effect("split", (el) => {
-    if (!SplitText) { gsap.set(el, { opacity: 1 }); return; }
+    if (!SplitText || !el.getClientRects().length) { gsap.set(el, { opacity: 1 }); return; }
     el._split = SplitText.create(el, {
       type: "lines",
       mask: "lines",
@@ -216,8 +233,14 @@
     const offs = [];
     for (const [name, fn] of Object.entries(Motion.effects)) {
       scope.querySelectorAll(`[data-${name}]`).forEach((el) => {
-        const off = fn(el, env);
-        if (typeof off === "function") offs.push(off);
+        try {
+          const off = fn(el, env);
+          if (typeof off === "function") offs.push(off);
+        } catch (err) {
+          // fail open: show the element in its final state and keep booting
+          el.style.opacity = ""; el.style.clipPath = "none"; el.setAttribute("data-revealed", "");
+          if (w.console) console.warn("[motion] effect", name, "failed on", el, err);
+        }
       });
     }
     return () => offs.forEach((f) => f());

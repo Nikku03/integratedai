@@ -127,10 +127,14 @@ def meta_line(parts) -> str:
     return " ".join(f'<span class="seg">{esc(x)}{sep if i < len(parts) - 1 else ""}</span>' for i, x in enumerate(parts))
 
 
+def keep_dots(s: str) -> str:
+    """'Concept · Interior design · …': a wrapped line never starts with the dot (no-break space before it)."""
+    return s.replace(" · ", "\u00a0· ")
+
+
 def fact(label: str, value: str, wide: bool = False) -> str:
     klass = "case-facts__item" + (" case-facts__item--wide" if wide else "")
-    # "Concept · Interior design · …": a wrapped line never starts with the dot (no-break space before it)
-    value = esc(value).replace(" · ", "\u00a0· ")
+    value = keep_dots(esc(value))
     return (f'<div class="{klass}" data-reveal><dt class="t-label">{esc(label)}</dt>'
             f"<dd>{value}</dd></div>")
 
@@ -264,7 +268,7 @@ def outcome(p):
 def credits(p):
     L = LABELS["creditLabels"]
     c = p["credits"]
-    rows = [f'<div class="case-credits__item" data-reveal><dt class="t-label">{esc(L[k])}</dt><dd>{esc(c[k])}</dd></div>'
+    rows = [f'<div class="case-credits__item" data-reveal><dt class="t-label">{esc(L[k])}</dt><dd>{keep_dots(esc(c[k]))}</dd></div>'
             for k in ("photography", "designAndBuild", "collaborators") if c.get(k)]
     return indent("\n".join(rows), 10)
 

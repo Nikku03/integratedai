@@ -23,14 +23,10 @@
 [data-page="case"] [data-case-split] .line-mask { padding-block: 0.12em; margin: 0 0 -0.24em; }
 [data-page="case"] [data-case-split] .line-mask:first-child { margin-top: -0.12em; }
 [data-page="case"] [data-case-split] .line-mask:last-child { margin-bottom: -0.12em; }
-html.js-motion [data-page="case"] [data-case-split] { visibility: hidden; }
+html.js-motion [data-page="case"] [data-case-split] { opacity: 0; }
 html.js-motion [data-page="case"] .case-hero__meta,
 html.js-motion [data-page="case"] .case-hero__badge { opacity: 0; visibility: hidden; }
 
-/* image curtains run by case.js (same start state as the core [data-reveal="image"]) */
-html.js-motion [data-page="case"] [data-case-reveal="image"] { clip-path: inset(8% 8% 8% 8%); }
-html.js-motion [data-page="case"] [data-case-reveal="image"] > img,
-html.js-motion [data-page="case"] [data-case-reveal="image"] > video { transform: scale(1.12); }
 
 /* ------------------------------------------------------------ 1 · hero */
 [data-page="case"] .case-hero {
@@ -42,12 +38,13 @@ html.js-motion [data-page="case"] [data-case-reveal="image"] > video { transform
   position: absolute; inset: 0; z-index: -2; aspect-ratio: auto !important;
   view-transition-class: proj; transform-origin: 50% 80%;
 }
-/* scrims under the text only: bottom-left for the title, a thin top band for the header */
+/* scrims under the text only: bottom-left for the title; a top band that holds the header and the back link
+   at AA even on the bright rooms (Otla, Dhaaga) */
 [data-page="case"] .case-hero::after {
   content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
   background:
     linear-gradient(to top, rgba(20, 24, 18, 0.74) 0%, rgba(20, 24, 18, 0.42) 26%, rgba(20, 24, 18, 0) 56%),
-    linear-gradient(to bottom, rgba(20, 24, 18, 0.46) 0%, rgba(20, 24, 18, 0) 24%);
+    linear-gradient(to bottom, rgba(20, 24, 18, 0.68) 0, rgba(20, 24, 18, 0.62) calc(var(--header-h) + 60px), rgba(20, 24, 18, 0.2) calc(var(--header-h) + 130px), rgba(20, 24, 18, 0) calc(var(--header-h) + 230px));
 }
 [data-page="case"] .case-hero__top { position: absolute; left: 0; right: 0; top: calc(var(--header-h) + 2px); }
 [data-page="case"] .case-back {
@@ -353,7 +350,7 @@ html.js-motion [data-page="case"] [data-case-reveal="image"] > video { transform
 @media (max-width: 600px) {
   [data-page="case"] .case-hero { min-height: 520px; }
   [data-page="case"] .case-hero__meta { line-height: 1.7; }
-  [data-page="case"] .case-hero__title { font-size: clamp(3.4rem, 17vw, 5rem); }
+  [data-page="case"] .case-hero__title { font-size: clamp(3.4rem, 21vw, 6rem); }
   [data-page="case"] .case-next__name { font-size: clamp(4.2rem, 21vw, 6rem); }
   [data-page="case"] .badge--placeholder { max-width: 100%; font-size: 0.75rem; }
 

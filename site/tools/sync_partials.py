@@ -20,7 +20,8 @@ MARK = re.compile(r"(<!-- @partial:(\w[\w-]*) -->)(.*?)(<!-- /@partial:\2 -->)",
 
 def sync(page: Path) -> int:
     depth = len(page.relative_to(SITE).parts) - 1
-    root = "../" * depth
+    # Netlify serves 404.html for unknown paths at any depth, so it needs root-absolute URLs
+    root = "/" if page.name == "404.html" else "../" * depth
     html = page.read_text()
     n = 0
     def repl(m):

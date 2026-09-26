@@ -45,8 +45,9 @@
     var off = [].filter.call(d.querySelectorAll(".case-hero__media, .case-next__media"), function (el) {
       var r = el.getBoundingClientRect(); return r.bottom <= 0 || r.top >= w.innerHeight;
     });
-    off.forEach(function (el) { el.style.viewTransitionName = "none"; });
-    vt.finished.finally(function () { off.forEach(function (el) { el.style.viewTransitionName = ""; }); });
+    // the names live in the inline style: keep each one to put back when the transition is over
+    var names = off.map(function (el) { var n = el.style.viewTransitionName; el.style.viewTransitionName = "none"; return n; });
+    vt.finished.finally(function () { off.forEach(function (el, i) { el.style.viewTransitionName = names[i]; }); });
   }
   w.addEventListener("pageswap", function (e) { prune(e.viewTransition); });
   w.addEventListener("pagereveal", function (e) { prune(e.viewTransition); });
@@ -304,7 +305,7 @@
         <dl class="case-credits__list" data-reveal-group>
           <div class="case-credits__item" data-reveal><dt class="t-label">Photography</dt><dd>Placeholder stock photography</dd></div>
           <div class="case-credits__item" data-reveal><dt class="t-label">Design &amp; build</dt><dd>Two Squares</dd></div>
-          <div class="case-credits__item" data-reveal><dt class="t-label">With</dt><dd>Espresso equipment: [Supplier] · Signage fabrication: [Fabricator]</dd></div>
+          <div class="case-credits__item" data-reveal><dt class="t-label">With</dt><dd>Espresso equipment: [Supplier] · Signage fabrication: [Fabricator]</dd></div>
         </dl>
       </div>
     </div>

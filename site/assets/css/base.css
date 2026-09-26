@@ -349,12 +349,12 @@ html:not(.js-motion) .preloader, html.no-preload .preloader { display: none; }
 
 /* ------------------------------------------------------------ motion pre-states (only when motion is on) */
 /* opacity only — never visibility: pending content must stay focusable and readable by screen readers */
-.js-motion [data-reveal] { opacity: 0; }
-.js-motion [data-split] { opacity: 0; }
+.js-motion [data-reveal]:not([data-revealed]) { opacity: 0; }
+.js-motion [data-split]:not([data-revealed]) { opacity: 0; }
 .js-motion [data-clip] { clip-path: inset(100% 0% 0% 0%); }
 .js-motion [data-clip] > img, .js-motion [data-clip] > picture > img, .js-motion [data-clip] > video { transform: scale(1.18); transform-origin: 50% 50%; }
-.js-motion [data-reveal="image"] { opacity: 1; clip-path: inset(8% 8% 8% 8%); }
-.js-motion [data-reveal="image"] > img { transform: scale(1.12); }
+.js-motion [data-reveal="image"]:not([data-revealed]) { opacity: 1; clip-path: inset(8% 8% 8% 8%); }
+.js-motion [data-reveal="image"]:not([data-revealed]) > img { transform: scale(1.12); }
 
 /* SplitText masks (see motion SPEC: padded masks, BFC parent, first/last margins) */
 [data-split] { display: flow-root; }

@@ -61,13 +61,10 @@
         url = URL.createObjectURL(await res.blob());
         this.objectURL = url;
       } catch (_) { /* fall back to streaming the URL */ }
-      this.v.src = url;
+      // setting src starts the load; an extra video.load() would restart it and abort the first read
       this.v.preload = "auto";
-      await new Promise((res) => {
-        if (this.v.readyState >= 2) return res();
-        this.v.addEventListener("loadeddata", res, { once: true });
-        this.v.load();
-      });
+      this.v.src = url;
+      if (this.v.readyState < 2) await new Promise((res) => this.v.addEventListener("loadeddata", res, { once: true }));
       this.duration = this.v.duration;
       this.unlock();
       this.ready = true;

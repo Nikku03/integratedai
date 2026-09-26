@@ -22,15 +22,6 @@
   if (MOTION_OK && w.matchMedia("(min-width: 901px) and (orientation: landscape)").matches) {
     $$(".case-details__inline[data-reveal]").forEach((f) => f.removeAttribute("data-reveal"));
   }
-  // Workaround for the core image reveal (SP/build/requests/case.md #1). motion.js builds
-  // [data-reveal="image"] as a gsap.timeline with a scrollTrigger; a timeline's trigger is refreshed lazily,
-  // so its end is still undefined when the next reveal is created. When the page boots scrolled down
-  // (history back / forward restores the position) the next trigger's init refreshes those lazy ones, they are
-  // already past and `once` kills them mid-loop, ScrollTrigger throws ("reading 'end'") and the rest of boot
-  // never runs: every reveal below stays hidden. Until the core uses tweens, this page runs the same reveal
-  // (same values) with plain tweens. Remove this block and the one in Motion.page once motion.js is patched.
-  const takeover = MOTION_OK ? $$('[data-reveal="image"]') : [];
-  takeover.forEach((f) => { f.removeAttribute("data-reveal"); f.setAttribute("data-case-reveal", "image"); });
 
   M.page("case", (env) => {
     if (!env.motion) return;
@@ -62,19 +53,6 @@
       });
     }
 
-    /* ---- image reveals (the core's curtain + settle, as tweens: see the workaround note above) ---- */
-    $$('[data-case-reveal="image"]').forEach((el) => {
-      const r = el.getBoundingClientRect();
-      const delay = r.top < innerHeight && r.bottom > 0 ? M.introDelay : 0;
-      const im = el.querySelector(":scope > img, :scope > picture > img, :scope > video");
-      const st = () => ({ trigger: el, start: "top 88%", once: true });
-      gsap.fromTo(el, { clipPath: "inset(8% 8% 8% 8%)" }, {
-        clipPath: "inset(0% 0% 0% 0%)", duration: 1.2, ease: M.DRIFT, delay, scrollTrigger: st(),
-        onComplete: () => gsap.set(el, { clipPath: "none" }),
-      });
-      if (im) gsap.fromTo(im, { scale: 1.12 }, { scale: 1, duration: 1.4, ease: EASE, delay, clearProps: "transform", scrollTrigger: st() });
-    });
-
     /* ---- paragraph line reveals ------------------------------------------ */
     // Like the core [data-split], but aria "none": a line split keeps the words as real text,
     // so no aria-label is needed (aria-label on a <p> is prohibited ARIA).
@@ -86,7 +64,7 @@
         const s = w.SplitText.create(el, {
           type: "lines", mask: "lines", linesClass: "line", autoSplit: true, aria: "none",
           onSplit(self) {
-            gsap.set(el, { visibility: "visible" });
+            gsap.set(el, { opacity: 1 });
             self.masks.forEach((m) => m.classList.add("line-mask"));
             return gsap.from(self.lines, {
               yPercent: 120, duration: 1.1, stagger: 0.09, ease: M.DRIFT, delay,

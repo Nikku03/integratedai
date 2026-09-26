@@ -167,7 +167,6 @@
 [data-page="work"] .work-item__cta-txt { background: linear-gradient(currentColor, currentColor) 0 100% / 100% 1px no-repeat; padding-bottom: 2px; }
 [data-page="work"] .work-item__cta .arr { display: inline-block; transition: transform var(--t-ui) var(--ease-cut); }
 [data-page="work"] .work-item__media { display: block; }
-[data-page="work"] .work-item .media > img { transform: none; }   /* see requests/work.md: base pre-state re-applies after clearProps */
 [data-page="work"] .work-item__loop { opacity: 0; pointer-events: none; }
 /* view-toggle ghosts (work.js): clones that hold a leaving element's place while it fades */
 [data-page="work"] .work-ghost { box-sizing: border-box; }
