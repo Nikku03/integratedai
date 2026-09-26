@@ -1,0 +1,26 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>
+/* motion bootstrap — inline, before any stylesheet: pre-animation states only when motion is allowed, fail open */
+(function (d, w) {
+  var r = d.documentElement, motion = w.matchMedia("(prefers-reduced-motion: no-preference)").matches;
+  r.classList.remove("no-js"); r.classList.add("js");
+  try { if (sessionStorage.getItem("ts-intro")) r.classList.add("no-preload"); } catch (e) { r.classList.add("no-preload"); }
+  if (motion) {
+    r.classList.add("js-motion");
+    try { if (!("CSSViewTransitionRule" in w) && sessionStorage.getItem("ts-curtain")) r.classList.add("curtain-in"); } catch (e) {}
+  }
+  w.addEventListener("pagereveal", function (e) { w.__vt = e.viewTransition || null; }, { once: true });
+  setTimeout(function () { if (!w.Motion || !w.Motion.booted) r.classList.remove("curtain-in"); }, 2500);
+  setTimeout(function () { if (!w.Motion || !w.Motion.booted) r.classList.remove("js-motion"); }, 4000);
+})(document, window);
+</script>
+<link rel="preload" href="{{root}}assets/fonts/InstrumentSerif-normal-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="{{root}}assets/fonts/InstrumentSans-normal-400_600-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="{{root}}assets/css/fonts.css">
+<link rel="stylesheet" href="{{root}}assets/css/base.css">
+<link rel="icon" href="{{root}}assets/img/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#2c3527">
+<meta property="og:site_name" content="Two Squares — Design &amp; Build">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">

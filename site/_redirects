@@ -1,0 +1,11 @@
+# Netlify redirects: the old prototype's sector pages now live as filters on the Work index.
+/restaurants        /work.html?filter=restaurants   301
+/restaurants.html   /work.html?filter=restaurants   301
+/bars               /work.html?filter=bars          301
+/bars.html          /work.html?filter=bars          301
+/retail             /work.html?filter=retail        301
+/retail.html        /work.html?filter=retail        301
+/shops              /work.html?filter=retail        301
+/cafes              /work.html?filter=cafes         301
+/project.html       /work.html                      301
+/menu               /services.html                  301

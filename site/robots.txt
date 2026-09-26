@@ -1,0 +1,3 @@
+# Prototype — keep it out of search results until the real photography and project names are in.
+User-agent: *
+Disallow: /

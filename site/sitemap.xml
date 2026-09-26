@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Replace https://www.example.com with the live domain before launch (and open robots.txt). -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://www.example.com/</loc></url>
+  <url><loc>https://www.example.com/work.html</loc></url>
+  <url><loc>https://www.example.com/work/common-hours.html</loc></url>
+  <url><loc>https://www.example.com/work/ember.html</loc></url>
+  <url><loc>https://www.example.com/work/stillroom.html</loc></url>
+  <url><loc>https://www.example.com/work/dhaaga.html</loc></url>
+  <url><loc>https://www.example.com/work/otla.html</loc></url>
+  <url><loc>https://www.example.com/work/tilt.html</loc></url>
+  <url><loc>https://www.example.com/services.html</loc></url>
+  <url><loc>https://www.example.com/studio.html</loc></url>
+  <url><loc>https://www.example.com/contact.html</loc></url>
+</urlset>
