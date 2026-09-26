@@ -48,12 +48,12 @@
 
 /* ---- the words */
 [data-page="404"] .nf__text { grid-column: 7 / span 5; }
-[data-page="404"] .nf__text .t-display-xl { margin-top: 1.1rem; }
+[data-page="404"] .nf__text .t-display-xl { margin-top: 1.1rem; white-space: nowrap; }   /* one line in any font: no reflow when the webfont swaps in */
 [data-page="404"] .nf__text .t-lede { margin-top: clamp(20px, 2.2vw, 32px); max-width: 34ch; }
 [data-page="404"] .nf__actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: clamp(28px, 3vw, 44px); }
 [data-page="404"] .nf__actions .btn:not(.btn--solid) { background: var(--paper); }
 [data-page="404"] .nf__more { margin-top: 20px; color: var(--ink-2); }
-[data-page="404"] .nf__more .text-link { color: var(--ink); padding-block: 12px; }
+[data-page="404"] .nf__more .text-link { color: var(--ink); }
 
 /* ---- the floor */
 [data-page="404"] .nf__floor {
@@ -72,7 +72,10 @@
 @media (max-width: 600px) {
   [data-page="404"] .nf { min-height: 0; }
   [data-page="404"] .nf__inner { row-gap: 36px; }
-  [data-page="404"] .nf__frame { grid-column: 1 / -1; width: 62%; }
+  [data-page="404"] .nf__frame { grid-column: 1 / -1; width: 64%; }
+  [data-page="404"] .nf__plaque { text-align: center; padding-inline: 14px; }
+  [data-page="404"] .nf__time { display: block; margin-bottom: 4px; }
+  [data-page="404"] .nf__dash { display: none; }
   [data-page="404"] .nf__text { grid-column: 1 / -1; text-align: center; }
   [data-page="404"] .nf__text .t-lede { margin-inline: auto; }
   [data-page="404"] .nf__actions { justify-content: center; }

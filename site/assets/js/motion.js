@@ -144,8 +144,8 @@
       if (img) tl.fromTo(img, { scale: 1.12 }, { scale: 1, duration: 1.4, ease: EASE, clearProps: "transform" }, 0);
       return;
     }
-    gsap.fromTo(el, { autoAlpha: 0, y: 24 }, {
-      autoAlpha: 1, y: 0, duration: 1, ease: DRIFT, delay,
+    gsap.fromTo(el, { opacity: 0, y: 24 }, {
+      opacity: 1, y: 0, duration: 1, ease: DRIFT, delay,
       clearProps: "transform",
       scrollTrigger: { trigger: el, start: "top 88%", once: true },
     });
@@ -164,7 +164,7 @@
 
   // data-split[="lines"]  → masked line reveal; re-splits on font load / width change
   Motion.effect("split", (el) => {
-    if (!SplitText) { gsap.set(el, { visibility: "visible" }); return; }
+    if (!SplitText) { gsap.set(el, { opacity: 1 }); return; }
     el._split = SplitText.create(el, {
       type: "lines",
       mask: "lines",
@@ -173,7 +173,7 @@
       aria: el.querySelector("a,button") ? "none" : "auto",
       onSplit(self) {
         el._splits = (el._splits || 0) + 1;              // debug/test: how many (re)splits
-        gsap.set(el, { visibility: "visible" });
+        gsap.set(el, { opacity: 1 });
         self.masks.forEach((m) => m.classList.add("line-mask"));
         // returning the tween lets SplitText revert it and sync its time on re-split
         // 120 not 100: the padded mask (motion.css) would otherwise show the top
@@ -227,6 +227,18 @@
   // ScrollTrigger already refreshes on DOMContentLoaded, load and (debounced) resize.
   // Add: fonts (line heights change), and any later body-height change (lazy
   // content, accordions) — guarded so a refresh can't retrigger itself.
+  // Keyboard and screen-reader users: focusing anything inside a pending one-shot
+  // reveal finishes that reveal at once (scrubbed timelines are left to the scroll).
+  function onFocusReveal(e) {
+    const t = e.target;
+    if (!t || !t.closest || t === d.body) return;
+    ST.getAll().forEach((st) => {
+      const a = st.animation;
+      if (!a || st.vars.scrub || !st.vars.once || !st.trigger || !st.trigger.contains(t)) return;
+      if (a.progress() < 1) a.progress(1);
+    });
+  }
+
   function refreshStrategy() {
     let lastH = d.body.scrollHeight, timer;
     const ro = new ResizeObserver(() => {
@@ -302,6 +314,7 @@
     Motion.introDelay = (Motion.config.introDelay || 0) + (w.__vt ? 0.35 : root.classList.contains("curtain-in") ? 0.45 : 0);
     const pageName = d.body.dataset.page;
     if (Motion.config.anchors) d.addEventListener("click", onAnchorClick);
+    d.addEventListener("focusin", onFocusReveal);
     Motion.mm = gsap.matchMedia();
     Motion.mm.add({ motion: MQ.motion, reduce: MQ.reduce, fine: MQ.fine }, (ctx) => {
       const { motion, fine } = ctx.conditions;

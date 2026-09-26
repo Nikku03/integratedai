@@ -6,8 +6,8 @@
    ===================================================================== */
 
 [data-page="services"] {
-  /* paper grain for the menu sheet: inline SVG noise, a few % of ink */
-  --svc-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n' x='0' y='0'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .11 0 0 0 0 .13 0 0 0 0 .1 .42 0 0 0 -.12'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)'/%3E%3C/svg%3E");
+  /* paper grain for the menu sheet: inline SVG noise, a warm fibre tone at ~2–3% so the sheet stays lighter than the sand ground */
+  --svc-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n' x='0' y='0'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .36 0 0 0 0 .3 0 0 0 0 .2 .5 0 0 0 -.235'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)'/%3E%3C/svg%3E");
   --svc-dot: radial-gradient(circle at 50% 50%, currentColor 0 0.8px, transparent 1.15px);
 }
 
@@ -25,6 +25,8 @@
   margin-left: -0.04em;                             /* optical: the T's serif hangs */
 }
 [data-page="services"] .svc-hero__copy { grid-column: 1 / 5; grid-row: 2; align-self: end; }
+/* above the fold: a timed intro (services.js), not a scroll reveal, so the actions are never waiting below the trigger line; opacity only, so they stay focusable */
+.js-motion [data-page="services"] [data-hero-in] { opacity: 0; }
 [data-page="services"] .svc-hero__copy .t-lede { max-width: 30ch; }
 [data-page="services"] .svc-hero__pricing { margin-top: 1.25rem; color: var(--ink-3); max-width: 38ch; }
 [data-page="services"] .svc-hero__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 28px; margin-top: clamp(28px, 3vw, 44px); }
@@ -247,6 +249,10 @@
 
 /* ================================================================ process */
 [data-page="services"] .svc-process { padding-block: var(--section); }
+/* deep links (#menu, #process, #faq): land flush with the section top; its own padding clears the header */
+[data-page="services"] .svc-menu,
+[data-page="services"] .svc-process,
+[data-page="services"] .svc-faq { scroll-margin-top: calc(-1 * var(--nav-h, var(--header-h))); }
 [data-page="services"] .svc-process__intro { row-gap: 28px; margin-bottom: clamp(64px, 8vw, 128px); }
 [data-page="services"] .svc-process__head { grid-column: 1 / 8; }
 [data-page="services"] .svc-process__eyebrow { color: var(--sand); margin-bottom: clamp(18px, 2vw, 28px); }
@@ -308,7 +314,7 @@
   .js-motion [data-page="services"] .svc-process__stage { align-items: start; }
   .js-motion [data-page="services"] .svc-process__media {
     display: block; grid-column: 1 / 8; grid-row: 1;
-    position: sticky; top: max(calc(var(--header-h) + 12px), calc(50svh - min(33vw, 60svh) * 0.5 - 30px));
+    position: sticky; top: max(calc(var(--header-h) + 12px), calc(50svh - var(--svc-frame-h) * 0.5 - 30px));
   }
   .js-motion [data-page="services"] .svc-process__steps { grid-column: 9 / 13; grid-row: 1; gap: 0; padding-bottom: 12svh; }
   .js-motion [data-page="services"] .svc-step { display: block; min-height: 74svh; padding-top: 4svh; }
@@ -327,8 +333,15 @@
   .js-motion [data-page="services"] .svc-step.is-active .svc-step__text { color: var(--on-dark-2); }
   .js-motion [data-page="services"] .svc-step.is-active .svc-step__name::before { color: var(--sand); -webkit-text-stroke-color: transparent; }
 }
+[data-page="services"] .svc-process__stage { --svc-frame-h: min(33vw, 60svh); }
+/* portrait tablets: a taller crop, and the steps closer together, so the column isn't a small letterbox */
+@media (min-width: 901px) and (orientation: portrait) {
+  [data-page="services"] .svc-process__stage { --svc-frame-h: min(56vw, 58svh); }
+  .js-motion [data-page="services"] .svc-step { min-height: 60svh; }
+  .js-motion [data-page="services"] .svc-step:last-child { min-height: 52svh; }
+}
 [data-page="services"] .svc-process__frame {
-  position: relative; width: 100%; height: min(33vw, 60svh); overflow: hidden; background: #1f261b;
+  position: relative; width: 100%; height: var(--svc-frame-h); overflow: hidden; background: #1f261b;
 }
 [data-page="services"] .svc-process__layer { position: absolute; inset: 0; visibility: hidden; background: #1f261b; }
 [data-page="services"] .svc-process__layer.is-active { visibility: visible; }

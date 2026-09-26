@@ -1,13 +1,31 @@
 /*!
  * Two Squares — studio.html
  * 1. The picture frame: the letters rise from the baseline, then the workshop
- *    loop pans and zooms inside them as you scroll (scrubbed, transform only).
+ *    photograph pans and zooms inside them as you scroll (scrubbed, transform
+ *    only) and drifts a touch with the pointer.
  * 2. One contract: two squares slide together until they overlap (scrubbed).
  * 3. Workshop band: a slow horizontal drift on desktop; a swipe strip elsewhere.
  * Reduced motion / no JS: the CSS default is the finished state of each.
  */
 (function (w, d) {
   "use strict";
+  /* ---------------------------------------------------------------- keyboard users see everything
+     [data-reveal] content is visibility:hidden until it scrolls into view, and hidden
+     controls can't take focus, so Tab would skip them. On the first Tab, finish every
+     pending reveal that holds a control. (Proposed for motion.js: SP/build/requests/pages.md) */
+  const FOCUSABLE = "a[href], button, input, select, textarea, [tabindex]";
+  const finishReveals = (e) => {
+    if (e.key !== "Tab") return;
+    d.removeEventListener("keydown", finishReveals, true);
+    const gsap = w.gsap;
+    d.querySelectorAll('[data-reveal]:not([data-reveal="image"])').forEach((el) => {
+      if (!el.matches(FOCUSABLE) && !el.querySelector(FOCUSABLE)) return;
+      if (gsap) gsap.getTweensOf(el).forEach((t) => t.progress(1).kill());
+      el.style.visibility = "visible"; el.style.opacity = "1";
+    });
+  };
+  d.addEventListener("keydown", finishReveals, true);
+
   const M = w.Motion;
   if (!M || !M.page) return;
 
@@ -22,16 +40,31 @@
       const fill = frame.querySelector(".frame__fill");
       const zoom = frame.querySelector("[data-frame-zoom]");
       const media = frame.querySelector(".frame__media");
+      const cap = d.querySelector("[data-frame-caption]");
+      // the letters rise from the baseline while the picture settles inside them
       const intro = gsap.timeline({ delay: (M.introDelay || 0) + 0.05 });
       intro.fromTo(fill, { clipPath: "inset(100% 0% 0% 0%)" },
         { clipPath: "inset(0% 0% 0% 0%)", duration: 1.35, ease: M.DRIFT,
           onComplete: () => gsap.set(fill, { clipPath: "none" }) }, 0);
-      if (media) intro.fromTo(media, { scale: 1.32 }, { scale: 1, duration: 2.1, ease: M.EASE, clearProps: "transform" }, 0);
-      // the picture drifts deeper into the frame as the page moves on
-      gsap.fromTo(zoom, { scale: 1.04, yPercent: -3 }, {
-        scale: 1.3, yPercent: 8, ease: "none",
-        scrollTrigger: { trigger: frame, start: "top 30%", end: "bottom top", scrub: true },
+      if (media) intro.fromTo(media, { scale: 1.3 }, { scale: 1.06, duration: 2.2, ease: M.EASE }, 0);
+      if (cap) intro.fromTo(cap, { autoAlpha: 0, y: 12 }, { autoAlpha: 1, y: 0, duration: 0.9, ease: M.EASE, clearProps: "transform" }, 0.7);
+      // as the page moves on, the picture drifts deeper into the frame
+      gsap.fromTo(zoom, { scale: 1, yPercent: 0 }, {
+        scale: 1.24, yPercent: 7, ease: "none",
+        scrollTrigger: { trigger: frame, start: "top 25%", end: "bottom top", scrub: true },
       });
+      // fine pointers: the picture sits a little behind the letters (±1.8% drift)
+      if (env.fine && media) {
+        const qx = gsap.quickTo(media, "xPercent", { duration: 1.1, ease: "power3.out" });
+        const qy = gsap.quickTo(media, "yPercent", { duration: 1.1, ease: "power3.out" });
+        const move = (e) => {
+          qx((e.clientX / innerWidth - 0.5) * -3.6);
+          qy((e.clientY / innerHeight - 0.5) * -3.6);
+        };
+        const stage = frame.closest(".studio-hero") || frame;
+        stage.addEventListener("pointermove", move, { passive: true });
+        offs.push(() => stage.removeEventListener("pointermove", move));
+      }
     }
 
     /* ---------------------------------------------------------- 2. two squares, one contract */
@@ -60,13 +93,15 @@
         band.classList.add("is-drift");
         band.removeAttribute("tabindex");              // nothing to scroll with the keyboard while it drifts
         band.scrollLeft = 0;
-        let o = 0, D = 0;
+        let D = 0;
         const measure = () => {
-          o = Math.max(0, track.scrollWidth - band.clientWidth);   // how much of the strip is hidden
-          D = Math.min(o, (section.offsetHeight + innerHeight) * 0.5); // drift at most half the scroll distance
+          const o = Math.max(0, track.scrollWidth - band.clientWidth);   // how much of the strip is hidden
+          D = Math.min(o, (section.offsetHeight + innerHeight) * 0.5);   // drift at most half the scroll distance
         };
-        gsap.fromTo(track, { x: () => (measure(), -o / 2 + D / 2) }, {
-          x: () => (measure(), -o / 2 - D / 2), ease: "none",
+        // it slides in from the right, sits square to the margin as it crosses the middle of
+        // the screen (the lead picture whole), then drifts on to the left as it leaves
+        gsap.fromTo(track, { x: () => (measure(), D * 0.45) }, {
+          x: () => (measure(), -D * 0.55), ease: "none",
           scrollTrigger: { trigger: section, start: "top bottom", end: "bottom top", scrub: 0.8, invalidateOnRefresh: true },
         });
         return () => { band.classList.remove("is-drift"); band.setAttribute("tabindex", "0"); };

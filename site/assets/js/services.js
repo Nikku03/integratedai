@@ -109,29 +109,52 @@
       }
     }
 
+    // back/forward: remember which items were open in this history entry, so
+    // returning from contact.html lands on the same (open) item
+    function persist() {
+      if (!opts.key) return;
+      try {
+        const st = Object.assign({}, history.state || {});
+        st[opts.key] = items.filter(isOpen).map((o) => o.el.id || o.btn.id);
+        history.replaceState(st, "");
+      } catch (_) { /* sandboxed history */ }
+    }
+    function restore() {
+      if (!opts.key) return;
+      let ids = null;
+      try {
+        const nav = performance.getEntriesByType && performance.getEntriesByType("navigation")[0];
+        if (nav && nav.type === "back_forward" && history.state) ids = history.state[opts.key];
+      } catch (_) { /* ignore */ }
+      if (!Array.isArray(ids)) return;
+      items.forEach((o) => { if (ids.includes(o.el.id || o.btn.id)) toggle(o, true, true); });
+    }
+
     items.forEach((it) => {
-      it.btn.addEventListener("click", () => toggle(it));
+      it.btn.addEventListener("click", () => { toggle(it); persist(); });
       // find-in-page reveals a collapsed panel: keep the button state in sync
       it.panel.addEventListener("beforematch", () => {
         if (opts.single) items.forEach((o) => { if (o !== it && isOpen(o)) toggle(o, false, true); });
         setState(it, true);
         show(it);
+        persist();
       });
       if (opts.clickable) {
         const extra = $(opts.clickable, it.el);
         if (extra) extra.addEventListener("click", () => it.btn.click());
       }
     });
-    return { items, toggle, isOpen };
+    restore();
+    return { items, toggle, isOpen, persist };
   }
 
   const sheet = $("[data-menu-sheet]");
   const menu = sheet && Disclosures(sheet, {
     item: "[data-menu-item]", button: ".menu-item__toggle", paper: $(".menu-sheet__paper", sheet),
-    clickable: ".menu-item__desc",
+    clickable: ".menu-item__desc", key: "svcMenuOpen",
   });
   const faqList = $("[data-faq]");
-  const faq = faqList && Disclosures(faqList, { item: ".faq-item", button: ".faq-item__q button", single: true });
+  const faq = faqList && Disclosures(faqList, { item: ".faq-item", button: ".faq-item__q button", single: true, key: "svcFaqOpen" });
 
   // deep links: services.html#whole-venue opens that item (other pages link to them)
   function openFromHash(instant) {
@@ -139,7 +162,7 @@
     if (!id || !menu) return;
     const target = d.getElementById(id);
     const it = target && menu.items.find((m) => m.el === target || m.el.contains(target));
-    if (it) menu.toggle(it, true, instant);
+    if (it) { menu.toggle(it, true, instant); menu.persist(); }
   }
   openFromHash(true);
   w.addEventListener("hashchange", () => openFromHash(false));
@@ -174,6 +197,17 @@
     const mm = gsap.matchMedia();
     offs.push(() => mm.revert());
 
+    // ---- hero copy: a timed intro after the headline's line reveal (above the fold on
+    // every viewport, so it must not wait for a scroll trigger); opacity + y only
+    const heroIn = $$("[data-hero-in]");
+    if (heroIn.length) {
+      gsap.fromTo(heroIn, { opacity: 0, y: 24 }, {
+        opacity: 1, y: 0, duration: 1, ease: DRIFT, stagger: 0.08,
+        delay: (M.introDelay || 0) + 0.3, clearProps: "transform",
+      });
+      offs.push(() => gsap.set(heroIn, { clearProps: "opacity,transform" }));
+    }
+
     // ---- the sheet: masthead wipe, then courses and items rise as they arrive
     if (sheet) {
       const logo = $(".menu-sheet__title .logo", sheet);
@@ -196,8 +230,13 @@
       mm.add("(min-width: 901px)", () => {
         gsap.fromTo(sheet, { rotation: -1.6, y: 56 }, {
           rotation: 0, y: 0, ease: "none",
-          scrollTrigger: { trigger: sheet, start: "top bottom", end: "top 30%", scrub: true },
+          scrollTrigger: {
+            trigger: sheet, start: "top bottom", end: "top 30%", scrub: true,
+            // its own layer only while it turns (a tall sheet repainted per frame is costly)
+            onToggle: (self) => { sheet.style.willChange = self.isActive ? "transform" : ""; },
+          },
         });
+        return () => { sheet.style.willChange = ""; };
       });
     }
 
@@ -270,6 +309,10 @@
       const prev = active;
       active = i;
       paint(i);
+      // a fast scroll can switch again mid-wipe: finish the outgoing wipe at once,
+      // so the layer underneath the new one is always whole (no ground showing through)
+      gsap.killTweensOf(layers[prev]);
+      gsap.set(layers[prev], { clearProps: "clipPath" });
       layers.forEach((l, k) => { l.style.zIndex = k === i ? 2 : k === prev ? 1 : 0; l.style.visibility = k === i || k === prev ? "visible" : "hidden"; });
       const L = layers[i], media = L.firstElementChild;
       gsap.fromTo(L, { clipPath: dir < 0 ? "inset(0% 0% 100% 0%)" : "inset(100% 0% 0% 0%)" }, {

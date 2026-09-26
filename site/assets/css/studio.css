@@ -1,8 +1,10 @@
 /* =====================================================================
    Studio — studio.html. Every rule is scoped under [data-page="studio"].
    Hero: the word "Studio" is a picture frame. The letters are a vector
-   mask (Instrument Serif outlines, see --frame-mask) over the workshop
-   loop, which pans and zooms inside them on scroll (studio.js).
+   mask (Instrument Serif outlines, see --frame-mask) over a workshop
+   photograph, which pans and zooms inside them on scroll (studio.js).
+   The mask is an SVG, so the letter edges stay sharp at any size, in
+   Chrome, Safari (-webkit-mask) and Firefox; no mask support = solid type.
    ===================================================================== */
 
 [data-page="studio"] {
@@ -16,10 +18,11 @@
   padding-top: calc(var(--header-h) + clamp(28px, 4.2vw, 64px));
   padding-bottom: calc(var(--section) * 0.5);
 }
-/* the first screen: labels on top, the framed word centred in what's left */
-[data-page="studio"] .studio-hero__stage {
-  display: grid; grid-template-rows: auto 1fr;
-  min-height: calc(100svh - var(--header-h) - clamp(28px, 4.2vw, 64px) - 8px);
+/* the first screen: labels on top, the framed word centred in what's left
+   (landscape screens only; on portrait ones the headline follows straight on) */
+[data-page="studio"] .studio-hero__stage { display: grid; grid-template-rows: auto 1fr; }
+@media (min-width: 901px) and (min-aspect-ratio: 1/1) {
+  [data-page="studio"] .studio-hero__stage { min-height: calc(100svh - var(--header-h) - clamp(28px, 4.2vw, 64px) - 8px); }
 }
 [data-page="studio"] .studio-hero__framegroup { align-self: center; padding-block: clamp(18px, 2.2vw, 32px) clamp(8px, 1.5vw, 24px); }
 [data-page="studio"] .studio-hero__top {
@@ -29,14 +32,15 @@
 [data-page="studio"] .frame { position: relative; width: 100%; aspect-ratio: var(--frame-ar); }
 [data-page="studio"] .frame__fill {
   position: absolute; inset: 0; overflow: hidden;
-  background: var(--green) url("../video/posters/loop-plane-poster.jpg") 50% 50% / cover no-repeat;
+  background: #88532a;             /* the photograph's own mean colour, until it decodes */
   -webkit-mask: var(--frame-mask) 50% 50% / 100% 100% no-repeat;
           mask: var(--frame-mask) 50% 50% / 100% 100% no-repeat;
 }
 [data-page="studio"] .frame__zoom { position: absolute; inset: 0; transform-origin: 50% 46%; }
 [data-page="studio"] .frame__media {
-  position: absolute; inset: 0; width: 100%; height: 100%;
-  object-fit: cover; object-position: 50% 50%; transform-origin: 50% 50%;
+  position: absolute; inset: 0; width: 100%; height: 100%; max-width: none;
+  object-fit: cover; object-position: 50% 58%; transform-origin: 50% 50%;
+  transform: scale(1.06);          /* headroom for the pointer drift */
 }
 /* no mask support → the word in solid ink green (never a bare rectangle of video) */
 [data-page="studio"] .frame__fallback {
@@ -52,9 +56,11 @@
 .js-motion [data-page="studio"] .frame__fill { clip-path: inset(100% 0% 0% 0%); }
 
 [data-page="studio"] .studio-hero__caption {
-  display: flex; justify-content: space-between; align-items: center; gap: 16px;
-  margin-top: clamp(12px, 1.4vw, 20px);
+  display: flex; justify-content: space-between; align-items: baseline; gap: 16px;
+  margin-top: clamp(14px, 1.6vw, 24px); padding-top: clamp(12px, 1.2vw, 16px);
+  border-top: 1px solid var(--line);
 }
+.js-motion [data-page="studio"] .studio-hero__caption { opacity: 0; }
 [data-page="studio"] .studio-hero__body { margin-top: clamp(56px, 7vw, 112px); align-items: start; row-gap: 32px; }
 [data-page="studio"] .studio-hero__title { grid-column: 1 / span 7; max-width: 13ch; }
 [data-page="studio"] .studio-hero__intro { grid-column: 9 / -1; padding-top: 0.6rem; }
@@ -135,7 +141,7 @@
   margin-top: clamp(72px, 9vw, 140px);
 }
 [data-page="studio"] .contract__point { border-top: 1px solid var(--line-dark); padding-top: 22px; }
-[data-page="studio"] .contract__point .t-display-s { margin-top: 1.1rem; max-width: 16ch; }
+[data-page="studio"] .contract__point .t-display-s { margin-top: 1.1rem; }
 [data-page="studio"] .contract__point .t-small { margin-top: 0.9rem; max-width: 36ch; }
 [data-page="studio"] .contract__foot { grid-column: 1 / -1; margin-top: clamp(48px, 5vw, 72px); color: var(--on-dark-2); }
 [data-page="studio"] .contract__foot .link { color: var(--on-dark); white-space: nowrap; }
@@ -226,6 +232,13 @@
 [data-page="studio"] .studio-cta__text .t-lede { margin-top: 1.5rem; color: var(--on-dark); }
 [data-page="studio"] .studio-cta__text .btn { margin-top: 2rem; }
 
+/* ------------------------------------------------------------ small laptop / landscape tablet */
+@media (max-width: 1200px) {
+  [data-page="studio"] .studio-hero__title { grid-column: 1 / span 6; }
+  [data-page="studio"] .studio-hero__intro { grid-column: 7 / -1; }
+  [data-page="studio"] .contract__points { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: calc(var(--gutter) * 2); }
+}
+
 /* ------------------------------------------------------------ tablet */
 @media (max-width: 900px) {
   [data-page="studio"] .studio-hero__title { grid-column: 1 / -1; }
@@ -235,7 +248,6 @@
   [data-page="studio"] .contract__head { grid-column: 1 / -1; }
   [data-page="studio"] .contract__figure { grid-column: 1 / -1; margin-top: 56px; max-width: 560px; }
   [data-page="studio"] .contract__points { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  [data-page="studio"] .studio-hero__stage { min-height: 0; }
   [data-page="studio"] .team__heading, [data-page="studio"] .team__note { grid-column: 1 / -1; justify-self: start; }
   [data-page="studio"] .member { grid-column: span 3; }
   [data-page="studio"] .numbers__item { grid-column: span 3; }
@@ -247,7 +259,9 @@
 
 /* ------------------------------------------------------------ phone */
 @media (max-width: 600px) {
-  [data-page="studio"] .studio-hero__top .quiet { display: none; }
+  [data-page="studio"] .studio-hero__top .quiet, [data-page="studio"] .studio-hero__fig { display: none; }
+  /* the word runs almost edge to edge on a phone */
+  [data-page="studio"] .frame { width: calc(100% + 2 * var(--margin) - 12px); margin-inline: calc(6px - var(--margin)); }
   [data-page="studio"] .principle { grid-template-columns: 2.5rem minmax(0, 1fr); }
   [data-page="studio"] .contract__points { grid-template-columns: 1fr; gap: 32px; }
   [data-page="studio"] .contract__point .t-display-s { max-width: none; }

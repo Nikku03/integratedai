@@ -26,13 +26,17 @@
 /* ------------------------------------------------------------ prefill banner */
 [data-page="contact"] .prefill {
   display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 24px;
-  margin-bottom: 40px; padding: 14px 14px 14px 20px;
+  margin-bottom: 40px; padding: 18px 16px 18px 22px;
   background: var(--paper-2); border-left: 2px solid var(--green);
 }
-[data-page="contact"] .prefill__text { display: flex; align-items: baseline; gap: 12px; font-size: 1.0625rem; }
+[data-page="contact"] .prefill__text {
+  display: flex; align-items: baseline; gap: 14px;
+  font-family: var(--f-display); font-size: clamp(1.3rem, 1.7vw, 1.6rem); line-height: 1.2; letter-spacing: -0.01em; text-wrap: balance;
+}
+[data-page="contact"] .prefill__text em { color: var(--green); }
 [data-page="contact"] .prefill__tick {
-  flex: none; width: 12px; height: 7px; border-left: 1.5px solid var(--green); border-bottom: 1.5px solid var(--green);
-  transform: translateY(-3px) rotate(-45deg);
+  flex: none; width: 13px; height: 7px; border-left: 1.5px solid var(--green); border-bottom: 1.5px solid var(--green);
+  transform: translateY(-0.3em) rotate(-45deg);
 }
 [data-page="contact"] .prefill__clear {
   min-height: 44px; padding-inline: 10px; font-size: 0.9375rem; font-weight: 500; color: var(--green);
@@ -41,6 +45,7 @@
 [data-page="contact"] .prefill__clear:hover { color: var(--ink); }
 
 /* ------------------------------------------------------------ error summary */
+[data-page="contact"] .form-errors, [data-page="contact"] .contact-body__form, [data-page="contact"] .field { scroll-margin-top: 28px; }
 [data-page="contact"] .form-errors {
   margin-bottom: 40px; padding: 22px 24px; border: 2px solid var(--err); background: var(--field-bg);
 }

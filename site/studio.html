@@ -34,7 +34,7 @@
 <meta property="og:title" content="Studio — Two Squares Design &amp; Build">
 <meta property="og:description" content="A small design &amp; build studio for cafés, restaurants, bars and shops. One senior lead, one contract and one team from site visit to opening night.">
 <meta property="og:image" content="assets/img/photos/build-01-hand-plane-1600.webp">
-<link rel="preload" as="image" href="assets/video/posters/loop-plane-poster.jpg" fetchpriority="high">
+<link rel="preload" as="image" href="assets/img/photos/build-01-hand-plane-1600.webp" imagesrcset="assets/img/photos/build-01-hand-plane-800.webp 800w, assets/img/photos/build-01-hand-plane-1600.webp 1600w" imagesizes="100vw" fetchpriority="high">
 <link rel="stylesheet" href="assets/css/studio.css">
 </head>
 <body data-page="studio" data-section="studio">
@@ -88,15 +88,16 @@
           <div class="frame" data-frame aria-hidden="true">
             <div class="frame__fill">
               <div class="frame__zoom" data-frame-zoom>
-                <video class="frame__media" id="frame-video" data-autoplay data-eager data-src="assets/video/loop-plane"
-                       poster="assets/video/posters/loop-plane-poster.jpg" muted loop playsinline preload="none" aria-hidden="true"></video>
+                <img class="frame__media" src="assets/img/photos/build-01-hand-plane-1600.webp"
+                     srcset="assets/img/photos/build-01-hand-plane-800.webp 800w, assets/img/photos/build-01-hand-plane-1600.webp 1600w" sizes="100vw"
+                     width="1600" height="1067" alt="" loading="eager" fetchpriority="high" decoding="async">
               </div>
             </div>
             <span class="frame__fallback">Studio</span>
           </div>
-          <div class="studio-hero__caption">
-            <p class="t-label quiet" data-reveal>07:10 — In the workshop</p>
-            <button class="vtoggle" type="button" data-video-toggle="#frame-video"><span class="sr-only">Pause video</span><i aria-hidden="true"></i></button>
+          <div class="studio-hero__caption" data-frame-caption>
+            <p class="t-label quiet">07:10 — In the workshop</p>
+            <p class="t-label quiet studio-hero__fig">Drawknife on hardwood</p>
           </div>
         </div>
       </div>
@@ -267,11 +268,11 @@
     <div class="band__viewport" data-band tabindex="0" role="region" aria-labelledby="band-title">
       <ul class="band__track" data-band-track>
         <li class="band__item band__item--lg">
-          <figure class="media band__img" style="aspect-ratio:3/2; --lqip:url(data:image/webp;base64,UklGRmYAAABXRUJQVlA4IFoAAAAwBACdASoUAA0APt1apkyopSOiMAgBEBuJZACdMoR3ACIcvfqgkEjfNAAA/t4Zba7fkEoarrTzg0B5Szephf5ElfbnyW3cJtR1XmPCb8iJqWyvJyb62NFAAAA=); --focus:50% 50%">
-            <img src="assets/img/photos/build-01-hand-plane-1600.webp" srcset="assets/img/photos/build-01-hand-plane-800.webp 800w, assets/img/photos/build-01-hand-plane-1600.webp 1600w" sizes="(max-width: 900px) 80vw, 45vw"
-                 width="1600" height="1067" alt="A joiner shapes a hardwood plank with a drawknife at a bench, among shavings, in warm workshop light" loading="lazy" decoding="async">
+          <figure class="media band__img" style="aspect-ratio:25/16; --lqip:url(data:image/webp;base64,UklGRoQAAABXRUJQVlA4IHgAAAAwBACdASoUAA0APt1cp0yopSOiMAgBEBuJbACdMoRwACxHFwZoSvoyQgAA/LAvXTstN+96EE3IFQdiQ2sfCXBjUUV9l79+Dh0t9r8E07Zah5zZ6ReqkIG5r+0EFj8LfU5ebDX/Yfb4l3DDnfbw+trySRlBoFDL+AA=); --focus:50% 50%">
+            <img src="assets/img/photos/build-03-drill-press-1600.webp" srcset="assets/img/photos/build-03-drill-press-800.webp 800w, assets/img/photos/build-03-drill-press-1600.webp 1600w" sizes="(max-width: 900px) 80vw, 45vw"
+                 width="1600" height="1026" alt="Hands feed a plank under a pillar drill amid sawdust, in warm timber tones" loading="lazy" decoding="async">
           </figure>
-          <p class="band__cap t-label quiet">Drawknife on hardwood</p>
+          <p class="band__cap t-label quiet">The joinery shop</p>
         </li>
         <li class="band__item band__item--sm">
           <figure class="media band__img" style="aspect-ratio:3/4; --lqip:url(data:image/webp;base64,UklGRlQAAABXRUJQVlA4IEgAAADwAwCdASoPABQAPt1apkyopSOiMAgBEBuJQBOmUABoYfMRCpYLVS0AAP6vHBuOLBMgcDhB+3l/ZWljH1yCBuGEHl3/9NmXgAA=); --focus:50% 50%">

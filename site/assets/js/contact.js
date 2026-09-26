@@ -24,7 +24,8 @@
   const BANNER = {
     "menu-card": "From the corner table: {item}. Change anything below.",
     services: "From the menu: {item}. Change anything below.",
-    "case-study": "From the work: {item}. Change anything below.",
+    // case studies send venue + item too: those prefill the chips and travel in the hidden
+    // "item" field, but the deck only gives a banner for the two menus
   };
   const SEND = "Send it over", SENDING = "Sending…";
   const NETWORK = "That didn’t send, and it’s our end, not yours. Your details are still here. Try again, or email hello@twosquares.studio.";
@@ -86,6 +87,10 @@
   const reduce = () => w.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   const scrollToEl = (el) => {
+    const L = w.Motion && w.Motion.lenis;
+    // showing the summary / success grows or shrinks the page above the viewport; the
+    // browser's scroll anchoring moves the page before Lenis hears of it, so sync first
+    if (L && Math.abs(L.animatedScroll - w.scrollY) > 1) L.scrollTo(w.scrollY, { immediate: true, force: true });
     if (w.Motion && w.Motion.scrollTo) w.Motion.scrollTo(el, { duration: 0.9 });
     else el.scrollIntoView({ block: "start", behavior: reduce() ? "auto" : "smooth" });
   };
@@ -151,7 +156,9 @@
     $("#f-item").value = item ? item.name : itemId;
 
     if (item && BANNER[from]) {
-      bannerText.textContent = BANNER[from].replace("{item}", item.name);
+      const [pre, post] = BANNER[from].split("{item}");
+      const em = d.createElement("em"); em.textContent = item.name;
+      bannerText.replaceChildren(pre, em, post);
       banner.hidden = false;
     }
   }
@@ -318,7 +325,8 @@
       if (!local) {
         const ctrl = "AbortController" in w ? new AbortController() : null;
         const timer = ctrl && setTimeout(() => ctrl.abort(), 15000);
-        const res = await fetch(form.action, {
+        // Netlify Forms: an urlencoded POST (with form-name) to the site root, as its docs do for AJAX
+        const res = await fetch("/", {
           method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body,
           signal: ctrl ? ctrl.signal : undefined,
         });
@@ -332,6 +340,23 @@
       netErr.textContent = NETWORK;
     }
   });
+
+  /* ---------------------------------------------------------------- keyboard users see everything
+     [data-reveal] content is visibility:hidden until it scrolls into view, and hidden
+     controls can't take focus, so Tab would skip them. On the first Tab, finish every
+     pending reveal that holds a control. (Proposed for motion.js: SP/build/requests/pages.md) */
+  const FOCUSABLE = "a[href], button, input, select, textarea, [tabindex]";
+  const finishReveals = (e) => {
+    if (e.key !== "Tab") return;
+    d.removeEventListener("keydown", finishReveals, true);
+    const gsap = w.gsap;
+    d.querySelectorAll('[data-reveal]:not([data-reveal="image"])').forEach((el) => {
+      if (!el.matches(FOCUSABLE) && !el.querySelector(FOCUSABLE)) return;
+      if (gsap) gsap.getTweensOf(el).forEach((t) => t.progress(1).kill());
+      el.style.visibility = "visible"; el.style.opacity = "1";
+    });
+  };
+  d.addEventListener("keydown", finishReveals, true);
 
   /* ---------------------------------------------------------------- boot */
   prefill();
