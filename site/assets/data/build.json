@@ -1,0 +1,4285 @@
+{
+ "venues": [
+  {
+   "id": "cafe",
+   "src": "hero-03-plant-hall-cafe.jpg",
+   "render": {
+    "local": 1.0,
+    "local_floor": 0.3,
+    "chroma": 1.0,
+    "rule_min": 45,
+    "rule_gap": 12,
+    "rule_fill": 0.4,
+    "rule_peaks": 800,
+    "free": 0.72,
+    "weight": 2.6,
+    "rule": 1.0,
+    "rule_w": 1.8,
+    "hatch": 0.42,
+    "tone0": 0.45,
+    "ink": 1.0,
+    "l0": 0.03,
+    "dim_exposure": 0.47,
+    "dim_lamp": 0.45,
+    "dim_sat": 0.5,
+    "clay_range": [
+     0.74,
+     0.24
+    ],
+    "clay_gamma": 0.5
+   },
+   "regions": [
+    {
+     "id": "floor",
+     "group": "shell",
+     "poly": [
+      [
+       0,
+       0.75
+      ],
+      [
+       0.13,
+       0.74
+      ],
+      [
+       0.34,
+       0.7
+      ],
+      [
+       0.45,
+       0.66
+      ],
+      [
+       0.66,
+       0.615
+      ],
+      [
+       0.72,
+       0.6
+      ],
+      [
+       0.86,
+       0.595
+      ],
+      [
+       1,
+       0.6
+      ],
+      [
+       1,
+       1
+      ],
+      [
+       0,
+       1
+      ]
+     ]
+    },
+    {
+     "id": "brick",
+     "group": "shell",
+     "poly": [
+      [
+       0,
+       0.15
+      ],
+      [
+       0.13,
+       0.165
+      ],
+      [
+       0.26,
+       0.21
+      ],
+      [
+       0.265,
+       0.72
+      ],
+      [
+       0.2,
+       0.73
+      ],
+      [
+       0.13,
+       0.74
+      ],
+      [
+       0,
+       0.75
+      ]
+     ]
+    },
+    {
+     "id": "backwall",
+     "group": "shell",
+     "poly": [
+      [
+       0.26,
+       0.21
+      ],
+      [
+       0.33,
+       0.25
+      ],
+      [
+       0.45,
+       0.285
+      ],
+      [
+       0.62,
+       0.31
+      ],
+      [
+       0.73,
+       0.3
+      ],
+      [
+       0.88,
+       0.24
+      ],
+      [
+       1,
+       0.25
+      ],
+      [
+       1,
+       0.6
+      ],
+      [
+       0.86,
+       0.595
+      ],
+      [
+       0.72,
+       0.6
+      ],
+      [
+       0.66,
+       0.615
+      ],
+      [
+       0.45,
+       0.66
+      ],
+      [
+       0.34,
+       0.7
+      ],
+      [
+       0.265,
+       0.72
+      ]
+     ]
+    },
+    {
+     "id": "roof",
+     "group": "shell",
+     "poly": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       1,
+       0.25
+      ],
+      [
+       0.88,
+       0.24
+      ],
+      [
+       0.73,
+       0.3
+      ],
+      [
+       0.62,
+       0.31
+      ],
+      [
+       0.45,
+       0.285
+      ],
+      [
+       0.33,
+       0.25
+      ],
+      [
+       0.26,
+       0.21
+      ],
+      [
+       0.13,
+       0.165
+      ],
+      [
+       0,
+       0.15
+      ]
+     ]
+    },
+    {
+     "id": "stair",
+     "group": "fit",
+     "poly": [
+      [
+       0.395,
+       0.615
+      ],
+      [
+       0.55,
+       0.47
+      ],
+      [
+       0.625,
+       0.405
+      ],
+      [
+       0.8,
+       0.33
+      ],
+      [
+       1,
+       0.33
+      ],
+      [
+       1,
+       0.395
+      ],
+      [
+       0.8,
+       0.395
+      ],
+      [
+       0.75,
+       0.425
+      ],
+      [
+       0.64,
+       0.44
+      ],
+      [
+       0.57,
+       0.53
+      ],
+      [
+       0.47,
+       0.64
+      ],
+      [
+       0.43,
+       0.665
+      ]
+     ]
+    },
+    {
+     "id": "counter",
+     "group": "fit",
+     "poly": [
+      [
+       0,
+       0.53
+      ],
+      [
+       0.145,
+       0.53
+      ],
+      [
+       0.145,
+       0.625
+      ],
+      [
+       0.25,
+       0.625
+      ],
+      [
+       0.365,
+       0.635
+      ],
+      [
+       0.365,
+       0.78
+      ],
+      [
+       0.2,
+       0.835
+      ],
+      [
+       0,
+       0.87
+      ]
+     ]
+    },
+    {
+     "id": "bench",
+     "group": "fit",
+     "poly": [
+      [
+       0.705,
+       0.595
+      ],
+      [
+       1,
+       0.595
+      ],
+      [
+       1,
+       0.72
+      ],
+      [
+       0.86,
+       0.715
+      ],
+      [
+       0.705,
+       0.645
+      ]
+     ]
+    },
+    {
+     "id": "tables-back",
+     "group": "fit",
+     "poly": [
+      [
+       0.555,
+       0.615
+      ],
+      [
+       0.64,
+       0.612
+      ],
+      [
+       0.655,
+       0.645
+      ],
+      [
+       0.76,
+       0.645
+      ],
+      [
+       0.765,
+       0.62
+      ],
+      [
+       0.82,
+       0.615
+      ],
+      [
+       0.825,
+       0.715
+      ],
+      [
+       0.77,
+       0.72
+      ],
+      [
+       0.76,
+       0.765
+      ],
+      [
+       0.66,
+       0.772
+      ],
+      [
+       0.645,
+       0.735
+      ],
+      [
+       0.56,
+       0.72
+      ]
+     ]
+    },
+    {
+     "id": "tables-mid",
+     "group": "fit",
+     "poly": [
+      [
+       0.53,
+       0.745
+      ],
+      [
+       0.655,
+       0.74
+      ],
+      [
+       0.665,
+       0.77
+      ],
+      [
+       0.7,
+       0.78
+      ],
+      [
+       0.7,
+       0.92
+      ],
+      [
+       0.64,
+       0.93
+      ],
+      [
+       0.62,
+       0.83
+      ],
+      [
+       0.53,
+       0.82
+      ]
+     ]
+    },
+    {
+     "id": "tables-right",
+     "group": "fit",
+     "poly": [
+      [
+       0.745,
+       0.62
+      ],
+      [
+       0.86,
+       0.615
+      ],
+      [
+       1,
+       0.62
+      ],
+      [
+       1,
+       1
+      ],
+      [
+       0.81,
+       1
+      ],
+      [
+       0.83,
+       0.9
+      ],
+      [
+       0.93,
+       0.87
+      ],
+      [
+       0.94,
+       0.78
+      ],
+      [
+       0.88,
+       0.75
+      ],
+      [
+       0.8,
+       0.735
+      ],
+      [
+       0.745,
+       0.7
+      ]
+     ]
+    },
+    {
+     "id": "planters",
+     "group": "fit",
+     "poly": [
+      [
+       0,
+       0.6
+      ],
+      [
+       0.1,
+       0.6
+      ],
+      [
+       0.25,
+       0.66
+      ],
+      [
+       0.36,
+       0.62
+      ],
+      [
+       0.45,
+       0.63
+      ],
+      [
+       0.52,
+       0.66
+      ],
+      [
+       0.6,
+       0.62
+      ],
+      [
+       0.66,
+       0.66
+      ],
+      [
+       0.65,
+       0.8
+      ],
+      [
+       0.62,
+       1
+      ],
+      [
+       0,
+       1
+      ]
+     ]
+    }
+   ],
+   "glows": [
+    {
+     "x": 0.219,
+     "y": 0.098,
+     "r": 0.03
+    },
+    {
+     "x": 0.164,
+     "y": 0.178,
+     "r": 0.028
+    },
+    {
+     "x": 0.411,
+     "y": 0.192,
+     "r": 0.026
+    },
+    {
+     "x": 0.561,
+     "y": 0.08,
+     "r": 0.026
+    },
+    {
+     "x": 0.337,
+     "y": 0.249,
+     "r": 0.022
+    },
+    {
+     "x": 0.438,
+     "y": 0.281,
+     "r": 0.022
+    },
+    {
+     "x": 0.515,
+     "y": 0.308,
+     "r": 0.02
+    },
+    {
+     "x": 0.665,
+     "y": 0.247,
+     "r": 0.02
+    },
+    {
+     "x": 0.778,
+     "y": 0.205,
+     "r": 0.02
+    },
+    {
+     "x": 0.261,
+     "y": 0.534,
+     "r": 0.028
+    },
+    {
+     "x": 0.28,
+     "y": 0.492,
+     "r": 0.026
+    },
+    {
+     "x": 0.302,
+     "y": 0.532,
+     "r": 0.028
+    },
+    {
+     "x": 0.32,
+     "y": 0.494,
+     "r": 0.026
+    },
+    {
+     "x": 0.525,
+     "y": 0.502,
+     "r": 0.024
+    },
+    {
+     "x": 0.54,
+     "y": 0.498,
+     "r": 0.02
+    },
+    {
+     "x": 0.66,
+     "y": 0.54,
+     "r": 0.024
+    },
+    {
+     "x": 0.69,
+     "y": 0.533,
+     "r": 0.02
+    },
+    {
+     "x": 0.725,
+     "y": 0.52,
+     "r": 0.02
+    },
+    {
+     "x": 0.79,
+     "y": 0.48,
+     "r": 0.022
+    },
+    {
+     "x": 0.895,
+     "y": 0.42,
+     "r": 0.05
+    },
+    {
+     "x": 0.93,
+     "y": 0.367,
+     "r": 0.035
+    },
+    {
+     "x": 0.918,
+     "y": 0.44,
+     "r": 0.035
+    },
+    {
+     "x": 0.99,
+     "y": 0.46,
+     "r": 0.04
+    },
+    {
+     "x": 0.873,
+     "y": 0.466,
+     "r": 0.025
+    }
+   ],
+   "plan": {
+    "size": [
+     20,
+     16
+    ],
+    "gx": [
+     0,
+     5,
+     10,
+     15,
+     20
+    ],
+    "gy": [
+     0,
+     8,
+     16
+    ],
+    "north": 0,
+    "title": "Plant hall café — ground floor plan, 1:100",
+    "aria": "Plan of the café: the counter along the brick wall, the stair to the mezzanine on the back wall, tables to the east and planters inside the door.",
+    "label": {
+     "name": "Café",
+     "area": "320 m² · ground floor",
+     "at": [
+      4.4,
+      6.4
+     ]
+    },
+    "walls": [
+     [
+      0,
+      0,
+      12.4,
+      0.35
+     ],
+     [
+      13.5,
+      0,
+      20,
+      0.35
+     ],
+     [
+      0,
+      0.35,
+      0.45,
+      15.65,
+      "brick"
+     ],
+     [
+      19.65,
+      0.35,
+      20,
+      15.65
+     ],
+     [
+      0,
+      15.65,
+      2,
+      16
+     ],
+     [
+      6,
+      15.65,
+      8.2,
+      16
+     ],
+     [
+      10.2,
+      15.65,
+      12,
+      16
+     ],
+     [
+      18,
+      15.65,
+      20,
+      16
+     ]
+    ],
+    "glazing": [
+     [
+      2,
+      15.65,
+      6,
+      16
+     ],
+     [
+      12,
+      15.65,
+      18,
+      16
+     ]
+    ],
+    "doors": [
+     [
+      8.2,
+      15.65,
+      1.0,
+      0,
+      -90
+     ],
+     [
+      10.2,
+      15.65,
+      1.0,
+      180,
+      270
+     ],
+     [
+      12.4,
+      0.35,
+      1.0,
+      0,
+      90
+     ]
+    ],
+    "columns": [
+     [
+      11.5,
+      5.5,
+      0.15
+     ],
+     [
+      15.5,
+      5.5,
+      0.15
+     ]
+    ],
+    "fixed": [
+     [
+      "rect",
+      0.45,
+      3,
+      1.1,
+      9.5
+     ],
+     [
+      "poly",
+      [
+       [
+        1.9,
+        3
+       ],
+       [
+        2.6,
+        3
+       ],
+       [
+        2.6,
+        9.2
+       ],
+       [
+        5.2,
+        9.2
+       ],
+       [
+        5.2,
+        9.9
+       ],
+       [
+        1.9,
+        9.9
+       ]
+      ]
+     ],
+     [
+      "rect",
+      0.45,
+      10.4,
+      1.15,
+      12.6
+     ],
+     [
+      "rect",
+      19.0,
+      6,
+      19.65,
+      15,
+      "top"
+     ],
+     [
+      "stair",
+      5.5,
+      0.35,
+      11.5,
+      1.5,
+      21
+     ],
+     [
+      "over",
+      [
+       [
+        11.5,
+        0.35
+       ],
+       [
+        11.5,
+        5.5
+       ],
+       [
+        19.65,
+        5.5
+       ]
+      ]
+     ],
+     [
+      "over",
+      [
+       [
+        0.45,
+        4
+       ],
+       [
+        19.65,
+        4
+       ]
+      ]
+     ],
+     [
+      "over",
+      [
+       [
+        0.45,
+        8
+       ],
+       [
+        19.65,
+        8
+       ]
+      ]
+     ],
+     [
+      "over",
+      [
+       [
+        0.45,
+        12
+       ],
+       [
+        19.65,
+        12
+       ]
+      ]
+     ]
+    ],
+    "furn": [
+     [
+      "table",
+      12.2,
+      7.4,
+      1.4,
+      0.75,
+      2,
+      0
+     ],
+     [
+      "table",
+      14.6,
+      7.4,
+      1.4,
+      0.75,
+      2,
+      0
+     ],
+     [
+      "table",
+      17.0,
+      7.4,
+      1.4,
+      0.75,
+      2,
+      0
+     ],
+     [
+      "table",
+      12.2,
+      10.2,
+      1.4,
+      0.75,
+      2,
+      0
+     ],
+     [
+      "table",
+      14.6,
+      10.2,
+      1.4,
+      0.75,
+      2,
+      0
+     ],
+     [
+      "table",
+      17.0,
+      10.2,
+      1.4,
+      0.75,
+      2,
+      0
+     ],
+     [
+      "table",
+      13.0,
+      13.3,
+      1.8,
+      0.8,
+      2,
+      1
+     ],
+     [
+      "table",
+      16.4,
+      13.3,
+      1.8,
+      0.8,
+      2,
+      1
+     ],
+     [
+      "table",
+      8.8,
+      11.0,
+      1.4,
+      0.75,
+      2,
+      0
+     ],
+     [
+      "plant",
+      4.2,
+      11.8,
+      0.5
+     ],
+     [
+      "plant",
+      5.5,
+      12.9,
+      0.42
+     ],
+     [
+      "plant",
+      6.8,
+      11.4,
+      0.5
+     ],
+     [
+      "plant",
+      7.4,
+      13.3,
+      0.38
+     ],
+     [
+      "plant",
+      3.4,
+      13.9,
+      0.55
+     ],
+     [
+      "plant",
+      9.9,
+      13.7,
+      0.4
+     ]
+    ]
+   },
+   "copy": {
+    "time": "08:00",
+    "name": "Café",
+    "project": "Plant hall",
+    "diary": [
+     [
+      "Week 1 · Measured survey",
+      "Counter on the brick wall, so the queue forms along it and not across the door. The stair stays where it is."
+     ],
+     [
+      "Week 2 · Concept",
+      "Drawn from the door: the trusses, the steel stair, a ceiling of plants to walk in under."
+     ],
+     [
+      "Week 4 · Strip-out and making good",
+      "Brick cleaned back, trusses painted, the mezzanine made safe. Everything stays white until it’s decided."
+     ],
+     [
+      "Weeks 6–9 · Joinery and FF&E",
+      "The steel stair goes in first, then the counter and the bench. Planters next, and the tables work round them."
+     ],
+     [
+      "Weeks 10–11 · Floor, brick, paint",
+      "Screed polished, brick sealed, walls in a warm white that holds the morning light. Beech tops, a pine counter."
+     ],
+     [
+      "Week 12 · Lighting and commissioning",
+      "Bare lamps on long flex at 2,700 K. 300 lux on the counter, softer everywhere else."
+     ],
+     [
+      "Day one · 08:00",
+      "Doors at eight. The queue moves."
+     ]
+    ],
+    "end": {
+     "title": "Café",
+     "label": "Take the corner table",
+     "aria": "Go into the café and sit at the corner table",
+     "kind": "cafe"
+    },
+    "alts": {
+     "clay": "The café as a white model: trusses, brick wall, stair and mezzanine, with the tables and planters still in plain card.",
+     "lit": "The finished café in the morning: hanging plants and bare bulbs under white trusses, a brick wall, the steel stair and pale timber tables."
+    },
+    "intro": "Scroll, and the café builds itself: the plan, the sketch, the shell, the joinery, the finishes, the lights. A café at eight in the morning. One team from the first drawing to the first service.",
+    "srSummary": "The build: a café shown in seven stages, from the first drawing to opening morning, with a short note from the studio at each stage. At the end you can take the corner table to see our services. You can skip the build at any time.",
+    "pops": [
+     {
+      "kind": "proof",
+      "label": "In numbers",
+      "value": "7 in 10",
+      "text": "clients come back to us for a second site."
+     },
+     {
+      "kind": "craft",
+      "label": "Planned for the rush",
+      "text": "We plan the counter before the room — order, make, pick-up — so two baristas do the work of three."
+     },
+     {
+      "kind": "promise",
+      "label": "Approvals",
+      "text": "Fire, exit and extraction drawings done to the conditions from day one. Nothing gets ripped out later."
+     },
+     {
+      "kind": "promise",
+      "label": "Made in our workshop",
+      "text": "The counter and the bench are made off-site, so time on site is days, not weeks.",
+      "action": {
+       "label": "Book a free site walk",
+       "href": "contact.html?venue=cafe&service=feasibility&from=build"
+      }
+     },
+     {
+      "kind": "promise",
+      "label": "One contract",
+      "text": "Every finish on a sample board first. Then one fixed price for the design and the build."
+     },
+     {
+      "kind": "client",
+      "label": "In their words",
+      "text": "The queue used to be our problem. Now it’s our best advert.",
+      "cite": "Co-founder & head baker, Common Hours",
+      "action": {
+       "label": "Read the project",
+       "href": "work/common-hours.html"
+      }
+     },
+     {
+      "kind": "promise",
+      "label": "Day 90",
+      "text": "Ninety days after opening we come back and fix whatever service has found.",
+      "action": {
+       "label": "See the café projects",
+       "href": "cafes.html",
+       "here": "#projects"
+      }
+     }
+    ]
+   },
+   "stage": {
+    "fx": 0.5,
+    "fy": 0.5,
+    "pan": [
+     0.22,
+     0.62
+    ],
+    "card": "left"
+   }
+  },
+  {
+   "id": "restaurant",
+   "src": "rest-b-01-colonnade-wide.jpg",
+   "render": {
+    "local": 1.0,
+    "local_floor": 0.3,
+    "chroma": 1.0,
+    "rule_min": 45,
+    "rule_gap": 12,
+    "rule_fill": 0.4,
+    "rule_peaks": 800,
+    "free": 0.72,
+    "weight": 2.6,
+    "rule": 1.0,
+    "rule_w": 1.8,
+    "hatch": 0.36,
+    "tone0": 0.55,
+    "ink": 1.0,
+    "dim_exposure": 0.5,
+    "dim_sat": 0.5,
+    "l0": 0.02,
+    "clay_range": [
+     0.8,
+     0.18
+    ],
+    "clay_gamma": 0.55
+   },
+   "regions": [
+    {
+     "id": "floor",
+     "group": "shell",
+     "poly": [
+      [
+       0.25,
+       0.93
+      ],
+      [
+       0.3,
+       0.78
+      ],
+      [
+       0.66,
+       0.77
+      ],
+      [
+       0.72,
+       0.78
+      ],
+      [
+       0.9,
+       0.78
+      ],
+      [
+       1,
+       0.8
+      ],
+      [
+       1,
+       1
+      ],
+      [
+       0.25,
+       1
+      ]
+     ]
+    },
+    {
+     "id": "walls",
+     "group": "shell",
+     "poly": [
+      [
+       0.02,
+       0.28
+      ],
+      [
+       0.28,
+       0.3
+      ],
+      [
+       0.28,
+       0.41
+      ],
+      [
+       0.61,
+       0.4
+      ],
+      [
+       0.61,
+       0.43
+      ],
+      [
+       0.665,
+       0.44
+      ],
+      [
+       0.72,
+       0.44
+      ],
+      [
+       0.8,
+       0.43
+      ],
+      [
+       0.8,
+       0.4
+      ],
+      [
+       1,
+       0.4
+      ],
+      [
+       1,
+       0.8
+      ],
+      [
+       0.9,
+       0.78
+      ],
+      [
+       0.72,
+       0.78
+      ],
+      [
+       0.66,
+       0.77
+      ],
+      [
+       0.3,
+       0.78
+      ],
+      [
+       0.25,
+       0.93
+      ],
+      [
+       0.02,
+       0.93
+      ]
+     ]
+    },
+    {
+     "id": "column",
+     "group": "shell",
+     "poly": [
+      [
+       0.61,
+       0.35
+      ],
+      [
+       0.8,
+       0.35
+      ],
+      [
+       0.8,
+       0.43
+      ],
+      [
+       0.72,
+       0.44
+      ],
+      [
+       0.72,
+       1
+      ],
+      [
+       0.655,
+       1
+      ],
+      [
+       0.665,
+       0.44
+      ],
+      [
+       0.61,
+       0.43
+      ]
+     ]
+    },
+    {
+     "id": "arcade",
+     "group": "shell",
+     "poly": [
+      [
+       0,
+       0.3
+      ],
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       0.97,
+       0.0
+      ],
+      [
+       0.92,
+       0.02
+      ],
+      [
+       0.86,
+       0.07
+      ],
+      [
+       0.8,
+       0.15
+      ],
+      [
+       0.76,
+       0.25
+      ],
+      [
+       0.75,
+       0.35
+      ],
+      [
+       0.64,
+       0.35
+      ],
+      [
+       0.63,
+       0.3
+      ],
+      [
+       0.6,
+       0.2
+      ],
+      [
+       0.56,
+       0.1
+      ],
+      [
+       0.5,
+       0.04
+      ],
+      [
+       0.4,
+       0.005
+      ],
+      [
+       0.3,
+       0.005
+      ],
+      [
+       0.2,
+       0.03
+      ],
+      [
+       0.12,
+       0.08
+      ],
+      [
+       0.05,
+       0.17
+      ],
+      [
+       0.01,
+       0.28
+      ]
+     ]
+    },
+    {
+     "id": "ceiling",
+     "group": "shell",
+     "poly": [
+      [
+       0.05,
+       0.17
+      ],
+      [
+       0.12,
+       0.08
+      ],
+      [
+       0.2,
+       0.03
+      ],
+      [
+       0.3,
+       0.005
+      ],
+      [
+       0.4,
+       0.005
+      ],
+      [
+       0.5,
+       0.04
+      ],
+      [
+       0.56,
+       0.1
+      ],
+      [
+       0.6,
+       0.2
+      ],
+      [
+       0.63,
+       0.3
+      ],
+      [
+       0.64,
+       0.35
+      ],
+      [
+       0.61,
+       0.35
+      ],
+      [
+       0.61,
+       0.4
+      ],
+      [
+       0.28,
+       0.41
+      ],
+      [
+       0.28,
+       0.3
+      ],
+      [
+       0.02,
+       0.28
+      ]
+     ]
+    },
+    {
+     "id": "ceiling-r",
+     "group": "shell",
+     "poly": [
+      [
+       0.75,
+       0.35
+      ],
+      [
+       0.76,
+       0.25
+      ],
+      [
+       0.8,
+       0.15
+      ],
+      [
+       0.86,
+       0.07
+      ],
+      [
+       0.92,
+       0.02
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       1,
+       0.4
+      ],
+      [
+       0.8,
+       0.4
+      ]
+     ]
+    },
+    {
+     "id": "booths",
+     "group": "fit",
+     "poly": [
+      [
+       0.23,
+       0.66
+      ],
+      [
+       0.4,
+       0.645
+      ],
+      [
+       0.4,
+       0.79
+      ],
+      [
+       0.345,
+       0.84
+      ],
+      [
+       0.3,
+       0.935
+      ],
+      [
+       0.23,
+       0.95
+      ]
+     ]
+    },
+    {
+     "id": "banquette",
+     "group": "fit",
+     "poly": [
+      [
+       0.78,
+       0.63
+      ],
+      [
+       1,
+       0.63
+      ],
+      [
+       1,
+       0.75
+      ],
+      [
+       0.9,
+       0.745
+      ],
+      [
+       0.78,
+       0.72
+      ]
+     ]
+    },
+    {
+     "id": "station",
+     "group": "fit",
+     "poly": [
+      [
+       0.72,
+       0.66
+      ],
+      [
+       0.82,
+       0.655
+      ],
+      [
+       0.82,
+       0.79
+      ],
+      [
+       0.72,
+       0.8
+      ]
+     ]
+    },
+    {
+     "id": "counter",
+     "group": "fit",
+     "poly": [
+      [
+       0.9,
+       0.74
+      ],
+      [
+       1,
+       0.74
+      ],
+      [
+       1,
+       1
+      ],
+      [
+       0.9,
+       1
+      ]
+     ]
+    },
+    {
+     "id": "tables",
+     "group": "fit",
+     "poly": [
+      [
+       0.49,
+       0.705
+      ],
+      [
+       0.61,
+       0.71
+      ],
+      [
+       0.66,
+       0.75
+      ],
+      [
+       0.665,
+       0.99
+      ],
+      [
+       0.5,
+       0.99
+      ],
+      [
+       0.49,
+       0.8
+      ]
+     ]
+    },
+    {
+     "id": "tables-r",
+     "group": "fit",
+     "poly": [
+      [
+       0.745,
+       0.71
+      ],
+      [
+       0.9,
+       0.72
+      ],
+      [
+       0.91,
+       0.76
+      ],
+      [
+       0.9,
+       0.95
+      ],
+      [
+       0.75,
+       0.93
+      ],
+      [
+       0.745,
+       0.8
+      ]
+     ]
+    },
+    {
+     "id": "planter",
+     "group": "fit",
+     "poly": [
+      [
+       0,
+       0.2
+      ],
+      [
+       0.15,
+       0.2
+      ],
+      [
+       0.25,
+       0.3
+      ],
+      [
+       0.38,
+       0.43
+      ],
+      [
+       0.38,
+       0.6
+      ],
+      [
+       0.3,
+       0.72
+      ],
+      [
+       0.28,
+       1
+      ],
+      [
+       0,
+       1
+      ]
+     ]
+    }
+   ],
+   "glows": [
+    {
+     "x": 0.221,
+     "y": 0.455,
+     "r": 0.05
+    },
+    {
+     "x": 0.307,
+     "y": 0.51,
+     "r": 0.035
+    },
+    {
+     "x": 0.349,
+     "y": 0.535,
+     "r": 0.03
+    },
+    {
+     "x": 0.853,
+     "y": 0.42,
+     "r": 0.02
+    }
+   ],
+   "plan": {
+    "size": [
+     18,
+     12
+    ],
+    "gx": [
+     0,
+     4.6,
+     10,
+     15.4,
+     18
+    ],
+    "gy": [
+     0,
+     7.2,
+     12
+    ],
+    "north": 0,
+    "title": "Colonnade dining room — ground floor plan, 1:100",
+    "aria": "Plan of the dining room: booths along the blind wall, an arcade on three columns, tables by the windows on two sides and the bar at the back.",
+    "label": {
+     "name": "Dining room",
+     "area": "216 m² · ground floor",
+     "at": [
+      5.0,
+      9.4
+     ]
+    },
+    "walls": [
+     [
+      0,
+      0,
+      0.35,
+      12
+     ],
+     [
+      0.35,
+      11.65,
+      8,
+      12
+     ],
+     [
+      9.2,
+      11.65,
+      18,
+      12
+     ],
+     [
+      0.35,
+      0,
+      0.8,
+      0.3
+     ],
+     [
+      14,
+      0,
+      14.6,
+      0.3
+     ],
+     [
+      17.7,
+      0,
+      18,
+      0.3
+     ],
+     [
+      17.7,
+      7,
+      18,
+      11.65
+     ]
+    ],
+    "glazing": [
+     [
+      0.8,
+      0,
+      12.8,
+      0.3
+     ],
+     [
+      14.6,
+      0,
+      17.7,
+      0.3
+     ],
+     [
+      17.7,
+      0.3,
+      18,
+      7
+     ]
+    ],
+    "doors": [
+     [
+      12.8,
+      0.3,
+      1.2,
+      0,
+      90
+     ],
+     [
+      8,
+      11.65,
+      1.0,
+      0,
+      -90
+     ]
+    ],
+    "columns": [
+     [
+      4.6,
+      7.2,
+      0.3,
+      "o"
+     ],
+     [
+      10,
+      7.2,
+      0.3,
+      "o"
+     ],
+     [
+      15.4,
+      7.2,
+      0.3,
+      "o"
+     ]
+    ],
+    "fixed": [
+     [
+      "over",
+      [
+       [
+        0.35,
+        6.9
+       ],
+       [
+        17.7,
+        6.9
+       ]
+      ]
+     ],
+     [
+      "over",
+      [
+       [
+        0.35,
+        7.5
+       ],
+       [
+        17.7,
+        7.5
+       ]
+      ]
+     ],
+     [
+      "rect",
+      0.35,
+      0.3,
+      0.5,
+      7
+     ],
+     [
+      "poly",
+      [
+       [
+        12.6,
+        9.2
+       ],
+       [
+        17.7,
+        9.2
+       ],
+       [
+        17.7,
+        10.1
+       ],
+       [
+        13.5,
+        10.1
+       ],
+       [
+        13.5,
+        11.65
+       ],
+       [
+        12.6,
+        11.65
+       ]
+      ]
+     ],
+     [
+      "rect",
+      16.3,
+      4.2,
+      17.4,
+      6.2
+     ],
+     [
+      "rect",
+      17.0,
+      0.8,
+      17.7,
+      3.8
+     ]
+    ],
+    "furn": [
+     [
+      "booth",
+      0.5,
+      0.8,
+      2.6,
+      2.8,
+      0.55
+     ],
+     [
+      "booth",
+      0.5,
+      3.0,
+      2.6,
+      5.0,
+      0.55
+     ],
+     [
+      "booth",
+      0.5,
+      5.2,
+      2.6,
+      6.8,
+      0.5
+     ],
+     [
+      "rect",
+      2.4,
+      8.2,
+      4.0,
+      11.2
+     ],
+     [
+      "plant",
+      3.2,
+      8.8,
+      0.45
+     ],
+     [
+      "plant",
+      3.1,
+      9.9,
+      0.5
+     ],
+     [
+      "plant",
+      3.3,
+      10.8,
+      0.35
+     ],
+     [
+      "table",
+      7.0,
+      2.6,
+      2.2,
+      0.85,
+      3,
+      0
+     ],
+     [
+      "table",
+      7.0,
+      5.0,
+      2.2,
+      0.85,
+      3,
+      0
+     ],
+     [
+      "table",
+      11.2,
+      2.6,
+      1.6,
+      0.8,
+      2,
+      0
+     ],
+     [
+      "table",
+      11.2,
+      5.0,
+      1.6,
+      0.8,
+      2,
+      0
+     ],
+     [
+      "table",
+      14.4,
+      2.4,
+      1.3,
+      0.75,
+      2,
+      0
+     ],
+     [
+      "table",
+      14.4,
+      4.8,
+      1.3,
+      0.75,
+      2,
+      0
+     ],
+     [
+      "table",
+      9.0,
+      9.6,
+      1.4,
+      0.75,
+      2,
+      0
+     ]
+    ]
+   },
+   "copy": {
+    "time": "14:00",
+    "name": "Restaurant",
+    "project": "Colonnade",
+    "diary": [
+     [
+      "Week 1 · Measured survey",
+      "An arcade down the middle, glass on two sides. Booths go on the blind wall; the tables take the light."
+     ],
+     [
+      "Week 2 · Concept",
+      "Seen from under the arches, the way a guest first sees the room."
+     ],
+     [
+      "Week 5 · Plaster and making good",
+      "Ceiling roses restored, arches re-run in lime plaster, columns stripped back to the iron."
+     ],
+     [
+      "Weeks 7–10 · Booths, tables, the station",
+      "Booths on the blind wall. The service station sits behind the column, so the floor team never crosses the room."
+     ],
+     [
+      "Weeks 11–12 · Floors and panelling",
+      "Boards sanded and oiled dark, walnut on the booth wall, green leather on the booths, the shopfront reglazed."
+     ],
+     [
+      "Week 13 · Lighting",
+      "Opal globes at 2,700 K for the evening. By day the windows do the work."
+     ],
+     [
+      "First service · 12:00",
+      "Full but calm by two, and every seat faces something worth looking at."
+     ]
+    ],
+    "end": {
+     "title": "Restaurant",
+     "label": "See the dining rooms",
+     "aria": "See our restaurant projects",
+     "href": "restaurants.html",
+     "kind": "link",
+     "here": "#projects",
+     "start": "contact.html?venue=restaurant&from=build"
+    },
+    "alts": {
+     "clay": "The dining room as a white model: the arches, the column, the ceiling roses and the shopfront, with booths and tables in plain card.",
+     "lit": "The finished dining room in the afternoon: sun through the shopfront, dark timber boards, green booths and tables laid under the arches."
+    },
+    "intro": "Scroll, and the dining room builds itself: the plan, the sketch, the shell, the joinery, the finishes, the lights. A dining room at two in the afternoon. One team from the first drawing to the first service.",
+    "srSummary": "The build: a restaurant shown in seven stages, from the first drawing to the first service, with a short note from the studio at each stage. At the end you can see our dining rooms or start a project. You can skip the build at any time.",
+    "pops": [
+     {
+      "kind": "proof",
+      "label": "In numbers",
+      "value": "64",
+      "text": "venues designed and built since 2016, in nine cities."
+     },
+     {
+      "kind": "promise",
+      "label": "One team",
+      "text": "One contract and one senior lead, from the first drawing to the first service."
+     },
+     {
+      "kind": "promise",
+      "label": "Approvals",
+      "text": "Fire and exit layouts, extraction routes and signage, drawn to the conditions from day one."
+     },
+     {
+      "kind": "promise",
+      "label": "Made in our workshop",
+      "text": "Booths, the station and the bar are made off-site while the plaster dries.",
+      "action": {
+       "label": "Book a free site walk",
+       "href": "contact.html?venue=restaurant&service=feasibility&from=build"
+      }
+     },
+     {
+      "kind": "craft",
+      "label": "Tested at full covers",
+      "text": "We check the acoustics at full covers, so a table for two can still talk at nine."
+     },
+     {
+      "kind": "client",
+      "label": "In their words",
+      "text": "Turnover went up and the room got quieter. I didn’t know both were possible.",
+      "cite": "Chef-owner, Ember",
+      "action": {
+       "label": "Read the project",
+       "href": "work/ember.html"
+      }
+     },
+     {
+      "kind": "promise",
+      "label": "Day 90",
+      "text": "Ninety days after opening we come back and fix whatever service has found."
+     }
+    ]
+   },
+   "stage": {
+    "fx": 0.5,
+    "fy": 0.5,
+    "pan": [
+     0.3,
+     0.62
+    ],
+    "card": "left"
+   }
+  },
+  {
+   "id": "bar",
+   "src": "hero-04-back-bar-stools.jpg",
+   "render": {
+    "local": 1.0,
+    "local_floor": 0.3,
+    "chroma": 1.0,
+    "rule_min": 45,
+    "rule_gap": 12,
+    "rule_fill": 0.4,
+    "rule_peaks": 800,
+    "free": 0.72,
+    "weight": 2.6,
+    "rule": 1.0,
+    "rule_w": 1.8,
+    "hatch": 0.42,
+    "tone0": 0.45,
+    "ink": 1.0,
+    "dim_exposure": 0.55,
+    "dim_tint": [
+     0.86,
+     0.95,
+     1.1
+    ],
+    "dim_sat": 0.5,
+    "clay_ao": 0.16,
+    "clay_range": [
+     0.85,
+     0.13
+    ]
+   },
+   "regions": [
+    {
+     "id": "floor",
+     "group": "shell",
+     "poly": [
+      [
+       0,
+       0.93
+      ],
+      [
+       1,
+       0.93
+      ],
+      [
+       1,
+       1
+      ],
+      [
+       0,
+       1
+      ]
+     ]
+    },
+    {
+     "id": "bar",
+     "group": "shell",
+     "poly": [
+      [
+       0,
+       0.53
+      ],
+      [
+       1,
+       0.53
+      ],
+      [
+       1,
+       0.945
+      ],
+      [
+       0,
+       0.945
+      ]
+     ]
+    },
+    {
+     "id": "backwall",
+     "group": "shell",
+     "poly": [
+      [
+       0,
+       0.19
+      ],
+      [
+       0.25,
+       0.2
+      ],
+      [
+       0.5,
+       0.2
+      ],
+      [
+       0.87,
+       0.25
+      ],
+      [
+       1,
+       0.27
+      ],
+      [
+       1,
+       0.54
+      ],
+      [
+       0,
+       0.54
+      ]
+     ]
+    },
+    {
+     "id": "column",
+     "group": "shell",
+     "poly": [
+      [
+       0.065,
+       0.06
+      ],
+      [
+       0.118,
+       0.06
+      ],
+      [
+       0.118,
+       0.54
+      ],
+      [
+       0.065,
+       0.54
+      ]
+     ]
+    },
+    {
+     "id": "ceiling",
+     "group": "shell",
+     "poly": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       1,
+       0.27
+      ],
+      [
+       0.87,
+       0.25
+      ],
+      [
+       0.5,
+       0.2
+      ],
+      [
+       0.25,
+       0.2
+      ],
+      [
+       0,
+       0.19
+      ]
+     ]
+    },
+    {
+     "id": "backbar",
+     "group": "fit",
+     "poly": [
+      [
+       0.25,
+       0.195
+      ],
+      [
+       0.87,
+       0.2
+      ],
+      [
+       0.87,
+       0.54
+      ],
+      [
+       0.25,
+       0.54
+      ]
+     ]
+    },
+    {
+     "id": "pendants",
+     "group": "fit",
+     "poly": [
+      [
+       0.28,
+       0
+      ],
+      [
+       0.29,
+       0
+      ],
+      [
+       0.29,
+       0.12
+      ],
+      [
+       0.325,
+       0.14
+      ],
+      [
+       0.33,
+       0.2
+      ],
+      [
+       0.3,
+       0.23
+      ],
+      [
+       0.27,
+       0.23
+      ],
+      [
+       0.24,
+       0.2
+      ],
+      [
+       0.245,
+       0.14
+      ],
+      [
+       0.28,
+       0.12
+      ]
+     ]
+    },
+    {
+     "id": "pendant-2",
+     "group": "fit",
+     "poly": [
+      [
+       0.573,
+       0
+      ],
+      [
+       0.583,
+       0
+      ],
+      [
+       0.583,
+       0.12
+      ],
+      [
+       0.615,
+       0.14
+      ],
+      [
+       0.62,
+       0.2
+      ],
+      [
+       0.59,
+       0.235
+      ],
+      [
+       0.565,
+       0.235
+      ],
+      [
+       0.54,
+       0.2
+      ],
+      [
+       0.545,
+       0.14
+      ],
+      [
+       0.573,
+       0.12
+      ]
+     ]
+    },
+    {
+     "id": "pendant-3",
+     "group": "fit",
+     "poly": [
+      [
+       0.861,
+       0
+      ],
+      [
+       0.871,
+       0
+      ],
+      [
+       0.871,
+       0.12
+      ],
+      [
+       0.905,
+       0.14
+      ],
+      [
+       0.91,
+       0.2
+      ],
+      [
+       0.88,
+       0.235
+      ],
+      [
+       0.855,
+       0.235
+      ],
+      [
+       0.825,
+       0.2
+      ],
+      [
+       0.83,
+       0.14
+      ],
+      [
+       0.861,
+       0.12
+      ]
+     ]
+    },
+    {
+     "id": "stool-1",
+     "group": "fit",
+     "poly": [
+      [
+       0.038,
+       0.695
+      ],
+      [
+       0.06,
+       0.685
+      ],
+      [
+       0.12,
+       0.683
+      ],
+      [
+       0.142,
+       0.695
+      ],
+      [
+       0.142,
+       0.735
+      ],
+      [
+       0.125,
+       0.745
+      ],
+      [
+       0.135,
+       0.93
+      ],
+      [
+       0.145,
+       1
+      ],
+      [
+       0.04,
+       1
+      ],
+      [
+       0.045,
+       0.93
+      ],
+      [
+       0.06,
+       0.745
+      ],
+      [
+       0.038,
+       0.735
+      ]
+     ]
+    },
+    {
+     "id": "stool-2",
+     "group": "fit",
+     "poly": [
+      [
+       0.21,
+       0.695
+      ],
+      [
+       0.23,
+       0.684
+      ],
+      [
+       0.29,
+       0.684
+      ],
+      [
+       0.307,
+       0.695
+      ],
+      [
+       0.307,
+       0.74
+      ],
+      [
+       0.29,
+       0.748
+      ],
+      [
+       0.3,
+       0.93
+      ],
+      [
+       0.31,
+       1
+      ],
+      [
+       0.21,
+       1
+      ],
+      [
+       0.215,
+       0.93
+      ],
+      [
+       0.228,
+       0.748
+      ],
+      [
+       0.21,
+       0.74
+      ]
+     ]
+    },
+    {
+     "id": "stool-3",
+     "group": "fit",
+     "poly": [
+      [
+       0.412,
+       0.698
+      ],
+      [
+       0.43,
+       0.688
+      ],
+      [
+       0.495,
+       0.688
+      ],
+      [
+       0.512,
+       0.698
+      ],
+      [
+       0.512,
+       0.742
+      ],
+      [
+       0.495,
+       0.75
+      ],
+      [
+       0.5,
+       0.93
+      ],
+      [
+       0.505,
+       1
+      ],
+      [
+       0.415,
+       1
+      ],
+      [
+       0.42,
+       0.93
+      ],
+      [
+       0.43,
+       0.75
+      ],
+      [
+       0.412,
+       0.742
+      ]
+     ]
+    }
+   ],
+   "glows": [
+    {
+     "x": 0.285,
+     "y": 0.17,
+     "r": 0.075,
+     "rr": 0.1
+    },
+    {
+     "x": 0.578,
+     "y": 0.175,
+     "r": 0.075,
+     "rr": 0.1
+    },
+    {
+     "x": 0.866,
+     "y": 0.175,
+     "r": 0.075,
+     "rr": 0.1
+    },
+    {
+     "x": 0.27,
+     "y": 0.09,
+     "r": 0.16,
+     "c": "red",
+     "rr": 0.16,
+     "k": 0.8
+    },
+    {
+     "x": 0.63,
+     "y": 0.1,
+     "r": 0.08,
+     "rr": 0.08,
+     "k": 0.7
+    },
+    {
+     "x": 0.33,
+     "y": 0.4,
+     "r": 0.09,
+     "rr": 0.1,
+     "k": 0.6
+    },
+    {
+     "x": 0.62,
+     "y": 0.38,
+     "r": 0.12,
+     "rr": 0.12,
+     "k": 0.5
+    }
+   ],
+   "plan": {
+    "size": [
+     14,
+     9
+    ],
+    "gx": [
+     0,
+     2,
+     7,
+     12,
+     14
+    ],
+    "gy": [
+     0,
+     1.6,
+     9
+    ],
+    "north": 0,
+    "title": "Back-bar — ground floor plan, 1:100",
+    "aria": "Plan of the bar: one long counter with the back-bar on the wall behind it, stools along the front, low tables and a banquette by the door.",
+    "label": {
+     "name": "Bar",
+     "area": "126 m² · ground floor",
+     "at": [
+      3.2,
+      4.75
+     ]
+    },
+    "walls": [
+     [
+      0,
+      0,
+      14,
+      0.35
+     ],
+     [
+      0,
+      0.35,
+      0.35,
+      6
+     ],
+     [
+      0,
+      7,
+      0.35,
+      9
+     ],
+     [
+      13.65,
+      0.35,
+      14,
+      9
+     ],
+     [
+      0.35,
+      8.65,
+      6,
+      9
+     ],
+     [
+      7.4,
+      8.65,
+      13.65,
+      9
+     ]
+    ],
+    "doors": [
+     [
+      6,
+      8.65,
+      1.4,
+      0,
+      -90
+     ],
+     [
+      0.35,
+      6,
+      0.9,
+      90,
+      0
+     ]
+    ],
+    "columns": [
+     [
+      2.0,
+      1.6,
+      0.25
+     ]
+    ],
+    "fixed": [
+     [
+      "rect",
+      3.0,
+      0.35,
+      12.0,
+      0.8
+     ],
+     [
+      "rect",
+      3.0,
+      0.8,
+      12.0,
+      1.25
+     ],
+     [
+      "poly",
+      [
+       [
+        2.6,
+        2.2
+       ],
+       [
+        12.4,
+        2.2
+       ],
+       [
+        12.4,
+        0.35
+       ],
+       [
+        13.1,
+        0.35
+       ],
+       [
+        13.1,
+        3.0
+       ],
+       [
+        2.6,
+        3.0
+       ]
+      ]
+     ],
+     [
+      "slats",
+      0.35,
+      2.6,
+      2.3,
+      10
+     ],
+     [
+      "overc",
+      4.0,
+      2.6,
+      0.35
+     ],
+     [
+      "overc",
+      7.2,
+      2.6,
+      0.35
+     ],
+     [
+      "overc",
+      10.4,
+      2.6,
+      0.35
+     ]
+    ],
+    "furn": [
+     [
+      "stool",
+      3.4,
+      3.55
+     ],
+     [
+      "stool",
+      4.6,
+      3.55
+     ],
+     [
+      "stool",
+      5.8,
+      3.55
+     ],
+     [
+      "stool",
+      7.0,
+      3.55
+     ],
+     [
+      "stool",
+      8.2,
+      3.55
+     ],
+     [
+      "stool",
+      9.4,
+      3.55
+     ],
+     [
+      "stool",
+      10.6,
+      3.55
+     ],
+     [
+      "round",
+      4.4,
+      7.0,
+      0.4,
+      3
+     ],
+     [
+      "round",
+      7.4,
+      7.0,
+      0.4,
+      3
+     ],
+     [
+      "round",
+      10.4,
+      7.0,
+      0.4,
+      3
+     ],
+     [
+      "rect",
+      12.9,
+      4.2,
+      13.65,
+      8.2
+     ]
+    ]
+   },
+   "copy": {
+    "time": "23:00",
+    "name": "Bar",
+    "project": "Back-bar",
+    "diary": [
+     [
+      "Week 1 · Measured survey",
+      "One long counter, the back-bar on the wall behind it, a speed rail at every station."
+     ],
+     [
+      "Week 2 · Concept",
+      "Drawn from a stool. The back-bar is the stage; the counter is the front row."
+     ],
+     [
+      "Week 4 · Carcass",
+      "Counter framed in steel, the back-bar wall lined and levelled, the ceiling battened out."
+     ],
+     [
+      "Weeks 6–8 · Back-bar and stools",
+      "The back-bar shelves go up, three pendants are hung, and three stools are set at 750 mm."
+     ],
+     [
+      "Weeks 9–10 · Veneers and stone",
+      "Walnut on the front and across the ceiling, a honed marble top that takes a knock, green velvet on the stools."
+     ],
+     [
+      "Week 11 · Scenes",
+      "Three blown-glass pendants, a red wash over the corner, the back-bar at 40 lux. Nothing brighter than the bottles."
+     ],
+     [
+      "Opening night · 23:00",
+      "The light drops, the bottles glow, the counter fills."
+     ]
+    ],
+    "end": {
+     "title": "Bar",
+     "label": "See the bars",
+     "aria": "See our bar projects",
+     "href": "bars.html",
+     "kind": "link",
+     "here": "#projects",
+     "start": "contact.html?venue=bar&from=build"
+    },
+    "alts": {
+     "clay": "The bar as a white model: the counter, the back-bar shelves and three stools in plain card.",
+     "lit": "The finished bar at night: three glass pendants over a walnut counter with a marble top, a lit back-bar of bottles and three green velvet stools."
+    },
+    "intro": "Scroll, and the bar builds itself: the plan, the sketch, the shell, the joinery, the finishes, the lights. A bar at eleven at night. One team from the first drawing to the first service.",
+    "srSummary": "The build: a bar shown in seven stages, from the first drawing to opening night, with a short note from the studio at each stage. At the end you can see our bars or start a project. You can skip the build at any time.",
+    "pops": [
+     {
+      "kind": "proof",
+      "label": "In numbers",
+      "value": "9",
+      "text": "cities, from Bengaluru to Lisbon, each run by our own site lead."
+     },
+     {
+      "kind": "promise",
+      "label": "On the date",
+      "text": "A dated programme before we start, then a weekly site walk and a daily diary."
+     },
+     {
+      "kind": "promise",
+      "label": "Approvals",
+      "text": "We draw what the landlord and the fire officer need to see, from day one."
+     },
+     {
+      "kind": "craft",
+      "label": "Made in our workshop",
+      "text": "The back-bar comes from our own workshop, with a speed rail at every station.",
+      "action": {
+       "label": "Book a free site walk",
+       "href": "contact.html?venue=bar&service=feasibility&from=build"
+      }
+     },
+     {
+      "kind": "promise",
+      "label": "One contract",
+      "text": "Every finish on a sample board first. Then one fixed price for the design and the build."
+     },
+     {
+      "kind": "client",
+      "label": "In their words",
+      "text": "They designed the bar for the night we actually have, not the one in the mood board. And then they built it.",
+      "cite": "Owner, Stillroom",
+      "action": {
+       "label": "Read the project",
+       "href": "work/stillroom.html"
+      }
+     },
+     {
+      "kind": "promise",
+      "label": "Day 90",
+      "text": "Ninety days after opening we come back and fix whatever service has found."
+     }
+    ]
+   },
+   "stage": {
+    "fx": 0.5,
+    "fy": 0.5,
+    "pan": [
+     0.2,
+     0.55
+    ],
+    "card": "right"
+   },
+   "flat": [
+    {
+     "poly": [
+      [
+       0.245,
+       0.215
+      ],
+      [
+       0.87,
+       0.215
+      ],
+      [
+       0.87,
+       0.535
+      ],
+      [
+       0.245,
+       0.535
+      ]
+     ],
+     "blur": [
+      3,
+      70
+     ]
+    },
+    {
+     "poly": [
+      [
+       0.0,
+       0.3
+      ],
+      [
+       0.12,
+       0.3
+      ],
+      [
+       0.12,
+       0.53
+      ],
+      [
+       0.0,
+       0.53
+      ]
+     ],
+     "blur": [
+      10,
+      20
+     ]
+    },
+    {
+     "poly": [
+      [
+       0.245,
+       0.125
+      ],
+      [
+       0.33,
+       0.125
+      ],
+      [
+       0.335,
+       0.2
+      ],
+      [
+       0.3,
+       0.235
+      ],
+      [
+       0.27,
+       0.235
+      ],
+      [
+       0.24,
+       0.2
+      ]
+     ],
+     "blur": [
+      2,
+      2
+     ],
+     "k": 0.6
+    },
+    {
+     "poly": [
+      [
+       0.54,
+       0.125
+      ],
+      [
+       0.62,
+       0.125
+      ],
+      [
+       0.625,
+       0.2
+      ],
+      [
+       0.59,
+       0.24
+      ],
+      [
+       0.565,
+       0.24
+      ],
+      [
+       0.535,
+       0.2
+      ]
+     ],
+     "blur": [
+      2,
+      2
+     ],
+     "k": 0.6
+    },
+    {
+     "poly": [
+      [
+       0.825,
+       0.125
+      ],
+      [
+       0.905,
+       0.125
+      ],
+      [
+       0.91,
+       0.2
+      ],
+      [
+       0.88,
+       0.24
+      ],
+      [
+       0.855,
+       0.24
+      ],
+      [
+       0.82,
+       0.2
+      ]
+     ],
+     "blur": [
+      2,
+      2
+     ],
+     "k": 0.6
+    }
+   ]
+  },
+  {
+   "id": "retail",
+   "src": "photos-other/final/retailA-02-fitting-curtains.jpg",
+   "render": {
+    "local": 1.0,
+    "local_floor": 0.3,
+    "chroma": 1.0,
+    "rule_min": 45,
+    "rule_gap": 12,
+    "rule_fill": 0.4,
+    "rule_peaks": 800,
+    "free": 0.72,
+    "weight": 2.6,
+    "rule": 1.0,
+    "rule_w": 1.8,
+    "hatch": 0.34,
+    "tone0": 0.5,
+    "ink": 1.0,
+    "l0": 0.02,
+    "dim_exposure": 0.5,
+    "dim_lamp": 0.6,
+    "dim_sat": 0.55,
+    "clay_range": [
+     0.8,
+     0.18
+    ],
+    "clay_gamma": 0.55
+   },
+   "regions": [
+    {
+     "id": "floor",
+     "group": "shell",
+     "poly": [
+      [
+       0,
+       1
+      ],
+      [
+       0,
+       0.975
+      ],
+      [
+       0.05,
+       0.965
+      ],
+      [
+       0.3,
+       0.875
+      ],
+      [
+       0.47,
+       0.845
+      ],
+      [
+       0.55,
+       0.8
+      ],
+      [
+       0.64,
+       0.75
+      ],
+      [
+       0.8,
+       0.74
+      ],
+      [
+       0.81,
+       0.84
+      ],
+      [
+       1,
+       0.87
+      ],
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    {
+     "id": "walls",
+     "group": "shell",
+     "poly": [
+      [
+       0,
+       0
+      ],
+      [
+       0.37,
+       0
+      ],
+      [
+       0.47,
+       0.17
+      ],
+      [
+       0.6,
+       0.2
+      ],
+      [
+       0.605,
+       0.76
+      ],
+      [
+       0.55,
+       0.8
+      ],
+      [
+       0.47,
+       0.845
+      ],
+      [
+       0.3,
+       0.875
+      ],
+      [
+       0.05,
+       0.965
+      ],
+      [
+       0,
+       0.975
+      ]
+     ]
+    },
+    {
+     "id": "rooms",
+     "group": "shell",
+     "poly": [
+      [
+       0.6,
+       0.2
+      ],
+      [
+       1,
+       0.14
+      ],
+      [
+       1,
+       0.87
+      ],
+      [
+       0.81,
+       0.84
+      ],
+      [
+       0.8,
+       0.74
+      ],
+      [
+       0.64,
+       0.75
+      ],
+      [
+       0.605,
+       0.76
+      ]
+     ]
+    },
+    {
+     "id": "ceiling",
+     "group": "shell",
+     "poly": [
+      [
+       0.37,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       1,
+       0.14
+      ],
+      [
+       0.6,
+       0.2
+      ],
+      [
+       0.47,
+       0.17
+      ]
+     ]
+    },
+    {
+     "id": "mirror",
+     "group": "fit",
+     "poly": [
+      [
+       0.477,
+       0.215
+      ],
+      [
+       0.582,
+       0.24
+      ],
+      [
+       0.582,
+       0.745
+      ],
+      [
+       0.477,
+       0.765
+      ]
+     ]
+    },
+    {
+     "id": "curtain-l",
+     "group": "fit",
+     "poly": [
+      [
+       0.605,
+       0.235
+      ],
+      [
+       0.69,
+       0.225
+      ],
+      [
+       0.69,
+       0.79
+      ],
+      [
+       0.66,
+       0.8
+      ],
+      [
+       0.605,
+       0.79
+      ]
+     ]
+    },
+    {
+     "id": "curtain-r",
+     "group": "fit",
+     "poly": [
+      [
+       0.795,
+       0.205
+      ],
+      [
+       0.94,
+       0.195
+      ],
+      [
+       0.94,
+       0.86
+      ],
+      [
+       0.8,
+       0.86
+      ]
+     ]
+    },
+    {
+     "id": "rail",
+     "group": "fit",
+     "poly": [
+      [
+       0,
+       0.325
+      ],
+      [
+       0.295,
+       0.35
+      ],
+      [
+       0.3,
+       0.42
+      ],
+      [
+       0.29,
+       0.72
+      ],
+      [
+       0.215,
+       0.75
+      ],
+      [
+       0.21,
+       0.93
+      ],
+      [
+       0.14,
+       0.945
+      ],
+      [
+       0.08,
+       0.94
+      ],
+      [
+       0.05,
+       0.97
+      ],
+      [
+       0,
+       0.99
+      ]
+     ]
+    },
+    {
+     "id": "chair",
+     "group": "fit",
+     "poly": [
+      [
+       0.49,
+       0.6
+      ],
+      [
+       0.575,
+       0.615
+      ],
+      [
+       0.615,
+       0.69
+      ],
+      [
+       0.63,
+       0.8
+      ],
+      [
+       0.62,
+       0.9
+      ],
+      [
+       0.56,
+       0.87
+      ],
+      [
+       0.5,
+       0.82
+      ],
+      [
+       0.485,
+       0.7
+      ]
+     ]
+    },
+    {
+     "id": "planter",
+     "group": "fit",
+     "poly": [
+      [
+       0.295,
+       0.73
+      ],
+      [
+       0.33,
+       0.655
+      ],
+      [
+       0.4,
+       0.625
+      ],
+      [
+       0.465,
+       0.66
+      ],
+      [
+       0.485,
+       0.73
+      ],
+      [
+       0.46,
+       0.84
+      ],
+      [
+       0.455,
+       0.99
+      ],
+      [
+       0.35,
+       0.99
+      ],
+      [
+       0.35,
+       0.86
+      ],
+      [
+       0.3,
+       0.81
+      ]
+     ]
+    },
+    {
+     "id": "ficus",
+     "group": "fit",
+     "poly": [
+      [
+       0.47,
+       0.335
+      ],
+      [
+       0.55,
+       0.325
+      ],
+      [
+       0.62,
+       0.37
+      ],
+      [
+       0.67,
+       0.46
+      ],
+      [
+       0.66,
+       0.6
+      ],
+      [
+       0.62,
+       0.72
+      ],
+      [
+       0.585,
+       0.8
+      ],
+      [
+       0.575,
+       0.87
+      ],
+      [
+       0.575,
+       0.965
+      ],
+      [
+       0.5,
+       0.97
+      ],
+      [
+       0.49,
+       0.87
+      ],
+      [
+       0.47,
+       0.8
+      ],
+      [
+       0.42,
+       0.72
+      ],
+      [
+       0.385,
+       0.62
+      ],
+      [
+       0.39,
+       0.5
+      ],
+      [
+       0.42,
+       0.41
+      ]
+     ]
+    },
+    {
+     "id": "plants-r",
+     "group": "fit",
+     "poly": [
+      [
+       0.9,
+       0.52
+      ],
+      [
+       0.97,
+       0.48
+      ],
+      [
+       1,
+       0.5
+      ],
+      [
+       1,
+       1
+      ],
+      [
+       0.86,
+       1
+      ],
+      [
+       0.855,
+       0.85
+      ],
+      [
+       0.88,
+       0.7
+      ]
+     ]
+    },
+    {
+     "id": "hanging",
+     "group": "fit",
+     "poly": [
+      [
+       0.79,
+       0.02
+      ],
+      [
+       0.87,
+       0.0
+      ],
+      [
+       0.895,
+       0.06
+      ],
+      [
+       0.885,
+       0.13
+      ],
+      [
+       0.86,
+       0.21
+      ],
+      [
+       0.84,
+       0.21
+      ],
+      [
+       0.82,
+       0.14
+      ],
+      [
+       0.79,
+       0.1
+      ]
+     ]
+    }
+   ],
+   "glows": [
+    {
+     "x": 0.64,
+     "y": 0.1,
+     "r": 0.05,
+     "rr": 0.06
+    },
+    {
+     "x": 0.705,
+     "y": 0.1,
+     "r": 0.05,
+     "rr": 0.06
+    },
+    {
+     "x": 0.985,
+     "y": 0.015,
+     "r": 0.06,
+     "rr": 0.06
+    }
+   ],
+   "plan": {
+    "size": [
+     12,
+     8.5
+    ],
+    "gx": [
+     0,
+     4.2,
+     7.2,
+     12
+    ],
+    "gy": [
+     0,
+     8.5
+    ],
+    "north": 0,
+    "title": "Atelier — ground floor plan, 1:100",
+    "aria": "Plan of the shop: a rail along the left wall, three fitting rooms with curtains in the back corner, a leaning mirror and planters in the middle, and the counter by the door.",
+    "label": {
+     "name": "Shop floor",
+     "area": "96 m² · ground floor",
+     "at": [
+      3.0,
+      6.9
+     ]
+    },
+    "walls": [
+     [
+      0,
+      0,
+      3.0,
+      0.3
+     ],
+     [
+      3.0,
+      0,
+      4.2,
+      0.1
+     ],
+     [
+      4.2,
+      0,
+      12,
+      0.3
+     ],
+     [
+      0,
+      0.3,
+      0.3,
+      8.5
+     ],
+     [
+      11.7,
+      0.3,
+      12,
+      8.5
+     ],
+     [
+      0.3,
+      8.2,
+      2.0,
+      8.5
+     ],
+     [
+      10.0,
+      8.2,
+      11.7,
+      8.5
+     ]
+    ],
+    "glazing": [
+     [
+      2.0,
+      8.2,
+      5.4,
+      8.5
+     ],
+     [
+      6.8,
+      8.2,
+      10.0,
+      8.5
+     ]
+    ],
+    "doors": [
+     [
+      5.4,
+      8.2,
+      0.7,
+      0,
+      -90
+     ],
+     [
+      6.8,
+      8.2,
+      0.7,
+      180,
+      270
+     ]
+    ],
+    "fixed": [
+     [
+      "rect",
+      7.2,
+      0.3,
+      8.7,
+      1.9
+     ],
+     [
+      "rect",
+      8.7,
+      0.3,
+      10.2,
+      1.9
+     ],
+     [
+      "rect",
+      10.2,
+      0.3,
+      11.7,
+      1.9
+     ],
+     [
+      "over",
+      [
+       [
+        7.2,
+        1.9
+       ],
+       [
+        11.7,
+        1.9
+       ]
+      ]
+     ],
+     [
+      "rect",
+      5.1,
+      0.3,
+      6.2,
+      0.42
+     ],
+     [
+      "rect",
+      0.3,
+      1.2,
+      0.8,
+      6.4
+     ],
+     [
+      "over",
+      [
+       [
+        0.55,
+        1.2
+       ],
+       [
+        0.55,
+        6.4
+       ]
+      ]
+     ],
+     [
+      "rect",
+      9.0,
+      5.6,
+      11.7,
+      6.3,
+      "top"
+     ]
+    ],
+    "furn": [
+     [
+      "plant",
+      5.3,
+      3.3,
+      0.5
+     ],
+     [
+      "plant",
+      3.7,
+      3.9,
+      0.38
+     ],
+     [
+      "plant",
+      11.0,
+      3.6,
+      0.42
+     ],
+     [
+      "rect",
+      5.8,
+      2.1,
+      6.5,
+      2.8
+     ],
+     [
+      "rect",
+      3.9,
+      5.4,
+      6.7,
+      6.2
+     ],
+     [
+      "rect",
+      7.5,
+      2.4,
+      8.9,
+      2.85
+     ]
+    ]
+   },
+   "copy": {
+    "time": "11:00",
+    "name": "Shop",
+    "project": "Atelier",
+    "intro": "Scroll, and the shop builds itself: the plan, the sketch, the shell, the joinery, the finishes, the lights. A shop at eleven in the morning. One team from the first drawing to the first sale.",
+    "srSummary": "The build: a shop shown in seven stages, from the first drawing to opening day, with a short note from the studio at each stage. At the end you can see our shops or start a project. You can skip the build at any time.",
+    "diary": [
+     [
+      "Week 1 · Measured survey",
+      "A white box with an arch. The rail takes the long wall; the fitting rooms go in the back corner, away from the door."
+     ],
+     [
+      "Week 2 · Concept",
+      "Drawn from the door, the way a customer first sees the room: the rail, the arch, the curtains at the back."
+     ],
+     [
+      "Week 3 · Partitions and making good",
+      "Fitting-room walls framed and boarded, the arch re-plastered, the ceiling made good for the new panels."
+     ],
+     [
+      "Weeks 5–7 · Joinery and fixtures",
+      "The brass rail, the mirror and the curtain tracks go up. Planters and a chair are set out round them."
+     ],
+     [
+      "Weeks 8–9 · Paint, floor, fabric",
+      "Terracotta in the fitting rooms, warm white everywhere else, a lilac resin floor and linen curtains to the ground."
+     ],
+     [
+      "Week 10 · Lighting",
+      "Flat panels at 3,000 K and 500 lux on the rail, so the colour you see is the colour you take home."
+     ],
+     [
+      "Opening day · 11:00",
+      "Doors at eleven. Everything on the rail is within reach, and every fitting room has a mirror."
+     ]
+    ],
+    "end": {
+     "title": "Shop",
+     "label": "See the shops",
+     "aria": "See our shop projects",
+     "href": "retail.html",
+     "here": "#projects",
+     "kind": "link",
+     "start": "contact.html?venue=shop&from=build"
+    },
+    "alts": {
+     "clay": "The shop as a white model: the arch, the fitting rooms and the leaning mirror, with the rail, the planters and the chair in plain card.",
+     "lit": "The finished shop by day: a brass rail of linen dresses, a ficus and planters, and terracotta fitting rooms behind cream curtains."
+    },
+    "pops": [
+     {
+      "kind": "proof",
+      "label": "In numbers",
+      "value": "18,000 m²",
+      "text": "fitted out since 2016, by the team that drew them."
+     },
+     {
+      "kind": "promise",
+      "label": "Seen before it’s built",
+      "text": "You walk through the shop in 3D and handle every finish before anything is made."
+     },
+     {
+      "kind": "promise",
+      "label": "Approvals",
+      "text": "Mall fit-out submissions drawn to the landlord’s conditions from day one."
+     },
+     {
+      "kind": "craft",
+      "label": "Roll-out ready",
+      "text": "Rails, mirrors and fitting rooms come as a kit from our workshop, ready for the next store.",
+      "action": {
+       "label": "Book a free site walk",
+       "href": "contact.html?venue=shop&service=feasibility&from=build"
+      }
+     },
+     {
+      "kind": "promise",
+      "label": "One contract",
+      "text": "Every finish on a sample board first. Then one fixed price for the design and the build."
+     },
+     {
+      "kind": "client",
+      "label": "In their words",
+      "text": "Our customers touch everything. For the first time, we want them to.",
+      "cite": "Director, Dhaaga",
+      "action": {
+       "label": "Read the project",
+       "href": "work/dhaaga.html"
+      }
+     },
+     {
+      "kind": "promise",
+      "label": "Day 90",
+      "text": "Ninety days after opening we come back and fix whatever service has found."
+     }
+    ]
+   },
+   "stage": {
+    "fx": 0.5,
+    "fy": 0.5,
+    "pan": [
+     0.25,
+     0.7
+    ],
+    "card": "right"
+   },
+   "flat": [
+    {
+     "poly": [
+      [
+       0.47,
+       0.335
+      ],
+      [
+       0.55,
+       0.325
+      ],
+      [
+       0.62,
+       0.37
+      ],
+      [
+       0.67,
+       0.46
+      ],
+      [
+       0.66,
+       0.6
+      ],
+      [
+       0.62,
+       0.72
+      ],
+      [
+       0.58,
+       0.8
+      ],
+      [
+       0.5,
+       0.82
+      ],
+      [
+       0.47,
+       0.8
+      ],
+      [
+       0.42,
+       0.72
+      ],
+      [
+       0.385,
+       0.62
+      ],
+      [
+       0.39,
+       0.5
+      ],
+      [
+       0.42,
+       0.41
+      ]
+     ],
+     "blur": [
+      16,
+      16
+     ],
+     "k": 0.9,
+     "soft": 0.01
+    },
+    {
+     "poly": [
+      [
+       0.295,
+       0.73
+      ],
+      [
+       0.33,
+       0.655
+      ],
+      [
+       0.4,
+       0.625
+      ],
+      [
+       0.465,
+       0.66
+      ],
+      [
+       0.485,
+       0.73
+      ],
+      [
+       0.46,
+       0.84
+      ],
+      [
+       0.35,
+       0.86
+      ],
+      [
+       0.3,
+       0.81
+      ]
+     ],
+     "blur": [
+      14,
+      14
+     ],
+     "k": 0.9,
+     "soft": 0.01
+    },
+    {
+     "poly": [
+      [
+       0.9,
+       0.52
+      ],
+      [
+       0.97,
+       0.48
+      ],
+      [
+       1,
+       0.5
+      ],
+      [
+       1,
+       1
+      ],
+      [
+       0.86,
+       1
+      ],
+      [
+       0.855,
+       0.85
+      ],
+      [
+       0.88,
+       0.7
+      ]
+     ],
+     "blur": [
+      14,
+      14
+     ],
+     "k": 0.85,
+     "soft": 0.01
+    },
+    {
+     "poly": [
+      [
+       0,
+       0.37
+      ],
+      [
+       0.295,
+       0.38
+      ],
+      [
+       0.29,
+       0.72
+      ],
+      [
+       0.215,
+       0.75
+      ],
+      [
+       0.21,
+       0.93
+      ],
+      [
+       0,
+       0.97
+      ]
+     ],
+     "blur": [
+      36,
+      5
+     ],
+     "k": 0.7,
+     "soft": 0.006
+    },
+    {
+     "poly": [
+      [
+       0.79,
+       0.02
+      ],
+      [
+       0.87,
+       0.0
+      ],
+      [
+       0.895,
+       0.06
+      ],
+      [
+       0.885,
+       0.13
+      ],
+      [
+       0.86,
+       0.21
+      ],
+      [
+       0.84,
+       0.21
+      ],
+      [
+       0.82,
+       0.14
+      ],
+      [
+       0.79,
+       0.1
+      ]
+     ],
+     "blur": [
+      12,
+      12
+     ],
+     "k": 0.9,
+     "soft": 0.008
+    }
+   ]
+  }
+ ],
+ "copy": {
+  "eyebrow": "The build",
+  "headline": "From the first line to <em>opening night</em>.",
+  "rmNote": "Motion is reduced on your device, so the build is shown as three stills: the drawing, the shell and the finished room.",
+  "skip": "Skip the build",
+  "stages": [
+   "The drawing",
+   "The sketch",
+   "The shell",
+   "Joinery & fit-out",
+   "Finishes",
+   "Lights on",
+   "Open"
+  ],
+  "spreadLabels": [
+   "The drawing",
+   "The shell",
+   "Opening night"
+  ],
+  "popsLabel": "Worth knowing",
+  "popsGroup": "Worth knowing, stage by stage",
+  "popClose": "Hide these notes",
+  "start": {
+   "label": "Start a project"
+  },
+  "siteWalk": "Book a free site walk",
+  "readProject": "Read the project",
+  "_note": "Copy for the build partials (tools/build_layers.py html). Pops: one per stage, in stage order; kinds proof | promise | craft | client. An action's 'here' is the fragment used instead when the link points at the page it is on."
+ }
+}

@@ -1,0 +1,136 @@
+<section class="corridor on-dark" id="walk" data-walk data-corridor data-root="{{root}}" aria-labelledby="corridor-title">
+  <!-- The corridor (home, Version A). Film mode (html.js-motion): a sticky 100svh stage inside a tall track, scrubbed by
+       corridor.js — every clip, in/out time, sign and hold is ONE entry in the CORRIDOR config at the top of corridor.js.
+       Reduced motion / no JS: the same DOM lays out as a sequence of stills. -->
+  <div class="corridor__track walk__track">
+    <div class="corridor__stage">
+
+      <div class="corridor__hud">
+        <p class="corridor__place t-label" aria-hidden="true">Outside</p>
+        <a class="corridor__skip" href="#after-walk">Skip the walk<span class="corridor__skip-arr" aria-hidden="true">↓</span></a>
+        <nav class="corridor__dir" aria-label="Directory">
+          <span class="corridor__dir-line" aria-hidden="true"><i class="corridor__dir-fill"></i></span>
+          <ol class="corridor__dir-list">
+            <li class="corridor__dir-item" data-stop="cafe"><a class="corridor__dir-link" href="#corridor-cafe"><span class="corridor__dir-t">08:00</span> <span class="corridor__dir-n">Café</span></a></li>
+            <li class="corridor__dir-item" data-stop="shop"><a class="corridor__dir-link" href="#corridor-shop"><span class="corridor__dir-t">11:00</span> <span class="corridor__dir-n">Shop</span></a></li>
+            <li class="corridor__dir-item" data-stop="restaurant"><a class="corridor__dir-link" href="#corridor-restaurant"><span class="corridor__dir-t">14:00</span> <span class="corridor__dir-n">Restaurant</span></a></li>
+            <li class="corridor__dir-item" data-stop="bar"><a class="corridor__dir-link" href="#corridor-bar"><span class="corridor__dir-t">23:00</span> <span class="corridor__dir-n">Bar</span></a></li>
+          </ol>
+        </nav>
+        <p class="corridor__hint t-label" aria-hidden="true"><span class="corridor__hint--fine">Scroll, or use the arrow keys, to walk.</span><span class="corridor__hint--touch">Scroll to walk in</span></p>
+        <p class="corridor__loading t-label" aria-hidden="true">Opening the doors…</p>
+      </div>
+
+      <div class="corridor__film" aria-hidden="true">
+        <div class="corridor__layer" data-layer="0"><img class="corridor__poster" alt="" decoding="async"><video class="corridor__video" muted playsinline preload="none" tabindex="-1"></video><canvas class="corridor__smear" width="24" height="54"></canvas><i class="corridor__edge"></i></div>
+        <div class="corridor__layer" data-layer="1"><img class="corridor__poster" alt="" decoding="async"><video class="corridor__video" muted playsinline preload="none" tabindex="-1"></video><canvas class="corridor__smear" width="24" height="54"></canvas><i class="corridor__edge"></i></div>
+        <span class="corridor__tint corridor__tint--am"></span>
+        <span class="corridor__tint corridor__tint--pm"></span>
+        <span class="corridor__tint corridor__tint--night"></span>
+        <span class="corridor__whip"></span>
+        <span class="corridor__dip"></span>
+        <span class="corridor__shade"></span>
+        <span class="corridor__hud-shade"></span>
+        <div class="corridor__signs">
+          <p class="corridor__sign" data-sign="cafe" style="--accent:var(--cafe)"><i class="corridor__sign-rods"></i><span class="corridor__sign-plate"><b>08:00</b><span>Café</span></span></p>
+          <p class="corridor__sign" data-sign="shop" style="--accent:var(--retail)"><i class="corridor__sign-rods"></i><span class="corridor__sign-plate"><b>11:00</b><span>Shop</span></span></p>
+          <p class="corridor__sign" data-sign="restaurant" style="--accent:var(--restaurant)"><i class="corridor__sign-rods"></i><span class="corridor__sign-plate"><b>14:00</b><span>Restaurant</span></span></p>
+          <p class="corridor__sign" data-sign="bar" style="--accent:var(--bar)"><i class="corridor__sign-rods"></i><span class="corridor__sign-plate"><b>23:00</b><span>Bar</span></span></p>
+        </div>
+      </div>
+
+      <ol class="corridor__approach" aria-label="The way in">
+        <li class="corridor__approach-item">
+          <figure class="corridor__approach-still"><picture><source media="(max-width: 900px)" srcset="{{root}}assets/img/corridor/outside-sm.webp" width="640" height="800"><img src="{{root}}assets/img/corridor/outside.webp" width="1280" height="720" alt="A red-brick building in the morning sun: steps up to tall open timber doors." loading="lazy" decoding="async"></picture></figure>
+          <p class="t-label corridor__approach-label">Outside</p>
+        </li>
+        <li class="corridor__approach-item">
+          <figure class="corridor__approach-still"><picture><source media="(max-width: 900px)" srcset="{{root}}assets/img/corridor/arcade-sm.webp" width="640" height="800"><img src="{{root}}assets/img/corridor/arcade.webp" width="1280" height="720" alt="Inside: a long arcade under a glass roof, shopfronts along both sides." loading="lazy" decoding="async"></picture></figure>
+          <p class="t-label corridor__approach-label">Through the arcade</p>
+        </li>
+        <li class="corridor__approach-item">
+          <figure class="corridor__approach-still"><picture><source media="(max-width: 900px)" srcset="{{root}}assets/img/corridor/corridor-sm.webp" width="640" height="800"><img src="{{root}}assets/img/corridor/corridor.webp" width="1280" height="720" alt="A panelled corridor with a patterned runner and doors along both walls." loading="lazy" decoding="async"></picture></figure>
+          <p class="t-label corridor__approach-label">Down the corridor</p>
+        </li>
+      </ol>
+
+      <div class="corridor__card">
+        <p class="corridor__eyebrow t-label">The walk</p>
+        <h2 class="corridor__headline t-display-l" id="corridor-title">A room is a <span class="corridor__nobr"><em>sequence</em>,</span> not a picture.</h2>
+        <p class="corridor__body t-lede">Scroll to walk in. Through the doors and down the arcade, four rooms open off one corridor: a café at 08:00, a shop at 11:00, a restaurant at 14:00 and a bar at 23:00. Four times of day, and each one has to work.</p>
+        <p class="sr-only">The walk: up the steps and through the doors of a building, across its glass-roofed arcade and down a corridor, past four rooms. At 08:00 a café, which you can enter and sit down in to see our services. At 11:00 a shop. At 14:00 a restaurant. At 23:00 a bar. Each room opens as you scroll. You can skip the walk at any time.</p>
+        <p class="corridor__rm-note t-small">Motion is reduced on your device, so the walk is shown as stills.</p>
+      </div>
+
+      <div class="corridor__stops">
+        <article class="corridor__stop" id="corridor-cafe" data-stop="cafe" aria-labelledby="corridor-cafe-title">
+          <figure class="corridor__still">
+            <picture><source media="(max-width: 900px)" srcset="{{root}}assets/img/corridor/cafe-sm.webp" width="640" height="800"><img src="{{root}}assets/img/corridor/cafe.webp" width="1280" height="720" alt="A café at eight in the morning: a green counter, shelves of jars and a pastry case." loading="lazy" decoding="async"></picture>
+          </figure>
+          <div class="corridor__cap">
+            <p class="t-label corridor__cap-label">Morning · Café</p>
+            <p class="t-display-m corridor__cap-head">Light first, then everything else.</p>
+            <p class="t-body corridor__cap-body">A café earns its living before ten. We plan the counter for a queue that moves, the seats for laptops and prams, and the light for pastries that photograph. Daylight does most of the work. We make sure it lands where it should.</p>
+          </div>
+          <div class="corridor__end">
+            <p class="corridor__time t-label">08:00</p>
+            <h3 class="corridor__title t-display-xl" id="corridor-cafe-title">Café</h3>
+            <button class="btn btn--paper corridor__cta" type="button" data-cafe-seq-open aria-haspopup="dialog" aria-controls="corner-table" data-cursor="Sit down">Take the corner table <span class="arr" aria-hidden="true">→</span></button>
+            <a class="btn btn--paper corridor__cta cafe-seq-fallback" href="#corner-table">Take the corner table <span class="arr" aria-hidden="true">→</span></a>
+          </div>
+        </article>
+        <article class="corridor__stop" id="corridor-shop" data-stop="shop" aria-labelledby="corridor-shop-title">
+          <figure class="corridor__still">
+            <picture><source media="(max-width: 900px)" srcset="{{root}}assets/img/corridor/shop-sm.webp" width="640" height="800"><img src="{{root}}assets/img/corridor/shop.webp" width="1280" height="720" alt="A furniture shop at eleven in the morning: carved chairs and cabinets on a concrete floor." loading="lazy" decoding="async"></picture>
+          </figure>
+          <div class="corridor__cap">
+            <p class="t-label corridor__cap-label">Late morning · Shop</p>
+            <p class="t-display-m corridor__cap-head">People decide at the door.</p>
+            <p class="t-body corridor__cap-body">We put the first table where the eye lands, keep a clear line to the back wall and light the product, not the floor. The fitting room gets the best mirror in the building.</p>
+          </div>
+          <div class="corridor__end">
+            <p class="corridor__time t-label">11:00</p>
+            <h3 class="corridor__title t-display-xl" id="corridor-shop-title">Shop</h3>
+            <a class="btn btn--on-dark corridor__cta" href="{{root}}work.html?filter=retail" data-cursor="Enter">See the shops <span class="arr" aria-hidden="true">→</span></a>
+          </div>
+        </article>
+        <article class="corridor__stop" id="corridor-restaurant" data-stop="restaurant" aria-labelledby="corridor-restaurant-title">
+          <figure class="corridor__still">
+            <picture><source media="(max-width: 900px)" srcset="{{root}}assets/img/corridor/restaurant-sm.webp" width="640" height="800"><img src="{{root}}assets/img/corridor/restaurant.webp" width="1280" height="720" alt="An all-day restaurant at two in the afternoon: tables along tall windows and a long bar." loading="lazy" decoding="async"></picture>
+          </figure>
+          <div class="corridor__cap">
+            <p class="t-label corridor__cap-label">Afternoon · Restaurant</p>
+            <p class="t-display-m corridor__cap-head">The long lunch, held.</p>
+            <p class="t-body corridor__cap-body">Warm walls, walnut floors, banquettes you sink into. By two o’clock the room should feel as if it has been busy for hours: full but calm, with every seat facing something worth looking at.</p>
+          </div>
+          <div class="corridor__end">
+            <p class="corridor__time t-label">14:00</p>
+            <h3 class="corridor__title t-display-xl" id="corridor-restaurant-title">Restaurant</h3>
+            <a class="btn btn--on-dark corridor__cta" href="{{root}}work.html?filter=restaurants" data-cursor="Enter">See the dining rooms <span class="arr" aria-hidden="true">→</span></a>
+          </div>
+        </article>
+        <article class="corridor__stop" id="corridor-bar" data-stop="bar" aria-labelledby="corridor-bar-title">
+          <figure class="corridor__still">
+            <picture><source media="(max-width: 900px)" srcset="{{root}}assets/img/corridor/bar-sm.webp" width="640" height="800"><img src="{{root}}assets/img/corridor/bar.webp" width="1280" height="720" alt="A red cocktail bar at eleven at night, the back-bar lit." loading="lazy" decoding="async"></picture>
+          </figure>
+          <div class="corridor__cap">
+            <p class="t-label corridor__cap-label">Night · Bar</p>
+            <p class="t-display-m corridor__cap-head">The <span class="corridor__nobr">back-bar</span> is the stage.</p>
+            <p class="t-body corridor__cap-body">The light drops, the bottles glow, the counter fills. We design bars for this exact hour: sightlines to the back-bar, a top that takes a knock, and acoustics that let the music lift without anyone shouting.</p>
+          </div>
+          <div class="corridor__end">
+            <p class="corridor__time t-label">23:00</p>
+            <h3 class="corridor__title t-display-xl" id="corridor-bar-title">Bar</h3>
+            <a class="btn btn--on-dark corridor__cta" href="{{root}}work.html?filter=bars" data-cursor="Enter">See the bars <span class="arr" aria-hidden="true">→</span></a>
+          </div>
+        </article>
+      </div>
+
+      <div class="corridor__outro">
+        <p class="corridor__outro-line t-display-l"><span class="corridor__nobr">Four rooms.</span> <span class="corridor__nobr">One day.</span> <span class="corridor__nobr">One team.</span></p>
+        <a class="link corridor__outro-link" href="{{root}}work.html">See all the work</a>
+      </div>
+
+    </div>
+  </div>
+</section>

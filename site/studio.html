@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="en-IN" class="no-js">
+<head>
+<!-- @partial:head -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>
+/* motion bootstrap — inline, before any stylesheet: pre-animation states only when motion is allowed, fail open */
+(function (d, w) {
+  var r = d.documentElement, motion = w.matchMedia("(prefers-reduced-motion: no-preference)").matches;
+  r.classList.remove("no-js"); r.classList.add("js");
+  try { if (sessionStorage.getItem("ts-intro")) r.classList.add("no-preload"); } catch (e) { r.classList.add("no-preload"); }
+  if (motion) {
+    r.classList.add("js-motion");
+    try { if (!("CSSViewTransitionRule" in w) && sessionStorage.getItem("ts-curtain")) r.classList.add("curtain-in"); } catch (e) {}
+  }
+  w.addEventListener("pagereveal", function (e) { w.__vt = e.viewTransition || null; }, { once: true });
+  setTimeout(function () { if (!w.Motion || !w.Motion.booted) r.classList.remove("curtain-in"); }, 2500);
+  setTimeout(function () { if (!w.Motion || !w.Motion.booted) r.classList.remove("js-motion"); }, 4000);
+})(document, window);
+</script>
+<link rel="preload" href="assets/fonts/InstrumentSerif-normal-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/InstrumentSans-normal-400_600-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="assets/css/fonts.css">
+<link rel="stylesheet" href="assets/css/base.css">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#383c20">
+<meta property="og:site_name" content="Two Squares — Design &amp; Build">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<!-- /@partial:head -->
+<title>Studio — Two Squares Design &amp; Build</title>
+<meta name="description" content="A small design &amp; build studio for cafés, restaurants, bars and shops. One senior lead, one contract and one team from site visit to opening night.">
+<meta property="og:title" content="Studio — Two Squares Design &amp; Build">
+<meta property="og:description" content="A small design &amp; build studio for cafés, restaurants, bars and shops. One senior lead, one contract and one team from site visit to opening night.">
+<meta property="og:image" content="assets/img/photos/build-01-hand-plane-1600.webp">
+<link rel="preload" as="image" href="assets/img/photos/build-01-hand-plane-1600.webp" imagesrcset="assets/img/photos/build-01-hand-plane-800.webp 800w, assets/img/photos/build-01-hand-plane-1600.webp 1600w" imagesizes="100vw" fetchpriority="high">
+<link rel="stylesheet" href="assets/css/studio.css">
+</head>
+<body data-page="studio" data-section="studio">
+<!-- @partial:header -->
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header" id="top">
+  <div class="wrap site-header__inner">
+    <a class="site-header__brand" href="index.html" aria-label="Two Squares, home"><span class="logo logo--mark" aria-hidden="true"></span></a>
+    <nav class="site-header__nav" aria-label="Primary">
+      <a href="work.html" data-section="work">Work</a>
+      <a href="services.html" data-section="services">Services</a>
+      <a href="studio.html" data-section="studio">Studio</a>
+      <a href="contact.html" data-section="contact">Contact</a>
+      <a class="btn btn--sm" href="contact.html">Start a project <span class="arr" aria-hidden="true">→</span></a>
+    </nav>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-overlay"><span class="nav-toggle__bars" aria-hidden="true"></span>Index</button>
+  </div>
+</header>
+<div class="nav-overlay" id="nav-overlay" role="dialog" aria-modal="true" aria-label="Site index" data-lenis-prevent>
+  <span class="nav-overlay__shape nav-overlay__shape--a" aria-hidden="true"></span>
+  <span class="nav-overlay__shape nav-overlay__shape--b" aria-hidden="true"></span>
+  <div class="wrap nav-overlay__top">
+    <a href="index.html" aria-label="Two Squares, home"><span class="logo logo--mark" aria-hidden="true"></span></a>
+    <button class="nav-overlay__close" type="button">Close <i aria-hidden="true"></i></button>
+  </div>
+  <nav class="wrap nav-overlay__links" aria-label="Site index">
+    <a class="nav-overlay__link" href="index.html"><span class="t-display-l">Home</span><small>The walk, and the corner table.</small></a>
+    <a class="nav-overlay__link" href="work.html" data-section="work"><span class="t-display-l">Work</span><small>Cafés, restaurants, bars and shops.</small></a>
+    <a class="nav-overlay__link" href="services.html" data-section="services"><span class="t-display-l">The menu</span><small>What we make, and how.</small></a>
+    <a class="nav-overlay__link" href="studio.html" data-section="studio"><span class="t-display-l">Studio</span><small>One team, design and build.</small></a>
+    <a class="nav-overlay__link" href="contact.html" data-section="contact"><span class="t-display-l">Contact</span><small>Tell us about the room.</small></a>
+  </nav>
+  <div class="wrap nav-overlay__foot t-small">
+    <a href="mailto:hello@twosquares.studio">hello@twosquares.studio</a>
+    <span>+91 [00000 00000]</span>
+    <span>By appointment · [City]</span>
+  </div>
+</div>
+<!-- /@partial:header -->
+<main id="main">
+
+  <!-- ============================================================ hero: the word is a picture frame -->
+  <section class="studio-hero" aria-labelledby="studio-title">
+    <div class="wrap">
+      <div class="studio-hero__stage">
+        <div class="studio-hero__top">
+          <p class="t-label" data-reveal>The studio</p>
+          <p class="t-label quiet" data-reveal>Design &amp; Build · Est. 2016</p>
+        </div>
+        <div class="studio-hero__framegroup">
+          <div class="frame" data-frame aria-hidden="true">
+            <div class="frame__fill">
+              <div class="frame__zoom" data-frame-zoom>
+                <img class="frame__media" src="assets/img/photos/build-01-hand-plane-1600.webp"
+                     srcset="assets/img/photos/build-01-hand-plane-800.webp 800w, assets/img/photos/build-01-hand-plane-1600.webp 1600w" sizes="100vw"
+                     width="1600" height="1067" alt="" loading="eager" fetchpriority="high" decoding="async">
+              </div>
+            </div>
+            <span class="frame__fallback">Studio</span>
+          </div>
+          <div class="studio-hero__caption" data-frame-caption>
+            <p class="t-label quiet">07:10 — In the workshop</p>
+            <p class="t-label quiet studio-hero__fig">Drawknife on hardwood</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid studio-hero__body">
+        <h1 class="studio-hero__title t-display-l" id="studio-title" data-split>A small studio with a long <em>snag list</em>.</h1>
+        <div class="studio-hero__intro">
+          <p class="t-lede" data-reveal>Two Squares designs and builds cafés, restaurants, bars and shops. We started in 2016 on one idea: the person who draws the room should be standing in it when it’s built.</p>
+          <p class="t-body muted" data-reveal>Sixty-four venues and nine cities later, that’s still how we work — one senior lead, one contract, one team from the first site walk to the first service. We’re hospitality people before we’re designers. We learn the menu before we choose a finish, plan the service before the room, and specify for year five, not opening night.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ principles -->
+  <section class="section principles" aria-labelledby="principles-title">
+    <div class="wrap grid">
+      <header class="principles__head">
+        <p class="t-label" data-reveal>What we believe</p>
+        <h2 class="t-display-l" id="principles-title" data-split>Three rules.</h2>
+      </header>
+      <ol class="principles__list">
+        <li class="principle" data-reveal-group>
+          <span class="principle__n t-label" data-reveal>01</span>
+          <h3 class="principle__title t-display-m" data-reveal>Design the service, then the room.</h3>
+          <p class="principle__text t-body muted" data-reveal>A beautiful room that slows the kitchen is a bad room. We start with how people work in the space — the pass, the station, the till — and let the interior follow.</p>
+        </li>
+        <li class="principle" data-reveal-group>
+          <span class="principle__n t-label" data-reveal>02</span>
+          <h3 class="principle__title t-display-m" data-reveal>Build for year five.</h3>
+          <p class="principle__text t-body muted" data-reveal>Hospitality interiors take a beating. We specify for spills, chair legs, heels and deep cleans, so the room wears in rather than out.</p>
+        </li>
+        <li class="principle" data-reveal-group>
+          <span class="principle__n t-label" data-reveal>03</span>
+          <h3 class="principle__title t-display-m" data-reveal>One senior lead, start to finish.</h3>
+          <p class="principle__text t-body muted" data-reveal>No hand-off to a junior after the concept. The designer who sold you the idea is the one on site at 07:00 checking the tile setting-out.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ============================================================ one contract: design & build -->
+  <section class="section on-dark contract" id="how-we-work" aria-labelledby="contract-title">
+    <div class="wrap grid">
+      <header class="contract__head">
+        <p class="t-label" data-reveal>How we work</p>
+        <h2 class="t-display-l" id="contract-title" data-split><em>One contract.</em><br> One team.<br> One number to call.</h2>
+        <p class="t-lede muted" data-reveal>Design &amp; build means the same studio draws your room and builds it, under a single contract. It sounds like paperwork. It changes almost everything.</p>
+      </header>
+
+      <figure class="contract__figure" data-duo data-float>
+        <div class="duo" aria-hidden="true">
+          <div class="duo__sq duo__sq--a"><span class="duo__name">Design</span><span class="duo__tick duo__tick--tl"></span><span class="duo__tick duo__tick--br"></span></div>
+          <div class="duo__sq duo__sq--b"><span class="duo__name">Build</span><span class="duo__tick duo__tick--tl"></span><span class="duo__tick duo__tick--br"></span></div>
+          <div class="duo__overlap"><span class="duo__label">One contract</span></div>
+        </div>
+        <figcaption class="sr-only">Two squares, Design and Build, drawn overlapping. The shared part is one contract.</figcaption>
+      </figure>
+
+      <ol class="contract__points" data-reveal-group>
+        <li class="contract__point" data-reveal>
+          <span class="t-label quiet">01</span>
+          <h3 class="t-display-s">No gap between drawing and building.</h3>
+          <p class="t-small muted">The people pricing the room sit next to the people drawing it. You know what a detail costs before you fall for it.</p>
+        </li>
+        <li class="contract__point" data-reveal>
+          <span class="t-label quiet">02</span>
+          <h3 class="t-display-s">A fixed price, sooner.</h3>
+          <p class="t-small muted">Our build team checks the design as it develops, so the price is fixed after detail design, not after three rounds of tender.</p>
+        </li>
+        <li class="contract__point" data-reveal>
+          <span class="t-label quiet">03</span>
+          <h3 class="t-display-s">Open sooner.</h3>
+          <p class="t-small muted">Kitchen equipment, lighting and stone are ordered while the drawings are still being finished. That takes weeks off the programme.</p>
+        </li>
+        <li class="contract__point" data-reveal>
+          <span class="t-label quiet">04</span>
+          <h3 class="t-display-s">One party responsible.</h3>
+          <p class="t-small muted">If something’s wrong, it’s ours to fix. No designer blaming the builder, no builder blaming the drawings.</p>
+        </li>
+      </ol>
+
+      <p class="contract__foot t-small" data-reveal>Prefer to split it? We also design for other builders and build for other designers. It’s all on the menu.&nbsp; <a class="link" href="services.html">See the menu</a></p>
+    </div>
+  </section>
+
+  <!-- ============================================================ team -->
+  <section class="section team" aria-labelledby="team-title">
+    <div class="wrap">
+      <div class="grid team__head">
+        <div class="team__heading">
+          <p class="t-label" data-reveal>People</p>
+          <h2 class="t-display-l" id="team-title" data-split>Twelve of us, plus the <em>trades</em> we keep coming back to.</h2>
+        </div>
+        <p class="team__note ph-note t-small quiet" data-reveal><span class="badge">Placeholder</span> Names and portraits to come.</p>
+      </div>
+      <ul class="grid team__list">
+        <li class="member">
+          <figure class="media member__img blob" data-reveal="image" style="aspect-ratio:4/5; --lqip:url(data:image/webp;base64,UklGRm4AAABXRUJQVlA4IGIAAAAwBACdASoNABQAPt1apkyopSOiMAgBEBuJQBOmUABpqUOcTTwlDcUF7gAA/s3lfrYTxha/o2g5q1DbbvjpRphsZDuCICn18/cSvXFav9m7ZaCCySERUs07MOBZ3AB6JK4AAA==); --focus:50% 50%">
+            <img src="assets/img/photos/process-02-hands-sketching-1600.webp" srcset="assets/img/photos/process-02-hands-sketching-800.webp 800w, assets/img/photos/process-02-hands-sketching-1600.webp 1600w" sizes="(max-width: 600px) 100vw, (max-width: 900px) 50vw, 25vw"
+                 width="1067" height="1600" alt="Hands drawing a plan with a circle stencil and pencil on cream paper, with rolled drawings and tools behind" loading="lazy" decoding="async">
+          </figure>
+          <div class="member__text" data-reveal-group>
+            <p class="t-label quiet" data-reveal>Founder &amp; principal designer</p>
+            <h3 class="t-display-s" data-reveal>[Founder name]</h3>
+            <p class="t-small muted" data-reveal>Fifteen years in hospitality interiors. Walks every site before we quote it, and still draws every counter by hand first.</p>
+          </div>
+        </li>
+        <li class="member">
+          <figure class="media member__img blob blob--b" data-reveal="image" style="aspect-ratio:4/5; --lqip:url(data:image/webp;base64,UklGRmoAAABXRUJQVlA4IF4AAAAwBACdASoUAA0APt1cp0yopSOiMAgBEBuJZACdMoADUB0MwUX6BMJQdoAA/tjclFGShCzyIqEmeXOWnEMiYDZU1590FbiZB120Ldd0VcnWY+Lpx4OHw0hLkpsdQAAA); --focus:50% 50%">
+            <img src="assets/img/photos/build-02-chisel-hands-1600.webp" srcset="assets/img/photos/build-02-chisel-hands-800.webp 800w, assets/img/photos/build-02-chisel-hands-1600.webp 1600w" sizes="(max-width: 600px) 100vw, (max-width: 900px) 50vw, 25vw"
+                 width="1600" height="1067" alt="Close-up of hands using a small brass block plane on timber, with curls of shavings on a dark bench" loading="lazy" decoding="async">
+          </figure>
+          <div class="member__text" data-reveal-group>
+            <p class="t-label quiet" data-reveal>Head of build</p>
+            <h3 class="t-display-s" data-reveal>[Head of build name]</h3>
+            <p class="t-small muted" data-reveal>Runs the site, the trades and the programme. Reads every drawing for what it will cost on site, and closes every snag list.</p>
+          </div>
+        </li>
+        <li class="member">
+          <figure class="media member__img blob blob--c" data-reveal="image" style="aspect-ratio:4/5; --lqip:url(data:image/webp;base64,UklGRnoAAABXRUJQVlA4IG4AAACQBACdASoUAA0APt1cp0yopSOiMAgBEBuJYwCdMoM0bE441YzP0mHtrJ5tzpwAzeBTpyiMxpWIglMvzjYILBoVYTy299xoMl2ujeBk8LqdXhNX8/Cx6f99pmM8Im6l+MUu536Ik3TH8lo/YTgAAA==); --focus:50% 50%">
+            <img src="assets/img/photos/process-06-samples-hands-1600.webp" srcset="assets/img/photos/process-06-samples-hands-800.webp 800w, assets/img/photos/process-06-samples-hands-1600.webp 1600w" sizes="(max-width: 600px) 100vw, (max-width: 900px) 50vw, 25vw"
+                 width="1600" height="1067" alt="Two pairs of hands arrange timber veneer samples, sheepskin, paint cards and fabric swatches on a white table" loading="lazy" decoding="async">
+          </figure>
+          <div class="member__text" data-reveal-group>
+            <p class="t-label quiet" data-reveal>Lighting &amp; FF&amp;E lead</p>
+            <h3 class="t-display-s" data-reveal>[Lighting &amp; FF&amp;E lead name]</h3>
+            <p class="t-small muted" data-reveal>Owns the scenes, the schedules and the samples wall. Carries a lux meter, and checks the colour temperature in every bar they walk into.</p>
+          </div>
+        </li>
+        <li class="member">
+          <figure class="media member__img blob blob--b" data-reveal="image" style="animation-delay:-17s; aspect-ratio:4/5; --lqip:url(data:image/webp;base64,UklGRnIAAABXRUJQVlA4IGYAAACQAwCdASoUAA0APt1apkyopSOiMAgBEBuJQBOmUAA5sD8Dyr8AAP7b3n6LEAa0M/aVlmbIQQI7TiTCXRdbDl1gZ8NpFxXQ13UMMJ7EDT887qDKiYDDUfZ3zuoU2ddqc6Yk+hgAAAA=); --focus:50% 50%">
+            <img src="assets/img/photos/build-04-marking-timber-1600.webp" srcset="assets/img/photos/build-04-marking-timber-800.webp 800w, assets/img/photos/build-04-marking-timber-1600.webp 1600w" sizes="(max-width: 600px) 100vw, (max-width: 900px) 50vw, 25vw"
+                 width="1600" height="1067" alt="Hands mark a line on a pale timber board with a pencil, with a chisel and shavings on the bench" loading="lazy" decoding="async">
+          </figure>
+          <div class="member__text" data-reveal-group>
+            <p class="t-label quiet" data-reveal>Project manager</p>
+            <h3 class="t-display-s" data-reveal>[Project manager name]</h3>
+            <p class="t-small muted" data-reveal>Your one number from contract to handover. Keeps the landlord, the licensing consultant and the kitchen supplier working to the same dates.</p>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============================================================ numbers -->
+  <section class="section section--tight on-sand numbers" aria-labelledby="numbers-title">
+    <div class="wrap">
+      <div class="numbers__head">
+        <h2 class="t-label" id="numbers-title" data-reveal>The studio in numbers</h2>
+        <p class="ph-note t-small quiet" data-reveal><span class="badge">Placeholder</span> Venue and city counts to be confirmed by the owner.</p>
+      </div>
+      <dl class="grid numbers__list" data-reveal-group>
+        <div class="numbers__item" data-reveal><dt class="t-label">Studio founded</dt><dd class="t-display-xl t-num">2016</dd></div>
+        <div class="numbers__item" data-reveal><dt class="t-label">Venues opened</dt><dd class="t-display-xl t-num" data-count="64">64</dd></div>
+        <div class="numbers__item" data-reveal><dt class="t-label">Cities</dt><dd class="t-display-xl t-num" data-count="9">9</dd></div>
+        <div class="numbers__item" data-reveal><dt class="t-label">People in the studio</dt><dd class="t-display-xl t-num" data-count="12">12</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <!-- ============================================================ workshop band: a slow drift -->
+  <section class="band" aria-labelledby="band-title">
+    <div class="wrap band__head">
+      <h2 class="t-label" id="band-title" data-reveal>The workshop and the site</h2>
+      <p class="t-small quiet band__hint" data-reveal>Drawn, made and fitted by the same team.</p>
+    </div>
+    <div class="band__viewport" data-band tabindex="0" role="region" aria-labelledby="band-title">
+      <ul class="band__track" data-band-track>
+        <li class="band__item band__item--lg">
+          <figure class="media band__img" style="aspect-ratio:25/16; --lqip:url(data:image/webp;base64,UklGRoQAAABXRUJQVlA4IHgAAAAwBACdASoUAA0APt1cp0yopSOiMAgBEBuJbACdMoRwACxHFwZoSvoyQgAA/LAvXTstN+96EE3IFQdiQ2sfCXBjUUV9l79+Dh0t9r8E07Zah5zZ6ReqkIG5r+0EFj8LfU5ebDX/Yfb4l3DDnfbw+trySRlBoFDL+AA=); --focus:50% 50%">
+            <img src="assets/img/photos/build-03-drill-press-1600.webp" srcset="assets/img/photos/build-03-drill-press-800.webp 800w, assets/img/photos/build-03-drill-press-1600.webp 1600w" sizes="(max-width: 900px) 80vw, 45vw"
+                 width="1600" height="1026" alt="Hands feed a plank under a pillar drill amid sawdust, in warm timber tones" loading="lazy" decoding="async">
+          </figure>
+          <p class="band__cap t-label quiet">The joinery shop</p>
+        </li>
+        <li class="band__item band__item--sm">
+          <figure class="media band__img" style="aspect-ratio:3/4; --lqip:url(data:image/webp;base64,UklGRlQAAABXRUJQVlA4IEgAAADwAwCdASoPABQAPt1apkyopSOiMAgBEBuJQBOmUABoYfMRCpYLVS0AAP6vHBuOLBMgcDhB+3l/ZWljH1yCBuGEHl3/9NmXgAA=); --focus:50% 50%">
+            <img src="assets/img/photos/material-09-timber-edge-joinery-1600.webp" srcset="assets/img/photos/material-09-timber-edge-joinery-800.webp 800w, assets/img/photos/material-09-timber-edge-joinery-1600.webp 1600w" sizes="(max-width: 900px) 50vw, 22vw"
+                 width="1200" height="1600" alt="Close-up of a curved, sanded pale timber edge with strong flame grain in soft light" loading="lazy" decoding="async">
+          </figure>
+          <p class="band__cap t-label quiet">A sanded counter edge</p>
+        </li>
+        <li class="band__item band__item--lg">
+          <figure class="media band__img" style="aspect-ratio:3/2; --lqip:url(data:image/webp;base64,UklGRmIAAABXRUJQVlA4IFYAAABwAwCdASoUAA0APt1cqE0opSQiMAgBEBuJZQDG9Av7cddw4WAA/kENSDKeSdXyYROZRmJ8jGq36YuERJBW3sVJXnwrmnPQvPVFJqtbGg6oxhy3TkFAAA==); --focus:50% 50%">
+            <img src="assets/img/photos/build-07-site-fitout-1600.webp" srcset="assets/img/photos/build-07-site-fitout-800.webp 800w, assets/img/photos/build-07-site-fitout-1600.webp 1600w" sizes="(max-width: 900px) 80vw, 45vw"
+                 width="1600" height="1067" alt="The raw shell of a large room under fit-out: arched windows, a concrete floor, a ladder, ducting and stacked materials" loading="lazy" decoding="async">
+          </figure>
+          <p class="band__cap t-label quiet">The shell, week one</p>
+        </li>
+        <li class="band__item band__item--md">
+          <figure class="media band__img" style="aspect-ratio:2/3; --lqip:url(data:image/webp;base64,UklGRkwAAABXRUJQVlA4IEAAAADQAwCdASoNABQAPt1cpkyopSOiMAgBEBuJaQAAWlxuDJYpaEc5rAAA/FPkjFkMbYd7EmY7/l9kusrWm9Xi4AAA); --focus:50% 50%">
+            <img src="assets/img/photos/material-03-terrazzo-speckled-1600.webp" srcset="assets/img/photos/material-03-terrazzo-speckled-800.webp 800w, assets/img/photos/material-03-terrazzo-speckled-1600.webp 1600w" sizes="(max-width: 900px) 50vw, 22vw"
+                 width="1067" height="1600" alt="Close-up of a grey speckled terrazzo slab with a soft diagonal fold of light and shadow" loading="lazy" decoding="async">
+          </figure>
+          <p class="band__cap t-label quiet">Terrazzo sample</p>
+        </li>
+        <li class="band__item band__item--lg">
+          <figure class="media band__img" style="aspect-ratio:25/13; --lqip:url(data:image/webp;base64,UklGRmQAAABXRUJQVlA4IFgAAADQAwCdASoUAAoAPt1cpkyopSOiMAgBEBuJQBOmUABe4VzUjKdmKgAA/ofdQ2muPdIt3+HcvFIH5n2MaYJfSbrrPqxTHdn00IwW0DrLXyx+Swlgnoj9gAAA); --focus:50% 50%">
+            <img src="assets/img/photos/build-05-chisels-on-board-1600.webp" srcset="assets/img/photos/build-05-chisels-on-board-800.webp 800w, assets/img/photos/build-05-chisels-on-board-1600.webp 1600w" sizes="(max-width: 900px) 90vw, 55vw"
+                 width="1600" height="832" alt="A set of wooden-handled carving chisels laid on a pale timber board marked with pencil lines" loading="lazy" decoding="async">
+          </figure>
+          <p class="band__cap t-label quiet">Setting-out, in pencil</p>
+        </li>
+        <li class="band__item band__item--sm">
+          <figure class="media band__img" style="aspect-ratio:2/3; --lqip:url(data:image/webp;base64,UklGRlAAAABXRUJQVlA4IEQAAACwAwCdASoNABQAPt1apkyopSOiMAgBEBuJZQC7ACHhT8PQPV9QwAD+5yjfXVNq3OXLsyMM2PJsK3x1iQAOrjxLzCAAAA==); --focus:50% 50%">
+            <img src="assets/img/photos/build-06-tiling-hands-1600.webp" srcset="assets/img/photos/build-06-tiling-hands-800.webp 800w, assets/img/photos/build-06-tiling-hands-1600.webp 1600w" sizes="(max-width: 900px) 50vw, 22vw"
+                 width="1067" height="1600" alt="A hand sets a white tile with spacers onto adhesive-combed wall above an oak worktop" loading="lazy" decoding="async">
+          </figure>
+          <p class="band__cap t-label quiet">Tiling, 07:00</p>
+        </li>
+        <li class="band__item band__item--md">
+          <figure class="media band__img" style="aspect-ratio:3/2; --lqip:url(data:image/webp;base64,UklGRmwAAABXRUJQVlA4IGAAAABQBACdASoUAA0APt1cpkyopSOiMAgBEBuJQBOgBAt7rSYfhZqaBvtpXxkAAP5HEAyL6GjM8KbM7Gc2MYb4GMZoXQTUMNJYgTAjFPWNvyQ6MAFRP02JOyHS+Agfh+IAAAA=); --focus:50% 50%">
+            <img src="assets/img/photos/process-05-samples-flatlay-1600.webp" srcset="assets/img/photos/process-05-samples-flatlay-800.webp 800w, assets/img/photos/process-05-samples-flatlay-1600.webp 1600w" sizes="(max-width: 900px) 80vw, 40vw"
+                 width="1600" height="1067" alt="Flat lay of interior material samples: walnut and oak veneer, cream teddy fabric, mustard and grey swatches and paint strips" loading="lazy" decoding="async">
+          </figure>
+          <p class="band__cap t-label quiet">The samples wall</p>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============================================================ clients & press (samples) -->
+  <section class="section clients" aria-labelledby="clients-title">
+    <div class="wrap grid">
+      <div class="clients__head">
+        <h2 class="t-label" id="clients-title" data-reveal>Clients &amp; press</h2>
+        <p class="ph-note t-small quiet" data-reveal><span class="badge">Sample</span> Real names only, with written permission.</p>
+      </div>
+      <div class="clients__body">
+        <p class="t-lede" data-reveal>Operators, developers and brands we’ve worked with:</p>
+        <ul class="clients__wall" data-reveal-group>
+          <li data-reveal><span>[Client name]</span></li>
+          <li data-reveal><span>[Client name]</span></li>
+          <li data-reveal><span>[Client name]</span></li>
+          <li data-reveal><span>[Client name]</span></li>
+          <li data-reveal><span>[Client name]</span></li>
+          <li data-reveal><span>[Client name]</span></li>
+        </ul>
+        <p class="clients__press t-display-s" data-reveal>Featured in <em>[Publication]</em>, <em>[Publication]</em> and <em>[Publication]</em>.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ careers -->
+  <section class="section careers" id="careers" aria-labelledby="careers-title">
+    <div class="wrap grid">
+      <figure class="media careers__img" data-reveal="image" style="aspect-ratio:4/5; --lqip:url(data:image/webp;base64,UklGRlgAAABXRUJQVlA4IEwAAACwAwCdASoUAA0APt1cpkyopSOiMAgBEBuJZQCdAB5bGrh7Ay8GAAD+62euApcm6z1WeAHrO376d6YESzSpHB9MypwzyaPV2Ddgi6AA); --focus:50% 50%">
+        <img src="assets/img/photos/process-08-drafting-table-window-1600.webp" srcset="assets/img/photos/process-08-drafting-table-window-800.webp 800w, assets/img/photos/process-08-drafting-table-window-1600.webp 1600w" sizes="(max-width: 900px) 100vw, 33vw"
+             width="1600" height="1060" alt="Drafting table with sketches and photos by an industrial steel window, plants on the sill and autumn trees outside, white-painted brick" loading="lazy" decoding="async">
+      </figure>
+      <div class="careers__text" data-float="0.7">
+        <p class="t-label" data-reveal>Careers</p>
+        <h2 class="t-display-l" id="careers-title" data-split>Joining the studio.</h2>
+        <p class="t-lede" data-reveal>We hire rarely and keep people. We look for designers who like being on site and site leads who like drawings. Send a few projects and a few lines to [careers email].</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ CTA over the green café loop -->
+  <section class="studio-cta on-dark" aria-labelledby="cta-title">
+    <figure class="media studio-cta__media" style="--lqip:none">
+      <video id="cta-video" data-autoplay data-src="assets/video/loop-greencafe" data-src-sm="assets/video/loop-greencafe-sm"
+             poster="assets/video/posters/loop-greencafe-poster.jpg" data-poster-sm="assets/video/posters/loop-greencafe-sm-poster.jpg"
+             muted loop playsinline preload="none" aria-hidden="true"></video>
+    </figure>
+    <div class="wrap studio-cta__inner">
+      <div class="studio-cta__text">
+        <h2 class="t-display-xl" id="cta-title" data-split>Operators, developers, brands.</h2>
+        <p class="t-lede" data-reveal>If you’re opening somewhere people eat, drink or shop, we’d like to see the plan.</p>
+        <p data-reveal><a class="btn btn--paper" href="contact.html" data-cursor="Open">Get in touch <span class="arr" aria-hidden="true">→</span></a></p>
+      </div>
+      <button class="vtoggle vtoggle--dark" type="button" data-video-toggle="#cta-video"><span class="sr-only">Pause video</span><i aria-hidden="true"></i></button>
+    </div>
+  </section>
+</main>
+<!-- @partial:footer -->
+<footer class="site-footer on-dark">
+  <div class="wrap">
+    <p class="site-footer__signoff t-display-m"><em>Come back to it.</em></p>
+    <div class="site-footer__cols">
+      <div>
+        <p class="t-lede">Design &amp; build for cafés, restaurants, bars and shops. Concept to opening night.</p>
+        <p class="t-small" style="margin-top:1.25rem"><a class="text-link" href="mailto:hello@twosquares.studio">hello@twosquares.studio</a><br>+91 [00000 00000]<br>[Street address], [City] · By appointment</p>
+      </div>
+      <nav aria-label="Work">
+        <h2 class="t-label">Work</h2>
+        <ul class="t-small">
+          <li><a href="work.html">All work</a></li>
+          <li><a href="work.html?filter=cafes">Cafés</a></li>
+          <li><a href="work.html?filter=restaurants">Restaurants</a></li>
+          <li><a href="work.html?filter=bars">Bars</a></li>
+          <li><a href="work.html?filter=retail">Retail</a></li>
+        </ul>
+      </nav>
+      <nav aria-label="Studio">
+        <h2 class="t-label">Studio</h2>
+        <ul class="t-small">
+          <li><a href="studio.html">About the studio</a></li>
+          <li><a href="services.html">The menu</a></li>
+          <li><a href="services.html#process">How we work</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </nav>
+      <nav aria-label="Follow">
+        <h2 class="t-label">Follow</h2>
+        <ul class="t-small">
+          <li><a href="#" rel="noopener" data-placeholder>Instagram</a></li>
+          <li><a href="#" rel="noopener" data-placeholder>Pinterest</a></li>
+          <li><a href="#" rel="noopener" data-placeholder>LinkedIn</a></li>
+        </ul>
+      </nav>
+    </div>
+    <a class="site-footer__mark" href="index.html" aria-label="Two Squares, home"><span class="logo logo--lockup" aria-hidden="true"></span></a>
+    <div class="site-footer__legal">
+      <span>© <span data-year>2026</span> Two Squares Design &amp; Build. All rights reserved.</span>
+      <span>Prototype. Project names, quotes and photographs are placeholders (stock photography from Pexels &amp; Unsplash).</span>
+      <a href="#top">Back to top ↑</a>
+    </div>
+  </div>
+</footer>
+<!-- /@partial:footer -->
+<!-- @partial:scripts -->
+<script src="assets/js/vendor/gsap.min.js" defer></script>
+<script src="assets/js/vendor/ScrollTrigger.min.js" defer></script>
+<script src="assets/js/vendor/SplitText.min.js" defer></script>
+<script src="assets/js/vendor/CustomEase.min.js" defer></script>
+<script src="assets/js/vendor/lenis.min.js" defer></script>
+<script src="assets/js/motion.js" defer></script>
+<script src="assets/js/site.js" defer></script>
+<!-- /@partial:scripts -->
+<script src="assets/js/studio.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,264 @@
+/* =====================================================================
+   Two Squares — the corridor (home, Version A). Scoped under .corridor.
+   Two layouts from one DOM:
+   - default (no JS, reduced motion, engine missing → .corridor--stills):
+     a designed sequence of stills — intro, directory, four rooms, outro.
+   - html.js-motion: the film. A tall track (--corridor-len) holding a
+     position:sticky 100svh stage; corridor.js scrubs it (transform and
+     opacity only; no CSS filter on video).
+   ===================================================================== */
+
+.corridor {
+  /* ≈ (sum of the shot lengths in corridor.js + 1) × 100svh; the engine only uses the proportions */
+  --corridor-len: 1890svh;
+  --brass: #c7ab6b;
+  --film: #0e0f0c;
+  --hud-pad: clamp(16px, 2.2vw, 28px);
+  position: relative;
+  --focus: var(--sand);
+}
+@media (max-width: 900px) { .corridor { --corridor-len: 1670svh; } }
+.corridor__nobr { white-space: nowrap; }
+.corridor__time { color: var(--on-dark-2); }
+.corridor__title { font-style: italic; color: var(--on-dark); margin: 0.06em 0 0.14em; text-wrap: balance; }
+.corridor__cap-label { color: var(--on-dark-2); }
+.corridor__cap-head { margin-top: 14px; max-width: 18ch; text-wrap: balance; }
+.corridor__cap-body { margin-top: 14px; color: var(--on-dark-2); max-width: 46ch; }
+.corridor__rm-note { display: none; color: var(--on-dark-2); margin-top: 16px; }
+@media (prefers-reduced-motion: reduce) { .js .corridor__rm-note { display: block; } }
+.corridor__film { display: none; }
+.corridor__hint--touch { display: none; }
+@media (hover: none), (pointer: coarse) { .corridor__hint--fine { display: none; } .corridor__hint--touch { display: inline; } }
+.corridor__skip {
+  display: inline-flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 12px; position: relative;
+  font-size: 0.75rem; font-weight: 500; letter-spacing: 0.22em; text-transform: uppercase; color: var(--on-dark);
+}
+.corridor__skip::after { content: ""; position: absolute; left: 12px; right: 12px; bottom: 10px; height: 1px; background: currentColor; transform: scaleX(0); transform-origin: right; transition: transform var(--t-ui) var(--ease-cut); }
+.corridor__skip:hover::after, .corridor__skip:focus-visible::after { transform: scaleX(1); transform-origin: left; }
+.corridor__skip-arr { display: inline-block; transition: transform var(--t-ui) var(--ease-cut); }
+.corridor__skip:hover .corridor__skip-arr { transform: translateY(3px); }
+.corridor__dir-link {
+  display: inline-flex; align-items: center; gap: 0.6em; min-height: 44px;
+  font-size: 0.75rem; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase; color: var(--on-dark-2);
+  transition: color var(--t-micro) linear;
+}
+.corridor__dir-link:hover, .corridor__dir-link:focus-visible { color: var(--on-dark); }
+.corridor__dir-t { font-variant-numeric: tabular-nums lining-nums; color: var(--sand); }
+
+/* ================================================================= STILLS (default) */
+.corridor__stage { display: flex; flex-direction: column; padding-block: var(--section); max-width: var(--maxw); margin-inline: auto; padding-inline: var(--margin); }
+.corridor__card { order: -1; }   /* the intro first; the HUD (first in the DOM, for tab order) becomes the directory row under it */
+.corridor__card {
+  display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--gutter); row-gap: 20px; align-items: end;
+  padding-bottom: clamp(36px, 5vw, 64px);
+}
+.corridor__eyebrow { grid-column: 1 / -1; color: var(--on-dark-2); }
+.corridor__headline { grid-column: 1 / 8; }
+.corridor__body { grid-column: 9 / 13; color: var(--on-dark-2); max-width: 42ch; padding-bottom: 0.35em; }
+.corridor__rm-note { grid-column: 1 / -1; }
+.corridor__hud {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 32px;
+  border-block: 1px solid var(--line-dark); padding-block: 6px; margin-bottom: clamp(56px, 8vw, 120px);
+}
+.corridor__place, .corridor__hint, .corridor__loading, .corridor__dir-line { display: none; }
+.corridor__hud .corridor__skip { order: 2; margin-right: -12px; }
+.corridor__dir-list { display: flex; flex-wrap: wrap; gap: 0 clamp(18px, 3vw, 44px); }
+/* the way in: three small stills in a row (outside → the arcade → the corridor), then the rooms */
+.corridor__approach {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: var(--gutter);
+  margin: 0 0 clamp(72px, 9vw, 150px); padding: 0; list-style: none;
+}
+.corridor__approach-still { margin: 0; position: relative; aspect-ratio: 3 / 2; overflow: hidden; background: var(--film); }
+.corridor__approach-still picture { display: contents; }
+.corridor__approach-still img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.corridor__approach-label { margin-top: 14px; color: var(--on-dark-2); }
+.corridor__approach-item + .corridor__approach-item .corridor__approach-label::before { content: "→"; margin-right: 0.8em; color: var(--sand); letter-spacing: 0; }
+.corridor__stops { display: grid; gap: clamp(72px, 9vw, 150px); }
+.corridor__stop {
+  display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--gutter);
+  grid-template-areas: "s s s s s s s . e e e e" "s s s s s s s . c c c c";
+  grid-template-rows: auto 1fr; row-gap: clamp(22px, 2.6vw, 36px); align-items: start;
+}
+.corridor__still { grid-area: s; margin: 0; position: relative; aspect-ratio: 16 / 9; overflow: hidden; background: var(--film); }
+.corridor__still picture { display: contents; }
+.corridor__still img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.corridor__end { grid-area: e; align-self: end; }
+.corridor__cap { grid-area: c; }
+.corridor__end .corridor__title { font-size: clamp(3rem, 6vw, 6.5rem); }
+.corridor__end .corridor__cta { margin-top: 10px; }
+.corridor__stop:nth-child(even) { grid-template-areas: "e e e e . s s s s s s s" "c c c c . s s s s s s s"; }
+.corridor__outro { padding-top: clamp(72px, 9vw, 150px); text-align: center; }
+.corridor__outro-line { margin-bottom: 18px; }
+.corridor__outro-link { color: var(--sand); }
+@media (max-width: 900px) {
+  .corridor__card { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .corridor__headline, .corridor__body { grid-column: 1 / -1; }
+  .corridor__stop, .corridor__stop:nth-child(even) {
+    grid-template-columns: minmax(0, 1fr); grid-template-areas: "s" "e" "c"; grid-template-rows: auto; row-gap: 18px;
+  }
+  .corridor__still { aspect-ratio: 4 / 5; }
+  .corridor__approach { column-gap: 8px; }
+  .corridor__approach-still { aspect-ratio: 4 / 5; }
+  .corridor__approach-label { margin-top: 10px; font-size: 0.6875rem; letter-spacing: 0.12em; }
+  .corridor__approach-item + .corridor__approach-item .corridor__approach-label::before { content: none; }
+}
+@media (max-width: 600px) {
+  .corridor__end .corridor__cta { width: 100%; justify-content: space-between; }
+  .corridor__hud { justify-content: flex-start; }
+  .corridor__hud .corridor__skip { order: 0; margin-left: -12px; }
+}
+
+/* ================================================================= FILM (html.js-motion) */
+html.js-motion .corridor:not(.corridor--stills) { background: var(--film); }
+html.js-motion .corridor:not(.corridor--stills) .corridor__track { position: relative; height: var(--corridor-len); }
+html.js-motion .corridor:not(.corridor--stills) .corridor__stage {
+  display: block; position: sticky; top: 0; height: 100svh; max-width: none; margin: 0; padding: 0; overflow: hidden;
+  background: var(--film); color: var(--on-dark); isolation: isolate;
+}
+
+/* ---- the picture: two stacked layers, tints, the whip, the scrims */
+html.js-motion .corridor:not(.corridor--stills) .corridor__film { display: block; position: absolute; inset: 0; z-index: 0; overflow: hidden; }
+.corridor__layer { position: absolute; inset: 0; overflow: hidden; opacity: 0; transform-origin: 50% 50%; backface-visibility: hidden; }
+.corridor__layer[data-layer="0"] { opacity: 1; }
+.corridor__poster, .corridor__video, .corridor__smear { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.corridor__poster, .corridor__video { object-fit: cover; }
+.corridor__video { opacity: 0; }
+.corridor__smear { opacity: 0; }
+/* feathered sides while a layer slides (no hard seam where the two pictures meet) */
+.corridor__edge { position: absolute; inset: 0; opacity: 0; pointer-events: none;
+  background: linear-gradient(90deg, var(--film), rgba(14, 15, 12, 0) 16%, rgba(14, 15, 12, 0) 84%, var(--film)); }
+.corridor__stage.is-live .corridor__layer { will-change: transform, opacity; }
+/* everything the scrub fades or moves gets its own compositor layer while the film is on screen,
+   so a frame is a composite, never a repaint of the stage */
+.corridor__stage.is-live :is(.corridor__tint, .corridor__dip, .corridor__shade, .corridor__edge, .corridor__smear, .corridor__video) { will-change: opacity; }
+.corridor__stage.is-live :is(.corridor__card, .corridor__cap, .corridor__end, .corridor__outro, .corridor__dir-fill) { will-change: transform, opacity; }
+.corridor__tint, .corridor__whip, .corridor__dip, .corridor__shade, .corridor__hud-shade { position: absolute; inset: 0; pointer-events: none; }
+.corridor__tint { opacity: 0; z-index: 3; }
+/* stacking inside the film: layers 1–2 (the incoming one on top, set by corridor.js), then light, the whip, scrims, signs */
+.corridor__whip { z-index: 4; }
+.corridor__dip { z-index: 5; }
+.corridor__shade { z-index: 6; }
+.corridor__hud-shade { z-index: 7; }
+.corridor__signs { z-index: 8; }
+/* morning haze, afternoon amber, night: cheap alpha overlays (opacity only) */
+.corridor__tint--am { background: linear-gradient(180deg, rgba(255, 229, 190, 0.2), rgba(255, 242, 222, 0.06) 55%, rgba(255, 226, 186, 0.12)); }
+.corridor__tint--pm { background: linear-gradient(200deg, rgba(230, 152, 70, 0.26), rgba(176, 100, 44, 0.12) 55%, rgba(120, 62, 30, 0.22)); }
+.corridor__tint--night { background: radial-gradient(120% 95% at 50% 36%, rgba(14, 20, 44, 0.3), rgba(5, 7, 18, 0.72)); }
+.corridor__whip {
+  inset: 0 -24%; opacity: 0;
+  background:
+    linear-gradient(90deg, rgba(255, 246, 230, 0) 30%, rgba(255, 246, 230, 0.14) 46%, rgba(255, 246, 230, 0.04) 55%, rgba(255, 246, 230, 0) 70%),
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0) 0, rgba(0, 0, 0, 0) 57px, rgba(0, 0, 0, 0.14) 83px, rgba(0, 0, 0, 0) 109px, rgba(255, 255, 255, 0) 163px, rgba(255, 255, 255, 0.05) 181px, rgba(255, 255, 255, 0) 197px);
+}
+.corridor__stage.is-live .corridor__whip { will-change: transform, opacity; }
+.corridor__dip { background: #060707; opacity: 0; }
+.corridor__shade {
+  opacity: 0;
+  background:
+    linear-gradient(to top, rgba(8, 9, 7, 0.82), rgba(8, 9, 7, 0.36) 42%, rgba(8, 9, 7, 0) 72%),
+    linear-gradient(to right, rgba(8, 9, 7, 0.45), rgba(8, 9, 7, 0) 58%);
+}
+.corridor__hud-shade {
+  background:
+    linear-gradient(to bottom, rgba(8, 9, 7, 0.5), rgba(8, 9, 7, 0)) top / 100% clamp(96px, 16svh, 150px) no-repeat,
+    linear-gradient(to top, rgba(8, 9, 7, 0.55), rgba(8, 9, 7, 0)) bottom / 100% clamp(110px, 17svh, 170px) no-repeat;
+}
+
+/* ---- blade signs: screen space, hung from the ceiling on two rods */
+.corridor__signs { position: absolute; inset: 0; z-index: 8; pointer-events: none; }
+.corridor__sign { position: absolute; top: 0; left: calc(var(--margin) + 7vw); display: flex; flex-direction: column; align-items: center; opacity: 0; transform-origin: 50% 0; margin: 0; }
+.corridor__sign[data-side="right"] { left: auto; right: calc(var(--margin) + 7vw); }
+.corridor__stage.is-live .corridor__sign { will-change: transform, opacity; }
+.corridor__sign-rods {
+  display: block; width: 58%; height: clamp(104px, 16svh, 160px); border-inline: 1.5px solid var(--brass); opacity: 0.85;
+  /* the rods come down out of the dark under the HUD row, so they never cross "Skip the walk" or the place label */
+  -webkit-mask-image: linear-gradient(to bottom, transparent calc(var(--hud-pad) + 48px), #000 calc(var(--hud-pad) + 80px));
+  mask-image: linear-gradient(to bottom, transparent calc(var(--hud-pad) + 48px), #000 calc(var(--hud-pad) + 80px));
+}
+.corridor__sign-plate {
+  display: grid; justify-items: center; gap: 12px; min-width: clamp(170px, 14.5vw, 236px);
+  padding: 20px 30px 24px; border-top: 4px solid var(--accent, var(--green));
+  background: linear-gradient(180deg, #1c1e19, #101210);
+  box-shadow: inset 0 0 0 1px rgba(199, 171, 107, 0.55), inset 0 0 0 6px #111310, inset 0 0 0 7px rgba(199, 171, 107, 0.26), 0 20px 44px -14px rgba(0, 0, 0, 0.75);
+}
+.corridor__sign-plate b { font-size: 0.75rem; font-weight: 500; letter-spacing: 0.24em; line-height: 1; color: var(--sand); font-variant-numeric: tabular-nums lining-nums; }
+.corridor__sign-plate span { font-family: var(--f-display); font-size: clamp(2.1rem, 3vw, 3.2rem); line-height: 1; color: var(--on-dark); }
+
+/* ---- HUD */
+html.js-motion .corridor:not(.corridor--stills) .corridor__hud {
+  position: absolute; inset: 0; z-index: 5; display: block; margin: 0; padding: 0; border: 0; pointer-events: none;
+}
+html.js-motion .corridor:not(.corridor--stills) .corridor__place {
+  display: block; position: absolute; left: var(--margin); top: calc(var(--hud-pad) + 13px); color: var(--on-dark); opacity: 0.85;
+}
+html.js-motion .corridor:not(.corridor--stills) .corridor__skip { position: absolute; right: calc(var(--margin) - 12px); top: var(--hud-pad); pointer-events: auto; margin: 0; }
+html.js-motion .corridor:not(.corridor--stills) .corridor__dir { position: absolute; left: var(--margin); right: var(--margin); bottom: max(8px, env(safe-area-inset-bottom)); pointer-events: auto; }
+html.js-motion .corridor:not(.corridor--stills) .corridor__dir-line { display: block; position: absolute; left: 0; right: 0; top: 0; height: 1px; background: rgba(244, 242, 236, 0.26); }
+.corridor__dir-fill { position: absolute; inset: 0; background: var(--sand); transform-origin: 0 50%; transform: scaleX(0); }
+html.js-motion .corridor:not(.corridor--stills) .corridor__dir-list { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; }
+html.js-motion .corridor:not(.corridor--stills) .corridor__dir-item { position: relative; text-align: center; }
+html.js-motion .corridor:not(.corridor--stills) .corridor__dir-item::before {
+  content: ""; position: absolute; top: -3px; left: 50%; width: 7px; height: 7px; margin-left: -3.5px; border-radius: 50%;
+  background: var(--film); box-shadow: 0 0 0 1px rgba(244, 242, 236, 0.55); transition: background-color 0.3s linear, box-shadow 0.3s linear;
+}
+html.js-motion .corridor:not(.corridor--stills) .corridor__dir-item.is-past::before { background: var(--sand); box-shadow: 0 0 0 1px var(--sand); }
+html.js-motion .corridor:not(.corridor--stills) .corridor__dir-item.is-here::before { background: var(--sand); box-shadow: 0 0 0 5px rgba(205, 191, 156, 0.28); }
+html.js-motion .corridor:not(.corridor--stills) .corridor__dir-link { padding: 14px 8px 0; justify-content: center; }
+.corridor__dir-item.is-here .corridor__dir-link { color: var(--on-dark); }
+html.js-motion .corridor:not(.corridor--stills) .corridor__hint,
+html.js-motion .corridor:not(.corridor--stills) .corridor__loading {
+  display: block; position: absolute; left: 50%; bottom: calc(max(8px, env(safe-area-inset-bottom)) + 66px); transform: translateX(-50%);
+  white-space: nowrap; color: var(--on-dark); opacity: 0.85;
+}
+html.js-motion .corridor:not(.corridor--stills) .corridor__loading { opacity: 0; transition: opacity 0.3s linear; }
+.corridor__stage.is-loading .corridor__loading { opacity: 0.9 !important; }
+.corridor__stage.is-loading .corridor__hint { visibility: hidden; }
+
+/* ---- the title card, the rooms' captions and end titles, the outro: bottom left, one at a time */
+html.js-motion .corridor:not(.corridor--stills) .corridor__card {
+  position: absolute; z-index: 3; left: var(--margin); right: var(--margin); bottom: clamp(112px, 17svh, 176px);
+  display: block; padding: 0; max-width: 780px; pointer-events: none;
+}
+html.js-motion .corridor:not(.corridor--stills) .corridor__card::before {
+  content: ""; position: absolute; z-index: -1; left: calc(-1 * var(--margin)); right: -30%; top: -40%; bottom: -60%; pointer-events: none;
+  background: radial-gradient(70% 62% at 30% 60%, rgba(8, 9, 7, 0.62), rgba(8, 9, 7, 0));
+}
+html.js-motion .corridor:not(.corridor--stills) .corridor__eyebrow { color: var(--on-dark); opacity: 0.85; }
+html.js-motion .corridor:not(.corridor--stills) .corridor__headline { margin-top: 16px; }
+html.js-motion .corridor:not(.corridor--stills) .corridor__body { margin-top: 18px; padding: 0; color: var(--on-dark); opacity: 0.88; max-width: 46ch; }
+html.js-motion .corridor:not(.corridor--stills) .corridor__stops { position: absolute; inset: 0; z-index: 3; display: block; pointer-events: none; }
+html.js-motion .corridor:not(.corridor--stills) .corridor__stop { position: absolute; inset: 0; display: block; }
+html.js-motion .corridor:not(.corridor--stills) :is(.corridor__still, .corridor__approach) { display: none; }
+html.js-motion .corridor:not(.corridor--stills) .corridor__cap,
+html.js-motion .corridor:not(.corridor--stills) .corridor__end,
+html.js-motion .corridor:not(.corridor--stills) .corridor__outro {
+  position: absolute; left: var(--margin); right: var(--margin); bottom: clamp(100px, 15svh, 160px); opacity: 0; padding: 0; pointer-events: none;
+}
+html.js-motion .corridor:not(.corridor--stills) .corridor__cap { max-width: 520px; }
+html.js-motion .corridor:not(.corridor--stills) .corridor__cap-label,
+html.js-motion .corridor:not(.corridor--stills) .corridor__time { color: var(--on-dark); opacity: 0.85; }
+html.js-motion .corridor:not(.corridor--stills) .corridor__cap-body { color: var(--on-dark); opacity: 0.86; }
+html.js-motion .corridor:not(.corridor--stills) .corridor__title { text-shadow: 0 1px 28px rgba(8, 9, 7, 0.3); }
+html.js-motion .corridor:not(.corridor--stills) .corridor__end .corridor__cta { margin-top: 18px; }
+html.js-motion .corridor:not(.corridor--stills) .corridor__stop.is-cta .corridor__end,
+html.js-motion .corridor:not(.corridor--stills) .corridor__outro.is-cta { pointer-events: auto; }
+html.js-motion .corridor:not(.corridor--stills) .corridor__outro { z-index: 3; text-align: left; }
+html.js-motion .corridor:not(.corridor--stills) .corridor__outro-line { margin-bottom: 16px; }
+@media (max-height: 640px) { html.js-motion .corridor:not(.corridor--stills) .corridor__cap-body { display: none; } }
+@media (max-width: 600px) {
+  .corridor__sign { left: calc(var(--margin) - 4px); }
+  .corridor__sign[data-side="right"] { right: calc(var(--margin) - 4px); }
+  .corridor__sign-rods { height: clamp(104px, 14svh, 128px); }
+  .corridor__sign-plate { min-width: 128px; padding: 14px 18px 16px; gap: 8px; }
+  .corridor__sign-plate span { font-size: 1.75rem; }
+  html.js-motion .corridor:not(.corridor--stills) .corridor__cap-body { display: none; }
+  html.js-motion .corridor:not(.corridor--stills) .corridor__dir-link { flex-direction: column; align-items: center; gap: 3px; padding-top: 12px; font-size: 0.6875rem; letter-spacing: 0.12em; }
+  html.js-motion .corridor:not(.corridor--stills) .corridor__card,
+  html.js-motion .corridor:not(.corridor--stills) .corridor__cap,
+  html.js-motion .corridor:not(.corridor--stills) .corridor__end,
+  html.js-motion .corridor:not(.corridor--stills) .corridor__outro { bottom: calc(max(8px, env(safe-area-inset-bottom)) + 112px); }
+  html.js-motion .corridor:not(.corridor--stills) .corridor__hint,
+  html.js-motion .corridor:not(.corridor--stills) .corridor__loading { bottom: calc(max(8px, env(safe-area-inset-bottom)) + 74px); }
+  html.js-motion .corridor:not(.corridor--stills) .corridor__body { font-size: 1.0625rem; }
+}
+html.js-motion .corridor:not(.corridor--stills) .corridor__end .corridor__title { font-size: clamp(3.4rem, 9vw, 9.5rem); }

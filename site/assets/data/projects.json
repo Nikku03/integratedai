@@ -1,0 +1,697 @@
+{
+ "_note": "Single source for the Work index, home 'Selected work' and the case-study generator. Copy is from the copy deck; images are slugs in assets/img/photos/media.json; loops are names in assets/video (<name>.webm/.mp4, -sm variants, posters in assets/video/posters/).",
+ "stagesMaster": [
+  "Concept",
+  "Interior design",
+  "Lighting",
+  "Joinery",
+  "FF&E",
+  "Signage",
+  "Build"
+ ],
+ "order": [
+  "stillroom",
+  "common-hours",
+  "ember",
+  "dhaaga",
+  "otla",
+  "tilt"
+ ],
+ "projects": [
+  {
+   "slug": "stillroom",
+   "placeholder": true,
+   "name": "Stillroom",
+   "sector": "Bar",
+   "filter": "bars",
+   "type": "Cocktail bar",
+   "neighbourhood": "Connaught Place",
+   "city": "New Delhi",
+   "country": "India",
+   "year": "2026",
+   "opened": "January 2026",
+   "sizeM2": "150 m²",
+   "seats": "56 seats + 30 standing",
+   "scope": [
+    "Concept",
+    "Interior design",
+    "Bar design",
+    "Lighting",
+    "Acoustics",
+    "Joinery",
+    "Build"
+   ],
+   "duration": "6 months, brief to opening · 14 weeks on site",
+   "oneLiner": "A first-floor cocktail bar in a Connaught Place colonnade, designed for 1am and built to take it.",
+   "brief": "A bar team known for its house-made cordials wanted a room that works early and late: 56 seated at seven, 30 more standing by midnight. The unit was a first-floor office with a low ceiling and a single staircase.",
+   "move": {
+    "title": "The back-bar is the stage.",
+    "text": "A 9-metre back-bar of smoked-glass shelves, lit from within, is the brightest thing in the room after ten, and every seat and standing spot faces it. Lighting scenes step the rest of the room down around it, three times a night."
+   },
+   "details": [
+    {
+     "label": "Stations",
+     "text": "Two bar stations drawn at full size with the head bartender, from speed rail to ice well to glass washer. Nothing is more than one turn away."
+    },
+    {
+     "label": "Bar top",
+     "text": "Honed Udaipur green marble, sealed for citrus and sugar, with an oiled-brass edge that gets better as it wears."
+    },
+    {
+     "label": "Scenes",
+     "text": "Lighting on a timer at 19:00, 22:00 and 00:30. Nobody on the floor touches a switch."
+    }
+   ],
+   "build": "We built in a working market: deliveries before 10:00, noisy works after the shops shut. The bar counter was made off-site in three sections and lifted in through the front window in a single night.",
+   "outcome": [
+    "At 01:00 on a full Saturday you can still hear the person next to you. The acoustic panels are hidden behind the fabric ceiling and the banquette backs.",
+    "Weeknights run from one station; the second opens only when the room needs it."
+   ],
+   "quote": {
+    "text": "They designed the bar for the night we actually have, not the one in the mood board. And then they built it.",
+    "attribution": "Owner, Stillroom"
+   },
+   "credits": {
+    "photography": "Placeholder stock photography",
+    "designAndBuild": "Two Squares",
+    "collaborators": "Acoustic consultant: [Consultant] · Stone: [Supplier]"
+   },
+   "seo": {
+    "title": "Stillroom, New Delhi · bar design & build — Two Squares",
+    "description": "A first-floor cocktail bar in Connaught Place: 56 seats, 30 standing and a 9-metre back-bar lit as the stage. Designed and built by Two Squares."
+   },
+   "altExamples": [
+    "A long back-bar of smoked-glass shelves glowing behind a green marble counter, late at night.",
+    "A bartender reaching into the speed rail at a compact bar station."
+   ],
+   "next": "dhaaga",
+   "location": "Connaught Place, New Delhi",
+   "url": "work/stillroom.html",
+   "accent": "bar",
+   "images": {
+    "hero": "bar-a-01-red-lounge-wide",
+    "cover": "bar-a-03-fireplace-brick",
+    "rows": [
+     "bar-a-01-red-lounge-wide",
+     "bar-a-06-cocktail-panel",
+     "bar-a-05-cocktail-banquette"
+    ],
+    "gallery": [
+     {
+      "layout": "inset",
+      "slugs": [
+       "bar-a-02-arch-fireplace"
+      ]
+     },
+     {
+      "layout": "full",
+      "slugs": [
+       "bar-a-04-red-room-bar"
+      ]
+     },
+     {
+      "layout": "pair",
+      "slugs": [
+       "bar-a-03-fireplace-brick",
+       "bar-a-06-cocktail-panel"
+      ]
+     },
+     {
+      "layout": "full",
+      "slugs": [
+       "bar-a-05-cocktail-banquette"
+      ]
+     }
+    ],
+    "details": [
+     "people-01-bar-counter-couple",
+     "material-08-marble-counter-edge",
+     "material-12-fluted-glass"
+    ]
+   },
+   "loop": "loop-cocktail"
+  },
+  {
+   "slug": "common-hours",
+   "placeholder": true,
+   "name": "Common Hours",
+   "sector": "Café",
+   "filter": "cafes",
+   "type": "Café & bakery",
+   "neighbourhood": "Indiranagar",
+   "city": "Bengaluru",
+   "country": "India",
+   "year": "2025",
+   "opened": "February 2025",
+   "sizeM2": "185 m²",
+   "seats": "62 seats (46 inside, 16 on the verandah)",
+   "scope": [
+    "Concept",
+    "Interior design",
+    "Lighting",
+    "Joinery",
+    "FF&E",
+    "Build"
+   ],
+   "duration": "7 months, brief to opening · 15 weeks on site",
+   "oneLiner": "An all-day café and bakery in a 1970s Indiranagar house, planned so the morning queue and the laptop crowd never meet.",
+   "brief": "A bakery with a cult following at the weekend market wanted a permanent home: a café that could pour 300 coffees before ten, then keep people until four. The house had a deep verandah, three small rooms and a staircase in exactly the wrong place.",
+   "move": {
+    "title": "Two speeds, one house.",
+    "text": "We opened the front rooms into a fast lane: door, counter, pick-up, out. The back rooms stayed small and slow, and between the two the bakery sits behind glass, so you queue past the lamination bench and sit where you can watch the ovens."
+   },
+   "details": [
+    {
+     "label": "Counter",
+     "text": "The espresso machine sits in a section of counter dropped by 150 mm, so the barista faces the queue, not the back of a machine."
+    },
+    {
+     "label": "Light",
+     "text": "Daylight carries the morning. From 16:00 the scene steps down to 2,700 K, with the pastry case held at 500 lux and the tables at 150."
+    },
+    {
+     "label": "Joinery",
+     "text": "Window benches in teak reclaimed from the house’s original doors, with a charging point under every second cushion."
+    }
+   ],
+   "build": "We built in two phases so the bakery could be commissioned and test-baked for three weeks before the café opened. On a residential street, the neighbours had the programme and our site lead’s number before the first delivery.",
+   "outcome": [
+    "The queue runs out of the door instead of through the room, and the back rooms stay full well into the afternoon.",
+    "The owners added a second daily bake within two months of opening."
+   ],
+   "quote": {
+    "text": "The queue used to be our problem. Now it’s our best advert.",
+    "attribution": "Co-founder & head baker, Common Hours"
+   },
+   "credits": {
+    "photography": "Placeholder stock photography",
+    "designAndBuild": "Two Squares",
+    "collaborators": "Bakery equipment: [Supplier] · Structural engineer: [Consultant]"
+   },
+   "seo": {
+    "title": "Common Hours, Bengaluru · café design & build — Two Squares",
+    "description": "An all-day café and bakery in a 1970s Indiranagar house: 185 m², 62 seats, designed and built by Two Squares with 15 weeks on site."
+   },
+   "altExamples": [
+    "The Common Hours counter at 08:00: terracotta-tiled front, teak top, a queue running toward the door.",
+    "The bakery behind glass, seen from the back room, trays of croissants cooling on the lamination bench."
+   ],
+   "next": "ember",
+   "location": "Indiranagar, Bengaluru",
+   "url": "work/common-hours.html",
+   "accent": "cafe",
+   "images": {
+    "hero": "hero-05-black-windows-cafe",
+    "cover": "cafe-a-01-window-seating-wide",
+    "rows": [
+     "hero-05-black-windows-cafe",
+     "cafe-a-01-window-seating-wide",
+     "cafe-a-03-timber-chair-plant"
+    ],
+    "gallery": [
+     {
+      "layout": "inset",
+      "slugs": [
+       "cafe-a-01-window-seating-wide"
+      ]
+     },
+     {
+      "layout": "full",
+      "slugs": [
+       "hero-03-plant-hall-cafe"
+      ]
+     },
+     {
+      "layout": "pair",
+      "slugs": [
+       "cafe-a-02-rattan-table-plant",
+       "cafe-a-03-timber-chair-plant"
+      ]
+     },
+     {
+      "layout": "full",
+      "slugs": [
+       "material-14-plaster-slat-shadow"
+      ]
+     }
+    ],
+    "details": [
+     "material-13-travertine-marble-dish",
+     "material-10-slatted-timber-pendants",
+     "material-09-timber-edge-joinery"
+    ]
+   },
+   "loop": "loop-dough"
+  },
+  {
+   "slug": "ember",
+   "placeholder": true,
+   "name": "Ember",
+   "sector": "Restaurant",
+   "filter": "restaurants",
+   "type": "Wood-fire restaurant",
+   "neighbourhood": "Alfama",
+   "city": "Lisbon",
+   "country": "Portugal",
+   "year": "2025",
+   "opened": "March 2025",
+   "sizeM2": "310 m²",
+   "seats": "84 covers",
+   "scope": [
+    "Concept",
+    "Interior design",
+    "Lighting",
+    "Joinery",
+    "FF&E",
+    "Build"
+   ],
+   "duration": "9 months, brief to opening · 22 weeks on site",
+   "oneLiner": "A wood-fire restaurant in a former Alfama warehouse. Eighty-four covers around an open hearth, built to feel like it’s always been there.",
+   "brief": "The chef wanted every seat to see the fire. The building wanted to keep its stone walls, its awkward columns and a floor that falls almost a metre from front to back.",
+   "move": {
+    "title": "Put the fire in the middle.",
+    "text": "We planned the room as three terraces stepping down toward the hearth, so the fall in the floor became the seating plan. The columns became the edges of rooms rather than obstacles in one."
+   },
+   "details": [
+    {
+     "label": "Materials",
+     "text": "Four materials, no more: lime plaster, blackened steel, oak and a hand-glazed terracotta tile."
+    },
+    {
+     "label": "Tile",
+     "text": "The terracotta runs unbroken from the bar front to the kitchen pass: 26 metres of it, set out by one tiler."
+    },
+    {
+     "label": "Light",
+     "text": "Warm and low throughout, with a single scene change at dusk. In March, that’s 19:40."
+    }
+   ],
+   "build": "We ran the build with a Lisbon contractor under our contract and our own site lead, cleaning the stone rather than covering it. Every new service runs in the floor or the terrace risers, and the hearth hood was sized with the kitchen engineer so the room smells of wood, not smoke.",
+   "outcome": [
+    "At 84 covers the room still holds a conversation: the terraces break up the sound as well as the sightlines.",
+    "No table is more than a dozen steps from the pass, and the kitchen feels it by the second sitting."
+   ],
+   "quote": {
+    "text": "Turnover went up and the room got quieter. I didn’t know both were possible.",
+    "attribution": "Chef-owner, Ember"
+   },
+   "credits": {
+    "photography": "Placeholder stock photography",
+    "designAndBuild": "Two Squares",
+    "collaborators": "Local contractor: [Contractor] · Kitchen engineer: [Consultant]"
+   },
+   "seo": {
+    "title": "Ember, Lisbon · restaurant design & build — Two Squares",
+    "description": "An 84-cover wood-fire restaurant in a former Alfama warehouse, planned as three terraces around an open hearth. Designed and built by Two Squares."
+   },
+   "altExamples": [
+    "The open hearth seen from the entrance, three terraces of tables stepping down toward it.",
+    "Hand-glazed terracotta tile running along the bar front, lit low and warm."
+   ],
+   "next": "stillroom",
+   "location": "Alfama, Lisbon",
+   "url": "work/ember.html",
+   "accent": "restaurant",
+   "images": {
+    "hero": "rest-c-03-window-plants",
+    "cover": "rest-c-01-bookcase-long-table",
+    "rows": [
+     "rest-c-03-window-plants",
+     "rest-c-01-bookcase-long-table",
+     "rest-c-06-table-detail"
+    ],
+    "gallery": [
+     {
+      "layout": "inset",
+      "slugs": [
+       "rest-c-01-bookcase-long-table"
+      ]
+     },
+     {
+      "layout": "full",
+      "slugs": [
+       "rest-c-04-bar-counter"
+      ]
+     },
+     {
+      "layout": "pair",
+      "slugs": [
+       "rest-c-02-brick-stair",
+       "rest-c-05-dark-stair-bar"
+      ]
+     },
+     {
+      "layout": "full",
+      "slugs": [
+       "rest-c-06-table-detail"
+      ]
+     }
+    ],
+    "details": [
+     "material-04-terrazzo-chips",
+     "build-06-tiling-hands",
+     "material-11-brass-pendants"
+    ]
+   },
+   "loop": "loop-plating"
+  },
+  {
+   "slug": "dhaaga",
+   "placeholder": true,
+   "name": "Dhaaga",
+   "sector": "Retail",
+   "filter": "retail",
+   "type": "Textile & homeware store",
+   "neighbourhood": "Alserkal Avenue",
+   "city": "Dubai",
+   "country": "UAE",
+   "year": "2025",
+   "opened": "October 2025",
+   "sizeM2": "210 m²",
+   "seats": null,
+   "keyFigure": "7-metre ceiling",
+   "scope": [
+    "Concept",
+    "Interior design",
+    "Fixtures",
+    "Lighting",
+    "Signage",
+    "Build",
+    "Roll-out kit"
+   ],
+   "duration": "7 months, brief to opening · 12 days installing on site",
+   "oneLiner": "A Jaipur block-printing house’s first store outside India, with the stock hung overhead like cloth drying in a dyer’s yard.",
+   "brief": "A family block-printing house from Jaipur wanted its first store abroad to feel like the workshop, not a showroom: cloth you can touch, prints you can watch being cut. The unit was a bare warehouse with a 7-metre ceiling and no daylight.",
+   "move": {
+    "title": "Hang the cloth like it’s drying.",
+    "text": "Lengths of fabric run on ceiling rails five metres up and come down on counterweights to be handled and cut. The ceiling is the stock, and it changes every time a new print arrives."
+   },
+   "details": [
+    {
+     "label": "Rails",
+     "text": "Blackened-steel rails and counterweights, each carrying a 12-metre bolt of cloth, lowered by one person with one hand."
+    },
+    {
+     "label": "Till",
+     "text": "A 6-metre cutting table in solid sheesham doubles as the till, with a brass rule inlaid along its edge."
+    },
+    {
+     "label": "Light",
+     "text": "3,500 K throughout at CRI 97 or higher, so indigo still looks like indigo when you get it home."
+    }
+   ],
+   "build": "Every fixture was made in India, flat-packed into two containers and installed in 12 days by our site team, with a Dubai-licensed contractor for the electrics and fire systems. Each rail was load-tested before the first bolt of cloth went up.",
+   "outcome": [
+    "Customers stay long enough to have fabric cut to order, and the cutting table is busy most afternoons.",
+    "The fixtures are now documented as a kit of parts for the brand’s next two stores."
+   ],
+   "quote": {
+    "text": "Our customers touch everything. For the first time, we want them to.",
+    "attribution": "Director, Dhaaga"
+   },
+   "credits": {
+    "photography": "Placeholder stock photography",
+    "designAndBuild": "Two Squares",
+    "collaborators": "Local contractor: [Contractor] · Rigging engineer: [Consultant]"
+   },
+   "seo": {
+    "title": "Dhaaga, Dubai · retail design & build — Two Squares",
+    "description": "A Jaipur textile house’s first store abroad: a 210 m² Alserkal Avenue warehouse with cloth hung on counterweighted rails. Designed and built by Two Squares."
+   },
+   "altExamples": [
+    "Lengths of block-printed cloth hanging from ceiling rails in a tall warehouse store.",
+    "A long sheesham cutting table with a brass rule inlaid along the edge, a bolt of indigo cloth unrolled on it."
+   ],
+   "next": "otla",
+   "location": "Alserkal Avenue, Dubai",
+   "url": "work/dhaaga.html",
+   "accent": "retail",
+   "images": {
+    "hero": "retailA-01-boutique-rail-plants",
+    "cover": "retailA-03-fitting-corner-rattan",
+    "rows": [
+     "retailA-01-boutique-rail-plants",
+     "retailA-05-haberdashery-wall",
+     "retailA-04-cutting-table-fabrics"
+    ],
+    "gallery": [
+     {
+      "layout": "inset",
+      "slugs": [
+       "retailA-02-fitting-curtains"
+      ]
+     },
+     {
+      "layout": "full",
+      "slugs": [
+       "retailA-06-atelier-workroom"
+      ]
+     },
+     {
+      "layout": "pair",
+      "slugs": [
+       "retailA-03-fitting-corner-rattan",
+       "retailA-05-haberdashery-wall"
+      ]
+     },
+     {
+      "layout": "full",
+      "slugs": [
+       "retailA-04-cutting-table-fabrics"
+      ]
+     }
+    ],
+    "details": [
+     "process-09-material-board-hands",
+     "build-04-marking-timber",
+     "material-06-brass-toggle-plaster"
+    ]
+   },
+   "loop": "loop-racks"
+  },
+  {
+   "slug": "otla",
+   "placeholder": true,
+   "name": "Otla",
+   "sector": "Restaurant",
+   "filter": "restaurants",
+   "type": "Gujarati thali restaurant",
+   "neighbourhood": "Bandra West",
+   "city": "Mumbai",
+   "country": "India",
+   "year": "2024",
+   "opened": "November 2024",
+   "sizeM2": "240 m² + a 60 m² garden",
+   "seats": "88 covers (64 inside, 24 in the garden)",
+   "scope": [
+    "Concept",
+    "Interior design",
+    "Lighting",
+    "Joinery",
+    "FF&E",
+    "Signage",
+    "Build"
+   ],
+   "duration": "8 months, brief to opening · 20 weeks on site",
+   "oneLiner": "A Gujarati thali restaurant in a 1930s Bandra bungalow, built around the raised plinth where families used to spend their evenings.",
+   "brief": "A family caterer’s first restaurant: 88 covers, a thali service that needs a refill at every table every few minutes, and a heritage bungalow whose outside could not change. It had to feel like somebody’s home and run like a canteen at one o’clock.",
+   "move": {
+    "title": "Sit on the otla.",
+    "text": "An otla is the raised plinth at the front of a Gujarati house, where the evening happens. We ran one around three walls of the dining room at 450 mm — seat height — as a single continuous banquette, and kept a clear lane down the middle wide enough for two servers with refill pots to pass."
+   },
+   "details": [
+    {
+     "label": "Stone",
+     "text": "The otla is grey Kota stone with a rounded edge, cushioned in block-printed cotton covers that unzip for washing."
+    },
+    {
+     "label": "Service",
+     "text": "Refill stations are built into the plinth every six metres, so no server walks more than a dozen steps for more dal."
+    },
+    {
+     "label": "Light & air",
+     "text": "The original ceiling fans restored and rewired; table light held at 200 lux, so food looks like food."
+    }
+   ],
+   "build": "The bungalow sits in a heritage precinct, so the façade, roof and windows were repaired like-for-like and everything new inside was made to be reversible. We sheeted the roof before anything else began and worked 20 weeks through the monsoon.",
+   "outcome": [
+    "Refills reach the table before anyone asks, which is the owners’ only real test of a thali service.",
+    "The garden tables are the first to book on weekend evenings."
+   ],
+   "quote": {
+    "text": "It still feels like somebody’s house. That was the whole brief.",
+    "attribution": "Owner, Otla"
+   },
+   "credits": {
+    "photography": "Placeholder stock photography",
+    "designAndBuild": "Two Squares",
+    "collaborators": "Heritage consultant: [Consultant] · Textiles: [Block-print studio]"
+   },
+   "seo": {
+    "title": "Otla, Mumbai · restaurant design & build — Two Squares",
+    "description": "An 88-cover Gujarati thali restaurant in a 1930s Bandra bungalow, built around a Kota stone plinth. Designed and built by Two Squares."
+   },
+   "altExamples": [
+    "A long Kota stone plinth running around the dining room, cushioned in block-printed cotton, set for thali.",
+    "The restored bungalow at dusk, garden tables lit under the trees."
+   ],
+   "next": "tilt",
+   "location": "Bandra West, Mumbai",
+   "url": "work/otla.html",
+   "accent": "restaurant",
+   "images": {
+    "hero": "rest-a-01-dining-room-banquette",
+    "cover": "rest-a-06-veranda-green-shutters",
+    "rows": [
+     "rest-a-01-dining-room-banquette",
+     "rest-a-06-veranda-green-shutters",
+     "rest-a-05-table-setting"
+    ],
+    "gallery": [
+     {
+      "layout": "inset",
+      "slugs": [
+       "rest-a-06-veranda-green-shutters"
+      ]
+     },
+     {
+      "layout": "full",
+      "slugs": [
+       "rest-a-03-long-room"
+      ]
+     },
+     {
+      "layout": "pair",
+      "slugs": [
+       "rest-a-04-green-door-detail",
+       "rest-a-05-table-setting"
+      ]
+     },
+     {
+      "layout": "full",
+      "slugs": [
+       "rest-a-02-fireplace-bentwood"
+      ]
+     }
+    ],
+    "details": [
+     "material-03-terrazzo-speckled",
+     "people-03-dinner-table-warm",
+     "window-01-arched-window-table"
+    ]
+   },
+   "loop": "loop-tiling"
+  },
+  {
+   "slug": "tilt",
+   "placeholder": true,
+   "name": "Tilt",
+   "sector": "Café",
+   "filter": "cafes",
+   "type": "Espresso bar",
+   "neighbourhood": "Sector 44",
+   "city": "Gurugram",
+   "country": "India",
+   "year": "2024",
+   "opened": "September 2024",
+   "sizeM2": "48 m²",
+   "seats": "12 seats + an 8-person standing ledge",
+   "scope": [
+    "Counter & workstation",
+    "Joinery",
+    "Lighting",
+    "Signage",
+    "Build"
+   ],
+   "duration": "5 weeks design · 19 nights on site",
+   "oneLiner": "An espresso bar in a working office lobby, built in 19 nights without closing the building.",
+   "brief": "A roaster opening its first bar in an office lobby. Four hundred people pass between 08:30 and 09:30, the landlord allowed no daytime works, and there was no gas. Speed first, room second.",
+   "move": {
+    "title": "The counter is the room.",
+    "text": "A single 7.2-metre bar runs the length of the unit. You order at one end and collect at the other, so the queue and the pick-up never cross, and everything behind the counter is set out for two baristas at peak and one after lunch."
+   },
+   "details": [
+    {
+     "label": "Workstation",
+     "text": "Grinders, knock-box chute and milk fridge all within one step of the group heads, drawn from the head barista’s reach."
+    },
+    {
+     "label": "Counter",
+     "text": "A 30 mm solid-surface top with a routed drip channel; the front is vertical ash battens that lift out for access to the plumbing."
+    },
+    {
+     "label": "Sign",
+     "text": "Backlit brushed brass, sized to read from the lift lobby 30 metres away."
+    }
+   ],
+   "build": "All joinery was made off-site and installed between 22:00 and 06:00, with the lobby cleaned and handed back every morning. Water, drainage and a 32-amp supply went in through the ceiling void over four nights, before the counter arrived.",
+   "outcome": [
+    "Peak hour runs on two baristas, and the queue stops short of the lift doors.",
+    "The landlord has since asked us to plan the building’s second food-and-drink unit."
+   ],
+   "quote": {
+    "text": "We opened on a Monday. Nobody in the lobby knew we’d been there until the grinder started.",
+    "attribution": "Founder, Tilt"
+   },
+   "credits": {
+    "photography": "Placeholder stock photography",
+    "designAndBuild": "Two Squares",
+    "collaborators": "Espresso equipment: [Supplier] · Signage fabrication: [Fabricator]"
+   },
+   "seo": {
+    "title": "Tilt, Gurugram · café counter design & build — Two Squares",
+    "description": "A 48 m² espresso bar in a working office lobby in Gurugram, built by Two Squares in 19 nights. A 7.2-metre counter set out for the 08:30 rush."
+   },
+   "altExamples": [
+    "A long espresso counter in an office lobby, ash-battened front, two baristas working the machine.",
+    "Close-up of the workstation: grinders, knock-box chute and milk fridge within one step of the group heads."
+   ],
+   "next": "common-hours",
+   "location": "Sector 44, Gurugram",
+   "url": "work/tilt.html",
+   "accent": "cafe",
+   "images": {
+    "hero": "cafe-b-03-counter-edge-light",
+    "cover": "cafe-c-01-counter-shelves-window",
+    "rows": [
+     "cafe-b-03-counter-edge-light",
+     "cafe-c-01-counter-shelves-window",
+     "cafe-b-01-window-bar-stools"
+    ],
+    "gallery": [
+     {
+      "layout": "inset",
+      "slugs": [
+       "cafe-c-01-counter-shelves-window"
+      ]
+     },
+     {
+      "layout": "full",
+      "slugs": [
+       "people-04-barista-cup"
+      ]
+     },
+     {
+      "layout": "pair",
+      "slugs": [
+       "cafe-b-01-window-bar-stools",
+       "cafe-c-02-window-desk-nook"
+      ]
+     },
+     {
+      "layout": "full",
+      "slugs": [
+       "cafe-b-02-timber-counter-cake"
+      ]
+     }
+    ],
+    "details": [
+     "cafe-c-04-window-light-detail",
+     "cafe-b-04-lemonade-timber-table",
+     "material-05-boucle-upholstery"
+    ]
+   },
+   "loop": "loop-icedlatte"
+  }
+ ]
+}

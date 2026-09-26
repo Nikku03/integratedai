@@ -1,0 +1,64 @@
+<!-- The café sequence: the corner table and the paper menu card. Opened by any button[data-cafe-seq-open] (cafe-seq.js). -->
+<div class="cafe-seq" id="corner-table" role="dialog" aria-modal="true" aria-labelledby="cafe-seq-title" data-cafe-seq data-lenis-prevent
+     data-announce="You’re at the corner table. The menu lists four things we can make for you." data-chosen="{name}. We’ll bring the form.">
+  <h2 class="sr-only" id="cafe-seq-title">The corner table</h2>
+  <div class="cafe-seq__frames">
+      <figure class="cafe-seq__frame" data-frame="0" style="--lqip:url(data:image/webp;base64,UklGRlwAAABXRUJQVlA4IFAAAAAQBACdASoNABQAPt1cpkyopSOiMAgBEBuJZQCdABhwaeBzO9PRmxDwAAD+W34q4tKiBfK1D/sx1OQNxSkXeT6tufRIq4kCzVw/xAmrPQAAAA==)">
+        <img class="cafe-seq__img" src="{{root}}assets/img/photos/single-02-green-tile-bar-1600.webp" srcset="{{root}}assets/img/photos/single-02-green-tile-bar-800.webp 800w, {{root}}assets/img/photos/single-02-green-tile-bar-1600.webp 1600w" sizes="100vw" width="1061" height="1600" alt="A café counter with a short morning queue, seen from just inside the door." loading="lazy" decoding="async">
+        <figcaption class="cafe-seq__cap t-label"><span class="t-num">08:02</span> — Past the queue.</figcaption>
+      </figure>
+      <figure class="cafe-seq__frame" data-frame="1" style="--lqip:url(data:image/webp;base64,UklGRmgAAABXRUJQVlA4IFwAAAAQBACdASoNABQAPt1ap0yopSOiMAgBEBuJYwCdABju+mtRZbCmq7XZpAD4VEICjh/phK8umOZp1zAtOu347BZvjzaiJ3XSxIKtUZQgfD85jKmFKhlTTw6QwgAAAA==)">
+        <img class="cafe-seq__img" src="{{root}}assets/img/photos/single-01-green-cafe-stools-1600.webp" srcset="{{root}}assets/img/photos/single-01-green-cafe-stools-800.webp 800w, {{root}}assets/img/photos/single-01-green-cafe-stools-1600.webp 1600w" sizes="100vw" width="1067" height="1600" alt="Walking past the end of the counter toward the back of the room." loading="lazy" decoding="async">
+        <figcaption class="cafe-seq__cap t-label"><span class="t-num">08:03</span> — Round the end of the counter.</figcaption>
+      </figure>
+      <figure class="cafe-seq__frame" data-frame="2" style="--lqip:url(data:image/webp;base64,UklGRmIAAABXRUJQVlA4IFYAAADQAwCdASoNABQAPt1apkyopSOiMAgBEBuJZwCdACK51pnAp8OIAywA/nPpRngu/Q7ZOuQyRrDy8u8MzE4YONhx0/+Tq8X7xwV89up3BWKCMIP1iiAAAA==)">
+        <img class="cafe-seq__img" src="{{root}}assets/img/photos/window-02-bay-window-table-1600.webp" srcset="{{root}}assets/img/photos/window-02-bay-window-table-800.webp 800w, {{root}}assets/img/photos/window-02-bay-window-table-1600.webp 1600w" sizes="100vw" width="1067" height="1600" alt="A small corner table by the window, two chairs, morning light across the top." loading="lazy" decoding="async">
+        <figcaption class="cafe-seq__cap t-label"><span class="t-num">08:04</span> — The corner table. Back to the wall, window on your left, the whole room in view.</figcaption>
+      </figure>
+      <figure class="cafe-seq__frame cafe-seq__frame--table" data-frame="3">
+        <div class="cafe-seq__table-media" role="img" aria-label="Looking down at the table: a paper menu card beside a cup of coffee.">
+          <video class="cafe-seq__video" muted playsinline preload="none" aria-hidden="true" tabindex="-1" data-src="{{root}}assets/video/seated-cup" data-src-sm="{{root}}assets/video/seated-cup-sm"></video>
+        </div>
+        <figcaption class="cafe-seq__cap t-label"><span class="t-num">08:05</span> — Sit down. The menu’s on the table.</figcaption>
+      </figure>
+  </div>
+  <div class="cafe-seq__table">
+    <div class="menu-card__drop">
+      <span class="menu-card__shadow" aria-hidden="true"></span>
+      <article class="menu-card" aria-labelledby="menu-card-title">
+        <p class="menu-card__top t-label">Corner table · 08:05</p>
+        <p class="menu-card__mark"><span class="logo logo--mark" aria-hidden="true"></span><span class="sr-only">Two Squares</span></p>
+        <h3 class="menu-card__heading" id="menu-card-title">Menu</h3>
+        <p class="menu-card__sub">What are we making?</p>
+        <ul class="menu-card__items">
+            <li class="menu-card__item">
+              <a class="menu-card__link" href="{{root}}contact.html?venue=cafe&amp;service=whole-venue&amp;from=menu-card&amp;item=whole-cafe&amp;message=We%E2%80%99d%20like%20the%20whole%20caf%C3%A9%20designed%20and%20built." data-item="whole-cafe" data-cursor="Order"><svg class="menu-card__tick" viewBox="0 0 28 22" aria-hidden="true" focusable="false"><path d="M2.5 12.5c2.6 1.6 4.6 3.7 6.2 6.6C12.4 11 18 5.2 25.5 2.5"/></svg><span class="menu-card__name">The whole café</span><span class="menu-card__dots" aria-hidden="true"></span><span class="menu-card__price">On request</span></a>
+              <p class="menu-card__desc">Design and build, from the empty shell to the first flat white.</p>
+            </li>
+            <li class="menu-card__item">
+              <a class="menu-card__link" href="{{root}}contact.html?venue=cafe&amp;service=counter&amp;from=menu-card&amp;item=just-the-counter&amp;message=We%E2%80%99d%20like%20to%20rework%20the%20counter%20and%20workstation." data-item="just-the-counter" data-cursor="Order"><svg class="menu-card__tick" viewBox="0 0 28 22" aria-hidden="true" focusable="false"><path d="M2.5 12.5c2.6 1.6 4.6 3.7 6.2 6.6C12.4 11 18 5.2 25.5 2.5"/></svg><span class="menu-card__name">Just the counter</span><span class="menu-card__dots" aria-hidden="true"></span><span class="menu-card__price">On request</span></a>
+              <p class="menu-card__desc">The workstation that makes or breaks the morning rush.</p>
+            </li>
+            <li class="menu-card__item">
+              <a class="menu-card__link" href="{{root}}contact.html?venue=cafe&amp;service=refresh&amp;stage=trading&amp;from=menu-card&amp;item=a-refresh&amp;message=We%E2%80%99re%20open%20and%20trading%2C%20and%20the%20room%20needs%20a%20refresh." data-item="a-refresh" data-cursor="Order"><svg class="menu-card__tick" viewBox="0 0 28 22" aria-hidden="true" focusable="false"><path d="M2.5 12.5c2.6 1.6 4.6 3.7 6.2 6.6C12.4 11 18 5.2 25.5 2.5"/></svg><span class="menu-card__name">A refresh</span><span class="menu-card__dots" aria-hidden="true"></span><span class="menu-card__price">On request</span></a>
+              <p class="menu-card__desc">New light, new seats, the same good room underneath. Often without closing.</p>
+            </li>
+            <li class="menu-card__item">
+              <a class="menu-card__link" href="{{root}}contact.html?service=not-sure&amp;from=menu-card&amp;item=something-else" data-item="something-else" data-cursor="Order"><svg class="menu-card__tick" viewBox="0 0 28 22" aria-hidden="true" focusable="false"><path d="M2.5 12.5c2.6 1.6 4.6 3.7 6.2 6.6C12.4 11 18 5.2 25.5 2.5"/></svg><span class="menu-card__name">Something else</span><span class="menu-card__dots" aria-hidden="true"></span><span class="menu-card__price">On request</span></a>
+              <p class="menu-card__desc">A bakery, a kiosk, a second site, a question. Tell us.</p>
+            </li>
+        </ul>
+        <p class="menu-card__foot">Choose a dish and we’ll bring the form.</p>
+        <p class="menu-card__note">Prices on request · Made by the same team, start to finish</p>
+      </article>
+    </div>
+    <p class="cafe-seq__more"><a class="text-link" href="{{root}}services.html">See the full menu</a></p>
+  </div>
+  <div class="cafe-seq__bar">
+    <button class="btn btn--on-dark btn--sm cafe-seq__skip" type="button">Skip to the menu <span class="arr" aria-hidden="true">→</span></button>
+    <button class="cafe-seq__close" type="button">Stand up<i aria-hidden="true"></i></button>
+    <a class="cafe-seq__close cafe-seq__close--nojs" href="#walk">Stand up<i aria-hidden="true"></i></a>
+  </div>
+  <p class="cafe-seq__loading t-label" aria-hidden="true">Finding you a table…</p>
+  <p class="sr-only" aria-live="polite" data-cafe-live></p>
+</div>

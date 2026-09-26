@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="en-IN" class="no-js">
+<head>
+<!-- @partial:head -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>
+/* motion bootstrap — inline, before any stylesheet: pre-animation states only when motion is allowed, fail open */
+(function (d, w) {
+  var r = d.documentElement, motion = w.matchMedia("(prefers-reduced-motion: no-preference)").matches;
+  r.classList.remove("no-js"); r.classList.add("js");
+  try { if (sessionStorage.getItem("ts-intro")) r.classList.add("no-preload"); } catch (e) { r.classList.add("no-preload"); }
+  if (motion) {
+    r.classList.add("js-motion");
+    try { if (!("CSSViewTransitionRule" in w) && sessionStorage.getItem("ts-curtain")) r.classList.add("curtain-in"); } catch (e) {}
+  }
+  w.addEventListener("pagereveal", function (e) { w.__vt = e.viewTransition || null; }, { once: true });
+  setTimeout(function () { if (!w.Motion || !w.Motion.booted) r.classList.remove("curtain-in"); }, 2500);
+  setTimeout(function () { if (!w.Motion || !w.Motion.booted) r.classList.remove("js-motion"); }, 4000);
+})(document, window);
+</script>
+<link rel="preload" href="assets/fonts/InstrumentSerif-normal-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/InstrumentSans-normal-400_600-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="assets/css/fonts.css">
+<link rel="stylesheet" href="assets/css/base.css">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#383c20">
+<meta property="og:site_name" content="Two Squares — Design &amp; Build">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<!-- /@partial:head -->
+<title>Start a project — Two Squares Design &amp; Build</title>
+<meta name="description" content="Tell us about your café, restaurant, bar or shop: the site, the size and the date you want to open. We reply within two working days.">
+<meta property="og:title" content="Start a project — Two Squares Design &amp; Build">
+<meta property="og:description" content="Tell us about your café, restaurant, bar or shop: the site, the size and the date you want to open. We reply within two working days.">
+<meta property="og:image" content="assets/img/photos/menu-03-seated-window-notebook-1600.webp">
+<link rel="stylesheet" href="assets/css/contact.css">
+</head>
+<body data-page="contact" data-section="contact">
+<!-- @partial:header -->
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header" id="top">
+  <div class="wrap site-header__inner">
+    <a class="site-header__brand" href="index.html" aria-label="Two Squares, home"><span class="logo logo--mark" aria-hidden="true"></span></a>
+    <nav class="site-header__nav" aria-label="Primary">
+      <a href="work.html" data-section="work">Work</a>
+      <a href="services.html" data-section="services">Services</a>
+      <a href="studio.html" data-section="studio">Studio</a>
+      <a href="contact.html" data-section="contact">Contact</a>
+      <a class="btn btn--sm" href="contact.html">Start a project <span class="arr" aria-hidden="true">→</span></a>
+    </nav>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-overlay"><span class="nav-toggle__bars" aria-hidden="true"></span>Index</button>
+  </div>
+</header>
+<div class="nav-overlay" id="nav-overlay" role="dialog" aria-modal="true" aria-label="Site index" data-lenis-prevent>
+  <span class="nav-overlay__shape nav-overlay__shape--a" aria-hidden="true"></span>
+  <span class="nav-overlay__shape nav-overlay__shape--b" aria-hidden="true"></span>
+  <div class="wrap nav-overlay__top">
+    <a href="index.html" aria-label="Two Squares, home"><span class="logo logo--mark" aria-hidden="true"></span></a>
+    <button class="nav-overlay__close" type="button">Close <i aria-hidden="true"></i></button>
+  </div>
+  <nav class="wrap nav-overlay__links" aria-label="Site index">
+    <a class="nav-overlay__link" href="index.html"><span class="t-display-l">Home</span><small>The walk, and the corner table.</small></a>
+    <a class="nav-overlay__link" href="work.html" data-section="work"><span class="t-display-l">Work</span><small>Cafés, restaurants, bars and shops.</small></a>
+    <a class="nav-overlay__link" href="services.html" data-section="services"><span class="t-display-l">The menu</span><small>What we make, and how.</small></a>
+    <a class="nav-overlay__link" href="studio.html" data-section="studio"><span class="t-display-l">Studio</span><small>One team, design and build.</small></a>
+    <a class="nav-overlay__link" href="contact.html" data-section="contact"><span class="t-display-l">Contact</span><small>Tell us about the room.</small></a>
+  </nav>
+  <div class="wrap nav-overlay__foot t-small">
+    <a href="mailto:hello@twosquares.studio">hello@twosquares.studio</a>
+    <span>+91 [00000 00000]</span>
+    <span>By appointment · [City]</span>
+  </div>
+</div>
+<!-- /@partial:header -->
+<main id="main">
+
+  <!-- ============================================================ hero -->
+  <section class="contact-hero" aria-labelledby="contact-title">
+    <div class="wrap grid">
+      <div class="contact-hero__text">
+        <p class="t-label" data-reveal>Start a project</p>
+        <h1 class="t-display-xl" id="contact-title" data-split>Tell us about the <em>room</em>.</h1>
+        <p class="t-lede muted" data-reveal>A floor plan, a few photos and the date you want to open are plenty to start. If you haven’t signed the lease yet, even better. That’s the best time to bring us in.</p>
+      </div>
+      <figure class="media contact-hero__img" data-reveal="image" style="aspect-ratio:4/5; --lqip:url(data:image/webp;base64,UklGRmwAAABXRUJQVlA4IGAAAADQAwCdASoNABQAPt1ep00opSOiMAgBEBuJZwDDNBuit2abhGMTRwAA/DFJK6C1CUTMZWFzR8PmDuId4bE+BULDNAtso8m9sFyezr7Z6L0eQNJFefo2L2tppmkV3qIAAAA=); --focus:50% 50%">
+        <img src="assets/img/photos/menu-03-seated-window-notebook-1600.webp" srcset="assets/img/photos/menu-03-seated-window-notebook-800.webp 800w, assets/img/photos/menu-03-seated-window-notebook-1600.webp 1600w" sizes="(max-width: 900px) 40vw, 22vw"
+             width="1067" height="1600" alt="A cup of black coffee and an open blank notebook on a timber window table, in morning light" loading="lazy" decoding="async">
+      </figure>
+    </div>
+  </section>
+
+  <!-- ============================================================ the form + what happens next -->
+  <section class="contact-body" aria-label="Enquiry">
+    <div class="wrap grid">
+      <div class="contact-body__form">
+
+        <div class="prefill" id="prefill" hidden>
+          <p class="prefill__text"><span class="prefill__tick" aria-hidden="true"></span><span id="prefill-text"></span></p>
+          <button type="button" class="prefill__clear" id="prefill-clear">Start from scratch</button>
+        </div>
+
+        <form class="enquiry" id="enquiry" name="project" method="POST" action="contact.html?sent=1" data-netlify="true" netlify-honeypot="bot-field" novalidate>
+          <input type="hidden" name="form-name" value="project">
+          <input type="hidden" name="from" id="f-from" value="">
+          <input type="hidden" name="item" id="f-item" value="">
+          <input type="hidden" name="currency" id="f-currency" value="INR">
+          <p class="enquiry__hp" aria-hidden="true"><label>Leave this empty <input name="bot-field" tabindex="-1" autocomplete="off"></label></p>
+
+          <div class="form-errors" id="form-errors" tabindex="-1" role="group" aria-labelledby="form-errors-title" hidden>
+            <p class="form-errors__title" id="form-errors-title"></p>
+            <ul class="form-errors__list" id="form-errors-list"></ul>
+          </div>
+
+          <p class="enquiry__req t-small quiet">Everything is optional except your name, email and where the site is.</p>
+
+          <fieldset class="enquiry__group">
+            <legend class="enquiry__legend t-label"><span class="t-num">01</span> You</legend>
+            <div class="enquiry__fields">
+            <div class="field" data-field="name" data-rules="required">
+              <div class="field__head"><label class="field__label" for="f-name">Your name</label></div>
+              <input class="field__control" id="f-name" name="name" type="text" autocomplete="name" required aria-required="true">
+              <p class="field__error" id="f-name-err" hidden></p>
+            </div>
+            <div class="field" data-field="email" data-rules="required,email">
+              <div class="field__head"><label class="field__label" for="f-email">Email</label></div>
+              <input class="field__control" id="f-email" name="email" type="email" autocomplete="email" inputmode="email" spellcheck="false" autocapitalize="off" required aria-required="true">
+              <p class="field__error" id="f-email-err" hidden></p>
+            </div>
+            <div class="field" data-field="phone" data-rules="phone">
+              <div class="field__head"><label class="field__label" for="f-phone">Phone <span class="field__opt">Optional</span></label></div>
+              <input class="field__control" id="f-phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" aria-describedby="f-phone-help">
+              <p class="field__help" id="f-phone-help">Only if you’d rather talk. We call between 10:00 and 19:00.</p>
+              <p class="field__error" id="f-phone-err" hidden></p>
+            </div>
+            <div class="field" data-field="business" data-rules="">
+              <div class="field__head"><label class="field__label" for="f-business">Business or brand <span class="field__opt">Optional</span></label></div>
+              <input class="field__control" id="f-business" name="business" type="text" autocomplete="organization" aria-describedby="f-business-help">
+              <p class="field__help" id="f-business-help">Or the working name, if it doesn’t have one yet.</p>
+              <p class="field__error" id="f-business-err" hidden></p>
+            </div>
+            </div>
+          </fieldset>
+
+          <fieldset class="enquiry__group">
+            <legend class="enquiry__legend t-label"><span class="t-num">02</span> The room</legend>
+            <div class="enquiry__fields">
+            <div class="field field--wide" data-field="city" data-rules="required">
+              <div class="field__head"><label class="field__label" for="f-city">Where’s the site?</label></div>
+              <input class="field__control" id="f-city" name="city" type="text" autocomplete="address-level2" required aria-required="true" aria-describedby="f-city-help">
+              <p class="field__help" id="f-city-help">Neighbourhood and city is plenty, e.g. Indiranagar, Bengaluru.</p>
+              <p class="field__error" id="f-city-err" hidden></p>
+            </div>
+            <fieldset class="field field--wide field--chips" data-field="venue" id="f-venue">
+              <legend class="field__label">What are we making?</legend>
+              <div class="chips">
+                <label class="chip"><input type="radio" name="venue" value="cafe"><span>Café</span></label>
+                <label class="chip"><input type="radio" name="venue" value="restaurant"><span>Restaurant</span></label>
+                <label class="chip"><input type="radio" name="venue" value="bar"><span>Bar</span></label>
+                <label class="chip"><input type="radio" name="venue" value="shop"><span>Shop</span></label>
+                <label class="chip"><input type="radio" name="venue" value="bakery"><span>Bakery</span></label>
+                <label class="chip"><input type="radio" name="venue" value="hotel"><span>Hotel F&amp;B</span></label>
+                <label class="chip"><input type="radio" name="venue" value="other"><span>Something else</span></label>
+              </div>
+            </fieldset>
+            <div class="field" data-field="service">
+              <div class="field__head"><label class="field__label" for="f-service">What do you need?</label></div>
+              <div class="select"><select class="field__control" id="f-service" name="service" aria-describedby="f-service-help">
+                <option value="">Choose one</option>
+                <option value="feasibility">A site visit or test-fit</option>
+                <option value="whole-venue">Design &amp; build, the whole venue</option>
+                <option value="design-only">Design only</option>
+                <option value="build-only">Build only</option>
+                <option value="counter">The counter or workstation</option>
+                <option value="refresh">A refresh</option>
+                <option value="lighting">Lighting only</option>
+                <option value="signage">Signage &amp; brand touchpoints</option>
+                <option value="rollout">A roll-out across several sites</option>
+                <option value="aftercare">Aftercare</option>
+                <option value="not-sure">Not sure yet</option>
+              </select></div>
+              <p class="field__help" id="f-service-help">“Not sure yet” is a fine answer. Working it out is our job.</p>
+            </div>
+            <div class="field" data-field="stage">
+              <div class="field__head"><label class="field__label" for="f-stage">Where are you with it?</label></div>
+              <div class="select"><select class="field__control" id="f-stage" name="stage">
+                <option value="">Choose one</option>
+                <option value="looking">Looking at sites</option>
+                <option value="signed">Lease signed, no design yet</option>
+                <option value="drawings">Have drawings, need a builder</option>
+                <option value="trading">Open and trading, want to change it</option>
+                <option value="multi">Planning several sites</option>
+              </select></div>
+            </div>
+            </div>
+          </fieldset>
+
+          <fieldset class="enquiry__group">
+            <legend class="enquiry__legend t-label"><span class="t-num">03</span> The detail</legend>
+            <div class="enquiry__fields">
+            <div class="field" data-field="size" data-rules="">
+              <div class="field__head"><label class="field__label" for="f-size">Roughly how big? <span class="field__opt">Optional</span></label></div>
+              <input class="field__control" id="f-size" name="size" type="text" placeholder="e.g. 120 m², 40 seats" aria-describedby="f-size-help">
+              <p class="field__help" id="f-size-help">Carpet area in m² or sq ft, plus seats or covers if you know them. A guess is fine.</p>
+              <p class="field__error" id="f-size-err" hidden></p>
+            </div>
+            <div class="field" data-field="opening" data-rules="">
+              <div class="field__head"><label class="field__label" for="f-opening">When would you like to open? <span class="field__opt">Optional</span></label></div>
+              <input class="field__control" id="f-opening" name="opening" type="text" placeholder="e.g. March 2027" aria-describedby="f-opening-help">
+              <p class="field__help" id="f-opening-help">A month is enough. If a rent-free period ends on a set date, tell us the date.</p>
+              <p class="field__error" id="f-opening-err" hidden></p>
+            </div>
+            <div class="field field--wide" data-field="budget">
+              <div class="field__head"><label class="field__label" for="f-budget">Fit-out budget <span class="field__opt">Optional</span></label><div class="currency" role="group" aria-label="Currency"><button type="button" class="currency__opt" data-currency="INR" aria-pressed="true">₹ INR</button><button type="button" class="currency__opt" data-currency="USD" aria-pressed="false">US$</button></div></div>
+              <div class="select"><select class="field__control" id="f-budget" name="budget" aria-describedby="f-budget-help">
+                <option value="">Choose a range</option>
+                <option value="not-sure">Not sure yet</option>
+                <option value="under-25l">Under ₹25 lakh</option>
+                <option value="25-60l">₹25–60 lakh</option>
+                <option value="60l-1.5cr">₹60 lakh – ₹1.5 crore</option>
+                <option value="over-1.5cr">Over ₹1.5 crore</option>
+              </select></div>
+              <p class="field__help" id="f-budget-help">Excluding kitchen equipment and deposits. It lets us tell you early whether the numbers work.</p>
+            </div>
+            <div class="field field--wide" data-field="message" data-rules="max:2000">
+              <div class="field__head"><label class="field__label" for="f-message">Tell us about it <span class="field__opt">Optional</span></label></div>
+              <textarea class="field__control" id="f-message" name="message" rows="6" placeholder="The site, the menu, the people you want through the door. A link to your Instagram or a floor plan helps." aria-describedby="f-message-count"></textarea>
+              <p class="field__count" id="f-message-count"><span data-count-now>0</span> / 2,000<span class="sr-only"> characters</span></p>
+              <p class="field__error" id="f-message-err" hidden></p>
+            </div>
+            <div class="field field--wide" data-field="heard">
+              <div class="field__head"><label class="field__label" for="f-heard">How did you find us? <span class="field__opt">Optional</span></label></div>
+              <div class="select"><select class="field__control" id="f-heard" name="heard">
+                <option value="">Choose one</option>
+                <option value="venue">I’ve been in one of your rooms</option>
+                <option value="referral">A friend or colleague</option>
+                <option value="instagram">Instagram</option>
+                <option value="search">Search</option>
+                <option value="press">Press</option>
+                <option value="other">Somewhere else</option>
+              </select></div>
+            </div>
+            </div>
+          </fieldset>
+
+          <div class="enquiry__foot">
+            <p class="enquiry__privacy t-small quiet">We use these details only to reply to you. No newsletters unless you ask for them.</p>
+            <p class="enquiry__neterr" id="enquiry-neterr" role="alert"></p>
+            <p class="sr-only" id="enquiry-status" role="status"></p>
+            <button class="btn btn--solid enquiry__submit" type="submit"><span class="enquiry__submit-label">Send it over</span> <span class="arr" aria-hidden="true">→</span></button>
+          </div>
+        </form>
+
+        <div class="enquiry-done" id="enquiry-done" hidden>
+          <p class="t-label enquiry-done__label">Start a project</p>
+          <h2 class="t-display-l enquiry-done__title" id="done-title" tabindex="-1">It’s <em>with us</em>.</h2>
+          <p class="t-lede enquiry-done__body" id="done-body"></p>
+          <p class="t-small quiet enquiry-done__preview" id="done-preview" hidden>(Preview — nothing was sent.)</p>
+          <p class="t-body muted enquiry-done__secondary" id="done-secondary">In the meantime, have a look around.</p>
+          <p><a class="btn btn--solid" id="done-button" href="work.html"><span id="done-button-label">See the work</span> <span class="arr" aria-hidden="true">→</span></a></p>
+        </div>
+      </div>
+
+      <aside class="next" aria-labelledby="next-title">
+        <p class="t-label" data-reveal>What happens next</p>
+        <h2 class="t-display-m" id="next-title" data-split>Three steps, then a plan.</h2>
+        <ol class="next__steps" data-reveal-group>
+          <li class="next__step" data-reveal>
+            <span class="next__n t-label">01</span>
+            <h3 class="t-display-s">We reply.</h3>
+            <p class="t-small muted">Within two working days, from the person who would lead your project, with a few questions and a time to talk.</p>
+          </li>
+          <li class="next__step" data-reveal>
+            <span class="next__n t-label">02</span>
+            <h3 class="t-display-s">We walk the site.</h3>
+            <p class="t-small muted">Ideally at the hour it has to work. We bring a tape, a lux meter and a lot of questions about your menu.</p>
+          </li>
+          <li class="next__step" data-reveal>
+            <span class="next__n t-label">03</span>
+            <h3 class="t-display-s">You get a plan and a range.</h3>
+            <p class="t-small muted">A short proposal: how we’d approach the room, what to order from the menu, a realistic budget range, a programme and who leads it.</p>
+          </li>
+        </ol>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ the studio: details -->
+  <section class="section on-sand details" aria-labelledby="details-title">
+    <div class="wrap grid">
+      <figure class="media details__img" data-reveal="image" style="aspect-ratio:4/5; --lqip:url(data:image/webp;base64,UklGRm4AAABXRUJQVlA4IGIAAADwAwCdASoUAA8APt1cp0yopSOiMAgBEBuJZQCsACIOZrTpLqh60aoAAP6yCGK5+MGlUM4pLO5SEsmqzprPYvJQ1js0ZE+yes434iEbkcrKuaxIEzsADJIfeDNKaPpkqyAAAA==); --focus:50% 50%">
+        <img src="assets/img/photos/front-08-shop-white-facade-oak-door-1600.webp" srcset="assets/img/photos/front-08-shop-white-facade-oak-door-800.webp 800w, assets/img/photos/front-08-shop-white-facade-oak-door-1600.webp 1600w" sizes="(max-width: 900px) 100vw, 36vw"
+             width="1600" height="1200" alt="A white rendered façade with an oak door under a small canopy, flanked by two windows and potted plants" loading="lazy" decoding="async">
+      </figure>
+      <div class="details__body" data-float="0.6">
+        <h2 class="t-display-l" id="details-title" data-split>The studio</h2>
+        <p class="ph-note t-small quiet" data-reveal><span class="badge">Placeholder</span> Address and phone to come.</p>
+        <dl class="details__list" data-reveal-group>
+          <div class="details__row" data-reveal><dt class="t-label">Studio</dt><dd>[Street address], [Neighbourhood], [City] [PIN code]<span class="details__note">Visits by appointment</span></dd></div>
+          <div class="details__row" data-reveal><dt class="t-label">Email</dt><dd class="details__email"><a class="text-link" href="mailto:hello@twosquares.studio">hello@twosquares.studio</a><button class="btn btn--sm details__copy" type="button" data-copy="hello@twosquares.studio" data-copied="Email copied">Copy email</button></dd></div>
+          <div class="details__row" data-reveal><dt class="t-label">Phone / WhatsApp</dt><dd>+91 [00000 00000]</dd></div>
+          <div class="details__row" data-reveal><dt class="t-label">Hours</dt><dd>Monday to Saturday, <span class="t-num">10:00–19:00</span></dd></div>
+          <div class="details__row" data-reveal><dt class="t-label">Response</dt><dd>Within two working days. Faster if there’s a lease deadline.</dd></div>
+          <div class="details__row" data-reveal><dt class="t-label">Follow</dt><dd>Instagram · Pinterest · LinkedIn</dd></div>
+        </dl>
+      </div>
+    </div>
+  </section>
+</main>
+<!-- @partial:footer -->
+<footer class="site-footer on-dark">
+  <div class="wrap">
+    <p class="site-footer__signoff t-display-m"><em>Come back to it.</em></p>
+    <div class="site-footer__cols">
+      <div>
+        <p class="t-lede">Design &amp; build for cafés, restaurants, bars and shops. Concept to opening night.</p>
+        <p class="t-small" style="margin-top:1.25rem"><a class="text-link" href="mailto:hello@twosquares.studio">hello@twosquares.studio</a><br>+91 [00000 00000]<br>[Street address], [City] · By appointment</p>
+      </div>
+      <nav aria-label="Work">
+        <h2 class="t-label">Work</h2>
+        <ul class="t-small">
+          <li><a href="work.html">All work</a></li>
+          <li><a href="work.html?filter=cafes">Cafés</a></li>
+          <li><a href="work.html?filter=restaurants">Restaurants</a></li>
+          <li><a href="work.html?filter=bars">Bars</a></li>
+          <li><a href="work.html?filter=retail">Retail</a></li>
+        </ul>
+      </nav>
+      <nav aria-label="Studio">
+        <h2 class="t-label">Studio</h2>
+        <ul class="t-small">
+          <li><a href="studio.html">About the studio</a></li>
+          <li><a href="services.html">The menu</a></li>
+          <li><a href="services.html#process">How we work</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </nav>
+      <nav aria-label="Follow">
+        <h2 class="t-label">Follow</h2>
+        <ul class="t-small">
+          <li><a href="#" rel="noopener" data-placeholder>Instagram</a></li>
+          <li><a href="#" rel="noopener" data-placeholder>Pinterest</a></li>
+          <li><a href="#" rel="noopener" data-placeholder>LinkedIn</a></li>
+        </ul>
+      </nav>
+    </div>
+    <a class="site-footer__mark" href="index.html" aria-label="Two Squares, home"><span class="logo logo--lockup" aria-hidden="true"></span></a>
+    <div class="site-footer__legal">
+      <span>© <span data-year>2026</span> Two Squares Design &amp; Build. All rights reserved.</span>
+      <span>Prototype. Project names, quotes and photographs are placeholders (stock photography from Pexels &amp; Unsplash).</span>
+      <a href="#top">Back to top ↑</a>
+    </div>
+  </div>
+</footer>
+<!-- /@partial:footer -->
+<!-- @partial:scripts -->
+<script src="assets/js/vendor/gsap.min.js" defer></script>
+<script src="assets/js/vendor/ScrollTrigger.min.js" defer></script>
+<script src="assets/js/vendor/SplitText.min.js" defer></script>
+<script src="assets/js/vendor/CustomEase.min.js" defer></script>
+<script src="assets/js/vendor/lenis.min.js" defer></script>
+<script src="assets/js/motion.js" defer></script>
+<script src="assets/js/site.js" defer></script>
+<!-- /@partial:scripts -->
+<script src="assets/js/contact.js" defer></script>
+</body>
+</html>
