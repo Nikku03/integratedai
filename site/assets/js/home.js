@@ -122,14 +122,14 @@
     const gsap = w.gsap;
     if (!el) return;
     if (!w.SplitText) {
-      gsap.fromTo(el, { autoAlpha: 0, y: 24 }, { autoAlpha: 1, y: 0, duration: 1, ease: M.DRIFT, delay: opts.delay || 0, scrollTrigger: trigger });
+      gsap.fromTo(el, { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 1, ease: M.DRIFT, delay: opts.delay || 0, scrollTrigger: trigger });
       return;
     }
     w.SplitText.create(el, {
       type: "lines", mask: "lines", linesClass: "line", autoSplit: true,
       aria: el.matches("h1,h2,h3,h4,h5,h6") ? "auto" : "none",
       onSplit(self) {
-        gsap.set(el, { visibility: "visible" });
+        gsap.set(el, { opacity: 1 });
         self.masks.forEach((m) => m.classList.add("line-mask"));
         return gsap.fromTo(self.lines, { yPercent: 120 }, { yPercent: 0, duration: 1.1, stagger: 0.09, ease: M.DRIFT, delay: opts.delay || 0, scrollTrigger: trigger });
       },
@@ -172,6 +172,10 @@
       const { sec, list } = work;
       const stack = $(".home-work__stack", sec);
       const small = () => w.innerWidth <= 900;
+      // the street ends at night, so the index arrives full bleed under it (dark to dark, no paper
+      // gap between them); without the walk, the frame opens out of the paper as before
+      const fromStreet = !!d.querySelector("[data-walk] .walk__track");
+      const openClip = () => (fromStreet ? "inset(0% 0% 0% 0%)" : small() ? "inset(5% 4% 0% 4%)" : "inset(9% 6% 0% 6%)");
       // paper → green: the frame opens out to full bleed as it arrives, and closes back as it leaves
       gsap.timeline({
         defaults: { ease: "none" },
@@ -180,7 +184,7 @@
           onToggle: (self) => { stack.style.willChange = self.isActive ? "transform" : ""; },
         },
       })
-        .fromTo(sec, { clipPath: () => (small() ? "inset(5% 4% 0% 4%)" : "inset(9% 6% 0% 6%)") },
+        .fromTo(sec, { clipPath: openClip },
           { clipPath: "inset(0% 0% 0% 0%)", duration: 0.5, ease: "power2.out" }, 0)
         .fromTo(stack, { scale: 1.16 }, { scale: 1, duration: 0.5, ease: "power1.out" }, 0)
         .to(sec, { clipPath: () => (small() ? "inset(0% 4% 5% 4%)" : "inset(0% 6% 9% 6%)"), duration: 0.38, ease: "power2.in" }, 0.62)
@@ -195,8 +199,8 @@
         onComplete: () => items.forEach((li) => li.classList.remove("is-masked")),
       });
       offs.push(() => { items.forEach((li) => li.classList.remove("is-masked")); stack.style.willChange = ""; });
-      gsap.fromTo($$("[data-work-in]", sec), { autoAlpha: 0, y: 16 }, {
-        autoAlpha: 1, y: 0, duration: 1, stagger: 0.08, ease: DRIFT, delay: 0.45, clearProps: "transform",
+      gsap.fromTo($$("[data-work-in]", sec), { opacity: 0, y: 16 }, {
+        opacity: 1, y: 0, duration: 1, stagger: 0.08, ease: DRIFT, delay: 0.45, clearProps: "transform",
         scrollTrigger: { trigger: list, start: "top 80%", once: true },
       });
 

@@ -378,7 +378,8 @@ html.js-motion .walk__outro-link { color: var(--sand); --focus: var(--sand); }
 .cafe-seq.has-menu .cafe-seq__table, .no-js .cafe-seq__table { visibility: visible; }
 .cafe-seq__more { margin-top: 26px; width: min(480px, 100%); text-align: center; font-size: 0.9375rem; color: var(--on-dark-2); }
 .cafe-seq__more a:hover { color: var(--sand); }
-@media (max-width: 900px) {
+/* phones, and portrait tablets (a landscape clip cropped to a tall screen blows the cup up past the card) */
+@media (max-width: 900px), (max-aspect-ratio: 4/5) {
   .cafe-seq__table { justify-items: center; align-content: end; padding: 24svh 16px max(22px, env(safe-area-inset-bottom)); }
   /* the seated frame sits in the top half, whole cup in view; the card lands below it */
   .cafe-seq__table-media { bottom: auto; height: 58svh; }

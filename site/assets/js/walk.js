@@ -62,6 +62,8 @@
     let tl = null, inerted = [], landTimer = 0, rvfc = 0, leaving = false, offTilt = null;
     const gsap = () => w.gsap;
     const MEDIA_SM = { yPercent: -12 }, MEDIA_LG = { xPercent: -6, scale: 1.1 };
+    // the stacked table (cup above, card below): phones and portrait tablets, as in walk.css
+    const mqStack = w.matchMedia("(max-width: 900px), (max-aspect-ratio: 4/5)");
 
     if (dlg.parentElement !== d.body) d.body.appendChild(dlg);   // so the rest of the page can go inert
 
@@ -97,7 +99,7 @@
       const hadSkipFocus = d.activeElement === skipBtn || d.activeElement === dlg || !dlg.contains(d.activeElement);
       skipBtn.classList.add("is-gone");
       const g = gsap();
-      const small = mqSmall.matches;
+      const small = mqStack.matches;
       if (g && motion) {
         g.fromTo(drop, { autoAlpha: 0, y: -70, rotationX: 26, rotationZ: -6, scale: 1.1 },
           { autoAlpha: 1, y: 0, rotationX: 0, rotationZ: 0, scale: 1, duration: fast ? 0.75 : 1.15, ease: M && M.EASE || "expo.out", clearProps: "transform" });
@@ -106,6 +108,8 @@
         g.to(media, { ...(small ? MEDIA_SM : MEDIA_LG), duration: 1.4, ease: M && M.DRIFT || "power3.out" });
       } else if (g) g.set(media, small ? MEDIA_SM : MEDIA_LG);
       else media.style.transform = small ? "translateY(-12%)" : "translateX(-6%) scale(1.1)";
+      // phones: the seated caption sits over the cup, so it steps out once the card is down
+      if (small) $$(".cafe-seq__cap", dlg).forEach((c) => (g ? g.to(c, { opacity: 0, duration: 0.4, ease: "none", overwrite: true }) : (c.style.opacity = 0)));
       announce(dlg.dataset.announce || "");
       if (hadSkipFocus) setTimeout(() => links[0] && links[0].focus({ preventScroll: true }), fast ? 80 : 450);
       if (env && env.fine && motion && g) offTilt = tilt();
@@ -439,7 +443,13 @@
         const on = g === act;
         css(g.el, "visibility", on ? "visible" : "hidden");
         // (inline visibility:visible on a child would show through the hidden gate)
-        if (!on) { css(g.el, "zIndex", ""); css(g.room, "visibility", "hidden"); css(g.facade, "visibility", "hidden"); g.roomOn = false; return; }
+        // the end title and caption stay visibility:visible (so the CTA can take focus and walk you
+        // here), so a gate that closes within one scrub step must zero them or they linger over the street
+        if (!on) {
+          css(g.el, "zIndex", ""); css(g.room, "visibility", "hidden"); css(g.facade, "visibility", "hidden");
+          css(g.end, "opacity", "0"); css(g.caption, "opacity", "0");
+          g.roomOn = false; return;
+        }
         css(g.el, "zIndex", "1");
         const gg = g.geo;
         // window: the frame's picture, pushed by the camera
@@ -567,8 +577,9 @@
       T.exitEnd[i] = t;
     });
     tl.to(S, { walk: 4, duration: DUR.outro, ease: "sine.inOut" }, t);
-    tl.to(S, { outro: 1, duration: 0.6, ease: "power2.out" }, t + DUR.outro * 0.45);
-    T.outro = t + DUR.outro * 0.8;
+    // the line comes up once the bar's door has slid out from under it (on phones it crosses the text)
+    tl.to(S, { outro: 1, duration: 0.6, ease: "power2.out" }, t + DUR.outro * 0.68);
+    T.outro = t + DUR.outro * 0.68 + 0.5;
     t += DUR.outro + 0.5;
     tl.set({}, {}, t);
 
@@ -615,7 +626,15 @@
 
     /* ---- controls */
     const timeToY = (time) => st.start + (st.end - st.start) * (time / tl.duration());
-    const jumpTo = (time) => M.scrollTo(Math.round(timeToY(time)), { immediate: true });
+    // a keyboard jump cuts straight to the room: the scrub's catch-up tween is finished at once,
+    // so the control that took focus is already on screen, fully opaque, when its ring is drawn
+    const jumpTo = (time) => {
+      M.scrollTo(Math.round(timeToY(time)), { immediate: true });
+      ST.update();
+      const tw = st.getTween && st.getTween();
+      if (tw) tw.progress(1); else tl.time(time);
+      render();
+    };
     // keyboard: tabbing to a room's button walks you to that room
     gates.forEach((g, i) => {
       if (!g.cta) return;
@@ -635,9 +654,10 @@
       if (!target) return;
       e.preventDefault();
       gates.forEach((g) => drop(g));
-      // a number, measured from the live page (Lenis may not have synced a native scroll yet)
-      const pad = parseFloat(getComputedStyle(d.documentElement).scrollPaddingTop) || 0;
-      const y = Math.max(st.end + 1, Math.round(target.getBoundingClientRect().top + w.scrollY - pad));
+      // a number, measured from the live page (Lenis may not have synced a native scroll yet). Land on
+      // the section's own top edge: the header hides on the way down, and a scroll-padding gap would
+      // leave a strip of the night street above the next section
+      const y = Math.max(st.end + 1, Math.round(target.getBoundingClientRect().top + w.scrollY));
       M.scrollTo(y, { immediate: true });
       if (!target.hasAttribute("tabindex")) target.setAttribute("tabindex", "-1");
       target.focus({ preventScroll: true });
