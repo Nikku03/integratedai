@@ -166,7 +166,11 @@ def rem_explanation(result_id: uuid.UUID, auth: Auth = Depends(current_auth), se
     ids = requires_of(r.output or {})
     trace_ids = {x.get("node") for part in (r.trace or {}).values() for x in part if isinstance(x, dict)}
     ids |= {i for i in trace_ids if i}
-    visible = {str(k) for k in reader.nodes([uuid.UUID(i) for i in ids])} if ids else set()
+    wanted = [uuid.UUID(i) for i in ids]
+    seen = reader.nodes(wanted) if wanted else {}
+    if set(wanted) - set(seen):  # records deleted since the result: judged on their last recorded version
+        seen.update(reader.nodes_latest(set(wanted) - set(seen)))
+    visible = {str(k) for k in seen}
     trace = {k: [x for x in v if not isinstance(x, dict) or x.get("node") in visible] for k, v in (r.trace or {}).items()}
     return {"result_id": str(r.id), "mode": r.mode, "policy": r.policy, "snapshot_seq": r.snapshot_seq, "current_seq": reader.seq,
             "request": r.request, "status": r.status, "stopping_reason": r.stopping_reason, "stale": r.stale,

@@ -73,12 +73,29 @@ def cosine(a, b) -> float:
     return max(0.0, float(a @ b) / (na * nb))
 
 
-def path_relevance(edges: list[tuple[str, str]]) -> float:
-    """Product of per-hop weights along a path of (kind, provenance) steps; 1.0 for a search hit (empty path)."""
-    r = 1.0
-    for kind, prov in edges:
-        r *= EDGE_WEIGHT.get(kind, 0.3) * PROVENANCE_FACTOR.get(prov, 0.5)
+HOP_DECAY = 0.8  # per relationship followed
+SIBLING_FACTOR = 0.5  # per change of direction: X -> Y <- Z makes Z a sibling of X, not a dependency or a consequence
+
+
+def path_relevance(steps: list[dict[str, Any]], anchor: float = 1.0) -> float:
+    """Dependency relevance of a record reached along ``steps`` from a start record whose normalised search score is
+    ``anchor``: anchor x product of edge-kind and provenance weights x HOP_DECAY per hop x SIBLING_FACTOR per change
+    of direction. A start record (empty path) scores its anchor."""
+    r = anchor
+    prev = None
+    for st in steps:
+        r *= EDGE_WEIGHT.get(st["kind"], 0.3) * PROVENANCE_FACTOR.get(st["provenance"], 0.5) * HOP_DECAY
+        d = st.get("direction")
+        if prev is not None and d is not None and d != prev:
+            r *= SIBLING_FACTOR
+        prev = d
     return r
+
+
+def role(node) -> str:
+    """Text evidence (passages, documents, claims, generated text) versus structured records. Two texts from one
+    original source are redundant; a record and the passage it was taken from are complementary."""
+    return "text" if node.type in ("passage", "document", "claim", "artifact") else "record"
 
 
 def reliability(node) -> float:
@@ -100,18 +117,18 @@ def temporal(node, as_of: datetime | None) -> float:
     return 1.0
 
 
-def information_gain(node, covered_sources: set[str]) -> float:
+def information_gain(node, covered: dict[str, set[str]]) -> float:
     roots = set(node.root_sources) or {f"node:{node.id}"}
-    new = len(roots - covered_sources) / len(roots)
+    new = len(roots - covered.get(role(node), set())) / len(roots)
     bonus = 0.25 if node.type in ("claim", "risk", "requirement") else 0.0
     return min(1.0, new + bonus)
 
 
-def redundancy(node, covered_sources: set[str]) -> float:
+def redundancy(node, covered: dict[str, set[str]]) -> float:
     roots = set(node.root_sources)
     if not roots:
         return 0.0
-    return len(roots & covered_sources) / len(roots)
+    return len(roots & covered.get(role(node), set())) / len(roots)
 
 
 def cost(node, max_tokens: int, fanout: int | None = None) -> float:
@@ -125,8 +142,8 @@ def cost(node, max_tokens: int, fanout: int | None = None) -> float:
     return min(1.0, c)
 
 
-def components(node, *, qrel: float, path: list[tuple[str, str]], as_of, covered: set[str], max_tokens: int,
+def components(node, *, qrel: float, dep: float, as_of, covered: dict[str, set[str]], max_tokens: int,
                fanout: int | None = None) -> Components:
-    return Components(query_relevance=qrel, dependency_relevance=path_relevance(path), source_reliability=reliability(node),
+    return Components(query_relevance=qrel, dependency_relevance=dep, source_reliability=reliability(node),
                       temporal_applicability=temporal(node, as_of), information_gain=information_gain(node, covered),
                       retrieval_cost=cost(node, max_tokens, fanout), redundancy=redundancy(node, covered))

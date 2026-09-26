@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import time
 import uuid
 from datetime import UTC, datetime
 from typing import Any
@@ -194,7 +195,11 @@ def process_event(session: Session, event_id: uuid.UUID, *, embedder=None, polic
     seq = writer.begin()
     prev = GraphReader(session, ev.tenant_id, None, seq=seq - 1)
     ops = translate(ev.kind, ev.payload, prev)
+    t_ops = time.perf_counter()
     deleted, restricted = apply_ops(session, writer, ops)
+    op_changed = {str(k): sorted(set(v)) for k, v in writer.changed.items()}
+    ops_ms = (time.perf_counter() - t_ops) * 1000
+    t_rules = time.perf_counter()
     reader = GraphReader(session, ev.tenant_id, None, seq=seq)
     budget = Budget(Limits.from_dict({"max_visited": 5000, "max_db_calls": 2000, "max_ms": 30000, **(limits or {})}))
     changed = {k: v for k, v in writer.changed.items() if k not in deleted}
@@ -214,6 +219,7 @@ def process_event(session: Session, event_id: uuid.UUID, *, embedder=None, polic
         engine.run(changed, extra)
         drafts = engine.impacts
         stop = engine.stop
+    rules_ms = (time.perf_counter() - t_rules) * 1000
     impacts = _persist(session, ev, seq, drafts, engine)
     stale = invalidate_results(session, ev.tenant_id, list(writer.changed), restricted, seq, ev.id)
     budget.tick(reader.counter.db_calls + prev.counter.db_calls)
@@ -221,7 +227,8 @@ def process_event(session: Session, event_id: uuid.UUID, *, embedder=None, polic
     ev.status = "done"
     ev.processed_at = datetime.now(UTC)
     ev.summary = {**(ev.summary or {}), "seq": seq, "policy": policy, "operations": len(ops),
-                  "changed": {str(k): sorted(set(v)) for k, v in writer.changed.items()},
+                  "changed": {str(k): sorted(set(v)) for k, v in writer.changed.items()}, "op_changed": op_changed,
+                  "ops_ms": round(ops_ms, 1), "detect_ms": round(rules_ms, 1),
                   "deleted": [str(d) for d in deleted], "restricted": [str(r) for r in restricted],
                   "impacts": len(impacts), "suggestions": len(engine.suggestions) if engine else 0,
                   "stale_results": stale, "status": "incomplete" if stop else "complete",
@@ -315,6 +322,8 @@ def visible_impacts(session: Session, reader: GraphReader, event_id: uuid.UUID |
     reader.counter.db_calls += 1
     need = {n for r in rows for n in r.requires} | {n for x in sugg for n in x.requires}
     visible = reader.nodes(need) if need else {}
+    if set(need) - set(visible):  # records deleted since: judged on their last recorded version
+        visible.update(reader.nodes_latest(set(need) - set(visible)))
     out = []
     for r in rows:
         if not set(r.requires) <= set(visible):

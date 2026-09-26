@@ -378,3 +378,13 @@ def test_rem_api(session, world, embedder):
     blocked = c.post("/api/rem/changes", headers=h["outsider"], json={"kind": "ops", "idempotency_key": "x", "wait": True,
                                                                      "payload": {"ops": [node("task", "evil", scope="Legal")]}})
     assert blocked.status_code == 403
+
+
+def test_impacts_on_deleted_records_stay_visible_to_those_allowed(session, world, embedder):
+    supply_world(session, world, embedder, stock=0)
+    ev, _ = apply(session, world, [{"op": "delete_node", "ref": ["order", "o1"]}])
+    admin = GraphReader(session, world.tenant.id, visible_scopes(session, world.admin))
+    cur, _ = visible_impacts(session, admin)
+    assert any(i["impact"] == "at_risk" and i["target"]["key"] == "m1" for i in cur), "a path through a deleted order is history, not a secret"
+    outsider = GraphReader(session, world.tenant.id, visible_scopes(session, world.outsider))
+    assert visible_impacts(session, outsider)[0] == [], "records in scopes the reader cannot see stay hidden, deleted or not"

@@ -164,6 +164,29 @@ class GraphReader:
                 return self._view(nv, node, True)
         return None
 
+    def nodes_latest(self, ids) -> dict[uuid.UUID, NodeView]:
+        """The last version of each record recorded at or before the snapshot, even if it has since been deleted or
+        replaced, under the same permission filter. For showing history (a deleted record on an impact's path) to
+        those who could see it."""
+        ids = [i for i in dict.fromkeys(ids)]
+        if not ids:
+            return {}
+        stmt = (select(RemNodeVersion, RemNode).join(RemNode, RemNode.id == RemNodeVersion.node_id)
+                .where(RemNodeVersion.tenant_id == self.tenant_id, RemNodeVersion.node_id.in_(ids), RemNodeVersion.sys_from <= self.seq)
+                .order_by(RemNodeVersion.node_id, RemNodeVersion.version.desc()))
+        vf = self._visible_filter()
+        out: dict[uuid.UUID, NodeView] = {}
+        for nv, node in self._run(stmt, label=f"nodes_latest[{len(ids)}]"):
+            if nv.node_id in out:
+                continue
+            # the permission check applies to the version shown
+            if vf is not None and not self.vis.can_read(nv.scope_id, nv.sensitivity, nv.acl):
+                out[nv.node_id] = None  # type: ignore[assignment]
+                continue
+            if self._acl_ok(nv.acl):
+                out[nv.node_id] = self._view(nv, node)
+        return {k: v for k, v in out.items() if v is not None}
+
     def visible_ids(self, ids) -> set[uuid.UUID]:
         return set(self.nodes(ids))
 

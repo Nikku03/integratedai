@@ -101,7 +101,8 @@ class RuleEngine:
         self.log: list[dict[str, Any]] = []
         self.visited: set[uuid.UUID] = set()
         self.stop: str | None = None
-        self.evaluated_roots: set[str] = set()  # milestones whose supply assessment was recomputed in this change
+        self.evaluated_roots: set[str] = set()
+        self.changed: dict[uuid.UUID, set[str]] = {}  # milestones whose supply assessment was recomputed in this change
         self._cache: dict[uuid.UUID, NodeView] = {}
 
     # ------------------------------------------------------------------ helpers
@@ -161,6 +162,7 @@ class RuleEngine:
 
     # ------------------------------------------------------------------ driver
     def run(self, changed: dict[uuid.UUID, list[str]], extra: list[tuple] | None = None) -> None:
+        self.changed = {k: set(v) for k, v in changed.items()}
         for nid, fields in changed.items():
             self.queue.append(("changed", nid, tuple(sorted(set(fields))), []))
         for item in extra or []:
@@ -205,8 +207,9 @@ class RuleEngine:
         if n.type == "milestone" and any(f in ("attrs.due_date", "attrs.slack_days") or f.startswith("edge:") for f in fields):
             self.r1_supply_exposure(n, trigger=f"milestone:{n.id}", path=[])
         if n.type == "product" and "stock" in fields:
+            holders = {k for k, f in self.changed.items() if "stock" in f and k != n.id}
             for e, m in self.neighbours(n.id, "depends_on", "in"):
-                if m.type == "milestone":
+                if m.type == "milestone" and set(m.project_ids) & holders:
                     self.r1_supply_exposure(m, trigger=f"stock:{n.id}", path=[_hop("depends_on", m.id, n.id, e.id, e.provenance)])
         if n.type == "task" and "attrs.status" in fields and str(n.attrs.get("status")) == "done":
             self.r5_unblock(n)
@@ -227,6 +230,8 @@ class RuleEngine:
             if not self._once("R7", dep.id, str(nid)):
                 continue
             what = gone.name if gone else "a deleted record"
+            if gone is not None and gone.type == "order" and dep.type == "milestone" and e.kind == "depends_on":
+                self.r1_supply_exposure(dep, trigger=f"deleted:{nid}", path=[_hop(e.kind, dep.id, nid, e.id, e.provenance)])
             if e.kind == "derived_from" and not dep.authoritative:
                 self._invalidate(dep, f"its source {what} was deleted", "R7", [_hop(e.kind, dep.id, nid, e.id, e.provenance)], source=gone)
                 continue
@@ -312,6 +317,9 @@ class RuleEngine:
         needs = [(e, p) for e, p in self.neighbours(m.id, "depends_on", "out") if p.type == "product"]
         orders = [(e, o) for e, o in self.neighbours(m.id, "depends_on", "out") if o.type == "order"]
         holder = m.project_ids[0] if m.project_ids else None
+        base = path or ([_hop("depends_on", m.id, changed_order.id)] if changed_order else [])
+        ev = [_ev(m, f"due {m.attrs.get('due_date')} (+{m.attrs.get('slack_days') or 0} days slack)")]
+        inputs, hyp, per_product, late_all, short_all = [m], False, [], [], []
         for need_edge, prod in needs:
             qty = float(need_edge.attrs.get("qty") or 0)
             if qty <= 0:
@@ -322,43 +330,50 @@ class RuleEngine:
             stock = self.r.stock(prod.id, [holder]).get(holder) if holder else None
             avail = max(0.0, stock["available"]) if stock else 0.0
             supply = avail + sum(float(o.attrs.get("qty") or 0) for _, o in on_time)
-            hyp = any(e.hypothesis for e, _ in late + on_time) or need_edge.hypothesis
-            ev = [_ev(m, f"due {m.attrs.get('due_date')} (+{m.attrs.get('slack_days') or 0} days slack); needs {qty:g} {prod.name}")]
-            ev += [_ev(o, f"{o.attrs.get('qty')} units promised {o.attrs.get('promised_date')} (late)") for _, o in late]
-            ev += [_ev(o, f"{o.attrs.get('qty')} units promised {o.attrs.get('promised_date')} (on time)") for _, o in on_time]
+            hyp = hyp or any(e.hypothesis for e, _ in mine) or need_edge.hypothesis
+            inputs += [o for _, o in mine]
+            ev += [_ev(o, f"{o.attrs.get('qty')} {prod.name} promised {o.attrs.get('promised_date')} "
+                          f"({'late' if (e, o) in late else 'on time'})") for e, o in mine]
             if stock is not None:
                 ev.append({"kind": "db_value", "table": "rem_stock", "product": prod.key, "holder": str(holder),
-                           "what": f"{stock['on_hand']:g} on hand, {stock['reserved']:g} reserved",
+                           "what": f"{stock['on_hand']:g} {prod.name} on hand, {stock['reserved']:g} reserved",
                            "source_pointers": stock["source_pointers"], "requires": [str(prod.id), str(holder)]})
-            base = path or ([_hop("depends_on", m.id, changed_order.id)] if changed_order else [])
-            inputs = [m] + [o for _, o in late + on_time]
-            details = {**root, "product": prod.key, "needed": qty, "available_stock": avail, "on_time_orders": [o.key for _, o in on_time],
-                       "late_orders": [o.key for _, o in late], "effective_due": due.isoformat()}
-            if not late:
-                prev = self._open_prior(m.id, "R1")
-                if prev:
-                    self.emit(ImpactDraft(m.id, "resolved", "R1", f"No order for {prod.name} arrives after {due.isoformat()} any more.",
-                                          _grade(inputs, hyp), evidence=ev, hypothesis=hyp, details=details), base)
-                continue
-            names = ", ".join(f"{o.key} ({o.attrs.get('promised_date')})" for _, o in late)
-            if supply >= qty:
-                why = (f"{m.name} needs {qty:g} {prod.name} by {due.isoformat()}; {names} now arrive late, but "
-                       f"{avail:g} in stock and {supply - avail:g} on time cover the need.")
-                self.emit(ImpactDraft(m.id, "covered", "R1", why, _grade(inputs, hyp), evidence=ev, hypothesis=hyp,
-                                      details=details), base)
-                if avail > 0 and stock is not None:
-                    self.suggest(SuggestionDraft(f"R1:reserve:{m.key}:{prod.key}", f"Reserve {min(qty, avail):g} {prod.name} from stock for {m.name}",
-                                                 "operations", [m.id, prod.id], why, 0.5, "R1", {m.id, prod.id}, {str(m.id)}))
-            else:
-                short = qty - supply
-                why = (f"{m.name} needs {qty:g} {prod.name} by {due.isoformat()}; {names} now arrive late and stock "
-                       f"({avail:g}) plus on-time orders ({supply - avail:g}) leave a shortfall of {short:g}.")
-                impact = "needs_review" if hyp else "at_risk"
-                self.emit(ImpactDraft(m.id, impact, "R1", why, _grade(inputs, hyp), evidence=ev, hypothesis=hyp,
-                                      details={**details, "shortfall": short}), base)
-                self.suggest(SuggestionDraft(f"R1:expedite:{m.key}:{prod.key}", f"Expedite or source {short:g} {prod.name} for {m.name}",
-                                             "operations", [m.id, prod.id] + [o.id for _, o in late], why, 0.9, "R1",
-                                             {m.id, prod.id} | {o.id for _, o in late}, {str(m.id)}))
+            item = {"product": prod.key, "name": prod.name, "id": prod.id, "needed": qty, "available_stock": avail,
+                    "on_time_orders": [o.key for _, o in on_time], "late_orders": [o.key for _, o in late],
+                    "late_ids": [o.id for _, o in late], "shortfall": max(0.0, qty - supply)}
+            per_product.append(item)
+            late_all += late
+            if item["shortfall"] > 0:
+                short_all.append(item)
+        if not per_product:
+            return
+        details = {**root, "effective_due": due.isoformat(),
+                   "products": [{k: v for k, v in x.items() if k not in ("id", "late_ids")} for x in per_product]}
+        grade = _grade(inputs, hyp)
+        late_names = ", ".join(sorted({f"{o.key} ({o.attrs.get('promised_date')})" for _, o in late_all}))
+        if short_all:
+            # exposed: stock plus orders arriving by the due date (plus slack) do not cover what the milestone needs
+            parts = "; ".join(f"{x['name']}: needs {x['needed']:g}, stock {x['available_stock']:g} plus on-time orders "
+                              f"{x['needed'] - x['shortfall'] - x['available_stock']:g}, shortfall {x['shortfall']:g}" for x in short_all)
+            why = f"{m.name} (due {due.isoformat()}): {parts}." + (f" Late: {late_names}." if late_names else "")
+            self.emit(ImpactDraft(m.id, "needs_review" if hyp else "at_risk", "R1", why, grade, evidence=ev, hypothesis=hyp,
+                                  details={**details, "shortfall": sum(x["shortfall"] for x in short_all)}), base)
+            for x in short_all:
+                self.suggest(SuggestionDraft(f"R1:expedite:{m.key}:{x['product']}", f"Expedite or source {x['shortfall']:g} {x['name']} for {m.name}",
+                                             "operations", [m.id, x["id"]] + x["late_ids"], why, 0.9, "R1",
+                                             {m.id, x["id"]} | set(x["late_ids"]), {str(m.id)}))
+        elif late_all:
+            why = (f"{m.name} (due {due.isoformat()}): {late_names} now arrive late, but stock and on-time orders cover "
+                   + ", ".join(f"{x['needed']:g} {x['name']}" for x in per_product) + ".")
+            self.emit(ImpactDraft(m.id, "covered", "R1", why, grade, evidence=ev, hypothesis=hyp, details=details), base)
+            for x in per_product:
+                if x["late_orders"] and x["available_stock"] > 0:
+                    self.suggest(SuggestionDraft(f"R1:reserve:{m.key}:{x['product']}",
+                                                 f"Reserve {min(x['needed'], x['available_stock']):g} {x['name']} from stock for {m.name}",
+                                                 "operations", [m.id, x["id"]], why, 0.5, "R1", {m.id, x["id"]}, {str(m.id)}))
+        elif self._open_prior(m.id, "R1"):
+            self.emit(ImpactDraft(m.id, "resolved", "R1", f"{m.name}: every need is covered by stock or orders arriving by {due.isoformat()}.",
+                                  grade, evidence=ev, hypothesis=hyp, details=details), base)
 
     def _open_prior(self, target: uuid.UUID, rule: str) -> bool:
         from sqlalchemy import select

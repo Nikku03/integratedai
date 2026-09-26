@@ -24,6 +24,7 @@ URLs). Interactive docs at `/docs`; the machine-readable contract is
 | Audit | `GET /audit?resource_id=&action=` |
 | Permissions | `POST /permissions/principals` (returns API key), `POST /permissions/roles`, `POST /permissions/grant`, `GET /permissions/me` |
 | Metrics | `GET /metrics/summary` (tokens, latency p95, cost, storage, counts, job stats) |
+| REM | `POST /rem/query` (question, policy?, project_keys?, as_of?, snapshot_seq?, limits?, weights?, targeted_searches?, resume_from?) → evidence packet with paths, facts vs hypotheses, contradictions, missing evidence, suggested tasks, budget, status; `POST /rem/changes` (kind, payload, idempotency_key, wait?) → event (+ job); `GET /rem/impacts/{event_id}`; `GET /rem/explanations/{result_id}` — see `docs/REM.md` |
 
 ## Evidence packet item
 

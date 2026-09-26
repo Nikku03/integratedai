@@ -60,6 +60,7 @@ class Visit:
     expanded: bool = False
     cross_boundary: bool = False
     order: int = 0
+    anchor: float = 1.0  # normalised search score of the start record this visit was reached from
 
     @property
     def path(self) -> list[dict[str, Any]]:
@@ -102,20 +103,23 @@ class Explorer:
         self.trace: list[dict[str, Any]] = []
         self.truncated: set[uuid.UUID] = set()
         self._order = itertools.count()
-        self._covered: set[str] = set()
+        self._covered: dict[str, set[str]] = {"text": set(), "record": set()}
         self._start_groups: set[uuid.UUID] = set()
         self.routing_hops = 0
+        self._full = False
 
     # ------------------------------------------------------------------ scoring
-    def _qrel(self, node: NodeView, search_score: float | None = None) -> float:
-        if search_score is not None:
-            return max(0.0, min(1.0, search_score))
-        return pr.cosine(self.qvec, node.embedding) if self.qvec is not None else 0.0
+    def _qrel(self, node: NodeView, fallback: float = 0.0) -> float:
+        """Query relevance: semantic similarity of the record's own text to the question (same measure for every
+        record, whether a search hit or reached by a relationship)."""
+        if self.qvec is not None and node.embedding is not None:
+            return pr.cosine(self.qvec, node.embedding)
+        return max(0.0, min(1.0, fallback))
 
     def _score(self, v: Visit) -> None:
-        steps = [(s["kind"], s["provenance"]) for s in v.path if s["kind"] != "routing"]
+        steps = [s for s in v.path if s["kind"] != "routing"]
         routed = any(s["kind"] == "routing" for s in v.path)
-        c = pr.components(v.node, qrel=v.qrel, path=steps, as_of=self.as_of, covered=self._covered,
+        c = pr.components(v.node, qrel=v.qrel, dep=pr.path_relevance(steps, v.anchor), as_of=self.as_of, covered=self._covered,
                           max_tokens=self.budget.limits.max_tokens)
         if routed:
             c.dependency_relevance *= 0.5  # a shortcut says nothing about how the records are related
@@ -140,17 +144,20 @@ class Explorer:
         return g
 
     # ------------------------------------------------------------------ admission
-    def _admit(self, node: NodeView, hop: int, via: str, qrel: float, path: list[dict[str, Any]]) -> Visit | None:
+    def _admit(self, node: NodeView, hop: int, via: str, qrel: float, path: list[dict[str, Any]], anchor: float = 1.0) -> Visit | None:
         v = self.visits.get(node.id)
         if v is not None:
             if path and len(v.paths) < MAX_PATHS and path not in v.paths:
                 v.paths.append(path)  # another route to the same record: kept for explanation, not counted twice
             return None
+        if self.budget.usage.visited >= self.budget.limits.max_visited:
+            self._full = True  # strict: the visited-record limit is never exceeded
+            return None
         if hop == 3 and self.policy != "search":
             groups = self._groups(node)
             if not groups or groups <= self._start_groups:
                 return None  # H3 is reserved for consequences outside the start set's projects and departments
-        v = Visit(node=node, hop=hop, via=via, qrel=qrel, paths=[path] if path else [], order=next(self._order))
+        v = Visit(node=node, hop=hop, via=via, qrel=qrel, paths=[path] if path else [], order=next(self._order), anchor=anchor)
         v.cross_boundary = bool(self._groups(node) - self._start_groups) and hop > 0
         self._score(v)
         self.visits[node.id] = v
@@ -159,12 +166,14 @@ class Explorer:
         return v
 
     def start(self, hits: list[tuple[NodeView, float, str]]) -> None:
+        top = max((float(sc) for _, sc, _ in hits), default=0.0) or 1.0
         for node, score, how in hits:
             if self.scope_projects and node.project_ids and not (set(node.project_ids) & self.scope_projects) \
                     and node.id not in self.scope_projects:
                 continue  # outside the requested project scope
             self._start_groups |= self._groups(node)
-            v = self._admit(node, 0, how, self._qrel(node, score), [])
+            anchor = max(0.0, float(score)) / top  # search rank information, kept for dependency relevance
+            v = self._admit(node, 0, how, self._qrel(node, anchor), [], anchor=anchor)
             if v is not None:
                 self.trace.append({"event": "start", "node": str(node.id), "type": node.type, "how": how,
                                    "score": v.score, "components": v.comps.as_dict()})
@@ -203,6 +212,8 @@ class Explorer:
             reason = self.budget.exceeded()
             if reason:
                 return reason
+            if self._full:
+                return "budget:max_visited"
             batch = self._next_batch()
             if not batch:
                 return None
@@ -211,7 +222,7 @@ class Explorer:
                 v.expanded = True
                 by_hop.setdefault(v.hop + 1, []).append(v)
                 if v.node.root_sources:
-                    self._covered |= set(v.node.root_sources)
+                    self._covered[pr.role(v.node)] |= set(v.node.root_sources)
                 self.trace.append({"event": "expand", "node": str(v.node.id), "type": v.node.type, "hop": v.hop,
                                    "score": v.score, "components": v.comps.as_dict() if v.comps else None})
             for hop, group in sorted(by_hop.items()):
@@ -224,6 +235,7 @@ class Explorer:
         kinds = HORIZON_KINDS.get(hop, DEP_KINDS)
         edges, views, cut = self.r.edges(anchors, kinds=kinds, per_node=PER_NODE, with_embedding=self.qvec is not None)
         self.truncated |= cut
+        cands = []
         for e in edges:
             self.edges[e.id] = e
             anchor_id = e.src if e.src in anchors else e.dst
@@ -233,9 +245,20 @@ class Explorer:
                 continue
             parent = anchors[anchor_id]
             path = parent.path + [_step(e, anchor_id)]
-            self._admit(node, hop, "edge", self._qrel(node), path)
+            cands.append((node, path, parent.anchor))
+        if self.policy.startswith("rem"):
+            # under a visited-record limit, the priority decides which neighbours are admitted first
+            def pre(c):
+                node, path, anchor = c
+                comps = pr.components(node, qrel=self._qrel(node), dep=pr.path_relevance(path, anchor), as_of=self.as_of,
+                                      covered=self._covered, max_tokens=self.budget.limits.max_tokens)
+                return -comps.score(self.w)
+            cands.sort(key=pre)
+        for node, path, anchor in cands:
+            self._admit(node, hop, "edge", self._qrel(node), path, anchor=anchor)
 
     def _route(self, group: list[Visit], hop: int) -> None:
+        anchors = {v.node.id: v.anchor for v in group}
         shortcuts = self.r.routing([v.node.id for v in group])
         new = {dst for _, dst, _ in shortcuts if dst not in self.visits}
         views = self.r.nodes(new, with_embedding=self.qvec is not None)
@@ -243,12 +266,12 @@ class Explorer:
             if dst in views:
                 path = [{"edge_id": None, "kind": "routing", "provenance": builder, "status": "navigation",
                          "from": str(src), "to": str(dst), "direction": "out", "hypothesis": False}]
-                if self._admit(views[dst], hop, "routing", self._qrel(views[dst]), path) is not None:
+                if self._admit(views[dst], hop, "routing", self._qrel(views[dst]), path, anchor=anchors.get(src, 1.0)) is not None:
                     self.routing_hops += 1
 
     # ------------------------------------------------------------------ resume
     def _frontier_items(self) -> list[dict[str, Any]]:
-        return [{"node": str(v.node.id), "hop": v.hop, "via": v.via, "qrel": v.qrel, "paths": v.paths}
+        return [{"node": str(v.node.id), "hop": v.hop, "via": v.via, "qrel": v.qrel, "paths": v.paths, "anchor": v.anchor}
                 for v in self._pending()]
 
     def resume(self, state: dict[str, Any]) -> None:
@@ -257,7 +280,9 @@ class Explorer:
         ids = [uuid.UUID(x) for x in state.get("expanded", [])] + [uuid.UUID(f["node"]) for f in state.get("frontier", [])]
         views = self.r.nodes(ids, with_embedding=self.qvec is not None)
         self._start_groups = {uuid.UUID(x) for x in state.get("start_groups", [])}
-        self._covered = set(state.get("covered", []))
+        cov = state.get("covered") or {}
+        cov = cov if isinstance(cov, dict) else {"text": cov}
+        self._covered = {"text": set(cov.get("text", [])), "record": set(cov.get("record", []))}
         for x in state.get("expanded", []):
             n = views.get(uuid.UUID(x["node"]) if isinstance(x, dict) else uuid.UUID(x))
             if n is not None:
@@ -268,14 +293,14 @@ class Explorer:
             n = views.get(uuid.UUID(f["node"]))
             if n is not None and n.id not in self.visits:
                 v = Visit(node=n, hop=int(f["hop"]), via=f["via"], qrel=float(f["qrel"]), paths=f.get("paths", []),
-                          order=next(self._order))
+                          order=next(self._order), anchor=float(f.get("anchor", 1.0)))
                 self._score(v)
                 self.visits[n.id] = v
 
     def state(self) -> dict[str, Any]:
         return {"expanded": [str(k) for k, v in self.visits.items() if v.expanded or v.hop >= self.budget.limits.max_depth],
                 "frontier": self._frontier_items(), "start_groups": [str(x) for x in self._start_groups],
-                "covered": sorted(self._covered)}
+                "covered": {k: sorted(v) for k, v in self._covered.items()}}
 
 
 def pack_evidence(visits: list[Visit], policy: str, max_tokens: int, weights: pr.Weights, as_of) -> tuple[list[Visit], int, bool]:
@@ -286,7 +311,7 @@ def pack_evidence(visits: list[Visit], policy: str, max_tokens: int, weights: pr
              and v.node.authoritative and v.node.review_status != "invalidated"]
     chosen, used, cut = [], 0, False
     if policy in ("search", "traversal"):
-        ordered = sorted(cands, key=lambda v: (v.hop, v.order) if policy == "traversal" else (-v.qrel, v.order))
+        ordered = sorted(cands, key=lambda v: (v.hop, v.order))  # search: rank order; traversal: breadth first
         for v in ordered:
             t = est_tokens(v.node.text())
             if used + t > max_tokens:
@@ -295,12 +320,13 @@ def pack_evidence(visits: list[Visit], policy: str, max_tokens: int, weights: pr
             chosen.append(v)
             used += t
         return chosen, used, cut
-    covered: set[str] = set()
+    covered: dict[str, set[str]] = {"text": set(), "record": set()}
     pool = list(cands)
     while pool:
         for v in pool:
-            steps = [(s["kind"], s["provenance"]) for s in v.path if s["kind"] != "routing"]
-            v.comps = pr.components(v.node, qrel=v.qrel, path=steps, as_of=as_of, covered=covered, max_tokens=max_tokens)
+            steps = [s for s in v.path if s["kind"] != "routing"]
+            dep = pr.path_relevance(steps, v.anchor) * (0.5 if any(s["kind"] == "routing" for s in v.path) else 1.0)
+            v.comps = pr.components(v.node, qrel=v.qrel, dep=dep, as_of=as_of, covered=covered, max_tokens=max_tokens)
             v.score = v.comps.score(weights)
         pool.sort(key=lambda v: (-v.score, v.order))
         v = pool.pop(0)
@@ -310,5 +336,5 @@ def pack_evidence(visits: list[Visit], policy: str, max_tokens: int, weights: pr
             continue
         chosen.append(v)
         used += t
-        covered |= set(v.node.root_sources) or {f"node:{v.node.id}"}
+        covered[pr.role(v.node)] |= set(v.node.root_sources) or {f"node:{v.node.id}"}
     return chosen, used, cut
