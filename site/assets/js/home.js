@@ -1,5 +1,5 @@
 /*!
- * Two Squares — home page (index.html). Loads after motion.js, site.js, scrub.js, walk.js.
+ * Two Squares — home page (index.html). Loads after motion.js, site.js, cafe-seq.js, then corridor.js (index.html) or build.js (index-build.html).
  *
  * Plain behaviour (works with reduced motion and even if GSAP failed to load):
  *   · "Walk in ↓" cue → scrolls to #walk
@@ -174,7 +174,7 @@
       const small = () => w.innerWidth <= 900;
       // the street ends at night, so the index arrives full bleed under it (dark to dark, no paper
       // gap between them); without the walk, the frame opens out of the paper as before
-      const fromStreet = !!d.querySelector("[data-walk] .walk__track");
+      const fromStreet = !!d.querySelector("[data-corridor], [data-build]");
       const openClip = () => (fromStreet ? "inset(0% 0% 0% 0%)" : small() ? "inset(5% 4% 0% 4%)" : "inset(9% 6% 0% 6%)");
       // paper → green: the frame opens out to full bleed as it arrives, and closes back as it leaves
       gsap.timeline({
