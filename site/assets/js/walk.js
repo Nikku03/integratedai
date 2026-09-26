@@ -77,7 +77,7 @@
     }
     // the settled frame: cup down, hands gone
     function settle() {
-      const go = () => { try { video.currentTime = Math.max(0, Math.min(6.4, (video.duration || 7.6) - 0.4)); } catch (_) {} };
+      const go = () => { try { video.currentTime = Math.min(4.7, (video.duration || 7.6) - 0.4); } catch (_) {} };   // cup down, hands still on the saucer
       if (video.readyState >= 1) go(); else video.addEventListener("loadedmetadata", go, { once: true });
     }
 
@@ -193,7 +193,6 @@
       } else {
         setVideo(); settle();
         table.style.opacity = 1;
-        frames[2].style.opacity = 1;              // the corner table, underneath the seated frame while it loads
         showMenu(true);
         setTimeout(() => links[0] && links[0].focus({ preventScroll: true }), 30);
       }
@@ -423,7 +422,7 @@
       const wi = clamp(S.walk, 0, xs.length - 1), i0 = Math.min(xs.length - 2, Math.floor(wi));
       const x = lerp(xs[i0], xs[i0 + 1], wi - i0);
       css(washAm, "opacity", S.am.toFixed(3)); css(washPm, "opacity", S.pm.toFixed(3)); css(washNight, "opacity", S.night.toFixed(3));
-      glows.forEach((gl) => css(gl, "opacity", S.night.toFixed(3)));
+      glows.forEach((gl) => css(gl, "opacity", (0.28 + 0.72 * S.night).toFixed(3)));   // the sconces are on all day
       // which gate is open (only one at a time)
       let act = null, zmax = 0;
       gates.forEach((g) => { const s = g.st; const on = s.z > 0.0005 || s.ttl > 0.001 || s.cap > 0.001; if (on && (!act || s.z > act.st.z)) act = g; zmax = Math.max(zmax, s.z); });
@@ -463,7 +462,7 @@
         if (g.door) {
           css(g.facade, "opacity", (1 - smooth(0.55, 1, s.push)).toFixed(3));
           // through the doorway: keep the facade's raster while it grows and fades (no re-raster per frame)
-          css(g.facade, "willChange", s.push > 0.001 ? "transform, opacity" : "auto");
+          css(g.facade, "willChange", s.push > 0.001 ? "transform, opacity" : "");
           const opening = s.open > 0.001 && s.open < 0.999;
           if (g.__opening !== opening) { g.__opening = opening; g.el.classList.toggle("is-open", opening); }
           const ang = s.open * 84;
@@ -636,12 +635,12 @@
       if (!target) return;
       e.preventDefault();
       gates.forEach((g) => drop(g));
-      const y = st.end + 1;
-      M.scrollTo(target, { immediate: true });
-      if (w.scrollY < y - 2) M.scrollTo(y, { immediate: true });
+      // a number, measured from the live page (Lenis may not have synced a native scroll yet)
+      const pad = parseFloat(getComputedStyle(d.documentElement).scrollPaddingTop) || 0;
+      const y = Math.max(st.end + 1, Math.round(target.getBoundingClientRect().top + w.scrollY - pad));
+      M.scrollTo(y, { immediate: true });
       if (!target.hasAttribute("tabindex")) target.setAttribute("tabindex", "-1");
       target.focus({ preventScroll: true });
-      if (location.hash !== "#after-walk" && target.id === "after-walk") history.replaceState(null, "", "#after-walk");
     };
     skipLink.addEventListener("click", onSkip);
     offs.push(() => skipLink.removeEventListener("click", onSkip));

@@ -14,7 +14,8 @@
   --walk-len: 1040vh;              /* tall container; the stage is sticky inside it */
   --fw: min(calc(56svh * 0.8), 86vw, 520px);   /* framed picture (4:5) */
   --fh: calc(var(--fw) * 1.25);
-  --cy: 45%;                       /* eye level: frame centre, % of the stage height */
+  --cy: 44%;                       /* eye level: frame centre, % of the stage height */
+  --floor: 15%;                    /* pavement band */
   --gap: 58vw;                     /* door-to-door along the street */
   --x0: 74vw;                      /* first door's centre when the walk starts */
   --moulding: clamp(10px, 1.1vw, 15px);
@@ -34,6 +35,7 @@
 }
 .walk__eyebrow { grid-column: 1 / -1; color: var(--ink-3); }
 .walk__headline { grid-column: 1 / 8; }
+.walk__nobr { white-space: nowrap; }   /* keeps the comma with its word */
 .walk__body { grid-column: 9 / 13; color: var(--ink-2); max-width: 40ch; padding-bottom: 0.35em; }
 .walk__rm-note { display: none; grid-column: 1 / -1; color: var(--ink-3); margin-top: 8px; }
 @media (prefers-reduced-motion: reduce) { .js .walk__rm-note { display: block; } }
@@ -108,7 +110,9 @@ html.js-motion .walk__camera { display: block; position: absolute; inset: 0; tra
 html.js-motion .walk__hud { display: block; }
 html.js-motion .walk__gates { display: block; position: absolute; inset: 0; padding: 0; max-width: none; margin: 0; pointer-events: none; }
 /* each camera layer is rastered once and only ever moved and scaled by the compositor */
-html.js-motion .walk__stage.is-live .walk__camera { will-change: transform; }
+html.js-motion .walk__stage.is-live .walk__camera,
+html.js-motion .walk__stage.is-live .walk__facade,
+html.js-motion .walk__stage.is-live .walk__gate--video .walk__room { will-change: transform; }
 
 /* the wall: plaster, cornice, pavement */
 .walk__wall {
@@ -126,7 +130,7 @@ html.js-motion .walk__stage.is-live .walk__camera { will-change: transform; }
   box-shadow: 0 1px 0 rgba(28, 33, 25, 0.12), 0 10px 18px -8px rgba(28, 33, 25, 0.22);
 }
 .walk__floor {
-  position: absolute; left: 0; right: 0; bottom: 0; height: 19%;
+  position: absolute; left: 0; right: 0; bottom: 0; height: var(--floor);
   background:
     repeating-linear-gradient(90deg, rgba(28, 33, 25, 0) 0 179px, rgba(28, 33, 25, 0.09) 179px 180px),
     linear-gradient(to bottom, #d2cbb9, #c9c1ad);
@@ -140,6 +144,19 @@ html.js-motion .walk__stage.is-live .walk__camera { will-change: transform; }
   content: ""; position: absolute; left: 0; right: 0; top: 0; height: 40%;
   background: linear-gradient(to bottom, rgba(28, 33, 25, 0.16), rgba(28, 33, 25, 0));
 }
+
+/* one building: shallow piers between the bays, and the studio's name painted on the plaster */
+.walk__piers {
+  position: absolute; top: 7svh; bottom: calc(var(--floor) + 14px);
+  left: calc(50vw + var(--x0) + var(--gap) / 2 - 23px); right: 0;
+  background: linear-gradient(90deg, rgba(28, 33, 25, 0.06) 0, rgba(255, 253, 246, 0.42) 2px, rgba(255, 253, 246, 0.16) 30px, rgba(28, 33, 25, 0.08) 44px, rgba(28, 33, 25, 0.035) 46px, rgba(28, 33, 25, 0) 64px) 0 0 / var(--gap) 100% repeat-x;
+}
+.walk__sign {
+  position: absolute; left: calc(50vw + var(--x0) - var(--gap) * 0.6); top: calc(var(--cy) - 2svh);
+  transform: translate(-50%, -50%); color: rgba(58, 52, 38, 0.1);
+}
+.walk__sign .logo { --logo-h: clamp(120px, 17svh, 190px); display: block; }
+@media (max-width: 600px) { .walk__sign { display: none; } }
 
 /* light across the day: washes over the wall (the pictures stay lit) */
 html.js-motion .walk__wash { display: block; position: absolute; inset: 0; pointer-events: none; will-change: opacity; }
@@ -231,13 +248,14 @@ html.js-motion .walk__leaf img {
   left: calc(var(--lx) / var(--lw) * -100%); top: calc(var(--ly) / var(--lh) * -100%);
 }
 .walk__leaf-shade { position: absolute; inset: 0; background: #0b0906; opacity: 0; }
+.walk__leaf--r::before { content: ""; position: absolute; z-index: 1; left: 0; top: 0; bottom: 0; width: 1.5px; background: rgba(22, 14, 8, 0.85); }   /* the meeting stile */
 html.js-motion .walk__gate.is-open .walk__leaf, html.js-motion .walk__gate.is-open .walk__leaf-shade { will-change: transform, opacity; }
 html.js-motion .walk__shade { display: block; position: absolute; inset: 0; pointer-events: none; opacity: 0; background: none; }
 html.js-motion .walk__shade::before, html.js-motion .walk__shade::after { content: ""; position: absolute; left: 0; right: 0; }
 html.js-motion .walk__shade::before { top: 0; height: 26%; background: linear-gradient(to bottom, rgba(20, 24, 18, 0.5), rgba(20, 24, 18, 0)); }
 html.js-motion .walk__shade::after { bottom: 0; height: 70%; background: linear-gradient(to top, rgba(20, 24, 18, 0.72), rgba(20, 24, 18, 0.32) 45%, rgba(20, 24, 18, 0) 100%); }
 html.js-motion .walk__vignette { display: block; position: absolute; inset: 0; pointer-events: none; opacity: 0;
-  background: radial-gradient(60% 46% at 50% 50%, rgba(20, 24, 18, 0.55), rgba(20, 24, 18, 0.22) 60%, rgba(20, 24, 18, 0) 100%); }
+  background: radial-gradient(58% 44% at 50% 50%, rgba(20, 24, 18, 0.66), rgba(20, 24, 18, 0.28) 60%, rgba(20, 24, 18, 0) 100%); }
 
 html.js-motion .walk__end {
   position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; text-align: center;
@@ -319,7 +337,7 @@ html.js-motion .walk__outro-link { color: var(--sand); --focus: var(--sand); }
 .cafe-seq.is-open { display: block; }
 .no-js .cafe-seq:target { display: block; }
 .cafe-seq__frames { position: fixed; inset: 0; overflow: hidden; }
-.cafe-seq__frame { position: absolute; inset: 0; margin: 0; opacity: 0; background: #0e0f0c var(--lqip, none) center / cover; }
+.cafe-seq__frame { position: absolute; inset: 0; margin: 0; opacity: 0; isolation: isolate; background: #0e0f0c var(--lqip, none) center / cover; }
 .cafe-seq__frame::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(to top, rgba(12, 14, 10, 0.62), rgba(12, 14, 10, 0) 42%); }
 .cafe-seq__img, .cafe-seq__table-media, .cafe-seq__video { position: absolute; inset: 0; width: 100%; height: 100%; }
 .cafe-seq__img, .cafe-seq__video { object-fit: cover; }
@@ -331,7 +349,6 @@ html.js-motion .walk__outro-link { color: var(--sand); --focus: var(--sand); }
 .cafe-seq__cap .t-num { font-weight: 500; letter-spacing: 0.18em; }
 /* no-JS / reduced motion: the corner table is already set */
 .no-js .cafe-seq__frame[data-frame="2"], .cafe-seq.is-static .cafe-seq__frame--table { opacity: 1; }
-.cafe-seq.is-static .cafe-seq__frame[data-frame="2"] { opacity: 0; }
 
 .cafe-seq__bar {
   position: fixed; z-index: 3; top: 0; left: 0; right: 0; display: flex; align-items: center; justify-content: space-between; gap: 16px;

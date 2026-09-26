@@ -88,7 +88,7 @@
 <section class="walk" id="walk" data-walk aria-labelledby="walk-title">
   <div class="walk__intro wrap">
     <p class="walk__eyebrow t-label" data-reveal>The walk</p>
-    <h2 class="walk__headline t-display-l" id="walk-title" data-split>A room is a <em>sequence</em>, not a picture.</h2>
+    <h2 class="walk__headline t-display-l" id="walk-title" data-split>A room is a <span class="walk__nobr"><em>sequence</em>,</span> not a picture.</h2>
     <p class="walk__body t-lede" data-reveal>Scroll to walk in. Behind the first door, a café at eight in the morning. Further down the street, a restaurant at two and a bar at eleven. Three rooms, three times of day, and each one has to work.</p>
     <p class="sr-only">The walk: a street with three doors. At 08:00 a café, which you can enter and sit down in to see our services. At 14:00 a restaurant. At 23:00 a bar. Each door opens into its room as you scroll. You can skip the walk at any time.</p>
     <p class="walk__rm-note t-small">Motion is reduced on your device, so the walk is shown as stills.</p>
@@ -96,8 +96,18 @@
 
   <div class="walk__track">
     <div class="walk__stage" data-tone="light">
+      <div class="walk__hud">
+        <p class="walk__street t-label" aria-hidden="true">On the street</p>
+        <a class="walk__skip" href="#after-walk">Skip the walk<span class="walk__skip-arr" aria-hidden="true">↓</span></a>
+        <div class="walk__day" aria-hidden="true">
+          <span class="walk__day-line"><i class="walk__day-fill"></i></span>
+          <span class="walk__day-t" data-t="0">08:00</span><span class="walk__day-t" data-t="1">14:00</span><span class="walk__day-t" data-t="2">23:00</span>
+        </div>
+        <p class="walk__hint t-label" aria-hidden="true"><span class="walk__hint--fine">Scroll, or use the arrow keys, to walk.</span><span class="walk__hint--touch">Scroll</span></p>
+        <p class="walk__loading t-label" aria-hidden="true">Opening the doors…</p>
+      </div>
       <div class="walk__camera walk__camera--wall" aria-hidden="true">
-        <div class="walk__wall"><span class="walk__cornice"></span><span class="walk__floor"></span></div>
+        <div class="walk__wall"><span class="walk__cornice"></span><span class="walk__piers"></span><span class="walk__sign"><span class="logo logo--lockup"></span></span><span class="walk__floor"></span></div>
       </div>
       <span class="walk__wash walk__wash--am" aria-hidden="true"></span>
       <span class="walk__wash walk__wash--pm" aria-hidden="true"></span>
@@ -201,20 +211,10 @@
       </div>
 
       <div class="walk__outro">
-        <p class="walk__outro-line t-display-m">Three rooms. One day. One team.</p>
+        <p class="walk__outro-line t-display-l">Three rooms. One day. One team.</p>
         <a class="link walk__outro-link" href="work.html">See all the work</a>
       </div>
 
-      <div class="walk__hud">
-        <p class="walk__street t-label" aria-hidden="true">On the street</p>
-        <a class="walk__skip" href="#after-walk">Skip the walk<span class="walk__skip-arr" aria-hidden="true">↓</span></a>
-        <div class="walk__day" aria-hidden="true">
-          <span class="walk__day-line"><i class="walk__day-fill"></i></span>
-          <span class="walk__day-t" data-t="0">08:00</span><span class="walk__day-t" data-t="1">14:00</span><span class="walk__day-t" data-t="2">23:00</span>
-        </div>
-        <p class="walk__hint t-label" aria-hidden="true"><span class="walk__hint--fine">Scroll, or use the arrow keys, to walk.</span><span class="walk__hint--touch">Scroll</span></p>
-        <p class="walk__loading t-label" aria-hidden="true">Opening the doors…</p>
-      </div>
     </div>
   </div>
 </section>
