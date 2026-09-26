@@ -92,7 +92,7 @@
     <div class="wrap grid work-hero__grid">
       <div class="work-hero__top">
         <p class="t-label work-hero__eyebrow" data-reveal>Work</p>
-        <span class="badge badge--placeholder" data-reveal>Placeholder projects</span>
+        <span class="badge badge--placeholder" data-reveal>Placeholder</span>
       </div>
 <!-- @gen:work-hero -->
 <h1 class="work-hero__title t-display-l work-swap" id="work-title" data-swap="title">
@@ -102,12 +102,12 @@
         <span class="work-swap__v" data-f="bars">Rooms built for <em>late</em>.</span>
         <span class="work-swap__v" data-f="retail">Retail you walk <em>slower</em> in.</span>
       </h1>
-      <div class="work-hero__side">
+      <div class="work-hero__side" data-reveal data-delay="0.2">
         <div class="work-hero__intro t-body work-swap" data-swap="intro">
           <p class="work-swap__v" data-f="all">Cafés that earn their living before ten. Dining rooms that turn tables without rushing anyone. Bars built for 1am, and shops you walk slower in. Every project here was drawn and built by the same team, which is why they look like the drawings and why they’re still holding up.</p>
-          <p class="work-swap__v" data-f="cafes">A café is judged at 08:15, with the queue at the door. We plan the counter first — order, make, pick-up, bin — so two baristas can do the work of three. Then the room: seats for laptops and for prams, daylight on the pastry case, power where people actually sit, and a corner table someone will claim every morning.</p>
-          <p class="work-swap__v" data-f="restaurants">We walk the service before we choose a finish: host to table, table to pass, pass to wash-up. Every metre a server saves is a metre of calm in the room. Then we make it warm: acoustics you can talk over at full covers, banquettes worth waiting for, and light that flatters the food and the faces.</p>
-          <p class="work-swap__v" data-f="bars">Everything in a bar faces one way. We design the back-bar as the stage and the room as the audience, draw the stations with your head bartender, and put the lighting on scenes so the room changes without anyone touching a switch. Finishes are chosen for citrus, sugar and 2am.</p>
+          <p class="work-swap__v" data-f="cafes">A café is judged at 08:15, with the queue at the door. We plan the counter first — order, make, <span class="work-nb">pick-up</span>, bin — so two baristas can do the work of three. Then the room: seats for laptops and for prams, daylight on the pastry case, power where people actually sit, and a corner table someone will claim every morning.</p>
+          <p class="work-swap__v" data-f="restaurants">We walk the service before we choose a finish: host to table, table to pass, pass to <span class="work-nb">wash-up</span>. Every metre a server saves is a metre of calm in the room. Then we make it warm: acoustics you can talk over at full covers, banquettes worth waiting for, and light that flatters the food and the faces.</p>
+          <p class="work-swap__v" data-f="bars">Everything in a bar faces one way. We design the <span class="work-nb">back-bar</span> as the stage and the room as the audience, draw the stations with your head bartender, and put the lighting on scenes so the room changes without anyone touching a switch. Finishes are chosen for citrus, sugar and 2am.</p>
           <p class="work-swap__v" data-f="retail">A shopfront gets about three seconds with someone walking past at 4 km/h. We design for those three seconds, then for the walk to the back wall, then for the till. Fixtures that disappear, light that renders colour truthfully, and kits of parts that travel to the next city.</p>
         </div>
         <div class="work-hero__cta work-swap" data-swap="cta">
@@ -118,19 +118,16 @@
         </div>
       </div>
 <!-- /@gen:work-hero -->
-    </div>
-  </section>
-
-  <div class="wrap work-bar" data-reveal>
-    <div class="work-bar__inner">
+      <div class="work-bar" data-reveal data-delay="0.3">
+        <div class="work-bar__inner">
 <!-- @gen:work-bar -->
 <div class="work-filters" role="radiogroup" aria-labelledby="work-filters-label">
     <span class="work-filters__label t-label" id="work-filters-label">Show</span>
-    <label class="work-filter" data-f="all" style="--dot:var(--green)"><input class="work-filter__input" type="radio" name="work-filter" value="all" autocomplete="off" checked><span class="work-filter__txt"><span class="work-filter__dot" aria-hidden="true"></span>All<sup class="work-filter__n" aria-hidden="true">06</sup><span class="sr-only">, 6 projects</span></span></label>
-    <label class="work-filter" data-f="cafes" style="--dot:var(--cafe)"><input class="work-filter__input" type="radio" name="work-filter" value="cafes" autocomplete="off"><span class="work-filter__txt"><span class="work-filter__dot" aria-hidden="true"></span>Cafés<sup class="work-filter__n" aria-hidden="true">02</sup><span class="sr-only">, 2 projects</span></span></label>
-    <label class="work-filter" data-f="restaurants" style="--dot:var(--restaurant)"><input class="work-filter__input" type="radio" name="work-filter" value="restaurants" autocomplete="off"><span class="work-filter__txt"><span class="work-filter__dot" aria-hidden="true"></span>Restaurants<sup class="work-filter__n" aria-hidden="true">02</sup><span class="sr-only">, 2 projects</span></span></label>
-    <label class="work-filter" data-f="bars" style="--dot:var(--bar)"><input class="work-filter__input" type="radio" name="work-filter" value="bars" autocomplete="off"><span class="work-filter__txt"><span class="work-filter__dot" aria-hidden="true"></span>Bars<sup class="work-filter__n" aria-hidden="true">01</sup><span class="sr-only">, 1 project</span></span></label>
-    <label class="work-filter" data-f="retail" style="--dot:var(--retail)"><input class="work-filter__input" type="radio" name="work-filter" value="retail" autocomplete="off"><span class="work-filter__txt"><span class="work-filter__dot" aria-hidden="true"></span>Retail<sup class="work-filter__n" aria-hidden="true">01</sup><span class="sr-only">, 1 project</span></span></label>
+    <label class="work-filter" data-f="all" style="--dot:var(--green)"><input class="work-filter__input" type="radio" name="work-filter" value="all" autocomplete="off" checked><span class="work-filter__txt"><span class="work-filter__dot" aria-hidden="true"></span>All<sup class="work-filter__n" aria-hidden="true">06</sup></span><span class="sr-only qa-ignore-overlap">, 6 projects</span></label>
+    <label class="work-filter" data-f="cafes" style="--dot:var(--cafe)"><input class="work-filter__input" type="radio" name="work-filter" value="cafes" autocomplete="off"><span class="work-filter__txt"><span class="work-filter__dot" aria-hidden="true"></span>Cafés<sup class="work-filter__n" aria-hidden="true">02</sup></span><span class="sr-only qa-ignore-overlap">, 2 projects</span></label>
+    <label class="work-filter" data-f="restaurants" style="--dot:var(--restaurant)"><input class="work-filter__input" type="radio" name="work-filter" value="restaurants" autocomplete="off"><span class="work-filter__txt"><span class="work-filter__dot" aria-hidden="true"></span>Restaurants<sup class="work-filter__n" aria-hidden="true">02</sup></span><span class="sr-only qa-ignore-overlap">, 2 projects</span></label>
+    <label class="work-filter" data-f="bars" style="--dot:var(--bar)"><input class="work-filter__input" type="radio" name="work-filter" value="bars" autocomplete="off"><span class="work-filter__txt"><span class="work-filter__dot" aria-hidden="true"></span>Bars<sup class="work-filter__n" aria-hidden="true">01</sup></span><span class="sr-only qa-ignore-overlap">, 1 project</span></label>
+    <label class="work-filter" data-f="retail" style="--dot:var(--retail)"><input class="work-filter__input" type="radio" name="work-filter" value="retail" autocomplete="off"><span class="work-filter__txt"><span class="work-filter__dot" aria-hidden="true"></span>Retail<sup class="work-filter__n" aria-hidden="true">01</sup></span><span class="sr-only qa-ignore-overlap">, 1 project</span></label>
   </div>
   <p class="work-count t-label work-swap" data-swap="count" aria-hidden="true">
     <span class="work-swap__v" data-f="all">6 projects</span>
@@ -140,18 +137,20 @@
     <span class="work-swap__v" data-f="retail">1 project</span>
   </p>
 <!-- /@gen:work-bar -->
-      <div class="work-view" role="group" aria-label="View">
-        <button class="work-view__btn" type="button" data-view="rows" aria-pressed="true">
-          <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><rect x="1" y="2.5" width="4" height="4.5"/><rect x="6.5" y="2.5" width="8.5" height="4.5"/><rect x="1" y="9" width="4" height="4.5"/><rect x="6.5" y="9" width="8.5" height="4.5"/></svg>
-          <span>Rows</span>
-        </button>
-        <button class="work-view__btn" type="button" data-view="grid" aria-pressed="false">
-          <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><rect x="1.5" y="1.5" width="5.5" height="5.5"/><rect x="9" y="1.5" width="5.5" height="5.5"/><rect x="1.5" y="9" width="5.5" height="5.5"/><rect x="9" y="9" width="5.5" height="5.5"/></svg>
-          <span>Grid</span>
-        </button>
+          <div class="work-view" role="group" aria-label="View">
+            <button class="work-view__btn" type="button" data-view="rows" aria-pressed="true">
+              <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><rect x="1" y="2.5" width="4" height="4.5"/><rect x="6.5" y="2.5" width="8.5" height="4.5"/><rect x="1" y="9" width="4" height="4.5"/><rect x="6.5" y="9" width="8.5" height="4.5"/></svg>
+              <span>Rows</span>
+            </button>
+            <button class="work-view__btn" type="button" data-view="grid" aria-pressed="false">
+              <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><rect x="1.5" y="1.5" width="5.5" height="5.5"/><rect x="9" y="1.5" width="5.5" height="5.5"/><rect x="1.5" y="9" width="5.5" height="5.5"/><rect x="9" y="9" width="5.5" height="5.5"/></svg>
+              <span>Grid</span>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
+  </section>
 
   <section class="work-index" aria-label="Projects">
     <div class="wrap">

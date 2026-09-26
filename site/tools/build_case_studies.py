@@ -121,14 +121,18 @@ def figure(slug, sizes, *, ratio=None, eager=False, reveal=True, cls="", alt=Non
 
 
 def meta_line(parts) -> str:
-    """'Cocktail bar · Connaught Place, New Delhi · 2026': each part stays on one line when the row wraps."""
-    return ' <span class="sep" aria-hidden="true">·</span> '.join(f'<span class="seg">{esc(x)}</span>' for x in parts)
+    """'Cocktail bar · Connaught Place, New Delhi · 2026': each part stays on one line when the row wraps,
+    and the dot travels with the part before it, so a wrapped line never starts with one."""
+    sep = '<span class="sep" aria-hidden="true">·</span>'
+    return " ".join(f'<span class="seg">{esc(x)}{sep if i < len(parts) - 1 else ""}</span>' for i, x in enumerate(parts))
 
 
 def fact(label: str, value: str, wide: bool = False) -> str:
     klass = "case-facts__item" + (" case-facts__item--wide" if wide else "")
+    # "Concept · Interior design · …": a wrapped line never starts with the dot (no-break space before it)
+    value = esc(value).replace(" · ", "\u00a0· ")
     return (f'<div class="{klass}" data-reveal><dt class="t-label">{esc(label)}</dt>'
-            f"<dd>{esc(value)}</dd></div>")
+            f"<dd>{value}</dd></div>")
 
 
 # ------------------------------------------------------------------ blocks
@@ -169,9 +173,11 @@ def stages(p, master):
             out.append(f'<li class="case-stages__item is-done" data-reveal><span class="case-stages__tick" aria-hidden="true"></span>'
                        f'<span class="case-stages__name">{esc(name)}</span></li>')
         else:
-            # not part of this job: shown at 30% as the rest of the menu, hidden from assistive tech
-            out.append(f'<li class="case-stages__item is-off" aria-hidden="true" data-reveal><span class="case-stages__tick" aria-hidden="true"></span>'
-                       f'<span class="case-stages__name">{esc(name)}</span></li>')
+            # not part of this job: the rest of the menu, ghosted at 30%. Decorative: the delivered stages
+            # (and the Scope fact) carry the information, so the name is drawn by CSS from data-label and
+            # the row is hidden from assistive tech.
+            out.append(f'<li class="case-stages__item is-off" aria-hidden="true" data-reveal><span class="case-stages__tick"></span>'
+                       f'<span class="case-stages__name" data-label="{attr(name)}"></span></li>')
     return indent("\n".join(out), 10)
 
 
@@ -299,6 +305,7 @@ def render(p, by_slug, master, tpl):
         "gallery": gallery(p),
         "h_details": esc(H["details"]), "stage_figures": stage_figs, "details": detail_items,
         "frame_ratio": frame_ratio, "frame_r": frame_r, "details_total": total,
+        "frame_orient": "landscape" if frame_r > 1 else "portrait",
         "h_build": esc(H["build"]), "build": esc(p["build"]),
         "h_outcome": esc(H["outcome"]), "outcome": outcome(p),
         "h_quote": esc(H["quote"]), "quote_text": f"“{esc(p['quote']['text'])}”", "quote_by": esc(p["quote"]["attribution"]),

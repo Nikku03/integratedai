@@ -96,10 +96,16 @@
       const io = new IntersectionObserver((es) => {
         if (!es.some((e) => e.isIntersecting)) return;
         io.disconnect();
-        $$(".home-work__slide > img", sec).forEach((img) => {
-          const dec = () => { if (img.decode) img.decode().catch(() => {}); };
-          if (img.complete && img.naturalWidth) dec(); else img.addEventListener("load", dec, { once: true });
-        });
+        // one image per idle slot, so six big decodes never land in the same frame
+        const queue = $$(".home-work__slide > img", sec);
+        const idle = w.requestIdleCallback || ((f) => setTimeout(f, 120));
+        const next = () => {
+          const img = queue.shift();
+          if (!img) return;
+          const dec = () => { (img.decode ? img.decode() : Promise.resolve()).catch(() => {}).then(() => idle(next)); };
+          if (img.complete && img.naturalWidth) dec(); else { img.loading = "eager"; img.addEventListener("load", dec, { once: true }); img.addEventListener("error", () => idle(next), { once: true }); }
+        };
+        idle(next);
       }, { rootMargin: "100% 0px" });
       io.observe(sec);
     }
@@ -109,6 +115,26 @@
   /* ================================================================ motion */
   const M = w.Motion;
   if (!M || !M.page) return;
+
+  // masked line reveal for [data-home-split] (same look as motion.js data-split). aria "none" keeps
+  // the text itself readable, so it also works on a <p> (which may not carry an aria-label)
+  function splitLines(el, trigger, opts = {}) {
+    const gsap = w.gsap;
+    if (!el) return;
+    if (!w.SplitText) {
+      gsap.fromTo(el, { autoAlpha: 0, y: 24 }, { autoAlpha: 1, y: 0, duration: 1, ease: M.DRIFT, delay: opts.delay || 0, scrollTrigger: trigger });
+      return;
+    }
+    w.SplitText.create(el, {
+      type: "lines", mask: "lines", linesClass: "line", autoSplit: true,
+      aria: el.matches("h1,h2,h3,h4,h5,h6") ? "auto" : "none",
+      onSplit(self) {
+        gsap.set(el, { visibility: "visible" });
+        self.masks.forEach((m) => m.classList.add("line-mask"));
+        return gsap.fromTo(self.lines, { yPercent: 120 }, { yPercent: 0, duration: 1.1, stagger: 0.09, ease: M.DRIFT, delay: opts.delay || 0, scrollTrigger: trigger });
+      },
+    });
+  }
 
   M.page("home", (env) => {
     if (!env.motion) return;                       // reduced motion: CSS shows every section as plain, readable content
@@ -149,7 +175,10 @@
       // paper → green: the frame opens out to full bleed as it arrives, and closes back as it leaves
       gsap.timeline({
         defaults: { ease: "none" },
-        scrollTrigger: { trigger: sec, start: "top bottom", end: "bottom top", scrub: true, invalidateOnRefresh: true },
+        scrollTrigger: {
+          trigger: sec, start: "top bottom", end: "bottom top", scrub: true, invalidateOnRefresh: true,
+          onToggle: (self) => { stack.style.willChange = self.isActive ? "transform" : ""; },
+        },
       })
         .fromTo(sec, { clipPath: () => (small() ? "inset(5% 4% 0% 4%)" : "inset(9% 6% 0% 6%)") },
           { clipPath: "inset(0% 0% 0% 0%)", duration: 0.5, ease: "power2.out" }, 0)
@@ -165,7 +194,7 @@
         scrollTrigger: { trigger: list, start: "top 80%", once: true },
         onComplete: () => items.forEach((li) => li.classList.remove("is-masked")),
       });
-      offs.push(() => items.forEach((li) => li.classList.remove("is-masked")));
+      offs.push(() => { items.forEach((li) => li.classList.remove("is-masked")); stack.style.willChange = ""; });
       gsap.fromTo($$("[data-work-in]", sec), { autoAlpha: 0, y: 16 }, {
         autoAlpha: 1, y: 0, duration: 1, stagger: 0.08, ease: DRIFT, delay: 0.45, clearProps: "transform",
         scrollTrigger: { trigger: list, start: "top 80%", once: true },
@@ -209,7 +238,7 @@
         const tl = gsap.timeline({
           defaults: { ease: "none" },
           scrollTrigger: wide
-            ? { trigger: rail, start: "top 84%", end: "top 36%", scrub: true }
+            ? { trigger: rail, start: "top 86%", end: "top 50%", scrub: true }
             : { trigger: rail, start: "top 78%", end: "bottom 58%", scrub: true },
         });
         tl.fromTo(fill, wide ? { scaleX: 0 } : { scaleY: 0 }, wide ? { scaleX: 1, duration: 1 } : { scaleY: 1, duration: 1 }, 0);
@@ -223,10 +252,13 @@
       });
     }
 
+    /* ---------------------------------------------------------- 7 · quote: the lines rise, then the attribution */
+    splitLines($(".home-quote [data-home-split]"), { trigger: ".home-quote", start: "top 82%", once: true });
+
     /* ---------------------------------------------------------- 8 · CTA: the window opens, then the headline rises */
     const cta = $("[data-home-cta]");
     if (cta) {
-      const panel = $(".home-cta__panel", cta), video = $(".home-cta__video", cta);
+      const stage = $(".home-cta__stage", cta), video = $(".home-cta__video", cta);
       const title = $("[data-cta-title]", cta), rule = $("[data-cta-rule]", cta);
       const bits = $$("[data-cta-in]", cta).concat($$(".home-cta__toggle", cta));
       // a lit, door-shaped window centred on the stage
@@ -241,21 +273,11 @@
         defaults: { ease: "none" },
         scrollTrigger: { trigger: cta, start: "top 88%", end: "top -38%", scrub: true, invalidateOnRefresh: true },
       })
-        .fromTo(panel, { clipPath: windowClip }, { clipPath: "inset(0% 0% 0% 0%)", duration: 1, ease: "power2.inOut" }, 0)
+        .fromTo(stage, { clipPath: windowClip }, { clipPath: "inset(0% 0% 0% 0%)", duration: 1, ease: "power2.inOut" }, 0)
         .fromTo(video, { scale: 1.32 }, { scale: 1, duration: 1, ease: "power1.out" }, 0);
 
       const reveal = { trigger: cta, start: "top -24%", once: true };
-      if (w.SplitText && title) {
-        w.SplitText.create(title, {
-          type: "lines", mask: "lines", linesClass: "line", autoSplit: true,
-          onSplit(self) {
-            self.masks.forEach((m) => m.classList.add("line-mask"));
-            return gsap.fromTo(self.lines, { yPercent: 120 }, { yPercent: 0, duration: 1.1, stagger: 0.09, ease: DRIFT, delay: 0.1, scrollTrigger: reveal });
-          },
-        });
-      } else if (title) {
-        gsap.fromTo(title, { autoAlpha: 0, y: 24 }, { autoAlpha: 1, y: 0, duration: 1, ease: DRIFT, scrollTrigger: reveal });
-      }
+      splitLines(title, reveal, { delay: 0.1 });
       const [eyebrow, ...rest] = bits;
       gsap.fromTo(eyebrow, { autoAlpha: 0, y: 18 }, { autoAlpha: 1, y: 0, duration: 0.9, ease: DRIFT, clearProps: "transform", scrollTrigger: reveal });
       gsap.fromTo(rest, { autoAlpha: 0, y: 22 }, { autoAlpha: 1, y: 0, duration: 1, stagger: 0.08, ease: DRIFT, delay: 0.5, clearProps: "transform", scrollTrigger: reveal });

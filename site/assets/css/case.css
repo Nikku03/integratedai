@@ -27,6 +27,11 @@ html.js-motion [data-page="case"] [data-case-split] { visibility: hidden; }
 html.js-motion [data-page="case"] .case-hero__meta,
 html.js-motion [data-page="case"] .case-hero__badge { opacity: 0; visibility: hidden; }
 
+/* image curtains run by case.js (same start state as the core [data-reveal="image"]) */
+html.js-motion [data-page="case"] [data-case-reveal="image"] { clip-path: inset(8% 8% 8% 8%); }
+html.js-motion [data-page="case"] [data-case-reveal="image"] > img,
+html.js-motion [data-page="case"] [data-case-reveal="image"] > video { transform: scale(1.12); }
+
 /* ------------------------------------------------------------ 1 · hero */
 [data-page="case"] .case-hero {
   position: relative; isolation: isolate; overflow: clip;
@@ -58,7 +63,7 @@ html.js-motion [data-page="case"] .case-hero__badge { opacity: 0; visibility: hi
 [data-page="case"] .case-hero__title { margin-left: -0.045em; margin-bottom: clamp(16px, 1.8vw, 28px); text-wrap: balance; }
 [data-page="case"] .case-hero__meta { color: var(--on-dark); }
 [data-page="case"] .case-hero__meta .sep,
-[data-page="case"] .case-next__meta .sep { margin-inline: 0.35em; }
+[data-page="case"] .case-next__meta .sep { margin: 0 0.3em 0 0.75em; }
 [data-page="case"] .case-hero__meta .seg,
 [data-page="case"] .case-next__meta .seg { white-space: nowrap; }
 [data-page="case"] .case-hero__badge { grid-column: 10 / 13; justify-self: end; }
@@ -71,8 +76,7 @@ html.js-motion [data-page="case"] .case-hero__badge { opacity: 0; visibility: hi
 }
 [data-page="case"] .case-hero .badge--placeholder {
   color: var(--on-dark); border-color: rgba(244, 242, 236, 0.32);
-  background: rgba(20, 24, 18, 0.34);
-  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+  background: rgba(20, 24, 18, 0.5);
 }
 [data-page="case"] .badge__dot { flex: none; width: 6px; height: 6px; margin-top: 0.5em; background: var(--sand); }
 
@@ -128,6 +132,7 @@ html.js-motion [data-page="case"] .case-hero__badge { opacity: 0; visibility: hi
 [data-page="case"] .case-stages__item.is-off .case-stages__tick { background: none; border-color: var(--ink-3); }
 [data-page="case"] .case-stages__item.is-off .case-stages__tick::after { content: none; }
 [data-page="case"] .case-stages__item.is-off > * { opacity: 0.3; }
+[data-page="case"] .case-stages__item.is-off .case-stages__name::before { content: attr(data-label); }
 
 /* ------------------------------------------------------------ 5 · image rhythm */
 [data-page="case"] .case-gallery { display: grid; row-gap: clamp(64px, 8.5vw, 136px); padding-bottom: var(--section); }
@@ -191,8 +196,9 @@ html.js-motion [data-page="case"] .case-hero__badge { opacity: 0; visibility: hi
 [data-page="case"] .case-details__num { color: var(--ink-3); font-variant-numeric: tabular-nums; }
 [data-page="case"] .case-details__text .t-lede { max-width: 36ch; }
 
-/* desktop with motion: the photo column holds still (CSS sticky) and swaps as each callout passes */
-@media (min-width: 901px) {
+/* desktop with motion: the photo column holds still (CSS sticky) and swaps as each callout passes.
+   Landscape screens only: on a portrait tablet the sticky frame would float in a tall empty column. */
+@media (min-width: 901px) and (orientation: landscape) {
   html.js-motion [data-page="case"] .case-details__stage { display: block; grid-column: 1 / 6; grid-row: 2; }
   html.js-motion [data-page="case"] .case-details__sticky {
     position: sticky; top: 0; height: 100svh;
@@ -213,8 +219,11 @@ html.js-motion [data-page="case"] .case-hero__badge { opacity: 0; visibility: hi
     grid-column: 7 / 12; grid-row: 2; display: block;
   }
   html.js-motion [data-page="case"] .case-details__inline { display: none; }
+  /* landscape detail photographs get a wider column, so the frame keeps its presence */
+  html.js-motion [data-page="case"] .case-details--landscape .case-details__stage { grid-column: 1 / 7; }
+  html.js-motion [data-page="case"] .case-details--landscape .case-details__list { grid-column: 8 / 13; }
   html.js-motion [data-page="case"] .case-details__item {
-    min-height: 80svh; display: flex; flex-direction: column; justify-content: center; gap: 0;
+    min-height: min(80svh, 760px); display: flex; flex-direction: column; justify-content: center; gap: 0;
   }
   html.js-motion [data-page="case"] .case-details__label { margin-bottom: 0; }
   /* reading marker: a short accent rule draws in beside the active callout */

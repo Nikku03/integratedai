@@ -143,6 +143,12 @@ def emphasise(text: str, phrase: str | None) -> str:
     return out
 
 
+def nobreak(markup: str) -> str:
+    """Keep hyphenated words (pick-up, back-bar) on one line. SplitText measures whole words,
+    so a word the browser breaks at its hyphen would wrap differently while split and jump on revert."""
+    return re.sub(r"(?<![\w-])(\w+(?:-\w+)+)(?![\w-])", r'<span class="work-nb">\1</span>', markup)
+
+
 def ratio(slug: str) -> float:
     m = MEDIA[slug]
     return m["w"] / m["h"]
@@ -257,8 +263,8 @@ def build(copy: dict, data: dict) -> dict[str, str]:
     t, i, c = [], [], []
     for f in filters:
         fid = f["id"]
-        t.append(f'        <span class="work-swap__v" data-f="{fid}">{emphasise(f["headline"], EMPHASIS.get(fid))}</span>')
-        i.append(f'          <p class="work-swap__v" data-f="{fid}">{esc(f["intro"])}</p>')
+        t.append(f'        <span class="work-swap__v" data-f="{fid}">{nobreak(emphasise(f["headline"], EMPHASIS.get(fid)))}</span>')
+        i.append(f'          <p class="work-swap__v" data-f="{fid}">{nobreak(esc(f["intro"]))}</p>')
         if f.get("cta"):
             href = f"contact.html?venue={VENUE.get(fid, '')}&amp;from=work"
             c.append(f'          <p class="work-swap__v" data-f="{fid}"><a class="work-hero__cta-link" href="{href}">'
@@ -266,7 +272,7 @@ def build(copy: dict, data: dict) -> dict[str, str]:
     hero = f'''<h1 class="work-hero__title t-display-l work-swap" id="work-title" data-swap="title">
 {chr(10).join(t)}
       </h1>
-      <div class="work-hero__side">
+      <div class="work-hero__side" data-reveal data-delay="0.2">
         <div class="work-hero__intro t-body work-swap" data-swap="intro">
 {chr(10).join(i)}
         </div>
@@ -284,7 +290,8 @@ def build(copy: dict, data: dict) -> dict[str, str]:
             f'    <label class="work-filter" data-f="{fid}" style="--dot:{DOT.get(fid, "var(--green)")}">'
             f'<input class="work-filter__input" type="radio" name="work-filter" value="{fid}" autocomplete="off"{checked}>'
             f'<span class="work-filter__txt"><span class="work-filter__dot" aria-hidden="true"></span>{esc(f["label"])}'
-            f'<sup class="work-filter__n" aria-hidden="true">{n:02d}</sup><span class="sr-only">, {esc(count_text(n))}</span></span></label>')
+            f'<sup class="work-filter__n" aria-hidden="true">{n:02d}</sup></span>'
+            f'<span class="sr-only qa-ignore-overlap">, {esc(count_text(n))}</span></label>')
     cnt = [f'    <span class="work-swap__v" data-f="{fid}">{esc(count_text(counts[fid]))}</span>' for fid in ids]
     bar = f'''<div class="work-filters" role="radiogroup" aria-labelledby="work-filters-label">
     <span class="work-filters__label t-label" id="work-filters-label">{esc(copy["filterLabel"])}</span>

@@ -7,7 +7,7 @@
    ===================================================================== */
 
 [data-page="work"] {
-  --work-top: calc(var(--header-h) + clamp(48px, 8vw, 132px));
+  --work-top: calc(var(--header-h) + clamp(44px, 6.6vw, 112px));
   --work-sticky: calc(var(--header-h) + 28px);
   --work-img-gap: clamp(8px, 0.75vw, 14px);
 }
@@ -27,7 +27,7 @@
 [data-page="work"] .work-swap > .work-swap__v.is-leaving { visibility: visible; pointer-events: none; }
 
 /* ------------------------------------------------------------ hero */
-[data-page="work"] .work-hero { padding-top: var(--work-top); padding-bottom: clamp(40px, 5.2vw, 84px); }
+[data-page="work"] .work-hero { padding-top: var(--work-top); }
 [data-page="work"] .work-hero__grid { row-gap: clamp(22px, 2.6vw, 40px); align-items: start; }
 [data-page="work"] .work-hero__top {
   grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: 16px;
@@ -38,7 +38,7 @@
 [data-page="work"] .work-hero__side { grid-column: 9 / -1; padding-top: clamp(6px, 0.9vw, 16px); }
 [data-page="work"] .work-hero__intro { color: var(--ink-2); max-width: 46ch; }
 [data-page="work"] .work-hero__intro > .work-swap__v { margin: 0; }
-[data-page="work"] .work-hero__cta { margin-top: 1.5rem; }
+[data-page="work"] .work-hero__cta { margin-top: 1.25rem; }
 [data-page="work"] .work-hero__cta > .work-swap__v { margin: 0; }
 [data-page="work"] .work-hero__cta-link {
   display: inline-flex; align-items: center; gap: 0.5em; min-height: 44px;
@@ -56,13 +56,19 @@
   50%  { background-size: 0% 1px;   background-position: 0 100%; }
   100% { background-size: 100% 1px; background-position: 0 100%; }
 }
-/* the masked-line swap: SplitText line masks inside the stacks (padded so descenders and italics survive) */
+/* the masked-line swap: SplitText line masks inside the stacks. The mask clips with an
+   outset clip-path instead of overflow + padding, so descenders and italic overhangs survive
+   and the split text is exactly as tall as the plain text (no jump when it reverts). */
 [data-page="work"] .work-line, [data-page="work"] .work-line-mask { display: block; }
-[data-page="work"] .work-line-mask { padding: 0.1em 0.12em; margin: -0.1em -0.12em; }
+[data-page="work"] .work-line-mask { overflow: visible !important; clip-path: inset(-0.22em -0.3em); }
+[data-page="work"] .work-nb { white-space: nowrap; }
+/* one-line stacks (CTA, count) roll as a whole inside their own box */
+[data-page="work"] .work-swap.is-swapping { overflow: clip; }
 /* intro pre-state: the active headline's lines rise in (work.js); motion only */
 .js-motion [data-page="work"] .work-hero__title { opacity: 0; }
 
-/* ------------------------------------------------------------ filter bar */
+/* ------------------------------------------------------------ filter bar (last row of the hero grid) */
+[data-page="work"] .work-bar { grid-column: 1 / -1; margin-top: clamp(10px, 1.7vw, 30px); }
 [data-page="work"] .work-bar__inner {
   display: flex; flex-wrap: wrap; align-items: center; gap: 6px clamp(20px, 2.6vw, 40px);
   min-height: 76px; padding-block: 12px;
@@ -72,7 +78,7 @@
   flex: 1 1 auto; display: flex; flex-wrap: wrap; align-items: center; gap: 0 clamp(22px, 2.3vw, 38px);
 }
 [data-page="work"] .work-filters__label { color: var(--ink-3); margin-right: clamp(0px, 0.6vw, 10px); }
-[data-page="work"] .work-filter { position: relative; display: inline-flex; align-items: center; min-height: 44px; cursor: pointer; }
+[data-page="work"] .work-filter { position: relative; display: inline-flex; align-items: center; justify-content: center; min-height: 44px; min-width: 44px; cursor: pointer; }
 [data-page="work"] .work-filter__input {
   position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; appearance: none;
 }
@@ -250,23 +256,41 @@
   :root:not([data-work-view="grid"]) [data-page="work"] .work-item__media { grid-column: 1 / -1; margin-top: clamp(22px, 3vw, 32px); }
 }
 
-/* ------------------------------------------------------------ ≤ 900: tablet */
+/* ------------------------------------------------------------ ≤ 900: tablet
+   The filter bar moves up under the headline and the intro below it sizes to the active
+   filter: nothing above the bar changes height, so the bar never moves under a finger,
+   and the list below glides (Flip) when the intro grows or shrinks. */
 @media (max-width: 900px) {
-  [data-page="work"] .work-hero__title { grid-column: 1 / -1; }
+  [data-page="work"] .work-hero__title { grid-column: 1 / -1; order: 1; }
   [data-page="work"] .work-hero__title > .work-swap__v { align-self: end; }
-  [data-page="work"] .work-hero__side { grid-column: 1 / -1; padding-top: 0; }
+  [data-page="work"] .work-bar { order: 2; margin-top: 4px; }
+  [data-page="work"] .work-hero__side { grid-column: 1 / -1; order: 3; padding-top: 4px; padding-bottom: clamp(8px, 2vw, 20px); }
+  [data-page="work"] .work-hero__side .work-swap { position: relative; }
+  [data-page="work"] .work-hero__side .work-swap > .work-swap__v { display: none; }
+  :root:not([data-work-filter]) [data-page="work"] .work-hero__side .work-swap > [data-f="all"],
+  [data-work-filter="all"] [data-page="work"] .work-hero__side .work-swap > [data-f="all"],
+  [data-work-filter="cafes"] [data-page="work"] .work-hero__side .work-swap > [data-f="cafes"],
+  [data-work-filter="restaurants"] [data-page="work"] .work-hero__side .work-swap > [data-f="restaurants"],
+  [data-work-filter="bars"] [data-page="work"] .work-hero__side .work-swap > [data-f="bars"],
+  [data-work-filter="retail"] [data-page="work"] .work-hero__side .work-swap > [data-f="retail"],
+  [data-page="work"] .work-hero__side .work-swap > .work-swap__v.is-leaving { display: block; }
+  [data-page="work"] .work-hero__side .work-swap > .work-swap__v.is-leaving { position: absolute; top: 0; left: 0; right: 0; }
+  :root:not([data-work-filter]) [data-page="work"] .work-hero__cta,
+  [data-work-filter="all"] [data-page="work"] .work-hero__cta { margin-top: 0; }
+  /* filters get their own row; the count and the Rows/Grid pill share the next one */
+  [data-page="work"] .work-bar__inner { row-gap: 4px; }
+  [data-page="work"] .work-filters { flex: 1 1 100%; }
+  [data-page="work"] .work-count { margin-left: 0; text-align: left; }
+  [data-page="work"] .work-count > .work-swap__v { justify-self: start; }
+  [data-page="work"] .work-view { margin-left: auto; }
   [data-work-view="grid"] [data-page="work"] .work-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   [data-page="work"] .work-cta__title, [data-page="work"] .work-cta__side { grid-column: 1 / -1; }
 }
 
 /* ------------------------------------------------------------ ≤ 600: phone */
 @media (max-width: 600px) {
-  [data-page="work"] .work-hero__top .badge { display: none; }
   [data-page="work"] .work-bar__inner { padding-block: 10px 8px; gap: 2px 16px; }
-  [data-page="work"] .work-filters { flex: 1 1 100%; gap: 0 26px; padding-left: 0; }
-  [data-page="work"] .work-count { margin-left: 0; text-align: left; }
-  [data-page="work"] .work-count > .work-swap__v { justify-self: start; }
-  [data-page="work"] .work-view { margin-left: auto; }
+  [data-page="work"] .work-filters { gap: 0 26px; }
   [data-page="work"] .work-view__btn { padding: 0 14px; }
   :root:not([data-work-view="grid"]) [data-page="work"] .work-item__text { display: block; }
   :root:not([data-work-view="grid"]) [data-page="work"] .work-item__line { margin-top: 14px; }

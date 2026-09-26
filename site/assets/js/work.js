@@ -144,6 +144,11 @@
   root.dataset.workFilter = filter;
   root.dataset.workView = view;
   applyItems(); syncControls(); syncSEO(); syncVT();
+  // Projects hidden by a ?filter= load get no scroll reveal (motion.js boots after this file):
+  // a display:none trigger measures start = end = 0, fires inside another trigger's refresh
+  // and, being `once`, kills itself mid-loop, which makes ScrollTrigger 3.15 throw. They
+  // enter through the filter animation instead.
+  items.forEach((li) => { if (li.classList.contains("is-out")) $$("[data-reveal]", li).forEach((el) => el.removeAttribute("data-reveal")); });
 
   const TS = (w.TS = w.TS || {});
   TS.work = { setFilter, setView, get state() { return { filter, view }; } };
@@ -189,7 +194,7 @@
       const s = splitLines(SplitText, v);
       gsap.set(h, { opacity: 1 });
       gsap.from(s.lines, {
-        yPercent: 118, duration: 1.1, stagger: 0.09, ease: M.DRIFT, delay: (M.introDelay || 0) + 0.05,
+        yPercent: 140, duration: 1.1, stagger: 0.09, ease: M.DRIFT, delay: (M.introDelay || 0) + 0.05,
         onComplete: () => s.revert(),
       });
     };
@@ -202,12 +207,15 @@
     const ghosts = new Set();
 
     // Scroll reveals that have not played yet would replay on top of a Flip: finish them first.
+    // Once done, the list is plain static content: dropping data-reveal also drops base.css's
+    // hidden pre-state, so clearProps on these elements can never hide them again.
     function completeReveals() {
       if (revealsDone || !ST) return;
       revealsDone = true;
       ST.getAll().forEach((st) => {
         if (st.trigger && list.contains(st.trigger) && st.animation) { st.animation.progress(1); st.kill(); }
       });
+      $$("[data-reveal]", list).forEach((el) => el.removeAttribute("data-reveal"));
     }
     function finishRunning() {
       [flipTl, viewTl, swapTl].forEach((t) => t && t.progress(1));
@@ -215,25 +223,39 @@
       ghosts.forEach((g) => g.remove()); ghosts.clear();
     }
 
-    // headline / intro / CTA / count: old lines roll up and out, new lines roll up and in
+    // headline / intro: old lines roll up and out, new lines roll up and in (SplitText line masks).
+    // The one-line CTA and count roll as a whole inside their clipped stack.
     function prepSwap(prev, next) {
-      const stacks = $$(".work-swap");
-      const outs = stacks.map((s) => variant(s, prev)).filter(Boolean);
-      const ins = stacks.map((s) => variant(s, next)).filter(Boolean);
-      outs.forEach((el) => el.classList.add("is-leaving"));
+      const pairs = $$(".work-swap").map((s) => ({
+        s, out: variant(s, prev), in: variant(s, next), whole: !SplitText || s.dataset.swap === "cta" || s.dataset.swap === "count",
+      }));
+      pairs.forEach((p) => p.out && p.out.classList.add("is-leaving"));
       return () => {
-        if (!SplitText) { outs.forEach((el) => el.classList.remove("is-leaving")); return; }
-        const splits = [];
+        const splits = [], moved = [];
         const tl = (swapTl = gsap.timeline({
-          onComplete() { splits.forEach((s) => s.revert()); outs.forEach((el) => el.classList.remove("is-leaving")); },
+          onComplete() {
+            splits.forEach((s) => s.revert());
+            gsap.set(moved, { clearProps: "transform,opacity" });
+            pairs.forEach((p) => { p.out && p.out.classList.remove("is-leaving"); p.s.classList.remove("is-swapping"); });
+          },
         }));
-        outs.forEach((el) => {
-          const s = splitLines(SplitText, el); splits.push(s);
-          tl.to(s.lines, { yPercent: -112, duration: 0.42, ease: "ts.cut", stagger: { amount: Math.min(0.14, s.lines.length * 0.03) } }, 0);
-        });
-        ins.forEach((el) => {
-          const s = splitLines(SplitText, el); splits.push(s);
-          tl.from(s.lines, { yPercent: 112, duration: 0.78, ease: M.DRIFT, stagger: { amount: Math.min(0.22, s.lines.length * 0.05) } }, 0.16);
+        const amount = (n, k) => Math.min(k * 4, n * k);
+        pairs.forEach((p) => {
+          if (p.whole) {
+            p.s.classList.add("is-swapping");
+            if (p.out) { moved.push(p.out); tl.to(p.out, { yPercent: -110, duration: 0.42, ease: "ts.cut" }, 0); }
+            if (p.in) { moved.push(p.in); tl.from(p.in, { yPercent: 110, duration: 0.78, ease: M.DRIFT }, 0.16); }
+            return;
+          }
+          if (p.out) {
+            const s = splitLines(SplitText, p.out); splits.push(s);
+            tl.to(s.lines, { yPercent: -150, duration: 0.42, ease: "ts.cut", stagger: { amount: amount(s.lines.length, 0.03) } }, 0);
+            tl.to(s.lines, { opacity: 0, duration: 0.18, ease: "none", stagger: { amount: amount(s.lines.length, 0.03) } }, 0.2);
+          }
+          if (p.in) {
+            const s = splitLines(SplitText, p.in); splits.push(s);
+            tl.from(s.lines, { yPercent: 140, duration: 0.8, ease: M.DRIFT, stagger: { amount: amount(s.lines.length, 0.05) } }, 0.16);
+          }
         });
       };
     }

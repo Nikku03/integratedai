@@ -61,6 +61,7 @@
     let opener = null, isOpen = false, menu = false, motion = false, env = null;
     let tl = null, inerted = [], landTimer = 0, rvfc = 0, leaving = false, offTilt = null;
     const gsap = () => w.gsap;
+    const MEDIA_SM = { yPercent: -12 }, MEDIA_LG = { xPercent: -6, scale: 1.1 };
 
     if (dlg.parentElement !== d.body) d.body.appendChild(dlg);   // so the rest of the page can go inert
 
@@ -101,9 +102,10 @@
         g.fromTo(drop, { autoAlpha: 0, y: -70, rotationX: 26, rotationZ: -6, scale: 1.1 },
           { autoAlpha: 1, y: 0, rotationX: 0, rotationZ: 0, scale: 1, duration: fast ? 0.75 : 1.15, ease: M && M.EASE || "expo.out", clearProps: "transform" });
         g.fromTo(shadow, { opacity: 0, scale: 0.82 }, { opacity: 1, scale: 1, duration: fast ? 0.75 : 1.15, ease: "power2.out", clearProps: "opacity,transform" });
-        if (small) g.to(media, { yPercent: -17, duration: 1.1, ease: M && M.DRIFT || "power3.out" });
-      } else if (g && small) g.set(media, { yPercent: -17 });
-      else if (small) media.style.transform = "translateY(-17%)";
+        // the camera makes room for the card: up a little on phones, a slow pan and push on desktop
+        g.to(media, { ...(small ? MEDIA_SM : MEDIA_LG), duration: 1.4, ease: M && M.DRIFT || "power3.out" });
+      } else if (g) g.set(media, small ? MEDIA_SM : MEDIA_LG);
+      else media.style.transform = small ? "translateY(-12%)" : "translateX(-6%) scale(1.1)";
       announce(dlg.dataset.announce || "");
       if (hadSkipFocus) setTimeout(() => links[0] && links[0].focus({ preventScroll: true }), fast ? 80 : 450);
       if (env && env.fine && motion && g) offTilt = tilt();
@@ -164,7 +166,7 @@
       });
       const tTable = 3 * step + 0.2;
       tl.to(frames[2], { opacity: 0, duration: 0.55, ease: "none" }, tTable - 0.3);
-      tl.call(() => playTable(0), null, tTable);
+      tl.call(() => playTable(0.6), null, tTable);   // skip most of the black lead-in
       const cap3 = $(".cafe-seq__cap", table);
       tl.fromTo(cap3, { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.55, ease: DRIFT }, tTable + 0.5);
       setVideo();   // start fetching the clip while the photographs run
@@ -257,6 +259,12 @@
     }));
     skipBtn.addEventListener("click", skip);
     closeBtn.addEventListener("click", close);
+    // back from the form (bfcache): still at the table, nothing ticked yet
+    w.addEventListener("pageshow", (e) => {
+      if (!e.persisted) return;
+      going = false;
+      $$(".menu-card__item.is-ticked", dlg).forEach((li) => li.classList.remove("is-ticked"));
+    });
 
     const api = { open, close, get isOpen() { return isOpen; } };
     dlg.__cafe = api;
@@ -275,11 +283,12 @@
   function initWalk(root, env) {
     const gsap = w.gsap, ST = w.ScrollTrigger;
     const stage = $(".walk__stage", root), track = $(".walk__track", root);
-    const camera = $(".walk__camera", stage), wall = $(".walk__wall", stage), doorsL = $(".walk__doors", stage);
+    const cams = $$(".walk__camera", stage);
     const washAm = $(".walk__wash--am", stage), washPm = $(".walk__wash--pm", stage), washNight = $(".walk__wash--night", stage);
     const glows = $$(".walk__glow", stage);
     const doorEls = $$(".walk__door", stage);
     const frames = doorEls.map((el) => $(".walk__frame", el));
+    const plaques = doorEls.map((el) => $(".walk__plaque", el));
     const outro = $(".walk__outro", stage), outroLink = $(".walk__outro-link", stage);
     const hudStreet = $(".walk__street", stage), dayFill = $(".walk__day-fill", stage), dayTs = $$(".walk__day-t", stage), hint = $(".walk__hint", stage);
     const skipLink = $(".walk__skip", stage);
@@ -308,7 +317,35 @@
       });
     }
     setSources();
-    if (Scrub) gates.forEach((g) => { g.player = new Scrub(g.video); });
+    // ScrubVideo (gated seeks, blob fetch, iOS unlock) with a cancellable fetch and
+    // without the second video.load() after src is set (it aborts the first blob read)
+    const Clip = Scrub && class extends Scrub {
+      async load() {
+        const ac = (this.ac = new AbortController());
+        const v = this.v, src = this.pickSrc();
+        let url = src;
+        try {
+          const res = await fetch(src, { signal: ac.signal });
+          if (!res.ok) throw new Error(res.status);
+          const blob = await res.blob();
+          if (ac.signal.aborted) throw new Error("aborted");
+          url = URL.createObjectURL(blob); this.objectURL = url;
+        } catch (e) { if (ac.signal.aborted) throw e; }
+        v.preload = "auto";
+        v.src = url;
+        if (v.readyState < 2) {
+          await new Promise((res, rej) => {
+            v.addEventListener("loadeddata", res, { once: true });
+            ac.signal.addEventListener("abort", () => rej(new Error("aborted")), { once: true });
+          });
+        }
+        this.duration = v.duration;
+        this.unlock();
+        this.ready = true;
+      }
+      cancel() { if (this.ac) this.ac.abort(); this.ac = null; }
+    };
+    if (Clip) gates.forEach((g) => { g.player = new Clip(g.video); });
 
     function want(g) {
       if (g.want) return;
@@ -329,9 +366,10 @@
       const p = g.player;
       if (!p) return;
       p.ready = false;
-      if (p.objectURL) { URL.revokeObjectURL(p.objectURL); p.objectURL = null; }
+      p.cancel();
       try { g.video.pause(); } catch (_) {}
       if (g.video.hasAttribute("src")) { g.video.removeAttribute("src"); g.video.load(); }
+      if (p.objectURL) { URL.revokeObjectURL(p.objectURL); p.objectURL = null; }
     }
 
     /* ---- geometry: read on refresh only */
@@ -346,10 +384,9 @@
       const xs = [0];
       geo.cx.forEach((c) => xs.push(W / 2 - c));
       const gap = geo.cx[1] - geo.cx[0];
-      xs.push(xs[3] - gap * 0.62);
+      xs.push(xs[3] - Math.max(gap * 0.62, W / 2 + fw / 2 + 48));   // walk on until the last door has left the frame
       geo.xs = xs;
       geo.kEnd = Math.max(W / fw, cy / Math.max(1, cy - ft), (H - cy) / Math.max(1, ft + fh - cy)) * 1.002;
-      css(camera, "transformOrigin", `${(W / 2).toFixed(1)}px ${cy.toFixed(1)}px`);
       const sm = mqSmall.matches;
       gates.forEach((g) => {
         const arStr = (sm && g.facade.dataset.arSm) || g.facade.dataset.ar;
@@ -360,6 +397,12 @@
         css(g.facade, "width", bw.toFixed(1) + "px");
         css(g.facade, "height", bh.toFixed(1) + "px");
         const gg = (g.geo = { bw, bh, x0, y0, s0: Math.max(fw / bw, fh / bh) });
+        if (!g.door) {
+          // the clip gets the picture's box, so it can shrink back into the frame exactly
+          css(g.room, "right", "auto"); css(g.room, "bottom", "auto");
+          css(g.room, "width", bw.toFixed(1) + "px"); css(g.room, "height", bh.toFixed(1) + "px");
+          css(g.room, "transformOrigin", "0 0");
+        }
         if (g.door) {
           const [dx, dy, dw, dh] = g.facade.dataset.door.split(" ").map(Number);
           const L = x0 + dx * bw, T = y0 + dy * bh, R = L + dw * bw, B = T + dh * bh;
@@ -379,22 +422,25 @@
       // the street
       const wi = clamp(S.walk, 0, xs.length - 1), i0 = Math.min(xs.length - 2, Math.floor(wi));
       const x = lerp(xs[i0], xs[i0 + 1], wi - i0);
-      const tx = `translate3d(${x.toFixed(1)}px,0,0)`;
-      css(wall, "transform", tx); css(doorsL, "transform", tx);
       css(washAm, "opacity", S.am.toFixed(3)); css(washPm, "opacity", S.pm.toFixed(3)); css(washNight, "opacity", S.night.toFixed(3));
       glows.forEach((gl) => css(gl, "opacity", S.night.toFixed(3)));
       // which gate is open (only one at a time)
       let act = null, zmax = 0;
       gates.forEach((g) => { const s = g.st; const on = s.z > 0.0005 || s.ttl > 0.001 || s.cap > 0.001; if (on && (!act || s.z > act.st.z)) act = g; zmax = Math.max(zmax, s.z); });
+      // the plaque steps aside as the camera goes in (it would sail over the HUD)
+      plaques.forEach((pl, j) => css(pl, "opacity", act && act.i === j ? (1 - smooth(0.04, 0.3, act.st.z)).toFixed(3) : "1"));
       // camera
       let k = 1;
       if (act) k = Math.pow(kEnd, act.st.z);
-      css(camera, "transform", k > 1.0001 ? `scale(${k.toFixed(4)})` : "none");
+      // walk (x) then zoom about the eye point (W/2, cy): one compositor transform per camera layer
+      const camT = `translate3d(${((W / 2) * (1 - k) + k * x).toFixed(1)}px,${(cy * (1 - k)).toFixed(1)}px,0) scale(${k.toFixed(4)})`;
+      cams.forEach((c) => css(c, "transform", camT));
       gates.forEach((g) => {
         const s = g.st;
         const on = g === act;
         css(g.el, "visibility", on ? "visible" : "hidden");
-        if (!on) { css(g.el, "zIndex", ""); return; }
+        // (inline visibility:visible on a child would show through the hidden gate)
+        if (!on) { css(g.el, "zIndex", ""); css(g.room, "visibility", "hidden"); css(g.facade, "visibility", "hidden"); g.roomOn = false; return; }
         css(g.el, "zIndex", "1");
         const gg = g.geo;
         // window: the frame's picture, pushed by the camera
@@ -402,20 +448,24 @@
         const l = Math.max(0, W / 2 - (fw / 2) * k);
         const full = t < 0.5 && b < 0.5 && l < 0.5;
         css(g.scene, "clipPath", full ? "none" : `inset(${t.toFixed(1)}px ${l.toFixed(1)}px ${b.toFixed(1)}px ${l.toFixed(1)}px)`);
-        css(camera, "visibility", full ? "hidden" : "visible");
-        // the picture: locked to the frame, then to the stage (cover)
-        const c = Math.min(1, gg.s0 * k);
-        const u = gg.s0 < 1 ? (c - gg.s0) / (1 - gg.s0) : 1;
-        const yc = lerp(cy, H / 2, u);
-        let zx = W / 2 - (gg.bw * c) / 2, zy = yc - (gg.bh * c) / 2, sc = c;
+        // the picture covers the visible window (the frame, clipped by the stage),
+        // so it is locked to the frame at k = 1 and to the stage at full zoom
+        const wcx = W / 2, wcy = (t + H - b) / 2;
+        const c = Math.min(1, Math.max((W - 2 * l) / gg.bw, (H - b - t) / gg.bh));
+        let zx = wcx - (gg.bw * c) / 2, zy = wcy - (gg.bh * c) / 2, sc = c;
         if (g.door && s.push > 0) {
           const P = lerp(1, gg.P, s.push), [Dx, Dy] = gg.D;
           zx = Dx + (zx - Dx) * P; zy = Dy + (zy - Dy) * P; sc = c * P;
         }
-        css(g.facade, "transform", `translate3d(${zx.toFixed(1)}px,${zy.toFixed(1)}px,0) scale(${sc.toFixed(4)})`);
+        const picT = `translate3d(${zx.toFixed(1)}px,${zy.toFixed(1)}px,0) scale(${sc.toFixed(4)})`;
+        css(g.facade, "transform", picT);
         let roomOn;
         if (g.door) {
           css(g.facade, "opacity", (1 - smooth(0.55, 1, s.push)).toFixed(3));
+          // through the doorway: keep the facade's raster while it grows and fades (no re-raster per frame)
+          css(g.facade, "willChange", s.push > 0.001 ? "transform, opacity" : "auto");
+          const opening = s.open > 0.001 && s.open < 0.999;
+          if (g.__opening !== opening) { g.__opening = opening; g.el.classList.toggle("is-open", opening); }
           const ang = s.open * 84;
           g.leaves.forEach((lf, j) => css(lf, "transform", `rotateY(${(j ? -ang : ang).toFixed(2)}deg)`));
           g.leafShades.forEach((sh) => css(sh, "opacity", (s.open * 0.78).toFixed(3)));
@@ -424,8 +474,11 @@
         } else {
           css(g.facade, "opacity", s.facade.toFixed(3));
           roomOn = s.facade < 0.999;
+          // the clip itself shrinks back into the frame on the way out
+          css(g.room, "transform", picT);
         }
         css(g.room, "visibility", roomOn ? "visible" : "hidden");
+        g.roomOn = roomOn;
         css(g.facade, "visibility", (g.door ? s.push < 0.999 : s.facade > 0.001) ? "visible" : "hidden");
         // text
         css(g.shade, "opacity", smooth(0.65, 1, s.z).toFixed(3));
@@ -441,8 +494,7 @@
         const liveNow = g === act && g.st.ttl > 0.6;
         if (lastLive[g.i] !== liveNow) { lastLive[g.i] = liveNow; g.el.classList.toggle("is-cta", liveNow); }
       });
-      if (!act) css(camera, "visibility", "visible");
-      activeGate = act && act.st.z > 0.98 ? act : null;
+      activeGate = act && act.roomOn ? act : null;   // the clip seeks whenever its room is on screen
       // outro, HUD
       css(outro, "opacity", S.outro.toFixed(3));
       css(outro, "transform", `translate3d(0,${((1 - S.outro) * 24).toFixed(1)}px,0)`);
@@ -463,7 +515,7 @@
 
     /* ---- the master timeline */
     const T = { walkIn: [], zoomIn: [], zoomEnd: [], scrub: [], hold: [], exitEnd: [] };
-    const DUR = { walk0: 1.1, walk: 1.25, zoom: 1.05, open: 0.85, push: 0.85, hold: 0.8, back: 0.8, close: 0.6, out: 1.0, outro: 1.4 };
+    const DUR = { walk0: 1.1, walk: 1.25, zoom: 1.05, open: 0.85, push: 0.85, hold: 0.8, back: 0.8, close: 0.6, out: 1.0, rewind: 1.5, outro: 1.4 };
     const SCRUB = { cafe: 2.3, restaurant: 2.7, bar: 2.0 };
     const tl = gsap.timeline({ defaults: { ease: "none", duration: 1 }, onUpdate: render, paused: true });
     let t = 0;
@@ -507,7 +559,9 @@
         tl.to(s, { open: 0, duration: DUR.close, ease: "power1.inOut" }, t + DUR.back * 0.55);
         t += DUR.back * 0.55 + DUR.close * 0.8;
       } else {
-        tl.to(s, { facade: 1, duration: 0.45 }, t);
+        // walk back out: the clip rewinds to the doorway while the camera backs off
+        tl.to(s, { vid: 0, duration: DUR.rewind, ease: "sine.inOut" }, t);
+        t += DUR.rewind - DUR.out * 0.7;
       }
       tl.to(s, { z: 0, duration: DUR.out, ease: "power2.inOut" }, t);
       t += DUR.out;
@@ -606,7 +660,7 @@
       io.disconnect();
       st.kill(); tl.kill();
       setLive(false);
-      gates.forEach((g) => { drop(g); if (g.player) g.player.destroy(); g.video.removeAttribute("poster"); g.el.classList.remove("is-cta"); });
+      gates.forEach((g) => { drop(g); if (g.player) g.player.destroy(); g.video.removeAttribute("poster"); g.el.classList.remove("is-cta", "is-open"); g.__opening = false; });
       stage.classList.remove("is-loading");
       stage.dataset.tone = "light";
       outro.classList.remove("is-cta");

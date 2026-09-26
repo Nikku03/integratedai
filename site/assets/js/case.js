@@ -16,6 +16,22 @@
   const $ = (s, r = d) => r.querySelector(s);
   const $$ = (s, r = d) => Array.from(r.querySelectorAll(s));
 
+  // Runs before the motion core boots (DOMContentLoaded). Where the sticky details column is used, the inline
+  // copies of the detail photos are display:none and never seen, so they don't get a reveal there.
+  const MOTION_OK = w.matchMedia("(prefers-reduced-motion: no-preference)").matches;
+  if (MOTION_OK && w.matchMedia("(min-width: 901px) and (orientation: landscape)").matches) {
+    $$(".case-details__inline[data-reveal]").forEach((f) => f.removeAttribute("data-reveal"));
+  }
+  // Workaround for the core image reveal (SP/build/requests/case.md #1). motion.js builds
+  // [data-reveal="image"] as a gsap.timeline with a scrollTrigger; a timeline's trigger is refreshed lazily,
+  // so its end is still undefined when the next reveal is created. When the page boots scrolled down
+  // (history back / forward restores the position) the next trigger's init refreshes those lazy ones, they are
+  // already past and `once` kills them mid-loop, ScrollTrigger throws ("reading 'end'") and the rest of boot
+  // never runs: every reveal below stays hidden. Until the core uses tweens, this page runs the same reveal
+  // (same values) with plain tweens. Remove this block and the one in Motion.page once motion.js is patched.
+  const takeover = MOTION_OK ? $$('[data-reveal="image"]') : [];
+  takeover.forEach((f) => { f.removeAttribute("data-reveal"); f.setAttribute("data-case-reveal", "image"); });
+
   M.page("case", (env) => {
     if (!env.motion) return;
     const gsap = w.gsap, ST = w.ScrollTrigger;
@@ -30,10 +46,12 @@
       // arriving directly (no shared-element morph): a slow settle, timed with the title
       gsap.fromTo(img, { scale: 1.07 }, { scale: 1, duration: 2, ease: EASE, delay: M.introDelay, clearProps: "transform" });
     }
+    // scrubbed layers get their own compositor layer only while they are on screen (no repaint per frame)
+    const layer = (el) => (self) => { el.style.willChange = self.isActive ? "transform" : ""; };
     if (fig) {
       gsap.to(fig, {
         scale: 1.06, yPercent: 5, ease: "none",
-        scrollTrigger: { trigger: hero, start: "top top", end: "bottom top", scrub: true },
+        scrollTrigger: { trigger: hero, start: "top top", end: "bottom top", scrub: true, onToggle: layer(fig) },
       });
     }
     // meta line + placeholder tag follow the title's line reveal (they sit below the 88% reveal line, so no ScrollTrigger)
@@ -43,6 +61,19 @@
         autoAlpha: 1, y: 0, duration: 1, ease: M.DRIFT, stagger: 0.08, delay: M.introDelay + 0.45, clearProps: "transform",
       });
     }
+
+    /* ---- image reveals (the core's curtain + settle, as tweens: see the workaround note above) ---- */
+    $$('[data-case-reveal="image"]').forEach((el) => {
+      const r = el.getBoundingClientRect();
+      const delay = r.top < innerHeight && r.bottom > 0 ? M.introDelay : 0;
+      const im = el.querySelector(":scope > img, :scope > picture > img, :scope > video");
+      const st = () => ({ trigger: el, start: "top 88%", once: true });
+      gsap.fromTo(el, { clipPath: "inset(8% 8% 8% 8%)" }, {
+        clipPath: "inset(0% 0% 0% 0%)", duration: 1.2, ease: M.DRIFT, delay, scrollTrigger: st(),
+        onComplete: () => gsap.set(el, { clipPath: "none" }),
+      });
+      if (im) gsap.fromTo(im, { scale: 1.12 }, { scale: 1, duration: 1.4, ease: EASE, delay, clearProps: "transform", scrollTrigger: st() });
+    });
 
     /* ---- paragraph line reveals ------------------------------------------ */
     // Like the core [data-split], but aria "none": a line split keeps the words as real text,
@@ -86,10 +117,13 @@
         const s = parseFloat(el.dataset.caseParallax) || 0.06;
         gsap.fromTo(el, { yPercent: -s * 100 }, {
           yPercent: s * 100, ease: "none",
-          scrollTrigger: { trigger: el.parentElement, start: "top bottom", end: "bottom top", scrub: true },
+          scrollTrigger: { trigger: el.parentElement, start: "top bottom", end: "bottom top", scrub: true, onToggle: layer(el) },
         });
       });
-
+      return () => $$("[data-case-parallax]").forEach((el) => { el.style.willChange = ""; });
+    });
+    // the sticky details column: landscape desktops only (matches case.css)
+    mm.add("(min-width: 901px) and (orientation: landscape)", () => {
       const sec = $(".case-details");
       if (!sec) return;
       const figs = $$(".case-details__fig", sec);
