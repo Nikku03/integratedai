@@ -10,7 +10,9 @@ Encode a clip for the site: WebM (VP9) + MP4 (H.264), a 4:5 phone crop, and post
 
 Writes assets/video/NAME.webm|.mp4, NAME-sm.webm|.mp4 (4:5 crop, for phones) and
 assets/video/posters/NAME-poster.jpg, NAME-sm-poster.jpg. Replacing a clip that already exists
-(e.g. cafe-walk) needs no page edits. Requires ffmpeg on the PATH (or FFMPEG=/path/to/ffmpeg).
+(e.g. cafe-walk) needs no page edits. --grade "<ffmpeg filters>" replaces the site's colour grade;
+--out DIR writes somewhere else first (to compare before replacing). Requires ffmpeg on the PATH
+(or FFMPEG=/path/to/ffmpeg).
 """
 from __future__ import annotations
 import argparse, os, subprocess
@@ -26,23 +28,25 @@ def run(args: list[str]) -> None:
     subprocess.run([FF, "-hide_banner", "-loglevel", "error", "-y", *args], check=True)
 
 
-def encode(src: str, name: str, scrub: bool, start: float | None, length: float | None, grade: bool) -> None:
-    vid, post = SITE / "assets/video", SITE / "assets/video/posters"
+def encode(src: str, name: str, scrub: bool, start: float | None, length: float | None, grade: bool | str, out: str | None = None) -> None:
+    vid = Path(out) if out else SITE / "assets/video"
+    post = vid / "posters"
+    vid.mkdir(parents=True, exist_ok=True)
     post.mkdir(parents=True, exist_ok=True)
     fps, gop = (24, 8) if scrub else (30, 48)
     crf264, crfvp9 = (28, 39) if scrub else (27, 37)
-    base = GRADE if grade else "null"
+    base = grade if isinstance(grade, str) else (GRADE if grade else "null")
     trim = (["-ss", str(start)] if start is not None else []) + ["-i", src] + (["-t", str(length)] if length else [])
     for suffix, chain in (("", f"{base},scale=1280:-2"), ("-sm", f"{base},{CROP45},scale=640:800")):
-        out = vid / f"{name}{suffix}"
+        dst = vid / f"{name}{suffix}"
         vf = f"{chain},fps={fps},format=yuv420p"
         run(trim + ["-an", "-vf", vf, "-c:v", "libx264", "-preset", "slow", "-crf", str(crf264),
-                    "-g", str(gop), "-keyint_min", str(gop), "-sc_threshold", "0", "-movflags", "+faststart", f"{out}.mp4"])
+                    "-g", str(gop), "-keyint_min", str(gop), "-sc_threshold", "0", "-movflags", "+faststart", f"{dst}.mp4"])
         run(trim + ["-an", "-vf", vf, "-c:v", "libvpx-vp9", "-b:v", "0", "-crf", str(crfvp9), "-row-mt", "1",
-                    "-g", str(gop), "-keyint_min", str(gop), f"{out}.webm"])
+                    "-g", str(gop), "-keyint_min", str(gop), f"{dst}.webm"])
         run((["-ss", str(start)] if start is not None else []) + ["-i", src, "-frames:v", "1", "-vf", chain, "-q:v", "3",
             str(post / f"{name}{suffix}-poster.jpg")])
-        print(f"  {out.name}: mp4 {out.with_suffix('.mp4').stat().st_size // 1024} KB · webm {out.with_suffix('.webm').stat().st_size // 1024} KB")
+        print(f"  {dst.name}: mp4 {dst.with_suffix('.mp4').stat().st_size // 1024} KB · webm {dst.with_suffix('.webm').stat().st_size // 1024} KB")
 
 
 if __name__ == "__main__":
@@ -52,5 +56,7 @@ if __name__ == "__main__":
     mode.add_argument("--scrub", action="store_true"); mode.add_argument("--loop", action="store_true")
     ap.add_argument("--start", type=float); ap.add_argument("--length", type=float)
     ap.add_argument("--no-grade", action="store_true", help="skip the site's colour grade")
+    ap.add_argument("--grade", help="ffmpeg filter chain to use instead of the site's grade")
+    ap.add_argument("--out", help="write here instead of assets/video (posters go in OUT/posters)")
     a = ap.parse_args()
-    encode(a.clip, a.name, a.scrub, a.start, a.length, not a.no_grade)
+    encode(a.clip, a.name, a.scrub, a.start, a.length, a.grade or (not a.no_grade), a.out)
