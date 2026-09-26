@@ -89,3 +89,15 @@ Validation results that informed only this amendment:
 | ggnn | 0.631 | 0.913 | 0.790 |
 | rem | 0.957 | 0.980 | 0.799 |
 | rem+inh+stp-bluebrain+fail | 0.949 | 0.980 | 0.803 |
+
+## Outcome (added after the single test run)
+
+| Rule | Result |
+|---|---|
+| 1. Useful to the engine | **Not met.** rem: controlled +0.184 [0.151, 0.219], ERB +0.020 [−0.008, 0.046]. mlp and ggnn pass on ERB and fail on the controlled dataset. |
+| 2. Message passing earns its place | **Met** by rem: controlled +0.240 over mlp, ERB −0.010. |
+| 3. Bounded activation | **Mixed.** Controlled: +0.281 over ggnn with 26% of its updates. ERB: −0.014 with 19%. |
+| 4. Routing shortcuts | **Not met.** |
+| 5. Blue Brain detail helps | **Not met: no evidence.** Every paired difference with the controls is within ±0.01, and every CI includes 0. |
+
+Details are in `docs/REMNET_RESULTS.md`.

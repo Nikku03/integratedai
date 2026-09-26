@@ -181,3 +181,33 @@ def describe(samples: list[Sample]) -> dict[str, Any]:
             "gold_in_pool": round(statistics.mean(len({s.keys[i] if s.docs[i] is None else s.docs[i] for i in range(s.n)
                                                        if s.labels[i] > 0} & set(s.gold)) / len(s.gold) for s in samples), 3),
             "extract_ms_p50": round(statistics.median(s.extract_ms for s in samples), 1)}
+
+
+def main(argv: list[str] | None = None) -> int:  # pragma: no cover - CLI
+    """python -m cie.remnet.data controlled | erb --erb-root <checkout> [--erb-tenant NAME]"""
+    import argparse
+
+    from cie.core.db import session_factory
+    from cie.memory.embeddings import get_embedding_provider
+
+    ap = argparse.ArgumentParser(description="build the learned explorer's samples")
+    ap.add_argument("which", choices=["controlled", "erb"])
+    ap.add_argument("--out", default="eval_out/remnet")
+    ap.add_argument("--erb-root", default=None)
+    ap.add_argument("--erb-tenant", default="erbfull-5000-9688c2")
+    args = ap.parse_args(argv)
+    out = Path(args.out)
+    out.mkdir(parents=True, exist_ok=True)
+    emb, factory = get_embedding_provider(), session_factory()
+    if args.which == "controlled":
+        seeds = CONTROLLED_SEEDS["val"] + CONTROLLED_SEEDS["test"] + CONTROLLED_SEEDS["train"]
+        for i, seed in enumerate(seeds):
+            build_controlled(seed, out, emb, factory)
+            print(f"{i + 1}/{len(seeds)} seed {seed}", flush=True)
+    else:
+        build_erb(Path(args.erb_root), args.erb_tenant, out, emb, factory)
+    return 0
+
+
+if __name__ == "__main__":  # pragma: no cover
+    raise SystemExit(main())
