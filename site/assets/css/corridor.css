@@ -10,14 +10,14 @@
 
 .corridor {
   /* ≈ (sum of the shot lengths in corridor.js + 1) × 100svh; the engine only uses the proportions */
-  --corridor-len: 1880svh;
+  --corridor-len: 1890svh;
   --brass: #c7ab6b;
   --film: #0e0f0c;
   --hud-pad: clamp(16px, 2.2vw, 28px);
   position: relative;
   --focus: var(--sand);
 }
-@media (max-width: 900px) { .corridor { --corridor-len: 1450svh; } }
+@media (max-width: 900px) { .corridor { --corridor-len: 1670svh; } }
 .corridor__nobr { white-space: nowrap; }
 .corridor__time { color: var(--on-dark-2); }
 .corridor__title { font-style: italic; color: var(--on-dark); margin: 0.06em 0 0.14em; text-wrap: balance; }
@@ -63,6 +63,16 @@
 .corridor__place, .corridor__hint, .corridor__loading, .corridor__dir-line { display: none; }
 .corridor__hud .corridor__skip { order: 2; margin-right: -12px; }
 .corridor__dir-list { display: flex; flex-wrap: wrap; gap: 0 clamp(18px, 3vw, 44px); }
+/* the way in: three small stills in a row (outside → the arcade → the corridor), then the rooms */
+.corridor__approach {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: var(--gutter);
+  margin: 0 0 clamp(72px, 9vw, 150px); padding: 0; list-style: none;
+}
+.corridor__approach-still { margin: 0; position: relative; aspect-ratio: 3 / 2; overflow: hidden; background: var(--film); }
+.corridor__approach-still picture { display: contents; }
+.corridor__approach-still img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.corridor__approach-label { margin-top: 14px; color: var(--on-dark-2); }
+.corridor__approach-item + .corridor__approach-item .corridor__approach-label::before { content: "→"; margin-right: 0.8em; color: var(--sand); letter-spacing: 0; }
 .corridor__stops { display: grid; gap: clamp(72px, 9vw, 150px); }
 .corridor__stop {
   display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--gutter);
@@ -87,6 +97,10 @@
     grid-template-columns: minmax(0, 1fr); grid-template-areas: "s" "e" "c"; grid-template-rows: auto; row-gap: 18px;
   }
   .corridor__still { aspect-ratio: 4 / 5; }
+  .corridor__approach { column-gap: 8px; }
+  .corridor__approach-still { aspect-ratio: 4 / 5; }
+  .corridor__approach-label { margin-top: 10px; font-size: 0.6875rem; letter-spacing: 0.12em; }
+  .corridor__approach-item + .corridor__approach-item .corridor__approach-label::before { content: none; }
 }
 @media (max-width: 600px) {
   .corridor__end .corridor__cta { width: 100%; justify-content: space-between; }
@@ -155,7 +169,12 @@ html.js-motion .corridor:not(.corridor--stills) .corridor__film { display: block
 .corridor__sign { position: absolute; top: 0; left: calc(var(--margin) + 7vw); display: flex; flex-direction: column; align-items: center; opacity: 0; transform-origin: 50% 0; margin: 0; }
 .corridor__sign[data-side="right"] { left: auto; right: calc(var(--margin) + 7vw); }
 .corridor__stage.is-live .corridor__sign { will-change: transform, opacity; }
-.corridor__sign-rods { display: block; width: 58%; height: clamp(84px, 15svh, 150px); border-inline: 1.5px solid var(--brass); opacity: 0.85; }
+.corridor__sign-rods {
+  display: block; width: 58%; height: clamp(104px, 16svh, 160px); border-inline: 1.5px solid var(--brass); opacity: 0.85;
+  /* the rods come down out of the dark under the HUD row, so they never cross "Skip the walk" or the place label */
+  -webkit-mask-image: linear-gradient(to bottom, transparent calc(var(--hud-pad) + 48px), #000 calc(var(--hud-pad) + 80px));
+  mask-image: linear-gradient(to bottom, transparent calc(var(--hud-pad) + 48px), #000 calc(var(--hud-pad) + 80px));
+}
 .corridor__sign-plate {
   display: grid; justify-items: center; gap: 12px; min-width: clamp(170px, 14.5vw, 236px);
   padding: 20px 30px 24px; border-top: 4px solid var(--accent, var(--green));
@@ -209,7 +228,7 @@ html.js-motion .corridor:not(.corridor--stills) .corridor__headline { margin-top
 html.js-motion .corridor:not(.corridor--stills) .corridor__body { margin-top: 18px; padding: 0; color: var(--on-dark); opacity: 0.88; max-width: 46ch; }
 html.js-motion .corridor:not(.corridor--stills) .corridor__stops { position: absolute; inset: 0; z-index: 3; display: block; pointer-events: none; }
 html.js-motion .corridor:not(.corridor--stills) .corridor__stop { position: absolute; inset: 0; display: block; }
-html.js-motion .corridor:not(.corridor--stills) .corridor__still { display: none; }
+html.js-motion .corridor:not(.corridor--stills) :is(.corridor__still, .corridor__approach) { display: none; }
 html.js-motion .corridor:not(.corridor--stills) .corridor__cap,
 html.js-motion .corridor:not(.corridor--stills) .corridor__end,
 html.js-motion .corridor:not(.corridor--stills) .corridor__outro {
@@ -229,7 +248,7 @@ html.js-motion .corridor:not(.corridor--stills) .corridor__outro-line { margin-b
 @media (max-width: 600px) {
   .corridor__sign { left: calc(var(--margin) - 4px); }
   .corridor__sign[data-side="right"] { right: calc(var(--margin) - 4px); }
-  .corridor__sign-rods { height: clamp(64px, 11svh, 110px); }
+  .corridor__sign-rods { height: clamp(104px, 14svh, 128px); }
   .corridor__sign-plate { min-width: 128px; padding: 14px 18px 16px; gap: 8px; }
   .corridor__sign-plate span { font-size: 1.75rem; }
   html.js-motion .corridor:not(.corridor--stills) .corridor__cap-body { display: none; }

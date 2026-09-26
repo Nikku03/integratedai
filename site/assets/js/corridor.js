@@ -12,7 +12,7 @@
  * on layer k % 2, so every cut is a two-layer transition (a whip — slide + smear + streaks — for
  * the turns, a push through the doors). Only one layer seeks at a time; the other holds its
  * boundary frame (prepared while the first is idle). Files are fetched whole as Blobs, shared by
- * both layers, prefetched two shots ahead and released when far. Phones (≤ 900px) use -sm files.
+ * both layers, prefetched two shots ahead and released when far. Portrait screens use the 4:5 -sm files.
  *
  * Reduced motion / no JS: CSS lays the same DOM out as a sequence of stills (corridor.css).
  */
@@ -33,6 +33,9 @@
    *           drifts out a little as you approach, and leaves with the turn. (`from: 0..1` also works.)
    *   tod     time of day, 0 = 08:00 · 1 = 11:00 · 2 = 14:00 · 3 = 23:00; [a, b] ramps across the shot.
    *   place   HUD label; poster (optional) a still for this shot's first frame (file in assets/video/posters/).
+   *   endStill  a still of the shot's last frame (path without extension: <p>.webp, <p>-sm.webp), shown after a jump
+   *           to the hold until the clip is ready. The reduced-motion stills use the same files.
+   *   still   the same, for the whole shot (a short shot that starts mid-clip).
    *   origin  (push only) where the push-in aims on the outgoing frame, e.g. "40% 56%" (the doors).
    *   focus   object-position of this shot on phones (the 4:5 file is cropped again to the screen), e.g. "22% 50%".
    * outro   screens of scroll for the end line after the last shot.
@@ -58,15 +61,15 @@
       { id: "outside",    clip: "enter",      in: 0.0, out: 9.2,  len: 1.25,            tod: 0,      place: "Outside", focus: "22% 50%" },
       { id: "doors",      clip: "enter",      in: 9.4, out: 11.6, len: 0.36,            tod: 0,      place: "Through the doors", enter: "push", origin: "40% 56%", focus: "30% 50%" },
       { id: "arcade",     clip: "arcade",     in: 1.2, out: 6.3,  len: 0.7,             tod: 0,      place: "The arcade", enter: "fade" },
-      { id: "corridor-1", clip: "c1",         in: 0.0, out: 5.2,  len: 0.8,             tod: 0,      place: "The corridor", enter: "push", sign: { stop: "cafe", side: "right", at: [2.6, 3.9] } },
-      { id: "cafe",       clip: "cafe",       in: 0.0, out: 9.4,  len: 1.25, hold: 0.6, tod: 0,      stop: "cafe",        enter: "whip-right" },
+      { id: "corridor-1", clip: "c1",         in: 0.0, out: 5.2,  len: 0.8,             tod: 0,      place: "The corridor", enter: "push",       sign: { stop: "cafe", side: "right", at: [2.6, 3.9] } },
+      { id: "cafe",       clip: "cafe",       in: 0.0, out: 9.4,  len: 1.25, hold: 0.7, tod: 0,      stop: "cafe",          enter: "whip-right", endStill: "assets/img/corridor/cafe" },
       { id: "corridor-2", clip: "c2",         in: 0.0, out: 4.55, len: 0.7,             tod: [0, 1], place: "The corridor", enter: "whip-left",  sign: { stop: "shop", side: "left", at: [1.9, 3.0] } },
-      { id: "shop",       clip: "shop",       in: 2.4, out: 13.2, len: 1.35, hold: 0.6, tod: 1,      stop: "shop",        enter: "whip-left" },
+      { id: "shop",       clip: "shop",       in: 2.4, out: 13.2, len: 1.35, hold: 0.6, tod: 1,      stop: "shop",          enter: "whip-left",  endStill: "assets/img/corridor/shop" },
       { id: "corridor-3", clip: "c3",         in: 0.0, out: 4.4,  len: 0.68,            tod: [1, 2], place: "The corridor", enter: "whip-right", sign: { stop: "restaurant", side: "right", at: [2.1, 3.2] } },
-      { id: "restaurant", clip: "restaurant", in: 0.4, out: 13.4, len: 1.6,  hold: 0.6, tod: 2,      stop: "restaurant",  enter: "whip-right" },
+      { id: "restaurant", clip: "restaurant", in: 0.4, out: 13.4, len: 1.6,  hold: 0.6, tod: 2,      stop: "restaurant",    enter: "whip-right", endStill: "assets/img/corridor/restaurant" },
       { id: "corridor-4", clip: "c4",         in: 0.0, out: 8.6,  len: 1.25,            tod: [2, 3], place: "The corridor", enter: "whip-left",  sign: { stop: "bar", side: "right", at: [5.9, 7.0] } },
-      { id: "bar",        clip: "bar",        in: 0.6, out: 8.2,  len: 1.05, hold: 0.6, tod: 3,      stop: "bar",         enter: "whip-right" },
-      { id: "way-out",    clip: "c4",         in: 7.7, out: 8.6,  len: 0.4,             tod: 3,      place: "The corridor", enter: "whip-left" },
+      { id: "bar",        clip: "bar",        in: 0.6, out: 8.2,  len: 1.05, hold: 0.6, tod: 3,      stop: "bar",           enter: "whip-right", endStill: "assets/img/corridor/bar" },
+      { id: "way-out",    clip: "c4",         in: 7.7, out: 8.6,  len: 0.4,             tod: 3,      place: "The corridor", enter: "whip-left",  still: "assets/img/corridor/vestibule" },
     ],
     outro: 0.8,
   };
@@ -79,7 +82,9 @@
   const lerp = (a, b, t) => a + (b - a) * t;
   const smooth = (a, b, v) => { const t = clamp((v - a) / (b - a)); return t * t * (3 - 2 * t); };
   const inOut = (p) => (p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2);   // cubic in-out
-  const mqSmall = w.matchMedia("(max-width: 900px)");
+  // the 4:5 (-sm) files for portrait screens (phones, portrait tablets): a 16:9 file on a 3:4 screen would show only
+  // the middle 42% of the frame, and decode twice the pixels. Landscape screens get the 16:9 files.
+  const mqSmall = w.matchMedia("(max-aspect-ratio: 1/1)");
   const isSafari = /^((?!chrome|android|crios|fxios).)*safari/i.test(navigator.userAgent);
   const TS = () => w.TS || {};
 
@@ -190,6 +195,14 @@
     const fileBase = (clip) => C.clips[clip] || clip;
     const fileFor = (clip) => base + "assets/video/" + fileBase(clip) + (small ? "-sm" : "") + "." + pickExt;
     const posterFor = (s) => base + "assets/video/posters/" + (s.poster ? s.poster : fileBase(s.clip) + (small ? "-sm" : "") + "-poster.jpg");
+    // what a layer shows until its video has a frame: the clip's first frame, or (at the end of a shot) the hold still
+    function setPoster(L, end) {
+      const s = shots[L.shot];
+      if (!s || L.shown) return;
+      const still = (end && s.endStill) || s.still;
+      const src = still ? base + still + (small ? "-sm" : "") + ".webp" : posterFor(s);
+      if (L.pend !== src) { L.pend = src; L.poster.setAttribute("src", src); }
+    }
     const lib = new Map();
     function fetchClip(src) {
       let e = lib.get(src);
@@ -269,8 +282,7 @@
       if (L.shot === k) return;
       L.shot = k; L.smearKey = "";
       const s = shots[k];
-      const poster = posterFor(s);
-      if (L.poster.getAttribute("src") !== poster) L.poster.setAttribute("src", poster);
+      L.pend = null;
       const fp = small && s.focus ? s.focus : "";
       css(L.v, "objectPosition", fp); css(L.poster, "objectPosition", fp);
       L.attach(fileFor(s.clip));   // same file: keeps the frame on screen, just seeks
@@ -335,6 +347,7 @@
         active = A; passive = B;
       }
       layers.forEach((L) => { if (!L.shown && L.ready && (L.fresh || L.settled)) L.shown = true; });
+      if (near) { setPoster(A, !R.tr && f1 > 0.5); setPoster(B, B.shot < k); }
 
       /* the cut: two layers */
       let whipO = 0, whipX = 0, dip = 0;
@@ -358,8 +371,10 @@
           layerStyle(A, 0, 1.04 - 0.04 * e, smooth(0.25, 0.75, p), 2, 0, kIn);
           dip = 0.5 * Math.sin(Math.PI * p);
         } else {
-          layerStyle(B, 0, 1, 1, 1, 0, kOut);
-          layerStyle(A, 0, 1, p, 2, 0, kIn);
+          // a dip: out through black and up into the next scene (no muddy double exposure)
+          layerStyle(B, 0, 1, 1 - smooth(0.12, 0.55, p), 1, 0, kOut);
+          layerStyle(A, 0, 1.02 - 0.02 * e, smooth(0.45, 0.9, p), 2, 0, kIn);
+          dip = 0.55 * Math.sin(Math.PI * p);
         }
       } else {
         css(B.el, "transformOrigin", "");
@@ -471,9 +486,11 @@
     const st = ST.create({
       trigger: track, start: "top top", end: "bottom bottom",
       animation: tween, scrub: C.scrub,
-      onToggle: (self) => setLive(self.isActive),
       onRefresh: () => { measure(); render(true); },
     });
+    // "live" (the header steps aside, the picture seeks) is a couple of pixels wider than the scrub, so a stage
+    // resting exactly on its first or last frame (the hero's "Walk in" cue, the outro, a restored scroll) still counts
+    const liveST = ST.create({ trigger: track, start: "top top+=2", end: "bottom bottom-=2", onToggle: (self) => setLive(self.isActive) });
 
     // fetch the first files as the corridor comes near; let go of everything far away
     const io = new IntersectionObserver((es) => {
@@ -557,7 +574,7 @@
       offs.forEach((f) => f());
       gsap.ticker.remove(tick);
       io.disconnect();
-      st.kill(); tween.kill();
+      st.kill(); liveST.kill(); tween.kill();
       setLive(false);
       releaseAll();
       layers.forEach((L) => { L.poster.removeAttribute("src"); L.destroy(); });

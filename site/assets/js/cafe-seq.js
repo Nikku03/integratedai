@@ -38,7 +38,7 @@
     let tl = null, inerted = [], landTimer = 0, rvfc = 0, leaving = false, offTilt = null;
     const gsap = () => w.gsap;
     const MEDIA_SM = { yPercent: -12 }, MEDIA_LG = { xPercent: -6, scale: 1.1 };
-    // the stacked table (cup above, card below): phones and portrait tablets, as in walk.css
+    // the stacked table (cup above, card below): phones and portrait tablets (see cafe-seq.css)
     const mqStack = w.matchMedia("(max-width: 900px), (max-aspect-ratio: 4/5)");
 
     if (dlg.parentElement !== d.body) d.body.appendChild(dlg);   // so the rest of the page can go inert
