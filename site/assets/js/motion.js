@@ -10,13 +10,43 @@
  * Page scripts register with   Motion.page("home", (env) => { ...; return cleanup })
  * Custom effects register with Motion.effect("name", (el, env) => { ...; return cleanup })
  * and are applied to every [data-name] element.
+ *
+ * ROUND 3 — LIQUID FLOATING (v1.2). Motion only; nothing runs under reduced motion.
+ *   Float     every .media figure, and every element with data-float, drifts slowly
+ *             and organically (y ±6–10px, x ±2px, rotation ±0.25–0.4°, 6–9 s, its own
+ *             phase) like something floating in water. Text columns drift less
+ *             (±4px, ±0.12°). data-float="0.5" is calmer, "1.4" livelier; "off" (on
+ *             the element or any ancestor) opts out.
+ *             Auto-skipped .media: fills (position absolute/fixed), anything inside a
+ *             sticky or fixed stage, anything wider than 90% of the viewport.
+ *             An explicit data-float is honoured anywhere (e.g. a pop-up card inside
+ *             a sticky stage).
+ *   Liquid    the same elements answer Lenis's scroll velocity with a springy lag
+ *   scroll    (they trail the scroll by up to ±24px and spring back with a little
+ *             overshoot); images lag more than text, each by its own amount.
+ *   Cost      ONE gsap.ticker listener updates only the elements an
+ *             IntersectionObserver reports near the viewport, and writes only the
+ *             CSS `translate` + `rotate` properties (compositor-only, .is-afloat
+ *             promotes the element while it is on screen). Never `transform`, so it
+ *             composes with any GSAP tween on the same element. If a later GSAP tween
+ *             bakes the float into its transform (GSAP folds translate/rotate into
+ *             transform when it parses an element), the float pauses on that element
+ *             and eases back in once the tween clears its transform.
+ *   Hover     fine pointers: a floating .media softens / morphs its corners (CSS,
+ *             base.css) and runs a ~0.85 s SVG liquid ripple (feTurbulence +
+ *             feDisplacementMap, applied only while it runs). Skipped on Safari, on
+ *             very large figures, and for the session if frames get slow.
+ *   Blob      .blob figures get .is-inview while on screen (their border-radius
+ *             morph runs only then; see base.css).
+ *   API       Motion.float(el[, strength]) / Motion.unfloat(el) for elements added
+ *             after boot. Floating elements carry .is-float.
  */
 (function (w, d) {
   "use strict";
   const root = d.documentElement;
   const gsap = w.gsap, ST = w.ScrollTrigger, SplitText = w.SplitText;
   const Motion = (w.Motion = w.Motion || {});
-  Motion.version = "1.0.0";
+  Motion.version = "1.2.0";
   Motion.effects = Motion.effects || {};
   Motion.pages = Motion.pages || {};
   Motion.lenis = null;
@@ -138,6 +168,14 @@
   // data-reveal  → fade + rise once when it enters
   // data-reveal="image" → clip-path inset curtain + inner image settle (for .media figures)
   // data-reveal-group on a parent staggers its [data-reveal] children by 60ms in DOM order
+  // rounded curtains: the clip keeps the figure's own corner radius (px), so reveals are soft-edged
+  const R_FALLBACK = "28px";
+  const radiusOf = (el) => {
+    const r = getComputedStyle(el).borderTopLeftRadius || "";
+    return /^[\d.]+px$/.test(r) && parseFloat(r) > 0 ? r : (getComputedStyle(root).getPropertyValue("--r-lg").trim() || R_FALLBACK);
+  };
+  Motion.radiusOf = radiusOf;
+
   Motion.effect("reveal", (el) => {
     const isImage = el.dataset.reveal === "image";
     const img = isImage && el.querySelector(":scope > img, :scope > picture > img, :scope > video");
@@ -151,7 +189,8 @@
     if (isImage) {
       // two tweens, not a timeline: a timeline's ScrollTrigger refreshes lazily, and a page that
       // boots scrolled down (history back) then threw inside ScrollTrigger when `once` killed it
-      gsap.fromTo(el, { clipPath: "inset(8% 8% 8% 8%)" }, { clipPath: "inset(0% 0% 0% 0%)", duration: 1.2, ease: DRIFT, delay,
+      const R = radiusOf(el);
+      gsap.fromTo(el, { clipPath: `inset(8% 8% 8% 8% round ${R})` }, { clipPath: `inset(0% 0% 0% 0% round ${R})`, duration: 1.2, ease: DRIFT, delay,
         scrollTrigger: st(), onComplete: () => { gsap.set(el, { clipPath: "none" }); el.setAttribute("data-revealed", ""); } });
       if (img) gsap.fromTo(img, { scale: 1.12 }, { scale: 1, duration: 1.4, ease: EASE, delay, scrollTrigger: st() });
       return;
@@ -216,7 +255,8 @@
       // once-mode final state: no clip left behind (scrub mode must keep reversing)
       onComplete: scrub ? undefined : () => gsap.set(el, { clipPath: "none" }),
     });
-    tl.fromTo(el, { clipPath: "inset(100% 0% 0% 0%)" }, { clipPath: "inset(0% 0% 0% 0%)" }, 0);
+    const R = radiusOf(el);
+    tl.fromTo(el, { clipPath: `inset(100% 0% 0% 0% round ${R})` }, { clipPath: `inset(0% 0% 0% 0% round ${R})` }, 0);
     if (media) tl.fromTo(media, { scale: 1.25 }, { scale: 1 }, 0);
   });
 
@@ -228,6 +268,181 @@
       scrollTrigger: { trigger: el.parentElement, start: "top bottom", end: "bottom top", scrub: true },
     });
   });
+
+  // ------------------------------------------------------------------ liquid floating (see the header)
+  const LIQ = {
+    amp: [6, 10], ampText: 4,          // px, vertical drift
+    rot: [0.2, 0.35], rotText: 0,      // deg (text never rotates: it would soften the glyphs)
+    period: [6, 9],                    // s
+    lag: 0.9, lagText: 0.45, lagMax: 24,
+    k: 150, c: 13,                     // spring: stiffness, damping (ζ ≈ 0.53: a little overshoot)
+    margin: "15% 0px 15% 0px",
+  };
+  if (Motion.config.liquidOpts) Object.assign(LIQ, Motion.config.liquidOpts);   // per-page tuning
+  const SAFARI = /^((?!chrome|android|crios|fxios).)*safari/i.test(navigator.userAgent);
+  const rand = (i) => { const x = Math.sin(i * 12.9898 + 78.233) * 43758.5453; return x - Math.floor(x); };
+  const lerp = (a, b, t) => a + (b - a) * t;
+  Motion.float = () => {}; Motion.unfloat = () => {};
+
+  function liquid(env) {
+    const items = new Map();                 // el → state
+    const live = new Set();                  // states near the viewport
+    let seq = 0, t0 = 0, lastScroll = null, vel = 0;
+
+    const offStage = (el) => {
+      for (let n = el.parentElement; n && n !== d.body; n = n.parentElement) {
+        const p = getComputedStyle(n).position;
+        if (p === "sticky" || p === "fixed") return true;
+      }
+      return false;
+    };
+    const autoOK = (el) => {
+      if (el.closest('[data-float="off"]')) return false;
+      const p = getComputedStyle(el).position;
+      if (p === "absolute" || p === "fixed") return false;
+      if (el.offsetWidth > innerWidth * 0.9) return false;
+      return !offStage(el);
+    };
+
+    const io = new IntersectionObserver((entries) => entries.forEach((e) => {
+      const el = e.target, st = items.get(el);
+      if (el.classList.contains("blob")) el.classList.toggle("is-inview", e.isIntersecting);
+      if (!st) return;
+      if (e.isIntersecting) { live.add(st); el.classList.add("is-afloat"); }
+      else { live.delete(st); el.classList.remove("is-afloat"); }
+    }), { rootMargin: LIQ.margin });
+
+    function add(el, strength) {
+      if (items.has(el)) return;
+      const i = ++seq, r1 = rand(i), r2 = rand(i + 7.31), r3 = rand(i + 13.7);
+      const f = strength != null ? strength : (el.dataset.float && el.dataset.float !== "on" ? parseFloat(el.dataset.float) : 1);
+      const s = isFinite(f) ? Math.max(0, Math.min(f, 2)) : 1;
+      const text = !el.classList.contains("media") && !el.querySelector("img, video");
+      const st = {
+        el, text,
+        amp: (text ? LIQ.ampText : lerp(LIQ.amp[0], LIQ.amp[1], r1)) * s,
+        rot: (text ? LIQ.rotText : lerp(LIQ.rot[0], LIQ.rot[1], r2)) * s * (r3 < 0.5 ? -1 : 1),
+        w: (Math.PI * 2) / lerp(LIQ.period[0], LIQ.period[1], r3),
+        ph: r1 * Math.PI * 2,
+        lag: (text ? LIQ.lagText : LIQ.lag) * lerp(0.75, 1.3, r2) * Math.min(s, 1.4),
+        k: LIQ.k * lerp(0.8, 1.2, r3),
+        y: 0, v: 0, ramp: 0, baked: false, wrote: false,
+      };
+      items.set(el, st);
+      el.classList.add("is-float");
+      io.observe(el);
+      if (st.text === false && env.fine && el.classList.contains("media")) el.addEventListener("pointerenter", onHover);
+    }
+    function remove(el) {
+      const st = items.get(el);
+      if (!st) return;
+      io.unobserve(el); live.delete(st); items.delete(el);
+      el.classList.remove("is-float", "is-afloat");
+      el.removeEventListener("pointerenter", onHover);
+      if (st.wrote) { el.style.removeProperty("translate"); el.style.removeProperty("rotate"); }
+    }
+
+    // candidates: explicit data-float anywhere; .media automatically (with the skips above);
+    // the outermost one wins, so a floating column never double-floats the figure inside it
+    const cands = [];
+    d.querySelectorAll("[data-float]").forEach((el) => { if (el.dataset.float !== "off" && !el.parentElement.closest('[data-float="off"]')) cands.push(el); });
+    d.querySelectorAll(".media").forEach((el) => { if (!el.hasAttribute("data-float") && autoOK(el)) cands.push(el); });
+    cands.filter((el) => !cands.some((o) => o !== el && o.contains(el))).forEach((el) => add(el));
+    d.querySelectorAll(".blob").forEach((el) => { if (!items.has(el)) io.observe(el); });
+
+    const tick = (time, dt) => {
+      if (!t0) t0 = time;
+      const L = Motion.lenis;
+      const sc = L ? L.animatedScroll : null;
+      const sec = Math.min(Math.max(dt / 1000, 1 / 240), 1 / 30);
+      if (sc != null && lastScroll != null) {
+        const raw = (sc - lastScroll) / (sec * 60);                  // px per 60 fps frame
+        vel += (raw - vel) * 0.5;                                     // light smoothing of wheel steps
+      } else vel = 0;
+      lastScroll = sc;
+      if (!live.size) return;
+      const t = time - t0;
+      live.forEach((st) => {
+        const el = st.el, stl = el.style;
+        // a GSAP tween folded our translate/rotate into its transform: hold until it clears
+        if (stl.translate === "none") { st.baked = true; return; }
+        if (st.baked) {
+          if (stl.transform && stl.transform !== "none") return;
+          st.baked = false; st.ramp = 0; st.y = 0; st.v = 0;
+        }
+        st.ramp = Math.min(1, st.ramp + sec / 1.2);
+        const a = st.ramp * st.ramp * (3 - 2 * st.ramp);             // smoothstep in
+        const wt = st.w * t + st.ph;
+        const fy = st.amp * (0.72 * Math.sin(wt) + 0.28 * Math.sin(2.13 * wt + 1.7));
+        const fx = st.amp * 0.25 * Math.sin(0.63 * wt + 2.1);
+        const fr = st.rot * Math.sin(0.81 * wt + 0.6);
+        const target = Math.max(-LIQ.lagMax, Math.min(LIQ.lagMax, vel * st.lag));
+        st.v += (st.k * (target - st.y) - LIQ.c * st.v) * sec;
+        st.y += st.v * sec;
+        stl.translate = `${(fx * a).toFixed(2)}px ${((fy + st.y) * a).toFixed(2)}px`;
+        stl.rotate = `${(fr * a).toFixed(3)}deg`;
+        st.wrote = true;
+      });
+    };
+    gsap.ticker.add(tick);
+
+    // ---- liquid hover ripple (fine pointers): one shared SVG filter, applied only while it runs
+    let svg = null, disp = null, turb = null, cur = null, rip = null, slow = 0;
+    let rippleOK = env.fine && !SAFARI && !Motion.config.noRipple;
+    // only a pointer that really moves onto a figure ripples it: never content scrolling under a
+    // resting pointer (browsers send synthetic hover events after a scroll), never mid-scroll
+    let px = -1, py = -1;
+    const onMove = (e) => { px = e.clientX; py = e.clientY; };
+    if (rippleOK) w.addEventListener("pointermove", onMove, { passive: true });
+    if (rippleOK) {
+      const NS = "http://www.w3.org/2000/svg";
+      svg = d.createElementNS(NS, "svg");
+      svg.setAttribute("aria-hidden", "true"); svg.setAttribute("focusable", "false");
+      svg.setAttribute("width", "0"); svg.setAttribute("height", "0");
+      svg.style.cssText = "position:absolute;width:0;height:0;overflow:hidden;pointer-events:none";
+      svg.innerHTML = '<filter id="ts-liquid" x="-4%" y="-4%" width="108%" height="108%" color-interpolation-filters="sRGB">' +
+        '<feTurbulence type="fractalNoise" baseFrequency="0.0065 0.0095" numOctaves="1" seed="4" result="n"/>' +
+        '<feDisplacementMap in="SourceGraphic" in2="n" scale="0" xChannelSelector="R" yChannelSelector="G"/></filter>';
+      d.body.appendChild(svg);
+      turb = svg.querySelector("feTurbulence"); disp = svg.querySelector("feDisplacementMap");
+    }
+    function onHover(e) {
+      const el = e.currentTarget;
+      if (!rippleOK || e.pointerType === "touch") return;
+      const still = Math.abs(e.clientX - px) + Math.abs(e.clientY - py) < 1;
+      if (still || Math.abs(vel) > 0.3 || (Motion.lenis && Motion.lenis.isScrolling)) return;
+      const r = el.getBoundingClientRect();
+      if (r.width * r.height > 1.1e6 || r.width < 60) return;       // huge figures: the corner morph only
+      if (cur && cur !== el) cur.style.removeProperty("filter");
+      if (rip) rip.kill();
+      cur = el;
+      turb.setAttribute("seed", String(1 + Math.floor(Math.random() * 90)));
+      el.style.filter = "url(#ts-liquid)";
+      let last = performance.now(), frames = 0, sum = 0;
+      const end = () => { el.style.removeProperty("filter"); if (cur === el) cur = null; };
+      rip = gsap.timeline({ onComplete: end, onInterrupt: end, onUpdate: () => {
+        const now = performance.now(); sum += now - last; last = now; frames++;
+        // graceful fallback: a slow filter (software raster, big figure) is switched off for the session
+        if (frames === 8 && sum / frames > 34 && ++slow >= 2) { rippleOK = false; }
+      } })
+        .fromTo(disp, { attr: { scale: 0 } }, { attr: { scale: 11 }, duration: 0.32, ease: "sine.out" })
+        .to(disp, { attr: { scale: 0 }, duration: 0.6, ease: "sine.inOut" });
+    }
+
+    Motion.float = (el, strength) => { if (el && !items.has(el)) add(el, strength); };
+    Motion.unfloat = (el) => remove(el);
+    return () => {
+      gsap.ticker.remove(tick);
+      w.removeEventListener("pointermove", onMove);
+      io.disconnect();
+      if (rip) rip.kill();
+      [...items.keys()].forEach(remove);
+      d.querySelectorAll(".blob.is-inview").forEach((el) => el.classList.remove("is-inview"));
+      if (svg) svg.remove();
+      Motion.float = () => {}; Motion.unfloat = () => {};
+    };
+  }
+  Motion.liquidConfig = LIQ;
 
   function applyEffects(scope, env) {
     const offs = [];
@@ -351,6 +566,10 @@
       (Motion.globals || []).forEach((fn) => offs.push(fn(env)));
       const page = Motion.pages[pageName];
       if (page) offs.push(page(env));
+      // last: the float must start after every boot-time tween has parsed its element
+      if (motion && Motion.config.liquid !== false) {       // Motion.config = { liquid: false } turns it off for a page
+        try { offs.push(liquid(env)); } catch (err) { if (w.console) console.warn("[motion] liquid failed", err); }
+      }
       return () => offs.forEach((f) => typeof f === "function" && f());
     });
     if (!HAS_XDOC_VT) {

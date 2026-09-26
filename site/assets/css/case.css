@@ -31,7 +31,7 @@ html.js-motion [data-page="case"] .case-hero__badge { opacity: 0; visibility: hi
 /* ------------------------------------------------------------ 1 · hero */
 [data-page="case"] .case-hero {
   position: relative; isolation: isolate; overflow: clip;
-  height: 100svh; min-height: 560px;
+  height: calc(100svh - 2 * var(--panel-inset)); min-height: 560px;   /* an inset rounded panel (base.css) */
   display: flex; flex-direction: column; justify-content: flex-end;
 }
 [data-page="case"] .case-hero__media {
@@ -43,8 +43,8 @@ html.js-motion [data-page="case"] .case-hero__badge { opacity: 0; visibility: hi
 [data-page="case"] .case-hero::after {
   content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
   background:
-    linear-gradient(to top, rgba(20, 24, 18, 0.74) 0%, rgba(20, 24, 18, 0.42) 26%, rgba(20, 24, 18, 0) 56%),
-    linear-gradient(to bottom, rgba(20, 24, 18, 0.68) 0, rgba(20, 24, 18, 0.62) calc(var(--header-h) + 60px), rgba(20, 24, 18, 0.2) calc(var(--header-h) + 130px), rgba(20, 24, 18, 0) calc(var(--header-h) + 230px));
+    linear-gradient(to top, rgb(var(--shade-rgb) / 0.74) 0%, rgb(var(--shade-rgb) / 0.42) 26%, rgb(var(--shade-rgb) / 0) 56%),
+    linear-gradient(to bottom, rgb(var(--shade-rgb) / 0.68) 0, rgb(var(--shade-rgb) / 0.62) calc(var(--header-h) + 60px), rgb(var(--shade-rgb) / 0.2) calc(var(--header-h) + 130px), rgb(var(--shade-rgb) / 0) calc(var(--header-h) + 230px));
 }
 [data-page="case"] .case-hero__top { position: absolute; left: 0; right: 0; top: calc(var(--header-h) + 2px); }
 [data-page="case"] .case-back {
@@ -72,10 +72,10 @@ html.js-motion [data-page="case"] .case-hero__badge { opacity: 0; visibility: hi
   font-size: 0.75rem; line-height: 1.45; letter-spacing: 0.02em; text-transform: none; font-weight: 500;
 }
 [data-page="case"] .case-hero .badge--placeholder {
-  color: var(--on-dark); border-color: rgba(244, 242, 236, 0.32);
-  background: rgba(20, 24, 18, 0.5);
+  color: var(--on-dark); border-color: rgb(var(--paper-rgb) / 0.32);
+  background: rgb(var(--shade-rgb) / 0.5);
 }
-[data-page="case"] .badge__dot { flex: none; width: 6px; height: 6px; margin-top: 0.5em; background: var(--sand); }
+[data-page="case"] .badge__dot { flex: none; width: 6px; height: 6px; margin-top: 0.5em; border-radius: 50%; background: var(--sand); }
 
 /* ------------------------------------------------------------ 2 · overview + facts */
 [data-page="case"] .case-intro { padding-block: clamp(88px, 10vw, 168px) clamp(72px, 8vw, 128px); }
@@ -88,7 +88,7 @@ html.js-motion [data-page="case"] .case-hero__badge { opacity: 0; visibility: hi
 [data-page="case"] .case-facts__item { padding: 18px 0 26px; border-bottom: 1px solid var(--line); }
 [data-page="case"] .case-facts__item--wide { grid-column: span 2; }
 [data-page="case"] .case-facts dt { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; color: var(--ink-3); }
-[data-page="case"] .case-facts dt::before { content: ""; flex: none; width: 6px; height: 6px; background: var(--accent); }
+[data-page="case"] .case-facts dt::before { content: ""; flex: none; width: 6px; height: 6px; border-radius: 2px; background: var(--accent); }
 [data-page="case"] .case-facts dd {
   max-width: 34ch; font-size: 1.0625rem; line-height: 1.45; text-wrap: pretty;
   font-variant-numeric: tabular-nums lining-nums;
@@ -119,7 +119,7 @@ html.js-motion [data-page="case"] .case-hero__badge { opacity: 0; visibility: hi
 }
 /* the tick: a drawn check in the sector accent; an open square for stages not in this job */
 [data-page="case"] .case-stages__tick {
-  position: relative; flex: none; width: 20px; height: 20px;
+  position: relative; flex: none; width: 20px; height: 20px; border-radius: 6px;
   border: 1px solid var(--accent); background: var(--accent);
 }
 [data-page="case"] .case-stages__tick::after {
@@ -133,7 +133,9 @@ html.js-motion [data-page="case"] .case-hero__badge { opacity: 0; visibility: hi
 
 /* ------------------------------------------------------------ 5 · image rhythm */
 [data-page="case"] .case-gallery { display: grid; row-gap: clamp(64px, 8.5vw, 136px); padding-bottom: var(--section); }
-[data-page="case"] .case-full { position: relative; overflow: clip; aspect-ratio: 16 / 9; max-height: 94svh; background: var(--paper-3); }
+/* full-bleed photographs are inset rounded panels too (base.css contract) */
+[data-page="case"] .case-full { position: relative; overflow: clip; aspect-ratio: 16 / 9; max-height: 94svh; background: var(--paper-3); margin-inline: var(--panel-inset); border-radius: var(--r-xl); }
+[data-page="case"] .case-full__media { border-radius: 0; }
 [data-page="case"] .case-full__media { position: absolute; inset: 0; aspect-ratio: auto !important; }
 /* room to drift: the frame clips a figure 16% taller than itself (desktop, motion only) */
 @media (min-width: 901px) {
@@ -203,10 +205,10 @@ html.js-motion [data-page="case"] .case-hero__badge { opacity: 0; visibility: hi
   }
   html.js-motion [data-page="case"] .case-details__frame {
     position: relative; overflow: clip; width: min(100%, calc(74svh * var(--r)));
-    background: var(--paper-3);
+    background: var(--paper-3); border-radius: var(--r-lg);
   }
   html.js-motion [data-page="case"] .case-details__fig {
-    position: absolute; inset: 0; aspect-ratio: auto !important;
+    position: absolute; inset: 0; aspect-ratio: auto !important; border-radius: 0;   /* the frame rounds them */
     clip-path: inset(100% 0% 0% 0%);
   }
   html.js-motion [data-page="case"] .case-details__fig.is-active { clip-path: inset(0% 0% 0% 0%); z-index: 2; }
@@ -262,7 +264,13 @@ html.js-motion [data-page="case"] .case-hero__badge { opacity: 0; visibility: hi
 [data-page="case"] .case-next__link {
   position: relative; isolation: isolate; overflow: clip; display: flex; align-items: flex-end;
   height: min(88svh, 64vw); min-height: 480px; color: var(--on-dark); background: var(--green-deep);
+  /* an inset rounded panel like the hero (base.css contract) */
+  --margin: calc(var(--margin-base) - var(--panel-inset)); --maxw: calc(var(--maxw-base) - 2 * var(--panel-inset));
+  margin-inline: var(--panel-inset); border-radius: var(--r-xl);
 }
+/* the fills take the panel's own corners, so the shared-element morph from the work index lands on a matching shape */
+[data-page="case"] .case-next__media, [data-page="case"] .case-hero__media { border-radius: inherit; }
+[data-page="case"] .case-next { padding-bottom: var(--panel-inset); }
 [data-page="case"] .case-next__media {
   position: absolute; inset: 0; z-index: -2; aspect-ratio: auto !important; view-transition-class: proj;
 }
@@ -272,8 +280,8 @@ html.js-motion [data-page="case"] .case-hero__badge { opacity: 0; visibility: hi
 [data-page="case"] .case-next__link::after {
   content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
   background:
-    linear-gradient(to top, rgba(20, 24, 18, 0.74) 0%, rgba(20, 24, 18, 0.42) 34%, rgba(20, 24, 18, 0.12) 62%, rgba(20, 24, 18, 0.04) 100%),
-    linear-gradient(to right, rgba(20, 24, 18, 0.28) 0%, rgba(20, 24, 18, 0) 55%);
+    linear-gradient(to top, rgb(var(--shade-rgb) / 0.74) 0%, rgb(var(--shade-rgb) / 0.42) 34%, rgb(var(--shade-rgb) / 0.12) 62%, rgb(var(--shade-rgb) / 0.04) 100%),
+    linear-gradient(to right, rgb(var(--shade-rgb) / 0.28) 0%, rgb(var(--shade-rgb) / 0) 55%);
   transition: opacity 0.9s var(--ease-out);
 }
 [data-page="case"] .case-next__inner { display: grid; padding-bottom: clamp(28px, 5vh, 64px); }
@@ -285,11 +293,11 @@ html.js-motion [data-page="case"] .case-hero__badge { opacity: 0; visibility: hi
 }
 [data-page="case"] .case-next__foot {
   display: flex; align-items: center; justify-content: space-between; gap: 24px;
-  margin-top: clamp(26px, 3.4vw, 56px); padding-top: 18px; border-top: 1px solid rgba(244, 242, 236, 0.3);
+  margin-top: clamp(26px, 3.4vw, 56px); padding-top: 18px; border-top: 1px solid rgb(var(--paper-rgb) / 0.3);
 }
 [data-page="case"] .case-next__arrow {
   flex: none; display: grid; place-items: center; width: 56px; height: 56px; border-radius: 50%;
-  border: 1px solid rgba(244, 242, 236, 0.45); font-size: 1.25rem;
+  border: 1px solid rgb(var(--paper-rgb) / 0.45); font-size: 1.25rem;
   transition: background var(--t-ui) var(--ease-cut), color var(--t-ui) var(--ease-cut), border-color var(--t-ui) var(--ease-cut);
 }
 [data-page="case"] .case-next__arrow span { transition: transform var(--t-ui) var(--ease-cut); }

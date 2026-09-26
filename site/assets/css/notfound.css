@@ -7,10 +7,13 @@
 [data-page="404"] .nf {
   position: relative; isolation: isolate; overflow: clip;
   display: grid; align-items: center;
-  min-height: max(100svh, 640px);
+  min-height: max(calc(100svh - 2 * var(--panel-inset)), 640px);
   padding-top: calc(var(--header-h) + clamp(32px, 5vw, 72px));
   padding-bottom: calc(clamp(72px, 12vh, 140px) + clamp(32px, 4vw, 56px));
   background: var(--paper-2);
+  /* an inset rounded panel (base.css contract) */
+  --margin: calc(var(--margin-base) - var(--panel-inset)); --maxw: calc(var(--maxw-base) - 2 * var(--panel-inset));
+  margin: var(--panel-inset) var(--panel-inset) 0; border-radius: var(--r-xl);
 }
 [data-page="404"] .nf__inner { align-items: center; row-gap: 56px; }
 
@@ -30,20 +33,20 @@
 [data-page="404"] .nf__wire path { fill: none; stroke: var(--ink-3); stroke-width: 1; vector-effect: non-scaling-stroke; }
 [data-page="404"] .nf__nail {
   position: absolute; left: 50%; top: 4px; width: 9px; height: 9px; margin-left: -4.5px; border-radius: 50%;
-  background: var(--ink-2); box-shadow: 0 1px 2px rgba(28, 33, 25, 0.35);
+  background: var(--ink-2); box-shadow: 0 1px 2px rgb(var(--ink-rgb) / 0.35);
 }
 [data-page="404"] .nf__pic {
   position: relative; padding: clamp(14px, 1.6vw, 22px);
-  background: var(--paper); border: 10px solid var(--green-deep);
-  box-shadow: 0 18px 40px -18px rgba(28, 33, 25, 0.45), 0 2px 6px rgba(28, 33, 25, 0.12);
+  background: var(--paper); border: 10px solid var(--green-deep); border-radius: var(--r-md);
+  box-shadow: var(--shadow-soft);
 }
-[data-page="404"] .nf__pic .media { box-shadow: inset 0 0 0 1px rgba(28, 33, 25, 0.08); }
+[data-page="404"] .nf__pic .media { --media-r: var(--r-sm); box-shadow: inset 0 0 0 1px rgb(var(--ink-rgb) / 0.08); }
 [data-page="404"] .nf__plaque {
-  display: table; margin: 22px auto 0; padding: 9px 16px 8px;
+  display: table; margin: 22px auto 0; padding: 9px 16px 8px; border-radius: 8px;
   background: var(--sand); color: var(--green-deep);
   font-size: 0.75rem; font-weight: 600; line-height: 1.2; letter-spacing: 0.18em; text-transform: uppercase;
   font-variant-numeric: tabular-nums lining-nums;
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.4) inset, 0 2px 4px rgba(28, 33, 25, 0.18);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.4) inset, 0 2px 4px rgb(var(--ink-rgb) / 0.18);
 }
 
 /* ---- the words */

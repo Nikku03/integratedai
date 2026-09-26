@@ -32,7 +32,7 @@
 [data-page="studio"] .frame { position: relative; width: 100%; aspect-ratio: var(--frame-ar); }
 [data-page="studio"] .frame__fill {
   position: absolute; inset: 0; overflow: hidden;
-  background: #88532a;             /* the photograph's own mean colour, until it decodes */
+  background: #88532a;             /* the photograph's own mean colour, until it decodes (a photo colour, not a theme colour) */
   -webkit-mask: var(--frame-mask) 50% 50% / 100% 100% no-repeat;
           mask: var(--frame-mask) 50% 50% / 100% 100% no-repeat;
 }
@@ -78,7 +78,7 @@
   width: 0; height: 0; border-style: solid; border-width: 6px 0 6px 10px;
   border-color: transparent transparent transparent currentColor; margin-left: 3px;
 }
-[data-page="studio"] .vtoggle--dark { color: var(--on-dark); border-color: rgba(244, 242, 236, 0.45); }
+[data-page="studio"] .vtoggle--dark { color: var(--on-dark); border-color: rgb(var(--paper-rgb) / 0.45); }
 [data-page="studio"] .vtoggle--dark:hover { background: var(--paper); border-color: var(--paper); color: var(--green-deep); }
 
 /* ------------------------------------------------------------ principles */
@@ -107,9 +107,9 @@
 
 [data-page="studio"] .duo { position: relative; width: 100%; aspect-ratio: 2 / 1; }
 [data-page="studio"] .duo__sq {
-  position: absolute; top: 0; width: 50%; height: 100%;
-  border: 1px solid rgba(244, 242, 236, 0.55);
-  background: rgba(244, 242, 236, 0.035);
+  position: absolute; top: 0; width: 50%; height: 100%; border-radius: var(--r-md);
+  border: 1px solid rgb(var(--paper-rgb) / 0.5);
+  background: rgb(var(--paper-rgb) / 0.04);
 }
 [data-page="studio"] .duo__sq--a { left: 8.3333%; }
 [data-page="studio"] .duo__sq--b { left: 41.6667%; }
@@ -128,7 +128,7 @@
 [data-page="studio"] .duo__tick--br { right: -7px; bottom: -7px; }
 [data-page="studio"] .duo__overlap {
   position: absolute; top: 0; left: 41.6667%; width: 16.6667%; height: 100%;
-  background: var(--sand); color: var(--green-deep); transform-origin: 50% 50%;
+  background: var(--sand); color: var(--green-deep); transform-origin: 50% 50%; border-radius: var(--r-md);
   display: grid; place-items: center; overflow: hidden;
 }
 [data-page="studio"] .duo__label {
@@ -198,12 +198,11 @@
 [data-page="studio"] .clients__head .t-small { margin-top: 1rem; max-width: 30ch; }
 [data-page="studio"] .clients__body { grid-column: 6 / -1; }
 [data-page="studio"] .clients__wall {
-  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: clamp(28px, 3vw, 44px);
-  border-top: 1px solid var(--line-strong); border-left: 1px solid var(--line-strong);
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(8px, 0.8vw, 12px); margin-top: clamp(28px, 3vw, 44px);
 }
 [data-page="studio"] .clients__wall li {
   display: grid; place-items: center; min-height: clamp(96px, 9vw, 140px); padding: 16px;
-  border-right: 1px solid var(--line-strong); border-bottom: 1px solid var(--line-strong);
+  background: var(--paper-2); border-radius: var(--r-md);
   font-family: var(--f-display); font-style: italic; font-size: clamp(1.2rem, 1.6vw, 1.6rem); color: var(--ink-3); text-align: center;
 }
 [data-page="studio"] .clients__press { margin-top: clamp(40px, 4.5vw, 64px); max-width: 30ch; }
@@ -218,11 +217,12 @@
 [data-page="studio"] .careers__text .t-lede { margin-top: 1.75rem; }
 
 /* ------------------------------------------------------------ CTA over the green café loop */
-[data-page="studio"] .studio-cta { position: relative; isolation: isolate; display: grid; align-items: end; min-height: min(100svh, 980px); overflow: clip; }
+[data-page="studio"] .studio-cta { position: relative; isolation: isolate; display: grid; align-items: end; min-height: min(calc(100svh - 2 * var(--panel-inset)), 980px); overflow: clip; }
+[data-page="studio"] .studio-cta__media { border-radius: 0; }
 [data-page="studio"] .studio-cta__media { position: absolute; inset: 0; z-index: -1; background-color: var(--green-deep); }
 [data-page="studio"] .studio-cta__media::after {
   content: ""; position: absolute; inset: 0;
-  background: linear-gradient(to top, rgba(20, 24, 18, 0.72), rgba(20, 24, 18, 0.18) 58%, rgba(20, 24, 18, 0) 80%);
+  background: linear-gradient(to top, rgb(var(--shade-rgb) / 0.72), rgb(var(--shade-rgb) / 0.18) 58%, rgb(var(--shade-rgb) / 0) 80%);
 }
 [data-page="studio"] .studio-cta__inner {
   display: flex; justify-content: space-between; align-items: flex-end; gap: 24px;

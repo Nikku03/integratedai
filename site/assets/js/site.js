@@ -33,17 +33,37 @@
   })();
 
   /* ---------------------------------------------------------------- lazy images: fade in on decode */
+  // Once the photo has faded in, the LQIP background is dropped (.media.is-ready): a CSS
+  // background image makes a floating (moving) layer repaint on every frame.
   function wireImages(scope = d) {
     $$(".media > img, .media > picture > img", scope).forEach((img) => {
       if (img.dataset.wired) return;
       img.dataset.wired = "1";
-      const done = () => img.classList.add("is-loaded");
+      const fig = img.closest(".media");
+      const done = () => {
+        img.classList.add("is-loaded");
+        if (fig && img.naturalWidth) setTimeout(() => fig.classList.add("is-ready"), 650);
+      };
       if (img.complete && img.naturalWidth) done();
       else { img.addEventListener("load", done, { once: true }); img.addEventListener("error", done, { once: true }); }
     });
   }
-  TS.wireImages = wireImages;
+  // video figures: the poster covers the LQIP once it has loaded (same URL, so it comes from cache)
+  function wirePosters(scope = d) {
+    $$(".media > video[poster]", scope).forEach((v) => {
+      if (v.dataset.posterWired) return;
+      v.dataset.posterWired = "1";
+      const fig = v.parentElement;
+      const url = v.getAttribute("poster");            // the poster on screen now (the browser loads it anyway)
+      if (!url || !fig) return;
+      const im = new Image();
+      im.onload = () => fig.classList.add("is-ready");
+      im.src = url;
+    });
+  }
+  TS.wireImages = (scope) => { wireImages(scope); wirePosters(scope); };
   wireImages();
+  wirePosters();
 
   /* ---------------------------------------------------------------- toast */
   let toastEl, toastTimer;
@@ -139,7 +159,8 @@
     if (!h) return;
     const firstDark = d.querySelector("main > [data-header='dark']:first-child, main > :first-child[data-header='dark']");
     let lastY = w.scrollY, ticking = false, forced = 0;
-    const heroH = () => (firstDark ? firstDark.offsetHeight : 0);
+    // the hero is an inset panel (margin-top: --panel-inset): measure to its bottom edge
+    const heroH = () => (firstDark ? firstDark.offsetTop + firstDark.offsetHeight : 0);
     let heroBottom = heroH();
     w.addEventListener("resize", () => { heroBottom = heroH(); }, { passive: true });
     function update() {

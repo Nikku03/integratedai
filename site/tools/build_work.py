@@ -317,7 +317,7 @@ def build(copy: dict, data: dict) -> dict[str, str]:
     cta = f'''<section class="work-cta section on-sand" aria-labelledby="work-cta-title">
     <div class="wrap grid work-cta__grid">
       <h2 class="work-cta__title t-display-l" id="work-cta-title" data-split>{emphasise(b["headline"], EMPHASIS.get("bottom"))}</h2>
-      <div class="work-cta__side">
+      <div class="work-cta__side" data-float="0.6">
         <p class="t-lede" data-reveal>{esc(b["body"])}</p>
         <a class="btn btn--solid" href="contact.html?from=work" data-reveal>{esc(b["button"])} <span class="arr" aria-hidden="true">→</span></a>
       </div>

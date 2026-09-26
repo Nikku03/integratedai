@@ -1,5 +1,5 @@
 """
-Render the aligned layers for "The build" (index-build.html) and write its partial.
+Render the aligned layers for "The build" and write one partial per venue (partials/build-<venue>.html).
 
 Every venue starts from ONE finished photograph. Each stage of the build is a rendering of that
 same photograph, so the layers line up pixel for pixel and the last stage is the real room:
@@ -10,13 +10,17 @@ same photograph, so the layers line up pixel for pixel and the last stage is the
     dim     the finishes in working light, before the lights come on (bloom removed, highlights pulled, cool)
     lit     the finished photograph
 
+Venues: cafe, restaurant, bar, retail. Each partial is self-contained (intro, the scrubbed build with its trust
+notes, the reduced-motion stills and notes); a page includes it with <!-- @partial:build-<venue> --> plus
+assets/css/build.css and assets/js/build.js. (partials/build.html, the old three-venue section, is no longer written.)
+
 Regions (build.json): "shell" polygons are structure (the empty model rises over the sketch, feathered
 ~3% of the width); "fit" polygons are joinery and fit-out (solid over their outline, feathered beyond it,
 where shell and clay are the same pixels); "flat" polygons flatten fine texture (bottles) into plain planes.
 
     python3 tools/build_layers.py images [venue ...]   # assets/img/build/<venue>-<layer>-{1920,960}.webp
     python3 tools/build_layers.py images --clay        # only re-render shell + clay (and the masks)
-    python3 tools/build_layers.py html                 # partials/build.html from assets/data/build.json
+    python3 tools/build_layers.py html [venue ...]     # partials/build-<venue>.html from assets/data/build.json
     python3 tools/build_layers.py preview [venue ...]  # grid + region overlays (to OUT_PREVIEW) for placing polygons
 
 Pillow + numpy only. Sources are the 2400px originals (see SRC below); the region polygons, glows,
@@ -132,8 +136,14 @@ def noise(h, w, scale, seed):
     return a / (np.abs(a).max() + 1e-6)
 
 
+def src_path(venue: dict) -> Path:
+    """A bare file name lives in SRC (photos-hospitality); a relative path is under SRC's parent (SP/media)."""
+    s = venue["src"]
+    return SRC / s if "/" not in s else SRC.parent / s
+
+
 def load(venue: dict, W: int) -> np.ndarray:
-    im = Image.open(SRC / venue["src"]).convert("RGB")
+    im = Image.open(src_path(venue)).convert("RGB")
     h = round(im.height * W / im.width)
     return to_f(im.resize((W, h), Image.LANCZOS))
 
@@ -559,7 +569,7 @@ def region_masks(v: dict) -> dict:
     the hole cut for them in the empty shell and feather out beyond it, where the empty shell and the full
     model are the same pixels: set down, a piece covers its hole exactly and its feather never shows.
     A later piece owns any overlap with an earlier one."""
-    im = Image.open(SRC / v["src"]).convert("RGB")
+    im = Image.open(src_path(v)).convert("RGB")
     w, h = MASK_W, round(im.height * MASK_W / im.width)
     R = v.get("render", {})
     fe = R.get("feather", 0.011) * w               # gaussian sigma: 10-90% over ~2.8% of the width
@@ -820,9 +830,80 @@ def plan_use(v: dict, uid: str) -> str:
             f'<use href="#build-plan-{uid}"/></svg>')
 
 
-# ------------------------------------------------------------------ the partial
+# ------------------------------------------------------------------ the partials (one per venue)
+ROOT = "{{root}}"          # sync_partials.py replaces it with the path back to the site root ("" or "../")
+
+
 def _n(v):
     return f"{v:.4f}".rstrip("0").rstrip(".") or "0"
+
+
+def _href(h: str) -> str:
+    """A site-relative link from build.json, rooted for the page the partial lands on."""
+    return H.escape(h if h.startswith(("#", "http", "mailto:", "tel:")) else ROOT + h)
+
+
+def _arr() -> str:
+    return '<span class="arr" aria-hidden="true">→</span>'
+
+
+def pop_body(p: dict, e=H.escape) -> str:
+    """The inside of one note: label, the line (a numeral, a quote or plain text), an optional action."""
+    kind = p.get("kind", "promise")
+    if kind == "client":
+        body = (f'<blockquote class="build__pop-quote"><p>“{e(p["text"])}”</p></blockquote>'
+                f'<p class="build__pop-cite">{e(p["cite"])}</p>')
+    elif p.get("value"):
+        body = f'<p class="build__pop-text"><span class="build__pop-num t-num">{e(p["value"])}</span> {e(p["text"])}</p>'
+    else:
+        body = f'<p class="build__pop-text">{e(p["text"])}</p>'
+    a = p.get("action")
+    if a:
+        here = f' data-here="{e(a["here"])}"' if a.get("here") else ""
+        body += f'<a class="build__pop-link" href="{_href(a["href"])}"{here}>{e(a["label"])} {_arr()}</a>'
+    return body
+
+
+def pops_html(v: dict, C: dict) -> str:
+    """The trust notes: one small card per stage, popped up by build.js as that stage arrives (and put away as it
+    ends). A polite live region reads each one once; the close button puts them all away for this venue."""
+    e = H.escape
+    cards = "".join(
+        f'<div class="build__pop" data-pop="{i}" data-kind="{e(p.get("kind", "promise"))}"><div class="build__pop-in">'
+        f'<p class="build__pop-label t-label">{e(p["label"])}</p>{pop_body(p)}'
+        f'<button class="build__pop-close" type="button" data-pop-close aria-label="{e(C["popClose"])}"><i aria-hidden="true"></i></button>'
+        f'</div></div>'
+        for i, p in enumerate(v["copy"]["pops"]))
+    return (f'<div class="build__pops" data-pops role="group" aria-label="{e(C["popsGroup"])}">'
+            f'<p class="sr-only" aria-live="polite" data-pop-live></p>{cards}</div>')
+
+
+def notes_html(v: dict, C: dict) -> str:
+    """Reduced motion / no JS: the same notes as a small list beside the stills."""
+    e, vid = H.escape, v["id"]
+    items = "".join(
+        f'<li class="build__note" data-kind="{e(p.get("kind", "promise"))}"><p class="build__note-label t-label"><span class="t-num">{i + 1:02d}</span> {e(p["label"])}</p>'
+        f'{pop_body(p)}</li>'
+        for i, p in enumerate(v["copy"]["pops"]))
+    return (f'<div class="build__notes"><p class="build__notes-title t-label" id="build-{vid}-notes">{e(C["popsLabel"])}</p>'
+            f'<ol class="build__notes-list" aria-labelledby="build-{vid}-notes">{items}</ol></div>')
+
+
+def end_actions(v: dict, C: dict, solid=False) -> str:
+    """Stage 07's actions. The café opens the corner table (cafe-seq); the others go to their sector page and
+    to a prefilled brief. A link to the page it's on goes to its data-here section instead (build.js)."""
+    e, end = H.escape, v["copy"]["end"]
+    main = "btn--solid" if solid else "btn--paper"
+    if end["kind"] == "cafe":
+        cta = (f'<button class="btn {main} build__cta" type="button" data-cafe-seq-open aria-haspopup="dialog" aria-controls="corner-table" '
+               f'aria-label="{e(end["aria"])}" data-cursor="Sit down">{e(end["label"])} {_arr()}</button>')
+        if solid:      # no JS: the dialog opens by :target
+            cta += f'<a class="btn btn--solid build__cta cafe-seq-fallback" href="#corner-table">{e(end["label"])} {_arr()}</a>'
+        return cta
+    here = f' data-here="{e(end["here"])}"' if end.get("here") else ""
+    second = "" if solid else " btn--on-dark"
+    return (f'<a class="btn {main} build__cta" href="{_href(end["href"])}"{here} aria-label="{e(end["aria"])}" data-cursor="Enter">{e(end["label"])} {_arr()}</a>'
+            f'<a class="btn{second} build__cta build__cta--2" href="{_href(end["start"])}">{e(C["start"]["label"])} {_arr()}</a>')
 
 
 def venue_html(v: dict, C: dict) -> str:
@@ -832,7 +913,6 @@ def venue_html(v: dict, C: dict) -> str:
     ar = Wm / Hm
     st = v.get("stage", {})
     e = H.escape
-    # the image box: sketch, the ruler's lines, shell (clay), finishes and fit-out (dim), dim, lit, glows
     rule = "".join(f'<path d="M{x0} {y0}L{x1} {y1}" pathLength="1"/>' for x0, y0, x1, y1 in meta["segments"])
     regs = []
     for r in v["regions"]:
@@ -856,39 +936,33 @@ def venue_html(v: dict, C: dict) -> str:
            f'<div class="build__layer" data-layer="lit"></div>'
            f'<div class="build__glows">{glows}</div></div>')
     end = c["end"]
-    if end["kind"] == "cafe":
-        cta = (f'<button class="btn btn--paper build__cta" type="button" data-cafe-seq-open aria-haspopup="dialog" aria-controls="corner-table" '
-               f'aria-label="{e(end["aria"])}" data-cursor="Sit down">{e(end["label"])} <span class="arr" aria-hidden="true">→</span></button>')
-        cta_rm = cta.replace("build__cta", "build__spread-cta") + (
-            f'<a class="btn btn--solid build__spread-cta cafe-seq-fallback" href="#corner-table">{e(end["label"])} <span class="arr" aria-hidden="true">→</span></a>')
-        cta_rm = cta_rm.replace("btn--paper", "btn--solid")
-    else:
-        cta = (f'<a class="btn btn--paper build__cta" href="{end["href"]}" aria-label="{e(end["aria"])}" data-cursor="Enter">'
-               f'{e(end["label"])} <span class="arr" aria-hidden="true">→</span></a>')
-        cta_rm = cta.replace("build__cta", "build__spread-cta").replace("btn--paper", "btn--solid")
     stages = C["stages"]
     diary = "".join(
         f'<li class="build__entry" data-i="{i}"><p class="build__stage-name"><span class="t-num">{i + 1:02d}</span> {e(stages[i])}</p>'
         f'<p class="build__week t-label">{e(wk)}</p><p class="build__cap t-small">{e(cap)}</p></li>'
         for i, (wk, cap) in enumerate(c["diary"]))
     index = "".join(f'<li data-i="{i}"><span>{i + 1:02d}</span></li>' for i in range(len(stages)))
-    head = f'{c["time"]} · {c["name"]}'
     plan = plan_svg(v, vid)
+    skip = (f'<a class="build__skip" href="#build-{vid}-after">{e(C["skip"].split(" ")[0])}<span class="sr-only"> '
+            f'{e(" ".join(C["skip"].split(" ")[1:]))}</span> <span class="build__skip-arr" aria-hidden="true">↓</span></a>')
     stage = (f'<div class="build__track" data-track><div class="build__stage" data-stage>'
              f'<div class="build__frame" data-frame>'
              f'<div class="build__plan" data-plan aria-hidden="true">{plan}</div>'
              f'<div class="build__paper" data-paper aria-hidden="true"></div>{box}'
              f'<div class="build__scrim" data-scrim aria-hidden="true"></div>'
              f'<div class="build__end" data-end><p class="build__end-time t-label"><span class="t-num">{c["time"]}</span> · {e(c["diary"][-1][0].split(" · ")[0])}</p>'
-             f'<h3 class="build__title t-display-xl" id="build-{vid}-title"><em>{e(end["title"])}</em></h3>{cta}</div></div>'
-             f'<div class="build__card" data-card><p class="build__card-head t-label"><span><span class="t-num">{c["time"]}</span> · {e(c["name"])}</span>'
-             f'<span class="build__count t-num" aria-hidden="true"><b data-now>01</b> / {len(stages):02d}</span></p>'
+             f'<h3 class="build__title t-display-xl" id="build-{vid}-title"><em>{e(end["title"])}</em></h3>'
+             f'<div class="build__actions">{end_actions(v, C)}</div></div></div>'
+             f'<div class="build__card" data-card><div class="build__card-head t-label"><span class="build__card-where"><span class="t-num">{c["time"]}</span> · {e(c["name"])}</span>'
+             f'<span class="build__count t-num" aria-hidden="true"><b data-now>01</b> / {len(stages):02d}</span>{skip}</div>'
              f'<ol class="build__diary">{diary}</ol><ol class="build__index" aria-hidden="true">{index}</ol></div>'
+             f'{pops_html(v, C)}'
              f'</div></div>')
     sizes = "(max-width: 900px) 100vw, 31vw"
     def fig(layer, alt, cap):
+        src = f"{ROOT}assets/img/build/{vid}-{layer}"
         return (f'<figure class="build__spread-fig"><div class="media" style="aspect-ratio:{Wm}/{Hm}">'
-                f'<img src="assets/img/build/{vid}-{layer}-1920.webp" srcset="assets/img/build/{vid}-{layer}-960.webp 960w, assets/img/build/{vid}-{layer}-1920.webp 1920w" '
+                f'<img src="{src}-1920.webp" srcset="{src}-960.webp 960w, {src}-1920.webp 1920w" '
                 f'sizes="{sizes}" width="{Wm}" height="{Hm}" alt="{e(alt)}" loading="lazy" decoding="async"></div>'
                 f'<figcaption class="build__spread-cap"><span class="t-label">{cap[0]}</span><span class="t-small">{e(cap[1])}</span></figcaption></figure>')
     L3 = C["spreadLabels"]
@@ -901,40 +975,41 @@ def venue_html(v: dict, C: dict) -> str:
               f'<figcaption class="build__spread-cap"><span class="t-label">01 · {e(L3[0])} · {e(d[0][0])}</span><span class="t-small">{e(d[0][1])}</span></figcaption></figure>'
               + fig("clay", c["alts"]["clay"], (f"03 · {e(L3[1])} · {e(d[2][0])}", d[2][1]))
               + fig("lit", c["alts"]["lit"], (f"07 · {e(L3[2])} · {e(d[6][0])}", d[6][1]))
-              + f'</div><div class="build__spread-end">{cta_rm}</div></div>')
+              + f'</div>{notes_html(v, C)}<div class="build__spread-end">{end_actions(v, C, solid=True)}</div></div>')
     pan = st.get("pan", [0.5, 0.5])
-    return (f'<article class="build__venue" id="build-{vid}" data-venue="{vid}" aria-labelledby="build-{vid}-title" '
+    return (f'<article class="build__venue" id="build-{vid}-room" data-venue="{vid}" aria-labelledby="build-{vid}-title" '
             f'style="--ar:{ar:.4f};--fx:{st.get("fx", 0.5)};--fy:{st.get("fy", 0.5)}" data-pan="{pan[0]},{pan[1]}" data-card="{st.get("card", "left")}">'
             f'{stage}{spread}</article>')
 
 
-def write_html():
+def write_html(ids=()):
+    """partials/build-<venue>.html: one self-contained section per venue (intro, the build, the notes, the stills)."""
     data = json.loads(DATA.read_text())
     C = data["copy"]
     e = H.escape
-    venues = "\n".join(venue_html(v, C) for v in data["venues"])
-    out = f"""<!-- The build (index-build.html). GENERATED by tools/build_layers.py html from assets/data/build.json: edit those, not this. -->
-<section class="build" id="walk" data-build data-build-root="assets/img/build/" aria-labelledby="build-title">
+    for v in data["venues"]:
+        if ids and v["id"] not in ids:
+            continue
+        vid, c = v["id"], v["copy"]
+        out = f"""<!-- The build: {e(c["name"])} ({c["time"]}). GENERATED by tools/build_layers.py html from assets/data/build.json: edit those, not this.
+     Needs assets/css/build.css and assets/js/build.js{" (and the cafe-seq partial, css and js for the corner table)" if c["end"]["kind"] == "cafe" else ""}. -->
+<section class="build" id="build-{vid}" data-build data-build-root="{ROOT}assets/img/build/" aria-labelledby="build-{vid}-heading">
   <div class="build__intro wrap">
     <p class="build__eyebrow t-label" data-reveal>{e(C["eyebrow"])}</p>
-    <h2 class="build__headline t-display-l" id="build-title" data-split>{C["headline"]}</h2>
-    <p class="build__body t-lede" data-reveal>{e(C["body"])}</p>
-    <p class="sr-only">{e(C["srSummary"])}</p>
+    <h2 class="build__headline t-display-l" id="build-{vid}-heading" data-split>{C["headline"]}</h2>
+    <p class="build__body t-lede" data-reveal data-float="0.6">{e(c["intro"])}</p>
+    <p class="sr-only">{e(c["srSummary"])}</p>
     <p class="build__rm-note t-small">{e(C["rmNote"])}</p>
   </div>
   <div class="build__venues">
-    <div class="build__hud"><a class="build__skip" href="#after-walk">{e(C["skip"])}<span class="build__skip-arr" aria-hidden="true">↓</span></a></div>
-{venues}
+{venue_html(v, C)}
   </div>
-  <div class="build__outro wrap">
-    <p class="build__outro-line t-display-m" data-reveal>{e(C["outro"]["line"])}</p>
-    <a class="link build__outro-link" href="work.html" data-reveal>{e(C["outro"]["link"])}</a>
-  </div>
+  <div class="build__after" id="build-{vid}-after" tabindex="-1"></div>
 </section>
 """
-    p = SITE / "partials/build.html"
-    p.write_text(out)
-    print(f"  {p.relative_to(SITE)}  {len(out) // 1024} KB")
+        p = SITE / f"partials/build-{vid}.html"
+        p.write_text(out)
+        print(f"  {p.relative_to(SITE)}  {len(out) // 1024} KB")
 
 
 # ------------------------------------------------------------------ authoring preview
@@ -950,7 +1025,7 @@ def preview(ids):
     for v in data["venues"]:
         if ids and v["id"] not in ids:
             continue
-        im = Image.open(SRC / v["src"]).convert("RGB")
+        im = Image.open(src_path(v)).convert("RGB")
         W = 1600
         im = im.resize((W, round(im.height * W / im.width)), Image.LANCZOS)
         w, h = im.size
@@ -984,7 +1059,7 @@ if __name__ == "__main__":
     if cmd == "images":
         images([a for a in rest if not a.startswith("--")])
     elif cmd == "html":
-        write_html()  # noqa: F821  (defined below once the partial template exists)
+        write_html(rest)
     elif cmd == "preview":
         preview(rest)  # noqa: F821
     else:

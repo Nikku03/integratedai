@@ -232,7 +232,7 @@ def loop(p):
            poster="{poster}-poster.jpg" data-poster-sm="{poster}-sm-poster.jpg"
            muted loop playsinline preload="none" aria-hidden="true"></video>
   </figure>
-  <div class="case-loop__side">
+  <div class="case-loop__side" data-float="0.6">
     <p class="case-loop__note"><span class="t-label">{esc(FILM_LABEL)}</span><span class="t-small">{esc(FILM_NOTE)}</span></p>
     <button class="case-loop__toggle" type="button" data-video-toggle="#{vid}" aria-pressed="true"><span class="case-loop__icon" aria-hidden="true"></span><span class="case-loop__word" aria-hidden="true"></span><span class="sr-only">Play video</span></button>
   </div>
