@@ -156,7 +156,7 @@
 [data-page="studio"] .team__list { row-gap: 56px; }
 [data-page="studio"] .member { grid-column: span 3; }
 [data-page="studio"] .member:nth-child(2n) { margin-top: clamp(40px, 7vw, 120px); }
-[data-page="studio"] .member__text { margin-top: 20px; }
+[data-page="studio"] .member__text { margin-top: 32px; }   /* clear of the portrait's liquid lag */
 [data-page="studio"] .member__text .t-display-s { margin-top: 0.6rem; }
 [data-page="studio"] .member__text .t-small { margin-top: 0.8rem; max-width: 36ch; }
 

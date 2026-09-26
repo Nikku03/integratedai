@@ -12,7 +12,7 @@ same photograph, so the layers line up pixel for pixel and the last stage is the
 
 Venues: cafe, restaurant, bar, retail. Each partial is self-contained (intro, the scrubbed build with its trust
 notes, the reduced-motion stills and notes); a page includes it with <!-- @partial:build-<venue> --> plus
-assets/css/build.css and assets/js/build.js. (partials/build.html, the old three-venue section, is no longer written.)
+assets/css/build.css and assets/js/build.js.
 
 Regions (build.json): "shell" polygons are structure (the empty model rises over the sketch, feathered
 ~3% of the width); "fit" polygons are joinery and fit-out (solid over their outline, feathered beyond it,

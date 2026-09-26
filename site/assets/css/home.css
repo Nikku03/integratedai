@@ -1,10 +1,11 @@
 /* =====================================================================
    Two Squares — home.css
    Home page only. Every rule is scoped under [data-page="home"].
-   Sections: 1 hero · 4 selected work · 5 what we do · 6 how it works ·
-   7 numbers + quote · 8 closing CTA. (2 · the walk lives in corridor.css, or build.css on index-build.html.)
+   Sections: 1 hero · 2 the restaurant build (build.css; nothing here) ·
+   3 pick your room · 4 selected work · 5 what we do · 6 how it works ·
+   7 numbers + quote · 8 closing CTA.
    Motion pre-states live under .js-motion so reduced motion / no JS
-   always shows everything.
+   always shows everything. Floating (data-float, .media, .blob) is motion.js.
    ===================================================================== */
 
 /* ------------------------------------------------------------ shared on this page: video pause/play chip (WCAG 2.2.2) */
@@ -160,6 +161,116 @@
 }
 
 /* ======================================================================
+   3 · PICK YOUR ROOM — four floating doorways (liquid arches) to the sector pages
+   ====================================================================== */
+[data-page="home"] .home-rooms { padding-top: calc(var(--section) * 0.72); }
+[data-page="home"] .home-rooms__head { align-items: end; margin-bottom: clamp(56px, 7vw, 116px); }
+[data-page="home"] .home-rooms__heading { grid-column: 1 / 8; }
+[data-page="home"] .home-rooms__eyebrow { margin-bottom: clamp(16px, 2vw, 28px); color: var(--ink-3); }
+[data-page="home"] .home-rooms__intro { grid-column: 9 / 13; padding-bottom: 0.4em; }
+
+[data-page="home"] .home-rooms__list {
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+  column-gap: clamp(16px, 2.6vw, 44px); align-items: start;
+}
+.js-motion [data-page="home"] .home-rooms__item { opacity: 0; }
+/* staggered, like four things floating at different depths */
+[data-page="home"] .home-rooms__item:nth-child(2) { margin-top: clamp(48px, 7vw, 120px); }
+[data-page="home"] .home-rooms__item:nth-child(3) { margin-top: clamp(16px, 2.2vw, 36px); }
+[data-page="home"] .home-rooms__item:nth-child(4) { margin-top: clamp(64px, 9.5vw, 160px); }
+
+[data-page="home"] .home-rooms__card {
+  display: block; position: relative; color: var(--ink); text-align: center;
+  border-radius: var(--r-lg); -webkit-tap-highlight-color: transparent;
+}
+[data-page="home"] .home-rooms__card:focus-visible { outline-offset: 10px; }
+[data-page="home"] .home-rooms__visual { position: relative; }
+
+/* the doorway: a soft arch whose crown drifts like liquid (motion.js runs .blob only while it's on screen) */
+[data-page="home"] .home-rooms__img.blob,
+[data-page="home"] .home-rooms__img {
+  border-radius: 50% 50% 26px 26px / 40% 40% 26px 26px;
+  box-shadow: var(--shadow-soft);
+}
+.js-motion [data-page="home"] .home-rooms__img.blob { animation-name: home-arch; }
+[data-page="home"] .home-rooms__item:nth-child(4) .home-rooms__img.blob { animation-duration: 24s; animation-delay: -5s; }
+@keyframes home-arch {
+  0%   { border-radius: 50% 50% 26px 26px / 40% 40% 26px 26px; }
+  25%  { border-radius: 57% 43% 30px 22px / 45% 36% 28px 24px; }
+  50%  { border-radius: 46% 54% 24px 30px / 37% 44% 24px 30px; }
+  75%  { border-radius: 53% 47% 28px 26px / 43% 38% 30px 24px; }
+  100% { border-radius: 44% 56% 26px 28px / 38% 45% 26px 28px; }
+}
+[data-page="home"] .home-rooms__img > img { transition: opacity 0.5s var(--ease-out), transform 1.2s var(--ease-out); }
+
+/* the door plaque: the room's hour, on the threshold */
+[data-page="home"] .home-rooms__plaque {
+  --h: 42px;
+  position: absolute; left: 0; right: 0; bottom: calc(var(--h) / -2); z-index: 1;
+  width: max-content; margin-inline: auto;                          /* centred without a transform (the intro tweens it) */
+  display: flex; align-items: center; gap: 10px;
+  height: var(--h); padding: 0 18px 0 15px; border-radius: 999px;
+  background: var(--paper); color: var(--ink); box-shadow: var(--shadow-soft);
+  font-size: 0.875rem; font-weight: 500; letter-spacing: 0.1em; white-space: nowrap;
+  transition: background-color var(--t-ui) var(--ease-cut), color var(--t-ui) var(--ease-cut);
+}
+[data-page="home"] .home-rooms__dot { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--accent, var(--green)); }
+
+
+[data-page="home"] .home-rooms__text { padding-top: clamp(40px, 3.6vw, 52px); }
+[data-page="home"] .home-rooms__time { color: var(--ink-3); }
+[data-page="home"] .home-rooms__name {
+  display: inline; padding-bottom: 0.04em;
+  background: linear-gradient(currentColor, currentColor) 50% 100% / 0% 1px no-repeat;
+  transition: background-size var(--t-ui) var(--ease-cut);
+}
+[data-page="home"] .home-rooms__card:focus-visible .home-rooms__name { background-size: 100% 1px; }
+[data-page="home"] .home-rooms__card:focus-visible .home-rooms__plaque { background: var(--green-deep); color: var(--on-dark); }
+[data-page="home"] .home-rooms__name::before { content: ""; display: block; height: 10px; }   /* the gap above an inline heading */
+[data-page="home"] .home-rooms__line { max-width: 24ch; margin: 12px auto 0; text-wrap: balance; }
+[data-page="home"] .home-rooms__nobr { white-space: nowrap; }
+[data-page="home"] .home-rooms__go {
+  display: inline-flex; align-items: center; gap: 8px; margin-top: 16px;
+  font-size: 0.8125rem; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase; color: var(--green);
+}
+[data-page="home"] .home-rooms__go .arr { display: inline-block; transition: transform var(--t-ui) var(--ease-cut); }
+/* hover only where there is a real pointer (a tap must not leave a card looking "on") */
+@media (hover: hover) and (pointer: fine) {
+  [data-page="home"] .home-rooms__card:hover .home-rooms__img > img { transform: scale(1.06); }
+  [data-page="home"] .home-rooms__card:hover .home-rooms__plaque { background: var(--green-deep); color: var(--on-dark); }
+  [data-page="home"] .home-rooms__card:hover .home-rooms__name { background-size: 100% 1px; }
+  [data-page="home"] .home-rooms__card:hover .home-rooms__go .arr { transform: translateX(5px); }
+}
+
+[data-page="home"] .home-rooms__foot { margin-top: clamp(72px, 8vw, 132px); text-align: center; }
+[data-page="home"] .home-rooms__foot .text-link { margin-left: 0.35em; padding-block: 10px; background-position: 0 calc(100% - 10px); color: var(--ink); white-space: nowrap; }
+
+@media (max-width: 1200px) {
+  [data-page="home"] .home-rooms__plaque { --h: 38px; padding: 0 14px 0 12px; gap: 8px; font-size: 0.8125rem; }
+}
+@media (max-width: 900px) {
+  [data-page="home"] .home-rooms__heading, [data-page="home"] .home-rooms__intro { grid-column: 1 / -1; }
+  [data-page="home"] .home-rooms__intro { margin-top: 24px; }
+  [data-page="home"] .home-rooms__list { grid-template-columns: 1fr 1fr; row-gap: clamp(48px, 9vw, 72px); }
+  /* two columns; the right one sits lower. Grid rows would line the pairs up, so offset each card instead */
+  [data-page="home"] .home-rooms__item:nth-child(n) { margin-top: 0; }
+  [data-page="home"] .home-rooms__item:nth-child(2) { margin-top: clamp(40px, 9vw, 80px); }
+  [data-page="home"] .home-rooms__item:nth-child(3) { margin-top: clamp(-24px, -3vw, -12px); }
+  [data-page="home"] .home-rooms__item:nth-child(4) { margin-top: clamp(16px, 5vw, 48px); }
+}
+@media (max-width: 600px) {
+  [data-page="home"] .home-rooms__list { column-gap: 14px; }
+  [data-page="home"] .home-rooms__name { font-size: 1.75rem; }
+  [data-page="home"] .home-rooms__text { padding-top: 32px; }
+  [data-page="home"] .home-rooms__line { font-size: 0.875rem; margin-top: 8px; }
+  [data-page="home"] .home-rooms__go { margin-top: 10px; min-height: 24px; }
+  [data-page="home"] .home-rooms__plaque { --h: 34px; padding: 0 12px 0 10px; gap: 7px; font-size: 0.75rem; letter-spacing: 0.08em; }
+  [data-page="home"] .home-rooms__dot { width: 7px; height: 7px; }
+  [data-page="home"] .home-rooms__foot { text-align: left; }
+  [data-page="home"] .home-rooms__foot .text-link { margin-left: 0; }
+}
+
+/* ======================================================================
    4 · SELECTED WORK — green-deep, 100svh, image stack under a text index
    ====================================================================== */
 [data-page="home"] .home-work {
@@ -272,7 +383,7 @@
 [data-page="home"] .home-what__media { position: relative; }
 [data-page="home"] .home-what__text { max-width: 30rem; }
 [data-page="home"] .home-what__kicker { display: flex; align-items: center; gap: 12px; color: var(--ink-3); margin-bottom: clamp(14px, 1.6vw, 22px); }
-[data-page="home"] .home-what__kicker::before { content: ""; width: 7px; height: 7px; border-radius: 2px; background: var(--green); flex: none; }
+[data-page="home"] .home-what__kicker::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--green); flex: none; }
 [data-page="home"] .home-what__title a {
   display: inline-flex; align-items: baseline; gap: 0.28em;
   background: linear-gradient(currentColor, currentColor) 0 96% / 0% 1px no-repeat;
@@ -316,7 +427,7 @@
   [data-page="home"] .home-what__side { grid-column: 8 / 13; padding-left: var(--gutter); }
   [data-page="home"] .home-what__inset { width: 62%; }
 }
-[data-page="home"] .home-what__cta { display: flex; justify-content: flex-end; margin-top: clamp(72px, 8vw, 128px); padding-top: 28px; border-top: 1px solid var(--line); }
+[data-page="home"] .home-what__cta { display: flex; justify-content: flex-end; margin-top: clamp(72px, 8vw, 128px); }
 
 @media (max-width: 900px) {
   [data-page="home"] .home-what__heading, [data-page="home"] .home-what__intro { grid-column: 1 / -1; }
@@ -352,15 +463,15 @@
   [data-page="home"] .home-process__aside { flex-direction: column; align-items: flex-start; gap: 24px; }
 }
 [data-page="home"] .home-process__rail { position: relative; margin-top: clamp(72px, 9vw, 140px); padding-top: 44px; }
-[data-page="home"] .home-process__track { position: absolute; left: 0; right: 0; top: 0; height: 1px; background: var(--line-strong); }
-[data-page="home"] .home-process__fill { position: absolute; inset: 0; background: var(--green); transform-origin: 0 50%; }
+[data-page="home"] .home-process__track { position: absolute; left: 0; right: 0; top: -1px; height: 3px; border-radius: 3px; background: rgb(var(--ink-rgb) / 0.1); overflow: hidden; }
+[data-page="home"] .home-process__fill { position: absolute; inset: 0; border-radius: inherit; background: var(--green); transform-origin: 0 50%; }
 [data-page="home"] .home-process__steps { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); column-gap: var(--gutter); counter-reset: none; }
 [data-page="home"] .home-process__step { position: relative; padding-right: 8px; }
 [data-page="home"] .home-process__mark {
-  position: absolute; left: 0; top: -49px; width: 11px; height: 11px; border-radius: 3px;
-  border: 1px solid var(--green); background: var(--paper-2);
+  position: absolute; left: -2px; top: -51px; width: 15px; height: 15px; border-radius: 50%;
+  background: var(--paper); box-shadow: 0 0 0 1px rgb(var(--green-rgb) / 0.55), 0 6px 14px -6px rgb(var(--deep-rgb) / 0.45);
 }
-[data-page="home"] .home-process__mark > span { position: absolute; inset: 2px; border-radius: 1.5px; background: var(--green); }
+[data-page="home"] .home-process__mark > span { position: absolute; inset: 4px; border-radius: 50%; background: var(--green); }
 [data-page="home"] .home-process__n { display: block; color: var(--green); }
 [data-page="home"] .home-process__name { margin-top: 14px; }
 [data-page="home"] .home-process__line { margin-top: 10px; max-width: 24ch; }
@@ -369,10 +480,10 @@
   [data-page="home"] .home-process__heading, [data-page="home"] .home-process__aside { grid-column: 1 / -1; }
   [data-page="home"] .home-process__aside { margin-top: 28px; flex-direction: column; align-items: flex-start; gap: 28px; }
   [data-page="home"] .home-process__rail { padding-top: 0; padding-left: 40px; }
-  [data-page="home"] .home-process__track { top: 6px; bottom: 6px; left: 5px; right: auto; width: 1px; height: auto; }
+  [data-page="home"] .home-process__track { top: 6px; bottom: 6px; left: 4px; right: auto; width: 3px; height: auto; }
   [data-page="home"] .home-process__fill { transform-origin: 50% 0; }
   [data-page="home"] .home-process__steps { grid-template-columns: minmax(0, 1fr); row-gap: 36px; }
-  [data-page="home"] .home-process__mark { left: -40px; top: 2px; }
+  [data-page="home"] .home-process__mark { left: -42px; top: 1px; }
   [data-page="home"] .home-process__name { margin-top: 8px; }
   [data-page="home"] .home-process__line { max-width: 36ch; }
 }
@@ -380,18 +491,15 @@
 /* ======================================================================
    7 · NUMBERS + QUOTE
    ====================================================================== */
-[data-page="home"] .home-numbers__head {
-  display: flex; align-items: center; gap: 14px;
-  padding-bottom: 20px; border-bottom: 1px solid var(--line);
-}
+[data-page="home"] .home-numbers__head { display: flex; align-items: center; gap: 14px; padding-bottom: clamp(22px, 2.4vw, 36px); }
 [data-page="home"] .home-numbers__head .t-label { color: var(--ink-3); }
-[data-page="home"] .home-numbers__list { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+[data-page="home"] .home-numbers__list { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--gutter); align-items: start; }
 [data-page="home"] .home-numbers__item {
-  padding: clamp(28px, 3.2vw, 48px) var(--gutter) 0;
-  border-left: 1px solid var(--line);
+  padding: clamp(24px, 2.6vw, 40px) clamp(20px, 2.2vw, 34px) clamp(26px, 2.8vw, 42px);
+  background: var(--paper-2); border-radius: var(--r-lg);
 }
-[data-page="home"] .home-numbers__item:first-child { border-left: 0; padding-left: 0; }
-[data-page="home"] .home-numbers__value { white-space: nowrap; font-variant-numeric: tabular-nums lining-nums; color: var(--ink); }
+[data-page="home"] .home-numbers__item:nth-child(even) { margin-top: clamp(20px, 3vw, 48px); }
+[data-page="home"] .home-numbers__value { font-size: clamp(2.4rem, 4.6vw, 4.9rem); white-space: nowrap; font-variant-numeric: tabular-nums lining-nums; color: var(--ink); }
 [data-page="home"] .home-numbers__num { display: inline-grid; }
 [data-page="home"] .home-numbers__num > * { grid-area: 1 / 1; justify-self: end; }
 [data-page="home"] .home-numbers__ghost { visibility: hidden; }
@@ -416,13 +524,13 @@
 [data-page="home"] .home-quote__link { font-size: 0.9375rem; padding-block: 10px; background-position: 0 calc(100% - 10px); }
 
 @media (max-width: 900px) {
-  [data-page="home"] .home-numbers__list { grid-template-columns: 1fr 1fr; }
-  [data-page="home"] .home-numbers__item { padding-bottom: 28px; }
-  [data-page="home"] .home-numbers__item:nth-child(odd) { border-left: 0; padding-left: 0; }
-  [data-page="home"] .home-numbers__item:nth-child(n + 3) { border-top: 1px solid var(--line); }
+  [data-page="home"] .home-numbers__list { grid-template-columns: 1fr 1fr; row-gap: 14px; }
+  [data-page="home"] .home-numbers__item:nth-child(even) { margin-top: 28px; }
+  [data-page="home"] .home-numbers__item:nth-child(3) { margin-top: -14px; }
 }
 @media (max-width: 600px) {
-  [data-page="home"] .home-numbers__value { font-size: clamp(2.3rem, 10.5vw, 2.8rem); }
+  [data-page="home"] .home-numbers__value { font-size: clamp(2.1rem, 9.6vw, 2.6rem); }
+  [data-page="home"] .home-numbers__item { padding: 20px 16px 22px; border-radius: var(--r-md); }
 }
 
 /* ======================================================================
@@ -486,32 +594,10 @@
   [data-page="home"] .home-cta__body { font-size: 1.0625rem; }
 }
 
-/* ------------------------------------------------------------ integration: "Walk in" moves focus to the walk; no ring around the whole stage */
-[data-page="home"] [data-walk][tabindex="-1"]:focus { outline: none; }
+/* ------------------------------------------------------------ the hero cue moves focus to the build; no ring around the whole section */
+[data-page="home"] [data-build][tabindex="-1"]:focus { outline: none; }
 
 /* ------------------------------------------------------------ reduced motion: every stage is a plain, readable section */
 @media (prefers-reduced-motion: reduce) {
   [data-page="home"] .home-work__slide, [data-page="home"] .home-work__slide > img { transition: none; }
-}
-
-/* ------------------------------------------------------------ prototype: switch between the two versions of the walk */
-[data-page="home"] .home-versions {
-  position: absolute; z-index: 2; right: var(--margin); top: calc(var(--header-h) + 14px);
-  display: flex; align-items: center; gap: 4px; padding: 4px 4px 4px 14px; border-radius: 999px;
-  background: rgb(var(--shade-rgb) / 0.55); border: 1px solid rgb(var(--paper-rgb) / 0.22); color: var(--on-dark);
-  font-size: 12px; letter-spacing: 0.02em;
-}
-[data-page="home"] .home-versions__label { text-transform: uppercase; letter-spacing: 0.18em; font-size: 10px; opacity: 0.75; margin-right: 6px; }
-[data-page="home"] .home-versions__link {
-  display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 12px; border-radius: 999px;
-  color: inherit; text-decoration: none; transition: background-color var(--t-ui) var(--ease-out), color var(--t-ui) var(--ease-out);
-}
-[data-page="home"] .home-versions__link b { font-weight: 600; font-size: 11px; opacity: 0.7; }
-[data-page="home"] .home-versions__link:hover { background: rgb(var(--paper-rgb) / 0.12); }
-[data-page="home"] .home-versions__link:focus-visible { outline: 2px solid var(--sand); outline-offset: 2px; }
-[data-variant="corridor"] .home-versions__link[data-v="corridor"],
-[data-variant="build"] .home-versions__link[data-v="build"] { background: var(--paper); color: var(--green-deep); }
-@media (max-width: 600px) {
-  [data-page="home"] .home-versions { left: var(--margin); right: auto; padding-left: 4px; }
-  [data-page="home"] .home-versions__label { display: none; }
 }

@@ -1,0 +1,105 @@
+/* =====================================================================
+   nav.css — the header's Sectors disclosure and the overlay index's
+   sector list (partials/header.html; behaviour in assets/js/nav.js).
+   Loaded on every page from partials/head.html, after base.css.
+   Tokens only (see base.css). Reduced motion: base.css makes every
+   transition instant, so the panel simply appears.
+   ===================================================================== */
+
+/* ------------------------------------------------------------ the toggle (sits in the header nav, looks like its links) */
+.site-header__inner { position: relative; }
+.nav-sectors { display: flex; align-items: center; }
+.nav-sectors__toggle {
+  position: relative; display: inline-flex; align-items: center; gap: 8px;
+  min-height: 44px; padding-block: 10px; font-size: 0.9375rem; font-weight: 500; line-height: 1.62;
+}
+.nav-sectors__toggle::after {
+  content: ""; position: absolute; left: 0; right: 18px; bottom: 6px; height: 1px; background: currentColor;
+  transform: scaleX(0); transform-origin: right; transition: transform var(--t-ui) var(--ease-cut);
+}
+.nav-sectors__toggle:hover::after, .nav-sectors.is-open .nav-sectors__toggle::after,
+body[data-section="sectors"] .nav-sectors__toggle::after { transform: scaleX(1); transform-origin: left; }
+.nav-sectors__chev {
+  width: 7px; height: 7px; margin-top: -4px;
+  border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor;
+  transform: rotate(45deg); transition: transform var(--t-ui) var(--ease-cut), margin var(--t-ui) var(--ease-cut);
+}
+.nav-sectors.is-open .nav-sectors__chev { transform: rotate(225deg); margin-top: 3px; }
+
+/* ------------------------------------------------------------ the panel: a soft glass card under the nav */
+.nav-sectors__panel {
+  position: absolute; z-index: 2; top: calc(100% - 4px); right: var(--margin);
+  width: min(640px, calc(100vw - 2 * var(--margin)));
+  display: grid; gap: 14px; padding: 18px;
+  border-radius: var(--r-lg); color: var(--ink);
+  background: color-mix(in srgb, var(--paper) 96%, transparent);
+  -webkit-backdrop-filter: blur(16px) saturate(140%); backdrop-filter: blur(16px) saturate(140%);
+  box-shadow: 0 0 0 1px var(--line), var(--shadow-lift);
+  opacity: 0; transform: translateY(-10px) scale(0.985); transform-origin: 72% 0;
+  transition: opacity 0.26s linear, transform 0.5s var(--ease-out);
+}
+.nav-sectors.is-open .nav-sectors__panel { opacity: 1; transform: none; }
+.nav-sectors__head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; padding: 2px 4px 0; }
+.nav-sectors__head .t-label { color: var(--ink-3); }
+.nav-sectors__sub { font-family: var(--f-display); font-style: italic; font-size: 1.125rem; line-height: 1.2; color: var(--ink-2); }
+.nav-sectors__list { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+@media (prefers-reduced-motion: no-preference) {
+  .nav-sectors__list > li { opacity: 0; transform: translateY(10px); transition: opacity 0.3s linear, transform 0.6s var(--ease-out); }
+  .nav-sectors.is-open .nav-sectors__list > li { opacity: 1; transform: none; transition-delay: calc(60ms + var(--i, 0) * 45ms); }
+}
+
+/* the items (override the header nav's link styles: no underline bar, no padding) */
+.site-header__nav a.nav-sectors__item {
+  display: grid; align-content: start; gap: 3px; padding: 0 0 4px; border-radius: var(--r-md); font-size: inherit;
+}
+.site-header__nav a.nav-sectors__item::after { content: none; }
+.site-header__nav a.nav-sectors__item:focus-visible { outline-offset: 4px; border-radius: var(--r-md); }
+.nav-sectors__thumb {
+  display: block; aspect-ratio: 4 / 5; margin-bottom: 9px; overflow: hidden;
+  border-radius: var(--r-md); background: var(--paper-3); isolation: isolate;
+  transition: border-radius 0.9s var(--ease-out);
+}
+.nav-sectors__thumb img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.9s var(--ease-out); }
+.nav-sectors__time { display: inline-flex; align-items: center; gap: 7px; color: var(--ink-3); }
+.nav-sectors__time::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--accent, var(--green)); }
+.nav-sectors__name { font-family: var(--f-display); font-size: 1.5rem; line-height: 1.05; letter-spacing: -0.01em; transition: color var(--t-micro); }
+.nav-sectors__item[aria-current="page"] .nav-sectors__name { color: var(--green); }
+@media (hover: hover) and (pointer: fine) {
+  .nav-sectors__item:hover .nav-sectors__thumb { border-radius: 30px 16px 34px 18px / 22px 30px 16px 28px; }
+  .nav-sectors__item:hover .nav-sectors__thumb img { transform: scale(1.05); }
+  .nav-sectors__item:hover .nav-sectors__name { color: var(--green); }
+}
+.site-header__nav a.nav-sectors__all { justify-self: end; display: inline-flex; gap: 0.5em; margin-right: 4px; padding-block: 8px; font-size: 0.875rem; }
+.site-header__nav a.nav-sectors__all::after { bottom: 4px; }
+.nav-sectors__all .arr { transition: transform var(--t-ui) var(--ease-cut); }
+.nav-sectors__all:hover .arr { transform: translateX(4px); }
+
+/* no JS: the panel opens while the toggle (or a link in it) has focus */
+.no-js .nav-sectors:focus-within .nav-sectors__panel { display: grid !important; opacity: 1; transform: none; }
+
+/* ------------------------------------------------------------ overlay index (≤ 900px): the four sector pages */
+.nav-overlay__sectors { margin-top: 6px; padding-top: 22px; border-top: 1px solid var(--line-dark); }
+.nav-overlay__sectors-label { color: var(--on-dark-2); margin-bottom: 14px; }
+.nav-overlay__sector-list { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.nav-overlay__sector { display: grid; gap: 10px; border-radius: var(--r-md); }
+.nav-overlay__sector:focus-visible { outline-offset: 4px; border-radius: var(--r-md); }
+.nav-overlay__thumb { display: block; aspect-ratio: 4 / 5; overflow: hidden; border-radius: var(--r-md); background: rgb(var(--paper-rgb) / 0.08); }
+.nav-overlay__thumb img { width: 100%; height: 100%; object-fit: cover; }
+.nav-overlay__sector-text { display: grid; gap: 4px; }
+.nav-overlay__sector-text .t-label { display: inline-flex; align-items: center; gap: 7px; color: var(--on-dark-2); }
+.nav-overlay__sector-text .t-label::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--sand); }
+.nav-overlay__sector-name { font-family: var(--f-display); font-size: 1.6rem; line-height: 1; transition: color var(--t-micro); }
+.nav-overlay__sector:hover .nav-overlay__sector-name, .nav-overlay__sector[aria-current="page"] .nav-overlay__sector-name { color: var(--sand); }
+@media (max-width: 600px) {
+  .nav-overlay__sector-list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .nav-overlay__sector { grid-template-columns: 52px minmax(0, 1fr); align-items: center; gap: 12px; }
+  .nav-overlay__thumb { aspect-ratio: 1; border-radius: var(--r-sm); }
+  .nav-overlay__sector-name { font-size: 1.3rem; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .js-motion .nav-overlay__sectors-label, .js-motion .nav-overlay__sector-list > li {
+    opacity: 0; transform: translateY(18px); transition: opacity 0.5s linear, transform 0.9s var(--ease-drift);
+  }
+  .js-motion .nav-overlay.is-open .nav-overlay__sectors-label,
+  .js-motion .nav-overlay.is-open .nav-overlay__sector-list > li { opacity: 1; transform: none; transition-delay: calc(0.5s + var(--i, 0) * 60ms); }
+}

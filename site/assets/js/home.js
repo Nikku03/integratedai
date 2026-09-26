@@ -1,14 +1,17 @@
 /*!
- * Two Squares — home page (index.html). Loads after motion.js, site.js, cafe-seq.js, then corridor.js (index.html) or build.js (index-build.html).
+ * Two Squares — home page (index.html). Loads after motion.js, site.js and build.js (the restaurant build,
+ * partials/build-restaurant.html, runs itself).
  *
  * Plain behaviour (works with reduced motion and even if GSAP failed to load):
- *   · "Walk in ↓" cue → scrolls to #walk
+ *   · "See one built ↓" cue → scrolls to the build (its href) and moves focus there
  *   · Selected work: hover / focus picks the image, dims the other names,
  *     and hands the image a view-transition-name on click (case-study hero morph)
  * Motion (registered with Motion.page, only when motion is allowed):
- *   1 hero intro + scroll drift   4 frame reveal, names rise, touch auto-advance
+ *   1 hero intro + scroll drift   3 the four doorways surface one after another
+ *   4 frame reveal, names rise, touch auto-advance
  *   5 media drift (desktop)       6 process rail draws with scroll
- *   8 CTA: a lit window opens to full-bleed green, then the headline rises
+ *   8 CTA: a lit window opens to the rounded deep-olive panel, then the headline rises
+ * Floating (images, data-float columns, the doorways' liquid arches) is motion.js's liquid system.
  */
 (function (w, d) {
   "use strict";
@@ -17,20 +20,20 @@
   const reduced = () => w.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const plainClick = (e) => !(e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey);
 
-  /* ================================================================ walk-in cue */
+  /* ================================================================ hero cue → the build */
   (function cue() {
-    const a = $("[data-walk-in]");
+    const a = $("[data-build-cue]");
     if (!a) return;
     a.addEventListener("click", (e) => {
       if (!plainClick(e)) return;
-      const walk = d.getElementById("walk");
+      const walk = d.getElementById((a.getAttribute("href") || "").slice(1));
       if (!walk) return;
       e.preventDefault();
       const M = w.Motion;
       const y = walk.getBoundingClientRect().top + w.scrollY;
       if (M && M.scrollTo) M.scrollTo(y, { duration: 1.5 });
       else w.scrollTo({ top: y, behavior: reduced() ? "auto" : "smooth" });
-      // keyboard / screen-reader users continue from the walk
+      // keyboard / screen-reader users continue from the build
       if (!walk.hasAttribute("tabindex")) walk.setAttribute("tabindex", "-1");
       walk.focus({ preventScroll: true });
     });
@@ -69,9 +72,17 @@
       dim(on) { list.classList.toggle("is-dim", !!on); },
     };
 
+    // only a pointer that really moves picks a project: when the page scrolls under a resting pointer the browser
+    // sends a synthetic pointerenter, and six full-panel crossfades in a row while scrolling cost frames (measured:
+    // 10–12% slow frames on desktop with them, ~1% without). Moving the mouse over a name picks it as usual.
+    let px = -1, py = -1;
+    w.addEventListener("pointermove", (e) => { px = e.clientX; py = e.clientY; }, { passive: true });
+    const synthetic = (e) => Math.abs(e.clientX - px) + Math.abs(e.clientY - py) < 1 || !!(w.Motion && w.Motion.lenis && w.Motion.lenis.isScrolling);
     links.forEach((a) => {
       const slug = a.dataset.slug;
-      a.addEventListener("pointerenter", (e) => { if (e.pointerType !== "mouse") return; api.set(slug); api.dim(true); });
+      const pick = () => { api.set(slug); api.dim(true); };
+      a.addEventListener("pointerenter", (e) => { if (e.pointerType === "mouse" && !synthetic(e)) pick(); });
+      a.addEventListener("pointermove", (e) => { if (e.pointerType === "mouse" && !(a.classList.contains("is-current") && list.classList.contains("is-dim"))) pick(); });
       a.addEventListener("focus", () => { api.set(slug); api.dim(true); });
       a.addEventListener("click", (e) => {
         if (!plainClick(e)) return;
@@ -167,16 +178,31 @@
         .fromTo(content, { opacity: 1 }, { opacity: 0, duration: 0.62 }, 0);
     }
 
+    /* ---------------------------------------------------------- 3 · pick your room: the doorways surface one after another */
+    const rooms = $("[data-rooms]");
+    if (rooms) {
+      const items = $$(".home-rooms__item", rooms);
+      const figs = items.map((li) => $(".home-rooms__img", li));
+      const plaques = items.map((li) => $(".home-rooms__plaque", li));
+      const texts = items.map((li) => $(".home-rooms__text", li));
+      const st = { trigger: rooms, start: "top 82%", once: true };
+      // rising out of the water: each card comes up from below, the arch opening a touch as it surfaces,
+      // then its plaque and its words (transform / opacity / clip-path only; the float takes over after)
+      gsap.fromTo(items, { y: 90, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 1.2, stagger: 0.1, ease: DRIFT, clearProps: "transform,visibility", scrollTrigger: st });
+      gsap.fromTo(figs, { scale: 0.9 }, { scale: 1, duration: 1.5, stagger: 0.1, ease: EASE, clearProps: "transform", scrollTrigger: st });
+      gsap.fromTo(plaques, { autoAlpha: 0, y: 12 }, { autoAlpha: 1, y: 0, duration: 0.8, stagger: 0.1, ease: DRIFT, delay: 0.45, clearProps: "transform,visibility", scrollTrigger: st });
+      gsap.fromTo(texts, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.9, stagger: 0.1, ease: DRIFT, delay: 0.35, clearProps: "visibility", scrollTrigger: st });
+    }
+
     /* ---------------------------------------------------------- 4 · selected work */
     if (work) {
       const { sec, list } = work;
       const stack = $(".home-work__stack", sec);
       const small = () => w.innerWidth <= 900;
-      // the street ends at night, so the index arrives full bleed under it (dark to dark, no paper
-      // gap between them); without the walk, the frame opens out of the paper as before
-      const fromStreet = !!d.querySelector("[data-corridor], [data-build]");
-      const openClip = () => (fromStreet ? "inset(0% 0% 0% 0%)" : small() ? "inset(5% 4% 0% 4%)" : "inset(9% 6% 0% 6%)");
-      // paper → green: the frame opens out to full bleed as it arrives, and closes back as it leaves
+      // rounded like the panel itself, so the frame never shows a hard corner while it opens
+      const R = () => (M.radiusOf ? M.radiusOf(sec) : "28px");
+      const openClip = () => (small() ? `inset(5% 4% 0% 4% round ${R()})` : `inset(9% 6% 0% 6% round ${R()})`);
+      // paper → deep olive: the frame opens out to the full panel as it arrives, and closes back as it leaves
       gsap.timeline({
         defaults: { ease: "none" },
         scrollTrigger: {
@@ -185,9 +211,9 @@
         },
       })
         .fromTo(sec, { clipPath: openClip },
-          { clipPath: "inset(0% 0% 0% 0%)", duration: 0.5, ease: "power2.out" }, 0)
+          { clipPath: () => `inset(0% 0% 0% 0% round ${R()})`, duration: 0.5, ease: "power2.out" }, 0)
         .fromTo(stack, { scale: 1.16 }, { scale: 1, duration: 0.5, ease: "power1.out" }, 0)
-        .to(sec, { clipPath: () => (small() ? "inset(0% 4% 5% 4%)" : "inset(0% 6% 9% 6%)"), duration: 0.38, ease: "power2.in" }, 0.62)
+        .to(sec, { clipPath: () => (small() ? `inset(0% 4% 5% 4% round ${R()})` : `inset(0% 6% 9% 6% round ${R()})`), duration: 0.38, ease: "power2.in" }, 0.62)
         .to(stack, { scale: 1.06, duration: 0.38 }, 0.62);
 
       // the names rise into place, one after another (masked), once
@@ -271,13 +297,15 @@
         const ww = W < H ? W * 0.62 : Math.min(W * 0.28, H * 0.5);
         const wh = W < H ? H * 0.48 : H * 0.62;
         const x = ((W - ww) / 2 / W) * 100, y = ((H - wh) / 2 / H) * 100;
-        return `inset(${y.toFixed(2)}% ${x.toFixed(2)}% ${y.toFixed(2)}% ${x.toFixed(2)}%)`;
+        // the door has an arched head: its corners are half its width (clamped by the browser), soft like everything else
+        return `inset(${y.toFixed(2)}% ${x.toFixed(2)}% ${y.toFixed(2)}% ${x.toFixed(2)}% round ${Math.round(ww / 2)}px ${Math.round(ww / 2)}px ${R()} ${R()})`;
       };
+      const R = () => (M.radiusOf ? M.radiusOf(stage) : "28px");
       gsap.timeline({
         defaults: { ease: "none" },
         scrollTrigger: { trigger: cta, start: "top 88%", end: "top -38%", scrub: true, invalidateOnRefresh: true },
       })
-        .fromTo(stage, { clipPath: windowClip }, { clipPath: "inset(0% 0% 0% 0%)", duration: 1, ease: "power2.inOut" }, 0)
+        .fromTo(stage, { clipPath: windowClip }, { clipPath: () => `inset(0% 0% 0% 0% round ${R()} ${R()} ${R()} ${R()})`, duration: 1, ease: "power2.inOut" }, 0)
         .fromTo(video, { scale: 1.32 }, { scale: 1, duration: 1, ease: "power1.out" }, 0);
 
       const reveal = { trigger: cta, start: "top -24%", once: true };

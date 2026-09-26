@@ -24,8 +24,16 @@
   const BANNER = {
     "menu-card": "From the corner table: {item}. Change anything below.",
     services: "From the menu: {item}. Change anything below.",
-    // case studies send venue + item too: those prefill the chips and travel in the hidden
-    // "item" field, but the deck only gives a banner for the two menus
+    // case studies send venue + item too (the deck only gives the two menu lines; this one is in its voice)
+    // the build's notes / end actions and the sector pages send venue + from (no item): a short
+    // banner names the room they came from, so the form picks up where the page left off
+    "case-study": "From the {item} project. Change anything below.",
+    build: "From the {item} you watched being built. Change anything below.",
+    sector: "From the {item} page. Change anything below.",
+  };
+  const ROOMS = {
+    build: { cafe: "café", restaurant: "dining room", bar: "bar", shop: "shop" },
+    sector: { cafe: "Cafés", restaurant: "Restaurants", bar: "Bars", shop: "Shops" },
   };
   const SEND = "Send it over", SENDING = "Sending…";
   const NETWORK = "That didn’t send, and it’s our end, not yours. Your details are still here. Try again, or email hello@twosquares.studio.";
@@ -155,9 +163,11 @@
     $("#f-from").value = from || "";
     $("#f-item").value = item ? item.name : itemId;
 
-    if (item && BANNER[from]) {
+    const room = !item && ROOMS[from] ? ROOMS[from][VENUE_ALIASES[venueRaw] || venueRaw] : "";
+    const label = item ? item.name : room;
+    if (label && BANNER[from]) {
       const [pre, post] = BANNER[from].split("{item}");
-      const em = d.createElement("em"); em.textContent = item.name;
+      const em = d.createElement("em"); em.textContent = label;
       bannerText.replaceChildren(pre, em, post);
       banner.hidden = false;
     }

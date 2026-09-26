@@ -191,6 +191,7 @@ html.js-motion [data-page="case"] .case-hero__badge { opacity: 0; visibility: hi
   grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 56px var(--gutter);
 }
 [data-page="case"] .case-details__item { display: grid; align-content: start; gap: 24px; }
+@media (min-width: 601px) { [data-page="case"] .case-details__item { gap: 36px; } }   /* the photo floats: keep its liquid lag clear of the label */
 [data-page="case"] .case-details__name { display: flex; align-items: baseline; gap: 14px; margin-bottom: 14px; color: var(--ink); }
 [data-page="case"] .case-details__num { color: var(--ink-3); font-variant-numeric: tabular-nums; }
 [data-page="case"] .case-details__text .t-lede { max-width: 36ch; }

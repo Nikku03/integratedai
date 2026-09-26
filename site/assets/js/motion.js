@@ -13,9 +13,10 @@
  *
  * ROUND 3 — LIQUID FLOATING (v1.2). Motion only; nothing runs under reduced motion.
  *   Float     every .media figure, and every element with data-float, drifts slowly
- *             and organically (y ±6–10px, x ±2px, rotation ±0.25–0.4°, 6–9 s, its own
- *             phase) like something floating in water. Text columns drift less
- *             (±4px, ±0.12°). data-float="0.5" is calmer, "1.4" livelier; "off" (on
+ *             and organically (y ±6–10px, x ±2px, 6–9 s, its own phase) like something
+ *             floating in water; figures marked data-float also tilt ±0.2–0.35° (the
+ *             auto-floated .media stay level: a page of rotated layers costs frames).
+ *             Text columns drift less (±4px, no tilt). data-float="0.5" is calmer, "1.4" livelier; "off" (on
  *             the element or any ancestor) opts out.
  *             Auto-skipped .media: fills (position absolute/fixed), anything inside a
  *             sticky or fixed stage, anything wider than 90% of the viewport.
@@ -318,10 +319,14 @@
       const f = strength != null ? strength : (el.dataset.float && el.dataset.float !== "on" ? parseFloat(el.dataset.float) : 1);
       const s = isFinite(f) ? Math.max(0, Math.min(f, 2)) : 1;
       const text = !el.classList.contains("media") && !el.querySelector("img, video");
+      // only figures a page marks with data-float tilt; the (many) auto-floated .media drift and lag
+      // but stay level: a rotated layer is resampled on every frame, and a page of them (the work
+      // index, the case-study galleries) measured 5–9% slow frames against ~1% level (qa3)
+      const tilt = !text && el.hasAttribute("data-float");
       const st = {
         el, text,
         amp: (text ? LIQ.ampText : lerp(LIQ.amp[0], LIQ.amp[1], r1)) * s,
-        rot: (text ? LIQ.rotText : lerp(LIQ.rot[0], LIQ.rot[1], r2)) * s * (r3 < 0.5 ? -1 : 1),
+        rot: (tilt ? lerp(LIQ.rot[0], LIQ.rot[1], r2) : LIQ.rotText) * s * (r3 < 0.5 ? -1 : 1),
         w: (Math.PI * 2) / lerp(LIQ.period[0], LIQ.period[1], r3),
         ph: r1 * Math.PI * 2,
         lag: (text ? LIQ.lagText : LIQ.lag) * lerp(0.75, 1.3, r2) * Math.min(s, 1.4),
@@ -380,7 +385,7 @@
         st.v += (st.k * (target - st.y) - LIQ.c * st.v) * sec;
         st.y += st.v * sec;
         stl.translate = `${(fx * a).toFixed(2)}px ${((fy + st.y) * a).toFixed(2)}px`;
-        stl.rotate = `${(fr * a).toFixed(3)}deg`;
+        if (st.rot) stl.rotate = `${(fr * a).toFixed(3)}deg`;
         st.wrote = true;
       });
     };

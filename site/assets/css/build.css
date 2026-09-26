@@ -22,6 +22,12 @@
   --pop-top: calc(var(--header-h) + 14px);
   --pop-room: 138px;                                                 /* the drawing keeps clear of the first note */
 }
+@supports (width: round(1.5px, 1px)) {
+  /* whole pixels: with a fractional inset (14.4px at 1440 wide) the painted corner strips stopped 1px short of the
+     stage's edge and a 1px sliver of the stage showed beside the rounded corner. The guard keeps browsers without
+     round() on the plain inset (a custom property is not validated, so an unsupported value would break `top`). */
+  .build { --bi: round(var(--panel-inset, 12px), 1px); }
+}
 .build__venue[data-venue="cafe"] { --accent: var(--cafe); }
 .build__venue[data-venue="restaurant"] { --accent: var(--restaurant); }
 .build__venue[data-venue="bar"] { --accent: var(--bar); }
@@ -43,7 +49,7 @@
 }
 
 /* ---------------------------------------------------------------- default (no JS, reduced motion): stills + notes */
-.build__track, .build__hud { display: none; }
+.build__track { display: none; }
 .build__venues { position: relative; }
 .build__after { height: 0; outline: none; }
 .build__spread { padding-block: calc(var(--section) * 0.2) calc(var(--section) * 0.5); padding-inline: var(--margin); max-width: var(--maxw); margin-inline: auto; }
@@ -170,6 +176,7 @@ html.js-motion .build__track { display: block; position: relative; height: var(-
 .build__plan .build__plan-svg { width: 100%; height: 100%; max-width: 1100px; margin-inline: auto; }
 /* solid strokes draw themselves (pathLength=1); poché, dashed lines and type fade in */
 html.js-motion .build__plan [data-g] { opacity: 0; }
+html.js-motion .build__plan [data-g="grid"]:not(.pl-draw) { opacity: 1; }   /* the sheet arrives with its grid on, so the stage never slides in empty */
 html.js-motion .build__plan .pl-draw { opacity: 1; stroke-dasharray: 1 2; stroke-dashoffset: 1.01; }   /* 1 2 / 1.01: no round-cap dot before a stroke starts */
 
 /* the paper the sketch is drawn on (the renders' own paper tone, so the sheet and the drawing meet exactly) */
@@ -309,10 +316,10 @@ html.js-motion .build__entry:not([data-i="0"]) { opacity: 0; visibility: hidden;
 .build__pop-close i, .build__pop-close i::after { position: relative; display: block; width: 13px; height: 1.5px; border-radius: 1px; background: currentColor; rotate: 45deg; }
 .build__pop-close i::after { content: ""; position: absolute; inset: 0; rotate: 90deg; }
 /* liquid floating: the note on show (and, on wide screens, the diary) drift like something in water */
-@keyframes build-float {
-  0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
-  30% { transform: translate3d(0, -7px, 0) rotate(-0.4deg); }
-  65% { transform: translate3d(0, 4px, 0) rotate(0.3deg); }
+@keyframes build-float {                      /* level: the note is text, and a tilt would soften its glyphs */
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  30% { transform: translate3d(1px, -7px, 0); }
+  65% { transform: translate3d(-1px, 4px, 0); }
 }
 @keyframes build-float-card {
   0%, 100% { transform: translate3d(0, 0, 0); }
@@ -362,6 +369,9 @@ html.js-motion .build__entry:not([data-i="0"]) { opacity: 0; visibility: hidden;
   .build__end { padding: 12px calc(var(--margin) + var(--card-w) + var(--gutter)); }
   .build__title { font-size: 3.2rem; margin-top: 4px; }
   .build__actions { margin-top: 12px; gap: 8px; }
+  /* the header comes back on scroll-up and would sit over the note (it's 12px from the top here): step it down */
+  .build__pops { transition: translate 0.45s var(--ease-cut, ease); }
+  .site-header:not(.is-hidden) ~ main .build__pops { translate: 0 calc(var(--header-h, 76px) - 6px); }
 }
 
 /* phones: the image on top, the diary in its own band below (the copy never covers what's being built);
@@ -409,16 +419,3 @@ html.js-motion .build__entry:not([data-i="0"]) { opacity: 0; visibility: hidden;
   .build__skip, .build__index li, .build__pop-link, .build__pop-close { transition: none; }
   .build__pop-in, .build__card { animation: none !important; }
 }
-
-/* ---------------------------------------------------------------- the old three-venue section (partials/build.html, index-build.html
-   until it is retired): a sticky skip pill across the venues, and the outro */
-html.js-motion .build__hud { display: block; position: sticky; top: 0; height: 0; z-index: 6; pointer-events: none; }
-.build__hud .build__skip {
-  position: absolute; right: calc(var(--margin) + var(--bi)); top: calc(var(--header-h) + 20px); pointer-events: auto; margin: 0;
-  min-height: 44px; padding: 0 16px; background: var(--paper); color: var(--ink); box-shadow: var(--build-shadow);
-  font-size: 0.75rem; font-weight: 500; letter-spacing: 0.22em; text-transform: uppercase;
-}
-.build__hud .build__skip::before { content: none; }
-.build__card-head:is(p) { justify-content: space-between; }
-.build__outro { padding-block: calc(var(--section) * 0.8) var(--section); text-align: center; display: grid; justify-items: center; gap: 18px; }
-.build__outro-line { text-wrap: balance; }
