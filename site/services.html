@@ -1,0 +1,844 @@
+<!doctype html>
+<html lang="en-IN" class="no-js">
+<head>
+<!-- @partial:head -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>
+/* motion bootstrap — inline, before any stylesheet: pre-animation states only when motion is allowed, fail open */
+(function (d, w) {
+  var r = d.documentElement, motion = w.matchMedia("(prefers-reduced-motion: no-preference)").matches;
+  r.classList.remove("no-js"); r.classList.add("js");
+  try { if (sessionStorage.getItem("ts-intro")) r.classList.add("no-preload"); } catch (e) { r.classList.add("no-preload"); }
+  if (motion) {
+    r.classList.add("js-motion");
+    try { if (!("CSSViewTransitionRule" in w) && sessionStorage.getItem("ts-curtain")) r.classList.add("curtain-in"); } catch (e) {}
+  }
+  w.addEventListener("pagereveal", function (e) { w.__vt = e.viewTransition || null; }, { once: true });
+  setTimeout(function () { if (!w.Motion || !w.Motion.booted) r.classList.remove("curtain-in"); }, 2500);
+  setTimeout(function () { if (!w.Motion || !w.Motion.booted) r.classList.remove("js-motion"); }, 4000);
+})(document, window);
+</script>
+<link rel="preload" href="assets/fonts/InstrumentSerif-normal-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/InstrumentSans-normal-400_600-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="assets/css/fonts.css">
+<link rel="stylesheet" href="assets/css/base.css">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#2c3527">
+<meta property="og:site_name" content="Two Squares — Design &amp; Build">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<!-- /@partial:head -->
+<title>The menu: services — Two Squares Design &amp; Build</title>
+<meta name="description" content="Design &amp; build, design only, build only, counters, refreshes, lighting, signage and multi-site roll-outs for cafés, restaurants, bars and shops.">
+<meta property="og:title" content="The menu: services — Two Squares Design &amp; Build">
+<meta property="og:description" content="Design &amp; build, design only, build only, counters, refreshes, lighting, signage and multi-site roll-outs for cafés, restaurants, bars and shops.">
+<meta property="og:image" content="assets/img/photos/bar-b-03-long-table-candles-1600.webp">
+<link rel="preload" as="image" href="assets/img/photos/bar-b-03-long-table-candles-1600.webp" imagesrcset="assets/img/photos/bar-b-03-long-table-candles-800.webp 800w, assets/img/photos/bar-b-03-long-table-candles-1600.webp 1600w" imagesizes="(max-width: 900px) 100vw, 40vw" fetchpriority="high">
+<link rel="stylesheet" href="assets/css/services.css">
+</head>
+<body data-page="services" data-section="services">
+<!-- @partial:header -->
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header" id="top">
+  <div class="wrap site-header__inner">
+    <a class="site-header__brand" href="index.html" aria-label="Two Squares, home"><span class="logo logo--mark" aria-hidden="true"></span></a>
+    <nav class="site-header__nav" aria-label="Primary">
+      <a href="work.html" data-section="work">Work</a>
+      <a href="services.html" data-section="services">Services</a>
+      <a href="studio.html" data-section="studio">Studio</a>
+      <a href="contact.html" data-section="contact">Contact</a>
+      <a class="btn btn--sm" href="contact.html">Start a project <span class="arr" aria-hidden="true">→</span></a>
+    </nav>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-overlay"><span class="nav-toggle__bars" aria-hidden="true"></span>Index</button>
+  </div>
+</header>
+<div class="nav-overlay" id="nav-overlay" role="dialog" aria-modal="true" aria-label="Site index" data-lenis-prevent>
+  <span class="nav-overlay__shape nav-overlay__shape--a" aria-hidden="true"></span>
+  <span class="nav-overlay__shape nav-overlay__shape--b" aria-hidden="true"></span>
+  <div class="wrap nav-overlay__top">
+    <a href="index.html" aria-label="Two Squares, home"><span class="logo logo--mark" aria-hidden="true"></span></a>
+    <button class="nav-overlay__close" type="button">Close <i aria-hidden="true"></i></button>
+  </div>
+  <nav class="wrap nav-overlay__links" aria-label="Site index">
+    <a class="nav-overlay__link" href="index.html"><span class="t-display-l">Home</span><small>The walk, and the corner table.</small></a>
+    <a class="nav-overlay__link" href="work.html" data-section="work"><span class="t-display-l">Work</span><small>Cafés, restaurants, bars and shops.</small></a>
+    <a class="nav-overlay__link" href="services.html" data-section="services"><span class="t-display-l">The menu</span><small>What we make, and how.</small></a>
+    <a class="nav-overlay__link" href="studio.html" data-section="studio"><span class="t-display-l">Studio</span><small>One team, design and build.</small></a>
+    <a class="nav-overlay__link" href="contact.html" data-section="contact"><span class="t-display-l">Contact</span><small>Tell us about the room.</small></a>
+  </nav>
+  <div class="wrap nav-overlay__foot t-small">
+    <a href="mailto:hello@twosquares.studio">hello@twosquares.studio</a>
+    <span>+91 [00000 00000]</span>
+    <span>By appointment · [City]</span>
+  </div>
+</div>
+<!-- /@partial:header -->
+<main id="main">
+  <section class="svc-hero" aria-labelledby="svc-title">
+    <div class="wrap grid svc-hero__grid">
+      <div class="svc-hero__head">
+        <p class="t-label svc-hero__eyebrow" data-reveal>Services</p>
+        <h1 id="svc-title" class="t-display-xl svc-hero__title" data-split>The <em>menu</em>.</h1>
+      </div>
+      <div class="svc-hero__copy" data-reveal-group>
+        <p class="t-lede" data-reveal>Order one plate or the whole table. Everything comes out of the same kitchen: the same senior team, from the first site walk to opening night.</p>
+        <p class="t-small svc-hero__pricing" data-reveal>Prices on request. You get a range after the site visit and a fixed price after detail design.</p>
+        <p class="svc-hero__actions" data-reveal>
+          <a class="btn btn--solid" href="#menu">See the menu <span class="arr" aria-hidden="true">↓</span></a>
+          <a class="svc-hero__link" href="#process">How we work</a>
+        </p>
+      </div>
+      <div class="svc-hero__side">
+        <figure class="media svc-hero__img" data-reveal="image" style="aspect-ratio:4/5; --lqip:url(data:image/webp;base64,UklGRmAAAABXRUJQVlA4IFQAAAAwBACdASoNABQAPt1cpkyopSOiMAgBEBuJQBOj+ABgcaTiRs2LUd69rAAA/vLbVDTqFpKprNQe6mPqbp76TdEsBFPfoc+HVGfVNAQ0pJus7nSXhAA=); --focus:50% 50%">
+          <img src="assets/img/photos/bar-b-02-candle-table-1600.webp" srcset="assets/img/photos/bar-b-02-candle-table-800.webp 800w, assets/img/photos/bar-b-02-candle-table-1600.webp 1600w" sizes="(max-width: 900px) 50vw, 22vw"
+               width="1067" height="1600" alt="One place setting: a printed menu on a plate, a folded napkin, tea lights and a bud vase of dried flowers." loading="eager" decoding="async">
+        </figure>
+        <p class="t-label svc-hero__cap" aria-hidden="true">One plate</p>
+      </div>
+      <div class="svc-hero__main">
+        <figure class="media svc-hero__img" data-reveal="image" style="aspect-ratio:4/5; --lqip:url(data:image/webp;base64,UklGRmYAAABXRUJQVlA4IFoAAADwAwCdASoNABQAPt1cp0yopSOiMAgBEBuJYgCdACP/5kFQXVDcXDcgAP7AdIwaqJo+FY9YhciBSHZjGhLwx5av6hHKP/Xtp3+Kfu2rVN0Vgteq6yUZit9lVAA=); --focus:50% 50%">
+          <img src="assets/img/photos/bar-b-03-long-table-candles-1600.webp" srcset="assets/img/photos/bar-b-03-long-table-candles-800.webp 800w, assets/img/photos/bar-b-03-long-table-candles-1600.webp 1600w" sizes="(max-width: 900px) 100vw, 40vw"
+               width="1067" height="1600" alt="A long ash table set for dinner by candlelight, a folded napkin and a printed menu at every place." loading="eager" fetchpriority="high" decoding="async">
+        </figure>
+        <p class="t-label svc-hero__cap" aria-hidden="true">The whole table</p>
+      </div>
+    </div>
+  </section>
+  <section class="svc-menu on-sand" id="menu" aria-label="The menu">
+    <div class="wrap grid svc-menu__layout">
+      <nav class="svc-index" aria-label="Courses">
+        <p class="t-label svc-index__title" aria-hidden="true">Menu</p>
+        <ol>
+          <li><a href="#to-start" data-course-link="to-start"><span class="svc-index__name">To start</span><span class="svc-index__leader" aria-hidden="true"></span><span class="svc-index__count"><span class="sr-only">, </span>02<span class="sr-only"> items</span></span></a></li>
+          <li><a href="#mains" data-course-link="mains"><span class="svc-index__name">Mains</span><span class="svc-index__leader" aria-hidden="true"></span><span class="svc-index__count"><span class="sr-only">, </span>03<span class="sr-only"> items</span></span></a></li>
+          <li><a href="#small-plates" data-course-link="small-plates"><span class="svc-index__name">Small plates</span><span class="svc-index__leader" aria-hidden="true"></span><span class="svc-index__count"><span class="sr-only">, </span>04<span class="sr-only"> items</span></span></a></li>
+          <li><a href="#for-the-table" data-course-link="for-the-table"><span class="svc-index__name">For the table</span><span class="svc-index__leader" aria-hidden="true"></span><span class="svc-index__count"><span class="sr-only">, </span>01<span class="sr-only"> item</span></span></a></li>
+          <li><a href="#to-finish" data-course-link="to-finish"><span class="svc-index__name">To finish</span><span class="svc-index__leader" aria-hidden="true"></span><span class="svc-index__count"><span class="sr-only">, </span>01<span class="sr-only"> item</span></span></a></li>
+        </ol>
+      </nav>
+      <article class="menu-sheet" data-menu-sheet aria-labelledby="menu-title">
+        <div class="menu-sheet__paper" aria-hidden="true"></div>
+        <header class="menu-sheet__masthead" data-flip>
+          <h2 class="menu-sheet__title" id="menu-title"><span class="logo logo--mark" aria-hidden="true"></span><span class="sr-only">Two Squares</span></h2>
+          <p class="t-label menu-sheet__sub">Design &amp; Build · Est. 2016</p>
+          <span class="menu-sheet__rule" aria-hidden="true"></span>
+        </header>
+        <section class="menu-sheet__course" id="to-start" aria-labelledby="to-start-title" data-course>
+          <header class="menu-sheet__course-head" data-flip>
+            <span class="menu-sheet__ornament" aria-hidden="true"><i></i><i></i></span>
+            <h3 class="menu-sheet__course-title" id="to-start-title">To start</h3>
+            <p class="menu-sheet__course-note">Before you sign anything.</p>
+          </header>
+          <ul class="menu-sheet__items">
+            <li class="menu-item" id="site-visit" data-flip data-menu-item>
+              <h4 class="menu-item__head">
+                <button class="menu-item__toggle" type="button" id="site-visit-btn" aria-expanded="false" aria-controls="site-visit-panel">
+                  <span class="menu-item__name">Site visit &amp; feasibility</span>
+                  <span class="menu-item__leader" aria-hidden="true"></span>
+                  <span class="menu-item__price">On request<span class="menu-item__mark" aria-hidden="true">*</span></span>
+                  <span class="menu-item__icon" aria-hidden="true"></span>
+                </button>
+              </h4>
+              <p class="menu-item__desc">Will this site work, what will it cost, and how long will it take?</p>
+              <div class="menu-item__panel qa-ignore-overlap" id="site-visit-panel" role="region" aria-labelledby="site-visit-btn" hidden="until-found">
+                <div class="menu-item__detail">
+                  <div class="menu-item__includes">
+                    <p class="t-label">Includes</p>
+                    <ul>
+                      <li>A walk-round with you, at service time if the site is already trading</li>
+                      <li>Measured survey and photo record</li>
+                      <li>Services check: power, water, drainage, gas and a route for extraction</li>
+                      <li>A capacity test: covers or seats against your target</li>
+                      <li>A budget range, a programme and the red flags to raise before you sign</li>
+                    </ul>
+                  </div>
+                  <div class="menu-item__aside">
+                    <dl class="menu-item__facts">
+                      <div><dt class="t-label">Typically</dt><dd>1–2 weeks</dd></div>
+                      <div><dt class="t-label">From</dt><dd>On request</dd></div>
+                    </dl>
+                    <a class="btn btn--solid menu-item__order" href="contact.html?service=feasibility&amp;stage=looking&amp;from=services&amp;item=site-visit" aria-label="Order this: enquire about Site visit &amp; feasibility">Order this <span class="arr" aria-hidden="true">→</span></a>
+                  </div>
+                </div>
+              </div>
+            </li>
+            <li class="menu-item" id="test-fit" data-flip data-menu-item>
+              <h4 class="menu-item__head">
+                <button class="menu-item__toggle" type="button" id="test-fit-btn" aria-expanded="false" aria-controls="test-fit-panel">
+                  <span class="menu-item__name">The test-fit</span>
+                  <span class="menu-item__leader" aria-hidden="true"></span>
+                  <span class="menu-item__price">On request<span class="menu-item__mark" aria-hidden="true">*</span></span>
+                  <span class="menu-item__icon" aria-hidden="true"></span>
+                </button>
+              </h4>
+              <p class="menu-item__desc">Three ways the room could work, on a floor plan you’re considering.</p>
+              <div class="menu-item__panel qa-ignore-overlap" id="test-fit-panel" role="region" aria-labelledby="test-fit-btn" hidden="until-found">
+                <div class="menu-item__detail">
+                  <div class="menu-item__includes">
+                    <p class="t-label">Includes</p>
+                    <ul>
+                      <li>Three layout options, each with a cover count</li>
+                      <li>Counter, kitchen and back-of-house positions</li>
+                      <li>Guest flow and service flow drawn over each option</li>
+                      <li>A one-page note on what each option gives you and what it costs you</li>
+                    </ul>
+                  </div>
+                  <div class="menu-item__aside">
+                    <dl class="menu-item__facts">
+                      <div><dt class="t-label">Typically</dt><dd>1 week</dd></div>
+                      <div><dt class="t-label">From</dt><dd>On request</dd></div>
+                    </dl>
+                    <a class="btn btn--solid menu-item__order" href="contact.html?service=feasibility&amp;stage=looking&amp;from=services&amp;item=test-fit" aria-label="Order this: enquire about The test-fit">Order this <span class="arr" aria-hidden="true">→</span></a>
+                  </div>
+                </div>
+              </div>
+            </li>
+          </ul>
+        </section>
+        <section class="menu-sheet__course" id="mains" aria-labelledby="mains-title" data-course>
+          <header class="menu-sheet__course-head" data-flip>
+            <span class="menu-sheet__ornament" aria-hidden="true"><i></i><i></i></span>
+            <h3 class="menu-sheet__course-title" id="mains-title">Mains</h3>
+            <p class="menu-sheet__course-note">Whole rooms, start to finish.</p>
+          </header>
+          <ul class="menu-sheet__items">
+            <li class="menu-item" id="whole-venue" data-flip data-menu-item>
+              <h4 class="menu-item__head">
+                <button class="menu-item__toggle" type="button" id="whole-venue-btn" aria-expanded="false" aria-controls="whole-venue-panel">
+                  <span class="menu-item__name">The whole venue, designed &amp; built</span>
+                  <span class="menu-item__leader" aria-hidden="true"></span>
+                  <span class="menu-item__price">On request<span class="menu-item__mark" aria-hidden="true">*</span></span>
+                  <span class="menu-item__icon" aria-hidden="true"></span>
+                </button>
+              </h4>
+              <p class="menu-item__desc">One team from the empty shell to opening night. The house speciality.</p>
+              <div class="menu-item__panel qa-ignore-overlap" id="whole-venue-panel" role="region" aria-labelledby="whole-venue-btn" hidden="until-found">
+                <div class="menu-item__detail">
+                  <div class="menu-item__includes">
+                    <p class="t-label">Includes</p>
+                    <ul>
+                      <li>Concept, layout and a 3D walk-through</li>
+                      <li>Full drawings: joinery, lighting, finishes, FF&amp;E</li>
+                      <li>A fixed price after detail design, on one contract</li>
+                      <li>Our site lead, our trades and a weekly site walk with you</li>
+                      <li>Snagging, dressing, opening night, and a return visit at 90 days</li>
+                    </ul>
+                  </div>
+                  <div class="menu-item__aside">
+                    <dl class="menu-item__facts">
+                      <div><dt class="t-label">Typically</dt><dd>12–28 weeks, depending on size and kitchen</dd></div>
+                      <div><dt class="t-label">From</dt><dd>On request</dd></div>
+                    </dl>
+                    <a class="btn btn--solid menu-item__order" href="contact.html?service=whole-venue&amp;from=services&amp;item=whole-venue" aria-label="Order this: enquire about The whole venue, designed &amp; built">Order this <span class="arr" aria-hidden="true">→</span></a>
+                  </div>
+                </div>
+              </div>
+            </li>
+            <li class="menu-item" id="design-only" data-flip data-menu-item>
+              <h4 class="menu-item__head">
+                <button class="menu-item__toggle" type="button" id="design-only-btn" aria-expanded="false" aria-controls="design-only-panel">
+                  <span class="menu-item__name">Design only</span>
+                  <span class="menu-item__leader" aria-hidden="true"></span>
+                  <span class="menu-item__price">On request<span class="menu-item__mark" aria-hidden="true">*</span></span>
+                  <span class="menu-item__icon" aria-hidden="true"></span>
+                </button>
+              </h4>
+              <p class="menu-item__desc">The full design, drawn so any good contractor can build it.</p>
+              <div class="menu-item__panel qa-ignore-overlap" id="design-only-panel" role="region" aria-labelledby="design-only-btn" hidden="until-found">
+                <div class="menu-item__detail">
+                  <div class="menu-item__includes">
+                    <p class="t-label">Includes</p>
+                    <ul>
+                      <li>Concept, layout and a 3D walk-through</li>
+                      <li>Tender-ready drawings and specifications</li>
+                      <li>Lighting design and an FF&amp;E schedule</li>
+                      <li>Help choosing and briefing a contractor</li>
+                      <li>Site visits at the moments that decide how it turns out</li>
+                    </ul>
+                  </div>
+                  <div class="menu-item__aside">
+                    <dl class="menu-item__facts">
+                      <div><dt class="t-label">Typically</dt><dd>6–12 weeks</dd></div>
+                      <div><dt class="t-label">From</dt><dd>On request</dd></div>
+                    </dl>
+                    <a class="btn btn--solid menu-item__order" href="contact.html?service=design-only&amp;from=services&amp;item=design-only" aria-label="Order this: enquire about Design only">Order this <span class="arr" aria-hidden="true">→</span></a>
+                  </div>
+                </div>
+              </div>
+            </li>
+            <li class="menu-item" id="build-only" data-flip data-menu-item>
+              <h4 class="menu-item__head">
+                <button class="menu-item__toggle" type="button" id="build-only-btn" aria-expanded="false" aria-controls="build-only-panel">
+                  <span class="menu-item__name">Build only</span>
+                  <span class="menu-item__leader" aria-hidden="true"></span>
+                  <span class="menu-item__price">On request<span class="menu-item__mark" aria-hidden="true">*</span></span>
+                  <span class="menu-item__icon" aria-hidden="true"></span>
+                </button>
+              </h4>
+              <p class="menu-item__desc">You have drawings. We price them properly and build them on time.</p>
+              <div class="menu-item__panel qa-ignore-overlap" id="build-only-panel" role="region" aria-labelledby="build-only-btn" hidden="until-found">
+                <div class="menu-item__detail">
+                  <div class="menu-item__includes">
+                    <p class="t-label">Includes</p>
+                    <ul>
+                      <li>A buildability review, with a note on where the drawings will cost you</li>
+                      <li>An honest price and a programme, with long-lead items ordered early</li>
+                      <li>Our site lead, our trades and a daily site diary</li>
+                      <li>Your designer kept in the loop on every change</li>
+                      <li>Snagging, handover documents and a return visit at 90 days</li>
+                    </ul>
+                  </div>
+                  <div class="menu-item__aside">
+                    <dl class="menu-item__facts">
+                      <div><dt class="t-label">Typically</dt><dd>6–20 weeks on site</dd></div>
+                      <div><dt class="t-label">From</dt><dd>On request</dd></div>
+                    </dl>
+                    <a class="btn btn--solid menu-item__order" href="contact.html?service=build-only&amp;stage=drawings&amp;from=services&amp;item=build-only" aria-label="Order this: enquire about Build only">Order this <span class="arr" aria-hidden="true">→</span></a>
+                  </div>
+                </div>
+              </div>
+            </li>
+          </ul>
+        </section>
+        <section class="menu-sheet__course" id="small-plates" aria-labelledby="small-plates-title" data-course>
+          <header class="menu-sheet__course-head" data-flip>
+            <span class="menu-sheet__ornament" aria-hidden="true"><i></i><i></i></span>
+            <h3 class="menu-sheet__course-title" id="small-plates-title">Small plates</h3>
+            <p class="menu-sheet__course-note">One part of the room, done properly.</p>
+          </header>
+          <ul class="menu-sheet__items">
+            <li class="menu-item" id="counter" data-flip data-menu-item>
+              <h4 class="menu-item__head">
+                <button class="menu-item__toggle" type="button" id="counter-btn" aria-expanded="false" aria-controls="counter-panel">
+                  <span class="menu-item__name">The counter or workstation</span>
+                  <span class="menu-item__leader" aria-hidden="true"></span>
+                  <span class="menu-item__price">On request<span class="menu-item__mark" aria-hidden="true">*</span></span>
+                  <span class="menu-item__icon" aria-hidden="true"></span>
+                </button>
+              </h4>
+              <p class="menu-item__desc">The few metres that make or break the morning rush.</p>
+              <div class="menu-item__panel qa-ignore-overlap" id="counter-panel" role="region" aria-labelledby="counter-btn" hidden="until-found">
+                <div class="menu-item__detail">
+                  <div class="menu-item__includes">
+                    <p class="t-label">Includes</p>
+                    <ul>
+                      <li>A workflow session with your head barista or bartender</li>
+                      <li>Counter layout: order, make, pick-up, bin</li>
+                      <li>Equipment positions, services and drainage drawn to your machines</li>
+                      <li>Joinery made off-site and installed in days, or nights</li>
+                      <li>Lighting and signage for the counter</li>
+                    </ul>
+                  </div>
+                  <div class="menu-item__aside">
+                    <dl class="menu-item__facts">
+                      <div><dt class="t-label">Typically</dt><dd>3–6 weeks, including 3–7 days on site</dd></div>
+                      <div><dt class="t-label">From</dt><dd>On request</dd></div>
+                    </dl>
+                    <a class="btn btn--solid menu-item__order" href="contact.html?service=counter&amp;from=services&amp;item=counter" aria-label="Order this: enquire about The counter or workstation">Order this <span class="arr" aria-hidden="true">→</span></a>
+                  </div>
+                </div>
+              </div>
+            </li>
+            <li class="menu-item" id="refresh" data-flip data-menu-item>
+              <h4 class="menu-item__head">
+                <button class="menu-item__toggle" type="button" id="refresh-btn" aria-expanded="false" aria-controls="refresh-panel">
+                  <span class="menu-item__name">A refresh</span>
+                  <span class="menu-item__leader" aria-hidden="true"></span>
+                  <span class="menu-item__price">On request<span class="menu-item__mark" aria-hidden="true">*</span></span>
+                  <span class="menu-item__icon" aria-hidden="true"></span>
+                </button>
+              </h4>
+              <p class="menu-item__desc">New light, new seats, new life in the room you already have.</p>
+              <div class="menu-item__panel qa-ignore-overlap" id="refresh-panel" role="region" aria-labelledby="refresh-btn" hidden="until-found">
+                <div class="menu-item__detail">
+                  <div class="menu-item__includes">
+                    <p class="t-label">Includes</p>
+                    <ul>
+                      <li>A walk-through during service to see what’s working and what isn’t</li>
+                      <li>A shortlist of changes, ranked by what each one does for what it costs</li>
+                      <li>Lighting, upholstery, finishes and small joinery</li>
+                      <li>Works phased around trading: nights, your quiet day, or a short closure</li>
+                    </ul>
+                  </div>
+                  <div class="menu-item__aside">
+                    <dl class="menu-item__facts">
+                      <div><dt class="t-label">Typically</dt><dd>2–6 weeks, often without closing</dd></div>
+                      <div><dt class="t-label">From</dt><dd>On request</dd></div>
+                    </dl>
+                    <a class="btn btn--solid menu-item__order" href="contact.html?service=refresh&amp;stage=trading&amp;from=services&amp;item=refresh" aria-label="Order this: enquire about A refresh">Order this <span class="arr" aria-hidden="true">→</span></a>
+                  </div>
+                </div>
+              </div>
+            </li>
+            <li class="menu-item" id="lighting" data-flip data-menu-item>
+              <h4 class="menu-item__head">
+                <button class="menu-item__toggle" type="button" id="lighting-btn" aria-expanded="false" aria-controls="lighting-panel">
+                  <span class="menu-item__name">Lighting only</span>
+                  <span class="menu-item__leader" aria-hidden="true"></span>
+                  <span class="menu-item__price">On request<span class="menu-item__mark" aria-hidden="true">*</span></span>
+                  <span class="menu-item__icon" aria-hidden="true"></span>
+                </button>
+              </h4>
+              <p class="menu-item__desc">Most rooms don’t need a new interior. They need new light.</p>
+              <div class="menu-item__panel qa-ignore-overlap" id="lighting-panel" role="region" aria-labelledby="lighting-btn" hidden="until-found">
+                <div class="menu-item__detail">
+                  <div class="menu-item__includes">
+                    <p class="t-label">Includes</p>
+                    <ul>
+                      <li>A lux and colour-temperature survey, by day and by night</li>
+                      <li>A lighting layout and fitting schedule</li>
+                      <li>Scenes programmed for morning, service and late</li>
+                      <li>Commissioning on site, and a one-page guide for your team</li>
+                    </ul>
+                  </div>
+                  <div class="menu-item__aside">
+                    <dl class="menu-item__facts">
+                      <div><dt class="t-label">Typically</dt><dd>2–4 weeks</dd></div>
+                      <div><dt class="t-label">From</dt><dd>On request</dd></div>
+                    </dl>
+                    <a class="btn btn--solid menu-item__order" href="contact.html?service=lighting&amp;from=services&amp;item=lighting" aria-label="Order this: enquire about Lighting only">Order this <span class="arr" aria-hidden="true">→</span></a>
+                  </div>
+                </div>
+              </div>
+            </li>
+            <li class="menu-item" id="signage" data-flip data-menu-item>
+              <h4 class="menu-item__head">
+                <button class="menu-item__toggle" type="button" id="signage-btn" aria-expanded="false" aria-controls="signage-panel">
+                  <span class="menu-item__name">Signage &amp; brand touchpoints</span>
+                  <span class="menu-item__leader" aria-hidden="true"></span>
+                  <span class="menu-item__price">On request<span class="menu-item__mark" aria-hidden="true">*</span></span>
+                  <span class="menu-item__icon" aria-hidden="true"></span>
+                </button>
+              </h4>
+              <p class="menu-item__desc">Everything a guest reads, touches or photographs.</p>
+              <div class="menu-item__panel qa-ignore-overlap" id="signage-panel" role="region" aria-labelledby="signage-btn" hidden="until-found">
+                <div class="menu-item__detail">
+                  <div class="menu-item__includes">
+                    <p class="t-label">Includes</p>
+                    <ul>
+                      <li>Shopfront and fascia signs, with the drawings for permissions</li>
+                      <li>Wayfinding, menu boards and counter graphics</li>
+                      <li>Menus, table numbers and uniforms, with your brand team</li>
+                      <li>Fabrication and installation</li>
+                    </ul>
+                  </div>
+                  <div class="menu-item__aside">
+                    <dl class="menu-item__facts">
+                      <div><dt class="t-label">Typically</dt><dd>3–6 weeks</dd></div>
+                      <div><dt class="t-label">From</dt><dd>On request</dd></div>
+                    </dl>
+                    <a class="btn btn--solid menu-item__order" href="contact.html?service=signage&amp;from=services&amp;item=signage" aria-label="Order this: enquire about Signage &amp; brand touchpoints">Order this <span class="arr" aria-hidden="true">→</span></a>
+                  </div>
+                </div>
+              </div>
+            </li>
+          </ul>
+        </section>
+        <section class="menu-sheet__course" id="for-the-table" aria-labelledby="for-the-table-title" data-course>
+          <header class="menu-sheet__course-head" data-flip>
+            <span class="menu-sheet__ornament" aria-hidden="true"><i></i><i></i></span>
+            <h3 class="menu-sheet__course-title" id="for-the-table-title">For the table</h3>
+            <p class="menu-sheet__course-note">For operators opening more than one.</p>
+          </header>
+          <ul class="menu-sheet__items">
+            <li class="menu-item" id="rollout" data-flip data-menu-item>
+              <h4 class="menu-item__head">
+                <button class="menu-item__toggle" type="button" id="rollout-btn" aria-expanded="false" aria-controls="rollout-panel">
+                  <span class="menu-item__name">Roll-out for multi-site operators</span>
+                  <span class="menu-item__leader" aria-hidden="true"></span>
+                  <span class="menu-item__price">On request<span class="menu-item__mark" aria-hidden="true">*</span></span>
+                  <span class="menu-item__icon" aria-hidden="true"></span>
+                </button>
+              </h4>
+              <p class="menu-item__desc">One idea, many sites, each one a local.</p>
+              <div class="menu-item__panel qa-ignore-overlap" id="rollout-panel" role="region" aria-labelledby="rollout-btn" hidden="until-found">
+                <div class="menu-item__detail">
+                  <div class="menu-item__includes">
+                    <p class="t-label">Includes</p>
+                    <ul>
+                      <li>A flagship designed and built as the prototype</li>
+                      <li>A design manual and kit of parts: counters, fixtures, finishes, lighting</li>
+                      <li>Site-by-site test-fits and local adaptations</li>
+                      <li>Fixed rates and a supply chain for the repeat items</li>
+                      <li>Our build team or yours, with our quality checks on every site</li>
+                    </ul>
+                  </div>
+                  <div class="menu-item__aside">
+                    <dl class="menu-item__facts">
+                      <div><dt class="t-label">Typically</dt><dd>8 weeks for the kit, then 4–8 weeks per site</dd></div>
+                      <div><dt class="t-label">From</dt><dd>On request</dd></div>
+                    </dl>
+                    <a class="btn btn--solid menu-item__order" href="contact.html?service=rollout&amp;stage=multi&amp;from=services&amp;item=rollout" aria-label="Order this: enquire about Roll-out for multi-site operators">Order this <span class="arr" aria-hidden="true">→</span></a>
+                  </div>
+                </div>
+              </div>
+            </li>
+          </ul>
+        </section>
+        <section class="menu-sheet__course" id="to-finish" aria-labelledby="to-finish-title" data-course>
+          <header class="menu-sheet__course-head" data-flip>
+            <span class="menu-sheet__ornament" aria-hidden="true"><i></i><i></i></span>
+            <h3 class="menu-sheet__course-title" id="to-finish-title">To finish</h3>
+            <p class="menu-sheet__course-note">After opening night.</p>
+          </header>
+          <ul class="menu-sheet__items">
+            <li class="menu-item" id="aftercare" data-flip data-menu-item>
+              <h4 class="menu-item__head">
+                <button class="menu-item__toggle" type="button" id="aftercare-btn" aria-expanded="false" aria-controls="aftercare-panel">
+                  <span class="menu-item__name">Aftercare</span>
+                  <span class="menu-item__leader" aria-hidden="true"></span>
+                  <span class="menu-item__price">On request<span class="menu-item__mark" aria-hidden="true">*</span></span>
+                  <span class="menu-item__icon" aria-hidden="true"></span>
+                </button>
+              </h4>
+              <p class="menu-item__desc">Rooms take a beating. We keep them looking like year one.</p>
+              <div class="menu-item__panel qa-ignore-overlap" id="aftercare-panel" role="region" aria-labelledby="aftercare-btn" hidden="until-found">
+                <div class="menu-item__detail">
+                  <div class="menu-item__includes">
+                    <p class="t-label">Includes</p>
+                    <ul>
+                      <li>A maintenance schedule for finishes, joinery and lighting</li>
+                      <li>Scheduled visits to touch up, re-oil, re-lamp and re-aim</li>
+                      <li>Adjustments once service has tested the room</li>
+                      <li>One number to call when something breaks</li>
+                    </ul>
+                  </div>
+                  <div class="menu-item__aside">
+                    <dl class="menu-item__facts">
+                      <div><dt class="t-label">Typically</dt><dd>Ongoing, by the year</dd></div>
+                      <div><dt class="t-label">From</dt><dd>On request</dd></div>
+                    </dl>
+                    <a class="btn btn--solid menu-item__order" href="contact.html?service=aftercare&amp;stage=trading&amp;from=services&amp;item=aftercare" aria-label="Order this: enquire about Aftercare">Order this <span class="arr" aria-hidden="true">→</span></a>
+                  </div>
+                </div>
+              </div>
+            </li>
+          </ul>
+        </section>
+        <footer class="menu-sheet__foot" data-flip>
+          <span class="menu-sheet__rule" aria-hidden="true"></span>
+          <ul class="menu-sheet__notes">
+          <li><span class="menu-sheet__notemark" aria-hidden="true">*</span>Prices on request. A range after the site visit, a fixed price after detail design.</li>
+          <li><span class="menu-sheet__notemark" aria-hidden="true">†</span>The 90-day return visit comes with everything we build.</li>
+          <li><span class="menu-sheet__notemark" aria-hidden="true">‡</span>Please tell us about any dietary requirements: heritage buildings, mall fit-out rules, a rent-free period that ends in eight weeks.</li>
+          </ul>
+        </footer>
+      </article>
+    </div>
+  </section>
+  <section class="svc-process on-dark" id="process" aria-labelledby="process-title">
+    <div class="wrap">
+      <header class="grid svc-process__intro">
+        <div class="svc-process__head">
+          <p class="t-label svc-process__eyebrow" data-reveal>How it works</p>
+          <h2 class="t-display-l" id="process-title" data-split>Five steps. <em>One team.</em></h2>
+        </div>
+        <p class="t-lede svc-process__lede" data-reveal>The same senior lead runs every step, so nothing gets lost between the drawing and the building.</p>
+      </header>
+      <div class="grid svc-process__stage" data-process>
+        <div class="svc-process__media">
+          <div class="svc-process__frame" aria-hidden="true">
+            <div class="svc-process__layer is-active" data-layer="0">
+              <img src="assets/video/posters/loop-sketch-poster.jpg" width="1280" height="720" alt="" loading="lazy" decoding="async">
+              <video muted loop playsinline preload="none" data-src="assets/video/loop-sketch" aria-hidden="true"></video>
+            </div>
+            <div class="svc-process__layer" data-layer="1">
+              <img src="assets/video/posters/loop-samples-poster.jpg" width="1280" height="720" alt="" loading="lazy" decoding="async">
+              <video muted loop playsinline preload="none" data-src="assets/video/loop-samples" aria-hidden="true"></video>
+            </div>
+            <div class="svc-process__layer" data-layer="2">
+              <img src="assets/video/posters/loop-plane-poster.jpg" width="1280" height="720" alt="" loading="lazy" decoding="async">
+              <video muted loop playsinline preload="none" data-src="assets/video/loop-plane" aria-hidden="true"></video>
+            </div>
+            <div class="svc-process__layer" data-layer="3">
+              <img src="assets/video/posters/loop-tiling-poster.jpg" width="1280" height="720" alt="" loading="lazy" decoding="async">
+              <video muted loop playsinline preload="none" data-src="assets/video/loop-tiling" aria-hidden="true"></video>
+            </div>
+            <div class="svc-process__layer" data-layer="4">
+              <img src="assets/img/photos/rest-b-03-teal-booths-1600.webp" srcset="assets/img/photos/rest-b-03-teal-booths-800.webp 800w, assets/img/photos/rest-b-03-teal-booths-1600.webp 1600w" sizes="55vw" width="1600" height="1067" alt="" loading="lazy" decoding="async">
+            </div>
+          </div>
+          <div class="svc-process__bar">
+            <p class="t-label svc-process__count" aria-hidden="true"><span data-process-n>01</span><span class="svc-process__of">/ 05</span><span data-process-name>Walk</span></p>
+            <span class="svc-process__progress" aria-hidden="true"><span></span></span>
+            <button class="svc-toggle svc-process__pause" type="button" aria-pressed="false" data-process-pause><span class="sr-only">Pause video</span><i aria-hidden="true"></i></button>
+          </div>
+        </div>
+        <ol class="svc-process__steps">
+          <li class="svc-step is-active" data-step="0" data-n="01">
+            <figure class="media svc-step__media">
+              <picture><source media="(min-width: 901px)" srcset="assets/video/posters/loop-sketch-poster.jpg"><img src="assets/video/posters/loop-sketch-sm-poster.jpg" width="600" height="750" alt="" loading="lazy" decoding="async"></picture>
+              <video id="svc-step-video-1" data-autoplay data-src="assets/video/loop-sketch" data-src-sm="assets/video/loop-sketch-sm"
+                     muted loop playsinline preload="none" aria-hidden="true"></video>
+              <button class="svc-toggle" type="button" data-video-toggle="#svc-step-video-1"><span class="sr-only">Pause video</span><i aria-hidden="true"></i></button>
+            </figure>
+            <div class="svc-step__body">
+              <h3 class="svc-step__name t-display-m" data-n="01">Walk</h3>
+              <p class="t-body svc-step__text">We see the site, ideally at the hour it has to work. Survey, services, capacity, red flags. We learn your menu and your service before we pick up a pen.</p>
+              <dl class="svc-step__facts">
+                <div><dt class="t-label">You get</dt><dd>A feasibility note, a budget range and a programme</dd></div>
+                <div><dt class="t-label">Typically</dt><dd>1–2 weeks</dd></div>
+              </dl>
+            </div>
+          </li>
+          <li class="svc-step" data-step="1" data-n="02">
+            <figure class="media svc-step__media">
+              <picture><source media="(min-width: 901px)" srcset="assets/video/posters/loop-samples-poster.jpg"><img src="assets/video/posters/loop-samples-sm-poster.jpg" width="600" height="750" alt="" loading="lazy" decoding="async"></picture>
+              <video id="svc-step-video-2" data-autoplay data-src="assets/video/loop-samples" data-src-sm="assets/video/loop-samples-sm"
+                     muted loop playsinline preload="none" aria-hidden="true"></video>
+              <button class="svc-toggle" type="button" data-video-toggle="#svc-step-video-2"><span class="sr-only">Pause video</span><i aria-hidden="true"></i></button>
+            </figure>
+            <div class="svc-step__body">
+              <h3 class="svc-step__name t-display-m" data-n="02">Design</h3>
+              <p class="t-body svc-step__text">Plan first, then the look. Layout options, concept, palette and a 3D walk-through. The big moves are agreed here, so they don’t move later.</p>
+              <dl class="svc-step__facts">
+                <div><dt class="t-label">You get</dt><dd>A concept pack and an agreed layout</dd></div>
+                <div><dt class="t-label">Typically</dt><dd>3–6 weeks</dd></div>
+              </dl>
+            </div>
+          </li>
+          <li class="svc-step" data-step="2" data-n="03">
+            <figure class="media svc-step__media">
+              <picture><source media="(min-width: 901px)" srcset="assets/video/posters/loop-plane-poster.jpg"><img src="assets/video/posters/loop-plane-sm-poster.jpg" width="600" height="750" alt="" loading="lazy" decoding="async"></picture>
+              <video id="svc-step-video-3" data-autoplay data-src="assets/video/loop-plane" data-src-sm="assets/video/loop-plane-sm"
+                     muted loop playsinline preload="none" aria-hidden="true"></video>
+              <button class="svc-toggle" type="button" data-video-toggle="#svc-step-video-3"><span class="sr-only">Pause video</span><i aria-hidden="true"></i></button>
+            </figure>
+            <div class="svc-step__body">
+              <h3 class="svc-step__name t-display-m" data-n="03">Detail</h3>
+              <p class="t-body svc-step__text">Joinery, lighting, finishes, FF&amp;E and services drawn to the millimetre. Samples on site, a full-size mock-up of anything we can’t afford to get wrong, then the fixed price.</p>
+              <dl class="svc-step__facts">
+                <div><dt class="t-label">You get</dt><dd>A full drawing set and a fixed price on one contract</dd></div>
+                <div><dt class="t-label">Typically</dt><dd>3–6 weeks</dd></div>
+              </dl>
+            </div>
+          </li>
+          <li class="svc-step" data-step="3" data-n="04">
+            <figure class="media svc-step__media">
+              <picture><source media="(min-width: 901px)" srcset="assets/video/posters/loop-tiling-poster.jpg"><img src="assets/video/posters/loop-tiling-sm-poster.jpg" width="600" height="750" alt="" loading="lazy" decoding="async"></picture>
+              <video id="svc-step-video-4" data-autoplay data-src="assets/video/loop-tiling" data-src-sm="assets/video/loop-tiling-sm"
+                     muted loop playsinline preload="none" aria-hidden="true"></video>
+              <button class="svc-toggle" type="button" data-video-toggle="#svc-step-video-4"><span class="sr-only">Pause video</span><i aria-hidden="true"></i></button>
+            </figure>
+            <div class="svc-step__body">
+              <h3 class="svc-step__name t-display-m" data-n="04">Build</h3>
+              <p class="t-body svc-step__text">Our site lead, our trades, one programme. Long-lead items are already on order. You get a weekly site walk and a daily diary, and no calls from the electrician.</p>
+              <dl class="svc-step__facts">
+                <div><dt class="t-label">You get</dt><dd>The room, on the date</dd></div>
+                <div><dt class="t-label">Typically</dt><dd>6–20 weeks</dd></div>
+              </dl>
+            </div>
+          </li>
+          <li class="svc-step" data-step="4" data-n="05">
+            <figure class="media svc-step__media" style="aspect-ratio:3/2; --lqip:url(data:image/webp;base64,UklGRnQAAABXRUJQVlA4IGgAAADwAwCdASoUAA0APt1eqE0opSQiMAgBEBuJQBOgBDzq5x1y9GeQGiVAAMsiV90gXh+XxUZ6HlU0wDoSp2bbNDZOufj0X3RssWUfwm3G+sTOh0pIt276jo0I1hda7x1C9B704gR70noAAA==); --focus:50% 50%">
+              <img src="assets/img/photos/rest-b-03-teal-booths-1600.webp" srcset="assets/img/photos/rest-b-03-teal-booths-800.webp 800w, assets/img/photos/rest-b-03-teal-booths-1600.webp 1600w" sizes="(max-width: 900px) 100vw, 50vw"
+                   width="1600" height="1067" alt="Teal quilted leather booths under white arches, set and waiting, late sun raking across the walnut wall." loading="lazy" decoding="async">
+            </figure>
+            <div class="svc-step__body">
+              <h3 class="svc-step__name t-display-m" data-n="05">Open</h3>
+              <p class="t-body svc-step__text">Snagging, dressing, a walk-through for your team, opening night. Ninety days later we come back to fix whatever service has found.</p>
+              <dl class="svc-step__facts">
+                <div><dt class="t-label">You get</dt><dd>A handover pack and the 90-day return visit</dd></div>
+                <div><dt class="t-label">Typically</dt><dd>Opening week, then day 90</dd></div>
+              </dl>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </div>
+  </section>
+  <section class="svc-faq" id="faq" aria-labelledby="faq-title">
+    <div class="wrap grid">
+      <div class="svc-faq__head">
+        <p class="t-label" data-reveal>Questions</p>
+        <h2 class="t-display-l" id="faq-title" data-split>What owners ask us <em>first</em>.</h2>
+      </div>
+      <div class="svc-faq__list" data-faq>
+        <div class="faq-item" data-flip>
+          <h3 class="faq-item__q">
+            <button type="button" id="faq-1-q" aria-expanded="false" aria-controls="faq-1-a">
+              <span class="faq-item__text">What will it cost?</span>
+              <span class="faq-item__icon" aria-hidden="true"></span>
+            </button>
+          </h3>
+          <div class="faq-item__a qa-ignore-overlap" id="faq-1-a" role="region" aria-labelledby="faq-1-q" hidden="until-found">
+            <div class="faq-item__inner"><p class="t-body">It depends on three things: the size of the space, the state of the shell, and how much is made rather than bought. We’ll tell you on the first call whether your number is realistic, including when it isn’t. After the site visit you get a range; after detail design, a fixed price on one contract. Kitchen equipment, deposits and licence fees sit outside that number, and we’ll help you plan for them.</p></div>
+          </div>
+        </div>
+        <div class="faq-item" data-flip>
+          <h3 class="faq-item__q">
+            <button type="button" id="faq-2-q" aria-expanded="false" aria-controls="faq-2-a">
+              <span class="faq-item__text">How long does it take?</span>
+              <span class="faq-item__icon" aria-hidden="true"></span>
+            </button>
+          </h3>
+          <div class="faq-item__a qa-ignore-overlap" id="faq-2-a" role="region" aria-labelledby="faq-2-q" hidden="until-found">
+            <div class="faq-item__inner"><p class="t-body">A 100–150 m² café usually takes 10–14 weeks from signed design to opening: 4–6 weeks of drawings and approvals, then 6–8 weeks on site. Restaurants and bars with full kitchens and extraction take 16–24 weeks. The build is rarely the critical path. Approvals and long-lead items are: kitchen equipment, custom lighting, stone. We order those early.</p></div>
+          </div>
+        </div>
+        <div class="faq-item" data-flip>
+          <h3 class="faq-item__q">
+            <button type="button" id="faq-3-q" aria-expanded="false" aria-controls="faq-3-a">
+              <span class="faq-item__text">Do you handle licences and permits?</span>
+              <span class="faq-item__icon" aria-hidden="true"></span>
+            </button>
+          </h3>
+          <div class="faq-item__a qa-ignore-overlap" id="faq-3-a" role="region" aria-labelledby="faq-3-q" hidden="until-found">
+            <div class="faq-item__inner"><p class="t-body">We draw what your landlord and the authorities need — fire and exit layouts, extraction routes, signage permissions, mall fit-out submissions — and design to those conditions from day one, so nothing is ripped out later. The licences themselves (in India: food, trade, excise, fire NOC) are held in your name. We work alongside your licensing consultant, or introduce one we trust.</p></div>
+          </div>
+        </div>
+        <div class="faq-item" data-flip>
+          <h3 class="faq-item__q">
+            <button type="button" id="faq-4-q" aria-expanded="false" aria-controls="faq-4-a">
+              <span class="faq-item__text">Can you work while we’re open?</span>
+              <span class="faq-item__icon" aria-hidden="true"></span>
+            </button>
+          </h3>
+          <div class="faq-item__a qa-ignore-overlap" id="faq-4-a" role="region" aria-labelledby="faq-4-q" hidden="until-found">
+            <div class="faq-item__inner"><p class="t-body">Yes. Most refreshes happen that way. We phase the works around trading: nights, your quiet day, or a short planned closure for the noisy parts. Joinery is made off-site, so time on site is days rather than weeks. We agree dust, noise and access rules with you before anyone picks up a drill.</p></div>
+          </div>
+        </div>
+        <div class="faq-item" data-flip>
+          <h3 class="faq-item__q">
+            <button type="button" id="faq-5-q" aria-expanded="false" aria-controls="faq-5-a">
+              <span class="faq-item__text">Who manages the contractors?</span>
+              <span class="faq-item__icon" aria-hidden="true"></span>
+            </button>
+          </h3>
+          <div class="faq-item__a qa-ignore-overlap" id="faq-5-a" role="region" aria-labelledby="faq-5-q" hidden="until-found">
+            <div class="faq-item__inner"><p class="t-body">We do. On a design &amp; build project every trade works for us, under one contract and one programme, with one of our site leads in charge. You get a weekly site walk and a daily diary. You don’t get calls from the electrician.</p></div>
+          </div>
+        </div>
+        <div class="faq-item" data-flip>
+          <h3 class="faq-item__q">
+            <button type="button" id="faq-6-q" aria-expanded="false" aria-controls="faq-6-a">
+              <span class="faq-item__text">I already have a designer. Can you still help?</span>
+              <span class="faq-item__icon" aria-hidden="true"></span>
+            </button>
+          </h3>
+          <div class="faq-item__a qa-ignore-overlap" id="faq-6-a" role="region" aria-labelledby="faq-6-q" hidden="until-found">
+            <div class="faq-item__inner"><p class="t-body">Yes. We build other designers’ drawings, and we’re good at it because we draw too. We review the package, flag anything that will cost you on site, price it properly and keep your designer in the loop on every change. The design stays theirs.</p></div>
+          </div>
+        </div>
+        <div class="faq-item" data-flip>
+          <h3 class="faq-item__q">
+            <button type="button" id="faq-7-q" aria-expanded="false" aria-controls="faq-7-a">
+              <span class="faq-item__text">Do you design the kitchen?</span>
+              <span class="faq-item__icon" aria-hidden="true"></span>
+            </button>
+          </h3>
+          <div class="faq-item__a qa-ignore-overlap" id="faq-7-a" role="region" aria-labelledby="faq-7-q" hidden="until-found">
+            <div class="faq-item__inner"><p class="t-body">We plan the kitchen with your chef and a specialist kitchen consultant: the layout, the pass, the services and the extraction. We build the room around it and coordinate the equipment supplier. We don’t sell equipment, so we have no reason to over-specify it.</p></div>
+          </div>
+        </div>
+        <div class="faq-item" data-flip>
+          <h3 class="faq-item__q">
+            <button type="button" id="faq-8-q" aria-expanded="false" aria-controls="faq-8-a">
+              <span class="faq-item__text">Is my project too small?</span>
+              <span class="faq-item__icon" aria-hidden="true"></span>
+            </button>
+          </h3>
+          <div class="faq-item__a qa-ignore-overlap" id="faq-8-a" role="region" aria-labelledby="faq-8-q" hidden="until-found">
+            <div class="faq-item__inner"><p class="t-body">Probably not. A counter, a lighting fix or one wall of joinery can change how a room trades. They’re on the menu as small plates, and they get the same senior team as a flagship.</p></div>
+          </div>
+        </div>
+        <div class="faq-item" data-flip>
+          <h3 class="faq-item__q">
+            <button type="button" id="faq-9-q" aria-expanded="false" aria-controls="faq-9-a">
+              <span class="faq-item__text">Will I know what it looks like before it’s built?</span>
+              <span class="faq-item__icon" aria-hidden="true"></span>
+            </button>
+          </h3>
+          <div class="faq-item__a qa-ignore-overlap" id="faq-9-a" role="region" aria-labelledby="faq-9-q" hidden="until-found">
+            <div class="faq-item__inner"><p class="t-body">Yes. You walk through it in 3D, handle every finish on a sample board, and for the pieces that matter most — the counter, a banquette, the bar top — we build a full-size section before we make the rest.</p></div>
+          </div>
+        </div>
+        <div class="faq-item" data-flip>
+          <h3 class="faq-item__q">
+            <button type="button" id="faq-10-q" aria-expanded="false" aria-controls="faq-10-a">
+              <span class="faq-item__text">Will you work in my city?</span>
+              <span class="faq-item__icon" aria-hidden="true"></span>
+            </button>
+          </h3>
+          <div class="faq-item__a qa-ignore-overlap" id="faq-10-a" role="region" aria-labelledby="faq-10-q" hidden="until-found">
+            <div class="faq-item__inner"><span class="badge svc-badge--placeholder">Placeholder</span><p class="t-body">Very likely. We work across India, and abroad with our own site lead and a local contractor under our contract. Recent projects include Lisbon and Dubai.</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="svc-cta on-sand" aria-labelledby="cta-title">
+    <div class="wrap grid">
+      <div class="svc-cta__media">
+        <figure class="media svc-cta__img" data-reveal="image" style="aspect-ratio:3/2; --lqip:url(data:image/webp;base64,UklGRlgAAABXRUJQVlA4IEwAAAAwBACdASoUAA0APt1cp0yopSOiMAgBEBuJYgCdMoR3ACfrsex+S6UPYAAA/o8PAGqs/BAHAWtTKTNRocJbFw+Vg49vhyMEO5j790AA); --focus:50% 50%">
+          <img src="assets/img/photos/menu-01-espresso-notepad-oak-1600.webp" srcset="assets/img/photos/menu-01-espresso-notepad-oak-800.webp 800w, assets/img/photos/menu-01-espresso-notepad-oak-1600.webp 1600w" sizes="(max-width: 900px) 100vw, 55vw"
+               width="1600" height="1067" alt="An espresso beside a blank notepad and a pen on a pale oak table, seen from above." loading="lazy" decoding="async">
+        </figure>
+      </div>
+      <div class="svc-cta__copy" data-reveal-group>
+        <h2 class="t-display-l" id="cta-title" data-split>Not sure what to <em>order</em>?</h2>
+        <p class="t-lede svc-cta__body" data-reveal>Tell us about the site and the date you want to open. We’ll suggest the smallest thing that solves it.</p>
+        <p data-reveal><a class="btn btn--solid" href="contact.html?service=not-sure">Start a project <span class="arr" aria-hidden="true">→</span></a></p>
+      </div>
+    </div>
+  </section>
+</main>
+<!-- @partial:footer -->
+<footer class="site-footer on-dark">
+  <div class="wrap">
+    <p class="site-footer__signoff t-display-m"><em>Come back to it.</em></p>
+    <div class="site-footer__cols">
+      <div>
+        <p class="t-lede">Design &amp; build for cafés, restaurants, bars and shops. Concept to opening night.</p>
+        <p class="t-small" style="margin-top:1.25rem"><a class="text-link" href="mailto:hello@twosquares.studio">hello@twosquares.studio</a><br>+91 [00000 00000]<br>[Street address], [City] · By appointment</p>
+      </div>
+      <nav aria-label="Work">
+        <h2 class="t-label">Work</h2>
+        <ul class="t-small">
+          <li><a href="work.html">All work</a></li>
+          <li><a href="work.html?filter=cafes">Cafés</a></li>
+          <li><a href="work.html?filter=restaurants">Restaurants</a></li>
+          <li><a href="work.html?filter=bars">Bars</a></li>
+          <li><a href="work.html?filter=retail">Retail</a></li>
+        </ul>
+      </nav>
+      <nav aria-label="Studio">
+        <h2 class="t-label">Studio</h2>
+        <ul class="t-small">
+          <li><a href="studio.html">About the studio</a></li>
+          <li><a href="services.html">The menu</a></li>
+          <li><a href="services.html#process">How we work</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </nav>
+      <nav aria-label="Follow">
+        <h2 class="t-label">Follow</h2>
+        <ul class="t-small">
+          <li><a href="#" rel="noopener" data-placeholder>Instagram</a></li>
+          <li><a href="#" rel="noopener" data-placeholder>Pinterest</a></li>
+          <li><a href="#" rel="noopener" data-placeholder>LinkedIn</a></li>
+        </ul>
+      </nav>
+    </div>
+    <a class="site-footer__mark" href="index.html" aria-label="Two Squares, home"><span class="logo logo--lockup" aria-hidden="true"></span></a>
+    <div class="site-footer__legal">
+      <span>© <span data-year>2026</span> Two Squares Design &amp; Build. All rights reserved.</span>
+      <span>Prototype. Project names, quotes and photographs are placeholders (stock photography from Pexels &amp; Unsplash).</span>
+      <a href="#top">Back to top ↑</a>
+    </div>
+  </div>
+</footer>
+<!-- /@partial:footer -->
+<!-- @partial:scripts -->
+<script src="assets/js/vendor/gsap.min.js" defer></script>
+<script src="assets/js/vendor/ScrollTrigger.min.js" defer></script>
+<script src="assets/js/vendor/SplitText.min.js" defer></script>
+<script src="assets/js/vendor/CustomEase.min.js" defer></script>
+<script src="assets/js/vendor/lenis.min.js" defer></script>
+<script src="assets/js/motion.js" defer></script>
+<script src="assets/js/site.js" defer></script>
+<!-- /@partial:scripts -->
+<script src="assets/js/services.js" defer></script>
+</body>
+</html>

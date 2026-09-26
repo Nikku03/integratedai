@@ -1,360 +1,412 @@
 <!doctype html>
-<html lang="en">
+<html lang="en-IN" class="no-js">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Two Squares — Design &amp; Build for restaurants, bars &amp; shops</title>
-  <meta name="description" content="Two Squares designs and builds restaurants, bars and retail spaces that people come back to. Concept, interiors, lighting and fit-out.">
-  <meta property="og:title" content="Two Squares — Design &amp; Build">
-  <meta property="og:description" content="Restaurants, bars and shops, designed and built to be lived in.">
-  <meta property="og:image" content="assets/img/hero-01.svg">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='4' y='4' width='11' height='11' rx='2' fill='%2346523d'/%3E%3Crect x='17' y='17' width='11' height='11' rx='2' fill='%2346523d'/%3E%3C/svg%3E">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,300..600,0..100,0..1;1,9..144,300..600,0..100,0..1&family=Homemade+Apple&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/site.css">
+<!-- @partial:head -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>
+/* motion bootstrap — inline, before any stylesheet: pre-animation states only when motion is allowed, fail open */
+(function (d, w) {
+  var r = d.documentElement, motion = w.matchMedia("(prefers-reduced-motion: no-preference)").matches;
+  r.classList.remove("no-js"); r.classList.add("js");
+  try { if (sessionStorage.getItem("ts-intro")) r.classList.add("no-preload"); } catch (e) { r.classList.add("no-preload"); }
+  if (motion) {
+    r.classList.add("js-motion");
+    try { if (!("CSSViewTransitionRule" in w) && sessionStorage.getItem("ts-curtain")) r.classList.add("curtain-in"); } catch (e) {}
+  }
+  w.addEventListener("pagereveal", function (e) { w.__vt = e.viewTransition || null; }, { once: true });
+  setTimeout(function () { if (!w.Motion || !w.Motion.booted) r.classList.remove("curtain-in"); }, 2500);
+  setTimeout(function () { if (!w.Motion || !w.Motion.booted) r.classList.remove("js-motion"); }, 4000);
+})(document, window);
+</script>
+<link rel="preload" href="assets/fonts/InstrumentSerif-normal-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/InstrumentSans-normal-400_600-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="assets/css/fonts.css">
+<link rel="stylesheet" href="assets/css/base.css">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#2c3527">
+<meta property="og:site_name" content="Two Squares — Design &amp; Build">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<!-- /@partial:head -->
+<title>Two Squares — design &amp; build for cafés, restaurants, bars &amp; shops</title>
+<meta name="description" content="Two Squares designs and builds cafés, restaurants, bars and shops: one team and one contract from the first site visit to opening night. India and abroad.">
+<meta property="og:title" content="Two Squares — design &amp; build for cafés, restaurants, bars &amp; shops">
+<meta property="og:description" content="Two Squares designs and builds cafés, restaurants, bars and shops: one team and one contract from the first site visit to opening night. India and abroad.">
+<meta property="og:image" content="assets/img/photos/hero-05-black-windows-cafe-1600.webp">
+<link rel="preload" as="image" href="assets/video/posters/hero-reel-poster.jpg" media="(min-width: 901px)" fetchpriority="high">
+<link rel="preload" as="image" href="assets/video/posters/hero-reel-sm-poster.jpg" media="(max-width: 900px)" fetchpriority="high">
+<link rel="stylesheet" href="assets/css/home.css">
+<link rel="stylesheet" href="assets/css/walk.css">
 </head>
-<body>
-  <div class="veil" aria-hidden="true"></div>
-  <div class="progress" aria-hidden="true"></div>
-  <div class="cursor-glow" aria-hidden="true"></div>
-
-  <!-- ============================================================ NAV -->
-  <header class="nav nav--on-green">
-    <div class="wrap">
-      <a class="brand" href="index.html"><span class="logo logo--mark" role="img" aria-label="Two Squares — Design &amp; Build"></span></a>
-      <nav class="nav__links" aria-label="Primary">
-        <a href="restaurants.html">Restaurants</a>
-        <a href="bars.html">Bars</a>
-        <a href="retail.html">Shops</a>
-        <a href="studio.html">Studio</a>
-      </nav>
-      <a class="btn nav__cta" href="contact.html">Start a project <span class="arr">→</span></a>
-      <button class="burger" aria-label="Menu" aria-expanded="false"><span></span><span></span><span></span></button>
-    </div>
-  </header>
-  <div class="menu" aria-hidden="true">
-    <a href="index.html">Home</a>
-    <a href="restaurants.html">Restaurants</a>
-    <a href="bars.html">Bars</a>
-    <a href="retail.html">Shops</a>
-    <a href="studio.html">Studio</a>
-    <a href="contact.html">Contact</a>
-    <div class="menu__foot"><span>hello@twosquares.studio</span><span>+00 000 000 000</span></div>
+<body data-page="home" data-section="home">
+<!-- @partial:header -->
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header" id="top">
+  <div class="wrap site-header__inner">
+    <a class="site-header__brand" href="index.html" aria-label="Two Squares, home"><span class="logo logo--mark" aria-hidden="true"></span></a>
+    <nav class="site-header__nav" aria-label="Primary">
+      <a href="work.html" data-section="work">Work</a>
+      <a href="services.html" data-section="services">Services</a>
+      <a href="studio.html" data-section="studio">Studio</a>
+      <a href="contact.html" data-section="contact">Contact</a>
+      <a class="btn btn--sm" href="contact.html">Start a project <span class="arr" aria-hidden="true">→</span></a>
+    </nav>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-overlay"><span class="nav-toggle__bars" aria-hidden="true"></span>Index</button>
   </div>
+</header>
+<div class="nav-overlay" id="nav-overlay" role="dialog" aria-modal="true" aria-label="Site index" data-lenis-prevent>
+  <span class="nav-overlay__shape nav-overlay__shape--a" aria-hidden="true"></span>
+  <span class="nav-overlay__shape nav-overlay__shape--b" aria-hidden="true"></span>
+  <div class="wrap nav-overlay__top">
+    <a href="index.html" aria-label="Two Squares, home"><span class="logo logo--mark" aria-hidden="true"></span></a>
+    <button class="nav-overlay__close" type="button">Close <i aria-hidden="true"></i></button>
+  </div>
+  <nav class="wrap nav-overlay__links" aria-label="Site index">
+    <a class="nav-overlay__link" href="index.html"><span class="t-display-l">Home</span><small>The walk, and the corner table.</small></a>
+    <a class="nav-overlay__link" href="work.html" data-section="work"><span class="t-display-l">Work</span><small>Cafés, restaurants, bars and shops.</small></a>
+    <a class="nav-overlay__link" href="services.html" data-section="services"><span class="t-display-l">The menu</span><small>What we make, and how.</small></a>
+    <a class="nav-overlay__link" href="studio.html" data-section="studio"><span class="t-display-l">Studio</span><small>One team, design and build.</small></a>
+    <a class="nav-overlay__link" href="contact.html" data-section="contact"><span class="t-display-l">Contact</span><small>Tell us about the room.</small></a>
+  </nav>
+  <div class="wrap nav-overlay__foot t-small">
+    <a href="mailto:hello@twosquares.studio">hello@twosquares.studio</a>
+    <span>+91 [00000 00000]</span>
+    <span>By appointment · [City]</span>
+  </div>
+</div>
+<!-- /@partial:header -->
+<main id="main">
 
-  <main>
-    <!-- ============================================================ HERO (green, like the card) -->
-    <section class="hero on-green ribbons">
-      <div class="liquid" aria-hidden="true">
-        <span class="blob blob--1"></span><span class="blob blob--2"></span><span class="blob blob--3"></span>
+  <!-- ============================================================ 1 · hero -->
+  <section class="home-hero on-dark" data-header="dark" aria-labelledby="hero-title">
+    <div class="home-hero__stage" aria-hidden="true">
+      <div class="home-hero__media">
+        <video class="home-hero__video" id="hero-reel" data-autoplay data-eager
+               data-src="assets/video/hero-reel" data-src-sm="assets/video/hero-reel-sm"
+               poster="assets/video/posters/hero-reel-poster.jpg" data-poster-sm="assets/video/posters/hero-reel-sm-poster.jpg"
+               muted loop playsinline preload="auto" aria-hidden="true"></video>
       </div>
-      <div class="hero__stage" aria-hidden="true">
-        <div class="card card--a" data-tilt="1" data-float style="--float-dur:9s;--float-amp:12px">
-          <img src="assets/img/rest-ember.svg" alt="">
-          <span class="card__tag" style="left:auto;right:16px;top:14px;bottom:auto">Ember · Restaurant</span>
-        </div>
-        <div class="card card--b" data-tilt="1.6" data-float style="--float-dur:7s;--float-amp:16px;--float-delay:-2s;--float-rot:-1deg">
-          <img src="assets/img/bar-velvet.svg" alt="">
-          <span class="card__tag">Velvet · Bar</span>
-        </div>
-        <div class="card card--c" data-tilt="2.2" data-float style="--float-dur:6s;--float-amp:18px;--float-delay:-4s;--float-rot:1.5deg">
-          <img src="assets/img/shop-form.svg" alt="">
-          <span class="card__tag">Form · Shop</span>
-        </div>
-        <div class="card card--d" data-tilt="0.7" data-float style="--float-dur:11s;--float-amp:10px;--float-delay:-1s">
-          <img src="assets/img/cafe-morning.svg" alt="">
-        </div>
-      </div>
-
-      <div class="wrap hero__content">
-        <div class="hero__mark" data-reveal><span class="logo logo--lockup" role="img" aria-label="Two Squares — Design &amp; Build"></span></div>
-        <span class="eyebrow" data-reveal style="--d:120">Restaurants, bars &amp; shops</span>
-        <h1 class="display t-hero hero__title split" style="margin-top:1rem">Spaces people <em>come back</em> to.</h1>
-        <p class="lede" data-reveal style="--d:300">We design and build the rooms where evenings happen — dining rooms, bars and shopfronts planned around how people actually move, sit, order and linger.</p>
-        <div class="hero__meta" data-reveal style="--d:450">
-          <div><strong>Design &amp; build</strong>One team, concept to handover</div>
-          <div><strong>Hospitality &amp; retail</strong>Cafés, restaurants, bars, shops</div>
-          <div><strong>Since 2016</strong>60+ venues opened</div>
-        </div>
-      </div>
-      <div class="scroll-hint" aria-hidden="true"><span>Walk in</span><i></i></div>
-    </section>
-
-    <!-- ============================================================ TICKER -->
-    <div class="marquee" aria-hidden="true">
-      <div class="marquee__track">
-        <span class="marquee__item">Restaurants <i></i> Cocktail bars <i></i> Cafés <i></i> Retail &amp; flagship stores <i></i> Hotel F&amp;B <i></i> Pop-ups <i></i> Rooftops <i></i> Bakeries <i></i></span>
-      </div>
+      <div class="home-hero__scrim"></div>
     </div>
 
-    <!-- ============================================================ THE WALK: framed doors -->
-    <section class="gates" id="walk" data-room="cafe" aria-label="A walk past three doors: a café in the morning, a restaurant in the afternoon, a bar at night">
-      <div class="gates__sticky">
-        <div class="gates__wall" aria-hidden="true"></div>
-        <div class="gates__floor" aria-hidden="true"></div>
-        <!-- the rooms behind the doors: swap these three images for photos -->
-        <img class="gates__inside" data-gate="1" src="assets/img/room-restaurant.svg" alt="" aria-hidden="true">
-        <img class="gates__inside" data-gate="2" src="assets/img/room-bar.svg" alt="" aria-hidden="true">
-        <div class="gates__grade" aria-hidden="true"></div>
-        <!-- the entrances, framed. Door rectangle + hinge are declared per picture (% of the image). -->
-        <div class="gates__track" aria-hidden="true">
-          <!-- a filmed walk-in: the frame grows to fill the screen and the clip scrubs with the scroll -->
-          <figure class="gate gate--video" data-room="cafe" style="--ar: 16 / 9">
-            <div class="gate__frame">
-              <video class="gate__video" poster="assets/img/cafe-walk-poster.jpg" data-poster-sm="assets/img/cafe-walk-poster-sm.jpg"
-                     data-src="assets/video/cafe-walk" data-src-sm="assets/video/cafe-walk-sm"
-                     preload="none" muted playsinline webkit-playsinline disablepictureinpicture></video>
-              <div class="gate__vig"></div>
-            </div>
-            <figcaption class="gate__plaque"><b>08:00</b>Café · walk in</figcaption>
-          </figure>
-          <figure class="gate" data-room="rest" style="--ar: 693 / 900; --dx: 48.3; --dy: 29.8; --dw: 26; --dh: 62.2; --hinge: 100%; --dir: -1">
-            <div class="gate__frame">
-              <img class="gate__outside" src="assets/img/facade-restaurant.svg" alt="">
-              <div class="gate__shade"></div>
-              <div class="gate__leaf"><img src="assets/img/facade-restaurant.svg" alt=""></div>
-            </div>
-            <figcaption class="gate__plaque"><b>14:00</b>Restaurant · the entrance</figcaption>
-          </figure>
-          <figure class="gate" data-room="bar" style="--ar: 693 / 900; --dx: 48.3; --dy: 29.8; --dw: 26; --dh: 62.2; --hinge: 100%; --dir: -1">
-            <div class="gate__frame">
-              <img class="gate__outside" src="assets/img/facade-bar.svg" alt="">
-              <div class="gate__shade"></div>
-              <div class="gate__leaf"><img src="assets/img/facade-bar.svg" alt=""></div>
-            </div>
-            <figcaption class="gate__plaque"><b>23:00</b>Bar · the entrance</figcaption>
-          </figure>
-        </div>
-        <div class="gates__hud" aria-hidden="true">
-          <span class="is-active">On the street</span>
-          <span>08:00 · Café</span>
-          <span>14:00 · Restaurant</span>
-          <span>23:00 · Bar</span>
-        </div>
+    <div class="home-hero__content wrap">
+      <div class="home-hero__lead">
+        <p class="t-label home-hero__eyebrow" data-hero-in>Cafés, restaurants, bars &amp; shops</p>
+        <h1 class="t-display-xl home-hero__title" id="hero-title" data-split data-delay="0.2">Spaces people <em>come back</em> to.</h1>
       </div>
+      <p class="t-lede home-hero__body" data-hero-in>We design and build the rooms where mornings start and evenings happen, planned around how people actually move, sit, order and linger.</p>
 
-      <div class="gates__steps">
-        <div class="gates__step" data-room="entry">
-          <div class="wrap" data-reveal>
-            <div class="gates__panel" data-lift="0.5">
-              <span class="eyebrow">The studio</span>
-              <h2 class="display t-2">A room is a <em>sequence</em>, not a picture.</h2>
-              <p>Scroll to walk in. Behind the first door, a café at eight in the morning; further along, a restaurant at two and a bar at eleven — three rooms we design and build, three times of day they have to work.</p>
-            </div>
+      <div class="home-hero__foot">
+        <span class="home-hero__rule" aria-hidden="true"></span>
+        <dl class="home-hero__facts">
+          <div class="home-hero__fact" data-hero-in>
+            <dt class="t-label">Design &amp; build</dt>
+            <dd class="t-small">One team, one contract, concept to opening night</dd>
           </div>
-        </div>
-        <div class="gates__step" data-room="cafe">
-          <div class="wrap" data-reveal>
-            <div class="gates__panel" data-lift="0.5">
-              <div class="time">08:00</div>
-              <span class="eyebrow">Morning · Café</span>
-              <h2 class="display t-2">Light first, <em>then</em> everything else.</h2>
-              <p>A café earns its living before ten. We plan the counter for a queue that moves, the seats for laptops and prams, and the light for pastries that photograph. Daylight does most of the work — we make sure it lands where it should.</p>
-              <a class="btn" href="restaurants.html">Cafés &amp; restaurants <span class="arr">→</span></a>
-            </div>
+          <div class="home-hero__fact" data-hero-in>
+            <dt class="t-label">Hospitality &amp; retail</dt>
+            <dd class="t-small"><a class="home-hero__sector" href="work.html?filter=cafes">Cafés</a>, <a class="home-hero__sector" href="work.html?filter=restaurants">restaurants</a>, <a class="home-hero__sector" href="work.html?filter=bars">bars</a> and <a class="home-hero__sector" href="work.html?filter=retail">shops</a>. Nothing else.</dd>
           </div>
-        </div>
-        <div class="gates__step" data-room="rest">
-          <div class="wrap" data-reveal>
-            <div class="gates__panel" data-lift="0.5">
-              <div class="time">14:00</div>
-              <span class="eyebrow">Afternoon · Restaurant</span>
-              <h2 class="display t-2">The long lunch, <em>held.</em></h2>
-              <p>Warm walls, walnut floors, banquettes you sink into. By two o'clock the room should feel like it has been busy for hours — full but calm, with every seat facing something worth looking at.</p>
-              <a class="btn" href="restaurants.html">See restaurants <span class="arr">→</span></a>
-            </div>
+          <div class="home-hero__fact" data-hero-in>
+            <dt class="t-label">Since 2016</dt>
+            <dd class="t-small">64 venues opened <span class="badge badge--placeholder">Placeholder</span></dd>
           </div>
-        </div>
-        <div class="gates__step" data-room="bar">
-          <div class="wrap" data-reveal>
-            <div class="gates__panel" data-lift="0.5">
-              <div class="time">23:00</div>
-              <span class="eyebrow">Night · Bar</span>
-              <h2 class="display t-2">The back-bar is the <em>stage.</em></h2>
-              <p>Light drops, the bottles glow, the counter fills. We design bars for this exact hour: sightlines to the back-bar, a top that takes a knock, and acoustics that let the music lift without anyone shouting.</p>
-              <a class="btn" href="bars.html">See bars <span class="arr">→</span></a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ============================================================ SECTORS (green band) -->
-    <section class="section on-green ribbons">
-      <div class="wrap">
-        <div class="row between" style="margin-bottom:2.2rem">
-          <span class="eyebrow" data-reveal>What we design &amp; build</span>
-          <span class="muted small" data-reveal>Three sectors, one team</span>
-        </div>
-        <div class="sectors">
-          <div data-reveal style="--d:0">
-            <a class="sector" href="restaurants.html" data-lift>
-              <img src="assets/img/hero-01.svg" alt="">
-              <span class="sector__num">01</span>
-              <span class="eyebrow">Restaurants</span>
-              <h3 class="display t-2">Dining rooms with a <em>pulse</em></h3>
-              <p>Layouts that turn tables without rushing anyone. Acoustics you can talk over. Lighting that flatters food and faces.</p>
-              <span class="btn">Explore restaurants <span class="arr">→</span></span>
-            </a>
-          </div>
-          <div data-reveal style="--d:120">
-            <a class="sector" href="bars.html" data-lift>
-              <img src="assets/img/hero-02.svg" alt="">
-              <span class="sector__num">02</span>
-              <span class="eyebrow">Bars</span>
-              <h3 class="display t-2">Rooms built for <em>late</em></h3>
-              <p>Back-bars as theatre, seating that mixes strangers, sound that lifts as the night does. Designed for the 1am version of the room.</p>
-              <span class="btn">Explore bars <span class="arr">→</span></span>
-            </a>
-          </div>
-          <div data-reveal style="--d:240">
-            <a class="sector" href="retail.html" data-lift>
-              <img src="assets/img/hero-03.svg" alt="">
-              <span class="sector__num">03</span>
-              <span class="eyebrow">Shops</span>
-              <h3 class="display t-2">Retail you walk <em>slower</em> in</h3>
-              <p>Shopfronts that stop people, floor plans that pull them through, fixtures that make the product the hero — and a till that doesn't queue.</p>
-              <span class="btn">Explore shops <span class="arr">→</span></span>
-            </a>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ============================================================ FLOATING PROJECTS -->
-    <section class="section">
-      <div class="wrap">
-        <div class="row between" style="margin-bottom:3rem">
-          <div>
-            <span class="eyebrow" data-reveal>Selected work</span>
-            <h2 class="display t-1 split" style="margin-top:.8rem">Recent <em>openings</em></h2>
-          </div>
-          <a class="btn" href="restaurants.html" data-reveal>All projects <span class="arr">→</span></a>
-        </div>
-
-        <div class="float-grid">
-          <a class="proj proj--1" href="project.html" data-speed="1.15">
-            <div class="proj__media wipe" style="--ar:4/5" data-lift="0.8"><img src="assets/img/rest-ember.svg" alt="Ember restaurant interior"><span class="proj__pill">Restaurant</span></div>
-            <div class="proj__meta" data-reveal><h3>Ember</h3><span>Lisbon · 2025</span></div>
-          </a>
-          <a class="proj proj--2" href="project.html" data-speed="0.85">
-            <div class="proj__media wipe" style="--ar:5/4;--d:120" data-lift="0.8"><img src="assets/img/bar-velvet.svg" alt="Velvet bar interior"><span class="proj__pill">Bar</span></div>
-            <div class="proj__meta" data-reveal style="--d:120"><h3>Velvet Room</h3><span>Berlin · 2025</span></div>
-          </a>
-          <a class="proj proj--3" href="project.html" data-speed="1.3">
-            <div class="proj__media wipe" style="--ar:1" data-lift="0.8"><img src="assets/img/shop-form.svg" alt="Form concept store"><span class="proj__pill">Shop</span></div>
-            <div class="proj__meta" data-reveal><h3>Form</h3><span>Copenhagen · 2024</span></div>
-          </a>
-          <a class="proj proj--4" href="project.html" data-speed="0.9">
-            <div class="proj__media wipe" style="--ar:4/5;--d:100" data-lift="0.8"><img src="assets/img/cafe-morning.svg" alt="Salt House café interior"><span class="proj__pill">Café</span></div>
-            <div class="proj__meta" data-reveal style="--d:100"><h3>Salt House</h3><span>Copenhagen · 2024</span></div>
-          </a>
-          <a class="proj proj--5" href="project.html" data-speed="1.1">
-            <div class="proj__media wipe" style="--ar:16/10" data-lift="0.8"><img src="assets/img/bar-ninety.svg" alt="Ninety bar interior"><span class="proj__pill">Bar</span></div>
-            <div class="proj__meta" data-reveal><h3>Ninety</h3><span>Dubai · 2024</span></div>
-          </a>
-          <a class="proj proj--6" href="project.html" data-speed="1.25">
-            <div class="proj__media wipe" style="--ar:3/4;--d:140" data-lift="0.8"><img src="assets/img/shop-clay.svg" alt="Clay homeware store"><span class="proj__pill">Shop</span></div>
-            <div class="proj__meta" data-reveal style="--d:140"><h3>Clay</h3><span>Mumbai · 2023</span></div>
+        </dl>
+        <div class="home-hero__controls" data-hero-in>
+          <button class="home-vtoggle home-hero__toggle" type="button" data-video-toggle="#hero-reel"><span class="sr-only">Pause video</span><i aria-hidden="true"></i></button>
+          <a class="home-hero__cue" href="#walk" data-walk-in>
+            <span class="t-label">Walk in</span>
+            <span class="home-hero__cue-dot" aria-hidden="true">↓</span>
           </a>
         </div>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <!-- ============================================================ STATS -->
-    <section class="section section--tight">
-      <div class="wrap">
-        <div class="stats">
-          <div class="stat" data-reveal style="--d:0"><b data-count="64" data-suffix="">64</b><span>Venues designed &amp; built</span></div>
-          <div class="stat" data-reveal style="--d:100"><b data-count="9" data-suffix="">9</b><span>Cities</span></div>
-          <div class="stat" data-reveal style="--d:200"><b data-count="18" data-suffix="k">18</b><span>Square metres fitted out</span></div>
-          <div class="stat" data-reveal style="--d:300"><b data-count="92" data-suffix="%">92</b><span>Clients who came back for a second site</span></div>
+  <!-- @partial:walk -->
+<section class="walk" id="walk" data-walk aria-label="The walk">
+  <!-- stub: replaced by the walk builder (partials/walk.html is theirs) -->
+</section>
+<!-- /@partial:walk -->
+
+  <!-- ============================================================ 4 · selected work -->
+  <section class="home-work on-dark" id="after-walk" aria-labelledby="work-title" data-home-work>
+    <div class="home-work__stack" aria-hidden="true">
+      <figure class="media home-work__slide is-active" data-slug="stillroom" style="--lqip:url(data:image/webp;base64,UklGRmYAAABXRUJQVlA4IFoAAADwAwCdASoUAA4APt1cpkyopSOiMAgBEBuJZgCdMoADSJlqqT2S6BmAAP7xaHnPB+ybWAljE3VfluiurLaFuSsLmVXII0Gw8m74KRzJZCgzs0N+XJysSJoAAAA=); --focus:50% 50%">
+        <img src="assets/img/photos/bar-a-01-red-lounge-wide-1600.webp" srcset="assets/img/photos/bar-a-01-red-lounge-wide-800.webp 800w, assets/img/photos/bar-a-01-red-lounge-wide-1600.webp 1600w" sizes="100vw"
+             width="1600" height="1106" alt="" loading="lazy" decoding="async">
+      </figure>
+      <figure class="media home-work__slide" data-slug="common-hours" style="--lqip:url(data:image/webp;base64,UklGRmQAAABXRUJQVlA4IFgAAACwAwCdASoUAA8APt1cpkyopSOiMAgBEBuJZQC7ABjHaHHUsMtPvAD+3NupiC5nx7IzoE4vGUsC+cF2VUPJFcyi8MaejwA0S6N5G6c0c0t4Zt9hUpBmqgAA); --focus:50% 50%">
+        <img src="assets/img/photos/hero-05-black-windows-cafe-1600.webp" srcset="assets/img/photos/hero-05-black-windows-cafe-800.webp 800w, assets/img/photos/hero-05-black-windows-cafe-1600.webp 1600w" sizes="100vw"
+             width="1600" height="1200" alt="" loading="lazy" decoding="async">
+      </figure>
+      <figure class="media home-work__slide" data-slug="ember" style="--lqip:url(data:image/webp;base64,UklGRmgAAABXRUJQVlA4IFwAAAAQBACdASoUAA0APt1cp0yopSOiMAgBEBuJZACdMoADQtaNl5mVodRusAD+5f+gTkJAeuU79jhma1PxFOpTjriumVTPH16QCH3q7wjhIYkXcgLwfYvxRBJwCgewAA==); --focus:50% 50%">
+        <img src="assets/img/photos/rest-c-03-window-plants-1600.webp" srcset="assets/img/photos/rest-c-03-window-plants-800.webp 800w, assets/img/photos/rest-c-03-window-plants-1600.webp 1600w" sizes="100vw"
+             width="1600" height="1067" alt="" loading="lazy" decoding="async">
+      </figure>
+      <figure class="media home-work__slide" data-slug="dhaaga" style="--lqip:url(data:image/webp;base64,UklGRmoAAABXRUJQVlA4IF4AAACwAwCdASoUAA0APt1cp0yopSOiMAgBEBuJYwC7ACGdDSMgNpARAAD+6D6+z50pnwe/hmMF4CICjgz8Awplbyr1PQV/lDnyE5tmhLooVkwc1R+HdzbgziYpXyCiAAAA); --focus:50% 50%">
+        <img src="assets/img/photos/retailA-01-boutique-rail-plants-1600.webp" srcset="assets/img/photos/retailA-01-boutique-rail-plants-800.webp 800w, assets/img/photos/retailA-01-boutique-rail-plants-1600.webp 1600w" sizes="100vw"
+             width="1600" height="1068" alt="" loading="lazy" decoding="async">
+      </figure>
+      <figure class="media home-work__slide" data-slug="otla" style="--lqip:url(data:image/webp;base64,UklGRmoAAABXRUJQVlA4IF4AAADwAwCdASoUAA0APt1ep00opSOiMAgBEBuJYwDE2CHYdKSeOXArejAAAP7tWYRICb53t0nLgex/TEeMm4t3WnkeIsTmuhNbun+zlsVYM4Oeubjon+SRfb7obdnz/AAA); --focus:50% 50%">
+        <img src="assets/img/photos/rest-a-01-dining-room-banquette-1600.webp" srcset="assets/img/photos/rest-a-01-dining-room-banquette-800.webp 800w, assets/img/photos/rest-a-01-dining-room-banquette-1600.webp 1600w" sizes="100vw"
+             width="1600" height="1067" alt="" loading="lazy" decoding="async">
+      </figure>
+      <figure class="media home-work__slide" data-slug="tilt" style="--lqip:url(data:image/webp;base64,UklGRpAAAABXRUJQVlA4IIQAAADQAwCdASoUAA0APt1cpkyopSOiMAgBEBuJZACdMoAC2kj1Wn+uOMgA/lTKRAIpTaxZ1CVUtsZ4JaOHAXhDTkVCza6uZngV+FARmlcEMky064P9j52aeu3y4INrv+scDKYAl1s725UPyWu6zeVmQ+E2MY1xM0hCKfGwrRn0mw1vL9J6AAA=); --focus:50% 50%">
+        <img src="assets/img/photos/cafe-b-03-counter-edge-light-1600.webp" srcset="assets/img/photos/cafe-b-03-counter-edge-light-800.webp 800w, assets/img/photos/cafe-b-03-counter-edge-light-1600.webp 1600w" sizes="100vw"
+             width="1600" height="1069" alt="" loading="lazy" decoding="async">
+      </figure>
+    </div>
+
+    <div class="home-work__inner wrap">
+      <header class="home-work__head">
+        <div class="home-work__title">
+          <p class="t-label home-work__eyebrow" data-reveal>Selected work <span class="badge badge--placeholder">Placeholder</span></p>
+          <h2 class="t-display-s" id="work-title" data-reveal data-delay="0.08">Recent openings.</h2>
         </div>
-      </div>
-    </section>
+        <p class="t-small home-work__intro" data-reveal data-delay="0.16">Six rooms in four Indian cities and two abroad, each one designed and built by the same team.</p>
+      </header>
 
-    <!-- ============================================================ QUOTE -->
-    <section class="section">
-      <div class="wrap">
-        <blockquote class="quote" data-reveal="scale">
-          <p>“They designed the bar for the night we actually have, not the one in the mood board — and then they built it.”</p>
-          <footer>Owner, Velvet Room · Berlin</footer>
-        </blockquote>
-      </div>
-    </section>
+      <ul class="home-work__list t-display-l" data-work-list>
+        <li class="home-work__item"><a class="home-work__link is-current" href="work/stillroom.html" data-slug="stillroom" data-meta="Cocktail bar · New Delhi · 2026" data-cursor="View"><span class="home-work__rise"><span class="home-work__name">Stillroom</span><sup class="home-work__tag" aria-hidden="true">Bar</sup></span><span class="sr-only">, cocktail bar, New Delhi, 2026</span></a></li>
+        <li class="home-work__item"><a class="home-work__link" href="work/common-hours.html" data-slug="common-hours" data-meta="Café &amp; bakery · Bengaluru · 2025" data-cursor="View"><span class="home-work__rise"><span class="home-work__name">Common Hours</span><sup class="home-work__tag" aria-hidden="true">Café</sup></span><span class="sr-only">, café and bakery, Bengaluru, 2025</span></a></li>
+        <li class="home-work__item"><a class="home-work__link" href="work/ember.html" data-slug="ember" data-meta="Wood-fire restaurant · Lisbon · 2025" data-cursor="View"><span class="home-work__rise"><span class="home-work__name">Ember</span><sup class="home-work__tag" aria-hidden="true">Restaurant</sup></span><span class="sr-only">, wood-fire restaurant, Lisbon, 2025</span></a></li>
+        <li class="home-work__item"><a class="home-work__link" href="work/dhaaga.html" data-slug="dhaaga" data-meta="Textile &amp; homeware store · Dubai · 2025" data-cursor="View"><span class="home-work__rise"><span class="home-work__name">Dhaaga</span><sup class="home-work__tag" aria-hidden="true">Retail</sup></span><span class="sr-only">, textile and homeware store, Dubai, 2025</span></a></li>
+        <li class="home-work__item"><a class="home-work__link" href="work/otla.html" data-slug="otla" data-meta="Gujarati thali restaurant · Mumbai · 2024" data-cursor="View"><span class="home-work__rise"><span class="home-work__name">Otla</span><sup class="home-work__tag" aria-hidden="true">Restaurant</sup></span><span class="sr-only">, Gujarati thali restaurant, Mumbai, 2024</span></a></li>
+        <li class="home-work__item"><a class="home-work__link" href="work/tilt.html" data-slug="tilt" data-meta="Espresso bar · Gurugram · 2024" data-cursor="View"><span class="home-work__rise"><span class="home-work__name">Tilt</span><sup class="home-work__tag" aria-hidden="true">Café</sup></span><span class="sr-only">, espresso bar, Gurugram, 2024</span></a></li>
+      </ul>
 
-    <!-- ============================================================ PROCESS -->
-    <section class="section section--tight">
-      <div class="wrap">
-        <div class="grid grid-12" style="margin-bottom:2.5rem">
-          <div class="span-6">
-            <span class="eyebrow" data-reveal>How we work</span>
-            <h2 class="display t-1 split" style="margin-top:.8rem">Four stages, <em>one</em> team</h2>
-          </div>
-        </div>
-        <div class="steps">
-          <div class="step" data-reveal><span class="n">01</span><h3>Discover</h3><p>Site visit, operator interviews, service flow, budget reality-check. We map how the room needs to work before we decide how it looks.</p></div>
-          <div class="step" data-reveal style="--d:80"><span class="n">02</span><h3>Design</h3><p>Narrative, palette, plan options and a 3D walk-through. This is where the brand becomes a place — and where we lock the big moves.</p></div>
-          <div class="step" data-reveal style="--d:160"><span class="n">03</span><h3>Detail</h3><p>Joinery drawings, lighting design, FF&amp;E schedules, finishes samples on site. Everything our own build team needs to price and build without guessing.</p></div>
-          <div class="step" data-reveal style="--d:240"><span class="n">04</span><h3>Build</h3><p>Our team on site, weekly walks, snagging and dressing. One contract, one programme. We're there on opening night — usually near the bar.</p></div>
-        </div>
+      <div class="home-work__foot">
+        <p class="t-label home-work__meta" aria-hidden="true" data-work-in><span class="home-work__count" data-work-count>01 / 06</span><span data-work-meta>Cocktail bar · New Delhi · 2026</span></p>
+        <a class="btn btn--on-dark" href="work.html" data-work-in>All work <span class="arr" aria-hidden="true">→</span></a>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <!-- ============================================================ HORIZONTAL RAIL -->
-    <section class="section section--tight hscroll">
-      <div class="wrap row between" style="margin-bottom:1rem">
-        <span class="eyebrow" data-reveal>By location</span>
-        <span class="muted small" data-reveal>Drag to explore →</span>
-      </div>
-      <div class="hscroll__rail">
-        <a class="hcard" href="restaurants.html" data-lift="0.8"><img src="assets/img/rest-salt.svg" alt=""><div class="hcard__body"><h3>Lisbon</h3><p>3 restaurants · 1 bar</p></div></a>
-        <a class="hcard" href="bars.html" data-lift="0.8"><img src="assets/img/bar-tempo.svg" alt=""><div class="hcard__body"><h3>Berlin</h3><p>2 bars · 1 café</p></div></a>
-        <a class="hcard" href="retail.html" data-lift="0.8"><img src="assets/img/shop-grove.svg" alt=""><div class="hcard__body"><h3>Copenhagen</h3><p>2 shops · 1 restaurant</p></div></a>
-        <a class="hcard" href="restaurants.html" data-lift="0.8"><img src="assets/img/rest-nori.svg" alt=""><div class="hcard__body"><h3>London</h3><p>6 restaurants · 4 bars · 3 shops</p></div></a>
-        <a class="hcard" href="bars.html" data-lift="0.8"><img src="assets/img/bar-lumen.svg" alt=""><div class="hcard__body"><h3>Dubai</h3><p>2 bars · 1 rooftop</p></div></a>
-        <a class="hcard" href="retail.html" data-lift="0.8"><img src="assets/img/shop-atlas.svg" alt=""><div class="hcard__body"><h3>Mumbai</h3><p>3 shops · 2 restaurants</p></div></a>
-      </div>
-      <div class="hscroll__bar" aria-hidden="true"><i></i></div>
-    </section>
-
-    <!-- ============================================================ CTA -->
-    <section class="section">
-      <div class="wrap">
-        <div data-reveal="scale">
-          <div class="cta" data-lift="0.25">
-            <div class="liquid" aria-hidden="true"><span class="blob blob--1"></span><span class="blob blob--2"></span></div>
-            <span class="eyebrow" style="justify-content:center">New project</span>
-            <h2 class="display t-1" style="margin-top:1rem">Opening something? <em>Let's talk early.</em></h2>
-            <p class="lede" style="margin:1.4rem auto 0;text-align:center">The best time to bring us in is before the lease is signed. The second-best time is now.</p>
-            <div class="row">
-              <a class="btn btn--accent" href="contact.html">Start a project <span class="arr">→</span></a>
-              <a class="btn" href="mailto:hello@twosquares.studio">hello@twosquares.studio</a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <!-- ============================================================ FOOTER (green, ribboned like the card) -->
-  <footer class="footer on-green ribbons">
+  <!-- ============================================================ 5 · what we do -->
+  <section class="home-what section" aria-labelledby="what-title">
     <div class="wrap">
-      <div class="footer__grid">
-        <div>
-          <a class="brand" href="index.html"><span class="logo logo--lockup" role="img" aria-label="Two Squares — Design &amp; Build"></span></a>
-          <p class="muted small" style="margin-top:1.2rem;max-width:30ch">Design &amp; build for restaurants, bars and shops. Concept to opening night.</p>
+      <header class="home-what__head grid">
+        <div class="home-what__heading">
+          <p class="t-label home-what__eyebrow" data-reveal>What we do</p>
+          <h2 class="t-display-l" id="what-title" data-split>Draw it, build it, or <em>both</em>.</h2>
         </div>
-        <div><h4>Work</h4><a href="restaurants.html">Restaurants</a><a href="bars.html">Bars</a><a href="retail.html">Shops</a></div>
-        <div><h4>Studio</h4><a href="studio.html">About</a><a href="contact.html">Contact</a><a href="contact.html">Careers</a></div>
-        <div><h4>Follow</h4><a href="#" rel="noopener">Instagram</a><a href="#" rel="noopener">Pinterest</a><a href="#" rel="noopener">LinkedIn</a></div>
-      </div>
-      <div class="footer__big" data-reveal>Come back<br>to it.</div>
-      <div class="footer__legal"><span>© 2026 Two Squares Design &amp; Build. All rights reserved.</span><span>hello@twosquares.studio · +00 000 000 000</span></div>
-    </div>
-  </footer>
+        <p class="t-lede muted home-what__intro" data-reveal data-delay="0.2">Most clients hire us for the whole thing. Some already have a designer, or a builder they trust. We work either way.</p>
+      </header>
 
-  <script src="assets/js/app.js" defer></script>
+      <div class="home-what__rows">
+        <article class="home-what__row home-what__row--design grid" aria-labelledby="what-design">
+          <div class="home-what__media" data-drift="50">
+            <figure class="media home-what__img" data-reveal="image" style="aspect-ratio:4/3; --lqip:url(data:image/webp;base64,UklGRm4AAABXRUJQVlA4IGIAAAAwBACdASoUAA0APt1apkyopSOiMAgBEBuJQBOgBEFs3b4A4RQmPZ9SToAA/ujlv5CXR3GgfwOER5/35sr3CfkjyTAgB5lE2h7qA9oTvvbrKQWpC5ZHDPfi9YUYwOBrlAAAAA==); --focus:50% 50%">
+              <img src="assets/img/photos/process-01-drafting-desk-tools-1600.webp" srcset="assets/img/photos/process-01-drafting-desk-tools-800.webp 800w, assets/img/photos/process-01-drafting-desk-tools-1600.webp 1600w" sizes="(max-width: 900px) 100vw, 58vw"
+                   width="1600" height="1067" alt="A drawing board with a plan sheet, rolled drawings and brass-tipped drafting pens on a dark desk." loading="lazy" decoding="async">
+            </figure>
+          </div>
+          <div class="home-what__text" data-reveal-group>
+            <p class="t-label home-what__kicker" data-reveal>Design only</p>
+            <h3 class="t-display-m home-what__title" id="what-design" data-reveal><a href="services.html#mains" data-cursor="Open">Design<span class="home-what__arr" aria-hidden="true">→</span></a></h3>
+            <p class="t-body muted home-what__copy" data-reveal>Concept, layout, lighting and every drawing a good contractor needs to build it without guessing. We come to site at the moments that decide how it turns out.</p>
+          </div>
+        </article>
+
+        <article class="home-what__row home-what__row--build grid" aria-labelledby="what-build">
+          <div class="home-what__text" data-reveal-group>
+            <p class="t-label home-what__kicker" data-reveal>Build only</p>
+            <h3 class="t-display-m home-what__title" id="what-build" data-reveal><a href="services.html#mains" data-cursor="Open">Build<span class="home-what__arr" aria-hidden="true">→</span></a></h3>
+            <p class="t-body muted home-what__copy" data-reveal>You have drawings. We price them honestly, flag what will cost you, order the long-lead items early and hand over on the date. Our site lead, our trades.</p>
+          </div>
+          <div class="home-what__media" data-drift="70">
+            <figure class="media home-what__vid home-what__vid--wide" data-reveal="image">
+              <video id="loop-plane" data-autoplay data-src="assets/video/loop-plane" data-src-sm="assets/video/loop-plane-sm"
+                     poster="assets/video/posters/loop-plane-poster.jpg" data-poster-sm="assets/video/posters/loop-plane-sm-poster.jpg"
+                     muted loop playsinline preload="none" aria-hidden="true"></video>
+              <button class="home-vtoggle home-what__toggle" type="button" data-video-toggle="#loop-plane"><span class="sr-only">Pause video</span><i aria-hidden="true"></i></button>
+            </figure>
+          </div>
+        </article>
+
+        <article class="home-what__row home-what__row--both grid" aria-labelledby="what-both">
+          <div class="home-what__media" data-drift="40">
+            <figure class="media home-what__img" data-reveal="image" style="aspect-ratio:4/3; --lqip:url(data:image/webp;base64,UklGRnQAAABXRUJQVlA4IGgAAADwAwCdASoUAA0APt1eqE0opSQiMAgBEBuJQBOgBDzq5x1y9GeQGiVAAMsiV90gXh+XxUZ6HlU0wDoSp2bbNDZOufj0X3RssWUfwm3G+sTOh0pIt276jo0I1hda7x1C9B704gR70noAAA==); --focus:50% 50%">
+              <img src="assets/img/photos/rest-b-03-teal-booths-1600.webp" srcset="assets/img/photos/rest-b-03-teal-booths-800.webp 800w, assets/img/photos/rest-b-03-teal-booths-1600.webp 1600w" sizes="(max-width: 900px) 100vw, 66vw"
+                   width="1600" height="1067" alt="Teal quilted leather booths under white arched dividers, a walnut wall raked by afternoon sun." loading="lazy" decoding="async">
+            </figure>
+          </div>
+          <div class="home-what__side">
+            <div class="home-what__inset" data-drift="110">
+              <figure class="media home-what__vid home-what__vid--inset" data-reveal="image">
+                <video id="loop-samples" data-autoplay data-src="assets/video/loop-samples" data-src-sm="assets/video/loop-samples-sm"
+                       poster="assets/video/posters/loop-samples-poster.jpg" data-poster-sm="assets/video/posters/loop-samples-sm-poster.jpg"
+                       muted loop playsinline preload="none" aria-hidden="true"></video>
+                <button class="home-vtoggle home-what__toggle" type="button" data-video-toggle="#loop-samples"><span class="sr-only">Pause video</span><i aria-hidden="true"></i></button>
+              </figure>
+            </div>
+            <div class="home-what__text" data-reveal-group>
+              <p class="t-label home-what__kicker" data-reveal>The house speciality</p>
+              <h3 class="t-display-m home-what__title" id="what-both" data-reveal><a href="services.html#mains" data-cursor="Open">Design &amp; build<span class="home-what__arr" aria-hidden="true">→</span></a></h3>
+              <p class="t-body muted home-what__copy" data-reveal>One team from the first site walk to the first service. One contract, one programme, one number to call. The person who drew the counter is there when it goes in.</p>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <div class="home-what__cta" data-reveal>
+        <a class="btn" href="services.html">See the menu <span class="arr" aria-hidden="true">→</span></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ 6 · how it works (teaser) -->
+  <section class="home-process section on-sand" aria-labelledby="process-title">
+    <div class="wrap">
+      <header class="home-process__head grid">
+        <div class="home-process__heading">
+          <p class="t-label" data-reveal>How it works</p>
+          <h2 class="t-display-l" id="process-title" data-split>Walk. Design. Detail. Build. <em>Open.</em></h2>
+        </div>
+        <div class="home-process__aside" data-reveal-group>
+          <p class="t-lede muted" data-reveal>Five steps and one senior lead, from the first site walk to the return visit 90 days after you open.</p>
+          <a class="btn" href="services.html#process" data-reveal>How we work <span class="arr" aria-hidden="true">→</span></a>
+        </div>
+      </header>
+
+      <div class="home-process__rail" data-process>
+        <div class="home-process__track" aria-hidden="true"><span class="home-process__fill"></span></div>
+        <ol class="home-process__steps">
+          <li class="home-process__step"><span class="home-process__mark" aria-hidden="true"><span></span></span><span class="t-label home-process__n">01</span><h3 class="t-display-s home-process__name">Walk</h3><p class="t-small muted home-process__line">We see the site at the hour it has to work.</p></li>
+          <li class="home-process__step"><span class="home-process__mark" aria-hidden="true"><span></span></span><span class="t-label home-process__n">02</span><h3 class="t-display-s home-process__name">Design</h3><p class="t-small muted home-process__line">Plan first, then the look. The big moves are locked here.</p></li>
+          <li class="home-process__step"><span class="home-process__mark" aria-hidden="true"><span></span></span><span class="t-label home-process__n">03</span><h3 class="t-display-s home-process__name">Detail</h3><p class="t-small muted home-process__line">Drawn to the millimetre, then a fixed price.</p></li>
+          <li class="home-process__step"><span class="home-process__mark" aria-hidden="true"><span></span></span><span class="t-label home-process__n">04</span><h3 class="t-display-s home-process__name">Build</h3><p class="t-small muted home-process__line">Our site lead, our trades, one programme.</p></li>
+          <li class="home-process__step"><span class="home-process__mark" aria-hidden="true"><span></span></span><span class="t-label home-process__n">05</span><h3 class="t-display-s home-process__name">Open</h3><p class="t-small muted home-process__line">Opening night, then back at 90 days.</p></li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ 7 · numbers + quote -->
+  <section class="home-numbers section" aria-labelledby="numbers-title">
+    <div class="wrap">
+      <div class="home-numbers__head" data-reveal>
+        <h2 class="t-label" id="numbers-title">In numbers</h2>
+        <span class="badge badge--placeholder">Placeholder</span>
+      </div>
+      <ul class="home-numbers__list" data-reveal-group>
+        <li class="home-numbers__item" data-reveal>
+          <p class="t-display-l home-numbers__value"><span class="home-numbers__num" aria-hidden="true"><span class="home-numbers__ghost">64</span><span data-count="64">64</span></span><span class="sr-only">64</span></p>
+          <p class="t-small muted home-numbers__label">Venues designed and built</p>
+        </li>
+        <li class="home-numbers__item" data-reveal>
+          <p class="t-display-l home-numbers__value"><span class="home-numbers__num" aria-hidden="true"><span class="home-numbers__ghost">9</span><span data-count="9">9</span></span><span class="sr-only">9</span></p>
+          <p class="t-small muted home-numbers__label">Cities, from Bengaluru to Lisbon</p>
+        </li>
+        <li class="home-numbers__item" data-reveal>
+          <p class="t-display-l home-numbers__value"><span class="home-numbers__num" aria-hidden="true"><span class="home-numbers__ghost">18,000</span><span data-count="18000">18,000</span></span><span class="home-numbers__unit" aria-hidden="true">m²</span><span class="sr-only">18,000 m²</span></p>
+          <p class="t-small muted home-numbers__label">Fitted out since 2016</p>
+        </li>
+        <li class="home-numbers__item" data-reveal>
+          <p class="t-display-l home-numbers__value"><span class="home-numbers__num" aria-hidden="true"><span class="home-numbers__ghost">7</span><span data-count="7">7</span></span><span class="home-numbers__of" aria-hidden="true"> in 10</span><span class="sr-only">7 in 10</span></p>
+          <p class="t-small muted home-numbers__label">Clients come back for a second site</p>
+        </li>
+      </ul>
+
+      <figure class="home-quote">
+        <blockquote class="home-quote__text t-display-m">
+          <p data-split>“They designed the bar for the night we actually have, not the one in the mood board. And then they built it.”</p>
+        </blockquote>
+        <figcaption class="home-quote__by" data-reveal>
+          <span class="t-label">Owner, Stillroom · New Delhi</span>
+          <span class="badge badge--placeholder">Placeholder</span>
+          <a class="text-link home-quote__link" href="work/stillroom.html">Read the project</a>
+        </figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ============================================================ 8 · closing CTA -->
+  <section class="home-cta" aria-labelledby="cta-title" data-home-cta>
+    <div class="home-cta__stage on-dark">
+      <div class="home-cta__panel" aria-hidden="true">
+        <video class="home-cta__video" id="loop-greencafe" data-autoplay data-src="assets/video/loop-greencafe" data-src-sm="assets/video/loop-greencafe-sm"
+               poster="assets/video/posters/loop-greencafe-poster.jpg" data-poster-sm="assets/video/posters/loop-greencafe-sm-poster.jpg"
+               muted loop playsinline preload="none" aria-hidden="true"></video>
+        <div class="home-cta__scrim"></div>
+      </div>
+      <div class="home-cta__content wrap">
+        <div class="home-cta__lead">
+          <p class="t-label home-cta__eyebrow" data-cta-in>New project</p>
+          <h2 class="t-display-xl home-cta__title" id="cta-title" data-cta-title>Opening something? Let’s talk <em>early</em>.</h2>
+        </div>
+        <div class="home-cta__foot">
+          <span class="home-cta__rule" aria-hidden="true" data-cta-rule></span>
+          <p class="t-lede home-cta__body" data-cta-in>The best time to bring us in is before the lease is signed. The second-best time is now.</p>
+          <div class="home-cta__actions" data-cta-in>
+            <a class="btn btn--paper" href="contact.html" data-cursor="Open">Start a project <span class="arr" aria-hidden="true">→</span></a>
+            <a class="home-cta__mail" href="mailto:hello@twosquares.studio">hello@twosquares.studio</a>
+          </div>
+        </div>
+      </div>
+      <button class="home-vtoggle home-cta__toggle" type="button" data-video-toggle="#loop-greencafe"><span class="sr-only">Pause video</span><i aria-hidden="true"></i></button>
+    </div>
+  </section>
+</main>
+<!-- @partial:footer -->
+<footer class="site-footer on-dark">
+  <div class="wrap">
+    <p class="site-footer__signoff t-display-m"><em>Come back to it.</em></p>
+    <div class="site-footer__cols">
+      <div>
+        <p class="t-lede">Design &amp; build for cafés, restaurants, bars and shops. Concept to opening night.</p>
+        <p class="t-small" style="margin-top:1.25rem"><a class="text-link" href="mailto:hello@twosquares.studio">hello@twosquares.studio</a><br>+91 [00000 00000]<br>[Street address], [City] · By appointment</p>
+      </div>
+      <nav aria-label="Work">
+        <h2 class="t-label">Work</h2>
+        <ul class="t-small">
+          <li><a href="work.html">All work</a></li>
+          <li><a href="work.html?filter=cafes">Cafés</a></li>
+          <li><a href="work.html?filter=restaurants">Restaurants</a></li>
+          <li><a href="work.html?filter=bars">Bars</a></li>
+          <li><a href="work.html?filter=retail">Retail</a></li>
+        </ul>
+      </nav>
+      <nav aria-label="Studio">
+        <h2 class="t-label">Studio</h2>
+        <ul class="t-small">
+          <li><a href="studio.html">About the studio</a></li>
+          <li><a href="services.html">The menu</a></li>
+          <li><a href="services.html#process">How we work</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </nav>
+      <nav aria-label="Follow">
+        <h2 class="t-label">Follow</h2>
+        <ul class="t-small">
+          <li><a href="#" rel="noopener" data-placeholder>Instagram</a></li>
+          <li><a href="#" rel="noopener" data-placeholder>Pinterest</a></li>
+          <li><a href="#" rel="noopener" data-placeholder>LinkedIn</a></li>
+        </ul>
+      </nav>
+    </div>
+    <a class="site-footer__mark" href="index.html" aria-label="Two Squares, home"><span class="logo logo--lockup" aria-hidden="true"></span></a>
+    <div class="site-footer__legal">
+      <span>© <span data-year>2026</span> Two Squares Design &amp; Build. All rights reserved.</span>
+      <span>Prototype. Project names, quotes and photographs are placeholders (stock photography from Pexels &amp; Unsplash).</span>
+      <a href="#top">Back to top ↑</a>
+    </div>
+  </div>
+</footer>
+<!-- /@partial:footer -->
+<!-- @partial:scripts -->
+<script src="assets/js/vendor/gsap.min.js" defer></script>
+<script src="assets/js/vendor/ScrollTrigger.min.js" defer></script>
+<script src="assets/js/vendor/SplitText.min.js" defer></script>
+<script src="assets/js/vendor/CustomEase.min.js" defer></script>
+<script src="assets/js/vendor/lenis.min.js" defer></script>
+<script src="assets/js/motion.js" defer></script>
+<script src="assets/js/site.js" defer></script>
+<!-- /@partial:scripts -->
+<script src="assets/js/scrub.js" defer></script>
+<script src="assets/js/walk.js" defer></script>
+<script src="assets/js/home.js" defer></script>
 </body>
 </html>

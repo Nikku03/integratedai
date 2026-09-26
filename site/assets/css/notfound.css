@@ -1,0 +1,79 @@
+/* =====================================================================
+   404 — 404.html. Every rule is scoped under [data-page="404"].
+   A closed door hung like one of the walk's framed pictures, on the
+   street wall (paper-2) above a floor band. No page script.
+   ===================================================================== */
+
+[data-page="404"] .nf {
+  position: relative; isolation: isolate; overflow: clip;
+  display: grid; align-items: center;
+  min-height: max(100svh, 640px);
+  padding-top: calc(var(--header-h) + clamp(32px, 5vw, 72px));
+  padding-bottom: calc(clamp(72px, 12vh, 140px) + clamp(32px, 4vw, 56px));
+  background: var(--paper-2);
+}
+[data-page="404"] .nf__inner { align-items: center; row-gap: 56px; }
+
+/* ---- the framed picture */
+[data-page="404"] .nf__frame {
+  position: relative; grid-column: 2 / span 4; justify-self: center;
+  width: min(100%, 340px); margin: 0; padding-top: 44px;
+  transform-origin: 50% 0;
+}
+.js-motion [data-page="404"] .nf__frame { animation: nf-hang 1.8s var(--ease-drift) 0.25s both; }
+@keyframes nf-hang {
+  0%   { transform: rotate(-3.2deg); }
+  55%  { transform: rotate(1.1deg); }
+  100% { transform: rotate(0deg); }
+}
+[data-page="404"] .nf__wire { position: absolute; left: 12%; right: 12%; top: 8px; width: 76%; height: 40px; overflow: visible; }
+[data-page="404"] .nf__wire path { fill: none; stroke: var(--ink-3); stroke-width: 1; vector-effect: non-scaling-stroke; }
+[data-page="404"] .nf__nail {
+  position: absolute; left: 50%; top: 4px; width: 9px; height: 9px; margin-left: -4.5px; border-radius: 50%;
+  background: var(--ink-2); box-shadow: 0 1px 2px rgba(28, 33, 25, 0.35);
+}
+[data-page="404"] .nf__pic {
+  position: relative; padding: clamp(14px, 1.6vw, 22px);
+  background: var(--paper); border: 10px solid var(--green-deep);
+  box-shadow: 0 18px 40px -18px rgba(28, 33, 25, 0.45), 0 2px 6px rgba(28, 33, 25, 0.12);
+}
+[data-page="404"] .nf__pic .media { box-shadow: inset 0 0 0 1px rgba(28, 33, 25, 0.08); }
+[data-page="404"] .nf__plaque {
+  display: table; margin: 22px auto 0; padding: 9px 16px 8px;
+  background: var(--sand); color: var(--green-deep);
+  font-size: 0.75rem; font-weight: 600; line-height: 1.2; letter-spacing: 0.18em; text-transform: uppercase;
+  font-variant-numeric: tabular-nums lining-nums;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.4) inset, 0 2px 4px rgba(28, 33, 25, 0.18);
+}
+
+/* ---- the words */
+[data-page="404"] .nf__text { grid-column: 7 / span 5; }
+[data-page="404"] .nf__text .t-display-xl { margin-top: 1.1rem; }
+[data-page="404"] .nf__text .t-lede { margin-top: clamp(20px, 2.2vw, 32px); max-width: 34ch; }
+[data-page="404"] .nf__actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: clamp(28px, 3vw, 44px); }
+[data-page="404"] .nf__actions .btn:not(.btn--solid) { background: var(--paper); }
+[data-page="404"] .nf__more { margin-top: 20px; color: var(--ink-2); }
+[data-page="404"] .nf__more .text-link { color: var(--ink); padding-block: 12px; }
+
+/* ---- the floor */
+[data-page="404"] .nf__floor {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: -1; height: clamp(72px, 12vh, 140px);
+  background: var(--paper-3); border-top: 1px solid var(--line-strong);
+}
+[data-page="404"] .nf__floor::before {
+  content: ""; position: absolute; left: 0; right: 0; top: 0; height: 12px;
+  background: var(--paper-2); border-bottom: 1px solid var(--line);
+}
+
+@media (max-width: 900px) {
+  [data-page="404"] .nf__frame { grid-column: 1 / span 3; width: min(100%, 280px); }
+  [data-page="404"] .nf__text { grid-column: 4 / -1; }
+}
+@media (max-width: 600px) {
+  [data-page="404"] .nf { min-height: 0; }
+  [data-page="404"] .nf__inner { row-gap: 36px; }
+  [data-page="404"] .nf__frame { grid-column: 1 / -1; width: 62%; }
+  [data-page="404"] .nf__text { grid-column: 1 / -1; text-align: center; }
+  [data-page="404"] .nf__text .t-lede { margin-inline: auto; }
+  [data-page="404"] .nf__actions { justify-content: center; }
+}
