@@ -76,3 +76,13 @@ Seeds 401 to 410, with `--tasks 30 --changes 8`.
 - **Real agents.** Durations and results are simulated; real work may not split into early results this neatly.
 - **Estimates.** The schedule's gains depend on them; here they are within -20% to +25%.
 - **Contention.** Workers per role are fixed at one. More workers per role would reduce waiting in every arm.
+
+## Outcome (added after the single test run)
+
+**Every criterion was met.**
+- `outputs-schedule` had a median makespan of 0.803 times `whole-fifo`'s, and was shorter on all ten worlds.
+- It never re-ran a task whose needed results were unchanged. With whole tasks, 419 of 653 re-runs were not needed.
+- No arm left a task incomplete or completed on a stale input.
+
+The schedule order stays the default claim order. With results released early, it missed 2 deadlines against 6
+for fifo, with a median makespan ratio of 1.0. Details are in `docs/SCHEDULE_RESULTS.md`.

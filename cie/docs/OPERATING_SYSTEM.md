@@ -182,15 +182,43 @@ proposed ─accept─▶ ready ─claim─▶ running ─submit─▶ review ─
 | Field | Contents |
 |---|---|
 | `brief` | inputs as instructions |
-| `task_inputs` | versioned inputs: live-state records with the version used, and other tasks' results with their revision |
+| `task_inputs` | versioned inputs: live-state records with the version used, other tasks' results with their revision, and other tasks' released outputs with their version |
+| `task_outputs` | the named results it has released, each with a version that goes up only when the value changes |
 | `acceptance` | the acceptance criteria |
 | `owner_principal_id`, `deadline_at` | owner and deadline |
-| `task_dependencies` | `requires` (the dependency must be completed) or `after` (it must be settled or waiting on a person; used by the synthesis) |
+| `task_dependencies` | `requires` (the dependency must be completed, or only the named `outputs` of it released) or `after` (it must be settled or waiting on a person; used by the synthesis) |
 | `limits` | `max_tokens`, `max_cost_usd`, `max_seconds`, allowed `tools` |
 | `progress` | checkpoints |
 | `result` | the result |
 | `verification` | every review with its reviewer, verdict, notes and round |
 | `attempts`, `max_attempts`, `review_rounds` | counters |
+
+**Results released early.** A task does not have to finish before others can use its work:
+- While it runs, a task releases each named result as soon as it has it (`publish_output`). For example,
+  logistics releases `expedite_cost` long before its full delivery plan is done.
+- A dependency can name only the results it needs (`depends_on=[(task_id, "requires", ["expedite_cost"])]`). The
+  dependant becomes ready as soon as they are released, while the other task is still running. The results it
+  reads are recorded as its inputs.
+- Releasing the same value again disturbs nobody. A changed value reopens or flags only the tasks that used the
+  earlier version, like a changed record (section 4).
+- When a task is reopened, its results are marked as being revised:
+  - dependants that have not started wait for them;
+  - dependants that already used them are disturbed only if a changed value is released.
+  A reopened task must re-release every result, even unchanged, before it can complete, and so must a task that
+  declares results in `acceptance.outputs`.
+- A task's context shows what its dependencies handed over (`upstream`) and what it should release, most awaited
+  first (`deliver`).
+
+**Scheduling.** `schedule` puts the ready tasks in the order to run them, each with its reason:
+1. priority, lower first;
+2. deadline slack: the time until the latest start that still meets every deadline downstream, from the tasks'
+   estimates (`metrics.estimate_seconds`);
+3. the longest chain of estimated work behind the task;
+4. how many unfinished tasks wait on it;
+5. age.
+
+`claim` takes the first task in this order that no other worker holds, and the head runs ready tasks in it.
+`order="fifo"` keeps priority, then age. `GET /api/projects/{id}/schedule` shows the order.
 
 **Claims and leases.** A worker claims a ready task with a lease (`FOR UPDATE SKIP LOCKED`, so no task is claimed
 twice). It extends the lease with heartbeats and records progress with checkpoints. When a lease expires, the task
@@ -199,9 +227,11 @@ is used up, it fails instead. A worker that lost its lease cannot submit.
 
 **Review.** On submission the engine checks, in order:
 1. the limits: exceeded means `failed`;
-2. the inputs: if a record or task result moved on since the task used it, changes are requested;
+2. the inputs: if a record, a task result or a released output moved on since the task used it, changes are
+   requested;
 3. the acceptance criteria (`min_findings`, `citations_required`, `max_unsupported`, `required_fields`,
-   `min_confidence`): unmet means changes are requested.
+   `min_confidence`, `outputs` released), and every result re-released after a reopening: unmet means changes are
+   requested.
 
 After that, the `review` mode decides:
 - `auto` completes the task.
@@ -214,13 +244,16 @@ fail it. When the rounds run out, a person decides. A task never completes on in
 
 **Failures and reopening.**
 - A failed task is retried only with a named authorisation (`retry`), which allows one more attempt.
-- A completed task is reopened only when an input changed (`reopen`). Completed dependants that required it are
-  reopened too, and waiting ones are blocked.
+- A completed task is reopened only when an input changed (`reopen`). Completed dependants that required the
+  whole task are reopened too, and waiting ones are blocked. Dependants that need only its results are handled as
+  above.
 - When a task is decided after a dependant used an earlier revision of it, that dependant is reopened. For
   example, a synthesis that reported the task as waiting on a person.
 
-**Head agent.** The head proposes its plan as tasks and accepts them. It claims each ready task for the chosen
-agent, records the dependency results it hands over as inputs, and submits results to the engine. It addresses
+**Head agent.** The head proposes its plan as tasks and accepts them. A plan can declare the results a task
+will hand over, and depend on `"task.result"` instead of a whole task. The head runs ready tasks in schedule order.
+It claims each for the chosen agent, records the dependency results it hands over as inputs, and submits results
+to the engine. Results named in a result's `outputs` are released on submission. It addresses
 requested changes by dropping findings the verifier could not support, then resubmits. The synthesis reports
 every task's outcome: verified, not independently verified, failed, or waiting on a person.
 
@@ -228,6 +261,9 @@ every task's outcome: verified, not independently verified, failed, or waiting o
 - `POST /api/tasks`: propose and accept a task.
 - `POST /api/tasks/claim` (next ready task) and `POST /api/tasks/{id}/claim`.
 - `POST /api/tasks/{id}/heartbeat`, `/checkpoint`, `/submit` and `/release`.
+- `POST /api/tasks/{id}/outputs`: release a named result now. `GET /api/tasks/{id}/outputs` lists what the task
+  released, what it should deliver, and what its dependencies handed over.
+- `GET /api/projects/{id}/schedule`: the ready tasks in order, with the reasons.
 - `POST /api/tasks/{id}/review`: the worker that produced a result cannot review it.
 - `POST /api/tasks/{id}/retry` and `/cancel`.
 - `GET /api/tasks/{id}/transitions` and `GET /api/tasks-overdue`.
@@ -284,7 +320,16 @@ A record also counts as changed when a record joins or leaves it: an order creat
 project changes the project. So a task that relied on "the project's open orders" is refreshed when that set
 changes, even though no field of the project did.
 
-Its agent receives an `input_changed` message carrying the record id and versions, never values. Reopened tasks
+Its agent receives an `input_changed` message carrying the record id and versions, never values. When a
+released result is first released or revised, the agents of the tasks that need it receive a
+`dependency_notification` (`route_output`).
+
+**Messages are read.** Each message has a read status. `GET /api/messages/inbox?agent=` lists an agent's unread
+messages and `POST /api/messages/read` marks them read. An agent reads only its own inbox; an administrator can
+read any.
+
+**Work resumes by itself.** When a processed change reopens tasks, the worker queues one run of each affected
+project's head (`resume_projects`), so the reopened work is redone without anyone asking. Reopened tasks
 are recorded in the project ledger. `task_invalidations` is unique per (task, record, new version), so a replayed
 or re-delivered event never reopens a task twice. The event summary lists the tasks reopened, flagged and noted.
 
@@ -459,5 +504,19 @@ project changes. Without routing, 347 stale answers were served. See `docs/LOOP_
 Study 2 is pre-registered but not yet run. It covers inputs from what an answer relied on (`loop-relied`) and
 Llama 3.1 8B as the analyst (`llm-relied`, `llm-no-routing`), on test worlds 304 to 306.
 
-The action gateway (permission, freshness, approval, already-executed and result-confirmed checks before acting on
-external systems) is **not built**.
+Results released early and the schedule order were tested in a pre-registered simulation (test worlds 401 to 410:
+generated projects and simulated durations, over the real engine). Every criterion was met:
+- projects finished about 20% sooner (median), and sooner on all ten worlds;
+- after changes, re-runs fell from 653 to 237, and unneeded re-runs from 419 to 0;
+- no task finished on a stale input.
+
+The schedule order cut deadline misses from 6 to 2, but not the median finish time. See `docs/SCHEDULE_RESULTS.md`.
+
+**Not built yet:**
+- The action gateway: permission, freshness, approval, already-executed and result-confirmed checks before acting
+  on external systems.
+- Agents acting on their inbox on their own. The head still runs the built-in specialists as one-shot calls, and
+  their evidence requests and questions are recorded but not answered.
+- Agents asking other agents for work.
+- Per-agent decision authority.
+- Re-planning when no option meets a task's constraints.

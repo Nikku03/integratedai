@@ -185,6 +185,16 @@ criterion (`docs/LOOP_RESULTS.md`). It is not measured on a real project. The ru
 records a task read but did not rely on still reopen it. Workers that declare their inputs avoid this with
 `inputs="explicit"`, and workers whose findings cite state avoid it with `inputs="relied"`.
 
+**Results released early are measured in simulation only.** `cie.eval.bench_schedule` runs the real engine on
+generated projects with simulated durations. Real specialists may not split their work into early results this
+neatly, and the schedule order depends on duration estimates.
+
+**Agents do not yet act on their own.**
+- Messages now have a read status and an inbox, and consumers are told when a result they need is released.
+- But the head still runs the built-in specialists as one-shot calls. Their evidence requests and questions are
+  recorded but not answered.
+- Agents cannot ask other agents for work, and there is no per-agent decision authority.
+
 **Relied inputs trust the citations.** With `inputs="relied"`, a task's inputs are the records its result cites,
 so a worker that relies on a record without citing it is not refreshed when that record changes. A result with no
 state references gets no inputs at all. Study 2 measures whether this is safe when a model decides what to cite.

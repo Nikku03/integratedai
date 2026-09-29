@@ -17,9 +17,9 @@ URLs). Interactive docs at `/docs`; the machine-readable contract is
 | Answers | `POST /answer` (mode strict/assisted) → cited answer; `GET /answers/{id}` |
 | Sources | `GET /sources/{doc}/pages/{n}` (text + blocks + corrections), `GET /sources/{doc}/pages/{n}/image`, `GET /sources/{doc}/download` |
 | Projects | `POST /projects`, `GET /projects`, `GET /projects/{id}`, `POST /projects/{id}/run` (objective; `background` to enqueue), `POST /projects/{id}/step`, `GET/POST /projects/{id}/ledger`, `GET /projects/{id}/final-answer` |
-| Tasks | `POST /tasks` (acceptance?, limits?, deadline_at?, depends_on?, propose_only?), `GET /tasks`, `GET /tasks/{id}`, `POST /tasks/{id}/route` (explain routing), `POST /tasks/{id}/verify`; lifecycle through the workflow engine: `POST /tasks/claim`, `POST /tasks/{id}/claim`, `/heartbeat`, `/checkpoint`, `/submit`, `/release`, `/review`, `/retry`, `/cancel`, `GET /tasks/{id}/transitions`, `GET /tasks-overdue` — see `docs/OPERATING_SYSTEM.md` |
+| Tasks | `POST /tasks` (acceptance?, limits?, deadline_at?, depends_on?, propose_only?), `GET /tasks`, `GET /tasks/{id}`, `POST /tasks/{id}/route` (explain routing), `POST /tasks/{id}/verify`; lifecycle through the workflow engine: `POST /tasks/claim` (order: schedule or fifo), `POST /tasks/{id}/claim`, `/heartbeat`, `/checkpoint`, `/submit`, `/release`, `/review`, `/retry`, `/cancel`, `POST /tasks/{id}/outputs` (release a named result now), `GET /tasks/{id}/outputs`, `GET /projects/{id}/schedule`, `GET /tasks/{id}/transitions`, `GET /tasks-overdue`; `depends_on` items may be `{task_id, kind, outputs}` — see `docs/OPERATING_SYSTEM.md` |
 | Agents | `POST /agents`, `GET /agents`, `GET /agents/{id}/scorecards`, `POST /agents/{id}/outcome` (human grading) |
-| Messages | `POST /messages`, `GET /messages?project_id=` |
+| Messages | `POST /messages`, `GET /messages?project_id=`, `GET /messages/inbox?agent=&unread=`, `POST /messages/read` |
 | Governance | `GET /approvals`, `POST /approvals/{id}/decide`, `POST /documents/{id}/legal-hold`, `POST /documents/{id}/retention`, `POST/GET /deletion-requests`, `GET /retention/expired` |
 | Audit | `GET /audit?resource_id=&action=` |
 | Permissions | `POST /permissions/principals` (returns API key), `POST /permissions/roles`, `POST /permissions/grant`, `GET /permissions/me` |
