@@ -2,10 +2,16 @@
 
 Names are normalised (case, punctuation, corporate suffixes) and matched against
 existing entity records, company-wide for organizations and department-wide for
-people: an exact normalised match wins outright, otherwise RapidFuzz scores the
-index-served candidates. A confident match links the new record with a
-``mentions`` edge instead of creating a duplicate entity. Ambiguous names (two candidates above threshold with no
-clear winner) are recorded as an ``open_question`` rather than guessed.
+people. The same name once case, punctuation and corporate suffixes are gone is a
+match: the new record is linked with a ``mentions`` edge instead of creating a
+duplicate entity. A merely similar name (RapidFuzz score above the threshold) is
+``probable``: it is linked as an unconfirmed possible match, with its score, and no
+alias is recorded, because name similarity alone never merges two entities.
+Ambiguous names (two candidates above threshold with no clear winner) are recorded
+as an ``open_question`` rather than guessed.
+
+This links mentions in knowledge memory, as a retrieval aid. Business entities in
+the live state resolve by identifiers and confirmed matches (``cie.state.identity``).
 """
 
 from __future__ import annotations
@@ -103,8 +109,8 @@ def remember_alias(ent: MemoryRecord, name: str) -> None:
 
 def resolve(session: Session, tenant_id: uuid.UUID, scope_id: uuid.UUID, name: str, rtype: RecordType,
             threshold: int = 90, ambiguity_gap: int = 5) -> tuple[MemoryRecord | None, str]:
-    """Returns (matched_entity_or_None, status) where status is
-    ``matched`` | ``ambiguous`` | ``new``."""
+    """Returns (entity_or_None, status) where status is ``matched`` (the same normalised name or a recorded alias),
+    ``probable`` (a similar name: a possible match, never a merge), ``ambiguous`` or ``new``."""
     key = normalise(name)
     scored = []
     for c in candidates(session, tenant_id, scope_id, rtype, name=name):
@@ -119,7 +125,19 @@ def resolve(session: Session, tenant_id: uuid.UUID, scope_id: uuid.UUID, name: s
         return None, "new"
     if len(scored) > 1 and scored[1][0] >= threshold and scored[0][0] - scored[1][0] < ambiguity_gap:
         return None, "ambiguous"
-    return scored[0][1], "matched"
+    return scored[0][1], "probable"
+
+
+def similarity(name: str, ent: MemoryRecord) -> float:
+    key = normalise(name)
+    names = [ent.summary] + list((ent.content or {}).get("aliases", []))
+    return float(max((fuzz.token_sort_ratio(key, normalise(a)) for a in names), default=0.0))
+
+
+def link_probable(session: Session, record: MemoryRecord, ent: MemoryRecord, name: str) -> None:
+    """A possible match found by name similarity: linked for retrieval, marked unconfirmed, never merged."""
+    link(session, record, ent, LinkKind.relates_to, weight=0.5,
+         evidence={"match": "name_similarity", "score": similarity(name, ent), "name": name, "confirmed": False})
 
 
 def attach_entities(session: Session, record: MemoryRecord, names: list[str], rtype: RecordType,
@@ -136,6 +154,13 @@ def attach_entities(session: Session, record: MemoryRecord, names: list[str], rt
                               producing_agent=producing_agent, confidence=0.5)
             link(session, q, record, LinkKind.relates_to)
             continue
+        if status == "probable":
+            if ent.id != record.id:
+                link_probable(session, record, ent, name)
+            if record.type == rtype:
+                out.append(record)  # a separate entity until a person confirms they are the same
+                continue
+            ent = None
         if ent is None:
             if record.type == rtype and normalise(record.summary) == normalise(name):
                 ent = record  # the record itself is the canonical entity

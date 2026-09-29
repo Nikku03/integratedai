@@ -399,7 +399,8 @@ def measure_organisation(s, tenant_id, admin: Principal, company_id, dept_id, do
         t = time.perf_counter()
         ent, status = resolve(s, tenant_id, company_id, spelled, RecordType.organization)
         res_ms.append((time.perf_counter() - t) * 1000)
-        matched += int(status == "matched" and ent is not None and ent.source_document_id == doc_ids[d])
+        # a misspelling is found as a possible match ("probable"); it is never merged without confirmation
+        matched += int(status in ("matched", "probable") and ent is not None and ent.source_document_id == doc_ids[d])
     prof_ms, prof_records = [], []
     for d in picks:
         org = s.scalar(select(MemoryRecord).where(MemoryRecord.source_document_id == doc_ids[d], MemoryRecord.type == RecordType.organization))

@@ -33,7 +33,12 @@ def _statement(r: StateField | None) -> dict[str, Any] | None:
 def entity_view(session: Session, reader: GraphReader, type_: str, key: str, *, history: bool = False) -> dict[str, Any] | None:
     n = reader.node_by_key(type_, key)
     if n is None:
-        return None
+        from cie.state.events import _canonical_view
+
+        n = _canonical_view(reader, type_, key)  # a merged record's key resolves to the canonical record
+        if n is None:
+            return None
+        return {**view_of(session, reader, n, history=history), "resolved_from": f"{type_}:{key}"}
     return view_of(session, reader, n, history=history)
 
 
@@ -69,6 +74,20 @@ def view_of(session: Session, reader: GraphReader, n: NodeView, *, history: bool
         deps.append({"relation": e.kind, "direction": "out" if e.src == n.id else "in", "id": str(other.id), "type": other.type,
                      "key": other.key, "name": other.name, "status": (other.attrs or {}).get("status"), "version": other.version,
                      "provenance": e.provenance, "hypothesis": e.hypothesis})
+    from cie.state.models import StateAlias, StateIdentifier, StateMatchProposal
+
+    identifiers = [{"scheme": i.scheme, "value": i.value, "strength": i.strength}
+                   for i in session.scalars(select(StateIdentifier).where(StateIdentifier.tenant_id == reader.tenant_id,
+                                                                          StateIdentifier.node_id == n.id, StateIdentifier.status == "active")
+                                            .order_by(StateIdentifier.strength, StateIdentifier.scheme))]
+    aliases = [f"{a.alias_type}:{a.alias_key}" for a in session.scalars(select(StateAlias).where(StateAlias.tenant_id == reader.tenant_id,
+                                                                                               StateAlias.canonical_id == n.id))]
+    props = list(session.scalars(select(StateMatchProposal).where(
+        StateMatchProposal.tenant_id == reader.tenant_id, StateMatchProposal.status == "proposed",
+        (StateMatchProposal.a_id == n.id) | (StateMatchProposal.b_id == n.id))))
+    others = reader.nodes({p.b_id if p.a_id == n.id else p.a_id for p in props})
+    possible = [{"proposal_id": str(p.id), "with": f"{o.type}:{o.key}", "name": o.name, "score": p.score, "method": p.method,
+                 "reasons": p.reasons} for p in props if (o := others.get(p.b_id if p.a_id == n.id else p.a_id)) is not None]
     evidence = list(n.source_pointers or [])
     for r in current.values():
         evidence += [p for p in (r.evidence or []) if p not in evidence]
@@ -77,6 +96,7 @@ def view_of(session: Session, reader: GraphReader, n: NodeView, *, history: bool
         "status": (n.attrs or {}).get("status"), "owner": (n.attrs or {}).get("owner"), "version": n.version,
         "as_of_seq": reader.seq, "project_ids": [str(p) for p in n.project_ids], "facts": facts, "dependencies": deps,
         "dependencies_truncated": bool(cut), "evidence": evidence, "unresolved": unresolved,
+        "identifiers": identifiers, "aliases": aliases, "possible_matches": possible,
         "last_verified_at": (n.attrs or {}).get("last_verified_at"), "verification": n.verification,
         "review_status": n.review_status, "authoritative": n.authoritative,
     }

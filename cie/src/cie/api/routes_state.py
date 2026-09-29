@@ -1,7 +1,9 @@
 """Live state routes: events, entity views, conflicts and source authority.
 
 POST /state/events, GET /state/events/{id}, GET /state/entities/{type}/{key}, GET /state/conflicts,
-POST /state/conflicts/{id}/resolve, GET and PUT /state/authority. Reads are filtered by the caller's permissions.
+POST /state/conflicts/{id}/resolve, GET and PUT /state/authority, POST /state/identity/resolve,
+GET /state/identity/proposals, POST /state/identity/proposals/{id}/confirm and /reject. Reads are filtered by the
+caller's permissions.
 """
 
 from __future__ import annotations
@@ -31,6 +33,18 @@ class EventIn(BaseModel):
 
 class ResolveIn(BaseModel):
     accept: Literal["current", "challenger"]
+    note: str = Field("", max_length=2000)
+    idempotency_key: str | None = Field(None, max_length=200)
+
+
+class IdentityIn(BaseModel):
+    type: str = Field(min_length=1, max_length=32)
+    name: str = Field(min_length=1, max_length=300)
+    identifiers: dict[str, str] = {}
+
+
+class DecideIn(BaseModel):
+    canonical: uuid.UUID | None = None
     note: str = Field("", max_length=2000)
     idempotency_key: str | None = Field(None, max_length=200)
 
@@ -84,8 +98,9 @@ def _submit(session: Session, auth: Auth, settings: Settings, kind: str, payload
     elif created:
         job_id = str(queue.enqueue(session, auth.tenant_id, "state_event", {"event_id": str(ev.id), "analysis": analysis}).id)
     s = ev.summary or {}
+    mine = ev.principal_id == auth.principal.id
     return {"event_id": str(ev.id), "created": created, "status": ev.status, "seq": ev.seq, "job_id": job_id,
-            "field_decisions": s.get("field_decisions", []) if ev.principal_id == auth.principal.id else []}
+            "field_decisions": s.get("field_decisions", []) if mine else [], "identity": s.get("identity", []) if mine else []}
 
 
 @router.post("/events", status_code=202)
@@ -104,7 +119,8 @@ def get_event(event_id: uuid.UUID, auth: Auth = Depends(current_auth), session: 
         raise HTTPException(404, "event not found")
     s = ev.summary or {}
     return {"event_id": str(ev.id), "kind": ev.kind, "status": ev.status, "seq": ev.seq, "error": ev.error,
-            "field_decisions": s.get("field_decisions", []), "tasks": s.get("tasks", {}), "stale_results": s.get("stale_results", 0)}
+            "field_decisions": s.get("field_decisions", []), "identity": s.get("identity", []), "tasks": s.get("tasks", {}),
+            "stale_results": s.get("stale_results", 0)}
 
 
 @router.get("/entities/{entity_type}/{key}")
@@ -165,3 +181,58 @@ def put_authority(body: AuthorityIn, auth: Auth = Depends(current_auth), session
     audit(session, tenant_id=auth.tenant_id, principal_id=auth.principal.id, action="state.authority", resource_kind="state_authority",
           resource_id=row.id, details=body.model_dump())
     return {"ok": True}
+
+
+@router.post("/identity/resolve")
+def identity_resolve(body: IdentityIn, auth: Auth = Depends(current_auth), session: Session = Depends(db)):
+    """Dry run: would this description match a known entity? Nothing is written. Possible matches are reported only
+    for records the caller may see; a match on a record the caller may not see is reported without details."""
+    from cie.state.identity import resolve_entity
+    from cie.state.store import GraphReader
+
+    reader = GraphReader(session, auth.tenant_id, auth.visibility)
+    try:
+        res = resolve_entity(session, auth.tenant_id, body.type, body.name, body.identifiers, reader=reader)
+    except ValueError as e:
+        raise HTTPException(400, str(e)) from None
+    node = reader.nodes([res.node_id]).get(res.node_id) if res.node_id else None
+    return {"status": res.status, "method": res.method,
+            "record": {"id": str(node.id), "key": node.key, "name": node.name} if node else None,
+            "note": "matches a record you may not see" if res.node_id and node is None else "",
+            "possible_matches": [{"id": str(c.node_id), "key": c.key, "name": c.name, "score": c.score, "method": c.method,
+                                  "reasons": c.reasons} for c in res.candidates],
+            "distinct_from": res.distinct if res.status != "conflicting_identifiers" else []}
+
+
+@router.get("/identity/proposals")
+def identity_proposals(status: str = "proposed", limit: int = 100, auth: Auth = Depends(current_auth), session: Session = Depends(db)):
+    from cie.state.models import StateMatchProposal
+    from cie.state.store import GraphReader
+
+    rows = list(session.scalars(select(StateMatchProposal).where(StateMatchProposal.tenant_id == auth.tenant_id,
+                                                                 StateMatchProposal.status == status)
+                                .order_by(StateMatchProposal.score.desc()).limit(min(max(limit, 1), 500) * 3)))
+    reader = GraphReader(session, auth.tenant_id, auth.visibility)
+    nodes = reader.nodes({r.a_id for r in rows} | {r.b_id for r in rows})
+    out = []
+    for r in rows:
+        a, b = nodes.get(r.a_id), nodes.get(r.b_id)
+        if a is None or b is None:
+            continue  # both records must be visible
+        out.append({"proposal_id": str(r.id), "type": r.entity_type, "score": r.score, "method": r.method, "reasons": r.reasons,
+                    "status": r.status, "a": {"id": str(a.id), "key": a.key, "name": a.name}, "b": {"id": str(b.id), "key": b.key, "name": b.name}})
+    return {"proposals": out[:limit]}
+
+
+@router.post("/identity/proposals/{proposal_id}/confirm")
+def identity_confirm(proposal_id: uuid.UUID, body: DecideIn, auth: Auth = Depends(current_auth), session: Session = Depends(db),
+                     settings: Settings = Depends(get_settings)):
+    op = {"op": "confirm_match", "proposal": str(proposal_id), "note": body.note, **({"canonical": str(body.canonical)} if body.canonical else {})}
+    return _submit(session, auth, settings, "ops", {"ops": [op]}, body.idempotency_key or f"confirm:{proposal_id}", "none", True)
+
+
+@router.post("/identity/proposals/{proposal_id}/reject")
+def identity_reject(proposal_id: uuid.UUID, body: DecideIn, auth: Auth = Depends(current_auth), session: Session = Depends(db),
+                    settings: Settings = Depends(get_settings)):
+    op = {"op": "reject_match", "proposal": str(proposal_id), "note": body.note}
+    return _submit(session, auth, settings, "ops", {"ops": [op]}, body.idempotency_key or f"reject:{proposal_id}", "none", True)

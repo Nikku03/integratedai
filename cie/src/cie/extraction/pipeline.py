@@ -40,7 +40,7 @@ from cie.extraction.sectioning import BlockRef, build_sections
 from cie.governance.scanners import scan_text
 from cie.memory.autolink import autolink
 from cie.memory.embeddings import EmbeddingProvider, get_embedding_provider
-from cie.memory.entities import remember_alias, resolve
+from cie.memory.entities import link_probable, remember_alias, resolve
 from cie.memory.records import create_record
 from cie.memory.text import tsvector_expr
 from cie.vault.service import VaultService
@@ -211,10 +211,13 @@ def _derive(session: Session, document: Document, extraction: Extraction, sectio
     n = 1
     created: list[MemoryRecord] = [doc_rec]
     entities: dict[str, MemoryRecord] = {}
+    probable: dict[str, MemoryRecord] = {}
     for d, vec in zip(drafts, vectors, strict=False):
         if d.type in ("organization", "person"):
             name = d.content.get("name", d.summary)
             ent, status = resolve(session, document.tenant_id, document.scope_id, name, RecordType(d.type))
+            if status == "probable" and ent is not None:
+                probable[name] = ent  # a separate record, linked below as an unconfirmed possible match
             if status == "matched" and ent is not None:
                 # inherit the canonical entity instead of duplicating it; keep the alias and the new evidence
                 remember_alias(ent, name)
@@ -239,7 +242,10 @@ def _derive(session: Session, document: Document, extraction: Extraction, sectio
             n += 1
             created.append(rec)
             if d.type in ("organization", "person"):
-                entities[d.content.get("name", d.summary)] = rec
+                name = d.content.get("name", d.summary)
+                entities[name] = rec
+                if name in probable and probable[name].id != rec.id:
+                    link_probable(session, rec, probable[name], name)
     autolink(session, doc_rec, created, entities)
     if document.previous_version_id is not None:
         from cie.memory.records import supersede_previous_version

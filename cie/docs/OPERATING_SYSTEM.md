@@ -109,3 +109,56 @@ conflicts, and `last_verified_at`.
 **What REM may still write.** Only derived, labelled content: `rule` or `inferred` relationships with their
 derivation, and review marks on generated records. `AnalysisWriter` enforces this. Giving generated content its
 source's access used to be rule R8's write; it is now a state step.
+
+## 2. Identity resolution (`cie.state.identity`)
+
+Business entities (customers, suppliers, people, products, teams, companies) keep stable ids. Whether a new
+description is a known entity is decided by identifiers, not names:
+
+| Evidence | Outcome |
+|---|---|
+| a known **strong identifier** (VAT or tax number, registration number, customer or supplier number, IBAN, DUNS, LEI, SKU, GTIN, employee id, a person's email) | the same entity |
+| a strong identifier that conflicts on a single-valued scheme (two different VAT numbers) | different entities, however alike the names |
+| identifiers held by two different records | not decided: a new record, and a proposal with each holder |
+| a similar name (score ≥ 90 after normalising case, punctuation and legal suffixes), or a shared weak identifier (phone, domain, address) | a **match proposal** only; the records stay separate |
+
+Tables: `state_identifiers` (a partial unique index keeps each strong identifier on one record per type),
+`state_match_proposals` and `state_aliases`.
+
+**Operations:**
+- `upsert_entity`: resolves, then creates or updates. Attributes go through the field authority rules.
+- `add_identifier`: a strong identifier already held by another record creates a proposal; it is not merged.
+- `confirm_match`, `reject_match`.
+
+References can name a record by identifier: `{"type": "supplier", "scheme": "vat", "value": "GB123456"}`.
+
+**Proposals.** A rejected pair is never proposed again, and a proposal is never acted on until it is confirmed.
+Confirming needs write access to both records.
+
+**Merging.**
+- **Which record stays.** The older record stays canonical, unless the confirmation names the other one. For two
+  records created by the same event, the one with more strong identifiers stays, then the lower key.
+- **What moves.** The alias's identifiers, relationships, stock rows and project memberships move to the canonical
+  record. Its field statements are replayed through the canonical record's authority rules, so a disagreement
+  becomes an open conflict, never a silent overwrite.
+- **The alias afterwards.** The alias is closed as a version, so its history stays readable. Its id and business
+  key keep resolving to the canonical record: in references, in entity views (`resolved_from`) and in imports
+  that still send the old key, whose values become statements about the canonical record.
+- **When a merge is refused:**
+  - the records have different access (scope, clearance or access list); align it first;
+  - they carry different single-valued identifiers;
+  - they are not of the same mergeable type.
+
+**API:**
+- `POST /api/state/identity/resolve`: a dry run. A match on a record the caller may not see is reported without
+  details.
+- `GET /api/state/identity/proposals`: lists only proposals where the caller can see both records.
+- `POST /api/state/identity/proposals/{id}/confirm` and `/reject`.
+- The entity view lists identifiers, aliases and open possible matches.
+
+**Knowledge memory.** Mention linking in knowledge memory (`cie.memory.entities`) is a retrieval aid:
+- The same normalised name links to the existing entity record.
+- A similar name is only `probable`. It gets an unconfirmed `relates_to` link carrying its score, and no alias is
+  recorded.
+- Before this change, a fuzzy match at score ≥ 90 was linked as the same entity and its spelling recorded as an
+  alias.

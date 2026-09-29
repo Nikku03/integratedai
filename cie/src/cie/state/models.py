@@ -39,6 +39,7 @@ from sqlalchemy import (
     Text,
     UniqueConstraint,
     func,
+    text,
 )
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB, TSVECTOR, UUID
 from sqlalchemy.orm import Mapped, mapped_column
@@ -349,3 +350,64 @@ class StateConflict(Base):
     opened_seq: Mapped[int] = mapped_column(BigInteger)
     resolved_seq: Mapped[int | None] = mapped_column(BigInteger)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+# ---------------------------------------------------------------------------------------------- identity
+class StateIdentifier(Base):
+    """An identifier of a business entity (VAT number, customer number, email ...). A strong identifier names one
+    entity of a type: the partial unique index enforces it. Weak identifiers (phone, domain, name) may be shared."""
+
+    __tablename__ = "state_identifiers"
+    id: Mapped[uuid.UUID] = _pk()
+    tenant_id: Mapped[uuid.UUID] = _tenant()
+    node_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("rem_nodes.id"), index=True)
+    entity_type: Mapped[str] = mapped_column(String(32))
+    scheme: Mapped[str] = mapped_column(String(32))
+    value: Mapped[str] = mapped_column(String(300))  # normalised
+    raw: Mapped[str] = mapped_column(String(300), default="")
+    strength: Mapped[str] = mapped_column(String(8))  # strong | weak
+    status: Mapped[str] = mapped_column(String(12), default="active")  # active | retired
+    source: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict)
+    recorded_seq: Mapped[int] = mapped_column(BigInteger)
+    __table_args__ = (
+        Index("ix_state_identifiers_lookup", "tenant_id", "entity_type", "scheme", "value"),
+        Index("uq_state_identifiers_strong", "tenant_id", "entity_type", "scheme", "value", unique=True,
+              postgresql_where=text("strength = 'strong' AND status = 'active'")),
+    )
+
+
+class StateMatchProposal(Base):
+    """Two records that may be the same entity. A proposal is never acted on until a person or authorised process
+    confirms it; a rejected pair is not proposed again."""
+
+    __tablename__ = "state_match_proposals"
+    id: Mapped[uuid.UUID] = _pk()
+    tenant_id: Mapped[uuid.UUID] = _tenant()
+    a_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("rem_nodes.id"))
+    b_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("rem_nodes.id"))
+    entity_type: Mapped[str] = mapped_column(String(32))
+    score: Mapped[float] = mapped_column(Float)
+    method: Mapped[str] = mapped_column(String(32))  # name_similarity | weak_identifier | shared_strong_identifier
+    reasons: Mapped[list[Any]] = mapped_column(JSONB, default=list)
+    status: Mapped[str] = mapped_column(String(12), default="proposed")  # proposed | confirmed | rejected
+    decided_by: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))
+    decided_seq: Mapped[int | None] = mapped_column(BigInteger)
+    created_seq: Mapped[int] = mapped_column(BigInteger)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    __table_args__ = (UniqueConstraint("tenant_id", "a_id", "b_id", name="uq_state_match_pair"),)
+
+
+class StateAlias(Base):
+    """A record confirmed to be the same entity as another. Its id and business key keep resolving to the
+    canonical record; its history stays readable."""
+
+    __tablename__ = "state_aliases"
+    alias_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("rem_nodes.id"), primary_key=True)
+    tenant_id: Mapped[uuid.UUID] = _tenant()
+    alias_type: Mapped[str] = mapped_column(String(32))
+    alias_key: Mapped[str] = mapped_column(String(300))
+    canonical_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("rem_nodes.id"), index=True)
+    proposal_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))
+    merged_seq: Mapped[int] = mapped_column(BigInteger)
+    merged_by: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))
+    __table_args__ = (Index("ix_state_aliases_key", "tenant_id", "alias_type", "alias_key"),)

@@ -32,11 +32,13 @@ from cie.governance.audit import audit
 from cie.state import domain
 from cie.state.consistency import invalidate_derived, invalidate_results, propagate_access
 from cie.state.fields import Authority, FieldStore, Source
+from cie.state.identity import IdentityStore
 from cie.state.models import RemEvent, RemNode, RemStock, StateConflict
 from cie.state.store import GraphReader, GraphWriter
 
 EVENT_KINDS = ("ops", "supplier_delay", "stock_count", "task_status", "restrict")
 FIELD_OPS = ("observe", "set_status", "set_owner", "verify_entity", "resolve_conflict")
+IDENTITY_OPS = ("upsert_entity", "add_identifier", "confirm_match", "reject_match")
 VERSIONED_OPS = ("revise_node", "delete_node", "restrict_node", "observe", "set_status", "set_owner", "verify_entity")
 TERMINAL = ("done", "rejected", "conflict")
 
@@ -109,15 +111,30 @@ def _scope_id(session: Session, tenant_id: uuid.UUID, scope: Any, cache: dict) -
 
 
 def _ref(writer: GraphWriter, ref) -> uuid.UUID:
+    """A record reference: its id, ``[type, key]``, or ``{"type", "scheme", "value"}`` (a strong identifier). A record
+    merged into another resolves to the canonical record."""
+    from cie.state.identity import canonical_of, find_by_identifier
+
+    if isinstance(ref, dict):
+        if "scheme" in ref:
+            nid = find_by_identifier(writer.s, writer.tenant_id, str(ref["type"]), str(ref["scheme"]), ref["value"])
+            if nid is None:
+                raise ValueError(f"unknown record {ref['type']} with {ref['scheme']} {ref['value']}")
+            return nid
+        ref = [ref["type"], ref["key"]]
     if isinstance(ref, (uuid.UUID, str)):
         nid = ref if isinstance(ref, uuid.UUID) else uuid.UUID(ref)
-        if writer.s.scalar(select(RemNode.id).where(RemNode.id == nid, RemNode.tenant_id == writer.tenant_id)) is None:
+        row = writer.s.execute(select(RemNode.id, RemNode.deleted_seq).where(RemNode.id == nid, RemNode.tenant_id == writer.tenant_id)).first()
+        if row is None:
             raise ValueError(f"unknown record {nid}")  # never another tenant's record
-        return nid
-    nid = writer.node_id(ref[0], ref[1])
-    if nid is None:
-        raise ValueError(f"unknown record {ref[0]}:{ref[1]}")
-    return nid
+    else:
+        row = writer.s.execute(select(RemNode.id, RemNode.deleted_seq).where(RemNode.tenant_id == writer.tenant_id, RemNode.type == ref[0],
+                                                                              RemNode.key == ref[1])).first()
+        if row is None:
+            raise ValueError(f"unknown record {ref[0]}:{ref[1]}")
+    if row.deleted_seq is not None:
+        return canonical_of(writer.s, writer.tenant_id, row.id) or row.id
+    return row.id
 
 
 def authorize_ops(session: Session, tenant_id: uuid.UUID, vis, ops: list[dict[str, Any]]) -> None:
@@ -153,6 +170,8 @@ def authorize_ops(session: Session, tenant_id: uuid.UUID, vis, ops: list[dict[st
             cur = w.current(nid) if nid else None
             if cur is not None:
                 need(cur.scope_id, f"{op['type']} {op['key']}")
+            elif nid is not None and _merged(w, op["type"], op["key"]):  # its values will go to the canonical record
+                need(current_scope(_merged(w, op["type"], op["key"])[1], "the merged record"), "the merged record")
             pending[(op["type"], op["key"])] = new
         elif k in ("revise_node", "delete_node", "restrict_node"):
             need(current_scope(op["ref"], "the record"), "the record")
@@ -164,6 +183,26 @@ def authorize_ops(session: Session, tenant_id: uuid.UUID, vis, ops: list[dict[st
             need(current_scope(op["ref"], "the record"), "the record")
             if k == "verify_entity" and not _can_verify(session, vis):
                 raise Unauthorized("only an administrator or a principal allowed to verify can mark a record verified")
+        elif k == "upsert_entity":
+            from cie.state.identity import resolve_entity
+
+            need(_scope_id(session, tenant_id, op["scope"], scopes), f"{op['type']} {op['name']}")
+            res = resolve_entity(session, tenant_id, str(op["type"]), str(op["name"]), op.get("identifiers"), key=op.get("key"))
+            if res.status == "matched":
+                need(current_scope(res.node_id, "the matched record"), "the matched record")
+        elif k == "add_identifier":
+            need(current_scope(op["ref"], "the record"), "the record")
+        elif k in ("confirm_match", "reject_match"):
+            from cie.state.models import StateMatchProposal
+
+            try:
+                p = session.get(StateMatchProposal, uuid.UUID(str(op["proposal"])))
+            except ValueError:
+                p = None
+            if p is None or p.tenant_id != tenant_id:
+                raise Unauthorized("write access required for both records")
+            need(current_scope(p.a_id, "both records"), "both records")
+            need(current_scope(p.b_id, "both records"), "both records")
         elif k == "resolve_conflict":
             try:
                 c = session.get(StateConflict, uuid.UUID(str(op["conflict"])))
@@ -198,12 +237,26 @@ def _can_verify(session: Session, vis) -> bool:
     return bool(p is not None and (p.attributes or {}).get("can_verify"))
 
 
+def _canonical_view(reader: GraphReader, type_: str, key: str):
+    """The canonical record behind a merged record's key, as the reader sees it."""
+    from cie.state.models import StateAlias
+
+    canonical = reader.s.scalar(select(StateAlias.canonical_id).where(StateAlias.tenant_id == reader.tenant_id,
+                                                                      StateAlias.alias_type == type_, StateAlias.alias_key == key))
+    if canonical is None:
+        return None
+    from cie.state.identity import canonical_of
+
+    canonical = canonical_of(reader.s, reader.tenant_id, canonical) or canonical
+    return reader.nodes([canonical]).get(canonical)
+
+
 def translate(kind: str, payload: dict[str, Any], reader: GraphReader) -> list[dict[str, Any]]:
     """Domain events -> generic operations. Every translation is explicit and reads exact values from the graph."""
     if kind == "ops":
         return list(payload.get("ops", []))
     if kind == "supplier_delay":
-        sup = reader.node_by_key("supplier", payload["supplier"])
+        sup = reader.node_by_key("supplier", payload["supplier"]) or _canonical_view(reader, "supplier", payload["supplier"])
         if sup is None:
             raise ValueError(f"unknown supplier {payload['supplier']!r}")
         new_date = domain.as_date(payload["new_date"])
@@ -233,16 +286,22 @@ def translate(kind: str, payload: dict[str, Any], reader: GraphReader) -> list[d
     raise ValueError(kind)
 
 
-def apply_ops(session: Session, writer: GraphWriter, ops: list[dict[str, Any]],
-              fields: FieldStore | None = None) -> tuple[list[uuid.UUID], list[uuid.UUID]]:
+def apply_ops(session: Session, writer: GraphWriter, ops: list[dict[str, Any]], fields: FieldStore | None = None,
+              identity: IdentityStore | None = None) -> tuple[list[uuid.UUID], list[uuid.UUID]]:
     """Apply operations at the writer's sequence number. Returns (deleted ids, restricted ids)."""
     scopes: dict = {}
     deleted, restricted = [], []
     fields = fields or FieldStore(session, writer, Authority(session, writer.tenant_id))
-    for op in ops:
+    identity = identity or IdentityStore(session, writer, fields, fields.principal_id)
+    for i, op in enumerate(ops):
         kind = op["op"]
         if kind in FIELD_OPS:
             _apply_field_op(writer, fields, op)
+        elif kind in IDENTITY_OPS:
+            _apply_identity_op(session, writer, identity, op, i, scopes)
+        elif kind == "upsert_node" and identity.aliases_exist() and _merged(writer, op["type"], op["key"]):
+            alias, canonical = _merged(writer, op["type"], op["key"])
+            identity.redirect_upsert(alias, canonical, op)
         elif kind == "upsert_node":
             projects = [_ref(writer, ["project", k]) for k in op.get("project_keys", [])]
             departments = [_ref(writer, ["department", k]) for k in op.get("department_keys", [])]
@@ -322,6 +381,31 @@ def _apply_field_op(writer: GraphWriter, fields: FieldStore, op: dict[str, Any])
             writer.close_edges(src=nid, kind="owned_by")
             if person is not None:
                 writer.upsert_edge(nid, "owned_by", person, source_pointers=list(op.get("evidence") or []))
+
+
+def _merged(writer: GraphWriter, type_: str, key: str) -> tuple[uuid.UUID, uuid.UUID] | None:
+    from cie.state.identity import canonical_of
+
+    row = writer.s.execute(select(RemNode.id, RemNode.deleted_seq).where(RemNode.tenant_id == writer.tenant_id, RemNode.type == type_,
+                                                                          RemNode.key == key)).first()
+    if row is None or row.deleted_seq is None:
+        return None
+    canonical = canonical_of(writer.s, writer.tenant_id, row.id)
+    return (row.id, canonical) if canonical is not None else None
+
+
+def _apply_identity_op(session: Session, writer: GraphWriter, identity: IdentityStore, op: dict[str, Any], index: int,
+                       scopes: dict) -> None:
+    kind = op["op"]
+    if kind == "upsert_entity":
+        identity.upsert_entity(op, index, _scope_id(session, writer.tenant_id, op["scope"], scopes))
+    elif kind == "add_identifier":
+        identity.results.append(identity.add_identifier(_ref(writer, op["ref"]), str(op["scheme"]), op["value"], op.get("source"),
+                                                        replace=bool(op.get("replace"))))
+    elif kind == "confirm_match":
+        identity.confirm(uuid.UUID(str(op["proposal"])), op.get("canonical"), str(op.get("note", "")))
+    elif kind == "reject_match":
+        identity.reject(uuid.UUID(str(op["proposal"])), str(op.get("note", "")))
 
 
 def check_versions(writer: GraphWriter, ops: list[dict[str, Any]]) -> None:
@@ -428,7 +512,8 @@ def process_event(session: Session, event_id: uuid.UUID, *, embedder=None, analy
         return _finish(session, ev, "conflict", str(e))
     t_ops = time.perf_counter()
     fields = FieldStore(session, writer, Authority(session, ev.tenant_id), principal_id=ev.principal_id)
-    deleted, restricted = apply_ops(session, writer, ops, fields)
+    identity = IdentityStore(session, writer, fields, ev.principal_id)
+    deleted, restricted = apply_ops(session, writer, ops, fields, identity)
     overwritten = fields.reconcile_direct(writer.changed)
     # any change of scope, clearance or access list is a restriction for content derived from the record
     restricted += [k for k, f in writer.changed.items() if k not in restricted and "created" not in f
@@ -461,7 +546,7 @@ def process_event(session: Session, event_id: uuid.UUID, *, embedder=None, analy
                   "access_narrowed": [str(n) for n in narrowed], "invalidated": [str(n) for n in invalidated],
                   "field_decisions": [{"node": str(d.node_id), "field": d.field, "status": d.status, "reason": d.reason,
                                        "conflict": str(d.conflict_id) if d.conflict_id else None} for d in fields.decisions],
-                  "overwritten_statements": overwritten, "stale_results": stale, "tasks": routed, **result}
+                  "identity": identity.results, "overwritten_statements": overwritten, "stale_results": stale, "tasks": routed, **result}
     audit(session, tenant_id=ev.tenant_id, principal_id=ev.principal_id, action="state.change", resource_kind="rem_event",
           resource_id=ev.id, details={"seq": seq, "kind": ev.kind, "impacts": result.get("impacts", 0), "analysis": analysis_name})
     savepoint.commit()
