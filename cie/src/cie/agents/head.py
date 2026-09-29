@@ -46,7 +46,6 @@ from cie.core.models import (
 )
 from cie.core.settings import Settings, get_settings
 from cie.memory.records import contradict, create_record
-from cie.retrieval.pipeline import Retriever
 from cie.workflow import engine
 
 log = get_logger(__name__)
@@ -182,13 +181,21 @@ class HeadAgent:
         return p
 
     def _packet(self, agent: Agent, task: Task, query: str) -> EvidencePacket | None:
-        retriever = Retriever(self.s, self.settings, embedder=self.embedder)
+        """The agent's context, built with the *agent's* principal: live-state traversal plus knowledge-memory search.
+        Live-state records it contains become the task's versioned inputs."""
+        from cie.context.builder import ContextRequest, budget_for_model, build_context
+
+        budget = min(16_000, budget_for_model(agent.model)) if agent.model else 16_000
         try:
-            res = retriever.retrieve(query, self._agent_principal(agent), task.scope_id or self.project.scope_id,
-                                     max_records=60, token_budget=8000)
+            ctx = build_context(self.s, self.project.tenant_id, self._agent_principal(agent),
+                                ContextRequest(question=query, task_id=task.id, scope_id=task.scope_id or self.project.scope_id,
+                                               budget_tokens=budget, model=agent.model, channels=("traversal", "retrieval")),
+                                embedder=self.embedder, settings=self.settings)
         except PermissionError:
             return None
-        return res.packet
+        task.progress = {**(task.progress or {}), "context": {"run_id": str(ctx.run_id) if ctx.run_id else None, "complete": ctx.data["complete"],
+                                                              "sources": ctx.data["sources"], "inputs": ctx.data["inputs_recorded"]}}
+        return ctx.packet
 
     def _execute(self, t: Task, rerun: bool = False) -> tuple[TaskResult, int] | None:
         p = self.project

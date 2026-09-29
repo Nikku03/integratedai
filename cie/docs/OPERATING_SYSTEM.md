@@ -286,3 +286,46 @@ or re-delivered event never reopens a task twice. The event summary lists the ta
 
 **Replay.** A processed event returns its stored outcome when processed again. `python -m cie.rem.cli replay`
 re-applies a tenant's event log into a new tenant and compares the outcomes.
+
+## 5. Context builder (`cie.context`)
+
+**Permissions come first.** Every channel reads through the requester's visibility (scope, clearance and access
+list, in SQL). A record the requester may not see is never loaded, summarised or counted. The channels:
+
+| Channel | What it adds |
+|---|---|
+| structured | entity views of the records the request names: current values with their sources, dependencies, unresolved conflicts, possible identity matches |
+| traversal | typed traversal of the live state from the question: relationship paths, facts versus hypotheses, contradictions, missing evidence. A record without a source pointer is never evidence. |
+| keyword and semantic | hybrid search over knowledge memory |
+| original sources | the documents and pages the knowledge-memory items cite |
+
+A task's context also carries its instructions, acceptance criteria, limits and deadline, and the unresolved
+conflicts of the records it names.
+
+**Budget.**
+- The budget is 25% of the model's context window, capped at 60,000 tokens. The default is 8,000.
+- Channels get 30/30/40 shares, and unused tokens flow to the next channel.
+- When items do not fit, the context says `complete: false` and returns a cursor. The cursor continues at the
+  same snapshot and returns every item exactly once.
+
+**Task inputs.** Live-state records placed in a task's context are recorded as the task's inputs, with their
+versions. From then on, a change to one of them flags or reopens the task (section 4), and the engine refuses to
+complete it on the old value (section 3). The head agent builds every specialist's context this way, with the
+agent's own principal.
+
+**Exhaustive mode** answers questions about a whole collection, for example "which open orders of Project A arrive
+after October 15?":
+- The collection is a record type, optionally limited to one project.
+- The check is deterministic: `{"field": "promised_date", "op": "gt", "value": "2026-10-15"}`, combinable with
+  `all`, `any` and `not`. Numbers compare as numbers and ISO dates as dates.
+- A record missing the field, or whose value cannot be compared, is **unreadable**: counted separately, never as a
+  match or a non-match.
+
+The scan covers every record of the collection the requester may see, in id order at one snapshot. It is never
+truncated; only the listing of matches is paged. Coverage records the records visible, scanned, matched and
+unreadable, and whether the scan was complete. Records hidden from the requester are not included, and neither are
+records restricted since an earlier snapshot a cursor points to. Each build is stored in `context_runs`; an
+exhaustive scan run for a task is also kept in the task's progress.
+
+**API.** `POST /api/context` (focused or exhaustive) and `GET /api/context/runs/{id}`, which only the requester
+or an administrator can read.
