@@ -241,3 +241,48 @@ every task's outcome: verified, not independently verified, failed, or waiting o
 | `assigned` | `running` |
 | `needs_verification`, `awaiting_approval` | `review` |
 | `verified`, `done` | `completed` |
+
+## 4. Events and routing to tasks (`cie.state.domain_events`, `cie.workflow.routing`)
+
+**Domain events.** Other systems report what happened as typed events:
+- `payment.confirmed` and `invoice.paid`
+- `delivery.date_changed`
+- `order.status_changed`
+- `supplier.delay`
+- `task.completed`
+- `entity.updated`
+
+Each event carries:
+- the record it is about: an id, `[type, key]` or a strong identifier;
+- the `version` the sender saw;
+- its `source` (system, record, kind);
+- `occurred_at`;
+- its `data`.
+
+It is translated into field statements, so the authority rules decide what becomes current: a payment from the
+bank moves an invoice from `issued` to `paid` or `partially_paid`, while a supplier's email about a delivery date
+opens a conflict with the ERP instead of overwriting it.
+
+With `version`, the event is a conditional write. If the record has moved on, the whole event is refused as a
+`conflict` (HTTP 409); the sender re-reads and resends. `POST /api/state/domain-events` derives the idempotency
+key from the source system and record, so a notification delivered twice is applied once.
+
+**Status ordering without times.** When two equally authoritative sources give a status and neither statement has
+an event time, the lifecycle orders them: a status that follows the current one wins, and one that precedes it is
+a late report. This applies only to types that have a lifecycle.
+
+**Routing.** After every event (unless `route_tasks=False`), each task that used a changed, deleted or restricted
+record (`task_inputs`) is handled according to its status:
+
+| Task status | What happens |
+|---|---|
+| completed | reopened, with its dependants (see section 3) |
+| running or in review | flagged (`progress.stale_inputs`); the engine will not complete it on the old version |
+| ready or blocked | noted |
+
+Its agent receives an `input_changed` message carrying the record id and versions, never values. Reopened tasks
+are recorded in the project ledger. `task_invalidations` is unique per (task, record, new version), so a replayed
+or re-delivered event never reopens a task twice. The event summary lists the tasks reopened, flagged and noted.
+
+**Replay.** A processed event returns its stored outcome when processed again. `python -m cie.rem.cli replay`
+re-applies a tenant's event log into a new tenant and compares the outcomes.

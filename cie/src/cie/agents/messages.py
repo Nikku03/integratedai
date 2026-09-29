@@ -19,6 +19,7 @@ REQUIRED_FIELDS: dict[MessageKind, set[str]] = {
     MessageKind.verification_request: {"task_id", "verifies_task_id"},
     MessageKind.final_result: {"task_id", "result"},
     MessageKind.failure_report: {"task_id", "error"},
+    MessageKind.input_changed: {"task_id", "record", "from_version", "to_version"},
 }
 
 

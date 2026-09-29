@@ -105,8 +105,11 @@ def test_status_changes_follow_the_lifecycle(session, world, erp_order):
     _, s = apply(session, world, [{"op": "set_status", "ref": ["order", "o184"], "status": "shipped", "source": {"system": "erp"}}])
     assert decisions(s) == [("status", "current")] and attrs(session, world, "order", "o184")["status"] == "shipped"
     _, s = apply(session, world, [{"op": "set_status", "ref": ["order", "o184"], "status": "open", "source": {"system": "erp"}}])
-    assert decisions(s) == [("status", "conflict")], "shipped -> open is not an allowed transition"
-    assert "cannot go from 'shipped' to 'open'" in s["field_decisions"][0]["reason"]
+    assert decisions(s) == [("status", "history")], "an earlier status arriving late is a late report"
+    assert attrs(session, world, "order", "o184")["status"] == "shipped"
+    _, s = apply(session, world, [{"op": "set_status", "ref": ["order", "o184"], "status": "cancelled", "source": {"system": "erp"}}])
+    assert decisions(s) == [("status", "conflict")], "shipped -> cancelled is not an allowed transition"
+    assert "cannot go from 'shipped' to 'cancelled'" in s["field_decisions"][0]["reason"]
     assert attrs(session, world, "order", "o184")["status"] == "shipped"
     _, s = apply(session, world, [{"op": "set_status", "ref": ["order", "o184"], "status": "teleported", "source": {"system": "erp"}}])
     assert decisions(s) == [("status", "conflict")] and "is not a status of order" in s["field_decisions"][0]["reason"]

@@ -36,7 +36,7 @@ from cie.state.identity import IdentityStore
 from cie.state.models import RemEvent, RemNode, RemStock, StateConflict
 from cie.state.store import GraphReader, GraphWriter
 
-EVENT_KINDS = ("ops", "supplier_delay", "stock_count", "task_status", "restrict")
+EVENT_KINDS = ("ops", "supplier_delay", "stock_count", "task_status", "restrict", "domain")
 FIELD_OPS = ("observe", "set_status", "set_owner", "verify_entity", "resolve_conflict")
 IDENTITY_OPS = ("upsert_entity", "add_identifier", "confirm_match", "reject_match")
 VERSIONED_OPS = ("revise_node", "delete_node", "restrict_node", "observe", "set_status", "set_owner", "verify_entity")
@@ -283,6 +283,10 @@ def translate(kind: str, payload: dict[str, Any], reader: GraphReader) -> list[d
         return [{"op": "revise_node", "ref": ["task", payload["task"]], "attrs": {"status": payload["status"]}}]
     if kind == "restrict":
         return [{"op": "restrict_node", **payload}]
+    if kind == "domain":
+        from cie.state.domain_events import translate_domain
+
+        return translate_domain(payload, reader)
     raise ValueError(kind)
 
 
@@ -487,7 +491,7 @@ def _finish(session: Session, ev: RemEvent, status: str, error: str) -> dict[str
 
 
 def process_event(session: Session, event_id: uuid.UUID, *, embedder=None, analysis: Analysis | None = None,
-                  analysis_name: str = "none", limits: dict[str, Any] | None = None, route_tasks: bool = False) -> dict[str, Any]:
+                  analysis_name: str = "none", limits: dict[str, Any] | None = None, route_tasks: bool = True) -> dict[str, Any]:
     """Apply one event to the live state, then run ``analysis`` (optional) on the new snapshot."""
     ev = session.get(RemEvent, event_id, with_for_update=True, populate_existing=True)
     if ev is None:

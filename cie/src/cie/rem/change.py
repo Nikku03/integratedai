@@ -73,7 +73,7 @@ def rem_analysis(policy: str = "rules"):
 
 
 def process_event(session: Session, event_id: uuid.UUID, *, embedder=None, policy: str = "rules",
-                  limits: dict[str, Any] | None = None, route_tasks: bool = False) -> dict[str, Any]:
+                  limits: dict[str, Any] | None = None, route_tasks: bool = True) -> dict[str, Any]:
     """Apply one event to the live state and run the REM analysis. ``policy`` 'rules' (REM), 'reachability'
     (baseline B) or 'none' (state change only)."""
     if policy not in POLICIES:

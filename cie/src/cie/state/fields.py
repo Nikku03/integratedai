@@ -9,8 +9,9 @@ time. Whether it becomes the current value is decided by rules, never by arrival
 3. a more authoritative source (lower rank): it replaces the current value, unless it describes an earlier
    moment than the current value, which opens a conflict (the authoritative system may not know yet);
 4. a less authoritative source with a different value: a conflict is opened and the current value stays;
-5. an equally authoritative source: the later event time wins, an earlier one is kept as history (a late report);
-   the same source updating its own statement wins; otherwise, when time cannot order them, a conflict is opened.
+5. an equally authoritative source: the later event time wins, an earlier one is kept as history (a late report).
+   Without times, a status that follows the current one in the lifecycle wins and one that precedes it is history;
+   the same source updating its own statement wins; otherwise a conflict is opened.
 
 Ranks come from ``state_authority`` rules (most specific match of entity type, field and source system) and fall
 back to the kind of source. A status change must also be an allowed transition (``cie.state.lifecycle``).
@@ -29,7 +30,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from cie.state import domain
-from cie.state.lifecycle import check_transition
+from cie.state.lifecycle import check_transition, states
 from cie.state.models import SOURCE_KINDS, RemNode, StateAuthority, StateConflict, StateField
 from cie.state.store import GraphWriter
 
@@ -230,6 +231,13 @@ class FieldStore:
             return become_current(f"later statement ({eff.date()}) from an equally authoritative source than {cur_desc} ({cur.effective_at.date()})")
         if earlier:
             return keep("history", f"late report: describes {eff.date()}, before the current value from {cur_desc} ({cur.effective_at.date()})")
+        if field_name == "status" and states(node.type) is not None and cur.value is not None and not _same(cur.value, value):
+            # the lifecycle orders statuses when time cannot: a next status is later, a previous one is a late report
+            if check_transition(node.type, str(cur.value), str(value)) is None and check_transition(node.type, None, str(value)) is None:
+                return become_current(f"{value!r} follows {cur.value!r} in the {node.type} lifecycle ({src_desc}, as authoritative as {cur_desc})")
+            if (check_transition(node.type, None, str(value)) is None and check_transition(node.type, None, str(cur.value)) is None
+                    and check_transition(node.type, str(value), str(cur.value)) is None):
+                return keep("history", f"late report: {value!r} comes before the current {cur.value!r} in the {node.type} lifecycle")
         if src.system == cur.source_system and (not src.record or src.record == cur.source_record):
             return become_current(f"update from the same source ({src.system}{':' + src.record if src.record else ''})")
         return conflict(f"{src_desc} and {cur_desc} are equally authoritative and their times do not order them")

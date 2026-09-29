@@ -615,6 +615,7 @@ class MessageKind(str, enum.Enum):
     verification_request = "verification_request"
     final_result = "final_result"
     failure_report = "failure_report"
+    input_changed = "input_changed"  # a record the task used changed (cie.workflow.routing)
 
 
 class AgentMessage(Base):

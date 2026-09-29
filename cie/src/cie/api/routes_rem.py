@@ -43,7 +43,7 @@ class QueryIn(BaseModel):
 
 
 class ChangeIn(BaseModel):
-    kind: Literal["ops", "supplier_delay", "stock_count", "task_status", "restrict"]
+    kind: Literal["ops", "supplier_delay", "stock_count", "task_status", "restrict", "domain"]
     payload: dict[str, Any]
     idempotency_key: str = Field(min_length=1, max_length=200)
     wait: bool = False  # process now instead of through the worker queue

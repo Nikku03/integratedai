@@ -1,6 +1,6 @@
 """Live state routes: events, entity views, conflicts and source authority.
 
-POST /state/events, GET /state/events/{id}, GET /state/entities/{type}/{key}, GET /state/conflicts,
+POST /state/events, POST /state/domain-events, GET /state/events/{id}, GET /state/entities/{type}/{key}, GET /state/conflicts,
 POST /state/conflicts/{id}/resolve, GET and PUT /state/authority, POST /state/identity/resolve,
 GET /state/identity/proposals, POST /state/identity/proposals/{id}/confirm and /reject. Reads are filtered by the
 caller's permissions.
@@ -29,6 +29,18 @@ class EventIn(BaseModel):
     idempotency_key: str = Field(min_length=1, max_length=200)
     analysis: Literal["none", "rules", "reachability"] = "none"
     wait: bool = True  # process now; false queues it for the worker
+
+
+class DomainEventIn(BaseModel):
+    type: str = Field(min_length=1, max_length=64)
+    entity: Any
+    version: int | None = None  # the record version the sender saw; a newer one refuses the event
+    source: dict[str, Any]
+    occurred_at: str | None = None
+    data: dict[str, Any] = {}
+    evidence: list[dict[str, Any]] = []
+    idempotency_key: str | None = Field(None, max_length=200)
+    analysis: Literal["none", "rules", "reachability"] = "none"
 
 
 class ResolveIn(BaseModel):
@@ -107,6 +119,18 @@ def _submit(session: Session, auth: Auth, settings: Settings, kind: str, payload
 def post_event(body: EventIn, auth: Auth = Depends(current_auth), session: Session = Depends(db),
                settings: Settings = Depends(get_settings)):
     return _submit(session, auth, settings, body.kind, body.payload, body.idempotency_key, body.analysis, body.wait)
+
+
+@router.post("/domain-events", status_code=202)
+def post_domain_event(body: DomainEventIn, auth: Auth = Depends(current_auth), session: Session = Depends(db),
+                      settings: Settings = Depends(get_settings)):
+    """A typed business event (payment.confirmed, delivery.date_changed, ...). Without an idempotency key, the source
+    system and record identify it, so the same notification delivered twice is applied once."""
+    key = body.idempotency_key or (f"{body.type}:{body.source.get('system')}:{body.source['record']}" if body.source.get("record") else None)
+    if not key:
+        raise HTTPException(400, "give an idempotency_key or source.record")
+    payload = body.model_dump(exclude={"idempotency_key", "analysis"})
+    return _submit(session, auth, settings, "domain", payload, key, body.analysis, True)
 
 
 @router.get("/events/{event_id}")
