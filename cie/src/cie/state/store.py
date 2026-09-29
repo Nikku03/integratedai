@@ -275,6 +275,22 @@ class GraphReader:
                                   "scope_id": str(row.scope_id), "sensitivity": row.sensitivity}
         return out
 
+    def stock_rows(self, holder_id: uuid.UUID | None = None, product_id: uuid.UUID | None = None) -> list[dict[str, Any]]:
+        """Stock rows held by a project (or of a product) at the snapshot, permission-filtered."""
+        stmt = select(RemStock).where(RemStock.tenant_id == self.tenant_id, _at(RemStock, self.seq))
+        if holder_id is not None:
+            stmt = stmt.where(RemStock.holder_id == holder_id)
+        if product_id is not None:
+            stmt = stmt.where(RemStock.product_id == product_id)
+        if self.vis is not None:
+            stmt = stmt.where(self.vis.sql_filter(RemStock.scope_id, RemStock.sensitivity))
+        rows = [r for (r,) in self._run(stmt, label="stock_rows")]
+        names = self.nodes({r.product_id for r in rows} | {r.holder_id for r in rows})
+        return [{"product": names[r.product_id].key, "holder": names[r.holder_id].key, "on_hand": float(r.qty_on_hand),
+                 "reserved": float(r.qty_reserved or 0), "available": float(r.qty_on_hand) - float(r.qty_reserved or 0),
+                 "sys_from": r.sys_from, "source_pointers": list(r.source_pointers or [])}
+                for r in rows if r.product_id in names and r.holder_id in names]
+
     # -------------------------------------------------------------- search over the graph
     def search(self, question: str, qvec=None, k: int = 10, types: list[str] | None = None) -> list[tuple[uuid.UUID, float, str]]:
         """Keyword and semantic search over node names and summaries at the snapshot (permission-filtered).
@@ -409,7 +425,7 @@ class GraphWriter:
             emb = cur.embedding if (cur.name == name and (cur.summary or "") == (summary or "")) else None
         else:
             if nid is None:
-                node = RemNode(tenant_id=self.tenant_id, type=type_, key=key, created_seq=seq)
+                node = RemNode(tenant_id=self.tenant_id, type=type_, key=key, created_seq=seq, changed_seq=seq)
                 self.s.add(node)
                 self.s.flush()
                 nid = node.id

@@ -23,7 +23,7 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from typing import Any
 
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -534,6 +534,9 @@ def process_event(session: Session, event_id: uuid.UUID, *, embedder=None, analy
     if analysis is not None:
         result.update(analysis(session, cs, AnalysisWriter(writer), limits or {}))
     detect_ms = (time.perf_counter() - t_an) * 1000
+    if writer.changed:  # every kind of change, including relationships and stock counts, which add no node version
+        session.execute(update(RemNode).where(RemNode.tenant_id == ev.tenant_id, RemNode.id.in_(list(writer.changed)))
+                        .values(changed_seq=seq))
     stale = invalidate_results(session, ev.tenant_id, list(writer.changed), restricted, seq, ev.id)
     routed: dict[str, Any] = {}
     if route_tasks:

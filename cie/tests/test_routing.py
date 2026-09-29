@@ -96,6 +96,10 @@ def test_changes_reopen_completed_tasks_once(session, world, books):
     assert run.progress["stale_inputs"][0]["label"] == "order:o1"
     engine.submit(session, run.id, worker="w", result=GOOD)
     assert run.status == S.running and "inputs changed" in run.progress["changes_requested"]["notes"], "never completed on old values"
+    from cie.workflow.models import TaskInput
+
+    assert session.query(TaskInput).filter_by(task_id=run.id, ref_kind="record").count() == 0, "the old reads no longer count"
+    engine.record_inputs(session, run, records={o1.id: (view(session, world, "order", "o1").version, "order:o1")})  # it reads again
     msgs = session.query(AgentMessage).filter_by(kind=MessageKind.input_changed).all()
     assert {m.task_id for m in msgs} == {a.id, run.id} and all("promised_date" not in str(m.payload) for m in msgs), "ids, not values"
     # the same change delivered again does nothing; a later change is handled once more
@@ -104,7 +108,15 @@ def test_changes_reopen_completed_tasks_once(session, world, books):
 
     again = route_to_tasks(session, ChangeSet(event=ev, seq=ev.seq, ops=[], prev=None, changed={o1.id: ["attrs.promised_date"]},
                                               deleted=[], restricted=[]))
-    assert again == {} and session.query(TaskInvalidation).filter_by(task_id=a.id).count() == 1
+    assert again == {} and session.query(TaskInvalidation).filter_by(task_id=a.id).count() == 1, "the same change: handled once"
+    # a change that adds no version (a new relationship) still reaches the tasks that read the record before it
+    engine.claim_task(session, a.id, worker="w")
+    engine.record_inputs(session, a, records={o1.id: (view(session, world, "order", "o1").version, "order:o1")})
+    engine.submit(session, a.id, worker="w", result=GOOD)
+    assert a.status == S.completed
+    apply(session, world, "ops", {"ops": [node("supplier", "s9"), {"op": "upsert_edge", "src": ["order", "o1"], "kind": "depends_on",
+                                                                  "dst": ["supplier", "s9"]}]})
+    assert a.status == S.ready and "relationships or stock" in a.progress["reopened"]["reason"]
     ev2, s2 = apply(session, world, "ops", {"ops": [{"op": "delete_node", "ref": ["order", "o1"]}]})
     inv = session.query(TaskInvalidation).filter_by(task_id=run.id, to_version=0).one()
     assert inv.action == "flagged" and str(run.id) in s2["tasks"]["flagged"]

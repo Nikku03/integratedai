@@ -7,8 +7,9 @@ handled according to its status:
 * running or in review: flagged, and its agent is told. The engine will not complete it on the old version;
 * anything else: noted, because it will read current values when it runs.
 
-Each (task, record, new version) is handled once (``task_invalidations`` is unique on it), so a re-delivered event
-or a retried job never reopens a task twice. Messages carry record ids and versions only, never values.
+A change counts whether it adds a version or not (a new relationship or a stock count stamps the record's
+``changed_seq``). Each (task, record, change) is handled once (``task_invalidations`` is unique on it), so a
+re-processed change never reopens a task twice. Messages carry record ids and versions only, never values.
 """
 
 from __future__ import annotations
@@ -43,8 +44,8 @@ def route_to_tasks(session: Session, cs) -> dict[str, Any]:
     out: dict[str, list[str]] = {"reopened": [], "flagged": [], "noted": []}
     for use, t in uses:
         new_version = 0 if use.ref_id in cs.deleted else int(now.get(use.ref_id, 0))
-        if new_version == use.version:
-            continue
+        if new_version == use.version and (use.seq is None or use.seq >= cs.seq):
+            continue  # neither a new version nor any other change since the task read it
         what = labels.get(use.ref_id, str(use.ref_id))
         if t.status == S.completed:
             action = "reopened"
@@ -56,10 +57,12 @@ def route_to_tasks(session: Session, cs) -> dict[str, Any]:
             action = "noted"
         row = session.execute(insert(TaskInvalidation).values(
             id=uuid.uuid4(), tenant_id=ev.tenant_id, task_id=t.id, ref_id=use.ref_id, from_version=use.version, to_version=new_version,
-            event_id=ev.id, seq=cs.seq, action=action).on_conflict_do_nothing(constraint="uq_task_invalidation").returning(TaskInvalidation.id)).first()
+            event_id=ev.id, seq=cs.seq, action=action).on_conflict_do_nothing(constraint="uq_task_invalidation_seq")
+            .returning(TaskInvalidation.id)).first()
         if row is None:
             continue  # already handled for this version
-        change = f"{what} changed (version {use.version} -> {new_version or 'deleted'}) at seq {cs.seq}"
+        change = (f"{what} changed (version {use.version} -> {new_version or 'deleted'}) at seq {cs.seq}" if new_version != use.version
+                  else f"{what} changed at seq {cs.seq} (its relationships or stock; still version {use.version})")
         details = {"record": str(use.ref_id), "label": what, "from_version": use.version, "to_version": new_version,
                    "event_id": str(ev.id), "seq": cs.seq}
         if action == "reopened":

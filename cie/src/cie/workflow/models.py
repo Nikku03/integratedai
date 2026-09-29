@@ -33,6 +33,7 @@ class TaskInput(Base):
     ref_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
     tenant_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("tenants.id"), index=True)
     version: Mapped[int] = mapped_column(Integer)
+    seq: Mapped[int | None] = mapped_column(BigInteger)  # the state snapshot it was read at (records)
     label: Mapped[str] = mapped_column(String(300), default="")
     recorded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     __table_args__ = (Index("ix_task_inputs_ref", "ref_kind", "ref_id"),)
@@ -53,8 +54,8 @@ class TaskTransition(Base):
 
 
 class TaskInvalidation(Base):
-    """A state change that invalidated a task's input. Unique per (task, input, new version), so replaying or
-    re-delivering the same event never reopens a task twice."""
+    """A state change that invalidated a task's input. Unique per (task, input, change sequence number), so
+    re-delivering or re-processing the same change never reopens a task twice."""
 
     __tablename__ = "task_invalidations"
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -67,4 +68,4 @@ class TaskInvalidation(Base):
     seq: Mapped[int | None] = mapped_column(BigInteger)
     action: Mapped[str] = mapped_column(String(24))  # reopened | flagged | blocked | noted
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
-    __table_args__ = (UniqueConstraint("task_id", "ref_id", "to_version", name="uq_task_invalidation"),)
+    __table_args__ = (UniqueConstraint("task_id", "ref_id", "seq", name="uq_task_invalidation_seq"),)

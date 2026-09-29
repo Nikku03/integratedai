@@ -363,20 +363,54 @@ through the verifier's permissions, so a record the verifier may not see cannot 
 The project synthesis is still written to the project scope. Each part of it is labelled as verified, not
 independently verified, failed, or waiting on a person.
 
-## 7. Status
+## 7. The loop benchmark (`cie.eval.bench_loop`)
+
+This measures the loop the architecture asks to prove on one project: retrieval completeness, citation accuracy,
+stale-state errors, missed dependencies, duplicate actions, task completion, latency and cost.
+
+**Data.** Projects come from the controlled generator (FICTIONAL, GENERATED data), with prices and budgets added.
+Expected answers come from the generator's own world model. The worlds are loaded into the tenant that holds the
+EnterpriseRAG-Bench memory bank, so search has to find them among real text.
+
+**How it runs.**
+- For each project, an analyst answers "Can it deliver every milestone on time and within budget?" through the
+  context builder, the workflow engine and the publication gate. The analyst is deterministic, so the measures
+  isolate the loop, not a model.
+- A stream of changes follows. Each change is delivered twice, and each supplier notice is also forwarded under a
+  new key.
+
+**Arms.**
+- `loop`: routing on; everything in the context counts as an input.
+- `loop-explicit`: routing on; only the named records count as inputs.
+- `no-routing`: routing off.
+
+The pass criteria were fixed in advance in `docs/LOOP_PREREGISTRATION.md` (test worlds 301 to 303). The
+Colab notebook `notebooks/enterprise_rag_bench_colab.ipynb` runs it as Part 2, after loading 50,000 documents.
+
+```bash
+python -m cie.eval.bench_loop --host-tenant <memory bank tenant> --seeds 301,302,303 --events 20
+```
+
+**Found and fixed during development** (worlds 1, 2 and 4 only):
+- A stock count or a new relationship did not change a record's version, so tasks that had used the record were
+  not reopened. Records now carry `changed_seq`, the last change of any kind. Task inputs record the snapshot they
+  were read at, and routing and the engine's stale check use both.
+- A re-run kept the previous run's inputs. A record deleted since then made every submission look stale, until a
+  person had to decide. A task's record inputs are now cleared whenever it starts running again.
+
+**Observed during development.** Counting everything in the context as an input (the builder's default) reopens
+many tasks whose answers did not depend on the change, because traversal brings in other projects' records. On
+two development worlds, 106 of 149 routings were of unaffected projects, and the reaction to a change took about
+6 s instead of about 0.8 s with `inputs="explicit"`. Nothing was missed either way. The default stays
+conservative, because a model may rely on anything in its context; workers that declare what they use can pass
+`inputs="explicit"`.
+
+## 8. Status
 
 These layers are built and tested (unit, integration and API tests; see `tests/test_state.py`,
-`test_identity.py`, `test_workflow.py`, `test_routing.py`, `test_context.py`, `test_verification.py`).
-
-The measurement the architecture asks for has **not** been run yet: prove the loop on one project, and measure
-retrieval completeness, citation accuracy, stale-state errors, missed dependencies, duplicate actions, task
-completion, latency and cost. The mechanisms those metrics need are now in place:
-- task inputs with versions;
-- invalidations;
-- coverage records;
-- verdicts with methods;
-- transition logs;
-- idempotency keys.
+`test_identity.py`, `test_workflow.py`, `test_routing.py`, `test_context.py`, `test_verification.py` and
+`test_bench_loop.py`). The pre-registered loop run on test worlds 301 to 303 happens in the Colab notebook; its
+results are not in this document yet.
 
 The action gateway (permission, freshness, approval, already-executed and result-confirmed checks before acting on
 external systems) is **not built**.

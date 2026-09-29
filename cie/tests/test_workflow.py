@@ -160,6 +160,16 @@ def test_stale_inputs_block_completion_and_reopen_cascades(session, world, proj)
     changed = engine.reopen(session, a.id, actor="events", reason="order:o1 changed")
     assert a.status == S.ready and b.status == S.blocked and {t.id for t in changed} == {a.id, b.id}
     assert "dependency 'a' was reopened" in b.progress["reopened"]["reason"]
+    # a new relationship adds no version to the record, but a task that read it before must not complete on it
+    t2 = new(session, world, proj, "stock check")
+    engine.claim_task(session, t2.id, worker="w")
+    engine.record_inputs(session, t2, records={o1.id: (o1.version, "order:o1")})
+    ev, _ = submit_event(session, world.tenant.id, kind="ops", idempotency_key="o3", payload={"ops": [
+        {"op": "upsert_node", "type": "product", "key": "p1", "name": "P1", "scope": "Acme"},
+        {"op": "upsert_edge", "src": ["order", "o1"], "kind": "depends_on", "dst": ["product", "p1"]}]})
+    process_event(session, ev.id)
+    engine.submit(session, t2.id, worker="w", result=GOOD)
+    assert t2.status == S.running and t2.progress["changes_requested"]["details"]["stale_inputs"][0]["changed_at_seq"]
 
 
 def test_overdue(session, world, proj):

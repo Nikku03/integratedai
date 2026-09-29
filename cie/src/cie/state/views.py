@@ -73,7 +73,7 @@ def view_of(session: Session, reader: GraphReader, n: NodeView, *, history: bool
             continue
         deps.append({"relation": e.kind, "direction": "out" if e.src == n.id else "in", "id": str(other.id), "type": other.type,
                      "key": other.key, "name": other.name, "status": (other.attrs or {}).get("status"), "version": other.version,
-                     "provenance": e.provenance, "hypothesis": e.hypothesis})
+                     "provenance": e.provenance, "hypothesis": e.hypothesis, "attrs": e.attrs or {}})
     from cie.state.models import StateAlias, StateIdentifier, StateMatchProposal
 
     identifiers = [{"scheme": i.scheme, "value": i.value, "strength": i.strength}
@@ -97,6 +97,8 @@ def view_of(session: Session, reader: GraphReader, n: NodeView, *, history: bool
         "as_of_seq": reader.seq, "project_ids": [str(p) for p in n.project_ids], "facts": facts, "dependencies": deps,
         "dependencies_truncated": bool(cut), "evidence": evidence, "unresolved": unresolved,
         "identifiers": identifiers, "aliases": aliases, "possible_matches": possible,
+        "stock": reader.stock_rows(holder_id=n.id) if n.type in ("project", "team", "department") else
+        (reader.stock_rows(product_id=n.id) if n.type == "product" else []),
         "last_verified_at": (n.attrs or {}).get("last_verified_at"), "verification": n.verification,
         "review_status": n.review_status, "authoritative": n.authoritative,
     }

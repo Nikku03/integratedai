@@ -175,9 +175,15 @@ Stated plainly so nobody mistakes a scaffold for a finished capability.
 
 ## Live state, identity, workflow, context and verification (docs/OPERATING_SYSTEM.md)
 
-**Not yet measured.** The one-project loop and its metrics (retrieval completeness, citation accuracy, stale-state
-errors, missed dependencies, duplicate actions, task completion, latency, cost) have not been measured. The tests
-show that the mechanisms behave as specified, not how well the whole system works on real work.
+**Measured only on generated projects so far.** `cie.eval.bench_loop` measures the one-project loop
+(retrieval completeness, citation accuracy, stale-state errors, missed dependencies, duplicate actions, task
+completion, latency, cost) on generated worlds, with a deterministic analyst. It is not measured on a real project
+or with a model doing the work. The pre-registered test run (`docs/LOOP_PREREGISTRATION.md`) is run in the Colab
+notebook.
+
+**Over-invalidation.** By default every live-state record in a task's context becomes an input, so changes to
+records a task read but did not rely on still reopen it. Workers that declare their inputs avoid this with
+`inputs="explicit"`.
 
 **Authority.**
 - Ranks come from rules or the kind of source. A value written directly by an import becomes a system-of-record

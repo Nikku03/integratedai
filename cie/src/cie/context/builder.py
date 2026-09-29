@@ -16,6 +16,10 @@ the context says so (``complete: false``) and returns a cursor that continues wh
 placed in a task's context are recorded as the task's inputs with their versions, so a later change to them
 reopens or flags the task.
 
+What becomes a task input is ``ContextRequest.inputs``: every live-state record in the context (``all``, the
+default: conservative, since a model may rely on anything it read) or only the records the request named and the
+collection an exhaustive scan covered (``explicit``, for workers that declare exactly what they use).
+
 **Exhaustive mode** answers questions about a whole collection ("which open orders of project A arrive after
 October 15?"). It scans every record of the collection the requester may see, in id order at one snapshot, applies
 a deterministic check (``cie.context.checks``) and records coverage: records visible, scanned, matched and
@@ -72,6 +76,10 @@ class ContextRequest:
     model: str | None = None
     cursor: str | None = None
     channels: tuple[str, ...] = ("structured", "traversal", "retrieval")
+    # which live-state records become the task's inputs: "all" in the context (conservative: nothing a model might
+    # have read escapes invalidation), or "explicit" (only the records the request named), for workers that
+    # declare exactly what they use
+    inputs: str = "all"
 
 
 @dataclass
@@ -172,8 +180,9 @@ def build_context(session: Session, tenant_id: uuid.UUID, principal: Principal, 
         data["contradictions"], data["missing_evidence"] = out.get("contradictions", [])[:20], out.get("missing_evidence", [])[:20]
         data["sources"]["traversal"] = {"visited": len(out.get("entities", [])), "evidence": len(ev), "returned": len(got),
                                         "stopping_reason": out.get("stopping_reason"), "status": out.get("status")}
-        for e in got:
-            live[uuid.UUID(e["node"]["id"])] = (e["node"]["version"], f"{e['node']['type']}:{e['node']['key']}")
+        if req.inputs == "all":
+            for e in got:
+                live[uuid.UUID(e["node"]["id"])] = (e["node"]["version"], f"{e['node']['type']}:{e['node']['key']}")
         if i < len(ev) or out.get("status") == "incomplete":
             complete, nxt["traversal"] = False, i
         spare = max(0, share - used)
@@ -220,7 +229,7 @@ def build_context(session: Session, tenant_id: uuid.UUID, principal: Principal, 
     if task is not None and live:
         from cie.workflow import engine
 
-        engine.record_inputs(session, task, records=live)
+        engine.record_inputs(session, task, records=live, seq=reader.seq)
     data["inputs_recorded"] = len(live) if task is not None else 0
     run = _record(session, tenant_id, principal, req, data, {}, complete, reader.seq, used_total) if record else None
     if run is not None:
@@ -304,7 +313,7 @@ def exhaustive(session: Session, tenant_id: uuid.UUID, principal: Principal, req
     if task is not None and task.tenant_id == tenant_id:
         from cie.workflow import engine
 
-        engine.record_inputs(session, task, records={uuid.UUID(m["id"]): (m["version"], m["entity_id"]) for m in page})
+        engine.record_inputs(session, task, records={uuid.UUID(m["id"]): (m["version"], m["entity_id"]) for m in page}, seq=reader.seq)
         progress = dict(task.progress or {})
         progress["coverage"] = list(progress.get("coverage", []))[-9:] + [coverage]
         task.progress = progress

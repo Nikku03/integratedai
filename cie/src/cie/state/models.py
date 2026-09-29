@@ -80,6 +80,8 @@ class RemNode(Base):
     key: Mapped[str] = mapped_column(String(300))  # stable business key, e.g. "erp:PO-1042"
     created_seq: Mapped[int] = mapped_column(BigInteger)
     deleted_seq: Mapped[int | None] = mapped_column(BigInteger)
+    # the last change of any kind: a new version, a relationship, a stock count. A task input read before it is stale.
+    changed_seq: Mapped[int | None] = mapped_column(BigInteger)
     __table_args__ = (UniqueConstraint("tenant_id", "type", "key", name="uq_rem_node_key"),)
 
 

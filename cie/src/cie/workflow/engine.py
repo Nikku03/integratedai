@@ -11,6 +11,8 @@
 * **ready -> running**: a worker claims it with a lease. Claims use ``FOR UPDATE SKIP LOCKED``, so two workers
   never run the same task. The worker heartbeats to keep the lease and checkpoints its progress. When a lease
   expires the task returns to ``ready`` with its progress intact, and another worker can pick it up.
+* **ready -> running** and **review -> running** clear the record inputs of the earlier run: the worker reads its
+  context again, and what it reads now is what counts.
 * **running -> review**: the worker submits a result. The engine checks the acceptance criteria, the cost and tool
   limits, and whether the task's inputs are still current. Automatic review completes the task or asks for
   changes. An agent or human review leaves it in ``review`` until the reviewer decides.
@@ -191,7 +193,16 @@ def claim(session: Session, tenant_id: uuid.UUID, *, worker: str, agent_id: uuid
     return _start(session, t, worker, agent_id, lease_seconds)
 
 
+def clear_record_inputs(session: Session, t: Task) -> None:
+    """A task about to run (again) rebuilds its context, so the records an earlier run read are no longer its inputs.
+    Without this, a record deleted or changed since the earlier run would keep the new run from ever completing."""
+    from sqlalchemy import delete
+
+    session.execute(delete(TaskInput).where(TaskInput.task_id == t.id, TaskInput.ref_kind == "record"))
+
+
 def _start(session: Session, t: Task, worker: str, agent_id: uuid.UUID | None, lease_seconds: int) -> Task:
+    clear_record_inputs(session, t)
     t.attempts = (t.attempts or 0) + 1
     if agent_id is not None:
         t.assigned_agent_id = agent_id
@@ -257,33 +268,44 @@ def reclaim_expired(session: Session, *, tenant_id: uuid.UUID | None = None, at:
 
 # ---------------------------------------------------------------------------------------------- inputs
 def record_inputs(session: Session, t: Task, records: dict[uuid.UUID, tuple[int, str]] | None = None,
-                  tasks: list[Task] | None = None) -> None:
-    """Remember which versions a task's work was based on (live-state records and other tasks' results)."""
-    rows = [("record", nid, v, label) for nid, (v, label) in (records or {}).items()]
-    rows += [("task", d.id, d.revision or 0, d.title[:300]) for d in tasks or []]
-    for kind, rid, version, label in rows:
+                  tasks: list[Task] | None = None, seq: int | None = None) -> None:
+    """Remember which versions a task's work was based on: live-state records (with the snapshot ``seq`` they were
+    read at, so changes that add no version, such as a stock count or a new relationship, are caught too) and
+    other tasks' results."""
+    if records and seq is None:
+        from cie.state.store import current_seq
+
+        seq = current_seq(session, t.tenant_id)
+    rows = [("record", nid, v, label, seq) for nid, (v, label) in (records or {}).items()]
+    rows += [("task", d.id, d.revision or 0, d.title[:300], None) for d in tasks or []]
+    for kind, rid, version, label, at in rows:
         cur = session.get(TaskInput, (t.id, kind, rid))
         if cur is None:
-            session.add(TaskInput(task_id=t.id, ref_kind=kind, ref_id=rid, tenant_id=t.tenant_id, version=version, label=label))
+            session.add(TaskInput(task_id=t.id, ref_kind=kind, ref_id=rid, tenant_id=t.tenant_id, version=version, label=label, seq=at))
         else:
-            cur.version, cur.label = version, label
+            cur.version, cur.label, cur.seq = version, label, at
     session.flush()
 
 
 def stale_inputs(session: Session, t: Task) -> list[dict[str, Any]]:
     """Inputs that moved on since the task used them: a record with a newer version (or deleted), or a task whose
     result changed."""
-    from cie.state.models import RemNodeVersion
+    from cie.state.models import RemNode, RemNodeVersion
 
     inputs = list(session.scalars(select(TaskInput).where(TaskInput.task_id == t.id)))
     recs = [i for i in inputs if i.ref_kind == "record"]
     out = []
     if recs:
+        ids = [i.ref_id for i in recs]
         cur = dict(session.execute(select(RemNodeVersion.node_id, RemNodeVersion.version).where(
-            RemNodeVersion.node_id.in_([i.ref_id for i in recs]), RemNodeVersion.sys_to.is_(None))).all())
+            RemNodeVersion.node_id.in_(ids), RemNodeVersion.sys_to.is_(None))).all())
+        changed = dict(session.execute(select(RemNode.id, RemNode.changed_seq).where(RemNode.id.in_(ids))).all())
         for i in recs:
             if cur.get(i.ref_id) != i.version:
                 out.append({"kind": "record", "id": str(i.ref_id), "label": i.label, "used": i.version, "now": cur.get(i.ref_id)})
+            elif i.seq is not None and (changed.get(i.ref_id) or 0) > i.seq:  # a relationship or stock count changed
+                out.append({"kind": "record", "id": str(i.ref_id), "label": i.label, "used": i.version, "now": cur.get(i.ref_id),
+                            "read_at_seq": i.seq, "changed_at_seq": changed.get(i.ref_id)})
     for i in inputs:
         if i.ref_kind == "task":
             d = session.get(Task, i.ref_id)
@@ -397,6 +419,7 @@ def _decide(session: Session, t: Task, verdict: str, reviewer: str, notes: str, 
         return t
     t.review_rounds = (t.review_rounds or 0) + 1
     t.progress = {**(t.progress or {}), "changes_requested": {"by": reviewer, "notes": notes, "details": details, "round": t.review_rounds}}
+    clear_record_inputs(session, t)  # the worker addresses the review with a fresh context
     worker = t.lease_owner
     transition(session, t, S.running, actor=reviewer, reason=f"changes requested: {notes}", details=details)
     t.lease_owner, t.lease_expires_at = worker, now() + timedelta(seconds=DEFAULT_LEASE_SECONDS)  # back to the same worker
