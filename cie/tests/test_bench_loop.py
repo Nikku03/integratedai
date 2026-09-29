@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from cie.eval.bench_loop import LoopWorld, Namespace, run_world
+from cie.eval.bench_loop import LoopWorld, Namespace, _parse_json, run_world
 
 pytestmark = pytest.mark.db
 
@@ -18,6 +18,12 @@ def test_oracle_states_line_up_with_events():
     pk = sorted(lw.base.projects)[0]
     assert ns.s(pk) == f"t-{pk}" and ns.key(f"milestone:{pk}-m0") == f"milestone:t-{pk}-m0"
     assert ns.s(f"{sorted(lw.base.orders)[0]}#text").startswith("t-PO-")
+
+
+def test_model_replies_are_read_leniently_but_whole():
+    assert _parse_json('Sure:\n```json\n{"cost": 5, "feasible": true}\n```') == {"cost": 5, "feasible": True}
+    assert _parse_json('{"milestones": [1]}, {"cost": 3} then {"milestones": [9]}') == {"milestones": [1], "cost": 3}, "split objects merge"
+    assert _parse_json('{"a": 1,, broken} {"b": 2}') == {"b": 2} and _parse_json("no json") is None and _parse_json("[1]") is None
 
 
 def test_loop_run_small(session, embedder):

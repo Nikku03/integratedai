@@ -79,21 +79,26 @@ TAGS = {"loop": "L", "loop-explicit": "E", "loop-relied": "R", "no-routing": "N"
 
 
 def _parse_json(text: str) -> dict[str, Any] | None:
-    """The first JSON object in a model's reply (models wrap it in prose or code fences)."""
+    """The JSON object in a model's reply. Models wrap it in prose or code fences, and small ones split it into
+    several objects (``{"milestones": ...}, {"cost": ...}``): every top-level object is read and their keys merged,
+    the first occurrence of a key winning."""
     if not text:
         return None
-    t = text.strip()
-    if "```" in t:
-        parts = t.split("```")
-        t = next((p.removeprefix("json").strip() for p in parts if "{" in p), t)
-    i, j = t.find("{"), t.rfind("}")
-    if i < 0 or j <= i:
-        return None
-    try:
-        v = json.loads(t[i:j + 1])
-    except json.JSONDecodeError:
-        return None
-    return v if isinstance(v, dict) else None
+    t = text.replace("```json", "```").replace("```", " ")
+    dec, out, i = json.JSONDecoder(), {}, t.find("{")
+    while 0 <= i < len(t):
+        try:
+            v, end = dec.raw_decode(t, i)
+        except json.JSONDecodeError:
+            i = t.find("{", i + 1)
+            continue
+        if isinstance(v, dict):
+            out = {**v, **out}
+        i = t.find("{", end)
+    return out or None
+
+
+ANALYST_KEYS = ("milestones", "cost_lines", "cost", "budget", "within_budget", "feasible")
 
 
 def _num(x: Any) -> float | None:
@@ -468,12 +473,14 @@ class Run:
             self.c["model_tokens_out"] += int(r.tokens_out or 0)
             self.c["model_cost_usd_micros"] += int(round(float(r.cost_usd or 0) * 1e6))
             out = _parse_json(r.text)
-            if out is not None and isinstance(out.get("milestones"), list):
+            missing = [k for k in ANALYST_KEYS if k not in (out or {})]
+            if not missing and isinstance(out["milestones"], list) and isinstance(out["cost_lines"], list):
                 break
             self.c["model_bad_json"] += 1
             self.last_bad_reply = f"{r.tokens_out} tokens: {(r.text or '')[:200]!r} ... {(r.text or '')[-100:]!r}"
             out = None
-            user += "\n\nYour previous reply was not a valid JSON object in the requested form. Reply with the JSON object only."
+            user += ("\n\nYour previous reply was not one JSON object in the requested form"
+                     + (f" (missing: {', '.join(missing)})" if missing else "") + ". Reply with the JSON object only, with every key.")
         if out is None:
             return None
         invented = 0
@@ -953,7 +960,7 @@ def markdown(report: dict[str, Any]) -> str:
              row("Delay question p50 (ms)", lambda a: a["latency_ms_p50_of_worlds"]["question_ms"]),
              row("Context tokens (total)", lambda a: a["cost"]["context_tokens_total"]),
              row("Model calls / tokens in / tokens out", lambda a: f"{a['cost']['model_calls']} / {a['cost']['model_tokens_in']} / {a['cost']['model_tokens_out']}"),
-             row("Model replies without valid JSON / invented record ids / failed calls",
+             row("Model replies not in the requested JSON form / invented record ids / failed calls",
                  lambda a: f"{a['cost']['model_bad_json']} / {a['cost']['model_invented_refs']} / {a['cost']['model_call_errors']}"),
              row("Model call p50 / worst p95 (ms)", lambda a: f"{a['latency_ms_p50_of_worlds']['model_ms']} / {a['latency_ms_p95_max']['model_ms']}"),
              row("Model cost (USD)", lambda a: a["cost"]["model_cost_usd"]),

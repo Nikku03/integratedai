@@ -123,7 +123,8 @@ test worlds (301 to 303) are not reused.
   - Verification can therefore catch a wrong cost or budget figure, and keep an answer built on it from being
     published. It cannot catch a wrong at-risk judgment, which has no recalculation.
   - The provider is local through Ollama, at temperature 0 with at most 2,000 output tokens. A reply that is not
-    valid JSON gets one retry.
+    in the requested JSON form (every key present; objects the model splits the reply into are merged) gets one
+    retry, which names the missing keys.
 - **Measures added**:
   - needed records the answer relied on (its recorded inputs);
   - answer accuracy when given (whole answer, and each part: delivery verdict, budget verdict, cost, set of
@@ -132,7 +133,7 @@ test worlds (301 to 303) are not reused.
     if it was right when given);
   - wrong and right figures blocked by verification;
   - runs without a usable answer;
-  - model calls, tokens, invalid JSON and invented record ids;
+  - model calls, tokens, replies not in the requested JSON form, and invented record ids;
   - affected projects whose task held no answer. These are counted apart from missed dependencies: a task with no
     answer has nothing to refresh.
 
@@ -178,7 +179,7 @@ measures, not a guarantee of the loop.
   - wrong answers served because the analyst erred;
   - wrong figures blocked by verification, and right figures blocked;
   - runs without a usable answer, and tasks left waiting on a person;
-  - invalid JSON and invented ids;
+  - replies not in the requested JSON form, and invented ids;
   - model latency and tokens;
   - needed records the answer relied on;
   - affected projects whose task held no answer.

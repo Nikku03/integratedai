@@ -418,7 +418,7 @@ EnterpriseRAG-Bench memory bank, so search has to find them among real text.
   if it was right when given.
 - Wrong and right figures blocked by verification.
 - Runs without a usable answer.
-- Invalid JSON, invented record ids, model calls, tokens and latency.
+- Replies not in the requested JSON form, invented record ids, model calls, tokens and latency.
 
 The pass criteria are fixed in advance in `docs/LOOP_PREREGISTRATION.md`:
 - study 1: `loop` and `loop-explicit`, test worlds 301 to 303;
