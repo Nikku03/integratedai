@@ -329,3 +329,54 @@ exhaustive scan run for a task is also kept in the task's progress.
 
 **API.** `POST /api/context` (focused or exhaustive) and `GET /api/context/runs/{id}`, which only the requester
 or an administrator can read.
+
+## 6. Verification and the publication gate (`cie.agents.verification`, `cie.agents.publication`)
+
+**Methods per finding.** The verdict records, for each finding, which methods ran and why it failed:
+
+| Method | When it runs | What it checks |
+|---|---|---|
+| citation | the finding has citations | the cited record exists and is current (not deleted, not superseded); its quote is on the cited page; the claim is lexically supported by it |
+| state | the finding lists `state_refs` | each live-state record is still at the version the finding used; any stated field value is still the record's value |
+| recalculation | the finding carries a `calculation` | the expression is recomputed from the current state and must match the stated value (tolerance 0.01 by default) |
+
+The recalculation evaluator (`cie.agents.calc`) allows numbers, `+ - * / // % **`, parentheses, and `min`, `max`,
+`abs`, `round` and `days_between`. It refuses names other than the given inputs, attribute access and any other
+call. A finding with no citation, state reference or calculation has no evidence and fails. State checks read
+through the verifier's permissions, so a record the verifier may not see cannot support a finding.
+
+**Publication gate.** An agent workspace cannot silently become shared truth:
+1. **Staging.** While a task runs, the agent's findings are written to its workspace for that project. This is a
+   scope of kind `agent` under the project: project readers can inspect it, but default retrieval does not address
+   it. Staged records are `unverified` and carry the highest clearance of what they cite.
+2. **Publication.** When the task completes, each finding is published to the project scope only if it passed
+   verification:
+   - the reviewing agent's verdict, if there was a review;
+   - otherwise a person's approval;
+   - otherwise a verification run at publication.
+
+   A published record is `verified`, names who verified it and by which methods, and links back to its workspace
+   record. A finding that fails stays in the workspace, marked blocked, with the reasons.
+3. **Withdrawal.** When a completed task is reopened because an input changed, its published findings become
+   `disputed`. When it completes again, the new publication supersedes them.
+
+The project synthesis is still written to the project scope. Each part of it is labelled as verified, not
+independently verified, failed, or waiting on a person.
+
+## 7. Status
+
+These layers are built and tested (unit, integration and API tests; see `tests/test_state.py`,
+`test_identity.py`, `test_workflow.py`, `test_routing.py`, `test_context.py`, `test_verification.py`).
+
+The measurement the architecture asks for has **not** been run yet: prove the loop on one project, and measure
+retrieval completeness, citation accuracy, stale-state errors, missed dependencies, duplicate actions, task
+completion, latency and cost. The mechanisms those metrics need are now in place:
+- task inputs with versions;
+- invalidations;
+- coverage records;
+- verdicts with methods;
+- transition logs;
+- idempotency keys.
+
+The action gateway (permission, freshness, approval, already-executed and result-confirmed checks before acting on
+external systems) is **not built**.

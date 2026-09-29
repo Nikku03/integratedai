@@ -260,12 +260,18 @@ benchmark decides whether a Ramanujan-style overlay is worth adding.
   scorecard (accuracy, citation quality, completion, latency, cost,
   hallucination, verification score, recency), availability, permissions
   and cost; the chosen reason is stored on the task and shown in the UI.
-* `Scheduler.step()` runs ready tasks, blocks on dependencies, retries
-  failures, and re-plans on stagnation.
-* Specialists receive a brief + evidence packet and reply with structured
-  messages only (eight kinds). High-risk tasks spawn a verification task for
-  a different agent; unresolved conflicts create `contradiction` records and
-  an approval item.
+* The head runs every task through the workflow engine (`cie.workflow.engine`):
+  proposed → ready → running → review → completed, with leases, checkpoints,
+  acceptance criteria, cost and tool limits, bounded review rounds and
+  authorised retries. It stops with a blocker entry on stagnation.
+* Specialists receive a brief and a context built with their own principal
+  (`cie.context`: live-state traversal plus knowledge-memory search) and reply
+  with structured messages only. High-risk or conflicting work is reviewed by a
+  different agent. Findings are staged in the agent's workspace and published
+  to the project only after verification (`cie.agents.publication`).
+* The live state (`cie.state`), identity resolution, event routing to tasks,
+  the context builder and verification are described in
+  `docs/OPERATING_SYSTEM.md`.
 * `Ledger.append()` writes hash-chained entries; any agent reads
   `Ledger.state(project)` to see the current objectives, tasks, results,
   blockers and next actions without replaying conversation history.

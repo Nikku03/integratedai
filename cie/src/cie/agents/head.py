@@ -21,7 +21,7 @@ from typing import Any
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from cie.agents import ledger, messages
+from cie.agents import ledger, messages, publication
 from cie.agents.planner import RulePlanner, TaskSpec
 from cie.agents.providers import LLMProvider
 from cie.agents.registry import agents_for_tenant
@@ -45,7 +45,9 @@ from cie.core.models import (
     TaskStatus,
 )
 from cie.core.settings import Settings, get_settings
+from cie.governance.permissions import visible_scopes
 from cie.memory.records import contradict, create_record
+from cie.state.store import GraphReader
 from cie.workflow import engine
 
 log = get_logger(__name__)
@@ -278,12 +280,10 @@ class HeadAgent:
         if t.status == TaskStatus.review and (t.verification or {}).get("awaiting") == "agent":
             self._spawn_verification(t)
         self._notify_dependants(t)
-        # store agent findings as memory records in the project scope (agent memory)
-        for f in result.findings[:8]:
-            create_record(self.s, tenant_id=p.tenant_id, scope_id=p.scope_id, type=RecordType.result,
-                          summary=f"[{agent.name}] {f.claim[:160]}", content={"task_id": str(t.id), "kind": f.kind, "value": f.value},
-                          detail=f.claim, source_document_id=uuid.UUID(f.citations[0]["document_id"]) if f.citations and f.citations[0].get("document_id") else None,
-                          source_locations=f.citations, producing_agent=agent.name, confidence=f.confidence, embedder=self.embedder)
+        # findings go to the agent's workspace; they reach project memory only once verified (the publication gate)
+        publication.stage(self.s, t, agent, p, out, embedder=self.embedder)
+        if t.status == TaskStatus.completed:
+            publication.publish(self.s, t, verifier="head", reader=GraphReader(self.s, p.tenant_id, None), embedder=self.embedder)
         return result, conflicts
 
     def _fail(self, t: Task, agent: Agent | None, error: str, report: bool = True) -> None:
@@ -361,12 +361,15 @@ class HeadAgent:
         v.assignment_reason = reason
         messages.send(self.s, tenant_id=p.tenant_id, project_id=p.id, kind=MessageKind.verification_request, task_id=v.id,
                       from_agent=self.head, to_agent=agent, payload={"task_id": str(v.id), "verifies_task_id": str(target.id)})
-        verdict = verify_result(self.s, target.result or {})
+        reader = GraphReader(self.s, p.tenant_id, visible_scopes(self.s, self._agent_principal(agent)))  # the verifier's view
+        verdict = verify_result(self.s, target.result or {}, reader=reader)
         engine.submit(self.s, v.id, worker=self.worker, result=verdict.as_dict(), usage={"tools": ["retrieval"]})
         failed = [d for d in verdict.details if d["status"] != "verified"]
         target = engine.review(self.s, target.id, reviewer=agent.name, verdict="passed" if verdict.passed else "changes_requested",
                                notes=f"{verdict.verified} verified, {verdict.failed} failed", details={"score": verdict.score, "failed_findings": failed})
         target.verification = {**(target.verification or {}), "by": agent.name, **verdict.as_dict()}
+        if target.status == TaskStatus.completed:
+            publication.publish(self.s, target, verifier=agent.name, reader=reader, embedder=self.embedder)
         producer = self.s.get(Agent, target.assigned_agent_id) if target.assigned_agent_id else None
         if producer is not None:
             record_outcome(self.s, producer, target.task_type, Outcome(accuracy=verdict.score, verification_score=verdict.score,

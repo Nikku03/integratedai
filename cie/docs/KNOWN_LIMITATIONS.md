@@ -172,3 +172,43 @@ Stated plainly so nobody mistakes a scaffold for a finished capability.
   stock rows are checked with the snapshot's permissions only. Stored aggregate counts are not re-filtered after
   a revocation.
 
+
+## Live state, identity, workflow, context and verification (docs/OPERATING_SYSTEM.md)
+
+**Not yet measured.** The one-project loop and its metrics (retrieval completeness, citation accuracy, stale-state
+errors, missed dependencies, duplicate actions, task completion, latency, cost) have not been measured. The tests
+show that the mechanisms behave as specified, not how well the whole system works on real work.
+
+**Authority.**
+- Ranks come from rules or the kind of source. A value written directly by an import becomes a system-of-record
+  statement only when the record's `source_system` is a known system of record; otherwise it has rank `unknown`,
+  so any named source can replace it.
+- Conflicts are resolved by a person, or by a more authoritative statement. Nothing escalates an old open
+  conflict automatically.
+
+**Identity.**
+- Name candidates come from trigram similarity over current record names, and there is no trigram index on
+  `rem_node_versions.name` yet, so large tenants scan.
+- Merges cannot be undone (there is no split operation).
+- Records with different access are never merged.
+- Project and department records cannot be merged.
+
+**Workflow.**
+- The head agent runs tasks in-process with its own lease owner. External workers use the task API, but there
+  is no built-in pool of remote agent workers.
+- Overdue tasks are reported, not escalated.
+- Addressing requested changes means dropping unsupported findings; it does not re-plan the work.
+
+**Context.**
+- Exhaustive mode scans live-state collections (a record type, optionally one project), not knowledge-memory
+  documents.
+- Paging through a large match list re-runs the scan at the same snapshot.
+- Budgets are estimated tokens, not a model's tokenizer.
+
+**Verification.**
+- The built-in extractive strategy produces cited findings, but not calculations or state references, so for the
+  default agents verification is citation-based. Recalculation and state checks apply to findings that declare
+  them, for example from external agents through the task API.
+- The synthesis is written to the project scope, labelled, and is not itself gated.
+
+**Missing.** The action gateway.

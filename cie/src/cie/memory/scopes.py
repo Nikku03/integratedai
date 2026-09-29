@@ -50,13 +50,18 @@ def descendants(session: Session, scope: Scope) -> list[Scope]:
                                                     Scope.path.like(scope.path + "/%"))))
 
 
-def addressable_scope_ids(session: Session, scope_id: uuid.UUID) -> set[uuid.UUID]:
+def addressable_scope_ids(session: Session, scope_id: uuid.UUID, include_workspaces: bool = False) -> set[uuid.UUID]:
     """Scopes whose records a query at ``scope_id`` may address: self, all
-    descendants (project sees its tasks/agents) and all ancestors (inherited
-    company/department memory)."""
+    descendants (project sees its tasks) and all ancestors (inherited
+    company/department memory). Agent workspaces below it are left out unless
+    asked for: an agent's unverified findings reach shared memory only when
+    they are published after verification (``cie.agents.publication``). A query
+    at a workspace itself addresses it."""
     scope = session.get(Scope, scope_id)
     if scope is None:
         return set()
     ids = {s.id for s in ancestors(session, scope_id)}
-    ids |= {s.id for s in descendants(session, scope)}
+    for d in descendants(session, scope):
+        if include_workspaces or d.kind != ScopeKind.agent or d.id == scope_id:
+            ids.add(d.id)
     return ids

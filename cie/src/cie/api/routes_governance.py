@@ -69,6 +69,10 @@ def decide(approval_id: uuid.UUID, body: Decision, auth: Auth = Depends(current_
             engine.review(session, t.id, reviewer=f"user:{auth.principal.name}", verdict="passed" if body.approve else "failed",
                           notes=body.reason or ("approved" if body.approve else "rejected"))
             t.verification = {**(t.verification or {}), ("human_approved_by" if body.approve else "human_rejected_by"): auth.principal.name}
+            if t.status == TaskStatus.completed:
+                from cie.agents.publication import publish
+
+                publish(session, t, verifier=f"user:{auth.principal.name}", human=True)
     return {"id": str(a.id), "status": a.status}
 
 

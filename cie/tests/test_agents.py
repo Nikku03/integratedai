@@ -86,6 +86,16 @@ def test_five_agents_on_dependent_work(session, world, embedder, staffed):
         assert v.assigned_agent_id != target.assigned_agent_id
         assert target.status == TaskStatus.completed or (target.status == TaskStatus.review and target.verification["awaiting"] == "human")
         assert target.verification["by"] == session.get(Agent, v.assigned_agent_id).name
+    # the publication gate: agents' findings are staged in their workspaces; only verified ones reached the project
+    from cie.core.models import MemoryRecord, RecordType, Scope, ScopeKind, VerificationStatus
+
+    agent_results = [r for r in session.scalars(select(MemoryRecord).where(MemoryRecord.type == RecordType.result))
+                     if (r.content or {}).get("task_id") and r.producing_agent != "head"]
+    staged = [r for r in agent_results if session.get(Scope, r.scope_id).kind == ScopeKind.agent]
+    shared = [r for r in agent_results if r.scope_id == project.scope_id]
+    assert staged and shared, "findings were staged and some were published"
+    assert all(r.verification == VerificationStatus.verified and r.content.get("verified_by") for r in shared)
+    assert all(r.content.get("publication", {}).get("status") in ("published", "blocked", None) for r in staged)
     # findings cite pages of the source document
     legal = by_type["legal"][0]
     assert legal.result["findings"] and legal.result["findings"][0]["citations"][0]["document_id"] == str(doc.id)

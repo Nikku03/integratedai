@@ -297,7 +297,9 @@ def verify_task(task_id: uuid.UUID, auth: Auth = Depends(current_auth), session:
     if t is None or t.tenant_id != auth.tenant_id:
         raise HTTPException(404, "task not found")
     _proj(session, auth, t.project_id)
-    verdict = verify_result(session, t.result or {})
+    from cie.state.store import GraphReader
+
+    verdict = verify_result(session, t.result or {}, reader=GraphReader(session, auth.tenant_id, auth.visibility))
     if t.status == TaskStatus.review:
         require_scope_write(auth, t.scope_id or _proj(session, auth, t.project_id).scope_id)
         from cie.workflow import engine
@@ -306,6 +308,10 @@ def verify_task(task_id: uuid.UUID, auth: Auth = Depends(current_auth), session:
                       notes=f"{verdict.verified} verified, {verdict.failed} failed",
                       details={"score": verdict.score, "failed_findings": [d for d in verdict.details if d["status"] != "verified"]})
     t.verification = {**(t.verification or {}), "by": f"user:{auth.principal.name}", **verdict.as_dict()}
+    if t.status == TaskStatus.completed and verdict.passed:
+        from cie.agents.publication import publish
+
+        publish(session, t, verifier=f"user:{auth.principal.name}", reader=GraphReader(session, auth.tenant_id, auth.visibility))
     ledger.append(session, tenant_id=auth.tenant_id, project_id=t.project_id, kind="verification",
                   content={"task_id": str(t.id), "verifier": auth.principal.name, "verdict": "passed" if verdict.passed else "failed",
                            "score": verdict.score, "failed": verdict.failed}, actor=f"user:{auth.principal.name}")
@@ -404,8 +410,13 @@ def review(task_id: uuid.UUID, body: ReviewIn, auth: Auth = Depends(current_auth
     t = _task_for_write(session, auth, task_id)
     if t.lease_owner and t.lease_owner.startswith(f"{auth.principal.name}:"):
         raise HTTPException(403, "the worker that produced a result cannot review it")
-    return _task_out(_engine_call(engine.review, session, task_id, reviewer=f"user:{auth.principal.name}", verdict=body.verdict,
-                                  notes=body.notes, details=body.details), session)
+    t = _engine_call(engine.review, session, task_id, reviewer=f"user:{auth.principal.name}", verdict=body.verdict,
+                     notes=body.notes, details=body.details)
+    if t.status == TaskStatus.completed:
+        from cie.agents.publication import publish
+
+        publish(session, t, verifier=f"user:{auth.principal.name}", human=True)
+    return _task_out(t, session)
 
 
 @router.post("/tasks/{task_id}/retry", summary="Authorise another attempt of a failed task")

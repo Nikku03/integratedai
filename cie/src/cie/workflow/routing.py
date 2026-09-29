@@ -63,7 +63,10 @@ def route_to_tasks(session: Session, cs) -> dict[str, Any]:
         details = {"record": str(use.ref_id), "label": what, "from_version": use.version, "to_version": new_version,
                    "event_id": str(ev.id), "seq": cs.seq}
         if action == "reopened":
-            engine.reopen(session, t.id, actor="events", reason=change, details=details)
+            from cie.agents.publication import withdraw
+
+            for x in engine.reopen(session, t.id, actor="events", reason=change, details=details):
+                withdraw(session, x.id, change)  # its published findings are disputed until it completes again
         elif action == "flagged":
             t.progress = {**(t.progress or {}), "stale_inputs": list((t.progress or {}).get("stale_inputs", []))[-19:] + [details]}
         _tell(session, t, what, use, new_version, action)
