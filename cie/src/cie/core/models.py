@@ -540,15 +540,18 @@ class Project(Base):
 
 
 class TaskStatus(str, enum.Enum):
-    pending = "pending"
-    blocked = "blocked"
-    assigned = "assigned"
+    """Proposed -> Ready -> Running -> Review -> Completed, with Blocked, Failed and Cancelled; transitions are
+    enforced by ``cie.workflow.engine``. (Earlier values pending, assigned, needs_verification, verified, done and
+    awaiting_approval remain in the database type but are no longer used.)"""
+
+    proposed = "proposed"
+    ready = "ready"
     running = "running"
-    needs_verification = "needs_verification"
-    verified = "verified"
-    done = "done"
+    blocked = "blocked"
+    review = "review"
+    completed = "completed"
     failed = "failed"
-    awaiting_approval = "awaiting_approval"
+    cancelled = "cancelled"
 
 
 class Task(Base):
@@ -571,16 +574,36 @@ class Task(Base):
     verification: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict)
     verifies_task_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("tasks.id"))
     metrics: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict)  # tokens, latency, cost
+    # workflow engine (cie.workflow.engine)
+    owner_principal_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))  # who answers for the outcome
+    deadline_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    acceptance: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict)  # criteria checked at review
+    limits: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict)  # max_tokens, max_cost_usd, max_seconds, tools
+    progress: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict)  # checkpoints; kept across reassignment
+    lease_owner: Mapped[str | None] = mapped_column(String(120))
+    lease_expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    attempts: Mapped[int] = mapped_column(Integer, default=0)
+    max_attempts: Mapped[int] = mapped_column(Integer, default=3)
+    review_rounds: Mapped[int] = mapped_column(Integer, default=0)
+    max_review_rounds: Mapped[int] = mapped_column(Integer, default=1)
+    retry_authorized_by: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))
+    revision: Mapped[int] = mapped_column(Integer, default=0)  # +1 on every transition
     created_at: Mapped[datetime] = _ts_created()
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
+    __table_args__ = (Index("ix_tasks_ready", "tenant_id", "status", "priority", "created_at"),
+                      Index("ix_tasks_lease", "status", "lease_expires_at"))
 
 
 class TaskDependency(Base):
+    """``requires``: the dependency must be completed. ``after``: it must be settled (completed, failed or
+    cancelled), e.g. a synthesis that reports failures instead of waiting for them forever."""
+
     __tablename__ = "task_dependencies"
     task_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("tasks.id"), primary_key=True)
     depends_on_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("tasks.id"), primary_key=True)
+    kind: Mapped[str] = mapped_column(String(12), default="requires")
 
 
 class MessageKind(str, enum.Enum):
@@ -750,3 +773,4 @@ _ = (JSON, text)
 
 # Live-state tables (the versioned business graph) live in cie.state; importing registers them with Base.metadata.
 from cie.state import models as _state_models  # noqa: E402,F401
+from cie.workflow import models as _workflow_models  # noqa: E402,F401

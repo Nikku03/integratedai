@@ -98,7 +98,7 @@ export function layoutDag(tasks: TaskOut[]): DagLayout {
   return { nodes: positioned, edges, width, height, externalDeps }
 }
 
-export const STATUS_ORDER = ['pending', 'blocked', 'assigned', 'running', 'needs_verification', 'awaiting_approval', 'done', 'verified', 'failed']
+export const STATUS_ORDER = ['proposed', 'ready', 'blocked', 'running', 'review', 'completed', 'failed', 'cancelled']
 
 interface Props {
   tasks: TaskOut[]

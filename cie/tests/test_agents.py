@@ -71,13 +71,20 @@ def test_five_agents_on_dependent_work(session, world, embedder, staffed):
         assert t.assignment_reason["decision"].startswith(f"{tt} chosen")
         assert any(c["agent"] == "head" and not c["eligible"] for c in t.assignment_reason["candidates"])
         assert t.result and t.metrics["packet_tokens"] > 0
+    # every task went through the engine and ended settled or with a person
+    from cie.workflow import engine
+
+    assert all(t.status in engine.SETTLED or engine.awaiting_person(t) for t in tasks), [(t.task_type, t.status) for t in tasks]
+    assert by_type["synthesis"][0].status == TaskStatus.completed
+    for t in tasks:
+        assert [r.to_status for r in engine.transitions(session, t.id)][:2] == ["proposed", t.status.value] or len(engine.transitions(session, t.id)) >= 3
     # high-risk work (legal, finance) got verification by a different agent
     verifs = by_type.get("verification", [])
     assert len(verifs) >= 2
     for v in verifs:
         target = session.get(Task, v.verifies_task_id)
         assert v.assigned_agent_id != target.assigned_agent_id
-        assert target.status in (TaskStatus.verified, TaskStatus.awaiting_approval)
+        assert target.status == TaskStatus.completed or (target.status == TaskStatus.review and target.verification["awaiting"] == "human")
         assert target.verification["by"] == session.get(Agent, v.assigned_agent_id).name
     # findings cite pages of the source document
     legal = by_type["legal"][0]
@@ -137,7 +144,7 @@ def test_routing_uses_task_specific_scores(session, world):
         record_outcome(session, agents["research"], "verification", Outcome(accuracy=0.99, citation_quality=1.0, verification_score=0.99))
         record_outcome(session, agents["legal"], "verification", Outcome(accuracy=0.3, citation_quality=0.4, hallucinated=True, verification_score=0.2))
     task = Task(tenant_id=world.tenant.id, project_id=project.id, scope_id=project.scope_id, task_type="verification",
-                title="Verify findings", brief="verify", status=TaskStatus.pending)
+                title="Verify findings", brief="verify", status=TaskStatus.ready)
     session.add(task)
     session.flush()
     chosen, reason = select_agent(session, task, list(agents.values()))
@@ -147,7 +154,7 @@ def test_routing_uses_task_specific_scores(session, world):
     assert cands["research"]["scorecard_low_support"] is False and cands["finance"]["scorecard_low_support"] is True
     # a finance task still goes to finance even though research has the best overall record
     task2 = Task(tenant_id=world.tenant.id, project_id=project.id, scope_id=project.scope_id, task_type="finance",
-                 title="Fees", brief="fees", status=TaskStatus.pending)
+                 title="Fees", brief="fees", status=TaskStatus.ready)
     session.add(task2)
     session.flush()
     chosen2, reason2 = select_agent(session, task2, list(agents.values()))

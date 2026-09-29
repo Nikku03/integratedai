@@ -60,13 +60,15 @@ def decide(approval_id: uuid.UUID, body: Decision, auth: Auth = Depends(current_
                 retention.execute_deletion(session, req, auth.principal.id, vault=_vault())
             else:
                 req.status = "rejected"
-    if a.kind == "task_result" and body.approve:
+    if a.kind == "task_result":
         from cie.core.models import Task, TaskStatus
+        from cie.workflow import engine
 
         t = session.get(Task, uuid.UUID(a.subject_id))
-        if t is not None:
-            t.status = TaskStatus.verified
-            t.verification = {**(t.verification or {}), "human_approved_by": auth.principal.name}
+        if t is not None and t.status == TaskStatus.review:  # the person is the reviewer of last resort
+            engine.review(session, t.id, reviewer=f"user:{auth.principal.name}", verdict="passed" if body.approve else "failed",
+                          notes=body.reason or ("approved" if body.approve else "rejected"))
+            t.verification = {**(t.verification or {}), ("human_approved_by" if body.approve else "human_rejected_by"): auth.principal.name}
     return {"id": str(a.id), "status": a.status}
 
 

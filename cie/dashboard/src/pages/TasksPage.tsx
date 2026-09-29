@@ -9,7 +9,7 @@ import { useAsync } from '../hooks/useAsync'
 import { fmtDate, trunc } from '../lib/format'
 import { useSettings } from '../state/settings'
 
-const STATUSES = ['pending', 'blocked', 'assigned', 'running', 'needs_verification', 'awaiting_approval', 'done', 'verified', 'failed']
+const STATUSES = ['proposed', 'ready', 'blocked', 'running', 'review', 'completed', 'failed', 'cancelled']
 
 export default function TasksPage() {
   const { version } = useSettings()
@@ -56,7 +56,7 @@ export default function TasksPage() {
         actions={
           <div className="badges">
             {Object.entries(counts).map(([s, n]) => (
-              <Badge key={s} tone={s === 'failed' ? 'red' : s === 'done' || s === 'verified' ? 'green' : s === 'blocked' || s === 'awaiting_approval' ? 'amber' : 'gray'}>
+              <Badge key={s} tone={s === 'failed' ? 'red' : s === 'completed' ? 'green' : s === 'blocked' || s === 'review' ? 'amber' : 'gray'}>
                 {s} {n}
               </Badge>
             ))}

@@ -247,15 +247,14 @@ export interface MetricsSummary {
 }
 
 export type TaskStatus =
-  | 'pending'
-  | 'blocked'
-  | 'assigned'
+  | 'proposed'
+  | 'ready'
   | 'running'
-  | 'needs_verification'
-  | 'verified'
-  | 'done'
+  | 'blocked'
+  | 'review'
+  | 'completed'
   | 'failed'
-  | 'awaiting_approval'
+  | 'cancelled'
 
 export interface RoutingCandidate {
   agent: string

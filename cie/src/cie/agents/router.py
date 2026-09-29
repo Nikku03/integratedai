@@ -37,7 +37,7 @@ def _skill_overlap(agent: Agent, task: Task) -> float:
 
 def _running(session: Session, agent: Agent) -> int:
     return session.scalar(select(func.count(Task.id)).where(Task.assigned_agent_id == agent.id,
-                                                            Task.status.in_([TaskStatus.assigned, TaskStatus.running]))) or 0
+                                                            Task.status == TaskStatus.running)) or 0
 
 
 def rank_candidates(session: Session, task: Task, agents: list[Agent], exclude: set | None = None) -> list[Candidate]:

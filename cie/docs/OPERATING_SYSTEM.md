@@ -162,3 +162,82 @@ Confirming needs write access to both records.
   recorded.
 - Before this change, a fuzzy match at score ≥ 90 was linked as the same entity and its spelling recorded as an
   alias.
+
+## 3. Workflow engine (`cie.workflow.engine`)
+
+Every task status change goes through the engine, which checks it against the transition table, increments the
+task's `revision` and logs it in `task_transitions` with actor, reason and details. Nothing else sets a status.
+
+```
+proposed ─accept─▶ ready ─claim─▶ running ─submit─▶ review ─passed─▶ completed
+    │               ▲  │            │  │              │  │               │
+    │               │  ▼            │  │   changes    │  │ failed        │ an input changed
+    └─▶ cancelled   blocked         │  └──requested◀──┘  ▼               ▼
+                                    │                  failed ─retry (authorised)─▶ ready
+                                    └─ lease expired / released ─▶ ready (progress kept)
+```
+
+**What a task stores:**
+
+| Field | Contents |
+|---|---|
+| `brief` | inputs as instructions |
+| `task_inputs` | versioned inputs: live-state records with the version used, and other tasks' results with their revision |
+| `acceptance` | the acceptance criteria |
+| `owner_principal_id`, `deadline_at` | owner and deadline |
+| `task_dependencies` | `requires` (the dependency must be completed) or `after` (it must be settled or waiting on a person; used by the synthesis) |
+| `limits` | `max_tokens`, `max_cost_usd`, `max_seconds`, allowed `tools` |
+| `progress` | checkpoints |
+| `result` | the result |
+| `verification` | every review with its reviewer, verdict, notes and round |
+| `attempts`, `max_attempts`, `review_rounds` | counters |
+
+**Claims and leases.** A worker claims a ready task with a lease (`FOR UPDATE SKIP LOCKED`, so no task is claimed
+twice). It extends the lease with heartbeats and records progress with checkpoints. When a lease expires, the task
+goes back to `ready` with its progress, and the next worker resumes from the last checkpoint. Once `max_attempts`
+is used up, it fails instead. A worker that lost its lease cannot submit.
+
+**Review.** On submission the engine checks, in order:
+1. the limits: exceeded means `failed`;
+2. the inputs: if a record or task result moved on since the task used it, changes are requested;
+3. the acceptance criteria (`min_findings`, `citations_required`, `max_unsupported`, `required_fields`,
+   `min_confidence`): unmet means changes are requested.
+
+After that, the `review` mode decides:
+- `auto` completes the task.
+- `agent` (the default for high-risk work, and for work that disagrees with another agent's findings) waits for an
+  independent agent: the head creates a verification task and assigns it to a different agent.
+- `human` waits for a person, through an approval request.
+
+A reviewer can pass the task, request changes (it goes back to the same worker for a bounded number of rounds) or
+fail it. When the rounds run out, a person decides. A task never completes on inputs that moved on.
+
+**Failures and reopening.**
+- A failed task is retried only with a named authorisation (`retry`), which allows one more attempt.
+- A completed task is reopened only when an input changed (`reopen`). Completed dependants that required it are
+  reopened too, and waiting ones are blocked.
+- When a task is decided after a dependant used an earlier revision of it, that dependant is reopened. For
+  example, a synthesis that reported the task as waiting on a person.
+
+**Head agent.** The head proposes its plan as tasks and accepts them. It claims each ready task for the chosen
+agent, records the dependency results it hands over as inputs, and submits results to the engine. It addresses
+requested changes by dropping findings the verifier could not support, then resubmits. The synthesis reports
+every task's outcome: verified, not independently verified, failed, or waiting on a person.
+
+**API.** Status changes go through these routes, never through direct edits:
+- `POST /api/tasks`: propose and accept a task.
+- `POST /api/tasks/claim` (next ready task) and `POST /api/tasks/{id}/claim`.
+- `POST /api/tasks/{id}/heartbeat`, `/checkpoint`, `/submit` and `/release`.
+- `POST /api/tasks/{id}/review`: the worker that produced a result cannot review it.
+- `POST /api/tasks/{id}/retry` and `/cancel`.
+- `GET /api/tasks/{id}/transitions` and `GET /api/tasks-overdue`.
+- Approving or rejecting a `task_result` approval is a person's review verdict.
+
+**Migration.** Old statuses map to new ones:
+
+| Old | New |
+|---|---|
+| `pending` | `ready` |
+| `assigned` | `running` |
+| `needs_verification`, `awaiting_approval` | `review` |
+| `verified`, `done` | `completed` |

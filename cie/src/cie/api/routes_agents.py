@@ -1,9 +1,11 @@
 """Agent routes: projects, tasks, agents, scorecards, routing, messages,
-verification, ledger, final answer."""
+verification, ledger, final answer. Task status changes go through the workflow engine
+(claim, heartbeat, checkpoint, submit, review, retry, cancel), never by assignment."""
 
 from __future__ import annotations
 
 import uuid
+from datetime import datetime
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -57,6 +59,38 @@ class TaskIn(BaseModel):
     risk_level: str = "low"
     priority: int = 5
     depends_on: list[uuid.UUID] = Field(default_factory=list)
+    acceptance: dict[str, Any] = Field(default_factory=dict)
+    limits: dict[str, Any] = Field(default_factory=dict)
+    deadline_at: datetime | None = None
+    max_attempts: int = Field(3, ge=1, le=20)
+    max_review_rounds: int = Field(1, ge=0, le=10)
+    propose_only: bool = False  # leave it proposed for someone to accept
+
+
+class ClaimIn(BaseModel):
+    worker: str = Field(min_length=1, max_length=100)
+    lease_seconds: int = Field(300, ge=10, le=86400)
+    task_types: list[str] = Field(default_factory=list)
+    project_id: uuid.UUID | None = None
+
+
+class WorkIn(BaseModel):
+    worker: str = Field(min_length=1, max_length=100)
+    lease_seconds: int = Field(300, ge=10, le=86400)
+    progress: dict[str, Any] = Field(default_factory=dict)
+    result: dict[str, Any] = Field(default_factory=dict)
+    usage: dict[str, Any] = Field(default_factory=dict)
+    reason: str = ""
+
+
+class ReviewIn(BaseModel):
+    verdict: str = Field(pattern="^(passed|changes_requested|failed)$")
+    notes: str = ""
+    details: dict[str, Any] = Field(default_factory=dict)
+
+
+class ReasonIn(BaseModel):
+    reason: str = ""
 
 
 class AgentIn(BaseModel):
@@ -98,12 +132,18 @@ def _proj(session: Session, auth: Auth, project_id: uuid.UUID) -> Project:
 
 def _task_out(t: Task, session: Session) -> dict[str, Any]:
     agent = session.get(Agent, t.assigned_agent_id) if t.assigned_agent_id else None
-    deps = [str(d.depends_on_id) for d in session.scalars(select(TaskDependency).where(TaskDependency.task_id == t.id))]
+    dep_rows = list(session.scalars(select(TaskDependency).where(TaskDependency.task_id == t.id)))
+    deps = [str(d.depends_on_id) for d in dep_rows]
     return {"id": str(t.id), "project_id": str(t.project_id), "task_type": t.task_type, "title": t.title, "brief": t.brief,
             "status": t.status.value, "priority": t.priority, "risk_level": t.risk_level, "assigned_agent": agent.name if agent else None,
             "assignment_reason": t.assignment_reason, "evidence_packet_id": str(t.evidence_packet_id) if t.evidence_packet_id else None,
             "result": t.result, "verification": t.verification, "verifies_task_id": str(t.verifies_task_id) if t.verifies_task_id else None,
-            "metrics": t.metrics, "depends_on": deps, "created_at": t.created_at.isoformat(), "updated_at": t.updated_at.isoformat()}
+            "metrics": t.metrics, "depends_on": deps, "dependency_kinds": {str(d.depends_on_id): d.kind for d in dep_rows},
+            "acceptance": t.acceptance, "limits": t.limits, "progress": t.progress,
+            "deadline_at": t.deadline_at.isoformat() if t.deadline_at else None, "attempts": t.attempts, "max_attempts": t.max_attempts,
+            "review_rounds": t.review_rounds, "lease_owner": t.lease_owner, "revision": t.revision,
+            "lease_expires_at": t.lease_expires_at.isoformat() if t.lease_expires_at else None,
+            "created_at": t.created_at.isoformat(), "updated_at": t.updated_at.isoformat() if t.updated_at else None}
 
 
 # ---------------------------------------------------------------- projects
@@ -200,18 +240,24 @@ def final_answer(project_id: uuid.UUID, auth: Auth = Depends(current_auth), sess
 # ---------------------------------------------------------------- tasks
 @router.post("/tasks")
 def create_task(body: TaskIn, auth: Auth = Depends(current_auth), session: Session = Depends(db)):
+    from cie.workflow import engine
+
     p = _proj(session, auth, body.project_id)
     require_scope_write(auth, p.scope_id)
-    t = Task(tenant_id=auth.tenant_id, project_id=p.id, scope_id=p.scope_id, task_type=body.task_type, title=body.title, brief=body.brief,
-             status=TaskStatus.blocked if body.depends_on else TaskStatus.pending, priority=body.priority, risk_level=body.risk_level,
-             metrics={"query": body.title})
-    session.add(t)
-    session.flush()
     for d in body.depends_on:
-        session.add(TaskDependency(task_id=t.id, depends_on_id=d))
+        dep = session.get(Task, d)
+        if dep is None or dep.tenant_id != auth.tenant_id:
+            raise HTTPException(400, f"unknown dependency {d}")
+    actor = f"user:{auth.principal.name}"
+    t = engine.propose(session, tenant_id=auth.tenant_id, project_id=p.id, scope_id=p.scope_id, task_type=body.task_type, title=body.title,
+                       brief=body.brief, priority=body.priority, risk_level=body.risk_level, acceptance=body.acceptance, limits=body.limits,
+                       deadline_at=body.deadline_at, owner_principal_id=auth.principal.id, depends_on=[(d, "requires") for d in body.depends_on],
+                       metrics={"query": body.title}, max_attempts=body.max_attempts, max_review_rounds=body.max_review_rounds, actor=actor)
+    if not body.propose_only:
+        engine.accept(session, t, actor=actor)
     ledger.append(session, tenant_id=auth.tenant_id, project_id=p.id, kind="task",
                   content={"task_id": str(t.id), "type": t.task_type, "title": t.title, "risk": t.risk_level, "status": t.status.value},
-                  actor=f"user:{auth.principal.name}")
+                  actor=actor)
     return _task_out(t, session)
 
 
@@ -252,13 +298,153 @@ def verify_task(task_id: uuid.UUID, auth: Auth = Depends(current_auth), session:
         raise HTTPException(404, "task not found")
     _proj(session, auth, t.project_id)
     verdict = verify_result(session, t.result or {})
+    if t.status == TaskStatus.review:
+        require_scope_write(auth, t.scope_id or _proj(session, auth, t.project_id).scope_id)
+        from cie.workflow import engine
+
+        engine.review(session, t.id, reviewer=f"user:{auth.principal.name}", verdict="passed" if verdict.passed else "changes_requested",
+                      notes=f"{verdict.verified} verified, {verdict.failed} failed",
+                      details={"score": verdict.score, "failed_findings": [d for d in verdict.details if d["status"] != "verified"]})
     t.verification = {**(t.verification or {}), "by": f"user:{auth.principal.name}", **verdict.as_dict()}
-    if verdict.passed and t.status in (TaskStatus.done, TaskStatus.needs_verification):
-        t.status = TaskStatus.verified
     ledger.append(session, tenant_id=auth.tenant_id, project_id=t.project_id, kind="verification",
                   content={"task_id": str(t.id), "verifier": auth.principal.name, "verdict": "passed" if verdict.passed else "failed",
                            "score": verdict.score, "failed": verdict.failed}, actor=f"user:{auth.principal.name}")
     return verdict.as_dict()
+
+
+# ---------------------------------------------------------------- task lifecycle (workflow engine)
+def _task_for_write(session: Session, auth: Auth, task_id: uuid.UUID) -> Task:
+    t = session.get(Task, task_id)
+    if t is None or t.tenant_id != auth.tenant_id:
+        raise HTTPException(404, "task not found")
+    p = _proj(session, auth, t.project_id)
+    require_scope_write(auth, t.scope_id or p.scope_id)
+    return t
+
+
+def _engine_call(fn, *args, **kw):
+    from cie.workflow.engine import LeaseLost, TransitionError
+
+    try:
+        return fn(*args, **kw)
+    except TransitionError as e:
+        raise HTTPException(409, str(e)) from None
+    except LeaseLost as e:
+        raise HTTPException(409, str(e)) from None
+
+
+@router.post("/tasks/claim", summary="Claim the next ready task (a lease); for external workers and agents")
+def claim_next(body: ClaimIn, auth: Auth = Depends(current_auth), session: Session = Depends(db)):
+    from cie.workflow import engine
+
+    worker = f"{auth.principal.name}:{body.worker}"
+    q = select(Task.project_id).where(Task.tenant_id == auth.tenant_id, Task.status == TaskStatus.ready)
+    if body.project_id:
+        q = q.where(Task.project_id == body.project_id)
+    for pid in dict.fromkeys(session.scalars(q)):  # only projects the caller may write
+        p = session.get(Project, pid)
+        if p is None or not auth.visibility.can_write(p.scope_id):
+            continue
+        t = engine.claim(session, auth.tenant_id, worker=worker, task_types=body.task_types or None, project_id=pid,
+                         lease_seconds=body.lease_seconds)
+        if t is not None:
+            return _task_out(t, session)
+    return {"task": None}
+
+
+@router.post("/tasks/{task_id}/claim")
+def claim_one(task_id: uuid.UUID, body: ClaimIn, auth: Auth = Depends(current_auth), session: Session = Depends(db)):
+    from cie.workflow import engine
+
+    _task_for_write(session, auth, task_id)
+    return _task_out(_engine_call(engine.claim_task, session, task_id, worker=f"{auth.principal.name}:{body.worker}",
+                                  lease_seconds=body.lease_seconds), session)
+
+
+@router.post("/tasks/{task_id}/heartbeat")
+def heartbeat(task_id: uuid.UUID, body: WorkIn, auth: Auth = Depends(current_auth), session: Session = Depends(db)):
+    from cie.workflow import engine
+
+    _task_for_write(session, auth, task_id)
+    t = _engine_call(engine.heartbeat, session, task_id, worker=f"{auth.principal.name}:{body.worker}", lease_seconds=body.lease_seconds)
+    return {"lease_expires_at": t.lease_expires_at.isoformat()}
+
+
+@router.post("/tasks/{task_id}/checkpoint")
+def checkpoint(task_id: uuid.UUID, body: WorkIn, auth: Auth = Depends(current_auth), session: Session = Depends(db)):
+    from cie.workflow import engine
+
+    _task_for_write(session, auth, task_id)
+    return _task_out(_engine_call(engine.checkpoint, session, task_id, worker=f"{auth.principal.name}:{body.worker}",
+                                  progress=body.progress), session)
+
+
+@router.post("/tasks/{task_id}/submit")
+def submit(task_id: uuid.UUID, body: WorkIn, auth: Auth = Depends(current_auth), session: Session = Depends(db)):
+    from cie.workflow import engine
+
+    _task_for_write(session, auth, task_id)
+    return _task_out(_engine_call(engine.submit, session, task_id, worker=f"{auth.principal.name}:{body.worker}", result=body.result,
+                                  usage=body.usage), session)
+
+
+@router.post("/tasks/{task_id}/release")
+def release(task_id: uuid.UUID, body: WorkIn, auth: Auth = Depends(current_auth), session: Session = Depends(db)):
+    from cie.workflow import engine
+
+    _task_for_write(session, auth, task_id)
+    return _task_out(_engine_call(engine.release, session, task_id, worker=f"{auth.principal.name}:{body.worker}",
+                                  reason=body.reason or "released"), session)
+
+
+@router.post("/tasks/{task_id}/review")
+def review(task_id: uuid.UUID, body: ReviewIn, auth: Auth = Depends(current_auth), session: Session = Depends(db)):
+    from cie.workflow import engine
+
+    t = _task_for_write(session, auth, task_id)
+    if t.lease_owner and t.lease_owner.startswith(f"{auth.principal.name}:"):
+        raise HTTPException(403, "the worker that produced a result cannot review it")
+    return _task_out(_engine_call(engine.review, session, task_id, reviewer=f"user:{auth.principal.name}", verdict=body.verdict,
+                                  notes=body.notes, details=body.details), session)
+
+
+@router.post("/tasks/{task_id}/retry", summary="Authorise another attempt of a failed task")
+def retry(task_id: uuid.UUID, body: ReasonIn, auth: Auth = Depends(current_auth), session: Session = Depends(db)):
+    from cie.workflow import engine
+
+    _task_for_write(session, auth, task_id)
+    t = _engine_call(engine.retry, session, task_id, authorized_by=auth.principal.id, reason=body.reason)
+    audit(session, tenant_id=auth.tenant_id, principal_id=auth.principal.id, action="task.retry", resource_kind="task", resource_id=t.id,
+          details={"reason": body.reason})
+    return _task_out(t, session)
+
+
+@router.post("/tasks/{task_id}/cancel")
+def cancel(task_id: uuid.UUID, body: ReasonIn, auth: Auth = Depends(current_auth), session: Session = Depends(db)):
+    from cie.workflow import engine
+
+    _task_for_write(session, auth, task_id)
+    return _task_out(_engine_call(engine.cancel, session, task_id, actor=f"user:{auth.principal.name}", reason=body.reason), session)
+
+
+@router.get("/tasks/{task_id}/transitions")
+def task_transitions(task_id: uuid.UUID, auth: Auth = Depends(current_auth), session: Session = Depends(db)):
+    from cie.workflow import engine
+
+    t = session.get(Task, task_id)
+    if t is None or t.tenant_id != auth.tenant_id:
+        raise HTTPException(404, "task not found")
+    _proj(session, auth, t.project_id)
+    return [{"from": r.from_status, "to": r.to_status, "actor": r.actor, "reason": r.reason, "details": r.details, "revision": r.revision,
+             "at": r.created_at.isoformat() if r.created_at else None} for r in engine.transitions(session, task_id)]
+
+
+@router.get("/tasks-overdue")
+def tasks_overdue(auth: Auth = Depends(current_auth), session: Session = Depends(db)):
+    from cie.workflow import engine
+
+    return [_task_out(t, session) for t in engine.overdue(session, auth.tenant_id)
+            if t.scope_id is None or t.scope_id in auth.visibility.scope_ids]
 
 
 # ---------------------------------------------------------------- agents
@@ -298,7 +484,7 @@ def list_agents(auth: Auth = Depends(current_auth), session: Session = Depends(d
         company = session.scalar(select(Scope).where(Scope.tenant_id == auth.tenant_id, Scope.parent_id.is_(None)))
         if company is not None and auth.visibility.is_admin:
             agents = list(ensure_default_agents(session, auth.tenant_id, company).values())
-    running = {a.id: session.scalar(select(Task.id).where(Task.assigned_agent_id == a.id, Task.status.in_([TaskStatus.running, TaskStatus.assigned])).limit(1)) for a in agents}
+    running = {a.id: session.scalar(select(Task.id).where(Task.assigned_agent_id == a.id, Task.status == TaskStatus.running).limit(1)) for a in agents}
     return [{**_agent_out(a), "busy": running[a.id] is not None} for a in agents]
 
 

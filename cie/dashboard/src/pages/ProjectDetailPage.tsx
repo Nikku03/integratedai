@@ -95,7 +95,7 @@ export default function ProjectDetailPage() {
                 actions={
                   <div className="badges">
                     {Object.entries(statusCounts).map(([s, n]) => (
-                      <Badge key={s} tone={s === 'failed' ? 'red' : s === 'done' || s === 'verified' ? 'green' : s === 'blocked' ? 'amber' : 'gray'}>
+                      <Badge key={s} tone={s === 'failed' ? 'red' : s === 'completed' ? 'green' : s === 'blocked' || s === 'review' ? 'amber' : 'gray'}>
                         {s} {n}
                       </Badge>
                     ))}

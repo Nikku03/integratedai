@@ -53,12 +53,22 @@ def engine():
         conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
         conn.execute(text("CREATE EXTENSION IF NOT EXISTS pg_trgm"))
     Base.metadata.create_all(eng)
-    # create_all does not add values to an enum type that already exists; keep the test database in step with the models
-    from cie.core.models import LinkKind
+    # create_all neither adds values to an enum type that already exists nor columns to a table that already exists;
+    # keep a long-lived test database in step with the models
+    import sqlalchemy as sa
 
+    enums = {c.type.name: c.type.enums for t in Base.metadata.sorted_tables for c in t.columns if isinstance(c.type, sa.Enum) and c.type.name}
     with eng.connect().execution_options(isolation_level="AUTOCOMMIT") as conn:
-        for kind in LinkKind:
-            conn.execute(text(f"ALTER TYPE link_kind ADD VALUE IF NOT EXISTS '{kind.value}'"))
+        for name, values in enums.items():
+            for v in values:
+                conn.execute(text(f"ALTER TYPE {name} ADD VALUE IF NOT EXISTS '{v}'"))
+    insp = sa.inspect(eng)
+    with eng.begin() as conn:
+        for t in Base.metadata.sorted_tables:
+            have = {c["name"] for c in insp.get_columns(t.name)}
+            for c in t.columns:
+                if c.name not in have:
+                    conn.execute(text(f'ALTER TABLE {t.name} ADD COLUMN IF NOT EXISTS "{c.name}" {c.type.compile(dialect=eng.dialect)}'))
     return eng
 
 
