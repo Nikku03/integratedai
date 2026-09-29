@@ -71,6 +71,16 @@ def decide(approval_id: uuid.UUID, body: Decision, auth: Auth = Depends(current_
                           payload={"task_id": str(q.task_id), "question": q.payload.get("question", ""),
                                    "answer": (body.reason or "") if body.approve else f"not answered: {body.reason or 'declined'}",
                                    "by": auth.principal.name})
+    if a.kind == "replan":  # approve: accept the best option found; reject: drop the task (relaxing is POST /tasks/{id}/replan)
+        from cie.core.models import Task, TaskStatus
+        from cie.workflow import engine
+
+        t = session.get(Task, uuid.UUID(a.subject_id))
+        if t is not None and t.status == TaskStatus.review and (t.verification or {}).get("infeasible"):
+            a.status = "pending"  # resolve_infeasible closes it with the decision
+            engine.resolve_infeasible(session, t.id, decision="accept_best" if body.approve else "drop", actor=f"user:{auth.principal.name}",
+                                      reason=body.reason or "")
+            a.status = "approved" if body.approve else "rejected"
     if a.kind == "task_result":
         from cie.core.models import Task, TaskStatus
         from cie.workflow import engine

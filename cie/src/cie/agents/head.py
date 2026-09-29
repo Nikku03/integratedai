@@ -16,6 +16,7 @@ fails goes to a person. Finally the synthesis reports every task's outcome. Ever
 
 from __future__ import annotations
 
+import json
 import time
 import uuid
 from collections import defaultdict
@@ -157,6 +158,7 @@ class HeadAgent:
     def step(self, max_tasks: int = 10) -> StepReport:
         engine.reclaim_expired(self.s, tenant_id=self.project.tenant_id)
         self.review_requests()
+        self.replan()
         self.read_inbox()
         # work sent back by a reviewer comes first: the same agent addresses the review
         reruns = [t for t in self._tasks() if t.status == TaskStatus.running and t.lease_owner == self.worker
@@ -286,9 +288,9 @@ class HeadAgent:
         if result.work_requests and self._request(agent, t, result):
             return result, 0  # it waits for the answers it asked for; it resumes when they are released
         if (t.metrics or {}).get("requested_by_task") and "answer" not in result.outputs:
-            # a requested task answers with its result: the summary and the claims it could support
+            # a requested task answers with its result: the summary, the claims it could support and its decisions
             result.outputs["answer"] = {"summary": result.summary, "findings": [f.claim for f in result.findings][:10],
-                                        "open_questions": result.open_questions[:5]}
+                                        "open_questions": result.open_questions[:5], "decisions": result.decisions}
         changes = (t.progress or {}).get("changes_requested") if rerun else None
         if changes:
             _address_review(result, changes)
@@ -433,6 +435,75 @@ class HeadAgent:
                           actor="head")
             out.append((t, decision))
         return out
+
+    def replan(self) -> list[tuple[Task, str]]:
+        """Tasks that found no option meeting their constraints. When every broken constraint may flex (``flex``:
+        ``{"up_to" or "down_to": limit, "approver": role, "authority": kind}``) far enough for the best option, and
+        the approver's authority covers it, the constraints are relaxed to the best option and it is accepted.
+        Otherwise a person decides (a ``replan`` approval): accept the best option, drop the task, or relax the
+        constraints (``POST /api/tasks/{id}/replan``)."""
+        p = self.project
+        out = []
+        for t in [x for x in self._tasks() if x.status == TaskStatus.review and (x.verification or {}).get("awaiting") == "head"
+                  and (x.verification or {}).get("infeasible")]:
+            inf = t.verification["infeasible"]
+            relaxed, why = self._relax_within_authority(t, inf.get("best") or {})
+            if relaxed is not None:
+                engine.resolve_infeasible(self.s, t.id, decision="accept_best", actor="head", reason=why, constraints=relaxed)
+                decision = "relaxed within authority"
+            else:
+                t.verification = {**t.verification, "awaiting": "human", "review": "human"}
+                self.s.add(Approval(tenant_id=p.tenant_id, kind="replan", subject_id=str(t.id), requested_by="head",
+                                    summary=(f"No option meets the constraints of '{t.title}': {inf.get('reason', '')}. Best found: "
+                                             f"{json.dumps(inf.get('best'), default=str)[:600]}. It breaks: {'; '.join(inf.get('violates') or [])}. "
+                                             f"{why} Approve to accept it, reject to drop the task, or relax the constraints.")[:2000]))
+                decision = "sent to a person"
+            ledger.append(self.s, tenant_id=p.tenant_id, project_id=p.id, kind="decision",
+                          content={"task_id": str(t.id), "decision": f"re-plan: {decision}", "reason": why[:500],
+                                   "infeasible": inf.get("reason", "")[:500]}, actor="head")
+            out.append((t, decision))
+        return out
+
+    def _relax_within_authority(self, t: Task, best: dict[str, Any]) -> tuple[list[dict] | None, str]:
+        """The constraints relaxed just enough for ``best``, if each broken one may flex that far and its approver's
+        authority covers the new value; else (None, why not)."""
+        from types import SimpleNamespace
+
+        from cie.context import checks
+
+        if not best:
+            return None, "The worker offered no option."
+        new, used = [], []
+        for c in (t.acceptance or {}).get("constraints") or []:
+            v = best.get(c.get("output"))
+            node = SimpleNamespace(attrs=v if isinstance(v, dict) else {"value": v}, name=None, key=None, type=None, verification=None,
+                                   version=None, review_status=None)
+            check = {"field": c.get("field") or "value", "op": c.get("op", "le"), "value": c.get("value")}
+            try:
+                if v is None or checks.evaluate(check, node):
+                    new.append(c)
+                    continue
+            except checks.Unreadable:
+                return None, f"The best option cannot be checked against {c.get('output')}.{check['field']}."
+            flex, got = c.get("flex") or {}, node.attrs.get(check["field"])
+            bound = flex.get("up_to") if check["op"] in ("le", "lt") else flex.get("down_to") if check["op"] in ("ge", "gt") else None
+            if bound is None:
+                return None, f"{c.get('output')}.{check['field']} {check['op']} {check['value']} may not flex."
+            try:
+                within = checks.evaluate({**check, "value": bound}, node)
+            except checks.Unreadable:
+                within = False
+            if not within:
+                return None, f"{got!r} is beyond the flex of {c.get('output')}.{check['field']} ({bound!r})."
+            approver = next((a for a in self.agents if flex.get("approver") in (a.name, a.role)), None)
+            kind = flex.get("authority") or "spend_usd"
+            limit = ((approver.config or {}).get("authority") or {}).get(kind) if approver is not None else None
+            amount = engine._amount(got)
+            if not (limit is True or (isinstance(limit, (int, float)) and not isinstance(limit, bool) and amount is not None and amount <= limit)):
+                return None, f"Relaxing {c.get('output')}.{check['field']} to {got!r} is beyond the authority of {flex.get('approver') or 'any agent'}."
+            new.append({**c, "value": got, "relaxed_from": c.get("value")})
+            used.append(f"{c.get('output')}.{check['field']} {c.get('value')!r} -> {got!r} within {approver.name}'s {kind} authority ({limit})")
+        return (new, "Relaxed: " + "; ".join(used)) if used else (None, "Nothing to relax.")
 
     def _ask(self, agent: Agent, t: Task, question: str) -> None:
         """A question the agent cannot decide: sent to the head, which passes it to a person (an approval of kind

@@ -43,6 +43,19 @@ progress kept); it becomes ready again when the answer is released, and reads it
 failed or cancelled request releases the requester, which is told why. Requests are bounded: at most
 ``REQUEST_MAX_PER_TASK`` per task and ``REQUEST_MAX_DEPTH`` requests deep.
 
+**Decision authority.** A result may carry decisions (``{"kind": "spend_usd", "amount": 8000, "subject": ...}``).
+Each is checked against the assigned agent's authority (``Agent.config["authority"]``: a limit per kind, or
+``true``). Decisions within it are recorded as authorised by that agent. Any decision above it, or by a worker with
+no authority, sends the task to a person; its outputs are held back until the person approves, so nothing
+downstream acts on an unapproved decision.
+
+**Constraints and infeasible work.** ``acceptance.constraints`` are checks on a task's outputs, such as
+``{"output": "option", "field": "cost_usd", "op": "le", "value": 12000}``. An output that breaks one cannot be
+released, and a result that breaks one is sent back. A worker that finds no option meeting them says so
+(``result["infeasible"]`` with its reason and the best option it found). The task then waits in review for the
+head, which re-plans (``resolve_infeasible``): it relaxes the constraints within an agent's authority, or a person
+relaxes them, accepts the best option, or drops the task.
+
 **Scheduling** (``schedule``). Ready tasks are ordered by their priority, then by their deadline slack (the latest
 start that still meets every deadline downstream, from task estimates), then by the longest chain of work waiting
 behind them, then by how many tasks they unblock. Each place in the order comes with its reason. ``claim`` takes
@@ -508,6 +521,9 @@ def publish_output(session: Session, task_id: uuid.UUID, *, worker: str, key: st
 def _release(session: Session, t: Task, key: str, value: Any, summary: str, state_refs: list[dict] | None, by: str) -> tuple[TaskOutput, bool]:
     if not key or len(key) > 64:
         raise ValueError("an output key is 1 to 64 characters")
+    broken = constraint_violations(session, t, {key: value}, only=[key])
+    if broken:
+        raise ValueError(f"output '{key}' breaks the task's constraints: " + "; ".join(broken))
     v = _json(value)
     o = session.scalar(select(TaskOutput).where(TaskOutput.task_id == t.id, TaskOutput.key == key).with_for_update())
     first = o is None
@@ -567,6 +583,122 @@ def deliverables(session: Session, t: Task) -> list[dict[str, Any]]:
                      "needed_by": [{"task_id": str(d.id), "title": d.title, "status": d.status.value} for d in ws]})
     rows.sort(key=lambda r: (r["released"], -r["waiting"], -len(r["needed_by"]), keys.index(r["output"])))
     return rows
+
+
+# ---------------------------------------------------------------------------------------------- authority and constraints
+def _amount(x: Any) -> float | None:
+    try:
+        v = float(str(x).replace(",", "").replace("$", "").strip())
+    except (TypeError, ValueError):
+        return None
+    return v if v == v and abs(v) != float("inf") else None
+
+
+def authority_of(session: Session, t: Task) -> tuple[str | None, dict[str, Any]]:
+    """The assigned agent's name and its authority (``Agent.config["authority"]``); none for an unassigned task."""
+    from cie.core.models import Agent
+
+    a = session.get(Agent, t.assigned_agent_id) if t.assigned_agent_id else None
+    return (a.name, dict((a.config or {}).get("authority") or {})) if a is not None else (None, {})
+
+
+def authority_check(session: Session, t: Task, result: dict[str, Any]) -> tuple[list[dict], list[dict]]:
+    """The result's decisions against the assigned agent's authority: (above it, within it). A limit is a number
+    (the amount may be at most that) or ``true`` (any amount); a kind the agent has no limit for is above it."""
+    who, auth = authority_of(session, t)
+    gaps, ok = [], []
+    for d in result.get("decisions") or []:
+        if not isinstance(d, dict) or not d.get("kind"):
+            continue
+        kind, amount, limit = str(d["kind"]), _amount(d.get("amount")), auth.get(str(d["kind"]))
+        rec = {"kind": kind, "amount": amount, "subject": str(d.get("subject", ""))[:300], "agent": who, "limit": limit}
+        if limit is True or (isinstance(limit, (int, float)) and not isinstance(limit, bool) and amount is not None and amount <= limit):
+            ok.append(rec)
+        else:
+            why = (f"{who or 'the worker'} decided {kind} {amount if amount is not None else ''} for '{rec['subject']}', "
+                   + (f"above its authority of {limit}" if isinstance(limit, (int, float)) and not isinstance(limit, bool)
+                      else "with no authority for that kind of decision"))
+            gaps.append({**rec, "why": why.replace("  ", " ")})
+    return gaps, ok
+
+
+def constraint_violations(session: Session, t: Task, values: dict[str, Any], only: list[str] | None = None) -> list[str]:
+    """The task's constraints broken by these output values (released outputs fill in the ones not given). A
+    constraint on an output that is not there yet is not checked here; a value it cannot be checked on counts as
+    broken."""
+    from types import SimpleNamespace
+
+    from cie.context import checks
+
+    cons = [c for c in (t.acceptance or {}).get("constraints") or [] if isinstance(c, dict) and c.get("output")]
+    if only is not None:
+        cons = [c for c in cons if c["output"] in only]
+    if not cons:
+        return []
+    have = {k: o.value for (_, k), o in released(session, [t.id]).items()}
+    out = []
+    for c in cons:
+        key = c["output"]
+        if key not in values and key not in have:
+            continue
+        v = values.get(key, have.get(key))
+        node = SimpleNamespace(attrs=v if isinstance(v, dict) else {"value": v}, name=None, key=key, type="output", verification=None,
+                               version=None, review_status=None)
+        check = {"field": c.get("field") or "value", "op": c.get("op", "le"), "value": c.get("value")}
+        try:
+            ok = checks.evaluate(check, node)
+        except checks.Unreadable as e:
+            out.append(f"{key}.{check['field']} {check['op']} {check['value']}: cannot be checked ({e})")
+            continue
+        if not ok:
+            got = node.attrs.get(check["field"]) if isinstance(node.attrs, dict) else None
+            out.append(f"{key}.{check['field']} {check['op']} {check['value']} is broken (it is {got!r})")
+    return out
+
+
+def resolve_infeasible(session: Session, task_id: uuid.UUID, *, decision: str, actor: str, reason: str = "",
+                       constraints: list[dict] | None = None) -> Task:
+    """Re-planning a task that found no option meeting its constraints (in review, awaiting the head):
+    ``relax`` replaces its constraints and sends it back to its worker; ``accept_best`` releases the best option
+    it found and completes it, under relaxed ``constraints`` if given (the best option must meet them) or else with
+    the constraints overridden (recorded); ``drop`` fails it, so the tasks that needed it are told. A pending
+    ``replan`` approval for the task is closed.""" 
+    t = locked(session, task_id)
+    inf = (t.verification or {}).get("infeasible")
+    if t.status != S.review or (t.verification or {}).get("awaiting") not in ("head", "human") or not inf:
+        raise TransitionError(f"task {t.id} is not waiting to be re-planned")
+    for a in session.scalars(select(Approval).where(Approval.tenant_id == t.tenant_id, Approval.kind == "replan",
+                                                    Approval.subject_id == str(t.id), Approval.status == "pending")):
+        a.status, a.reason, a.decided_at = "resolved", f"{decision} by {actor}: {reason}"[:2000], now()
+    rec = {"decision": decision, "by": actor, "reason": reason[:1000], "at": now().isoformat()}
+    t.verification = {**t.verification, "replanned": list(t.verification.get("replanned", []))[-9:] + [rec]}
+    if decision == "relax":
+        if not constraints:
+            raise ValueError("relax needs the new constraints")
+        t.acceptance = {**(t.acceptance or {}), "constraints": constraints}
+        t.review_rounds = 0  # a new brief, not another round of the old one
+        t.verification = {k: v for k, v in t.verification.items() if k != "infeasible"}
+        return _decide(session, t, "changes_requested", actor, f"constraints relaxed: {reason}".strip(": "), {"constraints": constraints})
+    if decision == "accept_best":  # with ``constraints``: relaxed to those (the best option must meet them); else overridden
+        best = inf.get("best") or {}
+        if not best:
+            raise ValueError("there is no best option to accept")
+        saved = t.acceptance
+        t.acceptance = {**(t.acceptance or {}), "constraints": constraints if constraints is not None else []}
+        try:
+            for key, value in best.items():
+                _release(session, t, key, value, (f"accepted under relaxed constraints: {reason}" if constraints is not None
+                                                  else f"accepted although it breaks the constraints: {reason}")[:4000], None, by=actor)
+        finally:
+            if constraints is None:
+                t.acceptance = saved
+        if constraints is None:
+            t.verification = {**t.verification, "overridden_constraints": inf.get("violates", [])}
+        return _decide(session, t, "passed", actor, f"best option accepted: {reason}".strip(": "),
+                       {"relaxed_to": constraints} if constraints is not None else {"overridden": inf.get("violates", [])})
+    if decision == "drop":
+        return _decide(session, t, "failed", actor, f"dropped in re-planning: {reason}".strip(": "), {"infeasible": inf})
+    raise ValueError("decision must be relax, accept_best or drop")
 
 
 # ---------------------------------------------------------------------------------------------- work requests
@@ -726,9 +858,12 @@ def submit(session: Session, task_id: uuid.UUID, *, worker: str, result: dict[st
     """running -> review, then the automatic checks. Returns the task in its new status."""
     t = _held(session, task_id, worker)
     usage = usage or {}
-    for key, v in (result.get("outputs") or {}).items():  # outputs in the result are released now, if not already
-        spec = v if isinstance(v, dict) and "value" in v else {"value": v}
-        _release(session, t, key, spec["value"], spec.get("summary", ""), spec.get("state_refs"), by=worker)
+    gaps, authorised = authority_check(session, t, result)
+    outs = {key: (v if isinstance(v, dict) and "value" in v else {"value": v}) for key, v in (result.get("outputs") or {}).items()}
+    broken = constraint_violations(session, t, {k: v["value"] for k, v in outs.items()})
+    if not gaps and not broken and not result.get("infeasible"):
+        for key, spec in outs.items():  # outputs in the result are released now, if not already
+            _release(session, t, key, spec["value"], spec.get("summary", ""), spec.get("state_refs"), by=worker)
     relied = relied_on(session, t, result)
     if relied:  # what the result relies on is an input, whatever else the worker's context held
         record_inputs(session, t, records=relied, seq=(t.progress or {}).get("context_seq"))
@@ -742,9 +877,26 @@ def submit(session: Session, task_id: uuid.UUID, *, worker: str, result: dict[st
     stale = stale_inputs(session, t)
     if stale:
         return _decide(session, t, "changes_requested", "engine", "inputs changed while the task ran", {"stale_inputs": stale})
-    missing = check_acceptance(t, result) + output_gaps(session, t)
+    if result.get("infeasible"):  # no option meets the constraints: the head re-plans
+        inf = result["infeasible"] if isinstance(result["infeasible"], dict) else {"reason": str(result["infeasible"])}
+        t.verification = {**(t.verification or {}), "review": "head", "awaiting": "head",
+                          "infeasible": {"reason": str(inf.get("reason", ""))[:1000], "best": inf.get("best") or {},
+                                         "violates": constraint_violations(session, t, inf.get("best") or {}), "by": worker}}
+        session.flush()
+        return t
+    missing = check_acceptance(t, result) + broken
+    if not gaps:  # held outputs are released when a person approves the decisions
+        missing += output_gaps(session, t)
     if missing:
         return _decide(session, t, "changes_requested", "engine", "acceptance criteria not met: " + "; ".join(missing), {"acceptance": missing})
+    if authorised:
+        t.verification = {**(t.verification or {}), "authorised": authorised}
+    if gaps:  # above the agent's authority: a person decides, and the outputs wait for that decision
+        t.progress = {**(t.progress or {}), "held_outputs": outs}
+        t.verification = {**(t.verification or {}), "review": "human", "awaiting": "human", "authority": gaps}
+        _approval(session, t, f"'{t.title}': " + "; ".join(g["why"] for g in gaps) + ". Approve to let the decision stand.", worker)
+        session.flush()
+        return t
     mode = review_mode(t)
     if mode == "auto":
         return _decide(session, t, "passed", "engine", "acceptance criteria met", {"acceptance": "met"})
@@ -772,6 +924,11 @@ def _decide(session: Session, t: Task, verdict: str, reviewer: str, notes: str, 
     t.verification = {**(t.verification or {}), "last_review": rec, "reviews": list((t.verification or {}).get("reviews", []))[-9:] + [rec]}
     if verdict == "passed":
         t.verification.pop("awaiting", None)
+        held = (t.progress or {}).get("held_outputs") or {}
+        for key, spec in held.items():  # the decision stands: what waited on it is released
+            _release(session, t, key, spec["value"], spec.get("summary", ""), spec.get("state_refs"), by=reviewer)
+        if held:
+            t.progress = {k: v for k, v in t.progress.items() if k != "held_outputs"}
         transition(session, t, S.completed, actor=reviewer, reason=notes or "review passed", details=details)
         t.lease_owner = None
         _settled(session, t)

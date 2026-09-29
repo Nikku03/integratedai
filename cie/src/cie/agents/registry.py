@@ -22,11 +22,13 @@ DEFAULT_AGENTS: list[dict] = [
     {"name": "research", "role": "research", "skills": ["evidence", "search", "summarisation", "citations", "documents"],
      "task_types": ["research", "evidence", "verification", "summary"], "cost_per_1k_tokens": 0.003},
     {"name": "finance", "role": "finance", "skills": ["metrics", "budget", "forecast", "cost", "analytics", "fees"],
-     "task_types": ["finance", "analytics", "metrics", "verification"], "cost_per_1k_tokens": 0.003},
+     "task_types": ["finance", "analytics", "metrics", "verification"], "cost_per_1k_tokens": 0.003,
+     "authority": {"spend_usd": 5000}},
     {"name": "legal", "role": "legal", "skills": ["contracts", "clauses", "compliance", "risk", "deadlines", "obligations"],
      "task_types": ["legal", "compliance", "risk", "verification"], "cost_per_1k_tokens": 0.005},
     {"name": "operations", "role": "operations", "skills": ["planning", "timeline", "dependencies", "tasks", "resources"],
-     "task_types": ["operations", "project_management", "timeline", "verification"], "cost_per_1k_tokens": 0.003},
+     "task_types": ["operations", "project_management", "timeline", "verification"], "cost_per_1k_tokens": 0.003,
+     "authority": {"spend_usd": 1000}},
     {"name": "engineering", "role": "engineering", "skills": ["implementation", "code", "architecture", "requirements", "testing"],
      "task_types": ["engineering", "implementation", "requirements", "verification"], "cost_per_1k_tokens": 0.005},
 ]
@@ -49,7 +51,9 @@ def ensure_default_agents(session: Session, tenant_id: uuid.UUID, company_scope:
             grant_role(session, tenant_id=tenant_id, principal=principal, role=writer, scope=scope)
             agent = Agent(tenant_id=tenant_id, principal_id=principal.id, name=spec["name"], role=spec["role"],
                           skills=spec["skills"], task_types=spec["task_types"], strategy=strategy, model=model,
-                          cost_per_1k_tokens=spec["cost_per_1k_tokens"], memory_scope_id=scope.id, max_concurrency=2)
+                          cost_per_1k_tokens=spec["cost_per_1k_tokens"], memory_scope_id=scope.id, max_concurrency=2,
+                          # what it may decide on its own (e.g. spend_usd up to a limit); above that, a person decides
+                          config={"authority": dict(spec.get("authority", {}))})
             session.add(agent)
             session.flush()
         out[spec["name"]] = agent

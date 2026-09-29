@@ -113,6 +113,17 @@ class RequestDecisionIn(BaseModel):
     into: uuid.UUID | None = None
 
 
+class AuthorityIn(BaseModel):
+    authority: dict[str, float | bool] = Field(default_factory=dict)  # decision kind -> limit, or true for any amount
+    actions: list[str] | None = None  # action kinds it may propose through the gateway (None: leave as is)
+
+
+class ReplanIn(BaseModel):
+    decision: str = Field(pattern="^(relax|accept_best|drop)$")
+    reason: str = ""
+    constraints: list[dict[str, Any]] | None = None
+
+
 class ReadIn(BaseModel):
     agent: str
     ids: list[uuid.UUID]
@@ -490,6 +501,19 @@ def decide_request(task_id: uuid.UUID, body: RequestDecisionIn, auth: Auth = Dep
     return _task_out(t, session)
 
 
+@router.post("/tasks/{task_id}/replan", summary="Decide a task that found no option meeting its constraints")
+def replan(task_id: uuid.UUID, body: ReplanIn, auth: Auth = Depends(current_auth), session: Session = Depends(db)):
+    from cie.workflow import engine
+
+    _task_for_write(session, auth, task_id)
+    try:
+        t = _engine_call(engine.resolve_infeasible, session, task_id, decision=body.decision, actor=f"user:{auth.principal.name}",
+                         reason=body.reason, constraints=body.constraints)
+    except ValueError as e:
+        raise HTTPException(400, str(e)) from None
+    return _task_out(t, session)
+
+
 @router.get("/tasks/{task_id}/outputs")
 def list_outputs(task_id: uuid.UUID, auth: Auth = Depends(current_auth), session: Session = Depends(db)):
     from cie.workflow import engine
@@ -590,8 +614,23 @@ def register_agent(body: AgentIn, auth: Auth = Depends(current_auth), session: S
     return _agent_out(a)
 
 
+@router.put("/agents/{agent_id}/authority", summary="Set what an agent may decide on its own, and the actions it may propose")
+def set_authority(agent_id: uuid.UUID, body: AuthorityIn, auth: Auth = Depends(current_auth), session: Session = Depends(db)):
+    if not auth.visibility.is_admin:
+        raise HTTPException(403, "admin only")
+    a = session.get(Agent, agent_id)
+    if a is None or a.tenant_id != auth.tenant_id:
+        raise HTTPException(404, "agent not found")
+    before = dict(a.config or {})
+    a.config = {**before, "authority": dict(body.authority), **({"actions": list(body.actions)} if body.actions is not None else {})}
+    audit(session, tenant_id=auth.tenant_id, principal_id=auth.principal.id, action="agent.authority", resource_kind="agent", resource_id=a.id,
+          details={"before": {k: before.get(k) for k in ("authority", "actions")}, "after": {k: a.config.get(k) for k in ("authority", "actions")}})
+    return _agent_out(a)
+
+
 def _agent_out(a: Agent) -> dict[str, Any]:
     return {"id": str(a.id), "name": a.name, "role": a.role, "skills": a.skills, "task_types": a.task_types, "strategy": a.strategy,
+            "authority": (a.config or {}).get("authority") or {}, "actions": (a.config or {}).get("actions") or [],
             "model": a.model, "cost_per_1k_tokens": a.cost_per_1k_tokens, "max_concurrency": a.max_concurrency, "active": a.active,
             "principal_id": str(a.principal_id), "memory_scope_id": str(a.memory_scope_id) if a.memory_scope_id else None}
 
