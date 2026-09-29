@@ -46,6 +46,10 @@ def handle(session: Session, job: Job, **deps) -> dict:
         from cie.agents.runtime import run_task_job
 
         return run_task_job(session, job)
+    if job.kind == "agent_turn":
+        from cie.agents.runtime import run_agent_job
+
+        return run_agent_job(session, job)
     if job.kind == "execute_action":
         from cie.actions.connectors import connectors_from_settings
         from cie.actions.gateway import execute

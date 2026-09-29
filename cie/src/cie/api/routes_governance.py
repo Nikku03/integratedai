@@ -71,6 +71,12 @@ def decide(approval_id: uuid.UUID, body: Decision, auth: Auth = Depends(current_
                           payload={"task_id": str(q.task_id), "question": q.payload.get("question", ""),
                                    "answer": (body.reason or "") if body.approve else f"not answered: {body.reason or 'declined'}",
                                    "by": auth.principal.name})
+        if q is not None and q.task_id:  # a task waiting for this answer goes on; the project's work is resumed
+            from cie.workers.worker import queue_head_run
+            from cie.workflow import engine
+
+            engine.answered(session, q.task_id, q.id)
+            queue_head_run(session, a.tenant_id, q.project_id, reason="a question was answered")
     if a.kind == "action":  # approve: the action may be executed (the worker does it); reject: it never is
         from cie.actions import gateway
 

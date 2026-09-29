@@ -37,6 +37,7 @@ from cie.agents.verification import verify_result
 from cie.core.logging import get_logger
 from cie.core.models import (
     Agent,
+    AgentMessage,
     Approval,
     EvidencePacket,
     MemoryRecord,
@@ -71,7 +72,8 @@ class StepReport:
 
 class HeadAgent:
     def __init__(self, session: Session, project: Project, *, settings: Settings | None = None, embedder=None,
-                 provider: LLMProvider | None = None, planner=None):
+                 provider: LLMProvider | None = None, planner=None, worker: str | None = None):
+        self._worker = worker  # an agent working on its own claims under its own name
         self.s = session
         self.project = project
         self.settings = settings or get_settings()
@@ -85,7 +87,7 @@ class HeadAgent:
     # ------------------------------------------------------------------ planning
     @property
     def worker(self) -> str:
-        return f"head:{self.project.id}"
+        return self._worker or f"head:{self.project.id}"
 
     def start(self, objective: str) -> list[Task]:
         p = self.project
@@ -222,10 +224,18 @@ class HeadAgent:
                                                               "deliver": tc.get("deliver", [])}}
         return ctx.packet
 
-    def _execute(self, t: Task, rerun: bool = False) -> tuple[TaskResult, int] | None:
+    def run_claimed(self, t: Task, agent: Agent) -> tuple[TaskResult, int] | None:
+        """Run a task that ``agent`` claimed on its own (``self.worker`` holds the lease), exactly as the head would."""
+        return self._execute(t, claimed_by=agent)
+
+    def _execute(self, t: Task, rerun: bool = False, claimed_by: Agent | None = None) -> tuple[TaskResult, int] | None:
         p = self.project
-        resuming = bool((t.progress or {}).get("requests")) and t.assigned_agent_id is not None
-        if rerun:
+        resuming = (bool((t.progress or {}).get("requests")) or bool((t.progress or {}).get("asked"))) and t.assigned_agent_id is not None
+        if claimed_by is not None:
+            agent = claimed_by
+            ledger.append(self.s, tenant_id=p.tenant_id, project_id=p.id, kind="assignment",
+                          content={"task_id": str(t.id), "agent": agent.name, "decision": f"{agent.name} took it on its own"}, actor=agent.name)
+        elif rerun:
             agent = self.s.get(Agent, t.assigned_agent_id)
         elif resuming and (agent := self.s.get(Agent, t.assigned_agent_id)) is not None and agent.active:
             # back from waiting for answers: the same agent carries on with its own requests and progress
@@ -285,8 +295,16 @@ class HeadAgent:
         result.latency_ms = (time.perf_counter() - t0) * 1000
         for q in result.questions:
             self._ask(agent, t, q)
-        if result.work_requests and self._request(agent, t, result):
+        waiting_on = [self._ask(agent, t, q) for q in result.blocking_questions]  # it cannot finish without these answers
+        if waiting_on:
+            t.progress = {**(t.progress or {}), "awaiting_answers": [str(m.id) for m in waiting_on],
+                          "asked": list((t.progress or {}).get("asked", [])) + [str(m.id) for m in waiting_on]}
+        if result.work_requests and self._request(agent, t, result, also_waiting=bool(waiting_on)):
             return result, 0  # it waits for the answers it asked for; it resumes when they are released
+        if waiting_on:
+            engine.checkpoint(self.s, t.id, worker=self.worker, progress={"partial": {"summary": result.summary, "findings": len(result.findings)}})
+            engine.block(self.s, t.id, worker=self.worker, reason=f"waiting for a person to answer {len(waiting_on)} question(s)")
+            return result, 0
         if (t.metrics or {}).get("requested_by_task") and "answer" not in result.outputs:
             # a requested task answers with its result: the summary, the claims it could support and its decisions
             result.outputs["answer"] = {"summary": result.summary, "findings": [f.claim for f in result.findings][:10],
@@ -378,9 +396,10 @@ class HeadAgent:
         t.evidence_packet_id = merged.id
         return merged
 
-    def _request(self, agent: Agent, t: Task, result: TaskResult) -> bool:
-        """File the work the agent asks other specialists for. Returns True when it must wait for an answer: its
-        partial result is kept and it steps aside until the answers arrive."""
+    def _request(self, agent: Agent, t: Task, result: TaskResult, also_waiting: bool = False) -> bool:
+        """File the work the agent asks other specialists for. Returns True when it must wait for an answer (or,
+        with ``also_waiting``, for a person's answer to its questions): its partial result is kept and it steps aside
+        until the answers arrive."""
         p = self.project
         waits = []
         for w in result.work_requests:
@@ -398,6 +417,8 @@ class HeadAgent:
                                    "for_task": str(t.id), "wait": bool(w.get("wait", True))}, actor=agent.name)
             if w.get("wait", True):
                 waits.append(w["role"])
+        if also_waiting:
+            waits.append("a person")
         if not waits:
             return False
         engine.checkpoint(self.s, t.id, worker=self.worker, progress={"partial": {"summary": result.summary, "findings": len(result.findings)}})
@@ -505,7 +526,7 @@ class HeadAgent:
             used.append(f"{c.get('output')}.{check['field']} {c.get('value')!r} -> {got!r} within {approver.name}'s {kind} authority ({limit})")
         return (new, "Relaxed: " + "; ".join(used)) if used else (None, "Nothing to relax.")
 
-    def _ask(self, agent: Agent, t: Task, question: str) -> None:
+    def _ask(self, agent: Agent, t: Task, question: str) -> AgentMessage:
         """A question the agent cannot decide: sent to the head, which passes it to a person (an approval of kind
         ``question``); the answer comes back to the agent's inbox."""
         p = self.project
@@ -515,6 +536,7 @@ class HeadAgent:
                             requested_by=agent.name))
         ledger.append(self.s, tenant_id=p.tenant_id, project_id=p.id, kind="blocker",
                       content={"task_id": str(t.id), "question": question[:500], "asked_by": agent.name, "to": "a person"}, actor=agent.name)
+        return m
 
     def read_inbox(self) -> int:
         """The head reads its inbox. Work requests are decided by ``review_requests``, questions were passed to a

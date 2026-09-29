@@ -120,6 +120,23 @@ def cmd_rem(args) -> None:
         print(json.dumps(out, indent=2, default=str))
 
 
+def cmd_agents(a) -> int:
+    from sqlalchemy import select
+
+    from cie.agents.runtime import run_agents
+    from cie.core.db import session_scope
+    from cie.core.models import Tenant
+
+    with session_scope() as s:
+        t = s.scalar(select(Tenant).where(Tenant.name == a.tenant))
+        if t is None:
+            print(f"no tenant named {a.tenant!r}")
+            return 1
+        turns = run_agents(s, t.id, max_turns=a.max_turns)
+    print(f"{len(turns)} turn(s) taken")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     configure_logging(get_settings().log_level)
     ap = argparse.ArgumentParser(prog="cie")
@@ -133,6 +150,10 @@ def main(argv: list[str] | None = None) -> int:
     w = sub.add_parser("worker")
     w.add_argument("--poll", type=float, default=2.0)
     w.set_defaults(fn=cmd_worker)
+    ag = sub.add_parser("agents", help="let the agents work on their own until none has anything to do")
+    ag.add_argument("--tenant", required=True, help="tenant name")
+    ag.add_argument("--max-turns", type=int, default=50)
+    ag.set_defaults(fn=cmd_agents)
     sv = sub.add_parser("serve")
     sv.add_argument("--host", default="0.0.0.0")
     sv.add_argument("--port", type=int, default=8000)

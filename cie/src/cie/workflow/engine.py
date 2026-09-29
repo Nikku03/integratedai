@@ -219,10 +219,30 @@ def unmet(deps: list[Dep], outs: dict[tuple[uuid.UUID, str], TaskOutput] | None 
 
 
 def waiting_for(session: Session, task_ids) -> dict[uuid.UUID, list[str]]:
-    """What each task still waits for among its dependencies."""
+    """What each task still waits for: its dependencies, and a person's answers to questions it cannot finish
+    without (``progress.awaiting_answers``)."""
     deps = dependencies(session, task_ids)
     outs = released(session, [d.task.id for ds in deps.values() for d in ds if d.outputs])
-    return {i: unmet(ds, outs) for i, ds in deps.items()}
+    out = {i: unmet(ds, outs) for i, ds in deps.items()}
+    for i in out:
+        t = session.get(Task, i)
+        n = len((t.progress or {}).get("awaiting_answers") or []) if t is not None else 0
+        if n:
+            out[i].append(f"a person's answer to {n} question(s)")
+    return out
+
+
+def answered(session: Session, task_id: uuid.UUID, question_message_id: uuid.UUID) -> bool:
+    """A person answered one of the task's questions: it waits for that one no longer, and becomes ready when it
+    waits for nothing else. Returns whether the task is now ready."""
+    t = session.get(Task, task_id)
+    if t is None:
+        return False
+    waiting = [x for x in (t.progress or {}).get("awaiting_answers") or [] if x != str(question_message_id)]
+    t.progress = {**(t.progress or {}), "awaiting_answers": waiting}
+    session.flush()
+    refresh(session, task_ids=[t.id], actor="answers")
+    return t.status == S.ready
 
 
 def accept(session: Session, t: Task, *, actor: str) -> Task:
