@@ -192,6 +192,40 @@ The full memory bank added 28,722 memory records to 33,200 sections (metric 6,26
 | high_level | 10 | None → None | None → None | None → None |
 | info_not_found | 20 | None → None | None → None | None → None |
 
+### 50,000-document haystack (full memory bank, Colab A100)
+
+Full tables: `docs/benchmarks/enterprise_rag_bench_50k_full_memory.md`. The embedding model is the same
+(`bge-small-en-v1.5`), run through sentence-transformers on CUDA instead of fastembed.
+
+| hybrid+graph(REM), full memory bank | 5,000 documents | 50,000 documents |
+|---|---|---|
+| document recall@10 | 0.848 | 0.700 |
+| MRR | 0.719 | 0.594 |
+| right document first | 0.63 | 0.511 |
+| all gold documents found | 0.80 | 0.645 |
+| abstained when the answer is not in the corpus | 0.05 | 0.15 |
+| abstained on answerable questions | 0.011 | 0.017 |
+| latency p50 / p95 ms | 549 / 1,883 | 776 / 5,954 |
+
+**Scale.** Ten times the distractors costs about 15 points of recall@10. The drop is concentrated in the
+`semantic` questions, which fall from 0.688 to 0.352. `basic` falls from 0.96 to 0.863, `project_related` from
+0.74 to 0.618 (all gold found 0.375 → 0.175), and `completeness` from 0.552 to 0.41.
+
+**Fusion.** At 50k, hybrid retrieval adds little over vector-only:
+- recall@10 is 0.700 versus 0.685;
+- MRR is 0.594 versus 0.607, and the right document comes first 51% versus 54% of the time;
+- latency is much higher, with p50 776 versus 195 ms and p95 5,954 versus 236 ms.
+
+The p95 comes from the lexical path, whose own p95 is 5,636 ms.
+
+**Composed answers (Llama 3.1 8B).** The model abstained on 19 of the 20 questions whose answer is not in the
+corpus, against 3 of 20 for the extractive answers. It also abstained on 29% of the answerable questions, against
+2% extractive, which is why its document recall is lower (0.599).
+
+**Multi-document questions.** `project_related` finds at least one gold document every time (hit@10 = 1.0) but all
+of them only 17.5% of the time. `completeness` finds all of them 25% of the time. The context builder's exhaustive
+mode covers live-state collections, not document collections, so it does not help here yet.
+
 ### Caveats
 
 * Extractive answers quote records and sections; the benchmark's correctness judge expects a composed answer, so judged correctness will lag document recall.
