@@ -257,10 +257,35 @@ to the engine. Results named in a result's `outputs` are released on submission.
 requested changes by dropping findings the verifier could not support, then resubmits. The synthesis reports
 every task's outcome: verified, not independently verified, failed, or waiting on a person.
 
+**Agents ask each other for work** (`request_work`, `decide_request`). A running task can ask another role for
+work it cannot do itself. For example, operations asks finance: "check the budget for $2,000 of expedited
+freight".
+- The request becomes a proposed task on the requester's behalf. It is answered by releasing an `answer` output;
+  the head packages a specialist's result as that answer.
+- The head decides each request at its next step:
+  - it merges it into an equivalent open request of the same role;
+  - it declines it when no agent does that work;
+  - otherwise it accepts it.
+  A person can decide instead (`POST /api/tasks/{id}/request-decision`).
+- With `wait` (the default), the requester steps aside (`blocked`) with its progress kept, and depends on the
+  answer. When the answer is released it becomes ready. The same agent then resumes it, with the answer handed over
+  in its context.
+- A declined, failed or cancelled request releases the requester, and its agent is told why (`work_decision`).
+- Requests are bounded: at most 5 per task, and 3 requests deep.
+- `POST /api/tasks/{id}/requests` files a request for an outside agent, and queues a head run to decide it.
+
+**More evidence, and questions.**
+- A specialist that asks for more evidence gets one more context round per run, with its own permissions, and runs
+  again with the new items. Requests it makes after that round are recorded as not served.
+- A question only the head can decide goes to a person, as an approval of kind `question`. The person's reply is
+  sent to the agent's inbox as an `answer`, and reaches the task the next time it runs. Questions do not block the
+  task.
+
 **API.** Status changes go through these routes, never through direct edits:
 - `POST /api/tasks`: propose and accept a task.
 - `POST /api/tasks/claim` (next ready task) and `POST /api/tasks/{id}/claim`.
 - `POST /api/tasks/{id}/heartbeat`, `/checkpoint`, `/submit` and `/release`.
+- `POST /api/tasks/{id}/requests`: ask another role for work, and `POST /api/tasks/{id}/request-decision`.
 - `POST /api/tasks/{id}/outputs`: release a named result now. `GET /api/tasks/{id}/outputs` lists what the task
   released, what it should deliver, and what its dependencies handed over.
 - `GET /api/projects/{id}/schedule`: the ready tasks in order, with the reasons.
@@ -320,18 +345,22 @@ A record also counts as changed when a record joins or leaves it: an order creat
 project changes the project. So a task that relied on "the project's open orders" is refreshed when that set
 changes, even though no field of the project did.
 
-Its agent receives an `input_changed` message carrying the record id and versions, never values. When a
-released result is first released or revised, the agents of the tasks that need it receive a
-`dependency_notification` (`route_output`).
-
-**Messages are read.** Each message has a read status. `GET /api/messages/inbox?agent=` lists an agent's unread
-messages and `POST /api/messages/read` marks them read. An agent reads only its own inbox; an administrator can
-read any.
-
-**Work resumes by itself.** When a processed change reopens tasks, the worker queues one run of each affected
-project's head (`resume_projects`), so the reopened work is redone without anyone asking. Reopened tasks
+Its agent receives an `input_changed` message carrying the record id and versions, never values. Reopened tasks
 are recorded in the project ledger. `task_invalidations` is unique per (task, record, new version), so a replayed
 or re-delivered event never reopens a task twice. The event summary lists the tasks reopened, flagged and noted.
+
+When a result is first released or revised, the agents of the tasks that need it receive a
+`dependency_notification` (`route_output`).
+
+**Messages are read and acted on.**
+- Each message has a read status. `GET /api/messages/inbox?agent=` lists an agent's unread messages, and
+  `POST /api/messages/read` marks them read. An agent reads only its own inbox; an administrator can read any.
+- When the head runs a task, the agent's unread messages about it go into its working context and count as read:
+  changed inputs, released results, decisions on its requests, answers to its questions.
+- The head reads its own inbox each step.
+
+**Work resumes by itself.** When a processed change reopens tasks, the worker queues one run of each affected
+project's head (`resume_projects`), so the reopened work is redone without anyone asking.
 
 **Replay.** A processed event returns its stored outcome when processed again. `python -m cie.rem.cli replay`
 re-applies a tenant's event log into a new tenant and compares the outcomes.
@@ -504,6 +533,11 @@ project changes. Without routing, 347 stale answers were served. See `docs/LOOP_
 Study 2 is pre-registered but not yet run. It covers inputs from what an answer relied on (`loop-relied`) and
 Llama 3.1 8B as the analyst (`llm-relied`, `llm-no-routing`), on test worlds 304 to 306.
 
+Work requests between agents, their merging, limits and release on decline or failure, the evidence round, and
+questions answered by a person are covered by tests (`tests/test_requests.py`). One test runs the whole flow with a
+scripted model: operations asks finance, waits, and finishes with the answer. These are tests of the mechanism, not
+a measurement with real models.
+
 Results released early and the schedule order were tested in a pre-registered simulation (test worlds 401 to 410:
 generated projects and simulated durations, over the real engine). Every criterion was met:
 - projects finished about 20% sooner (median), and sooner on all ten worlds;
@@ -515,8 +549,7 @@ The schedule order cut deadline misses from 6 to 2, but not the median finish ti
 **Not built yet:**
 - The action gateway: permission, freshness, approval, already-executed and result-confirmed checks before acting
   on external systems.
-- Agents acting on their inbox on their own. The head still runs the built-in specialists as one-shot calls, and
-  their evidence requests and questions are recorded but not answered.
-- Agents asking other agents for work.
-- Per-agent decision authority.
+- Specialists that run on their own. The head still runs the built-in specialists: it gives each its messages,
+  files its requests and resumes it with the answers. Outside agents can do the same through the API.
+- Per-agent decision authority (for example, finance approving up to a set amount).
 - Re-planning when no option meets a task's constraints.

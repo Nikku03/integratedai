@@ -189,11 +189,16 @@ records a task read but did not rely on still reopen it. Workers that declare th
 generated projects with simulated durations. Real specialists may not split their work into early results this
 neatly, and the schedule order depends on duration estimates.
 
-**Agents do not yet act on their own.**
-- Messages now have a read status and an inbox, and consumers are told when a result they need is released.
-- But the head still runs the built-in specialists as one-shot calls. Their evidence requests and questions are
-  recorded but not answered.
-- Agents cannot ask other agents for work, and there is no per-agent decision authority.
+**Agents work through the head.**
+- Agents read their messages, ask each other for work, get one more evidence round, and have their questions
+  answered by a person.
+- But the built-in specialists still run when the head runs them, as one call per run: they do not watch their
+  inbox between runs.
+- A question does not block the task, so an answer arrives only for its next run.
+- Requests are decided by fixed rules (merge equivalent ones, decline work no agent does), not by judging whether
+  the work is worth it.
+- There is no per-agent decision authority.
+- The request flow is tested with a scripted model only, not measured with real models.
 
 **Relied inputs trust the citations.** With `inputs="relied"`, a task's inputs are the records its result cites,
 so a worker that relies on a record without citing it is not refreshed when that record changes. A result with no

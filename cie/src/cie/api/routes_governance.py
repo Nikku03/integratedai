@@ -60,6 +60,17 @@ def decide(approval_id: uuid.UUID, body: Decision, auth: Auth = Depends(current_
                 retention.execute_deletion(session, req, auth.principal.id, vault=_vault())
             else:
                 req.status = "rejected"
+    if a.kind == "question":  # the person's reason is the answer; it goes to the asking agent's inbox
+        from cie.agents import messages
+        from cie.core.models import Agent, AgentMessage, MessageKind
+
+        q = session.get(AgentMessage, uuid.UUID(a.subject_id))
+        asker = session.get(Agent, q.from_agent_id) if q is not None and q.from_agent_id else None
+        if asker is not None:
+            messages.send(session, tenant_id=a.tenant_id, project_id=q.project_id, kind=MessageKind.answer, task_id=q.task_id, to_agent=asker,
+                          payload={"task_id": str(q.task_id), "question": q.payload.get("question", ""),
+                                   "answer": (body.reason or "") if body.approve else f"not answered: {body.reason or 'declined'}",
+                                   "by": auth.principal.name})
     if a.kind == "task_result":
         from cie.core.models import Task, TaskStatus
         from cie.workflow import engine

@@ -35,6 +35,14 @@ value reopens or flags only the tasks that used the earlier version. When a task
 ``revising``: tasks that have not started wait, and tasks that already used them are disturbed only if a changed
 value is released. A reopened task must re-release every output before it can complete.
 
+**Work requests** (``request_work``). A running task can ask another role for work it cannot do itself: logistics
+asks finance to check a budget. The request is a proposed task on the requester's behalf, answered by releasing
+an ``answer`` output. The head (or a person) accepts it, merges it into an equivalent open request, or declines
+it (``decide_request``). With ``wait``, the requester depends on the answer and steps aside (``blocked``, its
+progress kept); it becomes ready again when the answer is released, and reads it in its context. A declined,
+failed or cancelled request releases the requester, which is told why. Requests are bounded: at most
+``REQUEST_MAX_PER_TASK`` per task and ``REQUEST_MAX_DEPTH`` requests deep.
+
 **Scheduling** (``schedule``). Ready tasks are ordered by their priority, then by their deadline slack (the latest
 start that still meets every deadline downstream, from task estimates), then by the longest chain of work waiting
 behind them, then by how many tasks they unblock. Each place in the order comes with its reason. ``claim`` takes
@@ -69,6 +77,8 @@ ALLOWED: dict[TaskStatus, set[TaskStatus]] = {
 SETTLED = (S.completed, S.failed, S.cancelled)
 DEFAULT_LEASE_SECONDS = 300
 DEFAULT_ESTIMATE_SECONDS = 600.0  # a task's expected duration when it gives none (metrics.estimate_seconds)
+REQUEST_MAX_PER_TASK = 5  # work requests one task may make
+REQUEST_MAX_DEPTH = 3  # a request made by a requested task made by ... at most this deep
 
 
 class TransitionError(ValueError):
@@ -98,6 +108,8 @@ def transition(session: Session, t: Task, to: TaskStatus, *, actor: str, reason:
         t.lease_owner, t.lease_expires_at = None, None
     _log(session, t, frm, to, actor, reason, details)
     session.flush()
+    if to in SETTLED and (t.metrics or {}).get("requested_by_task"):
+        _request_settled(session, t, reason)
     return t
 
 
@@ -555,6 +567,110 @@ def deliverables(session: Session, t: Task) -> list[dict[str, Any]]:
                      "needed_by": [{"task_id": str(d.id), "title": d.title, "status": d.status.value} for d in ws]})
     rows.sort(key=lambda r: (r["released"], -r["waiting"], -len(r["needed_by"]), keys.index(r["output"])))
     return rows
+
+
+# ---------------------------------------------------------------------------------------------- work requests
+def request_depth(t: Task, session: Session) -> int:
+    """How many requests deep ``t`` is: 0 for planned work, 1 for a request made by planned work, and so on."""
+    d, seen, cur = 0, set(), t
+    while (rid := (cur.metrics or {}).get("requested_by_task")) and rid not in seen and d < 50:
+        seen.add(rid)
+        cur = session.get(Task, uuid.UUID(rid))
+        if cur is None:
+            break
+        d += 1
+    return d
+
+
+def request_work(session: Session, requester_id: uuid.UUID, *, worker: str, task_type: str, title: str, brief: str = "",
+                 wait: bool = True, agent_name: str | None = None, block_now: bool = True) -> Task:
+    """The running task ``requester_id`` asks another role (``task_type``) for work: a proposed task, answered by
+    releasing its ``answer`` output. With ``wait`` the requester depends on the answer and is blocked, its progress
+    kept, until it is released (``block_now=False`` leaves the blocking to the caller, after several requests).
+    Raises ``ValueError`` past the limits on requests."""
+    r = _held(session, requester_id, worker)
+    made = list((r.progress or {}).get("requests", []))
+    if len(made) >= REQUEST_MAX_PER_TASK:
+        raise ValueError(f"a task makes at most {REQUEST_MAX_PER_TASK} work requests")
+    depth = request_depth(r, session) + 1
+    if depth > REQUEST_MAX_DEPTH:
+        raise ValueError(f"requests go at most {REQUEST_MAX_DEPTH} deep")
+    who = agent_name or worker
+    t = propose(session, tenant_id=r.tenant_id, project_id=r.project_id, scope_id=r.scope_id, task_type=task_type, title=title[:500],
+                brief=f"Requested by {who} for the task '{r.title}'. {brief}".strip(), priority=r.priority, risk_level="low",
+                acceptance={"outputs": ["answer"]}, deadline_at=r.deadline_at, parent_id=r.id,
+                metrics={"requested_by_task": str(r.id), "requested_by": who, "wait": wait, "depth": depth,
+                         **({"estimate_seconds": (r.metrics or {})["estimate_seconds"] / 2} if (r.metrics or {}).get("estimate_seconds") else {})},
+                actor=who)
+    r.progress = {**(r.progress or {}), "requests": made + [{"task_id": str(t.id), "task_type": task_type, "title": title[:300], "wait": wait,
+                                                             "status": "proposed"}]}
+    if wait:
+        add_dependency(session, r, t.id, "requires", ["answer"])
+        session.flush()
+        if block_now:
+            block(session, r.id, worker=worker, reason=f"waiting for the answer of {task_type} to '{title[:200]}'")
+    session.flush()
+    return t
+
+
+def decide_request(session: Session, request_id: uuid.UUID, *, decision: str, actor: str, reason: str = "",
+                   into: uuid.UUID | None = None) -> Task:
+    """The head's or a person's decision on a proposed request: ``accept`` it into the plan, ``merge`` it ``into``
+    an equivalent open request (the requester then waits for that one's answer), or ``decline`` it (the requester is
+    released and told why)."""
+    t = locked(session, request_id)
+    rid = (t.metrics or {}).get("requested_by_task")
+    if not rid or t.status != S.proposed:
+        raise TransitionError(f"task {t.id} is not a request awaiting a decision")
+    _request_note(session, t, {"decision": decision, "reason": reason, "by": actor})
+    if decision == "accept":
+        return accept(session, t, actor=actor)
+    if decision == "merge":
+        other = session.get(Task, into) if into else None
+        if other is None or other.project_id != t.project_id or not (other.metrics or {}).get("requested_by_task") or other.status in SETTLED:
+            raise ValueError("a request merges only into an open request of the same project")
+        requester = session.get(Task, uuid.UUID(rid))
+        if (t.metrics or {}).get("wait") and requester is not None and session.get(TaskDependency, (requester.id, other.id)) is None:
+            add_dependency(session, requester, other.id, "requires", ["answer"])
+            session.flush()
+        return cancel(session, t.id, actor=actor, reason=f"merged into '{other.title}' ({other.id})")
+    if decision == "decline":
+        return cancel(session, t.id, actor=actor, reason=f"declined: {reason}" if reason else "declined")
+    raise ValueError("decision must be accept, merge or decline")
+
+
+def _request_note(session: Session, t: Task, note: dict[str, Any]) -> None:
+    """Update the requester's record of this request."""
+    rid = (t.metrics or {}).get("requested_by_task")
+    requester = session.get(Task, uuid.UUID(rid)) if rid else None
+    if requester is None:
+        return
+    reqs = [({**x, **note} if x.get("task_id") == str(t.id) else x) for x in (requester.progress or {}).get("requests", [])]
+    requester.progress = {**(requester.progress or {}), "requests": reqs}
+
+
+def _request_settled(session: Session, t: Task, reason: str) -> None:
+    """A requested task ended. Completed: the requester has its answer. Failed or cancelled: the requester stops
+    waiting for it (the dependency is removed) and its agent is told why."""
+    requester = session.get(Task, uuid.UUID(t.metrics["requested_by_task"]))
+    if requester is None:
+        return
+    _request_note(session, t, {"status": t.status.value, **({"reason": reason} if t.status != S.completed else {})})
+    if t.status == S.completed:
+        return
+    session.execute(delete(TaskDependency).where(TaskDependency.task_id == requester.id, TaskDependency.depends_on_id == t.id))
+    session.flush()
+    refresh(session, task_ids=[requester.id], actor="requests")
+    if requester.assigned_agent_id:
+        from cie.agents import messages
+        from cie.core.models import Agent, MessageKind
+
+        agent = session.get(Agent, requester.assigned_agent_id)
+        if agent is not None:
+            messages.send(session, tenant_id=requester.tenant_id, project_id=requester.project_id, kind=MessageKind.work_decision,
+                          task_id=requester.id, to_agent=agent,
+                          payload={"task_id": str(requester.id), "request_task_id": str(t.id), "decision": t.status.value,
+                                   "reason": reason[:500]})
 
 
 def output_gaps(session: Session, t: Task) -> list[str]:

@@ -2,10 +2,14 @@
 
 start(project, objective): ledger objective → plan (task DAG) → tasks proposed to the workflow engine and accepted
 (ready, or blocked on their dependencies).
-step(): for every ready task: route it with an explanation, claim it for the chosen agent (a lease), build the
-evidence packet with the *agent's* principal (so agent permissions apply), send a task_request, run the specialist
-strategy, check it for conflicts with other agents' findings, and submit it to the engine, which reviews it against
-the task's acceptance criteria, limits and input versions. High-risk or conflicting work waits in review for a
+step(): first decide the work requests agents made of each other (accept, merge into an equivalent open request, or
+decline past the limits) and handle the head's own inbox (questions go to a person). Then, for every ready task in
+schedule order: route it with an explanation, claim it for the chosen agent (a lease), build the evidence packet
+with the *agent's* principal (so agent permissions apply), give it the agent's unread messages for the task, send a
+task_request, run the specialist strategy (with one more evidence round if it asks for more), file the work it asks
+other specialists for (it steps aside until the answers it waits for arrive), send its questions on, check it for
+conflicts with other agents' findings, and submit it to the engine, which reviews it against the task's acceptance
+criteria, limits and input versions. High-risk or conflicting work waits in review for a
 different agent's verification; changes requested by a reviewer are addressed and resubmitted; a task that still
 fails goes to a person. Finally the synthesis reports every task's outcome. Everything is written to the ledger.
 """
@@ -32,6 +36,7 @@ from cie.agents.verification import verify_result
 from cie.core.logging import get_logger
 from cie.core.models import (
     Agent,
+    Approval,
     EvidencePacket,
     MemoryRecord,
     MessageKind,
@@ -45,6 +50,7 @@ from cie.core.models import (
     TaskStatus,
 )
 from cie.core.settings import Settings, get_settings
+from cie.core.util import estimate_tokens
 from cie.governance.permissions import visible_scopes
 from cie.memory.records import contradict, create_record
 from cie.state.store import GraphReader
@@ -150,6 +156,8 @@ class HeadAgent:
 
     def step(self, max_tasks: int = 10) -> StepReport:
         engine.reclaim_expired(self.s, tenant_id=self.project.tenant_id)
+        self.review_requests()
+        self.read_inbox()
         # work sent back by a reviewer comes first: the same agent addresses the review
         reruns = [t for t in self._tasks() if t.status == TaskStatus.running and t.lease_owner == self.worker
                   and (t.progress or {}).get("changes_requested")]
@@ -214,8 +222,12 @@ class HeadAgent:
 
     def _execute(self, t: Task, rerun: bool = False) -> tuple[TaskResult, int] | None:
         p = self.project
+        resuming = bool((t.progress or {}).get("requests")) and t.assigned_agent_id is not None
         if rerun:
             agent = self.s.get(Agent, t.assigned_agent_id)
+        elif resuming and (agent := self.s.get(Agent, t.assigned_agent_id)) is not None and agent.active:
+            # back from waiting for answers: the same agent carries on with its own requests and progress
+            t = engine.claim_task(self.s, t.id, worker=self.worker, agent_id=agent.id)
         else:
             agent, reason = select_agent(self.s, t, self.agents)
             t = engine.claim_task(self.s, t.id, worker=self.worker, agent_id=agent.id if agent else None)
@@ -238,7 +250,8 @@ class HeadAgent:
         t.evidence_packet_id = packet.id
         deps = [d for d in (self.s.get(Task, i) for i in self._deps().get(t.id, set())) if d is not None]
         engine.record_inputs(self.s, t, tasks=[d for d in deps if d.status == TaskStatus.completed])
-        if not rerun:
+        self._deliver_inbox(agent, t)
+        if not rerun and not resuming:
             messages.send(self.s, tenant_id=p.tenant_id, project_id=p.id, kind=MessageKind.task_request, task_id=t.id,
                           from_agent=self.head, to_agent=agent,
                           payload={"task_id": str(t.id), "brief": t.brief, "evidence_packet_id": str(packet.id), "risk": t.risk_level,
@@ -257,7 +270,25 @@ class HeadAgent:
             self._fail(t, agent, str(e))
             record_outcome(self.s, agent, t.task_type, Outcome(completed=False, latency_ms=(time.perf_counter() - t0) * 1000))
             return None
+        if result.evidence_requests and (t.progress or {}).get("evidence_round") != t.attempts:
+            more = self._more_evidence(agent, t, packet, result.evidence_requests)  # the agent asked for more: one more round
+            result.evidence_requests = []  # served (whatever was found)
+            if more is not None:
+                packet = more
+                try:
+                    result = self.strategy.run(agent, t, packet)
+                except Exception as e:  # noqa: BLE001
+                    self._fail(t, agent, str(e))
+                    return None
         result.latency_ms = (time.perf_counter() - t0) * 1000
+        for q in result.questions:
+            self._ask(agent, t, q)
+        if result.work_requests and self._request(agent, t, result):
+            return result, 0  # it waits for the answers it asked for; it resumes when they are released
+        if (t.metrics or {}).get("requested_by_task") and "answer" not in result.outputs:
+            # a requested task answers with its result: the summary and the claims it could support
+            result.outputs["answer"] = {"summary": result.summary, "findings": [f.claim for f in result.findings][:10],
+                                        "open_questions": result.open_questions[:5]}
         changes = (t.progress or {}).get("changes_requested") if rerun else None
         if changes:
             _address_review(result, changes)
@@ -270,9 +301,9 @@ class HeadAgent:
                  "tools": ["retrieval"] + (["llm"] if isinstance(self.strategy, LLMStrategy) else []),
                  "packet_tokens": packet.token_estimate, "packet_items": len(packet.items)}
         t.metrics = {**(t.metrics or {}), **out["metrics"]}
-        for req in result.evidence_requests:
+        for req in result.evidence_requests:  # asked for after this run's extra round: recorded, not served
             messages.send(self.s, tenant_id=p.tenant_id, project_id=p.id, kind=MessageKind.evidence_request, task_id=t.id,
-                          from_agent=agent, to_agent=self.head, payload={"task_id": str(t.id), "query": req})
+                          from_agent=agent, to_agent=self.head, payload={"task_id": str(t.id), "query": req[:500], "served": False})
         messages.send(self.s, tenant_id=p.tenant_id, project_id=p.id, kind=MessageKind.final_result, task_id=t.id,
                       from_agent=agent, to_agent=self.head,
                       payload={"task_id": str(t.id), "result": {"summary": result.summary, "n_findings": len(result.findings),
@@ -298,6 +329,130 @@ class HeadAgent:
         if t.status == TaskStatus.completed:
             publication.publish(self.s, t, verifier="head", reader=GraphReader(self.s, p.tenant_id, None), embedder=self.embedder)
         return result, conflicts
+
+    # ------------------------------------------------------------------ inbox, evidence rounds, requests, questions
+    def _deliver_inbox(self, agent: Agent, t: Task) -> None:
+        """The agent's unread messages about this task go into its working context, and count as read."""
+        msgs = messages.inbox(self.s, agent, project_id=self.project.id, task_id=t.id, unread_only=True)
+        if not msgs:
+            return
+        names = {a.id: a.name for a in self.agents}
+        ctx = dict((t.progress or {}).get("context") or {})
+        ctx["inbox"] = [{"id": str(m.id), "kind": m.kind.value, "from": names.get(m.from_agent_id), "payload": m.payload,
+                         "at": m.created_at.isoformat()} for m in msgs][-20:]
+        t.progress = {**(t.progress or {}), "context": ctx}
+        messages.mark_read(self.s, agent, [m.id for m in msgs])
+
+    def _more_evidence(self, agent: Agent, t: Task, packet: EvidencePacket, queries: list[str]) -> EvidencePacket | None:
+        """Another context round for the evidence the agent asked for, with its own permissions; the new items are
+        added to its packet. None when nothing new was found."""
+        from cie.context.builder import ContextRequest, build_context
+
+        p = self.project
+        have = {it.get("id") for it in packet.items}
+        extra: list[dict] = []
+        for q in queries[:3]:
+            try:
+                ctx = build_context(self.s, p.tenant_id, self._agent_principal(agent),
+                                    ContextRequest(question=q, task_id=t.id, scope_id=t.scope_id or p.scope_id, budget_tokens=4000,
+                                                   model=agent.model, channels=("traversal", "retrieval")),
+                                    embedder=self.embedder, settings=self.settings, record=False)
+            except PermissionError:
+                continue
+            new = [it for it in (ctx.packet.items if ctx.packet else []) if it.get("id") not in have]
+            have |= {it.get("id") for it in new}
+            extra += new
+            messages.send(self.s, tenant_id=p.tenant_id, project_id=p.id, kind=MessageKind.evidence_request, task_id=t.id,
+                          from_agent=agent, to_agent=self.head, payload={"task_id": str(t.id), "query": q[:500], "found": len(new)})
+        t.progress = {**(t.progress or {}), "evidence_round": t.attempts}
+        if not extra:
+            return None
+        merged = EvidencePacket(tenant_id=p.tenant_id, principal_id=agent.principal_id, query=f"{packet.query} | " + " | ".join(queries[:3]),
+                                intent=packet.intent, scope_ids=packet.scope_ids, filters=packet.filters, items=list(packet.items) + extra,
+                                trace={**(packet.trace or {}), "evidence_round": {"queries": queries[:3], "added": len(extra)}},
+                                token_estimate=(packet.token_estimate or 0) + sum(estimate_tokens(str(it)) for it in extra))
+        self.s.add(merged)
+        self.s.flush()
+        t.evidence_packet_id = merged.id
+        return merged
+
+    def _request(self, agent: Agent, t: Task, result: TaskResult) -> bool:
+        """File the work the agent asks other specialists for. Returns True when it must wait for an answer: its
+        partial result is kept and it steps aside until the answers arrive."""
+        p = self.project
+        waits = []
+        for w in result.work_requests:
+            try:
+                r = engine.request_work(self.s, t.id, worker=self.worker, task_type=w["role"], title=w["title"], brief=w.get("brief", ""),
+                                        wait=bool(w.get("wait", True)), agent_name=agent.name, block_now=False)
+            except ValueError as e:  # past the limits on requests: it finishes without that help
+                result.open_questions.append(f"could not ask {w['role']} for '{w['title']}': {e}"[:300])
+                continue
+            messages.send(self.s, tenant_id=p.tenant_id, project_id=p.id, kind=MessageKind.work_request, task_id=t.id, from_agent=agent,
+                          to_agent=self.head, payload={"task_id": str(t.id), "request_task_id": str(r.id), "task_type": w["role"],
+                                                       "title": w["title"][:300], "wait": bool(w.get("wait", True))})
+            ledger.append(self.s, tenant_id=p.tenant_id, project_id=p.id, kind="task",
+                          content={"task_id": str(r.id), "type": w["role"], "title": w["title"][:300], "requested_by": agent.name,
+                                   "for_task": str(t.id), "wait": bool(w.get("wait", True))}, actor=agent.name)
+            if w.get("wait", True):
+                waits.append(w["role"])
+        if not waits:
+            return False
+        engine.checkpoint(self.s, t.id, worker=self.worker, progress={"partial": {"summary": result.summary, "findings": len(result.findings)}})
+        engine.block(self.s, t.id, worker=self.worker, reason=f"waiting for answers from {', '.join(sorted(set(waits)))}")
+        self.review_requests()
+        return True
+
+    def review_requests(self) -> list[tuple[Task, str]]:
+        """Decide the work requests agents made: merge one into an equivalent open request of the same role, decline
+        one no agent can do, else accept it. (The engine already bounds how many and how deep.)"""
+        p = self.project
+        out = []
+        proposed = [t for t in self._tasks() if t.status == TaskStatus.proposed and (t.metrics or {}).get("requested_by_task")]
+        for t in proposed:
+            same = next((o for o in self._tasks() if o.id != t.id and o.task_type == t.task_type and o.status not in engine.SETTLED
+                         and o.status != TaskStatus.proposed and (o.metrics or {}).get("requested_by_task")
+                         and _same_request(o.title, t.title)), None)
+            if same is not None:
+                engine.decide_request(self.s, t.id, decision="merge", actor="head", reason="an equivalent request is open", into=same.id)
+                decision = "merged"
+            elif not any(t.task_type in (a.task_types or []) and a.role != "head" and a.active for a in self.agents):
+                engine.decide_request(self.s, t.id, decision="decline", actor="head", reason=f"no agent does {t.task_type} work")
+                decision = "declined"
+            else:
+                engine.decide_request(self.s, t.id, decision="accept", actor="head")
+                decision = "accepted"
+            requester = self.s.get(Task, uuid.UUID(t.metrics["requested_by_task"]))
+            to = self.s.get(Agent, requester.assigned_agent_id) if requester is not None and requester.assigned_agent_id else None
+            if decision == "accepted" and to is not None:  # a merge or decline is told by the engine when the request ends
+                messages.send(self.s, tenant_id=p.tenant_id, project_id=p.id, kind=MessageKind.work_decision, task_id=requester.id,
+                              from_agent=self.head, to_agent=to, payload={"task_id": str(requester.id), "request_task_id": str(t.id),
+                                                                          "decision": decision})
+            ledger.append(self.s, tenant_id=p.tenant_id, project_id=p.id, kind="decision",
+                          content={"task_id": str(t.id), "decision": f"request {decision}", "type": t.task_type, "title": t.title[:300]},
+                          actor="head")
+            out.append((t, decision))
+        return out
+
+    def _ask(self, agent: Agent, t: Task, question: str) -> None:
+        """A question the agent cannot decide: sent to the head, which passes it to a person (an approval of kind
+        ``question``); the answer comes back to the agent's inbox."""
+        p = self.project
+        m = messages.send(self.s, tenant_id=p.tenant_id, project_id=p.id, kind=MessageKind.question, task_id=t.id, from_agent=agent,
+                          to_agent=self.head, payload={"task_id": str(t.id), "question": question[:500]})
+        self.s.add(Approval(tenant_id=p.tenant_id, kind="question", subject_id=str(m.id), summary=f"{agent.name} asks, for '{t.title}': {question}"[:2000],
+                            requested_by=agent.name))
+        ledger.append(self.s, tenant_id=p.tenant_id, project_id=p.id, kind="blocker",
+                      content={"task_id": str(t.id), "question": question[:500], "asked_by": agent.name, "to": "a person"}, actor=agent.name)
+
+    def read_inbox(self) -> int:
+        """The head reads its inbox. Work requests are decided by ``review_requests``, questions were passed to a
+        person when asked, and results, failures and evidence requests were acted on as they happened; what remains
+        is marked read."""
+        if self.head is None:
+            return 0
+        msgs = messages.inbox(self.s, self.head, project_id=self.project.id, unread_only=True)
+        return messages.mark_read(self.s, self.head, [m.id for m in msgs])
 
     def _fail(self, t: Task, agent: Agent | None, error: str, report: bool = True) -> None:
         p = self.project
@@ -436,6 +591,14 @@ def _brief(value: Any, limit: int = 1000) -> Any:
 
     text = json.dumps(value, default=str)
     return value if len(text) <= limit else text[:limit] + " ..."
+
+
+def _same_request(a: str, b: str) -> bool:
+    """Two request titles ask for the same work: their words of four letters or more overlap by 80% or more."""
+    import re
+
+    wa, wb = (set(re.findall(r"[a-z0-9]{4,}", x.lower())) for x in (a, b))
+    return bool(wa and wb) and len(wa & wb) / len(wa | wb) >= 0.8
 
 
 def _address_review(result: TaskResult, changes: dict[str, Any]) -> None:

@@ -20,6 +20,10 @@ REQUIRED_FIELDS: dict[MessageKind, set[str]] = {
     MessageKind.final_result: {"task_id", "result"},
     MessageKind.failure_report: {"task_id", "error"},
     MessageKind.input_changed: {"task_id", "record", "from_version", "to_version"},
+    MessageKind.work_request: {"task_id", "request_task_id", "task_type", "title", "wait"},
+    MessageKind.work_decision: {"task_id", "request_task_id", "decision"},
+    MessageKind.question: {"task_id", "question"},
+    MessageKind.answer: {"task_id", "question", "answer"},
 }
 
 

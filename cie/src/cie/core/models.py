@@ -619,6 +619,10 @@ class MessageKind(str, enum.Enum):
     final_result = "final_result"
     failure_report = "failure_report"
     input_changed = "input_changed"  # a record the task used changed (cie.workflow.routing)
+    work_request = "work_request"  # an agent asks another role for work (cie.workflow.engine.request_work)
+    work_decision = "work_decision"  # a request was accepted, merged, declined, or ended without an answer
+    question = "question"  # an agent asks the head (or a person) something it cannot decide itself
+    answer = "answer"  # the reply to a question
 
 
 class AgentMessage(Base):

@@ -99,6 +99,20 @@ class OutputIn(BaseModel):
     state_refs: list[dict[str, Any]] = Field(default_factory=list)
 
 
+class RequestIn(BaseModel):
+    worker: str = Field(min_length=1, max_length=100)
+    task_type: str = Field(min_length=1, max_length=64)
+    title: str = Field(min_length=1, max_length=500)
+    brief: str = ""
+    wait: bool = True  # the requesting task steps aside until the answer is released
+
+
+class RequestDecisionIn(BaseModel):
+    decision: str = Field(pattern="^(accept|merge|decline)$")
+    reason: str = ""
+    into: uuid.UUID | None = None
+
+
 class ReadIn(BaseModel):
     agent: str
     ids: list[uuid.UUID]
@@ -446,6 +460,34 @@ def publish_output(task_id: uuid.UUID, body: OutputIn, auth: Auth = Depends(curr
     except ValueError as e:
         raise HTTPException(400, str(e)) from None
     return {"key": o.key, "version": o.version, "changed": changed, "status": o.status}
+
+
+@router.post("/tasks/{task_id}/requests", summary="Ask another role for work this running task needs; answered by its 'answer' output")
+def request_work(task_id: uuid.UUID, body: RequestIn, auth: Auth = Depends(current_auth), session: Session = Depends(db)):
+    from cie.workers.worker import queue_head_run
+    from cie.workflow import engine
+
+    t = _task_for_write(session, auth, task_id)
+    try:
+        r = _engine_call(engine.request_work, session, task_id, worker=f"{auth.principal.name}:{body.worker}", task_type=body.task_type,
+                         title=body.title, brief=body.brief, wait=body.wait, agent_name=auth.principal.name)
+    except ValueError as e:
+        raise HTTPException(400, str(e)) from None
+    queue_head_run(session, auth.tenant_id, t.project_id, reason="a work request to decide")
+    return _task_out(r, session)
+
+
+@router.post("/tasks/{task_id}/request-decision", summary="Accept a work request, merge it into an open one, or decline it")
+def decide_request(task_id: uuid.UUID, body: RequestDecisionIn, auth: Auth = Depends(current_auth), session: Session = Depends(db)):
+    from cie.workflow import engine
+
+    _task_for_write(session, auth, task_id)
+    try:
+        t = _engine_call(engine.decide_request, session, task_id, decision=body.decision, actor=f"user:{auth.principal.name}",
+                         reason=body.reason, into=body.into)
+    except ValueError as e:
+        raise HTTPException(400, str(e)) from None
+    return _task_out(t, session)
 
 
 @router.get("/tasks/{task_id}/outputs")
