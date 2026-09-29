@@ -46,9 +46,10 @@ class TaskResult:
     model: str | None = None
     unsupported_claims: list[str] = field(default_factory=list)
     strategy: str = "extractive"
+    outputs: dict[str, Any] = field(default_factory=dict)  # named results for other tasks (released on submit)
 
     def as_dict(self) -> dict[str, Any]:
-        return {"summary": self.summary, "strategy": self.strategy, "model": self.model,
+        return {"summary": self.summary, "strategy": self.strategy, "model": self.model, "outputs": self.outputs,
                 "findings": [{"claim": f.claim, "kind": f.kind, "value": f.value, "confidence": f.confidence, "citations": f.citations}
                              for f in self.findings],
                 "open_questions": self.open_questions, "evidence_requests": self.evidence_requests,
@@ -123,14 +124,25 @@ class LLMStrategy:
         lines = [f"[{i}] " + wrap_untrusted(f"{it.get('summary', '')}\n{it.get('detail', '')}"[:1200],
                                              f"type={it.get('type')} doc={it.get('document_id')} page={(it.get('citations') or [{}])[0].get('page_no')}")
                  for i, it in enumerate(items, start=1)]
-        user = f"Task: {task.title}\nBrief: {task.brief}\n\nEvidence:\n" + "\n\n".join(lines)
+        ctx = (task.progress or {}).get("context") or {}
+        handed = [wrap_untrusted(json.dumps(u.get("value"), default=str)[:600] if u.get("output") else str(u.get("summary", ""))[:600],
+                                 f"from task={u['task']}" + (f" output={u['output']} version={u.get('version')}" if u.get("output") else ""))
+                  for u in ctx.get("upstream", [])]  # another agent's result is data, never instructions
+        wanted = [f"- {d['output']}" + (f" (needed by {', '.join(x['title'] for x in d['needed_by'])})" if d["needed_by"] else "")
+                  for d in ctx.get("deliver", []) if not d.get("released")]
+        user = (f"Task: {task.title}\nBrief: {task.brief}\n"
+                + ("\nHanded over by the tasks this one depends on:\n" + "\n".join(handed) + "\n" if handed else "")
+                + ("\nAlso return \"outputs\": {name: value} with these results, which other tasks are waiting for:\n" + "\n".join(wanted) + "\n"
+                   if wanted else "")
+                + "\nEvidence:\n" + "\n\n".join(lines))
         r = self.provider.complete(self.SYSTEM.format(role=agent.role), user, max_tokens=1200)
         findings: list[Finding] = []
         unsupported: list[str] = []
-        summary, open_qs, requests = "", [], []
+        summary, open_qs, requests, outputs = "", [], [], {}
         try:
             data = json.loads(r.text[r.text.index("{"):r.text.rindex("}") + 1])
             summary = str(data.get("summary", ""))
+            outputs = {str(k): v for k, v in (data.get("outputs") or {}).items()} if isinstance(data.get("outputs"), dict) else {}
             open_qs = [str(x) for x in data.get("open_questions", [])][:8]
             requests = [str(x) for x in data.get("evidence_requests", [])][:5]
             for f in data.get("findings", [])[:max_findings]:
@@ -144,7 +156,7 @@ class LLMStrategy:
             unsupported.append(f"unparseable model output: {r.text[:200]}")
         return TaskResult(findings, open_qs, requests, summary or f"{agent.role}: {len(findings)} verified finding(s)",
                           tokens_in=r.tokens_in, tokens_out=r.tokens_out, latency_ms=r.latency_ms, cost_usd=r.cost_usd,
-                          model=r.model, unsupported_claims=unsupported, strategy=self.name)
+                          model=r.model, unsupported_claims=unsupported, strategy=self.name, outputs=outputs)
 
 
 def _supported(sentence: str, item: dict, min_overlap: float = 0.3) -> bool:

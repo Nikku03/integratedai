@@ -140,9 +140,15 @@ def build_context(session: Session, tenant_id: uuid.UUID, principal: Principal, 
     question = req.question or (task.title + ". " + (task.brief or "") if task else "")
     data: dict[str, Any] = {"question": question, "snapshot_seq": reader.seq, "budget_tokens": budget, "sources": {}}
     if task is not None:
+        from cie.workflow import engine
+
         data["task"] = {"id": str(task.id), "title": task.title, "brief": task.brief, "type": task.task_type, "status": task.status.value,
-                        "acceptance": task.acceptance, "limits": task.limits,
-                        "deadline_at": task.deadline_at.isoformat() if task.deadline_at else None, "revision": task.revision}
+                        "priority": task.priority, "acceptance": task.acceptance, "limits": task.limits,
+                        "deadline_at": task.deadline_at.isoformat() if task.deadline_at else None, "revision": task.revision,
+                        # what the tasks it depends on handed over (outputs used are recorded as its inputs) ...
+                        "upstream": engine.upstream(session, task, record=not cur),
+                        # ... and what it should release, most awaited first, so others can start before it finishes
+                        "deliver": engine.deliverables(session, task)}
     used_total, nxt, complete = _tokens(data), {"seq": reader.seq}, True
     live: dict[uuid.UUID, tuple[int, str]] = {}
     spare = 0

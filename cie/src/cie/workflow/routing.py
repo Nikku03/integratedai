@@ -10,6 +10,10 @@ handled according to its status:
 A change counts whether it adds a version or not (a new relationship or a stock count stamps the record's
 ``changed_seq``). Each (task, record, change) is handled once (``task_invalidations`` is unique on it), so a
 re-processed change never reopens a task twice. Messages carry record ids and versions only, never values.
+
+``route_output`` does the same for a task's released outputs (``engine.publish_output``): the tasks waiting for
+the output are unblocked and told; when a changed value replaces one they used, they are reopened or flagged in
+the same way. Releasing the same value again reaches nobody.
 """
 
 from __future__ import annotations
@@ -24,7 +28,7 @@ from sqlalchemy.orm import Session
 from cie.core.models import Agent, MessageKind, Task, TaskStatus
 from cie.state.models import RemNode, RemNodeVersion
 from cie.workflow import engine
-from cie.workflow.models import TaskInput, TaskInvalidation
+from cie.workflow.models import TaskInput, TaskInvalidation, TaskOutput
 
 S = TaskStatus
 
@@ -89,3 +93,51 @@ def _tell(session: Session, t: Task, what: str, use: TaskInput, new_version: int
         ledger.append(session, tenant_id=t.tenant_id, project_id=t.project_id, kind="decision",
                       content={"task_id": str(t.id), "decision": "reopened", "reason": f"input {what} changed",
                                "from_version": use.version, "to_version": new_version}, actor="events")
+
+
+def route_output(session: Session, producer: Task, o: TaskOutput, *, changed: bool, first: bool) -> dict[str, list[str]]:
+    """A task released output ``o``. Waiting dependants that need it are unblocked and their agents told; if its
+    value changed, the tasks that used an earlier version are reopened (completed) or flagged (running or in
+    review), like a changed record."""
+    from cie.agents import messages
+    from cie.core.models import TaskDependency
+
+    out: dict[str, list[str]] = {"unblocked": [], "reopened": [], "flagged": [], "noted": []}
+    consumers = [d for d in session.scalars(select(TaskDependency).where(TaskDependency.depends_on_id == producer.id))
+                 if o.key in (d.outputs or [])]
+    if consumers:
+        out["unblocked"] = [str(t.id) for t in engine.refresh(session, task_ids=[d.task_id for d in consumers], actor="outputs")
+                            if t.status == S.ready]
+    if changed and not first:
+        label = f"{producer.title[:200]}: {o.key}"
+        for use, t in session.execute(select(TaskInput, Task).join(Task, Task.id == TaskInput.task_id).where(
+                TaskInput.ref_kind == "output", TaskInput.ref_id == o.id, TaskInput.version != o.version)).all():
+            if t.status == S.completed:
+                action = "reopened"
+                from cie.agents.publication import withdraw
+
+                reason = f"{label} changed (version {use.version} -> {o.version})"
+                for x in engine.reopen(session, t.id, actor="outputs", reason=reason, details={"output": str(o.id), "from_version": use.version,
+                                                                                             "to_version": o.version}):
+                    withdraw(session, x.id, reason)
+            elif t.status in (S.running, S.review):
+                action = "flagged"
+                t.progress = {**(t.progress or {}), "stale_inputs": list((t.progress or {}).get("stale_inputs", []))[-19:]
+                              + [{"output": str(o.id), "label": label, "from_version": use.version, "to_version": o.version}]}
+            elif t.status in (S.failed, S.cancelled):
+                continue
+            else:
+                action = "noted"
+            session.add(TaskInvalidation(tenant_id=t.tenant_id, task_id=t.id, ref_id=o.id, from_version=use.version,
+                                         to_version=o.version, action=action))
+            out[action].append(str(t.id))
+    if changed:  # the first release or a new value: the agents of the tasks that need it are told (ids and versions, not values)
+        for d in consumers:
+            t = session.get(Task, d.task_id)
+            agent = session.get(Agent, t.assigned_agent_id) if t is not None and t.assigned_agent_id else None
+            if agent is not None and t.status not in (S.failed, S.cancelled):
+                messages.send(session, tenant_id=t.tenant_id, project_id=t.project_id, kind=MessageKind.dependency_notification, task_id=t.id,
+                              to_agent=agent, payload={"task_id": str(t.id), "depends_on_task_id": str(producer.id),
+                                                       "status": "released" if first else "revised", "output": o.key, "version": o.version})
+    session.flush()
+    return {k: v for k, v in out.items() if v}

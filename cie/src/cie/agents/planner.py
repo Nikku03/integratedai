@@ -22,10 +22,13 @@ class TaskSpec:
     task_type: str
     title: str
     brief: str
+    # "other_key" waits for that whole task; "other_key.output" waits only for that released output of it
     depends_on: list[str] = field(default_factory=list)
     risk_level: str = "low"
     priority: int = 5
     query: str | None = None  # retrieval query for the evidence packet
+    outputs: list[str] = field(default_factory=list)  # results it releases as soon as it has them, for others to use
+    estimate_seconds: float | None = None  # expected duration, for scheduling
 
 
 _FOCUS = {
@@ -85,8 +88,11 @@ class LLMPlanner:
     name = "llm_planner_v1"
     PROMPT = ("Decompose the objective into 3-7 tasks for specialists: research, finance, legal, operations, engineering. "
               "Return JSON: {\"tasks\":[{\"key\":str,\"task_type\":one of the specialists,\"title\":str,\"brief\":str,"
-              "\"depends_on\":[keys],\"risk_level\":\"low|medium|high\"}]}. Always start with a research task and end with "
-              "a task_type 'synthesis' depending on all others. Output JSON only.")
+              "\"outputs\":[names of intermediate results it can hand over before it finishes],"
+              "\"depends_on\":[keys, or \"key.output\" when only that result of the other task is needed],"
+              "\"risk_level\":\"low|medium|high\"}]}. Prefer depending on a named output over a whole task, so work can "
+              "start early. Always start with a research task and end with a task_type 'synthesis' depending on all others. "
+              "Output JSON only.")
 
     def __init__(self, provider: LLMProvider):
         self.provider = provider
@@ -95,11 +101,12 @@ class LLMPlanner:
         r = self.provider.complete(self.PROMPT, f"Objective: {objective}", max_tokens=1200)
         try:
             data = json.loads(r.text[r.text.index("{"):r.text.rindex("}") + 1])
-            specs = [TaskSpec(t["key"], t["task_type"], t["title"], t["brief"], list(t.get("depends_on", [])),
-                              t.get("risk_level", "medium"), query=objective) for t in data["tasks"]]
+            specs = [TaskSpec(t["key"], t["task_type"], t["title"], t["brief"], [str(d) for d in t.get("depends_on", [])],
+                              t.get("risk_level", "medium"), query=objective, outputs=[str(o) for o in t.get("outputs", [])][:8])
+                     for t in data["tasks"]]
             keys = {s.key for s in specs}
             for s in specs:
-                s.depends_on = [d for d in s.depends_on if d in keys and d != s.key]
+                s.depends_on = [d for d in s.depends_on if d.partition(".")[0] in keys and d.partition(".")[0] != s.key]
             if not any(s.task_type == "synthesis" for s in specs):
                 specs.append(TaskSpec("synthesis", "synthesis", "Synthesize final answer", "Combine outputs.", [s.key for s in specs], query=objective))
             return specs

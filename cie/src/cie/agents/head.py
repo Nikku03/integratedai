@@ -98,7 +98,8 @@ class HeadAgent:
     def acceptance_for(sp: TaskSpec) -> dict[str, Any]:
         if sp.task_type == "synthesis":
             return {"required_fields": ["answer"], "review": "auto"}
-        return {"citations_required": True, "max_unsupported": 0, "review": "agent" if sp.risk_level == "high" else "auto"}
+        return {"citations_required": True, "max_unsupported": 0, "review": "agent" if sp.risk_level == "high" else "auto",
+                **({"outputs": list(sp.outputs)} if sp.outputs else {})}
 
     def limits_for(self, sp: TaskSpec) -> dict[str, Any]:
         tools = ["retrieval"] + (["llm"] if isinstance(self.strategy, LLMStrategy) else [])
@@ -110,13 +111,20 @@ class HeadAgent:
         for sp in specs:
             t = engine.propose(self.s, tenant_id=p.tenant_id, project_id=p.id, scope_id=p.scope_id, task_type=sp.task_type, title=sp.title,
                                brief=sp.brief, priority=sp.priority, risk_level=sp.risk_level, acceptance=self.acceptance_for(sp),
-                               limits=self.limits_for(sp), metrics={"query": sp.query}, actor="head")
+                               limits=self.limits_for(sp), metrics={"query": sp.query, **({"estimate_seconds": sp.estimate_seconds}
+                                                                                           if sp.estimate_seconds else {})}, actor="head")
             by_key[sp.key] = t
         for sp in specs:
+            wants: dict[str, set[str]] = defaultdict(set)  # other key -> the outputs needed ("" = the whole task)
             for d in sp.depends_on:
-                if d in by_key:  # the synthesis reports every outcome, so it waits for settled work, not success
-                    self.s.add(TaskDependency(task_id=by_key[sp.key].id, depends_on_id=by_key[d].id,
-                                              kind="after" if sp.task_type == "synthesis" else "requires"))
+                key, _, out = d.partition(".")
+                if key in by_key and key != sp.key:
+                    wants[key].add(out)
+            for key, outs in wants.items():
+                if sp.task_type == "synthesis":  # it reports every outcome, so it waits for settled work, not success
+                    engine.add_dependency(self.s, by_key[sp.key], by_key[key].id, "after")
+                else:  # a whole-task need wins over output needs of the same task
+                    engine.add_dependency(self.s, by_key[sp.key], by_key[key].id, "requires", [] if "" in outs else sorted(outs))
         self.s.flush()
         for sp in specs:
             t = engine.accept(self.s, by_key[sp.key], actor="head")
@@ -136,8 +144,9 @@ class HeadAgent:
         return deps
 
     def ready_tasks(self) -> list[Task]:
+        """Ready tasks in schedule order: priority, deadline slack, the longest chain of work waiting behind them."""
         engine.refresh(self.s, project_id=self.project.id, actor="head")
-        return [t for t in self._tasks() if t.status == TaskStatus.ready]
+        return [t for t, _ in engine.schedule(self.s, tenant_id=self.project.tenant_id, project_id=self.project.id)]
 
     def step(self, max_tasks: int = 10) -> StepReport:
         engine.reclaim_expired(self.s, tenant_id=self.project.tenant_id)
@@ -195,8 +204,12 @@ class HeadAgent:
                                 embedder=self.embedder, settings=self.settings)
         except PermissionError:
             return None
+        tc = ctx.data.get("task") or {}
         task.progress = {**(task.progress or {}), "context": {"run_id": str(ctx.run_id) if ctx.run_id else None, "complete": ctx.data["complete"],
-                                                              "sources": ctx.data["sources"], "inputs": ctx.data["inputs_recorded"]}}
+                                                              "sources": ctx.data["sources"], "inputs": ctx.data["inputs_recorded"],
+                                                              # handed over by its dependencies, and what others wait for from it
+                                                              "upstream": [{**u, "value": _brief(u.get("value"))} for u in tc.get("upstream", [])],
+                                                              "deliver": tc.get("deliver", [])}}
         return ctx.packet
 
     def _execute(self, t: Task, rerun: bool = False) -> tuple[TaskResult, int] | None:
@@ -415,6 +428,14 @@ class HeadAgent:
                       content={"task_id": str(t.id), "confidence": result["confidence"], "contradictions": result["contradictions"]},
                       detail=answer[:4000], source_locations=citations[:10], producing_agent="head", confidence=result["confidence"],
                       embedder=self.embedder)
+
+
+def _brief(value: Any, limit: int = 1000) -> Any:
+    """A released value as it is kept in a task's progress: whole when small, else its JSON cut to ``limit``."""
+    import json
+
+    text = json.dumps(value, default=str)
+    return value if len(text) <= limit else text[:limit] + " ..."
 
 
 def _address_review(result: TaskResult, changes: dict[str, Any]) -> None:

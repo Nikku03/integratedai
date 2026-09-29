@@ -51,6 +51,12 @@ class RunIn(BaseModel):
     background: bool = False
 
 
+class DependencyIn(BaseModel):
+    task_id: uuid.UUID
+    kind: str = Field("requires", pattern="^(requires|after)$")
+    outputs: list[str] = Field(default_factory=list)  # only these released outputs of it are needed
+
+
 class TaskIn(BaseModel):
     project_id: uuid.UUID
     task_type: str
@@ -58,7 +64,8 @@ class TaskIn(BaseModel):
     brief: str = ""
     risk_level: str = "low"
     priority: int = 5
-    depends_on: list[uuid.UUID] = Field(default_factory=list)
+    depends_on: list[uuid.UUID | DependencyIn] = Field(default_factory=list)
+    estimate_seconds: float | None = Field(None, ge=0)
     acceptance: dict[str, Any] = Field(default_factory=dict)
     limits: dict[str, Any] = Field(default_factory=dict)
     deadline_at: datetime | None = None
@@ -72,6 +79,7 @@ class ClaimIn(BaseModel):
     lease_seconds: int = Field(300, ge=10, le=86400)
     task_types: list[str] = Field(default_factory=list)
     project_id: uuid.UUID | None = None
+    order: str = Field("schedule", pattern="^(schedule|fifo)$")  # schedule: priority, deadline slack, critical path
 
 
 class WorkIn(BaseModel):
@@ -81,6 +89,19 @@ class WorkIn(BaseModel):
     result: dict[str, Any] = Field(default_factory=dict)
     usage: dict[str, Any] = Field(default_factory=dict)
     reason: str = ""
+
+
+class OutputIn(BaseModel):
+    worker: str = Field(min_length=1, max_length=100)
+    key: str = Field(min_length=1, max_length=64)
+    value: Any = None
+    summary: str = ""
+    state_refs: list[dict[str, Any]] = Field(default_factory=list)
+
+
+class ReadIn(BaseModel):
+    agent: str
+    ids: list[uuid.UUID]
 
 
 class ReviewIn(BaseModel):
@@ -132,13 +153,18 @@ def _proj(session: Session, auth: Auth, project_id: uuid.UUID) -> Project:
 
 def _task_out(t: Task, session: Session) -> dict[str, Any]:
     agent = session.get(Agent, t.assigned_agent_id) if t.assigned_agent_id else None
+    from cie.workflow.models import TaskOutput
+
     dep_rows = list(session.scalars(select(TaskDependency).where(TaskDependency.task_id == t.id)))
     deps = [str(d.depends_on_id) for d in dep_rows]
+    outs = [{"key": o.key, "version": o.version, "status": o.status, "summary": o.summary, "value": o.value}
+            for o in session.scalars(select(TaskOutput).where(TaskOutput.task_id == t.id).order_by(TaskOutput.key))]
     return {"id": str(t.id), "project_id": str(t.project_id), "task_type": t.task_type, "title": t.title, "brief": t.brief,
             "status": t.status.value, "priority": t.priority, "risk_level": t.risk_level, "assigned_agent": agent.name if agent else None,
             "assignment_reason": t.assignment_reason, "evidence_packet_id": str(t.evidence_packet_id) if t.evidence_packet_id else None,
             "result": t.result, "verification": t.verification, "verifies_task_id": str(t.verifies_task_id) if t.verifies_task_id else None,
             "metrics": t.metrics, "depends_on": deps, "dependency_kinds": {str(d.depends_on_id): d.kind for d in dep_rows},
+            "dependency_outputs": {str(d.depends_on_id): d.outputs for d in dep_rows if d.outputs}, "outputs": outs,
             "acceptance": t.acceptance, "limits": t.limits, "progress": t.progress,
             "deadline_at": t.deadline_at.isoformat() if t.deadline_at else None, "attempts": t.attempts, "max_attempts": t.max_attempts,
             "review_rounds": t.review_rounds, "lease_owner": t.lease_owner, "revision": t.revision,
@@ -200,6 +226,16 @@ def step_project(project_id: uuid.UUID, auth: Auth = Depends(current_auth), sess
     return {"ran": [str(x) for x in rep.ran], "blocked": rep.blocked, "done": rep.done, "conflicts": rep.conflicts, "verifications": rep.verifications}
 
 
+@router.get("/projects/{project_id}/schedule", summary="The ready tasks in the order to run them, with the reason for each place")
+def project_schedule(project_id: uuid.UUID, auth: Auth = Depends(current_auth), session: Session = Depends(db)):
+    from cie.workflow import engine
+
+    p = _proj(session, auth, project_id)
+    engine.refresh(session, project_id=p.id, actor=f"user:{auth.principal.name}")
+    return [{"task_id": str(t.id), "title": t.title, "task_type": t.task_type, **why}
+            for t, why in engine.schedule(session, tenant_id=auth.tenant_id, project_id=p.id)]
+
+
 @router.get("/projects/{project_id}/ledger")
 def project_ledger(project_id: uuid.UUID, auth: Auth = Depends(current_auth), session: Session = Depends(db)):
     p = _proj(session, auth, project_id)
@@ -244,15 +280,20 @@ def create_task(body: TaskIn, auth: Auth = Depends(current_auth), session: Sessi
 
     p = _proj(session, auth, body.project_id)
     require_scope_write(auth, p.scope_id)
-    for d in body.depends_on:
-        dep = session.get(Task, d)
+    deps = [DependencyIn(task_id=d) if isinstance(d, uuid.UUID) else d for d in body.depends_on]
+    for d in deps:
+        dep = session.get(Task, d.task_id)
         if dep is None or dep.tenant_id != auth.tenant_id:
-            raise HTTPException(400, f"unknown dependency {d}")
+            raise HTTPException(400, f"unknown dependency {d.task_id}")
+        if d.outputs and d.kind != "requires":
+            raise HTTPException(400, "only a 'requires' dependency can name outputs")
     actor = f"user:{auth.principal.name}"
     t = engine.propose(session, tenant_id=auth.tenant_id, project_id=p.id, scope_id=p.scope_id, task_type=body.task_type, title=body.title,
                        brief=body.brief, priority=body.priority, risk_level=body.risk_level, acceptance=body.acceptance, limits=body.limits,
-                       deadline_at=body.deadline_at, owner_principal_id=auth.principal.id, depends_on=[(d, "requires") for d in body.depends_on],
-                       metrics={"query": body.title}, max_attempts=body.max_attempts, max_review_rounds=body.max_review_rounds, actor=actor)
+                       deadline_at=body.deadline_at, owner_principal_id=auth.principal.id,
+                       depends_on=[(d.task_id, d.kind, d.outputs) for d in deps],
+                       metrics={"query": body.title, **({"estimate_seconds": body.estimate_seconds} if body.estimate_seconds is not None else {})},
+                       max_attempts=body.max_attempts, max_review_rounds=body.max_review_rounds, actor=actor)
     if not body.propose_only:
         engine.accept(session, t, actor=actor)
     ledger.append(session, tenant_id=auth.tenant_id, project_id=p.id, kind="task",
@@ -352,7 +393,7 @@ def claim_next(body: ClaimIn, auth: Auth = Depends(current_auth), session: Sessi
         if p is None or not auth.visibility.can_write(p.scope_id):
             continue
         t = engine.claim(session, auth.tenant_id, worker=worker, task_types=body.task_types or None, project_id=pid,
-                         lease_seconds=body.lease_seconds)
+                         lease_seconds=body.lease_seconds, order=body.order)
         if t is not None:
             return _task_out(t, session)
     return {"task": None}
@@ -392,6 +433,31 @@ def submit(task_id: uuid.UUID, body: WorkIn, auth: Auth = Depends(current_auth),
     _task_for_write(session, auth, task_id)
     return _task_out(_engine_call(engine.submit, session, task_id, worker=f"{auth.principal.name}:{body.worker}", result=body.result,
                                   usage=body.usage), session)
+
+
+@router.post("/tasks/{task_id}/outputs", summary="Release a named result now, so the tasks that need only it can start")
+def publish_output(task_id: uuid.UUID, body: OutputIn, auth: Auth = Depends(current_auth), session: Session = Depends(db)):
+    from cie.workflow import engine
+
+    _task_for_write(session, auth, task_id)
+    try:
+        o, changed = _engine_call(engine.publish_output, session, task_id, worker=f"{auth.principal.name}:{body.worker}", key=body.key,
+                                  value=body.value, summary=body.summary, state_refs=body.state_refs)
+    except ValueError as e:
+        raise HTTPException(400, str(e)) from None
+    return {"key": o.key, "version": o.version, "changed": changed, "status": o.status}
+
+
+@router.get("/tasks/{task_id}/outputs")
+def list_outputs(task_id: uuid.UUID, auth: Auth = Depends(current_auth), session: Session = Depends(db)):
+    from cie.workflow import engine
+
+    t = session.get(Task, task_id)
+    if t is None or t.tenant_id != auth.tenant_id:
+        raise HTTPException(404, "task not found")
+    _proj(session, auth, t.project_id)
+    return {"released": _task_out(t, session)["outputs"], "deliver": engine.deliverables(session, t),
+            "upstream": engine.upstream(session, t, record=False)}
 
 
 @router.post("/tasks/{task_id}/release")
@@ -545,6 +611,35 @@ def post_message(body: MessageIn, auth: Auth = Depends(current_auth), session: S
     except ValueError as e:
         raise HTTPException(400, str(e)) from e
     return {"id": str(m.id), "kind": m.kind.value, "token_estimate": m.token_estimate}
+
+
+def _agent_for(session: Session, auth: Auth, name: str) -> Agent:
+    """An agent's inbox is read by the agent itself (its principal) or an administrator."""
+    a = next((x for x in agents_for_tenant(session, auth.tenant_id, active_only=False) if x.name == name), None)
+    if a is None:
+        raise HTTPException(404, "unknown agent")
+    if a.principal_id != auth.principal.id and not auth.visibility.is_admin:
+        raise HTTPException(403, "only the agent itself or an administrator reads its inbox")
+    return a
+
+
+@router.get("/messages/inbox")
+def inbox(agent: str, unread: bool = True, project_id: uuid.UUID | None = None, auth: Auth = Depends(current_auth),
+          session: Session = Depends(db)):
+    from cie.agents import messages
+
+    a = _agent_for(session, auth, agent)
+    names = {x.id: x.name for x in agents_for_tenant(session, auth.tenant_id, active_only=False)}
+    return [{"id": str(m.id), "kind": m.kind.value, "task_id": str(m.task_id) if m.task_id else None, "from": names.get(m.from_agent_id),
+             "payload": m.payload, "created_at": m.created_at.isoformat(), "read_at": m.read_at.isoformat() if m.read_at else None}
+            for m in messages.inbox(session, a, project_id=project_id, unread_only=unread)]
+
+
+@router.post("/messages/read")
+def read_messages(body: ReadIn, auth: Auth = Depends(current_auth), session: Session = Depends(db)):
+    from cie.agents import messages
+
+    return {"marked": messages.mark_read(session, _agent_for(session, auth, body.agent), body.ids)}
 
 
 @router.get("/messages")

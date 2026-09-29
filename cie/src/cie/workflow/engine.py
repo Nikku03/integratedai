@@ -7,7 +7,8 @@
                   +------ (lease expired: ready again, progress kept)
 
 * **proposed -> ready/blocked**: a proposed task is accepted into the plan; it is ``blocked`` until every
-  ``requires`` dependency is completed and every ``after`` dependency is settled.
+  ``requires`` dependency is completed and every ``after`` dependency is settled. A ``requires`` dependency on
+  named outputs is met as soon as those outputs are released, while the dependency is still running.
 * **ready -> running**: a worker claims it with a lease. Claims use ``FOR UPDATE SKIP LOCKED``, so two workers
   never run the same task. The worker heartbeats to keep the lease and checkpoints its progress. When a lease
   expires the task returns to ``ready`` with its progress intact, and another worker can pick it up.
@@ -26,19 +27,33 @@
 
 Every transition is checked against this table, increments the task's ``revision`` and is logged in
 ``task_transitions``.
+
+**Outputs released early.** A running task releases named results as soon as it has them (``publish_output``),
+for example logistics' ``expedite_cost`` long before its full plan is done. Tasks that need only that result
+become ready at once and record the version they used. Releasing the same value again changes nothing. A changed
+value reopens or flags only the tasks that used the earlier version. When a task is reopened, its outputs are
+``revising``: tasks that have not started wait, and tasks that already used them are disturbed only if a changed
+value is released. A reopened task must re-release every output before it can complete.
+
+**Scheduling** (``schedule``). Ready tasks are ordered by their priority, then by their deadline slack (the latest
+start that still meets every deadline downstream, from task estimates), then by the longest chain of work waiting
+behind them, then by how many tasks they unblock. Each place in the order comes with its reason. ``claim`` takes
+the first task in this order that no other worker holds.
 """
 
 from __future__ import annotations
 
+import json
 import uuid
+from collections import defaultdict
 from datetime import UTC, datetime, timedelta
-from typing import Any
+from typing import Any, NamedTuple
 
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
 from cie.core.models import Approval, Task, TaskDependency, TaskStatus
-from cie.workflow.models import TaskInput, TaskTransition
+from cie.workflow.models import TaskInput, TaskOutput, TaskTransition
 
 S = TaskStatus
 ALLOWED: dict[TaskStatus, set[TaskStatus]] = {
@@ -53,6 +68,7 @@ ALLOWED: dict[TaskStatus, set[TaskStatus]] = {
 }
 SETTLED = (S.completed, S.failed, S.cancelled)
 DEFAULT_LEASE_SECONDS = 300
+DEFAULT_ESTIMATE_SECONDS = 600.0  # a task's expected duration when it gives none (metrics.estimate_seconds)
 
 
 class TransitionError(ValueError):
@@ -96,7 +112,7 @@ def locked(session: Session, task_id: uuid.UUID) -> Task:
 def propose(session: Session, *, tenant_id: uuid.UUID, project_id: uuid.UUID, task_type: str, title: str, brief: str = "",
             scope_id: uuid.UUID | None = None, priority: int = 5, risk_level: str = "low", acceptance: dict | None = None,
             limits: dict | None = None, deadline_at: datetime | None = None, owner_principal_id: uuid.UUID | None = None,
-            depends_on: list[tuple[uuid.UUID, str]] | None = None, verifies_task_id: uuid.UUID | None = None,
+            depends_on: list[tuple] | None = None, verifies_task_id: uuid.UUID | None = None,
             parent_id: uuid.UUID | None = None, metrics: dict | None = None, max_attempts: int = 3, max_review_rounds: int = 1,
             actor: str = "system") -> Task:
     t = Task(tenant_id=tenant_id, project_id=project_id, scope_id=scope_id, task_type=task_type, title=title, brief=brief,
@@ -106,41 +122,87 @@ def propose(session: Session, *, tenant_id: uuid.UUID, project_id: uuid.UUID, ta
              review_rounds=0, revision=0)
     session.add(t)
     session.flush()
-    for dep_id, kind in depends_on or []:
-        if kind not in ("requires", "after"):
-            raise ValueError("dependency kind must be 'requires' or 'after'")
-        session.add(TaskDependency(task_id=t.id, depends_on_id=dep_id, kind=kind))
+    for dep in depends_on or []:
+        dep_id, kind, outputs = (tuple(dep) + ([],))[:3]
+        add_dependency(session, t, dep_id, kind, outputs)
     _log(session, t, S.proposed, S.proposed, actor, "proposed", {"title": title})
     session.flush()
     return t
 
 
-def dependencies(session: Session, task_ids) -> dict[uuid.UUID, list[tuple[Task, str]]]:
+def add_dependency(session: Session, t: Task, dep_id: uuid.UUID, kind: str = "requires", outputs: list[str] | None = None) -> None:
+    """``t`` depends on task ``dep_id``: ``requires`` (completed, or only the named ``outputs`` released) or
+    ``after`` (settled)."""
+    if kind not in ("requires", "after"):
+        raise ValueError("dependency kind must be 'requires' or 'after'")
+    if outputs and kind != "requires":
+        raise ValueError("only a 'requires' dependency can name outputs")
+    session.add(TaskDependency(task_id=t.id, depends_on_id=dep_id, kind=kind, outputs=sorted(set(outputs or []))))
+
+
+class Dep(NamedTuple):
+    task: Task
+    kind: str
+    outputs: list[str]
+
+
+def dependencies(session: Session, task_ids) -> dict[uuid.UUID, list[Dep]]:
     ids = list(task_ids)
-    out: dict[uuid.UUID, list[tuple[Task, str]]] = {i: [] for i in ids}
+    out: dict[uuid.UUID, list[Dep]] = {i: [] for i in ids}
     if not ids:
         return out
     rows = session.execute(select(TaskDependency, Task).join(Task, Task.id == TaskDependency.depends_on_id)
                            .where(TaskDependency.task_id.in_(ids))).all()
     for d, dep in rows:
-        out[d.task_id].append((dep, d.kind or "requires"))
+        out[d.task_id].append(Dep(dep, d.kind or "requires", list(d.outputs or [])))
     return out
+
+
+def released(session: Session, task_ids) -> dict[tuple[uuid.UUID, str], TaskOutput]:
+    """The outputs these tasks have released, by (task id, key)."""
+    ids = list(set(task_ids))
+    if not ids:
+        return {}
+    return {(o.task_id, o.key): o for o in session.scalars(select(TaskOutput).where(TaskOutput.task_id.in_(ids)))}
 
 
 def awaiting_person(t: Task) -> bool:
     return t.status == S.review and (t.verification or {}).get("awaiting") == "human"
 
 
-def unmet(deps: list[tuple[Task, str]]) -> list[str]:
-    """``requires`` needs the dependency completed; ``after`` needs it settled or waiting on a person's decision."""
-    return [f"{dep.title} ({dep.status.value})" for dep, kind in deps
-            if (kind == "requires" and dep.status != S.completed)
-            or (kind == "after" and dep.status not in SETTLED and not awaiting_person(dep))]
+def unmet(deps: list[Dep], outs: dict[tuple[uuid.UUID, str], TaskOutput] | None = None) -> list[str]:
+    """``requires`` needs the dependency completed, or, when it names outputs, those outputs released and current
+    (not being revised) and the dependency not failed or cancelled; ``after`` needs it settled or waiting on a
+    person's decision."""
+    outs = outs or {}
+    waiting = []
+    for dep, kind, names in deps:
+        if kind == "after":
+            if dep.status not in SETTLED and not awaiting_person(dep):
+                waiting.append(f"{dep.title} ({dep.status.value})")
+        elif not names:
+            if dep.status != S.completed:
+                waiting.append(f"{dep.title} ({dep.status.value})")
+        elif dep.status in (S.failed, S.cancelled):
+            waiting.append(f"{dep.title} ({dep.status.value})")
+        else:
+            missing = [k for k in names if (o := outs.get((dep.id, k))) is None or o.status != "current"]
+            if missing:
+                how = "being revised" if all(outs.get((dep.id, k)) is not None for k in missing) else "not released yet"
+                waiting.append(f"{dep.title}: {', '.join(missing)} ({how})")
+    return waiting
+
+
+def waiting_for(session: Session, task_ids) -> dict[uuid.UUID, list[str]]:
+    """What each task still waits for among its dependencies."""
+    deps = dependencies(session, task_ids)
+    outs = released(session, [d.task.id for ds in deps.values() for d in ds if d.outputs])
+    return {i: unmet(ds, outs) for i, ds in deps.items()}
 
 
 def accept(session: Session, t: Task, *, actor: str) -> Task:
     """proposed -> ready, or blocked while dependencies are not met."""
-    waiting = unmet(dependencies(session, [t.id])[t.id])
+    waiting = waiting_for(session, [t.id])[t.id]
     if waiting:
         return transition(session, t, S.blocked, actor=actor, reason="accepted; waiting for " + ", ".join(waiting))
     return transition(session, t, S.ready, actor=actor, reason="accepted")
@@ -155,10 +217,10 @@ def refresh(session: Session, *, project_id: uuid.UUID | None = None, task_ids=N
     if task_ids is not None:
         q = q.where(Task.id.in_(list(task_ids)))
     tasks = list(session.scalars(q))
-    deps = dependencies(session, [t.id for t in tasks])
+    waits = waiting_for(session, [t.id for t in tasks])
     changed = []
     for t in tasks:
-        waiting = unmet(deps[t.id])
+        waiting = waits[t.id]
         if t.status == S.ready and waiting:
             changed.append(transition(session, t, S.blocked, actor=actor, reason="waiting for " + ", ".join(waiting)))
         elif t.status == S.blocked and not waiting:
@@ -166,10 +228,11 @@ def refresh(session: Session, *, project_id: uuid.UUID | None = None, task_ids=N
     return changed
 
 
-def dependants(session: Session, task_id: uuid.UUID) -> list[tuple[Task, str]]:
-    rows = session.execute(select(Task, TaskDependency.kind).join(TaskDependency, TaskDependency.task_id == Task.id)
+def dependants(session: Session, task_id: uuid.UUID) -> list[Dep]:
+    """The tasks that depend on ``task_id``, with the kind of dependency and the outputs they need."""
+    rows = session.execute(select(Task, TaskDependency.kind, TaskDependency.outputs).join(TaskDependency, TaskDependency.task_id == Task.id)
                            .where(TaskDependency.depends_on_id == task_id)).all()
-    return [(t, k or "requires") for t, k in rows]
+    return [Dep(t, k or "requires", list(o or [])) for t, k, o in rows]
 
 
 # ---------------------------------------------------------------------------------------------- running
@@ -182,25 +245,81 @@ def claim_task(session: Session, task_id: uuid.UUID, *, worker: str, agent_id: u
 
 
 def claim(session: Session, tenant_id: uuid.UUID, *, worker: str, agent_id: uuid.UUID | None = None, task_types=None,
-          project_id: uuid.UUID | None = None, lease_seconds: int = DEFAULT_LEASE_SECONDS) -> Task | None:
-    """The next ready task, by priority then age. ``SKIP LOCKED``: concurrent workers never claim the same task."""
-    q = select(Task).where(Task.tenant_id == tenant_id, Task.status == S.ready)
-    if task_types:
-        q = q.where(Task.task_type.in_(list(task_types)))
+          project_id: uuid.UUID | None = None, lease_seconds: int = DEFAULT_LEASE_SECONDS, order: str = "schedule",
+          at: datetime | None = None) -> Task | None:
+    """The next ready task: in ``schedule`` order (the default), or by priority then age (``order="fifo"``).
+    ``SKIP LOCKED``: concurrent workers never claim the same task."""
+    if order == "fifo":
+        q = select(Task).where(Task.tenant_id == tenant_id, Task.status == S.ready)
+        if task_types:
+            q = q.where(Task.task_type.in_(list(task_types)))
+        if project_id is not None:
+            q = q.where(Task.project_id == project_id)
+        t = session.scalar(q.order_by(Task.priority, Task.created_at).limit(1).with_for_update(skip_locked=True))
+        return None if t is None else _start(session, t, worker, agent_id, lease_seconds)
+    for cand, why in schedule(session, tenant_id=tenant_id, project_id=project_id, task_types=task_types, at=at):
+        t = session.scalar(select(Task).where(Task.id == cand.id, Task.status == S.ready).with_for_update(skip_locked=True)
+                           .execution_options(populate_existing=True))
+        if t is not None:
+            return _start(session, t, worker, agent_id, lease_seconds, why=why)
+    return None
+
+
+def _estimate(t: Task) -> float:
+    try:
+        return max(0.0, float((t.metrics or {}).get("estimate_seconds") or DEFAULT_ESTIMATE_SECONDS))
+    except (TypeError, ValueError):
+        return DEFAULT_ESTIMATE_SECONDS
+
+
+def schedule(session: Session, *, tenant_id: uuid.UUID, project_id: uuid.UUID | None = None, task_types=None,
+             at: datetime | None = None) -> list[tuple[Task, dict[str, Any]]]:
+    """The ready tasks in the order to run them, each with its reason: priority (lower first), then deadline slack
+    (seconds between now and the latest start that still meets every deadline downstream; none = no deadline
+    depends on it), then the longest chain of estimated work from it through the tasks waiting on it, then how many
+    unfinished tasks wait on it, then age."""
+    at = at or now()
+    q = select(Task).where(Task.tenant_id == tenant_id, Task.status.not_in(list(SETTLED)))
     if project_id is not None:
         q = q.where(Task.project_id == project_id)
-    t = session.scalar(q.order_by(Task.priority, Task.created_at).limit(1).with_for_update(skip_locked=True))
-    if t is None:
-        return None
-    return _start(session, t, worker, agent_id, lease_seconds)
+    open_ = {t.id: t for t in session.scalars(q)}
+    if not open_:
+        return []
+    kids: dict[uuid.UUID, list[uuid.UUID]] = defaultdict(list)
+    for d in session.scalars(select(TaskDependency).where(TaskDependency.depends_on_id.in_(list(open_)))):
+        if d.task_id in open_:
+            kids[d.depends_on_id].append(d.task_id)
+    path: dict[uuid.UUID, float] = {}
+    latest: dict[uuid.UUID, float | None] = {}
+    below: dict[uuid.UUID, frozenset] = {}
+
+    def walk(i: uuid.UUID, trail: frozenset) -> None:
+        if i in path:
+            return
+        t, est = open_[i], _estimate(open_[i])
+        cs = [c for c in kids[i] if c not in trail]  # a cycle is cut, not followed
+        for c in cs:
+            walk(c, trail | {i})
+        path[i] = est + max((path[c] for c in cs), default=0.0)
+        below[i] = frozenset(cs).union(*(below[c] for c in cs)) if cs else frozenset()
+        starts = [latest[c] - est for c in cs if latest[c] is not None]
+        if t.deadline_at is not None:
+            starts.append((t.deadline_at - at).total_seconds() - est)
+        latest[i] = min(starts) if starts else None
+
+    for i in open_:
+        walk(i, frozenset())
+    ready = [t for t in open_.values() if t.status == S.ready and (not task_types or t.task_type in set(task_types))]
+    ready.sort(key=lambda t: (t.priority, latest[t.id] is None, latest[t.id] or 0.0, -path[t.id], -len(below[t.id]), t.created_at))
+    return [(t, {"rank": n + 1, "priority": t.priority, "slack_s": None if latest[t.id] is None else round(latest[t.id], 1),
+                 "critical_path_s": round(path[t.id], 1), "unblocks": len(below[t.id])}) for n, t in enumerate(ready)]
 
 
 def clear_record_inputs(session: Session, t: Task) -> None:
-    """A task about to run (again) rebuilds its context, so the records an earlier run read are no longer its inputs.
-    Without this, a record deleted or changed since the earlier run would keep the new run from ever completing."""
-    from sqlalchemy import delete
-
-    session.execute(delete(TaskInput).where(TaskInput.task_id == t.id, TaskInput.ref_kind == "record"))
+    """A task about to run (again) rebuilds its context, so the records and outputs an earlier run read are no longer
+    its inputs. Without this, a record deleted or changed since the earlier run would keep the new run from ever
+    completing."""
+    session.execute(delete(TaskInput).where(TaskInput.task_id == t.id, TaskInput.ref_kind.in_(["record", "output"])))
     if (t.progress or {}).get("context_seq") is not None:
         t.progress = {k: v for k, v in t.progress.items() if k != "context_seq"}
 
@@ -240,13 +359,14 @@ def relied_on(session: Session, t: Task, result: dict[str, Any]) -> dict[uuid.UU
     return out
 
 
-def _start(session: Session, t: Task, worker: str, agent_id: uuid.UUID | None, lease_seconds: int) -> Task:
+def _start(session: Session, t: Task, worker: str, agent_id: uuid.UUID | None, lease_seconds: int, why: dict | None = None) -> Task:
     clear_record_inputs(session, t)
     t.attempts = (t.attempts or 0) + 1
     if agent_id is not None:
         t.assigned_agent_id = agent_id
-    transition(session, t, S.running, actor=worker, reason=f"claimed (attempt {t.attempts})",
-               details={"resumed_from": t.progress.get("checkpoint")} if (t.progress or {}).get("checkpoint") else None)
+    details = {**({"resumed_from": t.progress.get("checkpoint")} if (t.progress or {}).get("checkpoint") else {}),
+               **({"schedule": why} if why else {})}
+    transition(session, t, S.running, actor=worker, reason=f"claimed (attempt {t.attempts})", details=details or None)
     t.lease_owner, t.lease_expires_at = worker, now() + timedelta(seconds=lease_seconds)
     session.flush()
     return t
@@ -307,16 +427,17 @@ def reclaim_expired(session: Session, *, tenant_id: uuid.UUID | None = None, at:
 
 # ---------------------------------------------------------------------------------------------- inputs
 def record_inputs(session: Session, t: Task, records: dict[uuid.UUID, tuple[int, str]] | None = None,
-                  tasks: list[Task] | None = None, seq: int | None = None) -> None:
+                  tasks: list[Task] | None = None, seq: int | None = None, outputs: list[tuple[TaskOutput, str]] | None = None) -> None:
     """Remember which versions a task's work was based on: live-state records (with the snapshot ``seq`` they were
-    read at, so changes that add no version, such as a stock count or a new relationship, are caught too) and
-    other tasks' results."""
+    read at, so changes that add no version, such as a stock count or a new relationship, are caught too), other
+    tasks' results, and other tasks' released outputs (with a label)."""
     if records and seq is None:
         from cie.state.store import current_seq
 
         seq = current_seq(session, t.tenant_id)
     rows = [("record", nid, v, label, seq) for nid, (v, label) in (records or {}).items()]
     rows += [("task", d.id, d.revision or 0, d.title[:300], None) for d in tasks or []]
+    rows += [("output", o.id, o.version, label[:300], None) for o, label in outputs or []]
     for kind, rid, version, label, at in rows:
         cur = session.get(TaskInput, (t.id, kind, rid))
         if cur is None:
@@ -351,7 +472,97 @@ def stale_inputs(session: Session, t: Task) -> list[dict[str, Any]]:
             if d is None or (d.revision or 0) != i.version:
                 out.append({"kind": "task", "id": str(i.ref_id), "label": i.label, "used": i.version,
                             "now": d.revision if d else None, "status": d.status.value if d else None})
+        elif i.ref_kind == "output":  # a released value that has since changed (being revised is not yet a change)
+            o = session.get(TaskOutput, i.ref_id)
+            if o is None or o.version != i.version:
+                out.append({"kind": "output", "id": str(i.ref_id), "label": i.label, "used": i.version, "now": o.version if o else None})
     return out
+
+
+# ---------------------------------------------------------------------------------------------- outputs
+def _json(value: Any) -> Any:
+    return json.loads(json.dumps(value, default=str, sort_keys=True))
+
+
+def publish_output(session: Session, task_id: uuid.UUID, *, worker: str, key: str, value: Any, summary: str = "",
+                   state_refs: list[dict] | None = None) -> tuple[TaskOutput, bool]:
+    """A running task releases a named result now, so the tasks that need only this result can start. Returns the
+    output and whether its value changed. The same value again changes nothing downstream; a changed value reopens
+    or flags only the tasks that used the earlier version (``cie.workflow.routing.route_output``)."""
+    t = _held(session, task_id, worker)
+    return _release(session, t, key, value, summary, state_refs, by=worker)
+
+
+def _release(session: Session, t: Task, key: str, value: Any, summary: str, state_refs: list[dict] | None, by: str) -> tuple[TaskOutput, bool]:
+    if not key or len(key) > 64:
+        raise ValueError("an output key is 1 to 64 characters")
+    v = _json(value)
+    o = session.scalar(select(TaskOutput).where(TaskOutput.task_id == t.id, TaskOutput.key == key).with_for_update())
+    first = o is None
+    if first:
+        o = TaskOutput(tenant_id=t.tenant_id, task_id=t.id, key=key, version=1, value=v)
+        session.add(o)
+    changed = first or o.value != v
+    if changed and not first:
+        o.version, o.value = o.version + 1, v
+    o.status, o.summary, o.state_refs = "current", (summary or "")[:4000], state_refs or []
+    o.produced_by, o.task_revision, o.updated_at = by[:120], t.revision or 0, now()
+    session.flush()
+    from cie.workflow.routing import route_output
+
+    route_output(session, t, o, changed=changed, first=first)
+    return o, changed
+
+
+def upstream(session: Session, t: Task, *, record: bool = True) -> list[dict[str, Any]]:
+    """What the task's dependencies have handed over: the released outputs it needs (recorded as its inputs, with
+    their versions, when ``record``) and the summaries of whole tasks it required."""
+    deps = dependencies(session, [t.id])[t.id]
+    outs = released(session, [d.task.id for d in deps if d.outputs])
+    items, used = [], []
+    for dep, kind, names in deps:
+        if names:
+            for k in names:
+                o = outs.get((dep.id, k))
+                items.append({"task_id": str(dep.id), "task": dep.title, "output": k, "status": o.status if o else "not released",
+                              "version": o.version if o else None, "value": o.value if o else None, "summary": o.summary if o else ""})
+                if o is not None and o.status == "current":
+                    used.append((o, f"{dep.title[:200]}: {k}"))
+        elif kind == "requires" and dep.status == S.completed:
+            items.append({"task_id": str(dep.id), "task": dep.title, "status": dep.status.value,
+                          "summary": ((dep.result or {}).get("summary") or "")[:1000]})
+    if record and used:
+        record_inputs(session, t, outputs=used)
+    return items
+
+
+def deliverables(session: Session, t: Task) -> list[dict[str, Any]]:
+    """The outputs this task should release, most awaited first: the ones its acceptance declares and the ones other
+    tasks wait for, each with who waits and whether it is released."""
+    declared = list((t.acceptance or {}).get("outputs") or [])
+    waiters: dict[str, list[Task]] = defaultdict(list)
+    for d, _kind, names in dependants(session, t.id):
+        for k in names:
+            waiters[k].append(d)
+    outs = released(session, [t.id])
+    keys = list(dict.fromkeys(declared + sorted(waiters)))
+    rows = []
+    for k in keys:
+        o = outs.get((t.id, k))
+        ws = waiters.get(k, [])
+        rows.append({"output": k, "released": o is not None and o.status == "current", "version": o.version if o else None,
+                     "waiting": sum(1 for d in ws if d.status in (S.blocked, S.proposed)),
+                     "needed_by": [{"task_id": str(d.id), "title": d.title, "status": d.status.value} for d in ws]})
+    rows.sort(key=lambda r: (r["released"], -r["waiting"], -len(r["needed_by"]), keys.index(r["output"])))
+    return rows
+
+
+def output_gaps(session: Session, t: Task) -> list[str]:
+    """Outputs the task has not (re-)released: declared in its acceptance but missing, or left ``revising`` after
+    it was reopened (re-release them, even unchanged, so the tasks waiting on them can go on)."""
+    outs = {k: o for (_, k), o in released(session, [t.id]).items()}
+    gaps = [f"output '{k}' not released" for k in (t.acceptance or {}).get("outputs") or [] if k not in outs]
+    return gaps + [f"output '{k}' not re-released since the task was reopened" for k, o in sorted(outs.items()) if o.status == "revising"]
 
 
 # ---------------------------------------------------------------------------------------------- results and review
@@ -399,6 +610,9 @@ def submit(session: Session, task_id: uuid.UUID, *, worker: str, result: dict[st
     """running -> review, then the automatic checks. Returns the task in its new status."""
     t = _held(session, task_id, worker)
     usage = usage or {}
+    for key, v in (result.get("outputs") or {}).items():  # outputs in the result are released now, if not already
+        spec = v if isinstance(v, dict) and "value" in v else {"value": v}
+        _release(session, t, key, spec["value"], spec.get("summary", ""), spec.get("state_refs"), by=worker)
     relied = relied_on(session, t, result)
     if relied:  # what the result relies on is an input, whatever else the worker's context held
         record_inputs(session, t, records=relied, seq=(t.progress or {}).get("context_seq"))
@@ -412,7 +626,7 @@ def submit(session: Session, task_id: uuid.UUID, *, worker: str, result: dict[st
     stale = stale_inputs(session, t)
     if stale:
         return _decide(session, t, "changes_requested", "engine", "inputs changed while the task ran", {"stale_inputs": stale})
-    missing = check_acceptance(t, result)
+    missing = check_acceptance(t, result) + output_gaps(session, t)
     if missing:
         return _decide(session, t, "changes_requested", "engine", "acceptance criteria not met: " + "; ".join(missing), {"acceptance": missing})
     mode = review_mode(t)
@@ -473,8 +687,8 @@ def _settled(session: Session, t: Task) -> None:
     """Unblock dependants; reopen completed dependants that used an earlier revision of this task (for example a
     synthesis that reported it as waiting on a person)."""
     deps = dependants(session, t.id)
-    refresh(session, task_ids=[d.id for d, _ in deps], actor="engine")
-    for d, _ in deps:
+    refresh(session, task_ids=[d.task.id for d in deps], actor="engine")
+    for d, *_ in deps:
         if d.status != S.completed:
             continue
         used = session.get(TaskInput, (d.id, "task", t.id))
@@ -515,7 +729,7 @@ def retry(session: Session, task_id: uuid.UUID, *, authorized_by: uuid.UUID | st
     t.retry_authorized_by = authorized_by if isinstance(authorized_by, uuid.UUID) else None
     t.max_attempts = max(t.max_attempts or 1, (t.attempts or 0) + 1)
     t.review_rounds = 0
-    waiting = unmet(dependencies(session, [t.id])[t.id])
+    waiting = waiting_for(session, [t.id])[t.id]
     return transition(session, t, S.blocked if waiting else S.ready, actor=str(authorized_by), reason=f"retry authorised: {reason}".strip(": "))
 
 
@@ -526,8 +740,10 @@ def cancel(session: Session, task_id: uuid.UUID, *, actor: str, reason: str) -> 
 
 def reopen(session: Session, task_id: uuid.UUID, *, actor: str, reason: str, details: dict | None = None,
            _seen: set | None = None) -> list[Task]:
-    """completed -> ready because an input changed; dependants that required it are reopened (if completed) or
-    blocked (if waiting). Returns every task reopened or blocked."""
+    """completed -> ready because an input changed. Dependants that required the whole task are reopened (if
+    completed) or blocked (if waiting). Its released outputs become ``revising``: dependants that need only those
+    outputs and have not started wait; the ones that used them are disturbed only if a changed value is released.
+    Returns every task reopened or blocked."""
     seen = _seen if _seen is not None else set()
     if task_id in seen:
         return []
@@ -537,12 +753,18 @@ def reopen(session: Session, task_id: uuid.UUID, *, actor: str, reason: str, det
         return []
     t.progress = {**(t.progress or {}), "reopened": {"reason": reason, "details": details or {}, "at": now().isoformat()}}
     t.review_rounds = 0
-    waiting = unmet(dependencies(session, [t.id])[t.id])
+    waiting = waiting_for(session, [t.id])[t.id]
     out = [transition(session, t, S.blocked if waiting else S.ready, actor=actor, reason=reason, details=details)]
-    for d, kind in dependants(session, t.id):
+    for o in session.scalars(select(TaskOutput).where(TaskOutput.task_id == t.id)):
+        o.status = "revising"
+    session.flush()
+    for d, kind, names in dependants(session, t.id):
         if kind != "requires":
             continue
-        if d.status == S.completed:
+        if names:  # waits only for the named outputs: not started yet -> waits for them to be re-released
+            if d.status == S.ready:
+                out.append(transition(session, d, S.blocked, actor=actor, reason=f"'{t.title}' is revising {', '.join(names)}"))
+        elif d.status == S.completed:
             out += reopen(session, d.id, actor=actor, reason=f"its dependency '{t.title}' was reopened", _seen=seen)
         elif d.status == S.ready:
             out.append(transition(session, d, S.blocked, actor=actor, reason=f"its dependency '{t.title}' was reopened"))

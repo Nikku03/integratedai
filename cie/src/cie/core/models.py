@@ -597,13 +597,16 @@ class Task(Base):
 
 
 class TaskDependency(Base):
-    """``requires``: the dependency must be completed. ``after``: it must be settled (completed, failed or
-    cancelled), e.g. a synthesis that reports failures instead of waiting for them forever."""
+    """``requires``: the dependency must be completed, or, when ``outputs`` names some of its outputs, only those
+    must be released (``cie.workflow.engine.publish_output``), so the dependant can start while the dependency is
+    still running. ``after``: it must be settled (completed, failed or cancelled), e.g. a synthesis that reports
+    failures instead of waiting for them forever."""
 
     __tablename__ = "task_dependencies"
     task_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("tasks.id"), primary_key=True)
     depends_on_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("tasks.id"), primary_key=True)
     kind: Mapped[str] = mapped_column(String(12), default="requires")
+    outputs: Mapped[list[str]] = mapped_column(JSONB, default=list, server_default="[]")
 
 
 class MessageKind(str, enum.Enum):
@@ -632,6 +635,7 @@ class AgentMessage(Base):
     payload: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict)
     token_estimate: Mapped[int] = mapped_column(Integer, default=0)
     created_at: Mapped[datetime] = _ts_created()
+    read_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))  # when the recipient read it
 
 
 class LedgerEntry(Base):
