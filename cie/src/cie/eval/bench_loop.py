@@ -60,6 +60,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import random
 import time
 import uuid
@@ -70,7 +71,46 @@ from sqlalchemy import func, select
 
 from cie.eval.rem_dataset import PEOPLE, World
 
-ARMS = ("loop", "loop-explicit", "no-routing")
+ARMS = ("loop", "loop-explicit", "loop-relied", "no-routing", "llm-relied", "llm-no-routing")
+# what becomes a task's input in each arm (cie.context.builder.ContextRequest.inputs)
+INPUTS = {"loop": "all", "loop-explicit": "explicit", "loop-relied": "relied", "no-routing": "all", "llm-relied": "relied",
+          "llm-no-routing": "relied"}
+TAGS = {"loop": "L", "loop-explicit": "E", "loop-relied": "R", "no-routing": "N", "llm-relied": "M", "llm-no-routing": "K"}
+
+
+def _parse_json(text: str) -> dict[str, Any] | None:
+    """The first JSON object in a model's reply (models wrap it in prose or code fences)."""
+    if not text:
+        return None
+    t = text.strip()
+    if "```" in t:
+        parts = t.split("```")
+        t = next((p.removeprefix("json").strip() for p in parts if "{" in p), t)
+    i, j = t.find("{"), t.rfind("}")
+    if i < 0 or j <= i:
+        return None
+    try:
+        v = json.loads(t[i:j + 1])
+    except json.JSONDecodeError:
+        return None
+    return v if isinstance(v, dict) else None
+
+
+def _num(x: Any) -> float | None:
+    """A number from a model's reply, or None (never NaN, which JSON storage refuses)."""
+    try:
+        v = float(str(x).replace(",", "").strip())
+    except (TypeError, ValueError):
+        return None
+    return v if math.isfinite(v) else None
+
+
+def _bool(x: Any) -> bool:
+    return x is True or str(x).strip().lower() in ("true", "yes", "1")
+
+
+def _close(a: Any, b: Any) -> bool:
+    return a is not None and b is not None and abs(float(a) - float(b)) < 0.01
 
 
 def pct(xs: list[float], q: float) -> float | None:
@@ -133,11 +173,19 @@ class Namespace:
         return f"{t}:{self.s(k)}"
 
 
+SUPPLIER_STEMS = ("Arden", "Brisk", "Corvid", "Delta", "Eider", "Fulmar", "Grebe", "Harrier", "Ibis", "Jacana", "Kestrel", "Lapwing",
+                  "Merlin", "Nightjar", "Osprey", "Petrel", "Quillon", "Rook", "Siskin", "Tern", "Upland", "Vireo", "Wren", "Yarrow")
+SUPPLIER_KINDS = ("Metals", "Circuits", "Castings", "Fasteners", "Optics", "Plastics", "Electronics", "Forge", "Polymers", "Components",
+                  "Machining", "Alloys")
+
+
 def _rename(w: World, tag: str) -> World:
-    """Supplier, product and project names get the world's tag, so worlds sharing a tenant are different companies'
-    suppliers and products, as they would be, and not copies with identical texts."""
-    w.suppliers = {k: f"{v.removesuffix(' (fictional)')} [{tag}] (fictional)" for k, v in w.suppliers.items()}
-    w.products = {k: f"{v} [{tag}]" for k, v in w.products.items()}
+    """Each world gets its own supplier and product names (drawn by its tag) and a tagged project name, so worlds
+    sharing a tenant are different companies' projects, as they would be, not copies with near-identical texts."""
+    rng = random.Random(f"names:{tag}")
+    stems = rng.sample(SUPPLIER_STEMS, len(w.suppliers))
+    w.suppliers = {k: f"{stems[i]} {rng.choice(SUPPLIER_KINDS)} {rng.randint(10, 99)} (fictional)" for i, k in enumerate(sorted(w.suppliers))}
+    w.products = {k: f"{v.rsplit(' ', 1)[0]} {rng.choice('BCDFGHJKLMNPQRSTVWXZ')}{rng.randint(100, 999)}" for k, v in w.products.items()}
     for p in w.projects.values():
         p["name"] = f"{p['name']} [{tag}]"
     return w
@@ -253,14 +301,18 @@ def memory_docs(session, tenant_id, ops: list[dict[str, Any]], scopes: dict[str,
 class Run:
     """One world in one arm."""
 
-    def __init__(self, session, lw: LoopWorld, arm: str, host_name: str | None, embedder, settings):
+    def __init__(self, session, lw: LoopWorld, arm: str, host_name: str | None, embedder, settings, model=None):
         from cie.agents.head import create_project
         from cie.agents.registry import ensure_default_agents
         from cie.core.models import Agent, Principal, Scope, ScopeKind
         from cie.memory.scopes import create_scope
         from cie.rem.change import process_event, submit_event
 
-        self.s, self.lw, self.arm, self.emb, self.settings = session, lw, arm, embedder, settings
+        self.s, self.lw, self.arm, self.emb, self.settings, self.model = session, lw, arm, embedder, settings, model
+        if arm.startswith("llm") and model is None:
+            raise SystemExit(f"arm {arm} needs a language model (set CIE_LLM_PROVIDER and CIE_LLM_MODEL)")
+        self.answered: dict[str, int] = {}
+        self.last_model_error = self.last_bad_reply = ""
         self.tag = lw.tag or tag_for(lw.seed, arm)
         self.tenant, self.root = host(session, host_name, self.tag)
         self.ns = Namespace(lw.base, self.tag, company=self.root.name)
@@ -288,29 +340,37 @@ class Run:
             self.projects[pk] = create_project(session, tenant_id=self.tenant.id, parent_scope=dept, name=p["name"])
         self.tasks: dict[str, uuid.UUID] = {}
         self.m: dict[str, Any] = {k: [] for k in ("event_ms", "context_ms", "analyse_ms", "publish_ms", "reaction_ms", "question_ms",
-                                                  "needed_recall", "question_recall", "question_recall_search", "context_tokens")}
+                                                  "needed_recall", "inputs_recall", "question_recall", "question_recall_search",
+                                                  "context_tokens", "model_ms")}
         self.c: dict[str, int] = {k: 0 for k in ("findings", "verified", "published_answers", "published_answers_right", "runs", "reruns",
                                                  "stale_answers", "stale_published", "affected", "missed", "reopened_unaffected", "routed",
                                                  "dup_versions", "dup_reopenings", "dup_transitions", "dup_suggestions", "redelivered",
-                                                 "duplicated", "answers_checked", "answers_right", "exhaustive_incomplete", "memory_docs")}
+                                                 "duplicated", "answers_checked", "answers_right", "exhaustive_incomplete", "memory_docs",
+                                                 "model_wrong_served", "answers_computed", "answers_computed_right", "part_feasible_right",
+                                                 "part_within_budget_right", "part_cost_right", "part_at_risk_set_right", "wrong_numbers",
+                                                 "wrong_numbers_blocked", "right_numbers_blocked", "no_answer", "model_calls", "model_tokens_in",
+                                                 "model_tokens_out", "model_cost_usd_micros", "model_bad_json", "model_invented_refs",
+                                                 "model_errors_call", "affected_no_answer")}
         self.c["memory_docs"] = self.docs
         self._agent = session.get(Agent, self.analyst.id)
 
     # ------------------------------------------------------------------------------------------ the analyst
-    def analyse(self, task, pk: str) -> dict[str, Any]:
+    def gather(self, task, pk: str) -> dict[str, Any]:
+        """The task's context, through the context builder with the analyst's principal: exhaustive scans of the
+        project's milestones and open orders, entity views of the project and its milestones, traversal and search."""
         from cie.context.builder import ContextRequest, build_context
 
         mpk = self.ns.s(pk)
-        s, tid = self.s, self.tenant.id
+        s, tid, mode = self.s, self.tenant.id, INPUTS[self.arm]
         t0 = time.perf_counter()
-        ms = build_context(s, tid, self.analyst_principal, ContextRequest(mode="exhaustive", task_id=task.id,
+        ms = build_context(s, tid, self.analyst_principal, ContextRequest(mode="exhaustive", task_id=task.id, inputs=mode,
                            collection={"type": "milestone", "project_key": mpk}, check={"field": "type", "op": "eq", "value": "milestone"})).data
-        orders = build_context(s, tid, self.analyst_principal, ContextRequest(mode="exhaustive", task_id=task.id,
+        orders = build_context(s, tid, self.analyst_principal, ContextRequest(mode="exhaustive", task_id=task.id, inputs=mode,
                                collection={"type": "order", "project_key": mpk}, check={"field": "status", "op": "eq", "value": "open"})).data
         self.c["exhaustive_incomplete"] += int(not ms["coverage"]["complete"]) + int(not orders["coverage"]["complete"])
         entities = [["project", mpk]] + [m["entity_id"].split(":", 1) for m in ms["matches"]]
         req = ContextRequest(question=task.title, task_id=task.id, entities=entities, project_keys=[mpk], scope_id=self.root.id,
-                             budget_tokens=60_000, inputs="explicit" if self.arm == "loop-explicit" else "all")
+                             budget_tokens=60_000, inputs=mode)
         views, tokens = [], 0
         while True:
             d = build_context(s, tid, self.analyst_principal, req, embedder=self.emb, settings=self.settings).data
@@ -321,57 +381,167 @@ class Run:
             req = ContextRequest(**{**req.__dict__, "cursor": d["cursor"]})
         self.m["context_ms"].append((time.perf_counter() - t0) * 1000)
         self.m["context_tokens"].append(tokens)
-        t1 = time.perf_counter()
         by = {v["entity_id"]: v for v in views}
         proj = by[f"project:{mpk}"]
-        stock = {r["product"]: r["available"] for r in proj.get("stock", [])}
-        open_orders = {m["entity_id"]: m for m in orders["matches"]}
-        findings, refs_all, at_risk = [], [], []
+        open_orders = {m["entity_id"].split(":", 1)[1]: m for m in orders["matches"]}
+        milestones = []
         for m in ms["matches"]:
             v = by.get(m["entity_id"])
             if v is None:
                 continue
-            due = str(v["facts"]["due_date"]["value"])[:10]
-            slack = int(v["facts"].get("slack_days", {}).get("value") or 0)
-            from datetime import date, timedelta
+            deps = [d for d in v["dependencies"] if d["relation"] == "depends_on" and d["direction"] == "out"]
+            milestones.append({"key": v["key"], "id": v["id"], "version": v["version"], "name": v["name"],
+                               "due": str(v["facts"]["due_date"]["value"])[:10], "slack": int(v["facts"].get("slack_days", {}).get("value") or 0),
+                               "needs": {d["key"]: float((d.get("attrs") or {}).get("qty") or 0) for d in deps if d["type"] == "product"},
+                               "product_names": {d["key"]: d["name"] for d in deps if d["type"] == "product"},
+                               "orders": [d["key"] for d in deps if d["type"] == "order" and d["key"] in open_orders]})
+        return {"project": proj, "milestones": milestones, "orders": open_orders,
+                "stock": {r["product"]: r["available"] for r in proj.get("stock", [])},
+                "budget": float(proj["facts"]["budget"]["value"]),
+                "in_context": {f"project:{mpk}"} | {f"milestone:{x['key']}" for x in milestones} | {f"order:{k}" for k in open_orders}}
 
-            limit = date.fromisoformat(due) + timedelta(days=slack)
-            mine = [open_orders[f"order:{d['key']}"] for d in v["dependencies"]
-                    if d["relation"] == "depends_on" and d["direction"] == "out" and d["type"] == "order" and f"order:{d['key']}" in open_orders]
+    def decide_rule(self, g: dict[str, Any]) -> dict[str, Any]:
+        """The documented business definition, applied exactly."""
+        from datetime import date, timedelta
+
+        at_risk, reasons = [], {}
+        for m in g["milestones"]:
+            limit = date.fromisoformat(m["due"]) + timedelta(days=m["slack"])
             short = []
-            for d in v["dependencies"]:
-                if d["relation"] != "depends_on" or d["direction"] != "out" or d["type"] != "product":
-                    continue
-                need = float((d.get("attrs") or {}).get("qty") or 0)
-                supply = stock.get(d["key"], 0.0) + sum(float(o["attrs"]["qty"]) for o in mine if o["attrs"].get("product") == d["key"]
-                                                          and date.fromisoformat(str(o["attrs"]["promised_date"])[:10]) <= limit)
+            for prod, need in m["needs"].items():
+                supply = g["stock"].get(prod, 0.0) + sum(float(g["orders"][o]["attrs"]["qty"]) for o in m["orders"]
+                                                         if g["orders"][o]["attrs"].get("product") == prod
+                                                         and date.fromisoformat(str(g["orders"][o]["attrs"]["promised_date"])[:10]) <= limit)
                 if supply < need:
-                    short.append(f"{d['name']}: {supply:g} available by {limit.isoformat()} against {need:g} needed")
-            refs = [{"ref": v["id"], "version": v["version"]}] + [{"ref": o["id"], "version": o["version"]} for o in mine]
-            refs_all += refs
+                    short.append(f"{m['product_names'].get(prod, prod)}: {supply:g} available by {limit.isoformat()} against {need:g} needed")
             if short:
-                at_risk.append(m["entity_id"].split(":", 1)[1])
-                findings.append({"claim": f"{v['name']} is at risk: " + "; ".join(short), "kind": "assessment", "value": "at_risk",
-                                 "state_refs": refs, "confidence": 0.9})
-        names, inputs, terms = {}, {}, []
-        for i, o in enumerate(sorted(open_orders.values(), key=lambda x: x["entity_id"])):
-            inputs[f"q{i}"] = {"ref": o["id"], "field": "qty"}
-            inputs[f"p{i}"] = {"ref": o["id"], "field": "unit_price"}
+                at_risk.append(m["key"])
+                reasons[m["key"]] = "; ".join(short)
+        lines = [{"order": k, "qty": float(o["attrs"]["qty"]), "unit_price": float(o["attrs"]["unit_price"])} for k, o in sorted(g["orders"].items())]
+        cost = sum(x["qty"] * x["unit_price"] for x in lines)
+        return {"at_risk": at_risk, "reasons": reasons, "cost_lines": lines, "cost": cost, "budget": g["budget"],
+                "within_budget": cost <= g["budget"], "feasible": not at_risk, "cited_milestones": [m["key"] for m in g["milestones"]]}
+
+    def decide_llm(self, g: dict[str, Any]) -> dict[str, Any] | None:
+        """A language model reads the same data and returns the assessment as JSON. Records are given short aliases
+        (M1, O1, P1) and mapped back; an alias the data does not contain is counted as invented."""
+        ms = {f"M{i + 1}": m for i, m in enumerate(g["milestones"])}
+        os_ = {f"O{i + 1}": (k, o) for i, (k, o) in enumerate(sorted(g["orders"].items()))}
+        prods = sorted({p for m in g["milestones"] for p in m["needs"]} | {o["attrs"].get("product") for _, o in os_.values()})
+        pa = {p: f"P{i + 1}" for i, p in enumerate(prods)}
+        pnames = {p: n for m in g["milestones"] for p, n in m["product_names"].items()}
+        ma = {m["key"]: a for a, m in ms.items()}
+        data = {"project": g["project"]["name"], "budget": g["budget"],
+                "stock_available": {pa[p]: q for p, q in g["stock"].items() if p in pa},
+                "products": {a: pnames.get(p, p) for p, a in pa.items()},
+                "milestones": [{"id": a, "name": m["name"], "due_date": m["due"], "slack_days": m["slack"],
+                                "needs": {pa[p]: q for p, q in m["needs"].items()}} for a, m in ms.items()],
+                "open_orders": [{"id": a, "for_milestone": next((ma[m["key"]] for m in g["milestones"] if k in m["orders"]), None),
+                                 "product": pa.get(o["attrs"].get("product")), "qty": o["attrs"]["qty"], "unit_price": o["attrs"]["unit_price"],
+                                 "promised_date": str(o["attrs"]["promised_date"])[:10]} for a, (k, o) in os_.items()]}
+        user = (f"Question: can {g['project']['name']} deliver every milestone on time and within budget?\n\n"
+                "Definitions:\n"
+                "- A milestone is at risk if, for some product it needs, the project's available stock of that product plus the "
+                "quantities of the milestone's open orders for that product with a promised date on or before (due date + slack days) "
+                "is less than the quantity needed.\n"
+                "- The project can deliver on time if no milestone is at risk.\n"
+                "- Committed cost = the sum over all open orders of qty x unit_price. The project is within budget if committed cost <= budget.\n\n"
+                f"Data (JSON):\n{json.dumps(data)}\n\n"
+                "Reply with one JSON object and nothing else, in this form:\n"
+                '{"milestones": [{"id": "M1", "at_risk": false, "reason": "..."}], '
+                '"cost_lines": [{"order": "O1", "qty": 0, "unit_price": 0}], "cost": 0, "budget": 0, "within_budget": true, "feasible": true}\n'
+                "List every milestone and every open order. Keep each reason under 20 words.")
+        system = "You are a careful operations analyst. Use only the data given. Check dates and arithmetic. Reply with JSON only."
+        out = None
+        for _attempt in range(2):
+            self._keep_lease()
+            t0 = time.perf_counter()
+            try:
+                r = self.model.complete(system, user, max_tokens=2000)  # a local provider caps it (CIE_LLM_LOCAL_MAX_OUTPUT_TOKENS)
+            except Exception as e:  # noqa: BLE001 - a model server error counts as a failed call, not a benchmark crash
+                self.c["model_errors_call"] += 1
+                self.last_model_error = str(e)[:300]
+                continue
+            self.m["model_ms"].append((time.perf_counter() - t0) * 1000)
+            self.c["model_calls"] += 1
+            self.c["model_tokens_in"] += int(r.tokens_in or 0)
+            self.c["model_tokens_out"] += int(r.tokens_out or 0)
+            self.c["model_cost_usd_micros"] += int(round(float(r.cost_usd or 0) * 1e6))
+            out = _parse_json(r.text)
+            if out is not None and isinstance(out.get("milestones"), list):
+                break
+            self.c["model_bad_json"] += 1
+            self.last_bad_reply = f"{r.tokens_out} tokens: {(r.text or '')[:200]!r} ... {(r.text or '')[-100:]!r}"
+            out = None
+            user += "\n\nYour previous reply was not a valid JSON object in the requested form. Reply with the JSON object only."
+        if out is None:
+            return None
+        invented = 0
+        at_risk, reasons, cited = [], {}, []
+        for x in out.get("milestones") or []:
+            m = ms.get(str(x.get("id")))
+            if m is None:
+                invented += 1
+                continue
+            cited.append(m["key"])
+            if _bool(x.get("at_risk")):
+                at_risk.append(m["key"])
+                reasons[m["key"]] = str(x.get("reason") or "")[:300]
+        lines = []
+        for x in out.get("cost_lines") or []:
+            o = os_.get(str(x.get("order")))
+            if o is None:
+                invented += 1
+                continue
+            lines.append({"order": o[0], "qty": _num(x.get("qty")), "unit_price": _num(x.get("unit_price"))})
+        self.c["model_invented_refs"] += invented
+        cost, budget = _num(out.get("cost")), _num(out.get("budget"))
+        return {"at_risk": at_risk, "reasons": reasons, "cost_lines": lines, "cost": cost, "budget": budget,
+                "within_budget": _bool(out.get("within_budget")), "feasible": _bool(out.get("feasible")), "cited_milestones": cited}
+
+    def findings(self, g: dict[str, Any], d: dict[str, Any]) -> dict[str, Any]:
+        """Findings with state references (the versions read) and a recalculable cost; the answer is the last one and
+        rests on the others, so the gate blocks it when any of them fails verification."""
+        proj = g["project"]
+        mby = {m["key"]: m for m in g["milestones"]}
+        oref = lambda k: {"ref": g["orders"][k]["id"], "version": g["orders"][k]["version"]}  # noqa: E731
+        found, refs_all = [], [{"ref": proj["id"], "version": proj["version"]}]
+        for mk in d["cited_milestones"]:
+            m = mby[mk]
+            refs = [{"ref": m["id"], "version": m["version"]}] + [oref(o) for o in m["orders"]]
+            refs_all += refs
+            if mk in d["at_risk"]:
+                found.append({"claim": f"{m['name']} is at risk: {d['reasons'].get(mk, '')}", "kind": "assessment", "value": "at_risk",
+                              "state_refs": refs, "confidence": 0.9})
+        inputs, terms = {}, []
+        for i, x in enumerate(d["cost_lines"]):
+            inputs[f"q{i}"] = {"ref": g["orders"][x["order"]]["id"], "field": "qty"}
+            inputs[f"p{i}"] = {"ref": g["orders"][x["order"]]["id"], "field": "unit_price"}
             terms.append(f"q{i} * p{i}")
-            names[o["id"]] = o
-        cost = sum(float(o["attrs"]["qty"]) * float(o["attrs"]["unit_price"]) for o in open_orders.values())
-        budget = float(proj["facts"]["budget"]["value"])
-        findings.append({"claim": f"Open orders commit {cost:g} against a budget of {budget:g}", "kind": "metric", "value": cost,
-                         "calculation": {"expression": " + ".join(terms) or "0", "inputs": inputs, "tolerance": 0.01}, "confidence": 0.95})
-        findings.append({"claim": f"The budget of {proj['name']} is {budget:g}", "kind": "metric", "value": budget,
-                         "state_refs": [{"ref": proj["id"], "version": proj["version"], "field": "budget", "value": proj["facts"]["budget"]["value"]}],
-                         "confidence": 0.95})
-        answer = {"feasible": not at_risk, "within_budget": cost <= budget, "at_risk": sorted(at_risk), "cost": cost}
-        findings.append({"claim": f"{proj['name']} {'can' if answer['feasible'] else 'cannot'} deliver every milestone on time and is "
-                                  f"{'within' if answer['within_budget'] else 'over'} budget", "kind": "answer", "value": answer,
-                         "state_refs": [{"ref": proj["id"], "version": proj["version"]}] + refs_all, "confidence": 0.9})
+            refs_all.append(oref(x["order"]))
+        fmt = lambda v: f"{v:g}" if v is not None else "an unreadable amount"  # noqa: E731
+        found.append({"claim": f"Open orders commit {fmt(d['cost'])}", "kind": "metric", "value": d["cost"],
+                      "calculation": {"expression": " + ".join(terms) or "0", "inputs": inputs, "tolerance": 0.01}, "confidence": 0.95})
+        found.append({"claim": f"The budget of {proj['name']} is {fmt(d['budget'])}", "kind": "metric", "value": d["budget"],
+                      "state_refs": [{"ref": proj["id"], "version": proj["version"], "field": "budget", "value": proj["facts"]["budget"]["value"]
+                                      if _close(d["budget"], g["budget"]) else d["budget"]}], "confidence": 0.95})
+        answer = {"feasible": d["feasible"], "within_budget": d["within_budget"], "at_risk": sorted(d["at_risk"]), "cost": d["cost"]}
+        found.append({"claim": f"{proj['name']} {'can' if answer['feasible'] else 'cannot'} deliver every milestone on time and is "
+                               f"{'within' if answer['within_budget'] else 'over'} budget", "kind": "answer", "value": answer,
+                      "state_refs": refs_all, "depends_on": list(range(len(found))), "confidence": 0.9})
+        return {"summary": found[-1]["claim"], "answer": answer, "findings": found}
+
+    def analyse(self, task, pk: str, j: int) -> dict[str, Any]:
+        g = self.gather(task, pk)
+        need = {self.ns.key(k) for k in self.lw.needed(j, pk)}
+        self.m["needed_recall"].append(len(need & g["in_context"]) / len(need))
+        t1 = time.perf_counter()
+        d = self.decide_llm(g) if self.arm.startswith("llm") else self.decide_rule(g)
         self.m["analyse_ms"].append((time.perf_counter() - t1) * 1000)
-        return {"summary": findings[-1]["claim"], "answer": answer, "findings": findings}
+        if d is None:  # the model gave no usable answer: nothing to submit but an empty result
+            self.c["no_answer"] += 1
+            return {"summary": "no usable answer", "answer": None, "findings": []}
+        return self.findings(g, d)
 
     def run_task(self, pk: str, j: int, rerun: bool) -> None:
         from cie.agents import publication
@@ -382,9 +552,12 @@ class Run:
 
         s = self.s
         t = engine.claim_task(s, self.tasks[pk], worker=f"analyst:{self.tag}", agent_id=self.analyst.id)
-        for _ in range(3):  # a change that lands while it runs sends it back once more
-            result = self.analyse(t, pk)
-            publication.stage(s, t, self._agent, self.projects[pk], result, embedder=self.emb)
+        self._running = t.id
+        for _ in range(3):  # a change that lands while it runs, or an unusable answer, sends it back
+            result = self.analyse(t, pk, j)
+            if result["findings"]:
+                publication.stage(s, t, self._agent, self.projects[pk], result, embedder=self.emb)
+            self._keep_lease()
             t = engine.submit(s, t.id, worker=f"analyst:{self.tag}", result=result, usage={"tools": ["retrieval"]})
             if t.status != TaskStatus.running:
                 break
@@ -392,22 +565,46 @@ class Run:
         self.c["reruns"] += int(rerun)
         got = {i.label for i in s.scalars(select(TaskInput).where(TaskInput.task_id == t.id, TaskInput.ref_kind == "record"))}
         need = {self.ns.key(k) for k in self.lw.needed(j, pk)}
-        self.m["needed_recall"].append(len(need & got) / len(need))
-        if t.status == TaskStatus.completed:
-            t0 = time.perf_counter()
-            out = publication.publish(s, t, verifier="verification", reader=GraphReader(s, self.tenant.id, None), embedder=self.emb)
-            self.m["publish_ms"].append((time.perf_counter() - t0) * 1000)
-            n = len(result["findings"])
-            self.c["findings"] += n
-            self.c["verified"] += n - len(out["blocked"])
-            blocked_findings = {int((s.get(MemoryRecord, uuid.UUID(b)).content or {}).get("finding", -1)) for b in out["blocked"]}
-            if (n - 1) not in blocked_findings:  # the answer is the last finding
-                self.c["published_answers"] += 1
-                self.c["published_answers_right"] += int(self._same(result["answer"], self.lw.oracle(j, pk)))
+        self.m["inputs_recall"].append(len(need & got) / len(need))
+        if t.status != TaskStatus.completed or not result.get("answer"):
+            return
+        oracle = self.lw.oracle(j, pk)
+        right = self._same(result["answer"], oracle)
+        self.answered[pk] = j
+        self.c["answers_computed"] += 1
+        self.c["answers_computed_right"] += int(right)
+        for k, ok in (("feasible", result["answer"]["feasible"] == oracle["feasible"]),
+                      ("within_budget", result["answer"]["within_budget"] == oracle["within_budget"]),
+                      ("cost", _close(result["answer"]["cost"], oracle["cost"])),
+                      ("at_risk_set", sorted(result["answer"]["at_risk"]) == sorted(self.ns.s(x) for x in oracle["at_risk"]))):
+            self.c[f"part_{k}_right"] += int(ok)
+        t0 = time.perf_counter()
+        out = publication.publish(s, t, verifier="verification", reader=GraphReader(s, self.tenant.id, None), embedder=self.emb)
+        self.m["publish_ms"].append((time.perf_counter() - t0) * 1000)
+        n = len(result["findings"])
+        self.c["findings"] += n
+        self.c["verified"] += n - len(out["blocked"])
+        blocked = {int((s.get(MemoryRecord, uuid.UUID(b)).content or {}).get("finding", -1)) for b in out["blocked"]}
+        cost_i, budget_i = n - 3, n - 2  # the cost and budget findings precede the answer
+        cost_wrong = not _close(result["findings"][cost_i]["value"], oracle["cost"])
+        budget_wrong = not _close(result["findings"][budget_i]["value"], self.lw.budget[pk])
+        self.c["wrong_numbers"] += int(cost_wrong) + int(budget_wrong)
+        self.c["wrong_numbers_blocked"] += int(cost_wrong and cost_i in blocked) + int(budget_wrong and budget_i in blocked)
+        self.c["right_numbers_blocked"] += int(not cost_wrong and cost_i in blocked) + int(not budget_wrong and budget_i in blocked)
+        if (n - 1) not in blocked:  # the answer is the last finding
+            self.c["published_answers"] += 1
+            self.c["published_answers_right"] += int(right)
 
-    @staticmethod
-    def _same(a: dict[str, Any], b: dict[str, Any]) -> bool:
-        return a["feasible"] == b["feasible"] and a["within_budget"] == b["within_budget"] and abs(float(a["cost"]) - float(b["cost"])) < 0.01
+    def _keep_lease(self) -> None:
+        """A worker renews its lease while it works: long enough for one model call (the provider times out at 600 s)."""
+        from cie.workflow import engine
+
+        engine.heartbeat(self.s, self._running, worker=f"analyst:{self.tag}", lease_seconds=900)
+
+    def _same(self, a: dict[str, Any], b: dict[str, Any]) -> bool:
+        """An answer matches the oracle when the verdicts, the cost and the set of milestones at risk all do."""
+        return (a["feasible"] == b["feasible"] and a["within_budget"] == b["within_budget"] and _close(a["cost"], b["cost"])
+                and sorted(a["at_risk"]) == sorted(self.ns.s(x) for x in b["at_risk"]))
 
     # ------------------------------------------------------------------------------------------ the loop
     def start(self) -> None:
@@ -444,7 +641,8 @@ class Run:
         payload = self.ns(ev["payload"])
         if ev["kind"] == "ops":  # replacement orders created by a change carry their unit price too
             payload = {**payload, "ops": self._priced_ns(payload["ops"])}
-        route = self.arm != "no-routing"
+        route = not self.arm.endswith("no-routing")
+        answering = {pk for pk, x in self.tasks.items() if s.get(Task, x).status == TaskStatus.completed and (s.get(Task, x).result or {}).get("answer")}
         t0 = time.perf_counter()
         e, _ = submit_event(s, tid, kind=ev["kind"], payload=payload, idempotency_key=self.ns.s(ev["key"]))
         summary = process_event(s, e.id, embedder=self.emb, policy="rules", route_tasks=route)
@@ -471,7 +669,9 @@ class Run:
         # missed dependencies: projects whose inputs changed, per the oracle, against the tasks routing reached
         routed_ids = {uuid.UUID(x) for k in ("reopened", "flagged") for x in (summary.get("tasks") or {}).get(k, [])}
         routed = {pk for pk, tid_ in self.tasks.items() if tid_ in routed_ids}
-        affected = {pk for pk in self.projects if self.lw.fingerprint(j, pk) != self.lw.fingerprint(j + 1, pk)}
+        changed = {pk for pk in self.projects if self.lw.fingerprint(j, pk) != self.lw.fingerprint(j + 1, pk)}
+        affected = changed & answering  # a task holding no answer (it waits on a person) has nothing to refresh
+        self.c["affected_no_answer"] += len(changed - answering)
         self.c["affected"] += len(affected)
         self.c["missed"] += len(affected - routed)
         self.c["reopened_unaffected"] += len(routed - affected)
@@ -524,10 +724,14 @@ class Run:
             t = s.get(Task, task_id)
             if t.status != TaskStatus.completed:
                 continue
+            if not (t.result or {}).get("answer"):
+                continue
             self.c["answers_checked"] += 1
             right = self._same(t.result["answer"], self.lw.oracle(j, pk))
             self.c["answers_right"] += int(right)
-            self.c["stale_answers"] += int(not right)  # completed, so neither reopened nor flagged, and wrong now
+            if not right:  # completed, so neither reopened nor flagged, and wrong now: was it right when it was given?
+                was_right = self._same(t.result["answer"], self.lw.oracle(self.answered.get(pk, j), pk))
+                self.c["stale_answers" if was_right else "model_wrong_served"] += 1
         pub = list(s.scalars(select(MemoryRecord).where(MemoryRecord.tenant_id == self.tenant.id, MemoryRecord.type == RecordType.result,
                                                         MemoryRecord.verification == VerificationStatus.verified,
                                                         MemoryRecord.superseded_by_id.is_(None),
@@ -553,6 +757,7 @@ class Run:
             "world": self.lw.seed, "arm": self.arm, "tenant": self.tenant.name, "tag": self.tag, "events": len(self.lw.events),
             "load_s": round(self.load_s, 1), "memory_docs": c["memory_docs"],
             "retrieval_completeness": {"needed_records_in_context": ratio(sum(m["needed_recall"]), len(m["needed_recall"])),
+                                       "needed_records_relied_on": ratio(sum(m["inputs_recall"]), len(m["inputs_recall"])),
                                        "question_evidence_found": ratio(sum(m["question_recall"]), len(m["question_recall"])),
                                        "question_passages_found_by_search": ratio(sum(m["question_recall_search"]), len(m["question_recall_search"])),
                                        "questions": len(m["question_recall"]), "exhaustive_scans_incomplete": c["exhaustive_incomplete"]},
@@ -562,7 +767,16 @@ class Run:
             "answers_correct_when_served": ratio(c["answers_right"], c["answers_checked"]),
             "stale_state_errors": {"stale_answers_served": c["stale_answers"], "stale_published_findings": c["stale_published"],
                                    "answer_checks": c["answers_checked"]},
+            "answer_accuracy": {"answers_given": c["answers_computed"], "right_when_given": ratio(c["answers_computed_right"], c["answers_computed"]),
+                                "feasible_right": ratio(c["part_feasible_right"], c["answers_computed"]),
+                                "within_budget_right": ratio(c["part_within_budget_right"], c["answers_computed"]),
+                                "cost_right": ratio(c["part_cost_right"], c["answers_computed"]),
+                                "at_risk_set_right": ratio(c["part_at_risk_set_right"], c["answers_computed"]),
+                                "wrong_answers_served_by_model_error": c["model_wrong_served"], "no_usable_answer": c["no_answer"]},
+            "verification_catch": {"wrong_numbers": c["wrong_numbers"], "wrong_numbers_blocked": c["wrong_numbers_blocked"],
+                                   "right_numbers_blocked": c["right_numbers_blocked"]},
             "missed_dependencies": {"affected_projects": c["affected"], "missed": c["missed"], "routed": c["routed"],
+                                    "affected_without_answer": c["affected_no_answer"],
                                     "routed_but_unaffected": c["reopened_unaffected"]},
             "duplicate_actions": {"redelivered_events": c["redelivered"], "forwarded_duplicates": c["duplicated"],
                                   "extra_versions": c["dup_versions"], "extra_reopenings": c["dup_reopenings"],
@@ -571,21 +785,25 @@ class Run:
                                 "awaiting_person": sum(engine.awaiting_person(t) for t in ts), "failed": sum(t.status == TaskStatus.failed for t in ts),
                                 "runs": c["runs"], "reruns": c["reruns"]},
             "latency_ms": {k: {"p50": pct(m[k], 0.5), "p95": pct(m[k], 0.95), "n": len(m[k])}
-                           for k in ("event_ms", "context_ms", "analyse_ms", "publish_ms", "reaction_ms", "question_ms")},
+                           for k in ("event_ms", "context_ms", "analyse_ms", "publish_ms", "reaction_ms", "question_ms", "model_ms")},
             "cost": {"context_tokens_total": int(sum(m["context_tokens"])), "context_tokens_per_run": pct(m["context_tokens"], 0.5),
-                     "model_calls": 0, "model_cost_usd": 0.0},
+                     "model": getattr(self.model, "model", None), "model_calls": c["model_calls"], "model_tokens_in": c["model_tokens_in"],
+                     "model_tokens_out": c["model_tokens_out"], "model_cost_usd": round(c["model_cost_usd_micros"] / 1e6, 4),
+                     "model_bad_json": c["model_bad_json"], "model_invented_refs": c["model_invented_refs"],
+                     "model_call_errors": c["model_errors_call"], "last_model_error": self.last_model_error,
+                     "last_invalid_reply": self.last_bad_reply},
         }
 
 
 def tag_for(seed: int, arm: str, run: str = "") -> str:
-    return f"w{seed}{ {'loop': 'L', 'loop-explicit': 'E', 'no-routing': 'N'}[arm]}{run}"
+    return f"w{seed}{TAGS[arm]}{run}"
 
 
 def run_world(factory, seed: int, arm: str, n_events: int, host_name: str | None, embedder, settings, log=print,
-              run: str = "") -> dict[str, Any]:
+              run: str = "", model=None) -> dict[str, Any]:
     lw = LoopWorld(seed, n_events, tag=tag_for(seed, arm, run))
     with factory() as s:
-        r = Run(s, lw, arm, host_name, embedder, settings)
+        r = Run(s, lw, arm, host_name, embedder, settings, model=model)
         log(f"  world {seed} [{arm}]: loaded in {r.load_s:.1f} s into {r.tenant.name}; {len(lw.events)} changes")
         r.start()
         for j, ev in enumerate(lw.events):
@@ -618,6 +836,7 @@ def aggregate(rows: list[dict[str, Any]]) -> dict[str, Any]:
     return {
         "worlds": len(rows),
         "retrieval_completeness": {"needed_records_in_context": mean(["retrieval_completeness", "needed_records_in_context"]),
+                                   "needed_records_relied_on": mean(["retrieval_completeness", "needed_records_relied_on"]),
                                    "question_evidence_found": mean(["retrieval_completeness", "question_evidence_found"]),
                                    "question_passages_found_by_search": mean(["retrieval_completeness", "question_passages_found_by_search"]),
                                    "exhaustive_scans_incomplete": int(total(["retrieval_completeness", "exhaustive_scans_incomplete"]))},
@@ -626,24 +845,37 @@ def aggregate(rows: list[dict[str, Any]]) -> dict[str, Any]:
                                                          total(["citation_accuracy", "findings"])),
                               "published_answers_correct": mean(["citation_accuracy", "published_answers_correct"])},
         "answers_correct_when_served": mean(["answers_correct_when_served"]),
+        "answer_accuracy": {"answers_given": int(total(["answer_accuracy", "answers_given"])),
+                            **{k: ratio(sum((r["answer_accuracy"][k] or 0) * r["answer_accuracy"]["answers_given"] for r in rows),
+                                        total(["answer_accuracy", "answers_given"]))
+                               for k in ("right_when_given", "feasible_right", "within_budget_right", "cost_right", "at_risk_set_right")},
+                            "wrong_answers_served_by_model_error": int(total(["answer_accuracy", "wrong_answers_served_by_model_error"])),
+                            "no_usable_answer": int(total(["answer_accuracy", "no_usable_answer"]))},
+        "verification_catch": {k: int(total(["verification_catch", k])) for k in rows[0]["verification_catch"]},
         "stale_state_errors": {"stale_answers_served": int(total(["stale_state_errors", "stale_answers_served"])),
                                "stale_published_findings": int(total(["stale_state_errors", "stale_published_findings"])),
                                "answer_checks": int(total(["stale_state_errors", "answer_checks"]))},
         "missed_dependencies": {"affected_projects": int(total(["missed_dependencies", "affected_projects"])),
                                 "missed": int(total(["missed_dependencies", "missed"])),
-                                "routed_but_unaffected": int(total(["missed_dependencies", "routed_but_unaffected"]))},
+                                "routed_but_unaffected": int(total(["missed_dependencies", "routed_but_unaffected"])),
+                                "affected_without_answer": int(total(["missed_dependencies", "affected_without_answer"]))},
         "duplicate_actions": {k: int(total(["duplicate_actions", k])) for k in rows[0]["duplicate_actions"]},
         "task_completion": {k: int(total(["task_completion", k])) for k in rows[0]["task_completion"]},
         "latency_ms_p50_of_worlds": {k: mean(["latency_ms", k, "p50"]) for k in rows[0]["latency_ms"]},
         "latency_ms_p95_max": {k: max((r["latency_ms"][k]["p95"] or 0) for r in rows) for k in rows[0]["latency_ms"]},
-        "cost": {"context_tokens_total": int(total(["cost", "context_tokens_total"])), "model_cost_usd": 0.0},
+        "cost": {"context_tokens_total": int(total(["cost", "context_tokens_total"])), "model": rows[0]["cost"]["model"],
+                 **{k: int(total(["cost", k])) for k in ("model_calls", "model_tokens_in", "model_tokens_out", "model_bad_json",
+                                                          "model_invented_refs", "model_call_errors")},
+                 "model_cost_usd": round(total(["cost", "model_cost_usd"]), 4),
+                 **{k: next((r["cost"][k] for r in reversed(rows) if r["cost"].get(k)), "") for k in ("last_model_error", "last_invalid_reply")}},
     }
 
 
 def verdict(report: dict[str, Any]) -> list[dict[str, Any]]:
-    """The criteria fixed in docs/LOOP_PREREGISTRATION.md, for the arms with routing."""
+    """The criteria fixed in docs/LOOP_PREREGISTRATION.md: 1-6 for the deterministic arms with routing, plus 7 for
+    ``loop-relied``; 1-4 (what the loop guarantees whatever the analyst concludes) for ``llm-relied``."""
     out = []
-    for arm in ("loop", "loop-explicit"):
+    for arm in ("loop", "loop-explicit", "loop-relied", "llm-relied"):
         a = report["arms"].get(arm)
         if a is None:
             continue
@@ -665,7 +897,13 @@ def verdict(report: dict[str, Any]) -> list[dict[str, Any]]:
              f"{a['citation_accuracy']['findings_verified']}, {a['citation_accuracy']['published_answers_correct']}"),
             ("6. every task completed", tc["completed"] == tc["tasks"] and not tc["failed"] and not tc["awaiting_person"],
              f"{tc['completed']} of {tc['tasks']}, failed {tc['failed']}, waiting {tc['awaiting_person']}"),
+            ("7. no re-runs of unaffected projects", a["missed_dependencies"]["routed_but_unaffected"] == 0,
+             f"{a['missed_dependencies']['routed_but_unaffected']}"),
         ]
+        if arm == "llm-relied":
+            checks = checks[:4]
+        elif arm != "loop-relied":
+            checks = checks[:6]
         out += [{"arm": arm, "criterion": c, "met": bool(ok), "value": v} for c, ok, v in checks]
     return out
 
@@ -682,16 +920,27 @@ def markdown(report: dict[str, Any]) -> str:
              "expected answers from the generator's world model.", "",
              "| Measure | " + " | ".join(names) + " |", "|---|" + "---|" * len(names),
              row("Needed records in the task context", lambda a: a["retrieval_completeness"]["needed_records_in_context"]),
+             row("Needed records the answer relied on (its inputs)", lambda a: a["retrieval_completeness"]["needed_records_relied_on"]),
              row("Delay-question evidence found (traversal + search)", lambda a: a["retrieval_completeness"]["question_evidence_found"]),
              row("… of which passages found by search over the whole memory", lambda a: a["retrieval_completeness"]["question_passages_found_by_search"]),
              row("Exhaustive scans incomplete", lambda a: a["retrieval_completeness"]["exhaustive_scans_incomplete"]),
              row("Findings passing verification", lambda a: a["citation_accuracy"]["findings_verified"]),
              row("Published answers matching the oracle", lambda a: a["citation_accuracy"]["published_answers_correct"]),
              row("Served answers matching the oracle (after each change)", lambda a: a["answers_correct_when_served"]),
-             row("Stale answers served (not reopened or flagged)", lambda a: a["stale_state_errors"]["stale_answers_served"]),
+             row("Answers right when given", lambda a: a["answer_accuracy"]["right_when_given"]),
+             row("… delivery verdict / budget verdict / cost / milestones at risk right",
+                 lambda a: "{feasible_right} / {within_budget_right} / {cost_right} / {at_risk_set_right}".format(**a["answer_accuracy"])),
+             row("Wrong answers served because the analyst erred", lambda a: a["answer_accuracy"]["wrong_answers_served_by_model_error"]),
+             row("Runs without a usable answer", lambda a: a["answer_accuracy"]["no_usable_answer"]),
+             row("Wrong cost or budget figures / blocked by verification",
+                 lambda a: f"{a['verification_catch']['wrong_numbers']} / {a['verification_catch']['wrong_numbers_blocked']}"),
+             row("Right figures blocked by verification", lambda a: a["verification_catch"]["right_numbers_blocked"]),
+             row("Stale answers served (right when given, wrong now, not reopened or flagged)",
+                 lambda a: a["stale_state_errors"]["stale_answers_served"]),
              row("Stale published findings", lambda a: a["stale_state_errors"]["stale_published_findings"]),
              row("Affected projects / missed", lambda a: f"{a['missed_dependencies']['affected_projects']} / {a['missed_dependencies']['missed']}"),
              row("Routed but not affected", lambda a: a["missed_dependencies"]["routed_but_unaffected"]),
+             row("Affected projects whose task held no answer", lambda a: a["missed_dependencies"]["affected_without_answer"]),
              row("Duplicate actions (versions / reopenings / transitions / suggestions)",
                  lambda a: "{extra_versions} / {extra_reopenings} / {extra_transitions} / {extra_suggestions}".format(**a["duplicate_actions"])),
              row("Tasks completed / total (re-runs)",
@@ -703,8 +952,14 @@ def markdown(report: dict[str, Any]) -> str:
                  lambda a: f"{a['latency_ms_p50_of_worlds']['reaction_ms']} / {a['latency_ms_p95_max']['reaction_ms']}"),
              row("Delay question p50 (ms)", lambda a: a["latency_ms_p50_of_worlds"]["question_ms"]),
              row("Context tokens (total)", lambda a: a["cost"]["context_tokens_total"]),
-             "", "The analyst is deterministic and calls no model, so model cost is 0. "
-             "`no-routing` applies the same changes with event routing off."]
+             row("Model calls / tokens in / tokens out", lambda a: f"{a['cost']['model_calls']} / {a['cost']['model_tokens_in']} / {a['cost']['model_tokens_out']}"),
+             row("Model replies without valid JSON / invented record ids / failed calls",
+                 lambda a: f"{a['cost']['model_bad_json']} / {a['cost']['model_invented_refs']} / {a['cost']['model_call_errors']}"),
+             row("Model call p50 / worst p95 (ms)", lambda a: f"{a['latency_ms_p50_of_worlds']['model_ms']} / {a['latency_ms_p95_max']['model_ms']}"),
+             row("Model cost (USD)", lambda a: a["cost"]["model_cost_usd"]),
+             "", f"Model: {next((a['cost']['model'] for a in arms.values() if a['cost'].get('model')), 'none')}. "
+             "`loop*` and `no-routing` use the deterministic analyst (no model); `llm-*` arms use the model. "
+             "Arms ending in `no-routing` apply the same changes with event routing off."]
     v = verdict(report)
     if v:
         met = all(x["met"] for x in v)
@@ -731,6 +986,13 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
     settings = get_settings()
     emb = get_embedding_provider(settings)
     factory = session_factory()
+    model = None
+    if any(x.strip().startswith("llm") for x in a.arms.split(",")):
+        from cie.agents.providers import get_provider
+
+        model = get_provider(settings)
+        if getattr(model, "name", "none") == "none":
+            raise SystemExit("the llm-* arms need a language model: set CIE_LLM_PROVIDER (e.g. local) and CIE_LLM_MODEL")
     seeds = [int(x) for x in a.seeds.split(",") if x.strip()]
     arms = [x.strip() for x in a.arms.split(",") if x.strip()]
     rows: dict[str, list[dict[str, Any]]] = {arm: [] for arm in arms}
@@ -738,9 +1000,10 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
     t0 = time.time()
     for seed in seeds:
         for arm in arms:
-            rows[arm].append(run_world(factory, seed, arm, a.events, a.host_tenant, emb, settings, run=run))
+            rows[arm].append(run_world(factory, seed, arm, a.events, a.host_tenant, emb, settings, run=run,
+                                       model=model if arm.startswith("llm") else None))
             print(json.dumps({k: rows[arm][-1][k] for k in ("world", "arm", "stale_state_errors", "missed_dependencies", "duplicate_actions",
-                                                             "task_completion")}, default=str), flush=True)
+                                                             "task_completion", "answer_accuracy")}, default=str), flush=True)
     report = {"worlds": len(seeds), "seeds": seeds, "events_per_world": a.events, "host_tenant": a.host_tenant, "run_id": run,
               "embedding": getattr(emb, "name", "?"), "wall_s": round(time.time() - t0, 1),
               "arms": {arm: aggregate(r) for arm, r in rows.items()}, "per_world": rows}

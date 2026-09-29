@@ -555,7 +555,9 @@ def _mean(xs):
 # ------------------------------------------------------------------ run
 def run(root: Path, out: Path, n_docs: int | None, questions_file: Path | None = None, arms: dict | None = None, seed: int = 5,
         entities: bool = True, reuse_tenant: str | None = None, n_questions: int | None = None, batch: int = 64, memory: str = "full",
-        workers: int | None = None, cache: Path | None = None, log=print) -> dict[str, Any]:
+        workers: int | None = None, cache: Path | None = None, load_only: bool = False, log=print) -> dict[str, Any]:
+    """Load the haystack as a memory bank (or reuse one) and ask the questions. ``load_only`` stops after the load:
+    ``load.json`` names the memory bank, for example as the host of the loop benchmark."""
     settings = get_settings()
     if any((cfg or {}).get("mode") == "assisted" for cfg in (arms or ARMS).values()):
         assisted_provider(settings)
@@ -611,8 +613,12 @@ def run(root: Path, out: Path, n_docs: int | None, questions_file: Path | None =
                                   entities=entities, batch=batch, cache=cache or out / "emb_cache.sqlite", log=log)
         report["load"]["code_version"] = report["code_version"]
         log(f"loaded: {report['load']}")
-        out.mkdir(parents=True, exist_ok=True)
-        (out / "load.json").write_text(json.dumps(report["load"], indent=2, default=str))  # kept even if the questions fail
+    out.mkdir(parents=True, exist_ok=True)
+    (out / "load.json").write_text(json.dumps(report["load"], indent=2, default=str))  # kept even if the questions fail
+    if load_only:
+        md = to_markdown({**report, "arms": {}})
+        print(md)
+        return report
     with session_scope() as s:
         tenant_id = uuid.UUID(report["load"]["tenant_id"])
         company_id = uuid.UUID(report["load"]["company_id"])
@@ -666,6 +672,8 @@ def to_markdown(rep: dict[str, Any]) -> str:
     elif "embed_texts_per_s" in ld:
         lines += [f"Load: {ld['documents']:,} documents → {ld['sections']:,} sections, {ld['records']:,} document records, {ld['entities']:,} entity links; "
                   f"{ld['load_seconds']} s ({ld['embed_seconds']} s embedding, {ld['embed_texts_per_s']} texts/s).", ""]
+    if not rep.get("arms"):
+        return "\n".join(lines + [f"Memory bank {ld.get('tenant_name')}: loaded, no questions asked (`--load-only`)."])
     lines += ["| arm | doc recall@10 | recall@5 | MRR | hit@1 | hit@10 | all gold found | extra docs@10 | abstained on info-not-found | false abstentions | p50 / p95 ms |",
               "|---|---|---|---|---|---|---|---|---|---|---|"]
     for arm, v in rep["arms"].items():
@@ -697,6 +705,8 @@ def main(argv: list[str] | None = None) -> dict:
     ap.add_argument("--cache", default=None, help="embedding cache file (default: <out>/emb_cache.sqlite); share one across runs to embed each text once")
     ap.add_argument("--assisted", action="store_true",
                     help="also compose answers with the configured model (CIE_LLM_PROVIDER / CIE_LLM_MODEL and its API key) on the default arm")
+    ap.add_argument("--load-only", action="store_true",
+                    help="build (or reuse) the memory bank and stop, without asking the questions; load.json names it")
     a = ap.parse_args(argv)
     wanted = [x.strip() for x in a.arms.split(",") if x.strip()] if a.arms else list(ARMS)
     unknown = [x for x in wanted if x not in ARMS]
@@ -706,7 +716,7 @@ def main(argv: list[str] | None = None) -> dict:
     if a.assisted:
         arms[ASSISTED_ARM] = {"mode": "assisted"}
     return run(Path(a.root), Path(a.out), a.docs, arms=arms, entities=not a.no_entities, reuse_tenant=a.reuse_tenant, n_questions=a.questions,
-               batch=a.batch, memory=a.memory, workers=a.workers, cache=Path(a.cache) if a.cache else None)
+               batch=a.batch, memory=a.memory, workers=a.workers, cache=Path(a.cache) if a.cache else None, load_only=a.load_only)
 
 
 if __name__ == "__main__":  # pragma: no cover

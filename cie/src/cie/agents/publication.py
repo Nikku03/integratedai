@@ -8,7 +8,8 @@
    verification: the reviewing agent's verdict when there was one, a person's approval, or otherwise a
    verification run at publication. A published record is ``verified``, names who verified it and by which
    methods, and links back to its workspace record. A finding that fails stays in the workspace, marked blocked,
-   with the reasons.
+   with the reasons. A finding that names others of the same result in ``depends_on`` (the figures a conclusion
+   rests on) is blocked when any of them is.
 3. **Withdraw.** When a completed task is reopened because an input changed, its published findings are marked
    ``disputed`` with the reason, until the task completes again and republishes.
 """
@@ -108,6 +109,7 @@ def publish(session: Session, task: Task, *, verifier: str, reader=None, embedde
     review = task.verification or {}
     reviewed = {d.get("claim"): d for d in review.get("details", [])} if review.get("by") else {}
     published, blocked = [], []
+    verdicts: dict[int, tuple[MemoryRecord, dict[str, Any], str]] = {}
     for ws in _staged(session, task):
         i = int(ws.content.get("finding", -1))
         if (ws.content or {}).get("publication", {}).get("status") == "published" or not 0 <= i < len(findings):
@@ -119,6 +121,19 @@ def publish(session: Session, task: Task, *, verifier: str, reader=None, embedde
             detail, by = reviewed[f["claim"]], review.get("by", verifier)
         else:
             detail, by = verify_result(session, {"findings": [f]}, reader=reader).details[0], verifier
+        verdicts[i] = (ws, detail, by)
+    failed = {i for i, (_, d, _) in verdicts.items() if d["status"] != "verified"}
+    while True:  # a conclusion fails with the findings it rests on, transitively
+        more = {i: [k for k in findings[i].get("depends_on") or [] if k in failed] for i in verdicts if i not in failed}
+        more = {i: ks for i, ks in more.items() if ks}
+        if not more:
+            break
+        for i, ks in more.items():
+            ws, d, by = verdicts[i]
+            verdicts[i] = (ws, {**d, "status": "failed", "reasons": [f"rests on finding {k}, which failed verification" for k in ks]}, by)
+            failed.add(i)
+    for i, (ws, detail, by) in sorted(verdicts.items()):
+        f = findings[i]
         if detail["status"] != "verified":
             ws.content = {**ws.content, "publication": {"status": "blocked", "reasons": detail.get("reasons", []), "by": by}}
             blocked.append(str(ws.id))

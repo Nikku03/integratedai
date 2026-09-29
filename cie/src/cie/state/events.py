@@ -471,6 +471,23 @@ class AnalysisWriter:
 Analysis = Callable[[Session, ChangeSet, AnalysisWriter, dict[str, Any]], dict[str, Any]]
 
 
+def _memberships(session: Session, tenant_id: uuid.UUID, changed: dict[uuid.UUID, list[str]], seq: int) -> set[uuid.UUID]:
+    """The projects and departments a record joined or left in this change. A project changes when its membership
+    does, so an answer about a project's orders is refreshed when an order is added to it or removed from it."""
+    from cie.state.models import RemNodeVersion
+
+    moved = [nid for nid, fs in changed.items() if {"created", "deleted", "project_ids", "department_ids"} & set(fs)]
+    if not moved:
+        return set()
+    out: set[uuid.UUID] = set()
+    rows = session.execute(select(RemNodeVersion.project_ids, RemNodeVersion.department_ids).where(
+        RemNodeVersion.tenant_id == tenant_id, RemNodeVersion.node_id.in_(moved),
+        (RemNodeVersion.sys_to.is_(None)) | (RemNodeVersion.sys_to >= seq))).all()
+    for projects, departments in rows:  # the version before the change and the one after it
+        out |= set(projects or []) | set(departments or [])
+    return out
+
+
 def _visibility(session: Session, principal_id: uuid.UUID | None):
     if principal_id is None:
         return None
@@ -525,6 +542,9 @@ def process_event(session: Session, event_id: uuid.UUID, *, embedder=None, analy
     op_changed = {str(k): sorted(set(v)) for k, v in writer.changed.items()}
     narrowed = propagate_access(writer, restricted, seq)
     invalidated = invalidate_derived(writer, dict(writer.changed), deleted, restricted, seq)
+    for pid in _memberships(session, ev.tenant_id, writer.changed, seq):  # a project whose members changed has changed
+        if pid not in deleted:
+            writer.changed.setdefault(pid, []).append("membership")
     ops_ms = (time.perf_counter() - t_ops) * 1000
     cs = ChangeSet(event=ev, seq=seq, ops=ops, prev=prev, changed={k: v for k, v in writer.changed.items() if k not in deleted},
                    deleted=deleted, restricted=restricted, decisions=fields.decisions)

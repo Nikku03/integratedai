@@ -178,11 +178,16 @@ Stated plainly so nobody mistakes a scaffold for a finished capability.
 **Measured only on generated projects so far.** `cie.eval.bench_loop` measures the one-project loop
 (retrieval completeness, citation accuracy, stale-state errors, missed dependencies, duplicate actions, task
 completion, latency, cost) on generated worlds, with a deterministic analyst. The pre-registered test run met every
-criterion (`docs/LOOP_RESULTS.md`). It is not measured on a real project or with a model doing the work.
+criterion (`docs/LOOP_RESULTS.md`). It is not measured on a real project. The run with a model doing the work
+(study 2, Llama 3.1 8B) is pre-registered but not yet run.
 
 **Over-invalidation.** By default every live-state record in a task's context becomes an input, so changes to
 records a task read but did not rely on still reopen it. Workers that declare their inputs avoid this with
-`inputs="explicit"`.
+`inputs="explicit"`, and workers whose findings cite state avoid it with `inputs="relied"`.
+
+**Relied inputs trust the citations.** With `inputs="relied"`, a task's inputs are the records its result cites,
+so a worker that relies on a record without citing it is not refreshed when that record changes. A result with no
+state references gets no inputs at all. Study 2 measures whether this is safe when a model decides what to cite.
 
 **Authority.**
 - Ranks come from rules or the kind of source. A value written directly by an import becomes a system-of-record

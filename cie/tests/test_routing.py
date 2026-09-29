@@ -144,3 +144,42 @@ def test_domain_event_api(session, world, books):
     stale = {**pay(5, record="PAY-9"), "version": 1}
     assert c.post("/api/state/domain-events", headers=h, json=stale).status_code == 409
     assert c.post("/api/state/domain-events", headers=h, json={**pay(5), "source": {"system": "bank"}}).status_code == 400
+
+
+def test_inputs_are_what_the_findings_rely_on(session, world, books):
+    """inputs="relied": the context records nothing; the result's state references and calculation inputs become
+    the inputs, read at the context's snapshot. A change to an uncited record reopens nothing; a cited one does."""
+    from cie.context.builder import ContextRequest, build_context
+    from cie.workflow.models import TaskInput
+
+    apply(session, world, "ops", {"ops": [node("project", "pa", budget=100), node("order", "o2", qty=3, unit_price=10, status="open",
+                                                                                  source_system="erp")]})
+    proj = create_project(session, tenant_id=world.tenant.id, parent_scope=world.company, name="Relied")
+    t = engine.accept(session, engine.propose(session, tenant_id=world.tenant.id, project_id=proj.id, scope_id=proj.scope_id,
+                                              task_type="operations", title="Order 2 cost"), actor="test")
+    engine.claim_task(session, t.id, worker="w")
+    ctx = build_context(session, world.tenant.id, world.admin, ContextRequest(entities=[["order", "o1"], ["order", "o2"], ["project", "pa"]],
+                                                                             task_id=t.id, channels=("structured",), inputs="relied")).data
+    assert ctx["inputs_recorded"] == 0 and session.query(TaskInput).filter_by(task_id=t.id).count() == 0
+    pa = view(session, world, "project", "pa")
+    result = {"summary": "cost", "findings": [
+        {"claim": "Order 2 costs 30", "value": 30, "citations": [{"item_id": "1"}],
+         "calculation": {"expression": "q * p", "inputs": {"q": {"ref": ["order", "o2"], "field": "qty"},
+                                                           "p": {"ref": ["order", "o2"], "field": "unit_price"}}}},
+        {"claim": "within the budget", "value": True, "state_refs": [{"ref": str(pa.id), "version": pa.version}]}]}
+    # a change between reading the context and submitting is caught: the inputs are judged at the context's snapshot
+    apply(session, world, "ops", {"ops": [{"op": "revise_node", "ref": ["order", "o2"], "attrs": {"qty": 4}}]})
+    engine.submit(session, t.id, worker="w", result=result)
+    assert t.status == S.running and t.progress["changes_requested"]["details"]["stale_inputs"][0]["label"] == "order:o2"
+    build_context(session, world.tenant.id, world.admin, ContextRequest(entities=[["order", "o2"], ["project", "pa"]], task_id=t.id,
+                                                                       channels=("structured",), inputs="relied"))
+    result["findings"][0]["value"] = 40
+    engine.submit(session, t.id, worker="w", result=result)
+    assert t.status == S.completed
+    got = {i.label: i.version for i in session.query(TaskInput).filter_by(task_id=t.id, ref_kind="record")}
+    assert got == {"order:o2": view(session, world, "order", "o2").version, "project:pa": pa.version}, "o1 was read but not relied on"
+    _, s = apply(session, world, "ops", {"ops": [{"op": "revise_node", "ref": ["order", "o1"], "attrs": {"qty": 9}}]})
+    assert t.status == S.completed and not s.get("tasks"), "an uncited record changed: nothing to redo"
+    # a new order joining the project changes the project, so an answer about the project is refreshed
+    _, s = apply(session, world, "ops", {"ops": [node("order", "o3", qty=1, status="open") | {"project_keys": ["pa"]}]})
+    assert t.status == S.ready and str(t.id) in s["tasks"]["reopened"]

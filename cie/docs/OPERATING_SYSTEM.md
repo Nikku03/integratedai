@@ -280,6 +280,10 @@ record (`task_inputs`) is handled according to its status:
 | running or in review | flagged (`progress.stale_inputs`); the engine will not complete it on the old version |
 | ready or blocked | noted |
 
+A record also counts as changed when a record joins or leaves it: an order created in, deleted from or moved to a
+project changes the project. So a task that relied on "the project's open orders" is refreshed when that set
+changes, even though no field of the project did.
+
 Its agent receives an `input_changed` message carrying the record id and versions, never values. Reopened tasks
 are recorded in the project ledger. `task_invalidations` is unique per (task, record, new version), so a replayed
 or re-delivered event never reopens a task twice. The event summary lists the tasks reopened, flagged and noted.
@@ -308,10 +312,20 @@ conflicts of the records it names.
 - When items do not fit, the context says `complete: false` and returns a cursor. The cursor continues at the
   same snapshot and returns every item exactly once.
 
-**Task inputs.** Live-state records placed in a task's context are recorded as the task's inputs, with their
-versions. From then on, a change to one of them flags or reopens the task (section 4), and the engine refuses to
-complete it on the old value (section 3). The head agent builds every specialist's context this way, with the
-agent's own principal.
+**Task inputs.** A task's inputs are the live-state records it used, with their versions. From then on, a change
+to one of them flags or reopens the task (section 4), and the engine refuses to complete it on the old value
+(section 3). The head agent builds every specialist's context with the agent's own principal. `inputs` sets what
+counts as used:
+
+| `inputs` | What becomes an input |
+|---|---|
+| `all` (default) | every live-state record placed in the context |
+| `explicit` | the records the request names and the collections it scans |
+| `relied` | nothing when the context is built. On submit, the result's state references and calculation inputs are recorded, at their versions as of the context's snapshot (`engine.relied_on`). A change between reading the context and submitting sends the task back. |
+
+`relied` records only what the answer depends on, so changes to records the worker merely read reopen nothing. It
+trusts the result to cite what it used. A result with no state references gets no inputs and is never refreshed,
+so use `relied` only for workers whose findings carry them.
 
 **Exhaustive mode** answers questions about a whole collection, for example "which open orders of Project A arrive
 after October 15?":
@@ -356,7 +370,9 @@ through the verifier's permissions, so a record the verifier may not see cannot 
    - otherwise a verification run at publication.
 
    A published record is `verified`, names who verified it and by which methods, and links back to its workspace
-   record. A finding that fails stays in the workspace, marked blocked, with the reasons.
+   record. A finding that fails stays in the workspace, marked blocked, with the reasons. A finding may name the
+   findings of the same result it rests on (`depends_on`, for example a conclusion and the figures behind it). It
+   is blocked when any of them is, transitively.
 3. **Withdrawal.** When a completed task is reopened because an input changed, its published findings become
    `disputed`. When it completes again, the new publication supersedes them.
 
@@ -374,21 +390,48 @@ EnterpriseRAG-Bench memory bank, so search has to find them among real text.
 
 **How it runs.**
 - For each project, an analyst answers "Can it deliver every milestone on time and within budget?" through the
-  context builder, the workflow engine and the publication gate. The analyst is deterministic, so the measures
-  isolate the loop, not a model.
+  context builder, the workflow engine and the publication gate.
+- The deterministic analyst applies the business definition exactly, so its arms isolate the loop.
+- The model analyst (`llm-*` arms) gets the same data, with records under short aliases, and replies with JSON:
+  milestones at risk, cost lines, cost, budget and verdicts. The harness builds the findings from that reply,
+  citing exactly the records the model listed. Verification can catch a wrong cost or budget figure (recalculation
+  against the records), and the answer, which rests on those figures, is then blocked with them. It cannot catch a
+  wrong at-risk judgment.
 - A stream of changes follows. Each change is delivered twice, and each supplier notice is also forwarded under a
   new key.
 
 **Arms.**
-- `loop`: routing on; everything in the context counts as an input.
-- `loop-explicit`: routing on; only the named records count as inputs.
-- `no-routing`: routing off.
 
-The pass criteria were fixed in advance in `docs/LOOP_PREREGISTRATION.md` (test worlds 301 to 303). The
-Colab notebook `notebooks/enterprise_rag_bench_colab.ipynb` runs it as Part 2, after loading 50,000 documents.
+| Arm | Analyst | Inputs | Routing |
+|---|---|---|---|
+| `loop` | deterministic | `all` | on |
+| `loop-explicit` | deterministic | `explicit` | on |
+| `loop-relied` | deterministic | `relied` | on |
+| `no-routing` | deterministic | `all` | off |
+| `llm-relied` | the configured model (`CIE_LLM_PROVIDER`, `CIE_LLM_MODEL`) | `relied` | on |
+| `llm-no-routing` | the configured model | `relied` | off |
+
+**Measures added for the model.**
+- Answer accuracy when given: the whole answer, and each part (delivery verdict, budget verdict, cost, milestones at
+  risk).
+- Wrong answers served because the analyst erred. These are kept apart from stale answers: an answer is stale only
+  if it was right when given.
+- Wrong and right figures blocked by verification.
+- Runs without a usable answer.
+- Invalid JSON, invented record ids, model calls, tokens and latency.
+
+The pass criteria are fixed in advance in `docs/LOOP_PREREGISTRATION.md`:
+- study 1: `loop` and `loop-explicit`, test worlds 301 to 303;
+- study 2: `loop-relied` and the model arms, test worlds 304 to 306.
+
+The Colab notebook `notebooks/enterprise_rag_bench_colab.ipynb` runs the benchmark as Part 2, inside the
+50,000-document memory bank. For the model arms, it runs Llama 3.1 8B on the GPU through Ollama.
 
 ```bash
-python -m cie.eval.bench_loop --host-tenant <memory bank tenant> --seeds 301,302,303 --events 20
+python -m cie.eval.bench_loop --host-tenant <memory bank tenant> --seeds 301,302,303 --events 20 --arms loop,loop-explicit,no-routing
+CIE_LLM_PROVIDER=local CIE_LLM_MODEL=<ollama model> CIE_LLM_BASE_URL=http://localhost:11434/v1 \
+  python -m cie.eval.bench_loop --host-tenant <memory bank tenant> --seeds 304,305,306 --events 20 \
+  --arms loop,loop-relied,llm-relied,llm-no-routing
 ```
 
 **Found and fixed during development** (worlds 1, 2 and 4 only):
@@ -412,6 +455,9 @@ These layers are built and tested (unit, integration and API tests; see `tests/t
 `test_bench_loop.py`). The pre-registered loop run (test worlds 301 to 303, inside the 50,000-document memory
 bank) met every criterion: no stale answers, no missed dependencies and no duplicate actions over 104 affected
 project changes. Without routing, 347 stale answers were served. See `docs/LOOP_RESULTS.md`.
+
+Study 2 is pre-registered but not yet run. It covers inputs from what an answer relied on (`loop-relied`) and
+Llama 3.1 8B as the analyst (`llm-relied`, `llm-no-routing`), on test worlds 304 to 306.
 
 The action gateway (permission, freshness, approval, already-executed and result-confirmed checks before acting on
 external systems) is **not built**.

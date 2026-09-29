@@ -13,9 +13,11 @@
   expires the task returns to ``ready`` with its progress intact, and another worker can pick it up.
 * **ready -> running** and **review -> running** clear the record inputs of the earlier run: the worker reads its
   context again, and what it reads now is what counts.
-* **running -> review**: the worker submits a result. The engine checks the acceptance criteria, the cost and tool
-  limits, and whether the task's inputs are still current. Automatic review completes the task or asks for
-  changes. An agent or human review leaves it in ``review`` until the reviewer decides.
+* **running -> review**: the worker submits a result. The records its findings rely on (state references and
+  calculation inputs) become task inputs, read at the snapshot of the worker's context. The engine checks the
+  acceptance criteria, the cost and tool limits, and whether the task's inputs are still current. Automatic review
+  completes the task or asks for changes. An agent or human review leaves it in ``review`` until the reviewer
+  decides.
 * **review -> running** (changes requested, a bounded number of rounds), **review -> completed**, or
   **review -> failed**. When the rounds run out, a person decides (an approval request).
 * **failed -> ready** only with an authorised retry.
@@ -199,6 +201,43 @@ def clear_record_inputs(session: Session, t: Task) -> None:
     from sqlalchemy import delete
 
     session.execute(delete(TaskInput).where(TaskInput.task_id == t.id, TaskInput.ref_kind == "record"))
+    if (t.progress or {}).get("context_seq") is not None:
+        t.progress = {k: v for k, v in t.progress.items() if k != "context_seq"}
+
+
+def note_context(t: Task, seq: int) -> None:
+    """A context was read at snapshot ``seq``; what the result relies on is judged against the earliest one."""
+    cur = (t.progress or {}).get("context_seq")
+    t.progress = {**(t.progress or {}), "context_seq": seq if cur is None else min(int(cur), int(seq))}
+
+
+def relied_on(session: Session, t: Task, result: dict[str, Any]) -> dict[uuid.UUID, tuple[int, str]]:
+    """The live-state records a result's findings rely on: their state references and the inputs of their
+    calculations, with the version each was read at (the one the finding names, else the one at the context snapshot)."""
+    from cie.state.domain_events import _view
+    from cie.state.store import GraphReader
+
+    seq = (t.progress or {}).get("context_seq")
+    reader = GraphReader(session, t.tenant_id, None, seq=seq)
+    refs: list[tuple[Any, int | None]] = []
+    for f in result.get("findings") or []:
+        refs += [(r.get("ref") or r.get("id"), r.get("version")) for r in f.get("state_refs") or []]
+        refs += [(spec.get("ref") or spec.get("id"), None) for spec in ((f.get("calculation") or {}).get("inputs") or {}).values()
+                 if isinstance(spec, dict)]
+    out: dict[uuid.UUID, tuple[int, str]] = {}
+    for ref, version in refs:
+        if ref is None:
+            continue
+        try:
+            n = _view(reader, ref)
+        except (ValueError, KeyError, TypeError):
+            n = None
+        if n is None:
+            continue  # unknown or invisible: verification fails the finding
+        v = int(version) if version is not None else n.version
+        if n.id not in out or v < out[n.id][0]:
+            out[n.id] = (v, f"{n.type}:{n.key}")
+    return out
 
 
 def _start(session: Session, t: Task, worker: str, agent_id: uuid.UUID | None, lease_seconds: int) -> Task:
@@ -360,6 +399,9 @@ def submit(session: Session, task_id: uuid.UUID, *, worker: str, result: dict[st
     """running -> review, then the automatic checks. Returns the task in its new status."""
     t = _held(session, task_id, worker)
     usage = usage or {}
+    relied = relied_on(session, t, result)
+    if relied:  # what the result relies on is an input, whatever else the worker's context held
+        record_inputs(session, t, records=relied, seq=(t.progress or {}).get("context_seq"))
     t.result = result
     t.metrics = {**(t.metrics or {}), **{k: v for k, v in usage.items() if k != "tools"}, "tools": usage.get("tools", [])}
     transition(session, t, S.review, actor=worker, reason="result submitted")

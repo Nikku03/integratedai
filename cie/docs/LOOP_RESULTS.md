@@ -96,3 +96,7 @@ so this measure is comparable across arms.
 2. **A model-driven analyst.** Run the same loop with, for example, Llama 3.1 8B on the Colab GPU, to measure
    answer accuracy with real reasoning in the loop.
 3. **A real project,** and the action gateway.
+
+Steps 1 and 2 are now built: `inputs="relied"` (see `docs/OPERATING_SYSTEM.md`, section 5) and the `llm-*` arms.
+Both are pre-registered as study 2 in `docs/LOOP_PREREGISTRATION.md`, on new test worlds 304 to 306, and have
+not been run yet.

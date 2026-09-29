@@ -137,3 +137,25 @@ def test_publication_gate(session, world, embedder):
     engine.submit(session, t.id, worker="w", result=result)
     again = publication.publish(session, t, verifier="head", reader=GraphReader(session, world.tenant.id, None), embedder=embedder)
     assert len(again["published"]) == 1 and pub.superseded_by_id == uuid.UUID(again["published"][0])
+
+
+@pytest.mark.db
+def test_a_conclusion_is_blocked_with_the_figures_it_rests_on(session, world, embedder):
+    agents = ensure_default_agents(session, world.tenant.id, world.company)
+    proj = create_project(session, tenant_id=world.tenant.id, parent_scope=world.company, name="Rests on")
+    src = create_record(session, tenant_id=world.tenant.id, scope_id=proj.scope_id, type=RecordType.fact, summary="Termination notice is 90 days",
+                        detail="Either party may terminate with 90 days notice", keywords=["termination", "notice"], embedder=embedder)
+    t = engine.accept(session, engine.propose(session, tenant_id=world.tenant.id, project_id=proj.id, scope_id=proj.scope_id,
+                                              task_type="legal", title="Notice period"), actor="test")
+    engine.claim_task(session, t.id, worker="w", agent_id=agents["legal"].id)
+    good = {"claim": "Termination notice is 90 days", "citations": [{"item_id": str(src.id)}]}
+    result = {"summary": "notice", "findings": [
+        good, {"claim": "Notice costs 500", "value": 500, "calculation": {"expression": "400", "inputs": {}}},
+        {**good, "depends_on": [1]}, {**good, "depends_on": [2]}, {**good, "depends_on": [0]}]}
+    publication.stage(session, t, agents["legal"], proj, result, embedder=embedder)
+    engine.submit(session, t.id, worker="w", result=result)
+    out = publication.publish(session, t, verifier="head", reader=GraphReader(session, world.tenant.id, None), embedder=embedder)
+    assert len(out["published"]) == 2 and len(out["blocked"]) == 3, "1 fails; 2 rests on it, 3 on 2; 0 and 4 stand"
+    why = {session.get(MemoryRecord, uuid.UUID(b)).content["finding"]: session.get(MemoryRecord, uuid.UUID(b)).content["publication"]["reasons"]
+           for b in out["blocked"]}
+    assert why[2] == ["rests on finding 1, which failed verification"] and why[3] == ["rests on finding 2, which failed verification"]
