@@ -74,7 +74,7 @@ def make_tenant(session, world, embedder, name: str):
 
 
 def keys_by_id(session, tenant_id) -> dict[uuid.UUID, str]:
-    from cie.rem.models import RemNode
+    from cie.state.models import RemNode
 
     return {i: f"{t}:{k}" for i, t, k in session.execute(select(RemNode.id, RemNode.type, RemNode.key).where(RemNode.tenant_id == tenant_id))}
 
@@ -96,9 +96,9 @@ def search_arm(reader, names: list[str], k: int = 20) -> set[uuid.UUID]:
 def run_change_seed(session, world_events, tenant, embedder, keymap) -> dict[str, Any]:
     from cie.rem.budget import Budget, Limits
     from cie.rem.change import process_event, submit_event, visible_impacts
-    from cie.rem.models import RemImpact
     from cie.rem.rules import reachability_baseline
-    from cie.rem.store import GraphReader
+    from cie.state.models import RemImpact
+    from cie.state.store import GraphReader
 
     per_event, b_current = [], set()
     for ev_spec in world_events:
@@ -212,8 +212,8 @@ def score_change(runs: list[dict[str, Any]]) -> dict[str, Any]:
 def build_routing(session, tenant_id, degree: int = 4, seed: int = 0) -> dict[str, Any]:
     """Random sparse routing shortcuts (an expander-style overlay): each node links to ``degree // 2`` random
     others in both directions. Navigation only."""
-    from cie.rem.models import RemNode
-    from cie.rem.store import GraphWriter
+    from cie.state.models import RemNode
+    from cie.state.store import GraphWriter
 
     ids = [r[0] for r in session.execute(select(RemNode.id).where(RemNode.tenant_id == tenant_id, RemNode.deleted_seq.is_(None)))]
     rng = random.Random(seed)
@@ -298,7 +298,7 @@ def score_queries(rows: list[dict[str, Any]]) -> dict[str, Any]:
 
 def stale_check(session, tenant, people, embedder, world_events_after) -> dict[str, Any]:
     """Cached results must be marked stale when a record version they used is replaced or deleted."""
-    from cie.rem.models import RemNodeVersion, RemResult, RemResultDep
+    from cie.state.models import RemNodeVersion, RemResult, RemResultDep
 
     rows = session.execute(select(RemResult.id, RemResult.stale).where(RemResult.tenant_id == tenant.id)).all()
     must, flagged = 0, 0

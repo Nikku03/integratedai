@@ -30,9 +30,9 @@ from dataclasses import dataclass
 import torch
 from torch import nn
 
-from cie.rem.models import BUSINESS_EDGE_KINDS
 from cie.remnet import bluebrain
 from cie.remnet.graphs import FEATS, INHIBITORY_KINDS, N_RELS, ROUTING_REL, R, Sample
+from cie.state.models import BUSINESS_EDGE_KINDS
 
 INHIBITORY_RELS = {BUSINESS_EDGE_KINDS.index(k) for k in INHIBITORY_KINDS} | {BUSINESS_EDGE_KINDS.index(k) + R for k in INHIBITORY_KINDS}
 

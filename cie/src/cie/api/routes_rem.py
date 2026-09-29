@@ -82,7 +82,7 @@ def _check_write(session: Session, auth: Auth, body: ChangeIn) -> None:
     the scope a record is put in, both ends of a relationship, and stock rows. Checked again by the worker under
     the tenant lock, on the state the change will actually modify."""
     from cie.rem.change import Unauthorized, authorize_ops, translate
-    from cie.rem.store import GraphReader
+    from cie.state.store import GraphReader
 
     try:
         ops = translate(body.kind, body.payload, GraphReader(session, auth.tenant_id, None))
@@ -126,8 +126,8 @@ def rem_change(body: ChangeIn, auth: Auth = Depends(current_auth), session: Sess
 def rem_impacts(event_id: uuid.UUID, include_superseded: bool = False, auth: Auth = Depends(current_auth),
                 session: Session = Depends(db)):
     from cie.rem.change import visible_impacts
-    from cie.rem.models import RemEvent
-    from cie.rem.store import GraphReader
+    from cie.state.models import RemEvent
+    from cie.state.store import GraphReader
 
     ev = session.get(RemEvent, event_id)
     if ev is None or ev.tenant_id != auth.tenant_id:
@@ -150,9 +150,9 @@ def rem_impacts(event_id: uuid.UUID, include_superseded: bool = False, auth: Aut
 
 @router.get("/explanations/{result_id}")
 def rem_explanation(result_id: uuid.UUID, auth: Auth = Depends(current_auth), session: Session = Depends(db)):
-    from cie.rem.models import RemResult
     from cie.rem.query import redact, requires_of
-    from cie.rem.store import GraphReader
+    from cie.state.models import RemResult
+    from cie.state.store import GraphReader
 
     r = session.get(RemResult, result_id)
     if r is None or r.tenant_id != auth.tenant_id:

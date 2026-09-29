@@ -26,6 +26,9 @@ def create_app() -> FastAPI:
     from cie.api.routes_rem import router as rem_router
 
     app.include_router(rem_router, prefix="/api")
+    from cie.api.routes_state import router as state_router
+
+    app.include_router(state_router, prefix="/api")
     try:
         from cie.api.routes_governance import router as gov_router
 

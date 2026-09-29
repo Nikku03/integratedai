@@ -84,8 +84,8 @@ def test_packing_respects_the_token_budget_and_metrics_use_gold():
 def test_candidate_pools_contain_only_records_the_requester_may_see(session, world, embedder):
     from cie.governance.permissions import visible_scopes
     from cie.rem.change import process_event, submit_event
-    from cie.rem.store import GraphReader
     from cie.remnet.graphs import extract
+    from cie.state.store import GraphReader
 
     def node(t, k, scope):
         return {"op": "upsert_node", "type": t, "key": k, "name": f"{t} {k}", "scope": scope}

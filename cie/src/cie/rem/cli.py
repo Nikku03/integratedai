@@ -77,7 +77,7 @@ def replay(args) -> dict[str, Any]:
     from cie.core.models import Scope
     from cie.memory.embeddings import get_embedding_provider
     from cie.rem.change import process_event, submit_event
-    from cie.rem.models import RemEvent, RemImpact, RemNode
+    from cie.state.models import RemEvent, RemImpact, RemNode
 
     with session_scope() as s:
         src = _tenant(s, args.tenant)

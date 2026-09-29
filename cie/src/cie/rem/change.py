@@ -1,352 +1,85 @@
-"""Change mode: idempotent events -> versioned graph updates -> rule-based candidate impacts and verification tasks.
+"""REM change analysis: after the live state applies an event, rules find the records it may affect.
 
-An event is stored once per (tenant, idempotency key); submitting it again returns the stored event. Processing
-happens in one transaction under the tenant lock: the event takes the next sequence number, its operations write
-new versions (nothing is overwritten or removed), the rules run against the snapshot that includes them, and
-impacts, suggestions, stale marks and the audit entry are written with it. A crash rolls all of it back and the
-worker's retry applies it once; a processed event is never applied twice.
+The live state (``cie.state.events``) owns the event: idempotency, the sequence number, version checks, the
+operations, access propagation and stale marks. This module adds the optional analysis on top: change rules R0-R8
+(or plain reachability, baseline B) produce candidate impacts and suggested verification tasks. Impacts are
+candidates for people and agents to check; they never change identity, permissions or task status.
+
+``process_event`` here is the state processor with the REM analysis attached; the state functions are re-exported
+so existing callers keep working.
 """
 
 from __future__ import annotations
 
-import hashlib
-import json
 import time
 import uuid
-from datetime import UTC, datetime
 from typing import Any
 
-from sqlalchemy import select, update
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from cie.core.models import Scope
-from cie.governance.audit import audit
-from cie.rem import domain
 from cie.rem.budget import Budget, Limits
-from cie.rem.models import (
-    RemEvent,
-    RemImpact,
-    RemNode,
-    RemResult,
-    RemResultDep,
-    RemStock,
-    RemSuggestion,
-)
 from cie.rem.rules import RuleEngine, reachability_baseline
-from cie.rem.store import GraphReader, GraphWriter
+from cie.state import events as _events
+from cie.state.consistency import invalidate_results  # noqa: F401
+from cie.state.events import (  # noqa: F401
+    EVENT_KINDS,
+    AnalysisWriter,
+    ChangeSet,
+    IdempotencyConflict,
+    StaleWrite,
+    Unauthorized,
+    apply_ops,
+    authorize_ops,
+    submit_event,
+    translate,
+)
+from cie.state.models import RemEvent, RemImpact, RemSuggestion
+from cie.state.store import GraphReader
 
-EVENT_KINDS = ("ops", "supplier_delay", "stock_count", "task_status", "restrict")
-
-
-class IdempotencyConflict(ValueError):
-    """The idempotency key was already used for a different payload."""
-
-
-class Unauthorized(PermissionError):
-    """The submitting principal may not write a record the event would create, change or delete."""
-
-
-def _digest(kind: str, payload: dict[str, Any]) -> str:
-    return hashlib.sha256(json.dumps([kind, payload], sort_keys=True, default=str).encode()).hexdigest()
-
-
-def submit_event(session: Session, tenant_id: uuid.UUID, *, kind: str, payload: dict[str, Any], idempotency_key: str,
-                 principal_id: uuid.UUID | None = None) -> tuple[RemEvent, bool]:
-    """Store an event once. Returns (event, created). Re-submitting the same key and payload is a no-op."""
-    if kind not in EVENT_KINDS:
-        raise ValueError(f"event kind must be one of {EVENT_KINDS}")
-    digest = _digest(kind, payload)
-    ev = session.scalar(select(RemEvent).where(RemEvent.tenant_id == tenant_id, RemEvent.idempotency_key == idempotency_key))
-    if ev is not None:
-        if (ev.summary or {}).get("payload_sha256") not in (None, digest):
-            raise IdempotencyConflict(f"idempotency key {idempotency_key!r} was used for a different event")
-        return ev, False
-    ev = RemEvent(tenant_id=tenant_id, idempotency_key=idempotency_key, kind=kind, payload=payload, principal_id=principal_id,
-                  status="queued", summary={"payload_sha256": digest})
-    try:
-        with session.begin_nested():  # a concurrent submit of the same key wins the race; return its event
-            session.add(ev)
-            session.flush()
-    except IntegrityError:
-        other = session.scalar(select(RemEvent).where(RemEvent.tenant_id == tenant_id, RemEvent.idempotency_key == idempotency_key))
-        if other is None:
-            raise
-        if (other.summary or {}).get("payload_sha256") not in (None, digest):
-            raise IdempotencyConflict(f"idempotency key {idempotency_key!r} was used for a different event") from None
-        return other, False
-    return ev, True
+POLICIES = ("rules", "reachability", "none")
 
 
-# ---------------------------------------------------------------------------------------------- operations
-def _scope_id(session: Session, tenant_id: uuid.UUID, scope: Any, cache: dict) -> uuid.UUID:
-    if isinstance(scope, uuid.UUID):
-        return scope
-    s = str(scope)
-    if s in cache:
-        return cache[s]
-    try:
-        sid = uuid.UUID(s)
-        if session.scalar(select(Scope.id).where(Scope.tenant_id == tenant_id, Scope.id == sid)) is None:
-            raise ValueError(f"unknown scope {s!r}")
-    except ValueError as e:
-        if "unknown scope" in str(e):
-            raise
-        ids = session.scalars(select(Scope.id).where(Scope.tenant_id == tenant_id, Scope.name == s)).all()
-        if not ids:
-            raise ValueError(f"unknown scope {s!r}") from None
-        if len(ids) > 1:
-            raise ValueError(f"scope name {s!r} is ambiguous in this tenant; use the scope id") from None
-        sid = ids[0]
-    cache[s] = sid
-    return sid
+def rem_analysis(policy: str = "rules"):
+    """The analysis hook for ``cie.state.events.process_event``: 'rules' (REM) or 'reachability' (baseline B)."""
+    if policy not in ("rules", "reachability"):
+        raise ValueError(f"policy must be one of {POLICIES}")
 
+    def run(session: Session, cs: ChangeSet, writer: AnalysisWriter, limits: dict[str, Any]) -> dict[str, Any]:
+        t = time.perf_counter()
+        ev, seq = cs.event, cs.seq
+        reader = GraphReader(session, ev.tenant_id, None, seq=seq)
+        budget = Budget(Limits.from_dict({"max_visited": 5000, "max_db_calls": 2000, "max_ms": 30000, **(limits or {})}))
+        extra = [("deleted", d, (), []) for d in cs.deleted] + [("restricted", r, (), []) for r in cs.restricted]
+        if policy == "reachability":
+            from cie.rem.rules import ImpactDraft
 
-def _ref(writer: GraphWriter, ref) -> uuid.UUID:
-    if isinstance(ref, (uuid.UUID, str)):
-        nid = ref if isinstance(ref, uuid.UUID) else uuid.UUID(ref)
-        if writer.s.scalar(select(RemNode.id).where(RemNode.id == nid, RemNode.tenant_id == writer.tenant_id)) is None:
-            raise ValueError(f"unknown record {nid}")  # never another tenant's record
-        return nid
-    nid = writer.node_id(ref[0], ref[1])
-    if nid is None:
-        raise ValueError(f"unknown record {ref[0]}:{ref[1]}")
-    return nid
-
-
-def authorize_ops(session: Session, tenant_id: uuid.UUID, vis, ops: list[dict[str, Any]]) -> None:
-    """Raise ``Unauthorized`` unless ``vis`` may write every record the operations touch: the current scope of a record
-    that is changed, restricted or deleted, the scope a record is put in, both ends of a relationship, and the scope of
-    a stock row. ``vis`` None is the system itself (ingestion, replay)."""
-    if vis is None:
-        return
-    w = GraphWriter(session, tenant_id)
-    scopes: dict = {}
-    pending: dict[tuple[str, str], uuid.UUID] = {}
-
-    def need(scope_id, what: str) -> None:
-        if scope_id is None or not vis.can_write(scope_id):
-            raise Unauthorized(f"write access required for {what}")
-
-    def current_scope(ref, what: str):
-        if isinstance(ref, (list, tuple)) and tuple(ref) in pending:
-            return pending[tuple(ref)]
-        try:
-            nid = _ref(w, ref)
-        except ValueError:
-            raise Unauthorized(f"write access required for {what}") from None  # unknown and invisible look the same
-        cur = w.current(nid)
-        return cur.scope_id if cur is not None else None
-
-    for op in ops:
-        k = op.get("op")
-        if k == "upsert_node":
-            new = _scope_id(session, tenant_id, op["scope"], scopes)
-            need(new, f"{op['type']} {op['key']}")
-            nid = w.node_id(op["type"], op["key"])
-            cur = w.current(nid) if nid else None
-            if cur is not None:
-                need(cur.scope_id, f"{op['type']} {op['key']}")
-            pending[(op["type"], op["key"])] = new
-        elif k in ("revise_node", "delete_node", "restrict_node"):
-            need(current_scope(op["ref"], "the record"), "the record")
-            if k == "restrict_node" and "scope" in op:
-                need(_scope_id(session, tenant_id, op["scope"], scopes), "the new scope")
-            if k == "revise_node" and ({"authoritative", "verification"} & set(op)) and not vis.is_admin:
-                raise Unauthorized("only an administrator can change verification or authority")
-        elif k in ("upsert_edge", "close_edge"):
-            need(current_scope(op["src"], "the relationship's source"), "the relationship's source")
-            need(current_scope(op["dst"], "the relationship's target"), "the relationship's target")
-        elif k == "set_stock":
-            need(_scope_id(session, tenant_id, op["scope"], scopes), "the stock record")
-            try:
-                prod, holder = _ref(w, ["product", op["product"]]), _ref(w, op["holder"])
-            except ValueError:
-                raise Unauthorized("write access required for the stock record") from None
-            row = session.scalar(select(RemStock).where(RemStock.tenant_id == tenant_id, RemStock.product_id == prod,
-                                                        RemStock.holder_id == holder, RemStock.sys_to.is_(None)))
-            if row is not None:
-                need(row.scope_id, "the stock record")
+            affected = reachability_baseline(reader, list(cs.changed) + cs.deleted, budget, max_depth=budget.limits.max_depth)
+            drafts = {(nid, "affected"): ImpactDraft(nid, "affected", "reachability", f"reachable from a changed record in {hop} hops",
+                                                     0.0, requires={nid}) for nid, hop in affected.items()}
+            engine, stop = None, budget.exceeded()
         else:
-            raise ValueError(f"unknown operation {k!r}")
+            engine = RuleEngine(reader, writer, budget)
+            engine.run(cs.changed, extra)
+            drafts, stop = engine.impacts, engine.stop
+        impacts = _persist(session, ev, seq, drafts, engine)
+        budget.tick(reader.counter.db_calls + cs.prev.counter.db_calls)
+        return {"impacts": len(impacts), "suggestions": len(engine.suggestions) if engine else 0,
+                "status": "incomplete" if stop else "complete", "stopping_reason": stop or "no_more_triggers",
+                "budget": budget.report(), "rule_log": engine.log if engine else [],
+                "analysis_ms": round((time.perf_counter() - t) * 1000, 1)}
+
+    return run
 
 
-def translate(kind: str, payload: dict[str, Any], reader: GraphReader) -> list[dict[str, Any]]:
-    """Domain events -> generic operations. Every translation is explicit and reads exact values from the graph."""
-    if kind == "ops":
-        return list(payload.get("ops", []))
-    if kind == "supplier_delay":
-        sup = reader.node_by_key("supplier", payload["supplier"])
-        if sup is None:
-            raise ValueError(f"unknown supplier {payload['supplier']!r}")
-        new_date = domain.as_date(payload["new_date"])
-        ops: list[dict[str, Any]] = list(payload.get("ops", []))  # e.g. the notice document and its passage
-        edges, views, _ = reader.edges([sup.id], kinds=("depends_on",), direction="in")
-        for e in edges:
-            o = views.get(e.src)
-            if o is None or o.type != "order" or not domain.is_open_order(o.attrs):
-                continue
-            if payload.get("product") and str(o.attrs.get("product")) != payload["product"]:
-                continue
-            cur = domain.as_date(o.attrs.get("promised_date"))
-            if cur is not None and cur >= new_date:
-                continue
-            ops.append({"op": "revise_node", "ref": ["order", o.key],
-                        "attrs": {"promised_date": new_date.isoformat(), "delay_notice": payload.get("notice"),
-                                  "revision": int(o.attrs.get("revision") or 1) + 1,
-                                  "source_date": payload.get("notice_date", new_date.isoformat())},
-                        "add_source_pointers": payload.get("source_pointers", [])})
-        return ops
-    if kind == "stock_count":
-        return [{"op": "set_stock", **payload}]
-    if kind == "task_status":
-        return [{"op": "revise_node", "ref": ["task", payload["task"]], "attrs": {"status": payload["status"]}}]
-    if kind == "restrict":
-        return [{"op": "restrict_node", **payload}]
-    raise ValueError(kind)
-
-
-def apply_ops(session: Session, writer: GraphWriter, ops: list[dict[str, Any]]) -> tuple[list[uuid.UUID], list[uuid.UUID]]:
-    """Apply operations at the writer's sequence number. Returns (deleted ids, restricted ids)."""
-    scopes: dict = {}
-    deleted, restricted = [], []
-    for op in ops:
-        kind = op["op"]
-        if kind == "upsert_node":
-            projects = [_ref(writer, ["project", k]) for k in op.get("project_keys", [])]
-            departments = [_ref(writer, ["department", k]) for k in op.get("department_keys", [])]
-            writer.upsert_node(op["type"], op["key"], name=op["name"], summary=op.get("summary", ""), attrs=op.get("attrs", {}),
-                               scope_id=_scope_id(session, writer.tenant_id, op["scope"], scopes),
-                               sensitivity=int(op.get("sensitivity", 1)), acl=op.get("acl"), project_ids=projects,
-                               department_ids=departments, source_pointers=op.get("source_pointers", []),
-                               root_sources=op.get("root_sources", []), verification=op.get("verification", "unverified"),
-                               authoritative=bool(op.get("authoritative", True)), valid_from=op.get("valid_from"),
-                               valid_to=op.get("valid_to"))
-        elif kind == "revise_node":
-            nid = _ref(writer, op["ref"])
-            cur = writer.current(nid)
-            changes: dict[str, Any] = {}
-            if "attrs" in op:
-                changes["attrs"] = op["attrs"]
-            for f in ("name", "summary", "verification", "valid_from", "valid_to", "authoritative", "root_sources"):
-                if f in op:
-                    changes[f] = op[f]
-            if op.get("add_source_pointers"):
-                changes["source_pointers"] = list(cur.source_pointers or []) + [p for p in op["add_source_pointers"]
-                                                                                if p not in (cur.source_pointers or [])]
-            writer.revise(nid, **changes)
-        elif kind == "upsert_edge":
-            writer.upsert_edge(_ref(writer, op["src"]), op["kind"], _ref(writer, op["dst"]), provenance=op.get("provenance", "explicit"),
-                               status=op.get("status"), attrs=op.get("attrs"), source_pointers=op.get("source_pointers"),
-                               derivation=op.get("derivation"), valid_from=op.get("valid_from"), valid_to=op.get("valid_to"),
-                               source_key=op.get("source_key", ""))
-        elif kind == "close_edge":
-            writer.close_edges(src=_ref(writer, op["src"]), dst=_ref(writer, op["dst"]), kind=op.get("kind"))
-            for r in (op["src"], op["dst"]):
-                writer.changed.setdefault(_ref(writer, r), []).append(f"edge:{op.get('kind')}")
-        elif kind == "set_stock":
-            writer.set_stock(_ref(writer, ["product", op["product"]]), _ref(writer, op["holder"]), on_hand=float(op["on_hand"]),
-                             reserved=float(op.get("reserved", 0)), scope_id=_scope_id(session, writer.tenant_id, op["scope"], scopes),
-                             sensitivity=int(op.get("sensitivity", 1)), source_pointers=op.get("source_pointers", []))
-        elif kind == "delete_node":
-            nid = _ref(writer, op["ref"])
-            writer.delete_node(nid)
-            deleted.append(nid)
-        elif kind == "restrict_node":
-            nid = _ref(writer, op["ref"])
-            changes = {}
-            if "scope" in op:
-                changes["scope_id"] = _scope_id(session, writer.tenant_id, op["scope"], scopes)
-            if "sensitivity" in op:
-                changes["sensitivity"] = int(op["sensitivity"])
-            if "acl" in op:
-                changes["acl"] = op["acl"]
-            writer.revise(nid, **changes)
-            restricted.append(nid)
-        else:
-            raise ValueError(f"unknown operation {kind!r}")
-    return deleted, restricted
-
-
-# ---------------------------------------------------------------------------------------------- processing
 def process_event(session: Session, event_id: uuid.UUID, *, embedder=None, policy: str = "rules",
-                  limits: dict[str, Any] | None = None) -> dict[str, Any]:
-    """Apply one event and evaluate its consequences. ``policy`` 'rules' (REM) or 'reachability' (baseline B)."""
-    ev = session.get(RemEvent, event_id, with_for_update=True, populate_existing=True)
-    if ev is None:
-        raise KeyError(event_id)
-    if ev.status in ("done", "rejected"):
-        return ev.summary
-    ev.attempts = (ev.attempts or 0) + 1
-    vis = None
-    if ev.principal_id is not None:
-        from cie.core.models import Principal
-        from cie.governance.permissions import visible_scopes
-
-        principal = session.get(Principal, ev.principal_id)
-        vis = visible_scopes(session, principal) if principal is not None else None
-    savepoint = session.begin_nested()
-    writer = GraphWriter(session, ev.tenant_id, embedder=embedder, event_id=ev.id)
-    seq = writer.begin()
-    prev = GraphReader(session, ev.tenant_id, None, seq=seq - 1)
-    ops = translate(ev.kind, ev.payload, prev)
-    try:
-        authorize_ops(session, ev.tenant_id, vis, ops)  # checked again under the tenant lock, on the state it will change
-    except Unauthorized as e:
-        savepoint.rollback()  # nothing applied, no sequence number used
-        ev.status, ev.error, ev.processed_at = "rejected", str(e), datetime.now(UTC)
-        ev.summary = {**(ev.summary or {}), "status": "rejected", "error": str(e)}
-        audit(session, tenant_id=ev.tenant_id, principal_id=ev.principal_id, action="rem.change", resource_kind="rem_event",
-              resource_id=ev.id, details={"kind": ev.kind}, outcome="denied")
-        session.flush()
-        return ev.summary
-    t_ops = time.perf_counter()
-    deleted, restricted = apply_ops(session, writer, ops)
-    # any change of scope, clearance or access list is a restriction for summaries derived from the record
-    restricted += [k for k, f in writer.changed.items() if k not in restricted and "created" not in f
-                   and {"scope_id", "sensitivity", "acl"} & set(f)]
-    op_changed = {str(k): sorted(set(v)) for k, v in writer.changed.items()}
-    ops_ms = (time.perf_counter() - t_ops) * 1000
-    t_rules = time.perf_counter()
-    reader = GraphReader(session, ev.tenant_id, None, seq=seq)
-    budget = Budget(Limits.from_dict({"max_visited": 5000, "max_db_calls": 2000, "max_ms": 30000, **(limits or {})}))
-    changed = {k: v for k, v in writer.changed.items() if k not in deleted}
-    extra = [("deleted", d, (), []) for d in deleted] + [("restricted", r, (), []) for r in restricted]
-    if policy == "reachability":
-        affected = reachability_baseline(reader, list(changed) + deleted, budget, max_depth=budget.limits.max_depth)
-        drafts = {}
-        from cie.rem.rules import ImpactDraft
-
-        for nid, hop in affected.items():
-            drafts[(nid, "affected")] = ImpactDraft(nid, "affected", "reachability", f"reachable from a changed record in {hop} hops",
-                                                    0.0, requires={nid})
-        engine = None
-        stop = budget.exceeded()
-    else:
-        engine = RuleEngine(reader, writer, budget)
-        engine.run(changed, extra)
-        drafts = engine.impacts
-        stop = engine.stop
-    rules_ms = (time.perf_counter() - t_rules) * 1000
-    impacts = _persist(session, ev, seq, drafts, engine)
-    stale = invalidate_results(session, ev.tenant_id, list(writer.changed), restricted, seq, ev.id)
-    budget.tick(reader.counter.db_calls + prev.counter.db_calls)
-    ev.seq = seq
-    ev.status = "done"
-    ev.processed_at = datetime.now(UTC)
-    ev.summary = {**(ev.summary or {}), "seq": seq, "policy": policy, "operations": len(ops),
-                  "changed": {str(k): sorted(set(v)) for k, v in writer.changed.items()}, "op_changed": op_changed,
-                  "ops_ms": round(ops_ms, 1), "detect_ms": round(rules_ms, 1),
-                  "deleted": [str(d) for d in deleted], "restricted": [str(r) for r in restricted],
-                  "impacts": len(impacts), "suggestions": len(engine.suggestions) if engine else 0,
-                  "stale_results": stale, "status": "incomplete" if stop else "complete",
-                  "stopping_reason": stop or "no_more_triggers", "budget": budget.report(),
-                  "rule_log": engine.log if engine else []}
-    audit(session, tenant_id=ev.tenant_id, principal_id=ev.principal_id, action="rem.change", resource_kind="rem_event",
-          resource_id=ev.id, details={"seq": seq, "kind": ev.kind, "impacts": len(impacts), "policy": policy})
-    savepoint.commit()
-    session.flush()
-    return ev.summary
+                  limits: dict[str, Any] | None = None, route_tasks: bool = False) -> dict[str, Any]:
+    """Apply one event to the live state and run the REM analysis. ``policy`` 'rules' (REM), 'reachability'
+    (baseline B) or 'none' (state change only)."""
+    if policy not in POLICIES:
+        raise ValueError(f"policy must be one of {POLICIES}")
+    return _events.process_event(session, event_id, embedder=embedder, analysis=None if policy == "none" else rem_analysis(policy),
+                                 analysis_name=policy, limits=limits, route_tasks=route_tasks)
 
 
 def _persist(session: Session, ev: RemEvent, seq: int, drafts: dict, engine: RuleEngine | None) -> list[RemImpact]:
@@ -396,19 +129,6 @@ def _persist(session: Session, ev: RemEvent, seq: int, drafts: dict, engine: Rul
     session.flush()
     ev.summary = {**(ev.summary or {}), "suggestion_keys": sorted(kept)}
     return rows
-
-
-def invalidate_results(session: Session, tenant_id: uuid.UUID, changed: list[uuid.UUID], restricted: list[uuid.UUID], seq: int,
-                       event_id: uuid.UUID) -> int:
-    """Mark cached results that used a changed record as stale (and say why)."""
-    if not changed and not restricted:
-        return 0
-    ids = set(changed) | set(restricted)
-    res = session.execute(update(RemResult).where(
-        RemResult.tenant_id == tenant_id, RemResult.stale.is_(False),
-        RemResult.id.in_(select(RemResultDep.result_id).where(RemResultDep.node_id.in_(ids))))
-        .values(stale=True, stale_reason=f"records it used changed at seq {seq} (event {event_id})"))
-    return res.rowcount or 0
 
 
 # ---------------------------------------------------------------------------------------------- reading

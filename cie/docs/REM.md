@@ -28,7 +28,8 @@ rules and a transparent priority score. Results from one do not transfer to the 
 | Raw vault | original documents and attachments (immutable, content-addressed) |
 | Databases | exact business values and calculations (`rem_stock`, ERP-like attributes, aggregates) |
 | Search | exact lookup, keyword, semantic retrieval (`cie.retrieval`, plus REM's own record search) |
-| **REM** (`cie.rem`) | dependency exploration, evidence selection, change-impact tracking |
+| Live state (`cie.state`) | the versioned business graph, field sources and authority, conflicts, events in commit order, permissions and stale marks (see `docs/OPERATING_SYSTEM.md`) |
+| **REM** (`cie.rem`) | optional analysis over the live state: dependency exploration, evidence selection, change-impact tracking |
 | Head agent | objectives, judgment, task assignment, synthesis |
 | Workflow scheduler | execution, retries, deadlines, task states (`cie.workers`; REM events run as `rem_change` jobs) |
 
@@ -54,7 +55,8 @@ G(t) = (V(t), E_business(t), E_routing(t)), in PostgreSQL (no separate graph dat
   evidence or as access. The node behind a shortcut is loaded through the same permission filter.
 * **Exact values** (`rem_stock`): quantities used by rules come from here, not from text.
 
-Direction conventions are in `cie/rem/domain.py`.
+Direction conventions are in `cie/state/domain.py`. The tables keep their `rem_` names but belong to the live state
+(`cie.state.models`, `cie.state.store`); `cie.rem.models`, `cie.rem.store` and `cie.rem.domain` re-export them.
 
 ## 4. Bounded horizons and budgets
 
@@ -123,6 +125,11 @@ unreadable records are never loaded. Two texts from one original source count as
 documents share a root), so repeated summaries do not corroborate each other.
 
 ## 7. Consistency and protection
+
+The event processor belongs to the live state (`cie.state.events`); REM's change rules run as an analysis hook after
+the state has applied the event. The analysis can write only derived, labelled content (rule or inferred edges
+with their derivation, review marks on generated records); giving generated content its source's access is a
+state step (`cie.state.consistency`), not a rule.
 
 Idempotent events (unique key; a different payload under the same key is refused); one transaction per event under
 a per-tenant advisory lock; versioned nodes, edges and stock; deletion and restriction are versions too; stale

@@ -24,13 +24,13 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from cie.governance.permissions import Visibility
-from cie.rem import domain
 from cie.rem import priority as pr
 from cie.rem.budget import Budget, Limits, est_tokens
 from cie.rem.change import visible_impacts
 from cie.rem.explore import Exploration, Explorer, pack_evidence
-from cie.rem.models import RemNode, RemNodeVersion, RemResult, RemResultDep, RemSuggestion
-from cie.rem.store import GraphReader, NodeView, _at, or_terms
+from cie.state import domain
+from cie.state.models import RemNode, RemNodeVersion, RemResult, RemResultDep, RemSuggestion
+from cie.state.store import GraphReader, NodeView, _at, or_terms
 
 STATEMENT_TYPES = ("fact", "claim", "order", "milestone", "task", "requirement", "contract", "decision", "risk", "invoice",
                    "artifact")

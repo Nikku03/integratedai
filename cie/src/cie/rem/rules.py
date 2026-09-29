@@ -31,9 +31,9 @@ from collections import deque
 from dataclasses import dataclass, field
 from typing import Any
 
-from cie.rem import domain
 from cie.rem.budget import Budget
-from cie.rem.store import GraphReader, GraphWriter, NodeView
+from cie.state import domain
+from cie.state.store import GraphReader, GraphWriter, NodeView
 
 CONTENT_FIELDS = ("name", "summary", "attrs", "source_pointers")
 
@@ -246,18 +246,9 @@ class RuleEngine:
         src = self.node(nid)
         for e, dep in self.neighbours(nid, "derived_from", "in"):
             if not dep.authoritative and self._once("R8", dep.id, str(nid)):
+                # the live state has already given it the source's access (cie.state.consistency.propagate_access)
                 self._invalidate(dep, "a record it summarises became more restricted", "R8",
                                  [_hop("derived_from", dep.id, nid, e.id, e.provenance)], source=src)
-                if self.w is not None and src is not None:
-                    # generated text may carry the source's content: it gets the source's access, never wider
-                    cur = self.w.current(dep.id)
-                    self.w.revise(dep.id, scope_id=src.scope_id, sensitivity=max(dep.sensitivity, src.sensitivity),
-                                  acl=(cur.acl if cur is not None and cur.acl else None) or self._acl_of(nid))
-                    self._cache.pop(dep.id, None)
-
-    def _acl_of(self, nid: uuid.UUID) -> dict:
-        cur = self.w.current(nid) if self.w is not None else None
-        return dict(cur.acl or {}) if cur is not None else {}
 
     def _on_impact(self, nid: uuid.UUID, impact: str, path) -> None:
         n = self.node(nid)
@@ -308,8 +299,8 @@ class RuleEngine:
     def _claims_about(self, n: NodeView) -> list[NodeView]:
         from sqlalchemy import select
 
-        from cie.rem.models import RemNode, RemNodeVersion
-        from cie.rem.store import _at
+        from cie.state.models import RemNode, RemNodeVersion
+        from cie.state.store import _at
 
         stmt = (select(RemNodeVersion.node_id).join(RemNode, RemNode.id == RemNodeVersion.node_id)
                 .where(RemNode.tenant_id == self.r.tenant_id, RemNode.type == "claim", _at(RemNodeVersion, self.r.seq),
@@ -400,7 +391,7 @@ class RuleEngine:
     def _open_prior(self, target: uuid.UUID, rule: str) -> bool:
         from sqlalchemy import select
 
-        from cie.rem.models import RemImpact
+        from cie.state.models import RemImpact
 
         row = self.r.s.scalar(select(RemImpact.id).where(RemImpact.tenant_id == self.r.tenant_id, RemImpact.target_id == target,
                                                          RemImpact.rule_id == rule, RemImpact.status == "candidate",

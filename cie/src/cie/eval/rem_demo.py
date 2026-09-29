@@ -29,7 +29,7 @@ from cie.governance.permissions import ensure_role, grant_role, visible_scopes
 from cie.rem.change import process_event, submit_event, visible_impacts
 from cie.rem.ingest import document_ops, ingest_bundle, store_document
 from cie.rem.query import QueryRequest, run_query
-from cie.rem.store import GraphReader
+from cie.state.store import GraphReader
 
 FICTIONAL = "Fictional demonstration data: every company, person, product and document is invented."
 OPS, AUR, BOR, LEGAL, FIN = "Operations", "Project Aurora", "Project Borealis", "Legal", "Finance"
@@ -220,7 +220,7 @@ class Demo:
 
     def impacts(self, who: str, event_id: str | None = None) -> tuple[list, list]:
         reader = GraphReader(self.s, self.tenant.id, self.vis(who))
-        from cie.rem.models import RemEvent
+        from cie.state.models import RemEvent
 
         keys = None
         if event_id:

@@ -18,8 +18,8 @@ import numpy as np
 from cie.rem import priority as pr
 from cie.rem.budget import Budget, Limits, est_tokens
 from cie.rem.explore import EVIDENCE_TYPES, Explorer
-from cie.rem.models import BUSINESS_EDGE_KINDS, NODE_TYPES
-from cie.rem.store import GraphReader
+from cie.state.models import BUSINESS_EDGE_KINDS, NODE_TYPES
+from cie.state.store import GraphReader
 
 R = len(BUSINESS_EDGE_KINDS)
 ROUTING_REL = 2 * R  # relation id of routing shortcuts

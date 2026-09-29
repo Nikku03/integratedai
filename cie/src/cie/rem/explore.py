@@ -32,7 +32,7 @@ from typing import Any
 
 from cie.rem import priority as pr
 from cie.rem.budget import Budget, est_tokens
-from cie.rem.store import EdgeView, GraphReader, NodeView
+from cie.state.store import EdgeView, GraphReader, NodeView
 
 DEP_KINDS = ("depends_on", "blocks", "supplies", "governed_by")
 HORIZON_KINDS = {

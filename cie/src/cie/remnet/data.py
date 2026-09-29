@@ -26,8 +26,8 @@ from typing import Any
 from sqlalchemy import select, text
 
 from cie.rem.query import QueryRequest, run_query
-from cie.rem.store import GraphReader
 from cie.remnet.graphs import Sample, extract
+from cie.state.store import GraphReader
 
 CONTROLLED_SEEDS = {"train": list(range(1000, 1060)), "val": [1, 2, 3, 4], "test": list(range(201, 211))}
 CONTROLLED_BUDGETS = {"t350": 350, "t1000": 1000}
@@ -115,8 +115,8 @@ def build_erb(root: Path, tenant_name: str, out_dir: Path, embedder, factory, li
     from cie.core.settings import get_settings
     from cie.eval.rem_erb import start_hits as hybrid_hits
     from cie.governance.permissions import visible_scopes
-    from cie.rem.models import RemNode, RemNodeVersion
     from cie.retrieval.pipeline import Retriever
+    from cie.state.models import RemNode, RemNodeVersion
 
     path = out_dir / "erb.pkl"
     if path.exists():

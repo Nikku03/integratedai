@@ -8,9 +8,9 @@ import pytest
 
 from cie.governance.permissions import visible_scopes
 from cie.rem.change import IdempotencyConflict, process_event, submit_event, visible_impacts
-from cie.rem.models import RemImpact, RemResult, RemSuggestion
 from cie.rem.query import QueryRequest, redact, requires_of, run_query
-from cie.rem.store import GraphReader, GraphWriter
+from cie.state.models import RemImpact, RemResult, RemSuggestion
+from cie.state.store import GraphReader, GraphWriter
 
 pytestmark = pytest.mark.db
 

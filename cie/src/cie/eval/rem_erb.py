@@ -39,8 +39,8 @@ ARMS = {"A": "search", "B": "traversal", "C": "rem", "D": "rem+routing"}
 def build_graph(session, tenant_id: uuid.UUID, log=print) -> dict[str, Any]:
     """Bulk-build the REM graph for a loaded ERB tenant in one change (one sequence number). Idempotent: an existing
     build is reused."""
-    from cie.rem.models import RemNode
-    from cie.rem.store import GraphWriter
+    from cie.state.models import RemNode
+    from cie.state.store import GraphWriter
 
     have = session.scalar(select(text("count(*)")).select_from(RemNode).where(RemNode.tenant_id == tenant_id))
     if have:
@@ -205,9 +205,9 @@ def run(args, out_dir: Path, embedder, factory) -> dict[str, Any]:
     from cie.core.settings import get_settings
     from cie.eval.bench_rem import build_routing, pct
     from cie.governance.permissions import visible_scopes
-    from cie.rem.models import RemNode, RemNodeVersion
     from cie.rem.query import QueryRequest, run_query
     from cie.retrieval.pipeline import Retriever
+    from cie.state.models import RemNode, RemNodeVersion
 
     root = Path(args.erb_root)
     questions = [json.loads(line) for line in (root / "questions.jsonl").read_text().splitlines() if line.strip()]

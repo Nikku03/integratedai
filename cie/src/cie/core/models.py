@@ -748,5 +748,5 @@ __all__ = [name for name in dir() if not name.startswith("_")]
 _ = (JSON, text)
 
 
-# REM graph tables live in their own module; importing it registers them with Base.metadata.
-from cie.rem import models as _rem_models  # noqa: E402,F401
+# Live-state tables (the versioned business graph) live in cie.state; importing registers them with Base.metadata.
+from cie.state import models as _state_models  # noqa: E402,F401
