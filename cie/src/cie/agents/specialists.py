@@ -155,6 +155,9 @@ class LLMStrategy:
                  for m in ctx.get("inbox", [])]
         asked = [f"- {x.get('task_type')}: {x.get('title')} ({x.get('status')}{', ' + x['reason'] if x.get('reason') else ''})"
                  for x in (task.progress or {}).get("requests", [])]
+        records = [wrap_untrusted(json.dumps(r.get("facts"), default=str)[:600], f"record={r.get('entity')}") for r in ctx.get("records", [])]
+        decided = [f"- {d.get('decision') or d.get('what') or d.get('status')}: {d.get('title') or d.get('reason') or ''}"[:200]
+                   for d in ctx.get("decisions", [])]
         cons = [f"- {c.get('output')}.{c.get('field') or 'value'} {c.get('op', 'le')} {c.get('value')}"
                 for c in (task.acceptance or {}).get("constraints") or [] if isinstance(c, dict)]
         authority = (agent.config or {}).get("authority") or {}
@@ -164,6 +167,9 @@ class LLMStrategy:
                 + f"Actions you may propose: {', '.join((agent.config or {}).get('actions') or []) or 'none'}\n"
                 + ("\nHanded over by the tasks this one depends on:\n" + "\n".join(handed) + "\n" if handed else "")
                 + ("\nMessages for this task:\n" + "\n".join(inbox) + "\n" if inbox else "")
+                + ("\nThe records this task is about, as they are now:\n" + "\n".join(records) + "\n" if records else "")
+                + ("\nDecisions already taken in this project:\n" + "\n".join(decided) + "\n" if decided else "")
+                + (f"\nPeriod: {ctx['period'].get('from')} to {ctx['period'].get('to')}\n" if isinstance(ctx.get("period"), dict) else "")
                 + ("\nWork you already asked other specialists for (do not ask again):\n" + "\n".join(asked) + "\n" if asked else "")
                 + ("\nAlso return \"outputs\": {name: value} with these results, which other tasks are waiting for:\n" + "\n".join(wanted) + "\n"
                    if wanted else "")

@@ -29,6 +29,7 @@ class TaskSpec:
     query: str | None = None  # retrieval query for the evidence packet
     outputs: list[str] = field(default_factory=list)  # results it releases as soon as it has them, for others to use
     estimate_seconds: float | None = None  # expected duration, for scheduling
+    profile: dict | None = None  # the information relevant to it: entities, triggers, period (engine.propose)
 
 
 _FOCUS = {

@@ -139,12 +139,15 @@ def propose(session: Session, *, tenant_id: uuid.UUID, project_id: uuid.UUID, ta
             limits: dict | None = None, deadline_at: datetime | None = None, owner_principal_id: uuid.UUID | None = None,
             depends_on: list[tuple] | None = None, verifies_task_id: uuid.UUID | None = None,
             parent_id: uuid.UUID | None = None, metrics: dict | None = None, max_attempts: int = 3, max_review_rounds: int = 1,
-            actor: str = "system") -> Task:
+            actor: str = "system", profile: dict | None = None) -> Task:
+    """A proposed task. ``profile`` says what information is relevant to it: ``entities`` (``[type, key]`` records
+    loaded into its context), ``triggers`` (by record type, or ``*``: the fields whose change matters; others do
+    not reopen it), and ``period`` (``{"from", "to"}``, shown to the worker)."""
     t = Task(tenant_id=tenant_id, project_id=project_id, scope_id=scope_id, task_type=task_type, title=title, brief=brief,
              status=S.proposed, priority=priority, risk_level=risk_level, acceptance=acceptance or {}, limits=limits or {},
              deadline_at=deadline_at, owner_principal_id=owner_principal_id, verifies_task_id=verifies_task_id, parent_id=parent_id,
-             metrics=metrics or {}, max_attempts=max_attempts, max_review_rounds=max_review_rounds, progress={}, attempts=0,
-             review_rounds=0, revision=0)
+             metrics={**(metrics or {}), **({"profile": profile} if profile else {})}, max_attempts=max_attempts,
+             max_review_rounds=max_review_rounds, progress={}, attempts=0, review_rounds=0, revision=0)
     session.add(t)
     session.flush()
     for dep in depends_on or []:
@@ -492,9 +495,50 @@ def record_inputs(session: Session, t: Task, records: dict[uuid.UUID, tuple[int,
     session.flush()
 
 
+def trigger_fields(t: Task, record_type: str | None) -> list[str] | None:
+    """The fields of a record type whose change matters to the task (its profile's ``triggers``, by type or ``*``);
+    None when any change matters (the default)."""
+    trig = ((t.metrics or {}).get("profile") or {}).get("triggers") or {}
+    fields = trig.get(record_type, trig.get("*")) if record_type else trig.get("*")
+    return None if fields is None else [str(f) for f in fields]
+
+
+def change_matters(t: Task, record_type: str | None, changed: list[str]) -> bool:
+    """Whether a change to a record (its changed fields as the state layer names them: ``attrs.promised_date``,
+    ``name``, ``edge:depends_on``, ``stock``, ``membership``, ``created``, ``deleted``) matters to the task. A record
+    appearing, disappearing or being hidden always matters."""
+    fields = trigger_fields(t, record_type)
+    if fields is None:
+        return True
+    for c in changed:
+        if c in ("created", "deleted", "restricted") or c in fields or c.removeprefix("attrs.") in fields:
+            return True
+        if c.startswith("edge:") and "edge:*" in fields:
+            return True
+    return False
+
+
+def _fields_differ(session: Session, node_id: uuid.UUID, old: int, new: int, fields: list[str]) -> bool:
+    from cie.state.models import RemNodeVersion
+
+    rows = {v.version: v for v in session.scalars(select(RemNodeVersion).where(RemNodeVersion.node_id == node_id,
+                                                                                  RemNodeVersion.version.in_([old, new])))}
+    if old not in rows or new not in rows:
+        return True
+    a, b = rows[old], rows[new]
+    for f in fields:
+        name = f.removeprefix("attrs.")
+        if name in ("name", "summary") and getattr(a, name) != getattr(b, name):
+            return True
+        if (a.attrs or {}).get(name) != (b.attrs or {}).get(name):
+            return True
+    return False
+
+
 def stale_inputs(session: Session, t: Task) -> list[dict[str, Any]]:
     """Inputs that moved on since the task used them: a record with a newer version (or deleted), or a task whose
-    result changed."""
+    result changed. With trigger fields in the task's profile, a record counts only if one of those fields
+    changed (or it was deleted)."""
     from cie.state.models import RemNode, RemNodeVersion
 
     inputs = list(session.scalars(select(TaskInput).where(TaskInput.task_id == t.id)))
@@ -506,9 +550,14 @@ def stale_inputs(session: Session, t: Task) -> list[dict[str, Any]]:
             RemNodeVersion.node_id.in_(ids), RemNodeVersion.sys_to.is_(None))).all())
         changed = dict(session.execute(select(RemNode.id, RemNode.changed_seq).where(RemNode.id.in_(ids))).all())
         for i in recs:
+            fields = trigger_fields(t, i.label.split(":", 1)[0] if ":" in (i.label or "") else None)
             if cur.get(i.ref_id) != i.version:
+                if fields is not None and cur.get(i.ref_id) is not None and not _fields_differ(session, i.ref_id, i.version, cur[i.ref_id], fields):
+                    continue  # a field the task does not watch
                 out.append({"kind": "record", "id": str(i.ref_id), "label": i.label, "used": i.version, "now": cur.get(i.ref_id)})
             elif i.seq is not None and (changed.get(i.ref_id) or 0) > i.seq:  # a relationship or stock count changed
+                if fields is not None and not ({"stock", "edge:*", "membership"} & set(fields)):
+                    continue
                 out.append({"kind": "record", "id": str(i.ref_id), "label": i.label, "used": i.version, "now": cur.get(i.ref_id),
                             "read_at_seq": i.seq, "changed_at_seq": changed.get(i.ref_id)})
     for i in inputs:

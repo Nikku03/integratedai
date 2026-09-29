@@ -89,9 +89,12 @@ class HeadAgent:
     def worker(self) -> str:
         return self._worker or f"head:{self.project.id}"
 
-    def start(self, objective: str) -> list[Task]:
+    def start(self, objective: str, deadline_at=None) -> list[Task]:
+        """Plan the objective into tasks. ``deadline_at``: the project's deadline, given to every task, so the
+        schedule can order work by the slack left."""
         p = self.project
         p.objective = objective
+        self._deadline = deadline_at
         p.head_agent_id = self.head.id if self.head else None
         ledger.append(self.s, tenant_id=p.tenant_id, project_id=p.id, kind="objective", content={"objective": objective},
                       actor="head")
@@ -121,7 +124,8 @@ class HeadAgent:
             t = engine.propose(self.s, tenant_id=p.tenant_id, project_id=p.id, scope_id=p.scope_id, task_type=sp.task_type, title=sp.title,
                                brief=sp.brief, priority=sp.priority, risk_level=sp.risk_level, acceptance=self.acceptance_for(sp),
                                limits=self.limits_for(sp), metrics={"query": sp.query, **({"estimate_seconds": sp.estimate_seconds}
-                                                                                           if sp.estimate_seconds else {})}, actor="head")
+                                                                                           if sp.estimate_seconds else {})},
+                               deadline_at=getattr(self, "_deadline", None), profile=sp.profile, actor="head")
             by_key[sp.key] = t
         for sp in specs:
             wants: dict[str, set[str]] = defaultdict(set)  # other key -> the outputs needed ("" = the whole task)
@@ -209,10 +213,12 @@ class HeadAgent:
         from cie.context.builder import ContextRequest, budget_for_model, build_context
 
         budget = min(16_000, budget_for_model(agent.model)) if agent.model else 16_000
-        try:
+        entities = [list(e) for e in ((task.metrics or {}).get("profile") or {}).get("entities") or []][:20]
+        try:  # the records its profile names are loaded as they are now, besides what traversal and search find
             ctx = build_context(self.s, self.project.tenant_id, self._agent_principal(agent),
                                 ContextRequest(question=query, task_id=task.id, scope_id=task.scope_id or self.project.scope_id,
-                                               budget_tokens=budget, model=agent.model, channels=("traversal", "retrieval")),
+                                               budget_tokens=budget, model=agent.model, entities=entities,
+                                               channels=(("structured",) if entities else ()) + ("traversal", "retrieval")),
                                 embedder=self.embedder, settings=self.settings)
         except PermissionError:
             return None
@@ -221,7 +227,10 @@ class HeadAgent:
                                                               "sources": ctx.data["sources"], "inputs": ctx.data["inputs_recorded"],
                                                               # handed over by its dependencies, and what others wait for from it
                                                               "upstream": [{**u, "value": _brief(u.get("value"))} for u in tc.get("upstream", [])],
-                                                              "deliver": tc.get("deliver", [])}}
+                                                              "deliver": tc.get("deliver", []), "decisions": tc.get("decisions", [])[:10],
+                                                              "records": [{"entity": e.get("entity_id"), "facts": _brief(e.get("facts"), 600)}
+                                                                          for e in ctx.data.get("entities", [])][:20],
+                                                              "period": tc.get("period")}}
         return ctx.packet
 
     def run_claimed(self, t: Task, agent: Agent) -> tuple[TaskResult, int] | None:

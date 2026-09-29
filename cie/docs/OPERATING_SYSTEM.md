@@ -278,8 +278,44 @@ freight".
 - A specialist that asks for more evidence gets one more context round per run, with its own permissions, and runs
   again with the new items. Requests it makes after that round are recorded as not served.
 - A question only the head can decide goes to a person, as an approval of kind `question`. The person's reply is
-  sent to the agent's inbox as an `answer`, and reaches the task the next time it runs. Questions do not block the
-  task.
+  sent to the agent's inbox as an `answer`.
+  - A question the agent marks as blocking pauses the task (`blocked`, progress kept) until the answer arrives. The
+    answer releases it (`engine.answered`) and queues a run of the project's head.
+  - A question that does not block reaches the task the next time it runs.
+  - An answer that arrives after the task completed reopens it at the agent's next turn, so the agent
+    reconsiders.
+
+**Agents work on their own** (`cie.agents.runtime`). The head is not the only way work gets done. An agent's turn
+(job `agent_turn`, or `python -m cie.cli agents --tenant <name>`):
+1. reopens its completed tasks that received an answer since;
+2. claims the next ready task it can do, in schedule order, across the tenant's projects. It never takes the head's
+   planning, verification or synthesis.
+3. runs the task exactly as the head would, under its own lease.
+
+What it asks of other agents is decided at once, so they can start. `run_agents` lets every agent take turns until
+none has anything left to do.
+
+**Decisions and authority.** A result can carry decisions, such as `{"kind": "spend_usd", "amount": 8000}`. The
+engine checks them against the assigned agent's authority (`Agent.config["authority"]`: a limit per kind, or
+`true` for any amount).
+- The defaults are finance `spend_usd` 5,000 and operations `spend_usd` 1,000; the other agents have none.
+  `PUT /api/agents/{id}/authority` changes them (administrators only, audited).
+- A decision within authority is recorded as authorised by that agent.
+- A decision above it, or by a worker with no authority, sends the task to a person. Its outputs are held until
+  the person approves, so a requested answer carrying an unapproved decision never reaches the task waiting for
+  it. If the person rejects it, the task fails and its requester is released.
+
+**Constraints and re-planning.** `acceptance.constraints` are checks on a task's outputs, for example
+`{"output": "option", "field": "cost_usd", "op": "le", "value": 12000}`.
+- An output that breaks a constraint cannot be released, and a result that breaks one is sent back.
+- A worker that finds no option meeting them returns `infeasible`, with its reason and the best option it found.
+  The task then waits for the head.
+- The head re-plans (`replan`). A constraint may flex: `"flex": {"up_to": 15000, "approver": "finance",
+  "authority": "spend_usd"}`. When every broken constraint may flex far enough for the best option, and each
+  approver's authority covers it, the head relaxes the constraints to that option and accepts it. The decision
+  names whose authority it used.
+- Otherwise a person decides through a `replan` approval: approve to accept the best option, reject to drop the
+  task. `POST /api/tasks/{id}/replan` also lets them relax the constraints and send the task back.
 
 **API.** Status changes go through these routes, never through direct edits:
 - `POST /api/tasks`: propose and accept a task.
@@ -289,6 +325,7 @@ freight".
 - `POST /api/tasks/{id}/outputs`: release a named result now. `GET /api/tasks/{id}/outputs` lists what the task
   released, what it should deliver, and what its dependencies handed over.
 - `GET /api/projects/{id}/schedule`: the ready tasks in order, with the reasons.
+- `POST /api/tasks/{id}/replan`: relax the constraints, accept the best option, or drop a task that found no option.
 - `POST /api/tasks/{id}/review`: the worker that produced a result cannot review it.
 - `POST /api/tasks/{id}/retry` and `/cancel`.
 - `GET /api/tasks/{id}/transitions` and `GET /api/tasks-overdue`.
@@ -350,7 +387,14 @@ are recorded in the project ledger. `task_invalidations` is unique per (task, re
 or re-delivered event never reopens a task twice. The event summary lists the tasks reopened, flagged and noted.
 
 When a result is first released or revised, the agents of the tasks that need it receive a
-`dependency_notification` (`route_output`).
+`dependency_notification` (`route_output`). The project's head is told of every task reopened in its project.
+
+**Only the fields a task watches.** A task's profile can name trigger fields per record type:
+`"triggers": {"order": ["promised_date", "status"]}`.
+- A change to other fields of that record neither reopens nor flags the task.
+- The engine does not count such a change as stale when the task submits.
+- A record appearing, disappearing or being hidden always counts.
+- Relationship and stock changes count only if the task watches `edge:*` or `stock`.
 
 **Messages are read and acted on.**
 - Each message has a read status. `GET /api/messages/inbox?agent=` lists an agent's unread messages, and
@@ -377,8 +421,16 @@ list, in SQL). A record the requester may not see is never loaded, summarised or
 | keyword and semantic | hybrid search over knowledge memory |
 | original sources | the documents and pages the knowledge-memory items cite |
 
-A task's context also carries its instructions, acceptance criteria, limits and deadline, and the unresolved
-conflicts of the records it names.
+A task's context also carries:
+- its instructions, acceptance criteria, limits and deadline;
+- the unresolved conflicts of the records it names;
+- what its dependencies handed over, and the outputs it should release;
+- the decisions already taken in its project (requests, re-plans, actions), newest first.
+
+**A task's information profile** (`profile` when it is proposed, or in a plan):
+- `entities`: records loaded into its context as they are now, besides what traversal and search find.
+- `triggers`: the fields whose change matters to it (section 4).
+- `period`: the time period it is about. The worker sees it; search is not filtered by it.
 
 **Budget.**
 - The budget is 25% of the model's context window, capped at 60,000 tokens. The default is 8,000.
@@ -453,7 +505,45 @@ through the verifier's permissions, so a record the verifier may not see cannot 
 The project synthesis is still written to the project scope. Each part of it is labelled as verified, not
 independently verified, failed, or waiting on a person.
 
-## 7. The loop benchmark (`cie.eval.bench_loop`)
+## 7. The action gateway (`cie.actions`)
+
+Nothing acts on an external system without passing the gateway, and every check is recorded on the action: book a
+shipment, notify a supplier, make a payment.
+
+**Proposing** (`gateway.propose`, `POST /api/actions`, or a completed task's `actions`):
+1. **Idempotency.** The key is unique per tenant. It is either given, or derived from the task, kind, target,
+   payload and proposer, so the same action proposed twice is one action.
+2. **Permission.** An agent may propose only the kinds granted to it (`Agent.config["actions"]`; by default
+   operations `book_shipment` and `notify_supplier`, finance `payment`). A person needs write access to the project.
+3. **Approval.** A person approves (an `action` approval) when either:
+   - the kind always needs a person (`CIE_ACTIONS_ALWAYS_APPROVE`: payments, contract signatures and external
+     messages by default); or
+   - the amount is above the proposing agent's authority.
+
+   Otherwise the action is approved as proposed.
+
+A refused or stale action that is proposed again is checked again; a person's rejection stands. A completed task's
+actions are proposed on completion. Their basis is the records its result relied on, and the task's revision.
+
+**Executing** (the worker's `execute_action` job, or `POST /api/actions/{id}/execute`):
+4. **Permission again**, in case the grant was withdrawn.
+5. **Freshness.** The records the action rests on must be at the same versions, and the task that proposed it must
+   still be completed at the same revision. Otherwise the action is `stale` and is not executed.
+6. **Already executed.** An executed action is never executed again. The status is committed as `executing` before
+   the connector is called, so after a crash the next attempt first asks whether the call went through. A failure
+   is retried with the same key, so the other side can recognise the repeat.
+7. **Result confirmed.** After executing, the connector reads back what the other side holds: `confirmed` or
+   `unconfirmed`.
+
+**Connectors** (`cie.actions.connectors`):
+- `outbox`: a JSON-lines file, written once per key and confirmed by the payload hash. Something else delivers what
+  it holds.
+- Webhooks: named in `CIE_ACTION_WEBHOOKS`, with secrets read from environment variables. A webhook call carries
+  an `Idempotency-Key` header and an HMAC-SHA256 signature, and is confirmed by reading back the receipt.
+
+No ERP, email or payment system is connected in this build.
+
+## 8. The loop benchmark (`cie.eval.bench_loop`)
 
 This measures the loop the architecture asks to prove on one project: retrieval completeness, citation accuracy,
 stale-state errors, missed dependencies, duplicate actions, task completion, latency and cost.
@@ -522,7 +612,7 @@ two development worlds, 106 of 149 routings were of unaffected projects, and the
 conservative, because a model may rely on anything in its context; workers that declare what they use can pass
 `inputs="explicit"`.
 
-## 8. Status
+## 9. Status
 
 These layers are built and tested (unit, integration and API tests; see `tests/test_state.py`,
 `test_identity.py`, `test_workflow.py`, `test_routing.py`, `test_context.py`, `test_verification.py` and
@@ -546,10 +636,20 @@ generated projects and simulated durations, over the real engine). Every criteri
 
 The schedule order cut deadline misses from 6 to 2, but not the median finish time. See `docs/SCHEDULE_RESULTS.md`.
 
+Tests cover the rest of the loop (`tests/test_authority.py`, `test_actions.py`, `test_agent_turns.py`,
+`test_profile.py`):
+- decision authority, and outputs held until a person approves;
+- constraints, and re-planning within an agent's authority or by a person;
+- the action gateway's seven checks, the outbox and a signed webhook;
+- agents taking turns on their own, including handing work to each other with no head run;
+- questions that pause a task;
+- trigger fields, and the head told of reopenings.
+
+These tests use scripted models and simulated connectors. They are not measurements with real models or real
+external systems.
+
 **Not built yet:**
-- The action gateway: permission, freshness, approval, already-executed and result-confirmed checks before acting
-  on external systems.
-- Specialists that run on their own. The head still runs the built-in specialists: it gives each its messages,
-  files its requests and resumes it with the answers. Outside agents can do the same through the API.
-- Per-agent decision authority (for example, finance approving up to a set amount).
-- Re-planning when no option meets a task's constraints.
+- Connectors to real systems (ERP, email, payments). The gateway has an outbox and a webhook connector.
+- Search limited to a task's period.
+- Re-planning that proposes new tasks: the head relaxes constraints within authority, or asks a person.
+- The head deciding requests on their merits: it merges duplicates and declines work no agent does.

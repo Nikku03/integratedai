@@ -125,6 +125,15 @@ def _take(items: list[Any], start: int, budget: int) -> tuple[list[Any], int, in
     return out, i, used
 
 
+def _decisions(session: Session, project_id: uuid.UUID, n: int = 10) -> list[dict[str, Any]]:
+    from cie.core.models import LedgerEntry
+
+    rows = session.scalars(select(LedgerEntry).where(LedgerEntry.project_id == project_id, LedgerEntry.kind == "decision")
+                           .order_by(LedgerEntry.seq.desc()).limit(n))
+    return [{"seq": e.seq, "by": e.actor, **{k: v for k, v in (e.content or {}).items() if k in (
+        "decision", "reason", "task_id", "title", "type", "kind", "status", "what", "action_id")}} for e in rows]
+
+
 def build_context(session: Session, tenant_id: uuid.UUID, principal: Principal, req: ContextRequest, *, embedder=None,
                   settings=None, record: bool = True) -> Context:
     if req.mode == "exhaustive":
@@ -148,7 +157,10 @@ def build_context(session: Session, tenant_id: uuid.UUID, principal: Principal, 
                         # what the tasks it depends on handed over (outputs used are recorded as its inputs) ...
                         "upstream": engine.upstream(session, task, record=not cur),
                         # ... and what it should release, most awaited first, so others can start before it finishes
-                        "deliver": engine.deliverables(session, task)}
+                        "deliver": engine.deliverables(session, task),
+                        "period": ((task.metrics or {}).get("profile") or {}).get("period"),
+                        # decisions already taken in its project (requests, re-plans, actions), newest first
+                        "decisions": _decisions(session, task.project_id)}
     used_total, nxt, complete = _tokens(data), {"seq": reader.seq}, True
     live: dict[uuid.UUID, tuple[int, str]] = {}
     spare = 0

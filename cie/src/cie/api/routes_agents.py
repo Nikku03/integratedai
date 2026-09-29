@@ -66,6 +66,7 @@ class TaskIn(BaseModel):
     priority: int = 5
     depends_on: list[uuid.UUID | DependencyIn] = Field(default_factory=list)
     estimate_seconds: float | None = Field(None, ge=0)
+    profile: dict[str, Any] | None = None  # entities, triggers (fields that matter, by record type), period
     acceptance: dict[str, Any] = Field(default_factory=dict)
     limits: dict[str, Any] = Field(default_factory=dict)
     deadline_at: datetime | None = None
@@ -330,7 +331,7 @@ def create_task(body: TaskIn, auth: Auth = Depends(current_auth), session: Sessi
                        deadline_at=body.deadline_at, owner_principal_id=auth.principal.id,
                        depends_on=[(d.task_id, d.kind, d.outputs) for d in deps],
                        metrics={"query": body.title, **({"estimate_seconds": body.estimate_seconds} if body.estimate_seconds is not None else {})},
-                       max_attempts=body.max_attempts, max_review_rounds=body.max_review_rounds, actor=actor)
+                       max_attempts=body.max_attempts, max_review_rounds=body.max_review_rounds, actor=actor, profile=body.profile)
     if not body.propose_only:
         engine.accept(session, t, actor=actor)
     ledger.append(session, tenant_id=auth.tenant_id, project_id=p.id, kind="task",

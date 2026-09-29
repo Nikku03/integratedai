@@ -51,6 +51,10 @@ def route_to_tasks(session: Session, cs) -> dict[str, Any]:
         if new_version == use.version and (use.seq is None or use.seq >= cs.seq):
             continue  # neither a new version nor any other change since the task read it
         what = labels.get(use.ref_id, str(use.ref_id))
+        fields = list(cs.changed.get(use.ref_id, [])) + (["deleted"] if use.ref_id in cs.deleted else []) + \
+            (["restricted"] if use.ref_id in cs.restricted else [])
+        if not engine.change_matters(t, what.split(":", 1)[0] if ":" in what else None, fields):
+            continue  # only fields the task does not watch changed
         if t.status == S.completed:
             action = "reopened"
         elif t.status in (S.running, S.review):
@@ -83,12 +87,16 @@ def route_to_tasks(session: Session, cs) -> dict[str, Any]:
 
 def _tell(session: Session, t: Task, what: str, use: TaskInput, new_version: int, action: str) -> None:
     from cie.agents import ledger, messages
+    from cie.core.models import Project
 
     agent = session.get(Agent, t.assigned_agent_id) if t.assigned_agent_id else None
-    if agent is not None:
-        messages.send(session, tenant_id=t.tenant_id, project_id=t.project_id, kind=MessageKind.input_changed, task_id=t.id, to_agent=agent,
-                      payload={"task_id": str(t.id), "record": str(use.ref_id), "label": what, "from_version": use.version,
-                               "to_version": new_version, "action": action})
+    project = session.get(Project, t.project_id)
+    head = session.get(Agent, project.head_agent_id) if project is not None and project.head_agent_id else None
+    payload = {"task_id": str(t.id), "record": str(use.ref_id), "label": what, "from_version": use.version, "to_version": new_version,
+               "action": action}
+    for to in {a.id: a for a in (agent, head if action == "reopened" else None) if a is not None}.values():
+        messages.send(session, tenant_id=t.tenant_id, project_id=t.project_id, kind=MessageKind.input_changed, task_id=t.id, to_agent=to,
+                      payload=payload)  # the head hears of every reopened task in its project
     if action == "reopened":
         ledger.append(session, tenant_id=t.tenant_id, project_id=t.project_id, kind="decision",
                       content={"task_id": str(t.id), "decision": "reopened", "reason": f"input {what} changed",

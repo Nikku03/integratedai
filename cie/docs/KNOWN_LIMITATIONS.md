@@ -189,16 +189,19 @@ records a task read but did not rely on still reopen it. Workers that declare th
 generated projects with simulated durations. Real specialists may not split their work into early results this
 neatly, and the schedule order depends on duration estimates.
 
-**Agents work through the head.**
-- Agents read their messages, ask each other for work, get one more evidence round, and have their questions
-  answered by a person.
-- But the built-in specialists still run when the head runs them, as one call per run: they do not watch their
-  inbox between runs.
-- A question does not block the task, so an answer arrives only for its next run.
+**Agents, decisions and actions are tested with scripted models and simulated connectors.**
+- Agents take turns on their own, ask each other for work, get one more evidence round, and have their questions
+  answered by a person, with blocking questions pausing the task. All of this is tested with scripted models, not
+  measured with real ones.
 - Requests are decided by fixed rules (merge equivalent ones, decline work no agent does), not by judging whether
   the work is worth it.
-- There is no per-agent decision authority.
-- The request flow is tested with a scripted model only, not measured with real models.
+- Decision authority is a limit per decision kind that the agent itself reports. A model that under-reports its
+  decisions, or leaves one out, is not caught; the action gateway checks amounts again for actions.
+- Re-planning relaxes constraints only within an approver's authority, or asks a person. It does not propose new
+  tasks.
+- The action gateway has an outbox file and a signed webhook connector. No ERP, email or payment system is
+  connected. Confirmation reads back what the other side holds; it cannot see whether a person acted on it.
+- A task's period is shown to the worker but does not filter search.
 
 **Relied inputs trust the citations.** With `inputs="relied"`, a task's inputs are the records its result cites,
 so a worker that relies on a record without citing it is not refreshed when that record changes. A result with no
