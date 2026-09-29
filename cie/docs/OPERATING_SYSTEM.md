@@ -409,8 +409,9 @@ conservative, because a model may rely on anything in its context; workers that 
 
 These layers are built and tested (unit, integration and API tests; see `tests/test_state.py`,
 `test_identity.py`, `test_workflow.py`, `test_routing.py`, `test_context.py`, `test_verification.py` and
-`test_bench_loop.py`). The pre-registered loop run on test worlds 301 to 303 happens in the Colab notebook; its
-results are not in this document yet.
+`test_bench_loop.py`). The pre-registered loop run (test worlds 301 to 303, inside the 50,000-document memory
+bank) met every criterion: no stale answers, no missed dependencies and no duplicate actions over 104 affected
+project changes. Without routing, 347 stale answers were served. See `docs/LOOP_RESULTS.md`.
 
 The action gateway (permission, freshness, approval, already-executed and result-confirmed checks before acting on
 external systems) is **not built**.

@@ -177,9 +177,8 @@ Stated plainly so nobody mistakes a scaffold for a finished capability.
 
 **Measured only on generated projects so far.** `cie.eval.bench_loop` measures the one-project loop
 (retrieval completeness, citation accuracy, stale-state errors, missed dependencies, duplicate actions, task
-completion, latency, cost) on generated worlds, with a deterministic analyst. It is not measured on a real project
-or with a model doing the work. The pre-registered test run (`docs/LOOP_PREREGISTRATION.md`) is run in the Colab
-notebook.
+completion, latency, cost) on generated worlds, with a deterministic analyst. The pre-registered test run met every
+criterion (`docs/LOOP_RESULTS.md`). It is not measured on a real project or with a model doing the work.
 
 **Over-invalidation.** By default every live-state record in a task's context becomes an input, so changes to
 records a task read but did not rely on still reopen it. Workers that declare their inputs avoid this with

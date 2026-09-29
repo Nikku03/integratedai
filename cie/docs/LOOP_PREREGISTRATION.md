@@ -68,3 +68,20 @@ Every result is reported, including failures.
   competition; it plays no part in the project.
 - **External actions.** Duplicate actions here are internal (state versions, task transitions). The action gateway
   for external systems is not built.
+
+## Outcome (added after the single test run)
+
+**All six criteria were met, for both `loop` and `loop-explicit`.** Over worlds 301 to 303 (36 tasks, 60
+changes):
+
+| Criterion | Result |
+|---|---|
+| stale answers served / stale published findings | 0 / 0 |
+| missed dependencies | 0 of 104 |
+| duplicate actions | 0 / 0 / 0 / 0 |
+| needed records in the context | 1.0, with no incomplete scans |
+| findings verified / published answers correct | 1.0 / 1.0 |
+| tasks completed | 36 of 36 |
+
+`no-routing` served 347 stale answers and missed 104 of 104 affected projects. Details are in
+`docs/LOOP_RESULTS.md`.
