@@ -50,6 +50,11 @@ class Settings(BaseSettings):
 
     redis_url: str = "redis://localhost:6379/0"
 
+    # the action gateway (cie.actions): kinds that always need a person's approval, the outbox file, and webhooks
+    actions_always_approve: list[str] = ["payment", "contract_signature", "external_message"]
+    actions_outbox: str = ""  # default: <vault_path>/actions_outbox.jsonl
+    action_webhooks: str = ""  # JSON {"name": {"url": ..., "secret_env": ...}}
+
     # Retrieval defaults
     packet_min_records: int = 20
     packet_max_records: int = 100

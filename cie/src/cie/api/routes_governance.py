@@ -71,6 +71,13 @@ def decide(approval_id: uuid.UUID, body: Decision, auth: Auth = Depends(current_
                           payload={"task_id": str(q.task_id), "question": q.payload.get("question", ""),
                                    "answer": (body.reason or "") if body.approve else f"not answered: {body.reason or 'declined'}",
                                    "by": auth.principal.name})
+    if a.kind == "action":  # approve: the action may be executed (the worker does it); reject: it never is
+        from cie.actions import gateway
+
+        try:
+            gateway.decide(session, uuid.UUID(a.subject_id), approve=body.approve, by=f"user:{auth.principal.name}", reason=body.reason or "")
+        except ValueError:
+            pass  # no longer awaiting approval (cancelled meanwhile): the approval is still recorded
     if a.kind == "replan":  # approve: accept the best option found; reject: drop the task (relaxing is POST /tasks/{id}/replan)
         from cie.core.models import Task, TaskStatus
         from cie.workflow import engine

@@ -124,6 +124,18 @@ class ReplanIn(BaseModel):
     constraints: list[dict[str, Any]] | None = None
 
 
+class ActionIn(BaseModel):
+    project_id: uuid.UUID
+    kind: str = Field(min_length=1, max_length=64)
+    target: str = Field("outbox", min_length=1, max_length=64)
+    payload: dict[str, Any] = Field(default_factory=dict)
+    amount: float | None = None
+    authority_kind: str = "spend_usd"
+    task_id: uuid.UUID | None = None
+    records: list[dict[str, Any]] = Field(default_factory=list)  # [{ref, version}] it rests on
+    idempotency_key: str | None = Field(None, max_length=200)
+
+
 class ReadIn(BaseModel):
     agent: str
     ids: list[uuid.UUID]
@@ -692,6 +704,89 @@ def post_message(body: MessageIn, auth: Auth = Depends(current_auth), session: S
     except ValueError as e:
         raise HTTPException(400, str(e)) from e
     return {"id": str(m.id), "kind": m.kind.value, "token_estimate": m.token_estimate}
+
+
+# ---------------------------------------------------------------- actions (cie.actions.gateway)
+def _action_out(a) -> dict[str, Any]:
+    return {"id": str(a.id), "project_id": str(a.project_id) if a.project_id else None, "task_id": str(a.task_id) if a.task_id else None,
+            "kind": a.kind, "target": a.target, "payload": a.payload, "status": a.status, "requested_by": a.requested_by, "amount": a.amount,
+            "idempotency_key": a.idempotency_key, "based_on": a.based_on, "checks": a.checks, "receipt": a.receipt, "error": a.error,
+            "attempts": a.attempts, "created_at": a.created_at.isoformat() if a.created_at else None,
+            "executed_at": a.executed_at.isoformat() if a.executed_at else None,
+            "confirmed_at": a.confirmed_at.isoformat() if a.confirmed_at else None}
+
+
+def _action_for(session: Session, auth: Auth, action_id: uuid.UUID):
+    from cie.actions.models import Action
+
+    a = session.get(Action, action_id)
+    if a is None or a.tenant_id != auth.tenant_id:
+        raise HTTPException(404, "action not found")
+    if a.project_id:
+        _proj(session, auth, a.project_id)
+    return a
+
+
+@router.post("/actions", summary="Propose an action on an external system; it passes the gateway's checks before anything happens")
+def propose_action(body: ActionIn, auth: Auth = Depends(current_auth), session: Session = Depends(db)):
+    from cie.actions import gateway
+
+    p = _proj(session, auth, body.project_id)
+    agent = next((x for x in agents_for_tenant(session, auth.tenant_id, active_only=False) if x.principal_id == auth.principal.id), None)
+    if agent is None:
+        require_scope_write(auth, p.scope_id)  # a person proposes with write access; an agent by its grants
+    task = session.get(Task, body.task_id) if body.task_id else None
+    if task is not None and task.project_id != p.id:
+        raise HTTPException(400, "the task is not in this project")
+    a = gateway.propose(session, tenant_id=auth.tenant_id, kind=body.kind, target=body.target, payload=body.payload,
+                        requested_by=agent.name if agent else f"user:{auth.principal.name}", agent=agent, principal_id=auth.principal.id,
+                        project_id=p.id, task=task, amount=body.amount, authority_kind=body.authority_kind, records=body.records,
+                        idempotency_key=body.idempotency_key)
+    return _action_out(a)
+
+
+@router.get("/actions")
+def list_actions(project_id: uuid.UUID, status: str | None = None, auth: Auth = Depends(current_auth), session: Session = Depends(db)):
+    from cie.actions.models import Action
+
+    _proj(session, auth, project_id)
+    q = select(Action).where(Action.tenant_id == auth.tenant_id, Action.project_id == project_id)
+    if status:
+        q = q.where(Action.status == status)
+    return [_action_out(a) for a in session.scalars(q.order_by(Action.created_at))]
+
+
+@router.get("/actions/{action_id}")
+def get_action(action_id: uuid.UUID, auth: Auth = Depends(current_auth), session: Session = Depends(db)):
+    return _action_out(_action_for(session, auth, action_id))
+
+
+@router.post("/actions/{action_id}/execute", summary="Execute an approved action now (the worker otherwise does it)")
+def execute_action(action_id: uuid.UUID, auth: Auth = Depends(current_auth), session: Session = Depends(db)):
+    from cie.actions import gateway
+    from cie.actions.connectors import connectors_from_settings
+    from cie.core.settings import get_settings
+
+    a = _action_for(session, auth, action_id)
+    if not auth.visibility.is_admin and a.principal_id != auth.principal.id:
+        raise HTTPException(403, "only whoever proposed it or an administrator executes an action")
+    try:
+        a = gateway.execute(session, a.id, connectors=connectors_from_settings(get_settings()), actor=f"user:{auth.principal.name}")
+    except ValueError as e:
+        raise HTTPException(409, str(e)) from None
+    return _action_out(a)
+
+
+@router.post("/actions/{action_id}/cancel")
+def cancel_action(action_id: uuid.UUID, auth: Auth = Depends(current_auth), session: Session = Depends(db)):
+    a = _action_for(session, auth, action_id)
+    if not auth.visibility.is_admin and a.principal_id != auth.principal.id:
+        raise HTTPException(403, "only whoever proposed it or an administrator cancels an action")
+    if a.status not in ("awaiting_approval", "approved", "failed", "stale"):
+        raise HTTPException(409, f"the action is {a.status}")
+    a.status = "cancelled"
+    a.checks = list(a.checks or []) + [{"check": "cancelled", "ok": True, "detail": f"by {auth.principal.name}"}]
+    return _action_out(a)
 
 
 def _agent_for(session: Session, auth: Auth, name: str) -> Agent:

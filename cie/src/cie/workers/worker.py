@@ -46,6 +46,14 @@ def handle(session: Session, job: Job, **deps) -> dict:
         from cie.agents.runtime import run_task_job
 
         return run_task_job(session, job)
+    if job.kind == "execute_action":
+        from cie.actions.connectors import connectors_from_settings
+        from cie.actions.gateway import execute
+        from cie.core.settings import get_settings
+
+        a = execute(session, uuid.UUID(job.payload["action_id"]), connectors=deps.get("connectors") or connectors_from_settings(get_settings()),
+                    actor=f"worker:{job.id}")
+        return {"action_id": str(a.id), "status": a.status}
     raise RuntimeError(f"unknown job kind {job.kind}")
 
 

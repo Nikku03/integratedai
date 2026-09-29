@@ -781,6 +781,7 @@ _ = (JSON, text)
 
 
 # Live-state tables (the versioned business graph) live in cie.state; importing registers them with Base.metadata.
+from cie.actions import models as _action_models  # noqa: E402,F401
 from cie.context import models as _context_models  # noqa: E402,F401
 from cie.state import models as _state_models  # noqa: E402,F401
 from cie.workflow import models as _workflow_models  # noqa: E402,F401

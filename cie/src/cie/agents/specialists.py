@@ -54,10 +54,11 @@ class TaskResult:
     questions: list[str] = field(default_factory=list)  # for the head, which answers or asks a person
     decisions: list[dict[str, Any]] = field(default_factory=list)  # {"kind", "amount", "subject"}: checked against its authority
     infeasible: dict[str, Any] | None = None  # {"reason", "best": {output: value}}: no option meets the constraints
+    actions: list[dict[str, Any]] = field(default_factory=list)  # {"kind", "target", "payload", "amount"}: via the action gateway
 
     def as_dict(self) -> dict[str, Any]:
         return {"summary": self.summary, "strategy": self.strategy, "model": self.model, "outputs": self.outputs,
-                "work_requests": self.work_requests, "questions": self.questions, "decisions": self.decisions,
+                "work_requests": self.work_requests, "questions": self.questions, "decisions": self.decisions, "actions": self.actions,
                 **({"infeasible": self.infeasible} if self.infeasible else {}),
                 "findings": [{"claim": f.claim, "kind": f.kind, "value": f.value, "confidence": f.confidence, "citations": f.citations}
                              for f in self.findings],
@@ -126,7 +127,8 @@ class LLMStrategy:
               "true if you cannot finish without the answer}}], \"questions\": [questions only the project head can decide], "
               "\"decisions\": [{{\"kind\": e.g. \"spend_usd\", \"amount\": number, \"subject\": str}} for what you approve or "
               "commit to], \"infeasible\": {{\"reason\": str, \"best\": {{output name: the best option found}}}} only when no "
-              "option meets the constraints}}. Every finding must cite at least one item. Ask another specialist only for work "
+              "option meets the constraints, \"actions\": [{{\"kind\": one of your allowed actions, \"target\": \"outbox\", \"payload\": {{}}, "
+              "\"amount\": number or null}}] for what should be done once the task is complete}}. Every finding must cite at least one item. Ask another specialist only for work "
               "outside your role that you need. Outputs must meet the constraints; decisions above your authority go to a person.")
     ROLES = ("research", "finance", "legal", "operations", "engineering")
 
@@ -156,6 +158,7 @@ class LLMStrategy:
         user = (f"Task: {task.title}\nBrief: {task.brief}\n"
                 + ("\nConstraints the outputs must meet:\n" + "\n".join(cons) + "\n" if cons else "")
                 + f"\nYour authority: {json.dumps(authority) if authority else 'none (every decision goes to a person)'}\n"
+                + f"Actions you may propose: {', '.join((agent.config or {}).get('actions') or []) or 'none'}\n"
                 + ("\nHanded over by the tasks this one depends on:\n" + "\n".join(handed) + "\n" if handed else "")
                 + ("\nMessages for this task:\n" + "\n".join(inbox) + "\n" if inbox else "")
                 + ("\nWork you already asked other specialists for (do not ask again):\n" + "\n".join(asked) + "\n" if asked else "")
@@ -166,7 +169,7 @@ class LLMStrategy:
                                    max_tokens=1200)
         findings: list[Finding] = []
         unsupported: list[str] = []
-        summary, open_qs, requests, outputs, work, questions, decisions, infeasible = "", [], [], {}, [], [], [], None
+        summary, open_qs, requests, outputs, work, questions, decisions, infeasible, actions = "", [], [], {}, [], [], [], None, []
         try:
             data = json.loads(r.text[r.text.index("{"):r.text.rindex("}") + 1])
             summary = str(data.get("summary", ""))
@@ -181,6 +184,10 @@ class LLMStrategy:
             questions = [str(x)[:500] for x in data.get("questions", []) if str(x).strip()][:3]
             decisions = [{"kind": str(d["kind"])[:64], "amount": d.get("amount"), "subject": str(d.get("subject", ""))[:300]}
                          for d in data.get("decisions") or [] if isinstance(d, dict) and d.get("kind")][:5]
+            allowed = set((agent.config or {}).get("actions") or [])
+            actions = [{"kind": str(x["kind"])[:64], "target": str(x.get("target") or "outbox")[:64],
+                        "payload": x.get("payload") if isinstance(x.get("payload"), dict) else {}, "amount": x.get("amount")}
+                       for x in data.get("actions") or [] if isinstance(x, dict) and x.get("kind") in allowed][:5]
             inf = data.get("infeasible")
             if isinstance(inf, dict) and inf.get("reason"):
                 infeasible = {"reason": str(inf["reason"])[:1000], "best": inf.get("best") if isinstance(inf.get("best"), dict) else {}}
@@ -196,7 +203,7 @@ class LLMStrategy:
         return TaskResult(findings, open_qs, requests, summary or f"{agent.role}: {len(findings)} verified finding(s)",
                           tokens_in=r.tokens_in, tokens_out=r.tokens_out, latency_ms=r.latency_ms, cost_usd=r.cost_usd,
                           model=r.model, unsupported_claims=unsupported, strategy=self.name, outputs=outputs, work_requests=work,
-                          questions=questions, decisions=decisions, infeasible=infeasible)
+                          questions=questions, decisions=decisions, infeasible=infeasible, actions=actions)
 
 
 def _supported(sentence: str, item: dict, min_overlap: float = 0.3) -> bool:

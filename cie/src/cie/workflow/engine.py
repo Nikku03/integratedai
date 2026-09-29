@@ -932,6 +932,10 @@ def _decide(session: Session, t: Task, verdict: str, reviewer: str, notes: str, 
         transition(session, t, S.completed, actor=reviewer, reason=notes or "review passed", details=details)
         t.lease_owner = None
         _settled(session, t)
+        if (t.result or {}).get("actions"):  # what it proposes to do goes through the action gateway
+            from cie.actions.gateway import propose_from_result
+
+            propose_from_result(session, t)
         return t
     if verdict == "failed":
         t.verification.pop("awaiting", None)
