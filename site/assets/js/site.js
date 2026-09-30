@@ -173,12 +173,20 @@
   // an invisible, unfocusable <input type=checkbox switch> label is clicked inside the tap's own
   // click handler, which plays the system tick. Anything unsupported fails silently.
   // Nothing moves or buzzes under reduced motion.
+  // A label is a press target when it names its control (label[for]) or wraps a radio or checkbox
+  // (the work filters, form chips). A label that wraps a text field is not: the field gets the caret.
+  const TOGGLE = /^(radio|checkbox)$/;
+  const pressLabel = (lab) => !!lab.htmlFor || !!(lab.control && TOGGLE.test(lab.control.type));
+  TS.pressLabel = pressLabel;
   (function press() {
-    const SEL = 'a[href], button, .chip, summary, [role="button"], label[for], input[type="submit"], input[type="button"], [data-press]:not([data-press="off"])';
+    const SEL = 'a[href], button, .chip, summary, [role="button"], label, input[type="submit"], input[type="button"], [data-press]:not([data-press="off"])';
     const state = new WeakMap();                               // el → { anim, amt, inline }
     let lastType = "", lastDown = 0, timer = 0, cur = null, pressedAt = 0, lastBuzz = 0;
     const pick = (e) => {
-      const t = e.target, el = t && t.closest && t.closest(SEL);
+      const t = e.target;
+      let el = t && t.closest && t.closest(SEL);
+      // a label around a text field: look further out (a card link, say), never at the label
+      while (el && el.tagName === "LABEL" && !el.matches(".chip") && !pressLabel(el)) el = el.parentElement && el.parentElement.closest(SEL);
       if (!el || el.closest('[data-press="off"], [disabled], [aria-disabled="true"]')) return null;
       return el;
     };
@@ -353,15 +361,36 @@
     const isSafari = /^((?!chrome|android|crios|fxios).)*safari/i.test(navigator.userAgent);
     return !isSafari && v.canPlayType('video/webm; codecs="vp9"') === "probably" ? "webm" : "mp4";
   };
+  // The -sm files are 4:5 portrait crops. They suit a portrait phone or tablet only: a phone held
+  // sideways (844×390, say) gets the 16:9 master and its poster, or it would stretch a thin band of
+  // a portrait crop across a wide panel.
+  const SMALL_Q = "(max-width: 900px) and (orientation: portrait)";
+  TS.videoSmall = (v) => !!v.dataset.srcSm && w.matchMedia(SMALL_Q).matches;
   TS.pickVideoSrc = (v) => {
-    const small = w.matchMedia("(max-width: 900px)").matches && v.dataset.srcSm;
-    const base = small ? v.dataset.srcSm : v.dataset.src;
-    if (small && v.dataset.posterSm) v.poster = v.dataset.posterSm;
-    return base + "." + pickExt(v);
+    const small = TS.videoSmall(v);
+    if (v.dataset.posterSm) {
+      if (v.dataset.posterLg == null) v.dataset.posterLg = v.getAttribute("poster") || "";
+      const want = small ? v.dataset.posterSm : v.dataset.posterLg;
+      if (want && v.getAttribute("poster") !== want) v.poster = want;
+    }
+    return (small ? v.dataset.srcSm : v.dataset.src) + "." + pickExt(v);
   };
   (function videos() {
     const vids = $$("video[data-autoplay]");
     if (!vids.length) return;
+    // the phone turned: loaded films switch file (keeping their place), the rest just their poster
+    const mqSmall = w.matchMedia(SMALL_Q);
+    const turned = () => vids.forEach((v) => {
+      if (!v.dataset.srcSm) return;
+      if (!v.dataset.loaded) { if (v.dataset.posterSm) TS.pickVideoSrc(v); return; }
+      const next = TS.pickVideoSrc(v);
+      if (v.getAttribute("src") === next) return;
+      const wasPlaying = !v.paused, t = v.currentTime || 0;
+      v.src = next;
+      if (t) v.addEventListener("loadedmetadata", () => { try { v.currentTime = v.duration ? t % v.duration : t; } catch (_) {} }, { once: true });
+      if (wasPlaying && !reduce()) { const p = v.play(); if (p && p.catch) p.catch(() => {}); }
+    });
+    if (mqSmall.addEventListener) mqSmall.addEventListener("change", turned); else if (mqSmall.addListener) mqSmall.addListener(turned);
     const setSrc = (v) => {
       if (v.dataset.loaded) return;
       v.dataset.loaded = "1";
@@ -454,7 +483,8 @@
         const t = e.target;
         if (!t || !t.closest) return;
         c.classList.toggle("is-hidden", !!t.closest(TEXT));
-        const hot = !!t.closest(INTERACTIVE);
+        const lab = t.closest("label");
+        const hot = !!t.closest(INTERACTIVE) || (!!lab && pressLabel(lab));
         c.classList.toggle("is-hover", hot);
         const dark = !!t.closest(DARK);
         c.classList.toggle("is-dark", dark); rip.classList.toggle("is-dark", dark);
