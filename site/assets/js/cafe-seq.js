@@ -35,11 +35,27 @@
     const live = $("[data-cafe-live]", dlg);
     const links = $$(".menu-card__link", dlg);
     let opener = null, isOpen = false, menu = false, motion = false, env = null;
-    let tl = null, inerted = [], landTimer = 0, rvfc = 0, leaving = false, offTilt = null;
+    let tl = null, inerted = [], landTimer = 0, posterTimer = 0, rvfc = 0, leaving = false, offTilt = null;
     const gsap = () => w.gsap;
-    const MEDIA_SM = { yPercent: -12 }, MEDIA_LG = { xPercent: -6, scale: 1.1 };
+    const MEDIA_SM = { yPercent: -12 }, MEDIA_LG = { xPercent: -6, scale: 1.1 }, MEDIA_SIDE = { scale: 1.04 };
     // the stacked table (cup above, card below): phones and portrait tablets (see cafe-seq.css)
     const mqStack = w.matchMedia("(max-width: 900px), (max-aspect-ratio: 4/5)");
+    // landscape phones: the cup on the left, the whole card on the right (see cafe-seq.css)
+    const mqSide = w.matchMedia("(orientation: landscape) and (max-height: 500px)");
+    const layout = () => (mqSide.matches ? "side" : mqStack.matches ? "stack" : "wide");
+    const MEDIA = { side: MEDIA_SIDE, stack: MEDIA_SM, wide: MEDIA_LG };
+    const MEDIA_CSS = { side: "scale(1.04)", stack: "translateY(-12%)", wide: "translateX(-6%) scale(1.1)" };
+    const useSm = () => mqSmall.matches && !mqSide.matches;
+
+    // every dish on this card is for a café: make sure each link says so, even one written without it
+    // (contact.js also reads from=menu-card as a café), and take over their press feedback (below)
+    links.forEach((a) => {
+      try {
+        const u = new URL(a.getAttribute("href"), location.href);
+        if (!u.searchParams.get("venue")) { u.searchParams.set("venue", "cafe"); a.setAttribute("href", a.getAttribute("href").split("?")[0] + "?" + u.searchParams.toString()); }
+      } catch (_) {}
+      a.setAttribute("data-press", "off");
+    });
 
     if (dlg.parentElement !== d.body) d.body.appendChild(dlg);   // so the rest of the page can go inert
 
@@ -47,12 +63,27 @@
     const focusables = () => $$("a[href], button:not([disabled])", dlg).filter((el) => el.offsetParent !== null && getComputedStyle(el).visibility !== "hidden");
 
     function setVideo() {
-      if (video.dataset.loaded === (mqSmall.matches ? "sm" : "lg")) return;
-      video.dataset.loaded = mqSmall.matches ? "sm" : "lg";
+      const sm = useSm();
+      if (video.dataset.loaded === (sm ? "sm" : "lg")) return;
+      video.dataset.loaded = sm ? "sm" : "lg";
       video.muted = true; video.playsInline = true;
-      video.src = (mqSmall.matches ? video.dataset.srcSm : video.dataset.src) + "." + ext(video);
+      video.src = (sm ? video.dataset.srcSm : video.dataset.src) + "." + ext(video);
       video.preload = "auto";
+      if (video.hasAttribute("poster")) posterOn();          // switched sm ⇄ lg: the matching still
     }
+    // the settled frame as a photograph: shown when the clip can't play (iOS Low Power Mode refuses
+    // play(); a slow connection) so the card never lands on black
+    function posterSrc() {
+      const sm = useSm(), own = sm ? video.dataset.posterSm : video.dataset.poster;
+      if (own) return own;
+      const src = video.dataset.src || "", dir = src.slice(0, src.lastIndexOf("/") + 1);
+      return dir + "posters/seated-cup-settled" + (sm ? "-sm" : "") + "-poster.jpg";
+    }
+    function posterOn() {
+      const src = posterSrc();
+      if (!video.getAttribute("poster") || video.getAttribute("poster") !== src) video.setAttribute("poster", src);
+    }
+    const stalled = () => video.paused || video.readyState < 2;
     // the settled frame: cup down, hands gone
     function settle() {
       const go = () => { try { video.currentTime = Math.min(4.7, (video.duration || 7.6) - 0.4); } catch (_) {} };   // cup down, hands still on the saucer
@@ -75,17 +106,19 @@
       const hadSkipFocus = d.activeElement === skipBtn || d.activeElement === dlg || !dlg.contains(d.activeElement);
       skipBtn.classList.add("is-gone");
       const g = gsap();
-      const small = mqStack.matches;
+      const lay = layout(), small = lay === "stack";
+      // the clip never started (refused or still loading): the settled photograph, not a black screen
+      if (stalled()) { posterOn(); settle(); }
       if (g && motion) {
         g.fromTo(drop, { autoAlpha: 0, y: -70, rotationX: 26, rotationZ: -6, scale: 1.1 },
           { autoAlpha: 1, y: 0, rotationX: 0, rotationZ: 0, scale: 1, duration: fast ? 0.75 : 1.15, ease: M && M.EASE || "expo.out", clearProps: "transform" });
         g.fromTo(shadow, { opacity: 0, scale: 0.82 }, { opacity: 1, scale: 1, duration: fast ? 0.75 : 1.15, ease: "power2.out", clearProps: "opacity,transform" });
         // the camera makes room for the card: up a little on phones, a slow pan and push on desktop
-        g.to(media, { ...(small ? MEDIA_SM : MEDIA_LG), duration: 1.4, ease: M && M.DRIFT || "power3.out" });
-      } else if (g) g.set(media, small ? MEDIA_SM : MEDIA_LG);
-      else media.style.transform = small ? "translateY(-12%)" : "translateX(-6%) scale(1.1)";
+        g.to(media, { ...MEDIA[lay], duration: 1.4, ease: M && M.DRIFT || "power3.out" });
+      } else if (g) g.set(media, MEDIA[lay]);
+      else media.style.transform = MEDIA_CSS[lay];
       // phones: the seated caption sits over the cup, so it steps out once the card is down
-      if (small) $$(".cafe-seq__cap", dlg).forEach((c) => (g ? g.to(c, { opacity: 0, duration: 0.4, ease: "none", overwrite: true }) : (c.style.opacity = 0)));
+      if (lay !== "wide") $$(".cafe-seq__cap", dlg).forEach((c) => (g ? g.to(c, { opacity: 0, duration: 0.4, ease: "none", overwrite: true }) : (c.style.opacity = 0)));
       announce(dlg.dataset.announce || "");
       if (hadSkipFocus) setTimeout(() => links[0] && links[0].focus({ preventScroll: true }), fast ? 80 : 450);
       if (env && env.fine && motion && g) offTilt = tilt();
@@ -109,9 +142,13 @@
       if (g) g.to(table, { opacity: 1, duration: 0.5, ease: "none" }); else table.style.opacity = 1;
       try { if (from != null) video.currentTime = from; } catch (_) {}
       const p = video.play();
-      if (p && p.catch) p.catch(() => { landTimer = setTimeout(() => showMenu(false), 900); });
-      if (video.readyState < 3) dlg.classList.add("is-loading");
-      video.addEventListener("playing", () => dlg.classList.remove("is-loading"), { once: true });
+      if (p && p.catch) p.catch(() => { posterOn(); settle(); landTimer = setTimeout(() => showMenu(false), 900); });
+      if (video.readyState < 3) {
+        dlg.classList.add("is-loading");
+        // still nothing after a beat: show the settled cup while it loads
+        posterTimer = setTimeout(() => { if (isOpen && stalled()) posterOn(); }, 1400);
+      }
+      video.addEventListener("playing", () => { dlg.classList.remove("is-loading"); clearTimeout(posterTimer); }, { once: true });
       // the menu lands as the cup settles (≈4.3s into the clip); a timer covers a stalled video
       const LAND = 4.3;
       const check = () => { if (!isOpen || menu) return; if (video.currentTime >= LAND) showMenu(false); else rvfc = requestAnimationFrame(check); };
@@ -172,7 +209,7 @@
         sequence();
         setTimeout(() => skipBtn.focus({ preventScroll: true }), 60);
       } else {
-        setVideo(); settle();
+        setVideo(); posterOn(); settle();
         table.style.opacity = 1;
         showMenu(true);
         setTimeout(() => links[0] && links[0].focus({ preventScroll: true }), 30);
@@ -186,7 +223,7 @@
       const done = () => {
         isOpen = false; leaving = false; menu = false;
         if (tl) { tl.kill(); tl = null; }
-        clearTimeout(landTimer); cancelAnimationFrame(rvfc);
+        clearTimeout(landTimer); clearTimeout(posterTimer); cancelAnimationFrame(rvfc);
         if (offTilt) { offTilt(); offTilt = null; }
         if (g) { g.killTweensOf([dlg, drop, shadow, media, card, ...frames, ...$$(".cafe-seq__img, .cafe-seq__cap", dlg)]); g.set([dlg, drop, shadow, media, ...frames, ...$$(".cafe-seq__img, .cafe-seq__cap", dlg)], { clearProps: "all" }); }
         [media, table, ...frames].forEach((el) => { el.style.opacity = ""; el.style.transform = ""; });
@@ -222,6 +259,18 @@
       }
     }
 
+    // pressing a dish: the whole item (name, leader and description are one target) squishes
+    // under the finger and springs back; a real tap also ticks the phone (site.js haptic)
+    let lastPointer = "";
+    const items = $$(".menu-card__item", dlg);
+    const unpress = () => items.forEach((li) => li.classList.remove("is-pressed"));
+    dlg.addEventListener("pointerdown", (e) => {
+      lastPointer = e.pointerType;
+      const li = e.target.closest && e.target.closest(".menu-card__item");
+      if (li && e.pointerType !== "mouse" && e.isPrimary) li.classList.add("is-pressed");
+    }, { passive: true });
+    ["pointerup", "pointercancel", "pointerleave"].forEach((t) => dlg.addEventListener(t, unpress, { passive: true }));
+
     // choosing a dish: tick it, say so, then bring the form
     let going = false;
     links.forEach((a) => a.addEventListener("click", (e) => {
@@ -229,6 +278,7 @@
       e.preventDefault();
       if (going) return;
       going = true;
+      if (e.isTrusted && (lastPointer === "touch" || lastPointer === "pen") && TS().haptic) TS().haptic();
       const li = a.closest(".menu-card__item");
       li.classList.add("is-ticked");
       const name = ($(".menu-card__name", a) || a).textContent.trim();

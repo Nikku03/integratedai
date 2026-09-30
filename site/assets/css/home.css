@@ -18,7 +18,9 @@
   border: 1px solid rgb(var(--paper-rgb) / 0.3);
   transition: background-color var(--t-ui) var(--ease-out), border-color var(--t-ui) var(--ease-out);
 }
-[data-page="home"] .home-vtoggle:hover { background: rgb(var(--shade-rgb) / 0.62); border-color: rgb(var(--paper-rgb) / 0.6); }
+@media (hover: hover) and (pointer: fine) {
+  [data-page="home"] .home-vtoggle:hover { background: rgb(var(--shade-rgb) / 0.62); border-color: rgb(var(--paper-rgb) / 0.6); }
+}
 [data-page="home"] .home-vtoggle:focus-visible { outline: 2px solid var(--paper); outline-offset: 3px; }
 [data-page="home"] .home-vtoggle i { position: relative; width: 10px; height: 12px; }
 [data-page="home"] .home-vtoggle i::before,
@@ -110,7 +112,9 @@
   padding-bottom: 0.06em;
   transition: color var(--t-micro);
 }
-[data-page="home"] .home-hero__sector:hover { color: var(--sand); animation: home-redraw 0.7s var(--ease-cut); }
+@media (hover: hover) and (pointer: fine) {
+  [data-page="home"] .home-hero__sector:hover { color: var(--sand); animation: home-redraw 0.7s var(--ease-cut); }
+}
 @keyframes home-redraw {
   0%   { background-size: 100% 1px; background-position: 100% 100%; }
   49%  { background-size: 0% 1px;   background-position: 100% 100%; }
@@ -131,8 +135,10 @@
   font-size: 1.05rem; line-height: 1;
   transition: background-color var(--t-ui) var(--ease-cut), color var(--t-ui) var(--ease-cut), border-color var(--t-ui) var(--ease-cut), transform var(--t-ui) var(--ease-cut);
 }
-[data-page="home"] .home-hero__cue:hover .home-hero__cue-dot,
 [data-page="home"] .home-hero__cue:focus-visible .home-hero__cue-dot { background: var(--paper); color: var(--green-deep); border-color: var(--paper); transform: translateY(3px); }
+@media (hover: hover) and (pointer: fine) {
+  [data-page="home"] .home-hero__cue:hover .home-hero__cue-dot { background: var(--paper); color: var(--green-deep); border-color: var(--paper); transform: translateY(3px); }
+}
 
 @media (max-width: 900px) {
   [data-page="home"] .home-hero__content { grid-template-columns: minmax(0, 1fr); padding-top: calc(var(--header-h) + 24px); }
@@ -181,7 +187,7 @@
 
 [data-page="home"] .home-rooms__card {
   display: block; position: relative; color: var(--ink); text-align: center;
-  border-radius: var(--r-lg); -webkit-tap-highlight-color: transparent;
+  border-radius: var(--r-lg);
 }
 [data-page="home"] .home-rooms__card:focus-visible { outline-offset: 10px; }
 [data-page="home"] .home-rooms__visual { position: relative; }
@@ -330,7 +336,6 @@
 [data-page="home"] .home-work__link {
   display: inline-block; position: relative;
   transition: opacity 0.45s var(--ease-out);
-  -webkit-tap-highlight-color: transparent;
 }
 [data-page="home"] .home-work__rise { display: inline-block; }
 [data-page="home"] .home-work__name {
@@ -358,17 +363,33 @@
 @media (max-width: 900px) {
   [data-page="home"] .home-work__head { grid-template-columns: minmax(0, 1fr); row-gap: 14px; }
   [data-page="home"] .home-work__title, [data-page="home"] .home-work__intro { grid-column: 1 / -1; justify-self: start; }
-  [data-page="home"] .home-work__list { max-width: 11em; column-gap: 0.3em; }
-  [data-page="home"] .home-work__tag { font-size: 0.6875rem; letter-spacing: 0.14em; }
   [data-page="home"] .home-work__meta { gap: 14px; }
+  /* phones + tablets (round 4): a left-aligned list, one name per row, rows ≥ 48px that never touch,
+     the type tag after the name (12px, 80%), and the project line under the list */
+  [data-page="home"] .home-work__list {
+    justify-self: stretch; align-self: center;
+    flex-direction: column; flex-wrap: nowrap; align-items: flex-start; row-gap: 6px;
+    max-width: none; margin-inline: 0; text-align: left;
+    font-size: clamp(2.125rem, 9.2vw, 3.25rem); line-height: 1.1;
+  }
+  [data-page="home"] .home-work__item { padding: 0.08em 0.1em 0.06em 0; margin: 0; }
+  [data-page="home"] .home-work__link { display: flex; align-items: center; min-height: 48px; }
+  [data-page="home"] .home-work__rise { display: inline-flex; align-items: baseline; gap: 0.4em; }
+  [data-page="home"] .home-work__tag {
+    position: static; top: auto; margin-left: 0; vertical-align: baseline; white-space: nowrap;
+    font-size: 0.75rem; letter-spacing: 0.14em; opacity: 0.8;
+  }
 }
 @media (max-width: 600px) {
-  [data-page="home"] .home-work__meta [data-work-meta] { display: none; }
-  [data-page="home"] .home-work__list { flex-direction: column; align-items: center; max-width: none; }
-  /* one name per line, centred on the name itself; the tag hangs to its right */
-  [data-page="home"] .home-work__item { padding: 0.2em 4em 0.1em; margin: -0.2em -4em -0.1em; }
-  [data-page="home"] .home-work__rise { position: relative; }
-  [data-page="home"] .home-work__tag { position: absolute; left: 100%; top: 0.6em; margin-left: 0.5em; white-space: nowrap; }
+  [data-page="home"] .home-work__meta { flex: 1 1 100%; flex-wrap: wrap; gap: 6px 14px; }
+}
+/* landscape phones: two columns of three, a smaller size, tags clear of the next name */
+@media (orientation: landscape) and (max-height: 500px) and (max-width: 900px) {
+  [data-page="home"] .home-work__list {
+    display: grid; grid-template-columns: repeat(2, max-content); grid-template-rows: repeat(3, auto); grid-auto-flow: column;
+    column-gap: 64px; row-gap: 2px; font-size: 2rem;
+  }
+  [data-page="home"] .home-work__link { min-height: 46px; }
 }
 
 /* ======================================================================
@@ -389,13 +410,15 @@
   background: linear-gradient(currentColor, currentColor) 0 96% / 0% 1px no-repeat;
   transition: background-size var(--t-ui) var(--ease-cut), color var(--t-micro);
 }
-[data-page="home"] .home-what__title a:hover,
 [data-page="home"] .home-what__title a:focus-visible { background-size: 100% 1px; color: var(--green); }
+@media (hover: hover) and (pointer: fine) {
+  [data-page="home"] .home-what__title a:hover { background-size: 100% 1px; color: var(--green); }
+  [data-page="home"] .home-what__title a:hover .home-what__arr { transform: translate(6px, -0.35em); }
+}
 [data-page="home"] .home-what__arr {
   font-family: var(--f-text); font-size: 0.42em; line-height: 1; color: var(--green);
   transform: translateY(-0.35em); transition: transform var(--t-ui) var(--ease-cut);
 }
-[data-page="home"] .home-what__title a:hover .home-what__arr { transform: translate(6px, -0.35em); }
 [data-page="home"] .home-what__copy { margin-top: clamp(16px, 1.6vw, 24px); max-width: 44ch; }
 
 [data-page="home"] .home-what__vid { background-color: var(--green-deep); }
@@ -580,7 +603,9 @@
   background: linear-gradient(currentColor, currentColor) 0 calc(100% - 10px) / 100% 1px no-repeat;
   transition: color var(--t-micro);
 }
-[data-page="home"] .home-cta__mail:hover { color: var(--sand); animation: home-redraw 0.7s var(--ease-cut); background-position: 0 calc(100% - 10px); }
+@media (hover: hover) and (pointer: fine) {
+  [data-page="home"] .home-cta__mail:hover { color: var(--sand); animation: home-redraw 0.7s var(--ease-cut); background-position: 0 calc(100% - 10px); }
+}
 [data-page="home"] .home-cta__toggle { position: absolute; right: var(--margin); top: calc(var(--header-h) + 16px); }
 
 @media (max-width: 900px) {
@@ -600,4 +625,149 @@
 /* ------------------------------------------------------------ reduced motion: every stage is a plain, readable section */
 @media (prefers-reduced-motion: reduce) {
   [data-page="home"] .home-work__slide, [data-page="home"] .home-work__slide > img { transition: none; }
+}
+
+/* ======================================================================
+   ROUND 4 · PHONES (BRIEF_V4 §2). Everything below is behind phone / landscape-phone
+   queries, so the approved desktop layout is untouched.
+   ====================================================================== */
+
+/* the one-line facts: phones only (the three-column facts stay on larger screens). Each segment keeps its
+   separator in front, so a wrapped line never ends on a dangling "·" */
+[data-page="home"] .home-hero__brief { display: none; }
+[data-page="home"] .home-hero__seg { white-space: nowrap; }
+[data-page="home"] .home-hero__sep { display: inline-block; margin: 0 0.7em; opacity: 0.6; }
+[data-page="home"] .home-hero__seg:first-child .home-hero__sep { display: none; }
+
+@media (max-width: 600px) {
+  /* 1 · hero: full bleed from the top edge, a full small-viewport screen, rounded only where it meets the page */
+  [data-page="home"] .home-hero { min-height: 100svh; border-radius: 0 0 var(--r-xl) var(--r-xl); }
+  [data-page="home"] .home-hero__content { min-height: 100svh; padding-top: calc(var(--header-h) + 16px); padding-bottom: max(14px, env(safe-area-inset-bottom)); }
+  [data-page="home"] .home-hero__eyebrow { margin-bottom: 14px; }
+  [data-page="home"] .home-hero__body { font-size: 1rem; line-height: 1.45; margin-top: 14px; }
+  [data-page="home"] .home-hero__foot { margin-top: 20px; padding-top: 14px; }
+  [data-page="home"] .home-hero__facts { display: none; }
+  [data-page="home"] .home-hero__brief {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 8px 0;
+    grid-column: 1 / -1; color: var(--on-dark); letter-spacing: 0.12em;
+  }
+  [data-page="home"] .home-hero__brief .badge { height: 20px; padding: 0 8px; font-size: 0.625rem; margin-left: 10px; }
+  [data-page="home"] .home-hero__controls { margin-top: 10px; }
+
+  /* 3 · pick your room: one column of full-width doorways (no stagger), a clear name, the line and an Enter pill */
+  [data-page="home"] .home-rooms__head { margin-bottom: 36px; }
+  [data-page="home"] .home-rooms__intro { margin-top: 18px; }
+  [data-page="home"] .home-rooms__list { grid-template-columns: minmax(0, 1fr); row-gap: 40px; }
+  [data-page="home"] .home-rooms__item:nth-child(n) { margin-top: 0; }
+  [data-page="home"] .home-rooms__card { text-align: left; }
+  [data-page="home"] .home-rooms__img { aspect-ratio: 6 / 5 !important; }
+  [data-page="home"] .home-rooms__img.blob,
+  [data-page="home"] .home-rooms__img { border-radius: 50% 50% 22px 22px / 34% 34% 22px 22px; }
+  [data-page="home"] .home-rooms__plaque { left: 18px; right: auto; margin-inline: 0; --h: 36px; padding: 0 14px 0 12px; gap: 8px; font-size: 0.8125rem; letter-spacing: 0.1em; }
+  [data-page="home"] .home-rooms__dot { width: 8px; height: 8px; }
+  [data-page="home"] .home-rooms__text {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 16px; align-items: center;
+    padding-top: 30px;
+  }
+  [data-page="home"] .home-rooms__time { grid-column: 1; font-size: 0.75rem; }
+  [data-page="home"] .home-rooms__name { grid-column: 1; display: block; justify-self: start; font-size: 2.125rem; line-height: 1.05; }
+  [data-page="home"] .home-rooms__name::before { height: 6px; }
+  [data-page="home"] .home-rooms__line { grid-column: 1; max-width: none; margin: 6px 0 0; font-size: 1rem; line-height: 1.45; text-wrap: pretty; }
+  [data-page="home"] .home-rooms__go {
+    grid-column: 2; grid-row: 1 / span 3; align-self: center;
+    min-height: 44px; margin: 0; padding: 0 18px; border-radius: 999px;
+    box-shadow: inset 0 0 0 1px rgb(var(--green-rgb) / 0.45);
+    font-size: 0.8125rem; letter-spacing: 0.12em;
+  }
+  [data-page="home"] .home-rooms__foot { margin-top: 44px; }
+
+  /* 5 · what we do: landscape crops and a tighter rhythm (about a screen less to scroll) */
+  [data-page="home"] .home-what__head { margin-bottom: 44px; }
+  [data-page="home"] .home-what__rows { row-gap: 64px; }
+  [data-page="home"] .home-what__row { row-gap: 22px; }
+  [data-page="home"] .home-what__row .home-what__img,
+  [data-page="home"] .home-what__vid--wide { aspect-ratio: 4 / 3 !important; }
+  [data-page="home"] .home-what__cta { margin-top: 32px; }
+  [data-page="home"] .home-what__cta .btn { width: 100%; justify-content: space-between; }
+
+  /* 6 · how it works: the sand panel's own padding, not the page rhythm on top of it */
+  [data-page="home"] .home-process { padding-block: 48px 44px; }
+  [data-page="home"] .home-process__aside { gap: 22px; margin-top: 22px; }
+  [data-page="home"] .home-process__rail { margin-top: 40px; }
+  [data-page="home"] .home-process__steps { row-gap: 26px; }
+
+  /* 7 · numbers: a clean 2 × 2 (no offsets), equal tiles; the quote closer */
+  [data-page="home"] .home-numbers__head { padding-bottom: 18px; }
+  [data-page="home"] .home-numbers__list { gap: 12px; align-items: stretch; }
+  [data-page="home"] .home-numbers__item:nth-child(n) { margin-top: 0; }
+  [data-page="home"] .home-numbers__item { padding: 18px 14px 20px 16px; }
+  [data-page="home"] .home-numbers__label { margin-top: 8px; max-width: none; }
+  [data-page="home"] .home-quote { margin-top: 48px; }
+
+  /* 8 · CTA: the actions run full width; the email is a 44px target */
+  [data-page="home"] .home-cta__actions { justify-self: stretch; flex-direction: column; align-items: stretch; gap: 8px; }
+  [data-page="home"] .home-cta__actions .btn { width: 100%; justify-content: space-between; }
+  [data-page="home"] .home-cta__mail { align-self: flex-start; }
+}
+
+/* 5 · what we do: the heading links are 44px targets on touch-size screens (desktop keeps its type box) */
+@media (max-width: 900px) {
+  [data-page="home"] .home-rooms__foot .text-link { display: inline-block; padding-block: 11px; line-height: 22px; background-position: 0 calc(100% - 11px); }
+  [data-page="home"] .home-what__title a { padding-block: 6px; background-position: 0 calc(100% - 6px); }
+  [data-page="home"] .home-what__arr { font-size: 0.6em; transform: translateY(-0.2em); }
+}
+
+/* 8 · CTA on phones and landscape phones: no sticky window stage (it read as a dead zone); a plain rounded panel
+   that opens a touch as it arrives, its words already there (home.js, same queries) */
+@media (max-width: 600px), (orientation: landscape) and (max-height: 500px) {
+  .js-motion [data-page="home"] .home-cta { height: auto; }
+  .js-motion [data-page="home"] .home-cta__stage,
+  [data-page="home"] .home-cta__stage { position: relative; top: auto; height: auto; min-height: 0; }
+  [data-page="home"] .home-cta__content { min-height: 0; padding-top: 112px; padding-bottom: 36px; }
+  [data-page="home"] .home-cta__foot { margin-top: 26px; }
+  [data-page="home"] .home-cta__toggle { top: 20px; right: var(--margin); }
+}
+@media (orientation: landscape) and (max-height: 500px) {
+  [data-page="home"] .home-cta__content { padding-top: 72px; padding-bottom: 28px; }
+  [data-page="home"] .home-cta__title { font-size: clamp(2.4rem, 6vw, 3.2rem); max-width: 16em; }
+}
+
+/* landscape phones (and any very short window): everything that matters fits one screen */
+@media (orientation: landscape) and (max-height: 500px) {
+  /* hero: headline left, statement right, one line of facts and the cue on the last row */
+  [data-page="home"] .home-hero__content {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    padding-top: calc(var(--header-h) + 8px); padding-bottom: 14px;
+  }
+  [data-page="home"] .home-hero__lead { grid-column: 1 / 8; }
+  [data-page="home"] .home-hero__body { grid-column: 8 / 13; justify-self: end; margin-top: 0; font-size: 0.9375rem; line-height: 1.45; }
+  [data-page="home"] .home-hero__eyebrow { margin-bottom: 10px; }
+  [data-page="home"] .home-hero__title { font-size: clamp(2.6rem, 6.4vw, 3.4rem); max-width: 11em; }
+  [data-page="home"] .home-hero__foot { grid-template-columns: minmax(0, 1fr) auto; margin-top: 16px; padding-top: 10px; }
+  [data-page="home"] .home-hero__facts { display: none; }
+  [data-page="home"] .home-hero__brief { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 0; grid-column: 1; color: var(--on-dark); letter-spacing: 0.12em; }
+  [data-page="home"] .home-hero__brief .badge { height: 20px; padding: 0 8px; font-size: 0.625rem; margin-left: 10px; }
+  [data-page="home"] .home-hero__controls { grid-column: 2; margin-top: 0; justify-self: end; flex-direction: row-reverse; }
+
+  /* pick your room: four across, the arches no taller than half the screen */
+  [data-page="home"] .home-rooms__list { grid-template-columns: repeat(4, minmax(0, 1fr)); column-gap: 16px; }
+  [data-page="home"] .home-rooms__item:nth-child(n) { margin-top: 0; }
+  [data-page="home"] .home-rooms__img { max-height: 50svh; }
+  [data-page="home"] .home-rooms__plaque { --h: 32px; padding: 0 10px 0 9px; gap: 6px; font-size: 0.75rem; }
+  [data-page="home"] .home-rooms__text { padding-top: 26px; }
+  [data-page="home"] .home-rooms__name { font-size: 1.6rem; }
+  [data-page="home"] .home-rooms__line { font-size: 0.8125rem; margin-top: 6px; }
+  [data-page="home"] .home-rooms__go { margin-top: 6px; min-height: 32px; }
+}
+/* landscape phones: what we do runs image | text, so no image is taller than the screen */
+@media (orientation: landscape) and (max-height: 500px) and (max-width: 900px) {
+  [data-page="home"] .home-what__head { margin-bottom: 48px; }
+  [data-page="home"] .home-what__rows { row-gap: 56px; }
+  [data-page="home"] .home-what__row { align-items: center; }
+  [data-page="home"] .home-what__row .home-what__media { grid-column: 1 / 4 !important; grid-row: 1 !important; }
+  [data-page="home"] .home-what__row .home-what__text,
+  [data-page="home"] .home-what__side { grid-column: 4 / -1 !important; grid-row: 1 !important; }
+  [data-page="home"] .home-what__row .home-what__img,
+  [data-page="home"] .home-what__vid--wide { aspect-ratio: 4 / 3 !important; max-height: 72svh; }
+  [data-page="home"] .home-what__cta { margin-top: 40px; }
 }

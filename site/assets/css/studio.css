@@ -72,14 +72,15 @@
   border: 1px solid var(--line-strong); color: var(--ink);
   transition: background-color var(--t-micro), color var(--t-micro), border-color var(--t-micro);
 }
-[data-page="studio"] .vtoggle:hover { background: var(--green); border-color: var(--green); color: var(--paper); }
+@media (hover: hover) and (pointer: fine) {
+  [data-page="studio"] .vtoggle:hover { background: var(--green); border-color: var(--green); color: var(--paper); }
+    }
 [data-page="studio"] .vtoggle i { display: block; width: 10px; height: 12px; border-inline: 3px solid currentColor; }
 [data-page="studio"] .vtoggle[aria-pressed="true"] i {
   width: 0; height: 0; border-style: solid; border-width: 6px 0 6px 10px;
   border-color: transparent transparent transparent currentColor; margin-left: 3px;
 }
 [data-page="studio"] .vtoggle--dark { color: var(--on-dark); border-color: rgb(var(--paper-rgb) / 0.45); }
-[data-page="studio"] .vtoggle--dark:hover { background: var(--paper); border-color: var(--paper); color: var(--green-deep); }
 
 /* ------------------------------------------------------------ principles */
 [data-page="studio"] .principles { padding-top: calc(var(--section) * 0.5); }
@@ -145,7 +146,6 @@
 [data-page="studio"] .contract__point .t-small { margin-top: 0.9rem; max-width: 36ch; }
 [data-page="studio"] .contract__foot { grid-column: 1 / -1; margin-top: clamp(48px, 5vw, 72px); color: var(--on-dark-2); }
 [data-page="studio"] .contract__foot .link { color: var(--on-dark); white-space: nowrap; }
-[data-page="studio"] .contract__foot .link:hover { color: var(--sand); }
 
 /* ------------------------------------------------------------ team */
 [data-page="studio"] .team__head { align-items: end; row-gap: 20px; margin-bottom: clamp(48px, 6vw, 96px); }
@@ -177,9 +177,14 @@
 [data-page="studio"] .band { --band-h: clamp(240px, 40vh, 480px); padding-block: var(--section) calc(var(--section) * 0.5); overflow: clip; }
 [data-page="studio"] .band__head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px 32px; margin-bottom: clamp(24px, 3vw, 40px); }
 [data-page="studio"] .band__viewport {
-  overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scroll-padding-inline: var(--margin);
+  /* a sideways strip only: overflow-y hidden (not the auto that overflow-x: auto implies), so a vertical
+     swipe that starts on it always scrolls the page */
+  overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; touch-action: pan-x pan-y;
+  scroll-snap-type: x mandatory; scroll-padding-inline: var(--margin);
   scrollbar-width: none; -webkit-overflow-scrolling: touch;
 }
+/* the swipe strip (not the desktop drift): room under the captions, so the clip never cuts their letters */
+[data-page="studio"] .band__viewport:not(.is-drift) { padding-block: 10px 18px; }
 [data-page="studio"] .band__viewport::-webkit-scrollbar { display: none; }
 [data-page="studio"] .band__viewport:focus-visible { outline-offset: -4px; }
 [data-page="studio"] .band__track { display: flex; gap: var(--gutter); width: max-content; padding-inline: var(--margin); }
@@ -267,14 +272,47 @@
   [data-page="studio"] .contract__point .t-display-s { max-width: none; }
   /* team: image left, words right */
   [data-page="studio"] .team__list { row-gap: 36px; }
-  [data-page="studio"] .member { grid-column: 1 / -1; display: grid; grid-template-columns: 40% minmax(0, 1fr); gap: 16px; align-items: start; }
+  [data-page="studio"] .member { grid-column: 1 / -1; display: grid; grid-template-columns: 30% minmax(0, 1fr); gap: 18px; align-items: start; }
   [data-page="studio"] .member:nth-child(2n) { margin-top: 0; }
   [data-page="studio"] .member__text { margin-top: 0; }
   [data-page="studio"] .member__text .t-display-s { font-size: 1.35rem; }
-  [data-page="studio"] .member__text .t-label { letter-spacing: 0.16em; }
+  [data-page="studio"] .member__text .t-label { letter-spacing: 0.12em; }
+  [data-page="studio"] .member__text .t-small { max-width: none; }
   [data-page="studio"] .clients__wall { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  [data-page="studio"] .careers__img { grid-column: 1 / span 4; }
+  [data-page="studio"] .careers__img { grid-column: 1 / -1; aspect-ratio: 3 / 2 !important; }
+  [data-page="studio"] .clients__wall { gap: 8px; }
+  [data-page="studio"] .clients__wall li { min-height: 64px; padding: 10px 12px; font-size: 1.125rem; }
   [data-page="studio"] .studio-cta { min-height: 88svh; }
   [data-page="studio"] .studio-cta__inner { flex-direction: column; align-items: flex-start; }
   [data-page="studio"] .studio-cta__inner .vtoggle { position: absolute; right: var(--margin); top: calc(var(--header-h) + 16px); }
+}
+
+/* narrow phones: the portrait above the words (a smaller blob), so the text keeps a readable measure */
+@media (max-width: 400px) {
+  [data-page="studio"] .member { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  [data-page="studio"] .member__img { width: 58%; }
+}
+
+/* phones and portrait tablets: the CTA headline sits over the bright café window, so the scrim reaches
+   up behind it and the crop leans to the dark panelled side of the room */
+@media (max-width: 900px) {
+  [data-page="studio"] .studio-cta__media::after {
+    background: linear-gradient(to top, rgb(var(--shade-rgb) / 0.8) 0%, rgb(var(--shade-rgb) / 0.66) 42%, rgb(var(--shade-rgb) / 0.32) 70%, rgb(var(--shade-rgb) / 0) 88%);
+  }
+  [data-page="studio"] .studio-cta__media video { object-position: 78% 50%; }
+}
+
+/* landscape phones: the framed word sized by the short screen too, the team two-up with capped portraits */
+@media (orientation: landscape) and (max-height: 500px) {
+  [data-page="studio"] .frame { width: min(100%, calc((100svh - var(--header-h) - 120px) * 2046 / 761)); margin-inline: auto; }
+  [data-page="studio"] .studio-hero__framegroup { padding-block: 8px 4px; }
+  [data-page="studio"] .member__img { max-height: 62svh; }
+  [data-page="studio"] .numbers__item dd { font-size: clamp(3rem, 16svh, 5rem); }
+  [data-page="studio"] .clients__wall li { min-height: 64px; }
+  [data-page="studio"] .careers__img { max-height: 70svh; }
+  [data-page="studio"] .studio-cta { min-height: calc(100svh - 2 * var(--panel-inset)); }
+  [data-page="studio"] .studio-cta__media::after {
+    background: linear-gradient(to top, rgb(var(--shade-rgb) / 0.82) 0%, rgb(var(--shade-rgb) / 0.6) 45%, rgb(var(--shade-rgb) / 0.2) 80%, rgb(var(--shade-rgb) / 0) 100%);
+  }
+  [data-page="studio"] .studio-cta__text .t-display-xl { font-size: clamp(2.6rem, 14svh, 4.4rem); }
 }

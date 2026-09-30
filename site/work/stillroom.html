@@ -91,8 +91,7 @@
 </header>
 <script src="../assets/js/nav.js" defer></script>
 <div class="nav-overlay" id="nav-overlay" role="dialog" aria-modal="true" aria-label="Site index" data-lenis-prevent>
-  <span class="nav-overlay__shape nav-overlay__shape--a" aria-hidden="true"></span>
-  <span class="nav-overlay__shape nav-overlay__shape--b" aria-hidden="true"></span>
+  <span class="nav-overlay__shapes" aria-hidden="true"><span class="nav-overlay__shape nav-overlay__shape--a"></span><span class="nav-overlay__shape nav-overlay__shape--b"></span></span>
   <div class="wrap nav-overlay__top">
     <a href="../index.html" aria-label="Two Squares, home"><span class="logo logo--mark" aria-hidden="true"></span></a>
     <button class="nav-overlay__close" type="button">Close <i aria-hidden="true"></i></button>
@@ -124,19 +123,19 @@
 
   <!-- 1 · hero: full-bleed photograph, shared view-transition name with the Work index card -->
   <section class="case-hero on-dark" data-header="dark" aria-labelledby="case-title">
-    <figure class="media case-hero__media" style="view-transition-name:proj-stillroom; aspect-ratio:13/9; --lqip:url(data:image/webp;base64,UklGRmYAAABXRUJQVlA4IFoAAADwAwCdASoUAA4APt1cpkyopSOiMAgBEBuJZgCdMoADSJlqqT2S6BmAAP7xaHnPB+ybWAljE3VfluiurLaFuSsLmVXII0Gw8m74KRzJZCgzs0N+XJysSJoAAAA=); --focus:50% 50%">
+    <figure class="media case-hero__media" style="view-transition-name:proj-stillroom; --focus-sm:56% 60%; aspect-ratio:13/9; --lqip:url(data:image/webp;base64,UklGRmYAAABXRUJQVlA4IFoAAADwAwCdASoUAA4APt1cpkyopSOiMAgBEBuJZgCdMoADSJlqqT2S6BmAAP7xaHnPB+ybWAljE3VfluiurLaFuSsLmVXII0Gw8m74KRzJZCgzs0N+XJysSJoAAAA=); --focus:50% 50%">
       <img src="../assets/img/photos/bar-a-01-red-lounge-wide-1600.webp" srcset="../assets/img/photos/bar-a-01-red-lounge-wide-800.webp 800w, ../assets/img/photos/bar-a-01-red-lounge-wide-1600.webp 1600w" sizes="(max-aspect-ratio: 1600/1106) calc(100vh * 1.447), 100vw"
            width="1600" height="1106" alt="Cocktail bar with oxblood-red walls, black lacquered frames, a chandelier, high timber tables and chesterfield banquettes" loading="eager" fetchpriority="high" decoding="async">
     </figure>
     <div class="wrap case-hero__top">
-      <a class="case-back t-label" href="../work.html?filter=bars"><span class="case-back__arr" aria-hidden="true">←</span>All work</a>
+      <a class="case-back t-label" href="../work.html"><span class="case-back__arr" aria-hidden="true">←</span>All work</a>
     </div>
     <div class="wrap case-hero__inner">
       <div class="case-hero__head">
         <h1 class="t-display-xl case-hero__title" id="case-title" data-split>Stillroom</h1>
         <p class="t-label case-hero__meta"><span class="seg">Cocktail bar<span class="sep" aria-hidden="true">·</span></span> <span class="seg">Connaught Place, New Delhi<span class="sep" aria-hidden="true">·</span></span> <span class="seg">2026</span></p>
       </div>
-      <p class="badge badge--placeholder case-hero__badge"><span class="badge__dot" aria-hidden="true"></span><span>Placeholder project. The name, quote and photographs stand in for real work.</span></p>
+      <p class="badge badge--placeholder case-hero__badge"><span class="badge__dot" aria-hidden="true"></span><span>Placeholder project.<span class="case-hero__badge-more"> The name, quote and photographs stand in for real work.</span></span></p>
     </div>
   </section>
 
@@ -199,7 +198,7 @@
   <section class="case-gallery" aria-label="Photographs">
     <div class="case-full case-full--1">
       <figure data-case-parallax="0.06" class="media case-full__media" data-reveal="image" style="aspect-ratio:3/2; --lqip:url(data:image/webp;base64,UklGRlQAAABXRUJQVlA4IEgAAABwAwCdASoUAA0APt1cp0yopSOiMAgBEBuJQBOgBDvp2qPrw14A/vQpPvO2F4u3ojKqErx0ChH1qBoX+7Zy3+GnVzniqUFoQAA=); --focus:50% 50%">
-        <img src="../assets/img/photos/bar-a-04-red-room-bar-1600.webp" srcset="../assets/img/photos/bar-a-04-red-room-bar-800.webp 800w, ../assets/img/photos/bar-a-04-red-room-bar-1600.webp 1600w" sizes="100vw"
+        <img src="../assets/img/photos/bar-a-04-red-room-bar-1600.webp" srcset="../assets/img/photos/bar-a-04-red-room-bar-800.webp 800w, ../assets/img/photos/bar-a-04-red-room-bar-1600.webp 1600w" sizes="(max-width: 900px) and (orientation: portrait) 187vw, 100vw"
              width="1600" height="1067" alt="A red room with the bar counter and chandelier in the distance and leather lounge seating in front" loading="lazy" decoding="async">
       </figure>
     </div>
@@ -215,20 +214,20 @@
       </div>
     </div>
     <div class="wrap">
-      <div class="case-pair case-pair--portrait">
+      <div class="case-pair case-pair--portrait" data-float="0.6">
         <figure class="media case-pair__a" data-reveal="image" style="aspect-ratio:3/4; --lqip:url(data:image/webp;base64,UklGRmwAAABXRUJQVlA4IGAAAADQAwCdASoPABQAPt1cpkyopSOiMAgBEBuJYwC7ACHfrvXVrRvfccAA/vV5R8429//rTu5Ev0ns8xMcIvVoTSC/K3k4o+MYxHvj0LsPlCnQMYHbaecT96o/qS0h/o1UAAA=); --focus:50% 50%">
-          <img src="../assets/img/photos/bar-a-03-fireplace-brick-1600.webp" srcset="../assets/img/photos/bar-a-03-fireplace-brick-800.webp 800w, ../assets/img/photos/bar-a-03-fireplace-brick-1600.webp 1600w" sizes="(max-width: 900px) 50vw, 46vw"
+          <img src="../assets/img/photos/bar-a-03-fireplace-brick-1600.webp" srcset="../assets/img/photos/bar-a-03-fireplace-brick-800.webp 800w, ../assets/img/photos/bar-a-03-fireplace-brick-1600.webp 1600w" sizes="(max-width: 600px) 100vw, (max-width: 900px) 50vw, 46vw"
                width="1188" height="1600" alt="Carved white fireplace between exposed brick piers, red sconce, upright piano, gilded screen art" loading="lazy" decoding="async">
         </figure>
         <figure class="media case-pair__b" data-reveal="image" style="aspect-ratio:3/4; --lqip:url(data:image/webp;base64,UklGRl4AAABXRUJQVlA4IFIAAADQAwCdASoNABQAPt1cpkyopSOiMAgBEBuJYwAAWmLtQitENpJhugAA/oeIHAdpLxjkS0v4s0/u1PZZGME1Mq/6a8TDhP7yNzzJmXu1NkbQAAAA); --focus:50% 50%">
-          <img src="../assets/img/photos/bar-a-06-cocktail-panel-1600.webp" srcset="../assets/img/photos/bar-a-06-cocktail-panel-800.webp 800w, ../assets/img/photos/bar-a-06-cocktail-panel-1600.webp 1600w" sizes="(max-width: 900px) 50vw, 46vw"
+          <img src="../assets/img/photos/bar-a-06-cocktail-panel-1600.webp" srcset="../assets/img/photos/bar-a-06-cocktail-panel-800.webp 800w, ../assets/img/photos/bar-a-06-cocktail-panel-1600.webp 1600w" sizes="(max-width: 600px) 100vw, (max-width: 900px) 50vw, 46vw"
                width="1067" height="1600" alt="Gilded bird-and-blossom panel above black panelled joinery with a single cocktail" loading="lazy" decoding="async">
         </figure>
       </div>
     </div>
     <div class="case-full case-full--2">
       <figure data-case-parallax="0.06" class="media case-full__media" data-reveal="image" style="aspect-ratio:3/2; --lqip:url(data:image/webp;base64,UklGRl4AAABXRUJQVlA4IFIAAACQAwCdASoUAA0APt1cqE0opSQiMAgBEBuJYwCdAB0+Uh6xmHuoAP6CjWDhRiUMwB/fIdXnSnylCCm6EGmoItY0Rfn930MM3O87fb4keKeBOgAA); --focus:50% 50%">
-        <img src="../assets/img/photos/bar-a-05-cocktail-banquette-1600.webp" srcset="../assets/img/photos/bar-a-05-cocktail-banquette-800.webp 800w, ../assets/img/photos/bar-a-05-cocktail-banquette-1600.webp 1600w" sizes="100vw"
+        <img src="../assets/img/photos/bar-a-05-cocktail-banquette-1600.webp" srcset="../assets/img/photos/bar-a-05-cocktail-banquette-800.webp 800w, ../assets/img/photos/bar-a-05-cocktail-banquette-1600.webp 1600w" sizes="(max-width: 900px) and (orientation: portrait) 187vw, 100vw"
              width="1600" height="1067" alt="Crimson cocktail in a cut-glass coupe on a black lacquered ledge, brick and gilded chinoiserie panel behind" loading="lazy" decoding="async">
       </figure>
     </div>
@@ -264,7 +263,7 @@
                  width="1600" height="1280" alt="Guests seen from behind at a warm-lit bar counter, with a bartender in front of backlit amber bottle shelving" loading="lazy" decoding="async">
           </figure>
           <div class="case-details__text">
-            <h3 class="t-label case-details__name"><span class="case-details__num">01</span>Stations</h3>
+            <h3 class="t-label case-details__name"><span class="case-details__num">01<span class="case-details__of" aria-hidden="true"> / 03</span></span>Stations</h3>
             <p class="t-lede" data-reveal>Two bar stations drawn at full size with the head bartender, from speed rail to ice well to glass washer. Nothing is more than one turn away.</p>
           </div>
         </li>
@@ -274,7 +273,7 @@
                  width="1211" height="1600" alt="A long cream marble counter with warm-grey veining running towards a window" loading="lazy" decoding="async">
           </figure>
           <div class="case-details__text">
-            <h3 class="t-label case-details__name"><span class="case-details__num">02</span>Bar top</h3>
+            <h3 class="t-label case-details__name"><span class="case-details__num">02<span class="case-details__of" aria-hidden="true"> / 03</span></span>Bar top</h3>
             <p class="t-lede" data-reveal>Honed Udaipur green marble, sealed for citrus and sugar, with an oiled-brass edge that gets better as it wears.</p>
           </div>
         </li>
@@ -284,7 +283,7 @@
                  width="1067" height="1600" alt="Vertical reeded glass with blurred warm light and teal shadow behind" loading="lazy" decoding="async">
           </figure>
           <div class="case-details__text">
-            <h3 class="t-label case-details__name"><span class="case-details__num">03</span>Scenes</h3>
+            <h3 class="t-label case-details__name"><span class="case-details__num">03<span class="case-details__of" aria-hidden="true"> / 03</span></span>Scenes</h3>
             <p class="t-lede" data-reveal>Lighting on a timer at 19:00, 22:00 and 00:30. Nobody on the floor touches a switch.</p>
           </div>
         </li>
@@ -339,8 +338,8 @@
   <!-- 10 · next project: full-width strip; its image morphs into the next page's hero -->
   <section class="case-next" aria-label="Next project">
     <a class="case-next__link" href="dhaaga.html" data-cursor="View">
-      <figure aria-hidden="true" class="media case-next__media" style="view-transition-name:proj-dhaaga; aspect-ratio:3/2; --lqip:url(data:image/webp;base64,UklGRmoAAABXRUJQVlA4IF4AAACwAwCdASoUAA0APt1cp0yopSOiMAgBEBuJYwC7ACGdDSMgNpARAAD+6D6+z50pnwe/hmMF4CICjgz8Awplbyr1PQV/lDnyE5tmhLooVkwc1R+HdzbgziYpXyCiAAAA); --focus:50% 50%">
-        <img src="../assets/img/photos/retailA-01-boutique-rail-plants-1600.webp" srcset="../assets/img/photos/retailA-01-boutique-rail-plants-800.webp 800w, ../assets/img/photos/retailA-01-boutique-rail-plants-1600.webp 1600w" sizes="100vw"
+      <figure aria-hidden="true" class="media case-next__media" style="view-transition-name:proj-dhaaga; --focus-sm:42% 55%; aspect-ratio:3/2; --lqip:url(data:image/webp;base64,UklGRmoAAABXRUJQVlA4IF4AAACwAwCdASoUAA0APt1cp0yopSOiMAgBEBuJYwC7ACGdDSMgNpARAAD+6D6+z50pnwe/hmMF4CICjgz8Awplbyr1PQV/lDnyE5tmhLooVkwc1R+HdzbgziYpXyCiAAAA); --focus:50% 50%">
+        <img src="../assets/img/photos/retailA-01-boutique-rail-plants-1600.webp" srcset="../assets/img/photos/retailA-01-boutique-rail-plants-800.webp 800w, ../assets/img/photos/retailA-01-boutique-rail-plants-1600.webp 1600w" sizes="(max-width: 600px) and (orientation: portrait) calc(78vh * 1.498), (max-width: 900px) and (orientation: portrait) calc(80vh * 1.498), 100vw"
              width="1600" height="1068" alt="" loading="lazy" decoding="async">
       </figure>
       <span class="wrap case-next__inner">
@@ -362,7 +361,7 @@
         <p class="t-lede" data-reveal>Send us the floor plan and the opening date. We’ll come back with how the room could work.</p>
         <div class="case-cta__actions" data-reveal>
           <a class="btn btn--solid" href="../contact.html?venue=bar&amp;from=case-study&amp;item=stillroom">Start a project <span class="arr" aria-hidden="true">→</span></a>
-          <a class="btn" href="../work.html?filter=bars">All work</a>
+          <a class="btn" href="../work.html">All work</a>
         </div>
       </div>
     </div>
@@ -400,9 +399,9 @@
       <nav aria-label="Follow">
         <h2 class="t-label">Follow</h2>
         <ul class="t-small">
-          <li><a href="#" rel="noopener" data-placeholder>Instagram</a></li>
-          <li><a href="#" rel="noopener" data-placeholder>Pinterest</a></li>
-          <li><a href="#" rel="noopener" data-placeholder>LinkedIn</a></li>
+          <li><a href="#" rel="noopener" data-placeholder aria-disabled="true">Instagram</a></li>
+          <li><a href="#" rel="noopener" data-placeholder aria-disabled="true">Pinterest</a></li>
+          <li><a href="#" rel="noopener" data-placeholder aria-disabled="true">LinkedIn</a></li>
         </ul>
       </nav>
     </div>

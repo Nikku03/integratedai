@@ -13,6 +13,8 @@ Generated blocks (everything between each pair of markers is replaced):
     <!-- @gen:work-bar -->   filter radios with counts, and the project count
     <!-- @gen:work -->       the project list (Rows and Grid markup) and the empty state
 Images come from tools/media_tag.py (aspect-ratio, width/height, LQIP, focus point).
+The filter bar (the work-bar block plus the static Rows/Grid pill around it) sits at the top of the
+.work-index list section, not in the hero, so it can stick on phones while the list scrolls.
 """
 from __future__ import annotations
 
@@ -225,7 +227,7 @@ def item(p: dict, idx: int, first: bool) -> str:
         <p class="work-item__cta" aria-hidden="true" data-reveal><span class="work-item__cta-txt">{esc(WORK_COPY["cardCta"])}</span> <span class="arr">→</span></p>
       </div>
       <a class="work-item__media" href="{esc(url)}" tabindex="-1" aria-hidden="true" data-cursor="View">
-        <div class="work-item__strip" data-reveal-group>
+        <div class="work-item__strip" data-reveal-group data-float="0.6">
 {chr(10).join(figs)}
         </div>
 {cover}
@@ -273,9 +275,10 @@ def build(copy: dict, data: dict) -> dict[str, str]:
 {chr(10).join(t)}
       </h1>
       <div class="work-hero__side" data-reveal data-delay="0.2">
-        <div class="work-hero__intro t-body work-swap" data-swap="intro">
+        <div class="work-hero__intro t-body work-swap" data-swap="intro" id="work-intro">
 {chr(10).join(i)}
         </div>
+        <button class="work-hero__more" type="button" aria-expanded="false" aria-controls="work-intro"><span class="work-hero__more-txt">More</span><span class="work-hero__more-ico" aria-hidden="true"></span></button>
         <div class="work-hero__cta work-swap" data-swap="cta">
 {chr(10).join(c)}
         </div>

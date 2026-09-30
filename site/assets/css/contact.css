@@ -25,10 +25,11 @@
 
 /* ------------------------------------------------------------ prefill banner */
 [data-page="contact"] .prefill {
-  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 24px;
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 12px 24px;
   margin-bottom: 40px; padding: 18px 16px 18px 24px;
   background: var(--paper-2); border-radius: var(--r-md); box-shadow: inset 3px 0 0 var(--green);
 }
+[data-page="contact"] .prefill[hidden] { display: none; }
 [data-page="contact"] .prefill__text {
   display: flex; align-items: baseline; gap: 14px;
   font-family: var(--f-display); font-size: clamp(1.3rem, 1.7vw, 1.6rem); line-height: 1.2; letter-spacing: -0.01em; text-wrap: balance;
@@ -39,10 +40,31 @@
   transform: translateY(-0.3em) rotate(-45deg);
 }
 [data-page="contact"] .prefill__clear {
+  grid-column: 2; grid-row: 1;
   min-height: 44px; padding-inline: 10px; font-size: 0.9375rem; font-weight: 500; color: var(--green);
   background: linear-gradient(currentColor, currentColor) 10px calc(100% - 11px) / calc(100% - 20px) 1px no-repeat;
 }
-[data-page="contact"] .prefill__clear:hover { color: var(--ink); }
+/* what is already chosen, as small filled pills (each jumps to its field) */
+[data-page="contact"] .prefill__picks { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px; padding-left: 27px; }
+[data-page="contact"] .prefill__picks[hidden] { display: none; }
+[data-page="contact"] .prefill__pick {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 16px 0 13px; border-radius: 999px;
+  background: var(--green); color: var(--paper); font-size: 0.875rem; font-weight: 500; line-height: 1.2;
+}
+[data-page="contact"] .prefill__pick::before {
+  content: ""; flex: none; width: 9px; height: 5px; margin-top: -3px;
+  border-left: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(-45deg);
+}
+[data-page="contact"] .prefill__pick:focus-visible { outline: 2px solid var(--green); outline-offset: 3px; }
+
+/* a field filled in on arrival: a green edge and a small tick by its label, until it is changed */
+[data-page="contact"] .field.is-prefilled .field__control { border-color: var(--green); box-shadow: inset 0 0 0 1px var(--green); }
+[data-page="contact"] .field.is-prefilled .field__label::after,
+[data-page="contact"] .field--chips.is-prefilled > legend::after {
+  content: ""; flex: none; align-self: center; width: 18px; height: 18px; border-radius: 50%;
+  background: var(--green) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 18'%3E%3Cpath d='M5 9.4l2.6 2.5L13 6.6' fill='none' stroke='%23F2ECDF' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 18px no-repeat;
+}
+[data-page="contact"] .field--chips.is-prefilled > legend { display: flex; align-items: center; gap: 10px; }
 
 /* ------------------------------------------------------------ error summary */
 [data-page="contact"] .form-errors, [data-page="contact"] .contact-body__form, [data-page="contact"] .field { scroll-margin-top: 28px; }
@@ -53,11 +75,11 @@
 [data-page="contact"] .form-errors__title { font-family: var(--f-display); font-size: clamp(1.4rem, 2vw, 1.8rem); line-height: 1.15; color: var(--ink); }
 [data-page="contact"] .form-errors__list { margin-top: 12px; }
 [data-page="contact"] .form-errors__list li + li { margin-top: 6px; }
+[data-page="contact"] .form-errors__list li { padding-block: 5px; line-height: 1.5; }
 [data-page="contact"] .form-errors__list a {
-  display: inline-flex; min-height: 32px; align-items: center; color: var(--err); font-weight: 500;
-  background: linear-gradient(currentColor, currentColor) 0 calc(100% - 5px) / 100% 1px no-repeat;
+  display: inline; color: var(--err); font-weight: 500;
+  text-decoration: underline 1px; text-underline-offset: 3px;
 }
-[data-page="contact"] .form-errors__list a:hover { color: var(--ink); }
 
 /* ------------------------------------------------------------ the form */
 [data-page="contact"] .enquiry__hp { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
@@ -88,7 +110,6 @@
   -webkit-appearance: none; appearance: none;
 }
 [data-page="contact"] .field__control::placeholder { color: var(--ink-3); opacity: 1; }
-[data-page="contact"] .field__control:hover { border-color: var(--ink-3); }
 [data-page="contact"] .field__control:focus { border-color: var(--green); box-shadow: inset 0 0 0 1px var(--green); }
 [data-page="contact"] .field__control:focus-visible { outline: 2px solid var(--green); outline-offset: 3px; }
 [data-page="contact"] textarea.field__control { min-height: 176px; resize: vertical; }
@@ -118,16 +139,27 @@
 /* chips (base .chip) */
 [data-page="contact"] .chips { display: flex; flex-wrap: wrap; gap: 10px; }
 [data-page="contact"] .chip span { cursor: pointer; background: var(--field-bg); }
-[data-page="contact"] .chip:hover input:not(:checked) + span { border-color: var(--ink-3); }
 
 /* currency toggle */
 [data-page="contact"] .currency { display: inline-flex; border: 1px solid var(--line-strong); border-radius: 999px; padding: 2px; margin-bottom: -6px; }
 [data-page="contact"] .currency__opt {
+  position: relative;
   min-height: 36px; min-width: 44px; padding: 0 12px; border-radius: 999px; font-size: 0.8125rem; font-weight: 500; color: var(--ink-2);
   transition: background-color var(--t-micro), color var(--t-micro);
 }
+[data-page="contact"] .currency__opt::after { content: ""; position: absolute; inset: -5px 0; }   /* a 46px hit area on the 36px pill */
 [data-page="contact"] .currency__opt[aria-pressed="true"] { background: var(--green); color: var(--paper); }
-[data-page="contact"] .currency__opt:not([aria-pressed="true"]):hover { color: var(--ink); background: var(--paper-2); }
+
+/* hover looks: real hover pointers only (after a tap on a phone they would stick) */
+@media (hover: hover) and (pointer: fine) {
+  [data-page="contact"] .prefill__clear:hover { color: var(--ink); }
+  [data-page="contact"] .prefill__pick:hover { background: var(--green-deep); }
+  [data-page="contact"] .form-errors__list a:hover { color: var(--ink); }
+  [data-page="contact"] .field__control:hover { border-color: var(--ink-3); }
+  [data-page="contact"] .field.is-prefilled .field__control:hover { border-color: var(--green); }
+  [data-page="contact"] .chip:hover input:not(:checked) + span { border-color: var(--ink-3); }
+  [data-page="contact"] .currency__opt:not([aria-pressed="true"]):hover { color: var(--ink); background: var(--paper-2); }
+}
 
 /* foot */
 [data-page="contact"] .enquiry__foot { display: grid; gap: 20px; justify-items: start; padding-top: 32px; border-top: 1px solid var(--line-strong); }
@@ -191,6 +223,32 @@
   [data-page="contact"] .enquiry__fields { grid-template-columns: minmax(0, 1fr); gap: 24px; }
   [data-page="contact"] .field__head { flex-wrap: wrap; }
   [data-page="contact"] .details__row { grid-template-columns: minmax(0, 1fr); }
-  [data-page="contact"] .details__img { grid-column: 1 / span 5; }
-  [data-page="contact"] .prefill { padding: 12px 8px 12px 16px; }
+  /* the studio photo runs the full width in a landscape crop, not 5 of 6 columns with a gap beside it */
+  [data-page="contact"] .details__img { grid-column: 1 / -1; aspect-ratio: 4 / 3 !important; }
+  [data-page="contact"] .prefill { grid-template-columns: minmax(0, 1fr); gap: 10px; margin-bottom: 28px; padding: 14px 12px 8px 16px; }
+  [data-page="contact"] .prefill__text { font-size: 1.25rem; gap: 12px; }
+  [data-page="contact"] .prefill__picks { padding-left: 25px; }
+  [data-page="contact"] .prefill__pick { min-height: 44px; }
+  [data-page="contact"] .prefill__clear { grid-column: 1; grid-row: auto; justify-self: start; margin-left: 15px; }
+  [data-page="contact"] .currency__opt { min-height: 44px; }
+  [data-page="contact"] .currency { margin-bottom: 0; }
+  [data-page="contact"] .enquiry__foot { justify-items: stretch; }
+  [data-page="contact"] .enquiry__submit { width: 100%; justify-content: center; }
+}
+
+/* ------------------------------------------------------------ arriving prefilled on a phone or a landscape phone:
+   a shorter hero (no lede), so the banner with the chosen room is in the first screen */
+@media (max-width: 900px), (max-height: 500px) {
+  html.has-prefill [data-page="contact"] .contact-hero { padding-top: calc(var(--header-h) + 20px); padding-bottom: 28px; }
+  html.has-prefill [data-page="contact"] .contact-hero__text .t-lede { display: none; }
+}
+@media (orientation: landscape) and (max-height: 500px) {
+  html.has-prefill [data-page="contact"] .contact-hero__text .t-display-xl { font-size: clamp(2.6rem, 12svh, 4rem); max-width: none; }
+  html.has-prefill [data-page="contact"] .contact-hero__img { display: none; }
+  /* the studio photo beside its details, not 1.6 screens tall */
+}
+@media (max-width: 900px) and (orientation: landscape) and (max-height: 500px) {
+  [data-page="contact"] .details .wrap { align-items: start; }
+  [data-page="contact"] .details__img { grid-column: 1 / span 2; max-height: 80svh; }
+  [data-page="contact"] .details__body { grid-column: 3 / -1; }
 }

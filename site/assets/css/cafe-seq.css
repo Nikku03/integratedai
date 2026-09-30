@@ -48,7 +48,7 @@
 .cafe-seq__close i { position: relative; width: 18px; height: 18px; transition: transform var(--t-ui) var(--ease-cut); }
 .cafe-seq__close i::before, .cafe-seq__close i::after { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 1.5px; background: currentColor; }
 .cafe-seq__close i::before { transform: rotate(45deg); } .cafe-seq__close i::after { transform: rotate(-45deg); }
-.cafe-seq__close:hover i { transform: rotate(90deg); }
+@media (hover: hover) and (pointer: fine) { .cafe-seq__close:hover i { transform: rotate(90deg); } }
 .cafe-seq__close--nojs { display: none; }
 .no-js .cafe-seq__close--nojs { display: inline-flex; }
 .no-js button.cafe-seq__close, .no-js .cafe-seq__skip { display: none; }
@@ -63,14 +63,20 @@
 }
 .cafe-seq.has-menu .cafe-seq__table, .no-js .cafe-seq__table { visibility: visible; }
 .cafe-seq__more { margin-top: 26px; width: min(480px, 100%); text-align: center; font-size: 0.9375rem; color: var(--on-dark-2); }
-.cafe-seq__more a:hover { color: var(--sand); }
+/* touch: a 44px target; the underline stays under the words */
+@media (max-width: 900px), (pointer: coarse) {
+  .cafe-seq__more { margin-top: 14px; }
+  .cafe-seq__more a { display: inline-block; padding: 12px 6px; background-position: 6px calc(100% - 12px); background-size: calc(100% - 12px) 1px; }
+}
+@media (hover: hover) and (pointer: fine) { .cafe-seq__more a:hover { color: var(--sand); } }
+@media (max-width: 900px), (pointer: coarse) { .cafe-seq__skip { min-height: 44px; } }
 /* phones, and portrait tablets (a landscape clip cropped to a tall screen blows the cup up past the card) */
 @media (max-width: 900px), (max-aspect-ratio: 4/5) {
-  .cafe-seq__table { justify-items: center; align-content: end; padding: 24svh 16px max(22px, env(safe-area-inset-bottom)); }
+  .cafe-seq__table { justify-items: center; align-content: end; padding: 12svh 16px max(18px, env(safe-area-inset-bottom)); }
   /* the seated frame sits in the top half, whole cup in view; the card lands below it */
   .cafe-seq__table-media { bottom: auto; height: 58svh; }
   .cafe-seq__table-media::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 38%; background: linear-gradient(to bottom, rgb(var(--shade-rgb) / 0), var(--shade)); }
-  .cafe-seq__more { margin-top: 18px; }
+  .cafe-seq__more { margin-top: 8px; }
   .cafe-seq__cap { bottom: auto; top: calc(max(16px, env(safe-area-inset-top)) + 64px); }
   .cafe-seq.has-menu .cafe-seq__frame .cafe-seq__cap { opacity: 0; transition: opacity 0.4s linear; }
   .cafe-seq__frame::after { background: linear-gradient(to bottom, rgb(var(--shade-rgb) / 0.6), rgb(var(--shade-rgb) / 0) 40%); }
@@ -103,7 +109,10 @@
 }
 .menu-card__sub { margin-top: 6px; text-align: center; font-family: var(--f-display); font-style: italic; font-size: clamp(1.4rem, 2vw, 1.75rem); line-height: 1.15; color: var(--green); }
 .menu-card__items { margin-top: clamp(20px, 2.6vw, 30px); border-top: 1px solid var(--line); padding-top: clamp(14px, 2vw, 22px); }
-.menu-card__item { position: relative; padding-block: 8px; }
+/* each dish is one target: the link's ::after covers the name, the leader and the description */
+.menu-card__item { position: relative; padding-block: 8px; min-height: 56px; border-radius: 10px; transition: scale 0.52s cubic-bezier(.34, 1.56, .64, 1); }
+.menu-card__item.is-pressed { scale: 0.97; transition-duration: 0.11s; transition-timing-function: cubic-bezier(.2, .8, .2, 1); }
+.menu-card__item.is-pressed .menu-card__name { color: var(--green); }
 .menu-card__item + .menu-card__item { margin-top: 4px; }
 .menu-card__link { position: static; display: flex; align-items: baseline; gap: 10px; color: var(--ink); }
 .menu-card__link::after { content: ""; position: absolute; inset: 0; z-index: 1; }
@@ -113,8 +122,11 @@
 .menu-card__dots { flex: 1 1 auto; min-width: 16px; border-bottom: 1.5px dotted rgb(var(--ink-rgb) / 0.42); transform: translateY(-0.3em); }
 .menu-card__price { flex: none; font-size: 0.8125rem; color: var(--ink-2); font-variant-numeric: tabular-nums lining-nums; letter-spacing: 0.02em; }
 .menu-card__desc { margin-top: 4px; font-size: 0.9375rem; line-height: 1.45; color: var(--ink-2); max-width: 38ch; text-wrap: pretty; }
-.menu-card__item:hover .menu-card__name, .menu-card__link:focus-visible .menu-card__name { color: var(--green); }
-.menu-card__item:hover .menu-card__dots { border-bottom-color: var(--green); }
+.menu-card__link:focus-visible .menu-card__name { color: var(--green); }
+@media (hover: hover) and (pointer: fine) {
+  .menu-card__item:hover .menu-card__name { color: var(--green); }
+  .menu-card__item:hover .menu-card__dots { border-bottom-color: var(--green); }
+}
 .menu-card__tick {
   position: absolute; left: clamp(-30px, -2.2vw, -22px); top: 12px; width: 22px; height: 18px; overflow: visible;
   fill: none; stroke: var(--green); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round;
@@ -141,6 +153,45 @@
   .menu-card__note { margin-top: 4px; }
 }
 
+/* ================================================================= landscape phones: the cup on the left, the whole card on the right
+   (the card is sized to the short screen: no scrolling inside the dialog to reach the last dish) */
+@media (orientation: landscape) and (max-height: 500px) {
+  .cafe-seq__table {
+    justify-items: end; align-content: center; min-height: 100svh; overflow: clip;   /* the card's soft shadow never makes the dialog scroll */
+    padding: 56px max(var(--margin), env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(38%, calc(100% - 520px));
+  }
+  /* the bar is shorter, and the card starts below Stand up */
+  .cafe-seq__bar { padding-top: max(6px, env(safe-area-inset-top)); padding-bottom: 6px; }
+  .cafe-seq.has-menu .cafe-seq__frame .cafe-seq__cap { opacity: 0; }
+  /* "See the full menu" moves to the foot of the cup side, so the card keeps the whole height */
+  .cafe-seq__more { position: absolute; left: max(var(--margin), env(safe-area-inset-left)); bottom: max(4px, env(safe-area-inset-bottom)); width: auto; text-align: left; }
+  .cafe-seq__table-media { inset: 0 auto 0 0; width: 56%; height: 100%; }
+  .cafe-seq__table-media::after { content: ""; position: absolute; top: 0; bottom: 0; right: -1px; left: auto; width: 34%; height: auto; background: linear-gradient(to right, rgb(var(--shade-rgb) / 0), var(--shade)); }
+  .cafe-seq__cap { top: auto; bottom: 16px; max-width: 40%; }
+  .menu-card__drop { width: min(460px, 100%); }
+  .menu-card { transform: rotate(-1deg); padding: 12px 18px 8px 26px; }
+  .menu-card::before { inset: 6px; }
+  .menu-card__top { display: none; }
+  .menu-card__mark { margin-top: 0; }
+  .menu-card__mark .logo { --logo-h: 20px; }
+  .menu-card__heading { margin-top: 4px; font-size: 0.6875rem; }
+  .menu-card__sub { margin-top: 0; font-size: 1.15rem; }
+  .menu-card__items { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 26px; margin-top: 8px; padding-top: 4px; }
+  .menu-card__item { padding-block: 5px; min-height: 0; }
+  .menu-card__item + .menu-card__item { margin-top: 0; }
+  .menu-card__name { font-size: 1.125rem; }
+  .menu-card__dots, .menu-card__price { display: none; }
+  .menu-card__tick { left: -19px; top: 7px; width: 16px; }
+  .menu-card__desc { margin-top: 1px; font-size: 0.8125rem; line-height: 1.3; }
+  .menu-card__foot { margin-top: 4px; font-size: 0.9375rem; }
+  .menu-card__note { display: none; }
+}
+@media (orientation: landscape) and (max-height: 500px) and (max-width: 740px) {
+  .menu-card__mark { display: none; }
+  .menu-card__heading { margin-top: 0; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .menu-card__tick { transition: none; }
+  .menu-card__item, .menu-card__item.is-pressed { transition: none; scale: none; }
 }

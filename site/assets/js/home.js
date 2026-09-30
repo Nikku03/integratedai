@@ -166,7 +166,7 @@
         .fromTo($(".home-hero__eyebrow", hero), { autoAlpha: 0, y: 16 }, { autoAlpha: 1, y: 0, clearProps: "transform" }, 0.1)
         .fromTo($(".home-hero__body", hero), { autoAlpha: 0, y: 24 }, { autoAlpha: 1, y: 0, clearProps: "transform" }, 0.72)
         .fromTo(rule, { scaleX: 0 }, { scaleX: 1, duration: 1.4, ease: "ts.cut" }, 0.82)
-        .fromTo($$(".home-hero__fact", hero), { autoAlpha: 0, y: 20 }, { autoAlpha: 1, y: 0, stagger: 0.08, clearProps: "transform" }, 0.95)
+        .fromTo($$(".home-hero__fact, .home-hero__brief", hero), { autoAlpha: 0, y: 20 }, { autoAlpha: 1, y: 0, stagger: 0.08, clearProps: "transform" }, 0.95)
         .fromTo($(".home-hero__controls", hero), { autoAlpha: 0, y: 20 }, { autoAlpha: 1, y: 0, clearProps: "transform" }, 1.2);
       // scroll away: the room pushes in, the words drift up and fade (transform + opacity only)
       gsap.timeline({
@@ -185,13 +185,20 @@
       const figs = items.map((li) => $(".home-rooms__img", li));
       const plaques = items.map((li) => $(".home-rooms__plaque", li));
       const texts = items.map((li) => $(".home-rooms__text", li));
-      const st = { trigger: rooms, start: "top 82%", once: true };
       // rising out of the water: each card comes up from below, the arch opening a touch as it surfaces,
-      // then its plaque and its words (transform / opacity / clip-path only; the float takes over after)
-      gsap.fromTo(items, { y: 90, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 1.2, stagger: 0.1, ease: DRIFT, clearProps: "transform,visibility", scrollTrigger: st });
-      gsap.fromTo(figs, { scale: 0.9 }, { scale: 1, duration: 1.5, stagger: 0.1, ease: EASE, clearProps: "transform", scrollTrigger: st });
-      gsap.fromTo(plaques, { autoAlpha: 0, y: 12 }, { autoAlpha: 1, y: 0, duration: 0.8, stagger: 0.1, ease: DRIFT, delay: 0.45, clearProps: "transform,visibility", scrollTrigger: st });
-      gsap.fromTo(texts, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.9, stagger: 0.1, ease: DRIFT, delay: 0.35, clearProps: "visibility", scrollTrigger: st });
+      // then its plaque and its words (transform / opacity / clip-path only; the float takes over after).
+      // Phones stack the doorways in one column, so each one surfaces as it reaches the screen, quicker.
+      const oneCol = w.matchMedia("(max-width: 600px)").matches;
+      const groups = oneCol ? items.map((_, i) => [i]) : [items.map((_, i) => i)];
+      groups.forEach((ix) => {
+        const pick = (arr) => ix.map((i) => arr[i]);
+        const st = { trigger: oneCol ? items[ix[0]] : rooms, start: oneCol ? "top 94%" : "top 82%", once: true };
+        const k = oneCol ? 0.7 : 1;
+        gsap.fromTo(pick(items), { y: oneCol ? 48 : 90, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 1.2 * k, stagger: 0.1, ease: DRIFT, clearProps: "transform,visibility", scrollTrigger: st });
+        gsap.fromTo(pick(figs), { scale: oneCol ? 0.95 : 0.9 }, { scale: 1, duration: 1.5 * k, stagger: 0.1, ease: EASE, clearProps: "transform", scrollTrigger: st });
+        gsap.fromTo(pick(plaques), { autoAlpha: 0, y: 12 }, { autoAlpha: 1, y: 0, duration: 0.8 * k, stagger: 0.1, ease: DRIFT, delay: 0.45 * k, clearProps: "transform,visibility", scrollTrigger: st });
+        gsap.fromTo(pick(texts), { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.9 * k, stagger: 0.1, ease: DRIFT, delay: 0.35 * k, clearProps: "visibility", scrollTrigger: st });
+      });
     }
 
     /* ---------------------------------------------------------- 4 · selected work */
@@ -238,10 +245,20 @@
           work.set(next.dataset.slug);
           timer = gsap.delayedCall(3.5, tick);
         };
-        const start = () => { if (timer) return; list.classList.add("is-auto"); timer = gsap.delayedCall(3.5, tick); };
+        let inView = false, held = null;
+        const start = (wait = 3.5) => { if (timer || !inView) return; list.classList.add("is-auto"); timer = gsap.delayedCall(wait, tick); };
         const stop = () => { if (timer) { timer.kill(); timer = null; } list.classList.remove("is-auto"); };
-        ST.create({ trigger: sec, start: "top 70%", end: "bottom 30%", onToggle: (self) => (self.isActive ? start() : stop()) });
-        offs.push(stop);
+        ST.create({ trigger: sec, start: "top 70%", end: "bottom 30%", onToggle: (self) => { inView = self.isActive; if (inView) start(); else stop(); } });
+        // a finger on the list pauses it (reading, or about to tap a name); it carries on a few seconds after
+        const hold = () => { stop(); if (held) held.kill(); held = null; };
+        const release = () => { if (held) held.kill(); held = gsap.delayedCall(2.5, () => { held = null; start(3.5); }); };
+        list.addEventListener("touchstart", hold, { passive: true });
+        list.addEventListener("touchend", release, { passive: true });
+        list.addEventListener("touchcancel", release, { passive: true });
+        offs.push(() => {
+          stop(); if (held) held.kill();
+          list.removeEventListener("touchstart", hold); list.removeEventListener("touchend", release); list.removeEventListener("touchcancel", release);
+        });
       }
     }
 
@@ -265,13 +282,23 @@
         const wide = c.conditions.wide;
         const fill = $(".home-process__fill", rail);
         const steps = $$(".home-process__step", rail);
+        if (!wide) {
+          // phones / tablets: the rail fills with scroll, but no text ever waits behind it — each step
+          // (its dot, number, name and line) arrives once, as it comes on screen
+          gsap.fromTo(fill, { scaleY: 0 }, { scaleY: 1, ease: "none", scrollTrigger: { trigger: rail, start: "top 85%", end: "bottom 60%", scrub: true } });
+          steps.forEach((s) => {
+            const st = { trigger: s, start: "top 92%", once: true };
+            gsap.fromTo($(".home-process__mark > span", s), { scale: 0 }, { scale: 1, duration: 0.5, ease: "power2.out", scrollTrigger: st });
+            gsap.fromTo([...s.children].filter((el) => !el.classList.contains("home-process__mark")),
+              { autoAlpha: 0, y: 14 }, { autoAlpha: 1, y: 0, duration: 0.6, stagger: 0.06, ease: DRIFT, clearProps: "transform", scrollTrigger: st });
+          });
+          return;
+        }
         const tl = gsap.timeline({
           defaults: { ease: "none" },
-          scrollTrigger: wide
-            ? { trigger: rail, start: "top 86%", end: "top 50%", scrub: true }
-            : { trigger: rail, start: "top 78%", end: "bottom 58%", scrub: true },
+          scrollTrigger: { trigger: rail, start: "top 86%", end: "top 50%", scrub: true },
         });
-        tl.fromTo(fill, wide ? { scaleX: 0 } : { scaleY: 0 }, wide ? { scaleX: 1, duration: 1 } : { scaleY: 1, duration: 1 }, 0);
+        tl.fromTo(fill, { scaleX: 0 }, { scaleX: 1, duration: 1 }, 0);
         steps.forEach((s, i) => {
           const at = i / steps.length;                // where the fill reaches this step's marker
           tl.fromTo($(".home-process__mark > span", s), { scale: 0 }, { scale: 1, duration: 0.05, ease: "power2.out" }, at);
@@ -301,19 +328,34 @@
         return `inset(${y.toFixed(2)}% ${x.toFixed(2)}% ${y.toFixed(2)}% ${x.toFixed(2)}% round ${Math.round(ww / 2)}px ${Math.round(ww / 2)}px ${R()} ${R()})`;
       };
       const R = () => (M.radiusOf ? M.radiusOf(stage) : "28px");
-      gsap.timeline({
-        defaults: { ease: "none" },
-        scrollTrigger: { trigger: cta, start: "top 88%", end: "top -38%", scrub: true, invalidateOnRefresh: true },
-      })
-        .fromTo(stage, { clipPath: windowClip }, { clipPath: () => `inset(0% 0% 0% 0% round ${R()} ${R()} ${R()} ${R()})`, duration: 1, ease: "power2.inOut" }, 0)
-        .fromTo(video, { scale: 1.32 }, { scale: 1, duration: 1, ease: "power1.out" }, 0);
+      // phones and landscape phones (same queries as home.css): no sticky window stage — it read as a screen of
+      // empty arch. The panel opens from a slightly smaller rounded rect as it arrives, and the words come in early.
+      const COMPACT = "(max-width: 600px), (orientation: landscape) and (max-height: 500px)";
+      mm.add({ compact: COMPACT, any: "all" }, (c) => {        // re-runs whenever COMPACT flips
+      const compact = !!c.conditions.compact;
+      if (compact) {
+        gsap.timeline({
+          defaults: { ease: "none" },
+          scrollTrigger: { trigger: cta, start: "top bottom", end: "top 35%", scrub: true, invalidateOnRefresh: true },
+        })
+          .fromTo(stage, { clipPath: () => `inset(5% 4% 0% 4% round ${R()})` }, { clipPath: () => `inset(0% 0% 0% 0% round ${R()})`, duration: 1, ease: "power2.out" }, 0)
+          .fromTo(video, { scale: 1.14 }, { scale: 1, duration: 1, ease: "power1.out" }, 0);
+      } else {
+        gsap.timeline({
+          defaults: { ease: "none" },
+          scrollTrigger: { trigger: cta, start: "top 88%", end: "top -38%", scrub: true, invalidateOnRefresh: true },
+        })
+          .fromTo(stage, { clipPath: windowClip }, { clipPath: () => `inset(0% 0% 0% 0% round ${R()} ${R()} ${R()} ${R()})`, duration: 1, ease: "power2.inOut" }, 0)
+          .fromTo(video, { scale: 1.32 }, { scale: 1, duration: 1, ease: "power1.out" }, 0);
+      }
 
-      const reveal = { trigger: cta, start: "top -24%", once: true };
+      const reveal = compact ? { trigger: stage, start: "top 72%", once: true } : { trigger: cta, start: "top -24%", once: true };
       splitLines(title, reveal, { delay: 0.1 });
       const [eyebrow, ...rest] = bits;
       gsap.fromTo(eyebrow, { autoAlpha: 0, y: 18 }, { autoAlpha: 1, y: 0, duration: 0.9, ease: DRIFT, clearProps: "transform", scrollTrigger: reveal });
       gsap.fromTo(rest, { autoAlpha: 0, y: 22 }, { autoAlpha: 1, y: 0, duration: 1, stagger: 0.08, ease: DRIFT, delay: 0.5, clearProps: "transform", scrollTrigger: reveal });
       gsap.fromTo(rule, { scaleX: 0 }, { scaleX: 1, duration: 1.3, ease: "ts.cut", delay: 0.35, scrollTrigger: reveal });
+      });
     }
 
     return () => offs.forEach((f) => f());

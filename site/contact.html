@@ -68,8 +68,7 @@
 </header>
 <script src="assets/js/nav.js" defer></script>
 <div class="nav-overlay" id="nav-overlay" role="dialog" aria-modal="true" aria-label="Site index" data-lenis-prevent>
-  <span class="nav-overlay__shape nav-overlay__shape--a" aria-hidden="true"></span>
-  <span class="nav-overlay__shape nav-overlay__shape--b" aria-hidden="true"></span>
+  <span class="nav-overlay__shapes" aria-hidden="true"><span class="nav-overlay__shape nav-overlay__shape--a"></span><span class="nav-overlay__shape nav-overlay__shape--b"></span></span>
   <div class="wrap nav-overlay__top">
     <a href="index.html" aria-label="Two Squares, home"><span class="logo logo--mark" aria-hidden="true"></span></a>
     <button class="nav-overlay__close" type="button">Close <i aria-hidden="true"></i></button>
@@ -98,6 +97,16 @@
 </div>
 <!-- /@partial:header -->
 <main id="main">
+<script>
+/* contact: an arrival that will be prefilled gets the short phone hero before first paint (contact.js confirms or drops it) */
+(function (d) {
+  try {
+    var q = new URLSearchParams(location.search), f = (q.get("from") || "").toLowerCase();
+    if (q.get("venue") || q.get("service") || q.get("stage") || /^(menu-card|services|case-study)$/.test(f) || sessionStorage.getItem("ts-venue"))
+      d.documentElement.classList.add("has-prefill");
+  } catch (e) {}
+})(document);
+</script>
 
   <!-- ============================================================ hero -->
   <section class="contact-hero" aria-labelledby="contact-title">
@@ -121,6 +130,7 @@
 
         <div class="prefill" id="prefill" hidden>
           <p class="prefill__text"><span class="prefill__tick" aria-hidden="true"></span><span id="prefill-text"></span></p>
+          <ul class="prefill__picks" id="prefill-picks" aria-label="Already chosen" hidden></ul>
           <button type="button" class="prefill__clear" id="prefill-clear">Start from scratch</button>
         </div>
 
@@ -362,9 +372,9 @@
       <nav aria-label="Follow">
         <h2 class="t-label">Follow</h2>
         <ul class="t-small">
-          <li><a href="#" rel="noopener" data-placeholder>Instagram</a></li>
-          <li><a href="#" rel="noopener" data-placeholder>Pinterest</a></li>
-          <li><a href="#" rel="noopener" data-placeholder>LinkedIn</a></li>
+          <li><a href="#" rel="noopener" data-placeholder aria-disabled="true">Instagram</a></li>
+          <li><a href="#" rel="noopener" data-placeholder aria-disabled="true">Pinterest</a></li>
+          <li><a href="#" rel="noopener" data-placeholder aria-disabled="true">LinkedIn</a></li>
         </ul>
       </nav>
     </div>

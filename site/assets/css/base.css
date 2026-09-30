@@ -51,6 +51,27 @@
             .blob--b / .blob--c give a different shape and phase.
    HOVER    Floating .media on fine pointers: corners soften and morph, and a
             brief SVG liquid ripple runs (motion.js; skipped on Safari / if slow).
+
+   ROUND 4 — the phone  (read this too)
+   ---------------------------------------------------------------------
+   HOVER    Hover looks are for real hover pointers only: wrap them in
+            @media (hover: hover) and (pointer: fine) { … } — on a phone a tapped
+            :hover sticks and reads as "still selected". :focus-visible stays
+            outside that query.
+   PRESS    Touch presses get a squish + spring (site.js, Web Animations on the
+            `scale` property, so it composes with any transform) and a haptic tick
+            (navigator.vibrate / the iOS switch trick) on a, button, .chip,
+            summary, [role=button], label[for] and anything with data-press.
+            data-press="off" opts an element (and its contents) out.
+            Don't set :active transforms yourself; don't remove the feedback with
+            -webkit-tap-highlight-color (html already clears it).
+   PHONES   ≤ 600px: panels go edge to edge (--panel-inset: 0, rounded ends;
+            stacked panels keep a 6px seam), --section is clamp(56px, 16vw, 80px).
+            --margin-base respects the notch (safe-area insets) in landscape.
+   CURSOR   Fine pointers only: a small liquid blob (no ring, no text). It grows
+            softly over anything interactive (data-cursor is still honoured as
+            "interactive", its label text is never shown), squishes + ripples on
+            press, and hides over text fields. data-cursor="none" hides it.
    ===================================================================== */
 
 /* ------------------------------------------------------------ tokens */
@@ -98,7 +119,8 @@
   --f-display: "Instrument Serif", "Iowan Old Style", "Times New Roman", serif;
   --f-text: "Instrument Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 
-  --margin-base: clamp(20px, 4vw, 64px);
+  /* the notch: in landscape, content clears the safe area (env() is 0 everywhere else) */
+  --margin-base: max(clamp(20px, 4vw, 64px), env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px));
   --margin: var(--margin-base);
   --gutter: clamp(12px, 1.6vw, 24px);
   --maxw-base: 1680px;
@@ -120,7 +142,7 @@
 
 /* ------------------------------------------------------------ reset */
 *, *::before, *::after { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; scroll-behavior: auto; scroll-padding-top: var(--nav-h); }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; scroll-behavior: auto; scroll-padding-top: var(--nav-h); -webkit-tap-highlight-color: transparent; }
 body {
   margin: 0; min-height: 100svh;
   background: var(--paper); color: var(--ink);
@@ -189,7 +211,7 @@ p + p { margin-top: 1em; }
   padding-bottom: 0.08em;
   transition: background-size var(--t-ui) var(--ease-cut);
 }
-.link:hover { animation: link-redraw 0.7s var(--ease-cut); }
+@media (hover: hover) and (pointer: fine) { .link:hover { animation: link-redraw 0.7s var(--ease-cut); } }
 @keyframes link-redraw {
   0%   { background-size: 100% 1px; background-position: 100% 100%; }
   49%  { background-size: 0% 1px;   background-position: 100% 100%; }
@@ -200,7 +222,7 @@ p + p { margin-top: 1em; }
   background: linear-gradient(currentColor, currentColor) 0 100% / 100% 1px no-repeat;
   transition: color var(--t-micro);
 }
-.text-link:hover { color: var(--green); }
+@media (hover: hover) and (pointer: fine) { .text-link:hover { color: var(--green); } }
 
 /* ------------------------------------------------------------ layout */
 .wrap { width: 100%; max-width: var(--maxw); margin-inline: auto; padding-inline: var(--margin); }
@@ -225,6 +247,16 @@ main > :is(.on-dark, .on-sand, .inset-panel) + :is(.on-dark, .on-sand, .inset-pa
 .card-soft { background: var(--paper); border-radius: var(--r-md); box-shadow: var(--shadow-soft); }
 @media (max-width: 900px) {
   .grid { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+}
+/* phones: panels run edge to edge (the inset only wasted width); stacked panels keep a thin seam
+   so their rounded ends read as two surfaces. Tighter section rhythm: 96px a side stacked into
+   ~200px dead bands between panels. */
+@media (max-width: 600px) {
+  :root { --panel-inset: 0px; --section: clamp(56px, 16vw, 80px); }
+  .section--tight { padding-block: 40px; }
+  main > :is(.on-dark, .on-sand, .inset-panel) + :is(.on-dark, .on-sand, .inset-panel) { margin-top: 6px; }
+  /* the footer closes the page: square bottom corners, flush with the screen */
+  .site-footer { border-radius: var(--r-xl) var(--r-xl) 0 0; padding-top: 64px; margin-top: 6px; }
 }
 
 /* ------------------------------------------------------------ logo (traced script, CSS-masked over currentColor) */
@@ -253,10 +285,14 @@ main > :is(.on-dark, .on-sand, .inset-panel) + :is(.on-dark, .on-sand, .inset-pa
   background: var(--btn-fill); transform: translateY(101%);
   transition: transform var(--t-ui) var(--ease-cut);
 }
-.btn:hover, .btn:focus-visible { color: var(--btn-fill-fg); border-color: var(--btn-fill); }
-.btn:hover::before, .btn:focus-visible::before { transform: none; }
+.btn:focus-visible { color: var(--btn-fill-fg); border-color: var(--btn-fill); }
+.btn:focus-visible::before { transform: none; }
 .btn .arr { display: inline-block; transition: transform var(--t-ui) var(--ease-cut); }
-.btn:hover .arr { transform: translateX(4px); }
+@media (hover: hover) and (pointer: fine) {
+  .btn:hover { color: var(--btn-fill-fg); border-color: var(--btn-fill); }
+  .btn:hover::before { transform: none; }
+  .btn:hover .arr { transform: translateX(4px); }
+}
 .btn--solid { --btn-bg: var(--green); --btn-fg: var(--paper); --btn-bd: var(--green); --btn-fill: var(--green-deep); }
 .btn--on-dark { --btn-fg: var(--on-dark); --btn-bd: var(--line-dark); --btn-fill: var(--paper); --btn-fill-fg: var(--green-deep); }
 .btn--paper { --btn-bg: var(--paper); --btn-fg: var(--green-deep); --btn-bd: var(--paper); --btn-fill: var(--sand); --btn-fill-fg: var(--green-deep); }
@@ -319,7 +355,7 @@ main > :is(.on-dark, .on-sand, .inset-panel) + :is(.on-dark, .on-sand, .inset-pa
 }
 .site-header::before {
   content: ""; position: absolute; z-index: -1;
-  inset: 8px var(--panel-inset); border-radius: var(--r-lg);
+  inset: 8px max(8px, var(--panel-inset)); border-radius: var(--r-lg);
   background: color-mix(in srgb, var(--paper) 88%, transparent);
   -webkit-backdrop-filter: blur(14px) saturate(140%); backdrop-filter: blur(14px) saturate(140%);
   box-shadow: 0 0 0 1px var(--line), 0 18px 40px -26px rgb(var(--deep-rgb) / 0.35);
@@ -341,7 +377,8 @@ html[data-header-over="dark"] .site-header:not(.is-solid) { color: var(--on-dark
   content: ""; position: absolute; left: 0; right: 0; bottom: 6px; height: 1px; background: currentColor;
   transform: scaleX(0); transform-origin: right; transition: transform var(--t-ui) var(--ease-cut);
 }
-.site-header__nav a:not(.btn):hover::after, .site-header__nav a[aria-current="page"]::after { transform: scaleX(1); transform-origin: left; }
+.site-header__nav a[aria-current="page"]::after { transform: scaleX(1); transform-origin: left; }
+@media (hover: hover) and (pointer: fine) { .site-header__nav a:not(.btn):hover::after { transform: scaleX(1); transform-origin: left; } }
 html[data-header-over="dark"] .site-header:not(.is-solid) .btn { --btn-fg: var(--on-dark); --btn-bd: rgb(var(--paper-rgb) / 0.4); --btn-fill: var(--paper); --btn-fill-fg: var(--green-deep); }
 .nav-toggle {
   display: none; align-items: center; gap: 10px; min-height: 44px; padding-inline: 4px;
@@ -355,8 +392,13 @@ html[data-header-over="dark"] .site-header:not(.is-solid) .btn { --btn-fg: var(-
 .nav-toggle__bars::before { top: 0; } .nav-toggle__bars::after { top: 8.5px; }
 @media (max-width: 900px) {
   .site-header__nav { display: none; }
-  .nav-toggle { display: inline-flex; }
+  .nav-toggle { display: inline-flex; min-width: 44px; }
   .site-header__brand .logo { --logo-h: 26px; }
+}
+/* phones and touch tablets: the pill comes back over body copy on scroll-up; 96% paper so nothing
+   reads through the logo and Index */
+@media (max-width: 900px), (hover: none) and (pointer: coarse) {
+  .site-header::before { background: color-mix(in srgb, var(--paper) 96%, transparent); -webkit-backdrop-filter: blur(20px) saturate(140%); backdrop-filter: blur(20px) saturate(140%); }
 }
 
 /* ------------------------------------------------------------ overlay nav */
@@ -368,9 +410,20 @@ html[data-header-over="dark"] .site-header:not(.is-solid) .btn { --btn-fg: var(-
   overflow: hidden auto; overscroll-behavior: contain;
 }
 .nav-overlay.is-open { clip-path: circle(150% at var(--ox, 95%) var(--oy, 4%)); visibility: visible; transition: clip-path 0.8s var(--ease-cut), visibility 0s; }
-.nav-overlay__top { height: var(--header-h); display: flex; align-items: center; justify-content: space-between; }
+/* the drifting shapes live in their own fixed, clipped layer: as plain absolute children they
+   hung below the overlay and made it scroll on every phone */
+.nav-overlay__shapes { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+.nav-overlay > .nav-overlay__shape { position: fixed; z-index: -1; }   /* pages not yet re-synced (no wrapper) */
+/* the top bar (logo + Close) stays put if the overlay ever has to scroll (small landscape phones) */
+.nav-overlay__top {
+  position: sticky; top: 0; z-index: 2;
+  height: var(--header-h); display: flex; align-items: center; justify-content: space-between;
+  transition: background-color 0.3s linear, box-shadow 0.3s linear;
+}
+.nav-overlay.is-scrolled .nav-overlay__top { background: var(--green-deep); box-shadow: 0 1px 0 var(--line-dark); }
+.nav-overlay__top > a { display: inline-flex; align-items: center; min-height: 44px; }
 .nav-overlay__top .logo { --logo-h: 28px; }
-.nav-overlay__close { display: inline-flex; align-items: center; gap: 12px; min-height: 44px; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.22em; text-transform: uppercase; }
+.nav-overlay__close { display: inline-flex; align-items: center; gap: 12px; min-height: 44px; min-width: 44px; justify-content: flex-end; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.22em; text-transform: uppercase; }
 .nav-overlay__close i { position: relative; width: 20px; height: 20px; }
 .nav-overlay__close i::before, .nav-overlay__close i::after { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 1.5px; background: currentColor; }
 .nav-overlay__close i::before { transform: rotate(45deg); } .nav-overlay__close i::after { transform: rotate(-45deg); }
@@ -378,19 +431,36 @@ html[data-header-over="dark"] .site-header:not(.is-solid) .btn { --btn-fg: var(-
 .nav-overlay__link { display: block; overflow: hidden; }
 .nav-overlay__link span { display: block; }
 .nav-overlay__link .t-display-l { transition: color var(--t-micro); }
-.nav-overlay__link:hover .t-display-l, .nav-overlay__link:focus-visible .t-display-l { color: var(--sand); }
+.nav-overlay__link:focus-visible .t-display-l { color: var(--sand); }
+@media (hover: hover) and (pointer: fine) { .nav-overlay__link:hover .t-display-l { color: var(--sand); } }
 .nav-overlay__link small { display: block; margin-top: 0.4rem; color: var(--on-dark-2); font-size: 0.9375rem; }
 .nav-overlay__foot { display: flex; flex-wrap: wrap; gap: 12px 40px; justify-content: space-between; padding-block: 28px; border-top: 1px solid var(--line-dark); color: var(--on-dark-2); }
-.nav-overlay__foot a:hover { color: var(--on-dark); }
+@media (hover: hover) and (pointer: fine) { .nav-overlay__foot a:hover { color: var(--on-dark); } }
 .nav-overlay__shape {
-  position: absolute; z-index: -1; border-radius: 28%; background: color-mix(in srgb, var(--green-deep) 88%, var(--paper));
+  position: absolute; border-radius: 28%; background: color-mix(in srgb, var(--green-deep) 88%, var(--paper));
   opacity: 0.35; pointer-events: none;
 }
 .nav-overlay__shape--a { width: 46vmax; height: 46vmax; right: -12vmax; top: -10vmax; transform: rotate(12deg); }
 .nav-overlay__shape--b { width: 30vmax; height: 30vmax; left: -8vmax; bottom: -12vmax; transform: rotate(-8deg); }
 @media (max-width: 900px) {
-  .nav-overlay__links { grid-template-columns: 1fr; gap: 18px; }
+  .nav-overlay__links { grid-template-columns: 1fr; gap: 0; padding-block: 8px 20px; }
   .nav-overlay__link small { display: none; }
+  /* ≥ 48px rows: the whole row is the target, not just the word */
+  .nav-overlay__link { display: flex; align-items: center; min-height: 52px; padding-block: 4px; }
+  .nav-overlay__foot { padding-block: 12px max(16px, env(safe-area-inset-bottom)); gap: 0 28px; }
+  .nav-overlay__foot > * { display: inline-flex; align-items: center; min-height: 44px; }
+}
+/* landscape phones: two columns (links | sectors), everything on one screen */
+@media (max-height: 500px) and (orientation: landscape) {
+  .nav-overlay__top { height: 60px; }
+  .nav-overlay__links {
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr); grid-auto-flow: column; grid-template-rows: repeat(5, auto);
+    column-gap: clamp(24px, 4vw, 48px); align-content: center; padding-block: 4px 8px;
+  }
+  .nav-overlay__link { min-height: 46px; padding-block: 2px; }
+  .nav-overlay__link .t-display-l { font-size: clamp(1.9rem, 8.5svh, 2.4rem); }
+  .nav-overlay__foot { flex-wrap: nowrap; padding-block: 2px max(4px, env(safe-area-inset-bottom)); }
+  .nav-overlay__foot > :last-child { margin-left: auto; }
 }
 
 /* ------------------------------------------------------------ footer */
@@ -400,13 +470,35 @@ html[data-header-over="dark"] .site-header:not(.is-solid) .btn { --btn-fg: var(-
 .site-footer__cols h2 { margin-bottom: 1rem; color: var(--on-dark-2); }
 .site-footer__cols li + li { margin-top: 0.35rem; }
 .site-footer__cols a { transition: color var(--t-micro); }
-.site-footer__cols a:hover { color: var(--sand); }
+@media (hover: hover) and (pointer: fine) { .site-footer__cols a:hover { color: var(--sand); } }
 .site-footer__cols p { color: var(--on-dark-2); max-width: 34ch; }
 .site-footer__mark { display: block; width: 100%; color: var(--on-dark); line-height: 0; margin-bottom: clamp(20px, 3vw, 40px); }
 .site-footer__mark .logo { width: 100%; height: auto; --logo-h: auto; }
 .site-footer__legal { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px 32px; padding-block: 22px 28px; border-top: 1px solid var(--line-dark); color: var(--on-dark-2); font-size: 0.8125rem; }
-.site-footer__legal a:hover { color: var(--on-dark); }
-@media (max-width: 900px) { .site-footer__cols { grid-template-columns: 1fr 1fr; } .site-footer__cols > :first-child { grid-column: 1 / -1; } }
+@media (hover: hover) and (pointer: fine) { .site-footer__legal a:hover { color: var(--on-dark); } }
+@media (max-width: 900px) {
+  .site-footer__cols { grid-template-columns: 1fr 1fr; row-gap: 28px; }
+  .site-footer__cols > :first-child { grid-column: 1 / -1; }
+  .site-footer__cols h2 { margin-bottom: 0.25rem; }
+  /* 44px rows for thumbs; the rows touch, so the column stays about as tall as before */
+  .site-footer__cols li + li { margin-top: 0; }
+  .site-footer__cols li > a { display: flex; align-items: center; min-height: 44px; }
+  .site-footer__cols p a { display: inline-flex; align-items: center; min-height: 44px; }
+  .site-footer__cols p a.text-link { background-position: 0 calc(50% + 0.72em); }   /* the underline stays under the words */
+  /* Follow: one row across the bottom instead of a lone third column */
+  .site-footer__cols > nav:last-child { grid-column: 1 / -1; }
+  .site-footer__cols > nav:last-child ul { display: flex; flex-wrap: wrap; column-gap: 28px; }
+  .site-footer__legal a { display: inline-flex; align-items: center; min-height: 44px; padding-right: 8px; }
+  .site-footer__legal { padding-block: 18px max(18px, env(safe-area-inset-bottom)); }
+}
+/* landscape phones: the desktop's four columns fit; the lockup would fill the whole screen */
+@media (max-height: 500px) and (orientation: landscape) {
+  .site-footer__cols { grid-template-columns: 1.3fr repeat(3, minmax(0, 1fr)); }
+  .site-footer__cols > :first-child, .site-footer__cols > nav:last-child { grid-column: auto; }
+  .site-footer__cols > nav:last-child ul { display: block; }
+  .site-footer__mark { width: fit-content; }
+  .site-footer__mark .logo { width: auto; height: 40svh; max-width: 100%; }
+}
 
 /* ------------------------------------------------------------ badge, chips, forms (shared) */
 .badge {
@@ -423,27 +515,37 @@ html[data-header-over="dark"] .site-header:not(.is-solid) .btn { --btn-fg: var(-
 .chip input:checked + span { background: var(--green); border-color: var(--green); color: var(--paper); }
 .chip input:focus-visible + span { outline: 2px solid var(--focus); outline-offset: 3px; }
 
-/* ------------------------------------------------------------ cursor (fine pointers only) */
-.cursor {
-  position: fixed; left: 0; top: 0; z-index: 120; pointer-events: none;
-  width: 44px; height: 44px; margin: -22px 0 0 -22px; border-radius: 50%;
-  border: 1px solid var(--paper); mix-blend-mode: difference;
-  opacity: 0; transition: width .35s var(--ease-out), height .35s var(--ease-out), margin .35s var(--ease-out), opacity .3s, background-color .35s;
-  will-change: transform;
-}
+/* ------------------------------------------------------------ cursor (fine pointers only; site.js) */
+/* A small liquid blob that trails the pointer. No ring, no text. site.js writes transforms only:
+   .cursor = position; .cursor__blob = direction-of-travel stretch, hover grow, press squish;
+   .cursor__fill = the organic shape, turning slowly (reads as liquid, costs nothing). */
+.cursor, .cursor-ripple { position: fixed; left: 0; top: 0; z-index: 120; pointer-events: none; }
+.cursor { width: 0; height: 0; opacity: 0; transition: opacity 0.3s linear; }
 .cursor.is-visible { opacity: 1; }
-.cursor.is-label {
-  width: 108px; height: 108px; margin: -54px 0 0 -54px; border-color: transparent;
-  background: var(--paper); mix-blend-mode: normal;
+.cursor.is-hidden { opacity: 0; }
+.cursor__blob { position: absolute; left: -24px; top: -24px; width: 48px; height: 48px; transform: scale(0.42); will-change: transform; }
+.cursor__fill {
+  position: absolute; inset: 0; background: var(--green);
+  border-radius: 62% 38% 55% 45% / 47% 60% 40% 53%;
+  opacity: 0.88; transition: opacity 0.35s var(--ease-out), background-color 0.35s linear;
+  animation: ts-cursor-turn 7s linear infinite; animation-play-state: paused;
 }
-.cursor__label {
-  position: absolute; inset: 0; display: grid; place-items: center; color: var(--green-deep);
-  font-size: 0.6875rem; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase;
-  opacity: 0; transform: scale(.6); transition: opacity .25s, transform .35s var(--ease-out);
+.cursor.is-visible .cursor__fill { animation-play-state: running; }
+.cursor.is-dark .cursor__fill { background: var(--sand); }
+/* over a target the blob tints what's under it instead of covering it, so a label always reads
+   (and a sand button on a dark band still shows the blob): multiply on light grounds, screen on dark.
+   The blend sits on .cursor itself: it's the stacking context, a blend inside it would be isolated. */
+.cursor.is-hover { mix-blend-mode: multiply; }
+.cursor.is-hover .cursor__fill { opacity: 0.4; }
+.cursor.is-dark.is-hover { mix-blend-mode: screen; }
+.cursor.is-dark.is-hover .cursor__fill { opacity: 0.5; }
+@keyframes ts-cursor-turn { to { transform: rotate(360deg); } }
+.cursor-ripple {
+  width: 64px; height: 64px; margin: -32px 0 0 -32px; border-radius: 50%; opacity: 0;
+  background: radial-gradient(closest-side, transparent 55%, rgb(var(--green-rgb) / 0.4) 74%, transparent 100%);
 }
-.cursor.is-label .cursor__label { opacity: 1; transform: none; }
-.cursor.is-hidden { opacity: 0 !important; }
-@media (hover: none), (pointer: coarse) { .cursor { display: none; } }
+.cursor-ripple.is-dark { background: radial-gradient(closest-side, transparent 55%, rgb(var(--sand-rgb) / 0.5) 74%, transparent 100%); }
+@media (hover: none), (pointer: coarse) { .cursor, .cursor-ripple { display: none; } }
 
 /* ------------------------------------------------------------ toast */
 .toast {

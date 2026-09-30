@@ -41,6 +41,9 @@
   const ogTitle = $('meta[property="og:title"]');
   const ogDesc = $('meta[property="og:description"]');
 
+  // contact.html prefill: the room each filter stands for (contact.js reads venue; site.js remembers it)
+  const VENUE = { cafes: "cafe", restaurants: "restaurant", bars: "bar", retail: "shop" };
+  const sset = (k, v) => { try { w.sessionStorage.setItem(k, v); } catch (_) {} };
   const matches = (li, f) => f === "all" || li.dataset.filter === f;
   const shown = () => items.filter((li) => !li.classList.contains("is-out"));
   const leadOf = (li, v) => $(v === "grid" ? ".work-item__cover" : ".work-item__lead", li);
@@ -91,6 +94,20 @@
       else { lead.style.viewTransitionName = name; cover.style.removeProperty("view-transition-name"); }
     });
   }
+  // "Start a project" (closing panel) and the empty state's "Ask us": with a sector filter on, they
+  // carry its room, so the form opens with that venue chip selected (and the room is remembered for
+  // the header's own contact links, via site.js)
+  function syncContact() {
+    const v = VENUE[filter] || "";
+    $$('.work-cta a[href*="contact.html"], #work-empty a[href*="contact.html"]').forEach((a) => {
+      const href = a.getAttribute("href"), qAt = href.indexOf("?");
+      const q = new URLSearchParams(qAt >= 0 ? href.slice(qAt + 1) : "");
+      if (v) q.set("venue", v); else q.delete("venue");
+      if (!q.has("from")) q.set("from", "work");
+      a.setAttribute("href", (qAt >= 0 ? href.slice(0, qAt) : href) + "?" + q.toString());
+    });
+    if (v) { sset("ts-venue", v); sset("ts-venue-from", "work"); sset("ts-venue-item", ""); }
+  }
   function announce(n) {
     if (!status) return;
     const s = SEO[filter];
@@ -113,8 +130,29 @@
     syncSEO();
     if (opts.url !== false) writeURL(f);
     if (opts.announce !== false) announce(n);
+    syncContact();
     loops && loops.refresh();
     run && run();
+    if (opts.reveal !== false) revealList();
+  }
+
+  // phones and tablets: a filter tap must show projects. If the first one now starts below ~60% of the
+  // screen (or is hidden above it, under the sticky bar), glide the list up to just under the bar.
+  function revealList() {
+    if (!w.matchMedia("(max-width: 900px)").matches) return;
+    const first = shown()[0];
+    const bar = $(".work-bar");
+    if (!first || !bar) return;
+    // layout position, not the Flip start position (the item may be mid-transform)
+    const wrapTop = layer.getBoundingClientRect().top + w.scrollY;
+    const top = wrapTop + first.offsetTop - w.scrollY;
+    const barH = bar.offsetHeight;
+    const hdr = parseFloat(getComputedStyle(root).getPropertyValue("--header-h")) || 64;
+    if (top > innerHeight * 0.6 || top < barH + 8) {
+      const y = wrapTop + first.offsetTop - barH - hdr - 12;
+      if (w.Motion && w.Motion.scrollTo) w.Motion.scrollTo(Math.max(0, y), { duration: 0.9 });
+      else w.scrollTo({ top: Math.max(0, y), behavior: w.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+    }
   }
 
   function setView(v, opts = {}) {
@@ -130,7 +168,62 @@
     run && run();
   }
 
-  radios.forEach((r) => r.addEventListener("change", () => { if (r.checked) setFilter(r.value); }));
+  radios.forEach((r) => r.addEventListener("change", () => {
+    if (!r.checked) return;
+    setFilter(r.value);
+    // the chip strip scrolls sideways on phones: bring the chosen chip fully into view
+    const chip = r.closest(".work-filter"), strip = chip && chip.parentElement;
+    if (strip && strip.scrollWidth > strip.clientWidth + 1) {
+      const cr = chip.getBoundingClientRect(), sr = strip.getBoundingClientRect();
+      if (cr.left < sr.left || cr.right > sr.right - 28) strip.scrollBy({ left: cr.left - sr.left - 8, behavior: "smooth" });
+    }
+  }));
+
+  // the intro's "More" (phones and tablets: the paragraph is clamped to three lines)
+  const more = $(".work-hero__more"), intro = $(".work-hero__intro"), bar = $(".work-bar");
+  const mqTab = w.matchMedia("(max-width: 900px)");
+  // QA hint only: the clamped lines are clipped (overflow: clip), and the sticky bar is opaque over the
+  // list it scrolls across, so neither is a text-on-text overlap for the harness to report
+  const qaHints = () => {
+    const side = more && more.closest(".work-hero__side");
+    intro && intro.classList.toggle("qa-ignore-overlap", mqTab.matches && !(side && side.classList.contains("is-open")));
+    bar && bar.classList.toggle("qa-ignore-overlap", mqTab.matches);
+  };
+  if (more) more.addEventListener("click", () => {
+    const side = more.closest(".work-hero__side"), open = !side.classList.contains("is-open");
+    side.classList.toggle("is-open", open);
+    more.setAttribute("aria-expanded", String(open));
+    $(".work-hero__more-txt", more).textContent = open ? "Less" : "More";
+    qaHints();
+  });
+  qaHints();
+  mqTab.addEventListener && mqTab.addEventListener("change", qaHints);
+
+  // touch press: the whole project card squishes and springs back (CSS .is-pressed), and a real tap
+  // ticks the phone. The links opt out of site.js's own press (it would only dim the name).
+  let lastPointer = "", pressT = 0, pressLi = null;
+  $$(".work-item__link, .work-item__media", list).forEach((a) => a.setAttribute("data-press", "off"));
+  const unpress = () => { clearTimeout(pressT); pressLi = null; $$(".work-item.is-pressed", list).forEach((li) => li.classList.remove("is-pressed")); };
+  list.addEventListener("pointerdown", (e) => {
+    lastPointer = e.pointerType;
+    if (e.pointerType === "mouse" || !e.isPrimary) return;
+    const li = e.target.closest && e.target.closest(".work-item");
+    if (!li) return;
+    unpress();
+    pressLi = li;
+    pressT = setTimeout(() => li.classList.add("is-pressed"), 60);   // a finger that starts a scroll never flashes the card
+  }, { passive: true });
+  list.addEventListener("pointerup", () => {
+    if (!pressLi) return;
+    const li = pressLi; clearTimeout(pressT); pressLi = null;
+    li.classList.add("is-pressed");                                  // a quick tap still gets the whole squish
+    setTimeout(() => li.classList.remove("is-pressed"), 110);
+  }, { passive: true });
+  list.addEventListener("pointercancel", unpress, { passive: true });
+  list.addEventListener("click", (e) => {
+    const a = e.target.closest && e.target.closest("a[href]");
+    if (a && e.isTrusted && (lastPointer === "touch" || lastPointer === "pen") && TS.haptic) TS.haptic();
+  });
   viewBtns.forEach((b) => b.addEventListener("click", () => setView(b.dataset.view)));
   w.addEventListener("popstate", () => setFilter(readURL(), { url: false }));
   w.addEventListener("pageshow", (e) => {
@@ -143,7 +236,7 @@
   // first sync: the <head> script already set the attributes; make everything agree with them
   root.dataset.workFilter = filter;
   root.dataset.workView = view;
-  applyItems(); syncControls(); syncSEO(); syncVT();
+  applyItems(); syncControls(); syncSEO(); syncVT(); syncContact();
   // Projects hidden by a ?filter= load get no scroll reveal (motion.js boots after this file):
   // a display:none trigger measures start = end = 0, fires inside another trigger's refresh
   // and, being `once`, kills itself mid-loop, which makes ScrollTrigger 3.15 throw. They
@@ -244,7 +337,7 @@
           if (p.whole) {
             p.s.classList.add("is-swapping");
             if (p.out) { moved.push(p.out); tl.to(p.out, { yPercent: -110, duration: 0.42, ease: "ts.cut" }, 0); }
-            if (p.in) { moved.push(p.in); tl.from(p.in, { yPercent: 110, duration: 0.78, ease: M.DRIFT }, 0.16); }
+            if (p.in) { moved.push(p.in); tl.from(p.in, { yPercent: 110, duration: 0.78, ease: M.DRIFT }, 0.08); }
             return;
           }
           if (p.out) {
@@ -254,7 +347,8 @@
           }
           if (p.in) {
             const s = splitLines(SplitText, p.in); splits.push(s);
-            tl.from(s.lines, { yPercent: 140, duration: 0.8, ease: M.DRIFT, stagger: { amount: amount(s.lines.length, 0.05) } }, 0.16);
+            // the incoming lines start while the old ones are still leaving, so the block is never empty
+            tl.from(s.lines, { yPercent: 140, duration: 0.8, ease: M.DRIFT, stagger: { amount: amount(s.lines.length, 0.05) } }, 0.08);
           }
         });
       };

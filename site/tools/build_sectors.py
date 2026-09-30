@@ -99,8 +99,20 @@ def contact(**kw) -> str:
 
 
 def meta_line(parts) -> str:
+    """segments never break inside; each carries its '·' in front of it, hung in the gap (sector.css), and a
+    line that starts with a segment clips its dot — so no line ends on, or starts with, a dangling separator"""
     sep = '<span class="sep" aria-hidden="true">·</span>'
-    return " ".join(f'<span class="seg">{esc(x)}{sep if i < len(parts) - 1 else ""}</span>' for i, x in enumerate(parts))
+    return " ".join(f'<span class="seg">{sep if i else ""}{esc(x)}</span>' for i, x in enumerate(parts))
+
+
+def intro_html(text: str) -> str:
+    """the hero intro: the first sentence always shows; the rest is tucked away on phones (sector.css keeps it for
+    screen readers). The page's "What a … needs" section carries the same points in full."""
+    m = re.search(r"(?<=[.!?])\s+(?=[A-Z0-9])", text)
+    if not m or m.start() < 24:
+        return esc(text)
+    lead, rest = text[:m.start()], text[m.end():]
+    return f'{esc(lead)}<span class="sector-hero__more"> {esc(rest)}</span>'
 
 
 # ------------------------------------------------------------------ blocks
@@ -153,7 +165,7 @@ def projects(s, by_slug, L):
         fig = figure(hero, sizes, ratio=ratio, cls="sector-project__media", alt="",
                      style=f"view-transition-name:proj-{slug};", attrs='aria-hidden="true"', ind=8)
         meta = meta_line([p["type"], p["city"], p["year"]])
-        out.append(f"""      <li class="sector-project sector-project--{i + 1}" data-cursor="View">
+        out.append(f"""      <li class="sector-project sector-project--{i + 1}">
 {fig}
         <div class="sector-project__text">
           <p class="t-label sector-project__meta">{meta}</p>
@@ -230,7 +242,7 @@ def render(s, data, by_slug, tpl):
         "label": esc(s["label"]),
         "film_note": film_note(s, L),
         "headline": md(s["headline"]),
-        "intro": esc(s["intro"]),
+        "intro": intro_html(s["intro"]),
         "walk_href": attr(walk),
         "walk_label": esc(L["walk"]),
         "see_work": esc(L["seeWork"]),

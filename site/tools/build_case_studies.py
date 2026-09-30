@@ -60,6 +60,25 @@ FILM_LABEL, FILM_NOTE = "Film", "Placeholder stock footage"
 # work.html?filter=<filter> → contact.html?venue=<venue>
 VENUE = {"cafes": "cafe", "restaurants": "restaurant", "bars": "bar", "retail": "shop"}
 
+# Phones hold the landscape hero in a tall portrait frame: where to centre that crop (object-position),
+# per hero photograph, so the room (not a window mullion or a blank wall) is what fills the screen.
+FOCUS_SM = {
+    "rest-c-03-window-plants": "22% 70%",          # Ember: the brick wall and the plants, the table at the foot
+    "retailA-01-boutique-rail-plants": "42% 55%",  # Dhaaga: the rail of clothes
+    "rest-a-01-dining-room-banquette": "70% 60%",  # Otla: the banquette and the bentwood chairs
+    "bar-a-01-red-lounge-wide": "56% 60%",         # Stillroom: the high tables and the bar
+    "hero-05-black-windows-cafe": "46% 62%",       # Common Hours: the two chairs at the window table
+    "cafe-b-03-counter-edge-light": "30% 55%",     # Tilt: the cake on the counter edge
+}
+
+# Detail photographs that contradict their captions in projects.json (a boucle cushion for Tilt's
+# backlit brass sign, a white wall tile for Ember's terracotta). Until the data is updated (requested),
+# the page uses a closer placeholder: {slug: {detail index: photo slug}}.
+DETAIL_SWAP = {
+    "tilt": {2: "material-06-brass-toggle-plaster"},
+    "ember": {1: "material-14-plaster-slat-shadow"},
+}
+
 # media.json alt text is a literal description, but some entries run past the 125-character rule
 # (cut mid-word at 150) and one is an editing note. Case-study overrides, same literal voice.
 ALT = {
@@ -140,13 +159,18 @@ def fact(label: str, value: str, wide: bool = False) -> str:
 
 
 # ------------------------------------------------------------------ blocks
+def focus_sm(slug: str) -> str:
+    f = FOCUS_SM.get(slug)
+    return f" --focus-sm:{f};" if f else ""
+
+
 def hero_figure(p):
     slug = p["images"]["hero"]
     m = DB[slug]
     # object-fit: cover on a 100svh frame: on tall screens the photo is drawn wider than the viewport
     sizes = f"(max-aspect-ratio: {m['w']}/{m['h']}) calc(100vh * {m['w'] / m['h']:.3f}), 100vw"
     return figure(slug, sizes, eager=True, reveal=False, cls="case-hero__media",
-                  style=f"view-transition-name:proj-{p['slug']};", ind=4)
+                  style=f"view-transition-name:proj-{p['slug']};{focus_sm(slug)}", ind=4)
 
 
 def facts(p):
@@ -204,7 +228,10 @@ def gallery(p):
             continue
         if lay == "full":
             fulls += 1
-            f = figure(g["slugs"][0], "100vw", cls="case-full__media", attrs='data-case-parallax="0.06"', ind=2)
+            # portrait phones crop it 4:5 (capped at 86svh), so the photo is drawn ~1.25 × its ratio × the width
+            r = ratio_of(g["slugs"][0])
+            sizes = f"(max-width: 900px) and (orientation: portrait) {max(100, round(125 * r))}vw, 100vw"
+            f = figure(g["slugs"][0], sizes, cls="case-full__media", attrs='data-case-parallax="0.06"', ind=2)
             blocks.append(f'<div class="case-full case-full--{fulls}">\n{f}\n</div>')
             if fulls == 1 and p.get("loop"):
                 blocks.append(loop(p))
@@ -213,10 +240,11 @@ def gallery(p):
             a, b = g["slugs"]
             both_portrait = orient(a) == "portrait" and orient(b) == "portrait"
             ratio = "3/4" if both_portrait else "3/2" if orient(a) == orient(b) == "landscape" else "4/5"
-            sizes = "(max-width: 900px) 50vw, 46vw"
+            sizes = "(max-width: 600px) 100vw, (max-width: 900px) 50vw, 46vw"
             fa = figure(a, sizes, ratio=ratio, cls="case-pair__a", ind=4)
             fb = figure(b, sizes, ratio=ratio, cls="case-pair__b", ind=4)
-            blocks.append(f'<div class="wrap">\n  <div class="case-pair case-pair--{"portrait" if both_portrait else "landscape"}">\n{fa}\n{fb}\n  </div>\n</div>')
+            # the pair floats as one (motion.js: the outermost data-float wins), so the two stay level
+            blocks.append(f'<div class="wrap">\n  <div class="case-pair case-pair--{"portrait" if both_portrait else "landscape"}" data-float="0.6">\n{fa}\n{fb}\n  </div>\n</div>')
     if p.get("loop") and not loop_done:
         blocks.append(loop(p))
     return indent("\n".join(blocks), 4)
@@ -240,7 +268,10 @@ def loop(p):
 
 
 def details(p):
-    imgs, items = p["images"]["details"], p["details"]
+    imgs, items = list(p["images"]["details"]), p["details"]
+    for i, slug in DETAIL_SWAP.get(p["slug"], {}).items():
+        if i < len(imgs):
+            imgs[i] = slug
     n = len(items)
     # one frame shape for the sticky column: portrait unless most detail photos are landscape
     land = sum(orient(s) == "landscape" for s in imgs)
@@ -254,11 +285,19 @@ def details(p):
         lst.append(f"""        <li class="case-details__item{' is-active' if i == 0 else ''}" data-i="{i}">
 {inline}
           <div class="case-details__text">
-            <h3 class="t-label case-details__name"><span class="case-details__num">{i + 1:02d}</span>{esc(d['label'])}</h3>
+            <h3 class="t-label case-details__name"><span class="case-details__num">{i + 1:02d}<span class="case-details__of" aria-hidden="true"> / {n:02d}</span></span>{esc(d['label'])}</h3>
             <p class="t-lede" data-reveal>{esc(d['text'])}</p>
           </div>
         </li>""")
     return "\n".join(stage), "\n".join(lst), frame_ratio, frame_r, f"{n:02d}"
+
+
+def placeholder_badge() -> str:
+    text = LABELS["placeholderBanner"]
+    first, _, rest = text.partition(". ")
+    if not rest:
+        return esc(text)
+    return f'{esc(first)}.<span class="case-hero__badge-more"> {esc(rest)}</span>'
 
 
 def outcome(p):
@@ -274,9 +313,14 @@ def credits(p):
 
 
 def next_figure(n):
-    # decorative here (the link text names the project); its view-transition name matches the next page's hero
-    return figure(n["images"]["hero"], "100vw", reveal=False, cls="case-next__media", alt="",
-                  style=f"view-transition-name:proj-{n['slug']};", attrs='aria-hidden="true"', ind=6)
+    # decorative here (the link text names the project); its view-transition name matches the next page's hero.
+    # Phones show it in a tall portrait panel (78–80svh): the photo is drawn that height × its ratio wide.
+    slug = n["images"]["hero"]
+    r = ratio_of(slug)
+    sizes = (f"(max-width: 600px) and (orientation: portrait) calc(78vh * {r:.3f}), "
+             f"(max-width: 900px) and (orientation: portrait) calc(80vh * {r:.3f}), 100vw")
+    return figure(slug, sizes, reveal=False, cls="case-next__media", alt="",
+                  style=f"view-transition-name:proj-{n['slug']};{focus_sm(slug)}", attrs='aria-hidden="true"', ind=6)
 
 
 # ------------------------------------------------------------------ page
@@ -285,7 +329,9 @@ def render(p, by_slug, master, tpl):
     n = by_slug[p["next"]]
     inset, inset_o = inset_figure(p)
     stage_figs, detail_items, frame_ratio, frame_r, total = details(p)
-    back = f"{ROOT}work.html?filter={p['filter']}"
+    # "All work" goes to all the work (case.js steps back instead when the visitor came from the index,
+    # so a filtered list and its scroll position come back as they were)
+    back = f"{ROOT}work.html"
     hero_img = p["images"]["hero"]
     values = {
         "root": ROOT,
@@ -299,7 +345,7 @@ def render(p, by_slug, master, tpl):
         "back_label": esc(LABELS["backLink"]),
         "name": esc(p["name"]),
         "hero_meta": meta_line([p["type"], f'{p["neighbourhood"]}, {p["city"]}', p["year"]]),
-        "placeholder": esc(LABELS["placeholderBanner"]),
+        "placeholder": placeholder_badge(),
         "one_liner": esc(p["oneLiner"]),
         "facts": facts(p),
         "h_brief": esc(H["brief"]), "brief": esc(p["brief"]),

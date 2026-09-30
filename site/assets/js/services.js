@@ -167,6 +167,20 @@
   openFromHash(true);
   w.addEventListener("hashchange", () => openFromHash(false));
 
+  /* ================================================================ process: the sticky step pill (phones, tablets) */
+  (function processMini() {
+    const mini = $(".svc-process__mini"), steps = $$(".svc-step");
+    if (!mini || !steps.length || !("IntersectionObserver" in w)) return;
+    const nEl = $("[data-mini-n]", mini), nameEl = $("[data-mini-name]", mini);
+    const io = new IntersectionObserver((es) => es.forEach((e) => {
+      if (!e.isIntersecting) return;
+      const s = e.target, name = $(".svc-step__name", s);
+      nEl.textContent = s.dataset.n || nEl.textContent;
+      if (name) nameEl.textContent = name.textContent.trim();
+    }), { rootMargin: "-40% 0px -55% 0px" });
+    steps.forEach((s) => io.observe(s));
+  })();
+
   /* ================================================================ motion */
   const M = w.Motion;
   if (!M || !M.page) return;

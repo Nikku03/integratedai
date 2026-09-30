@@ -91,8 +91,7 @@
 </header>
 <script src="../assets/js/nav.js" defer></script>
 <div class="nav-overlay" id="nav-overlay" role="dialog" aria-modal="true" aria-label="Site index" data-lenis-prevent>
-  <span class="nav-overlay__shape nav-overlay__shape--a" aria-hidden="true"></span>
-  <span class="nav-overlay__shape nav-overlay__shape--b" aria-hidden="true"></span>
+  <span class="nav-overlay__shapes" aria-hidden="true"><span class="nav-overlay__shape nav-overlay__shape--a"></span><span class="nav-overlay__shape nav-overlay__shape--b"></span></span>
   <div class="wrap nav-overlay__top">
     <a href="../index.html" aria-label="Two Squares, home"><span class="logo logo--mark" aria-hidden="true"></span></a>
     <button class="nav-overlay__close" type="button">Close <i aria-hidden="true"></i></button>
@@ -124,19 +123,19 @@
 
   <!-- 1 · hero: full-bleed photograph, shared view-transition name with the Work index card -->
   <section class="case-hero on-dark" data-header="dark" aria-labelledby="case-title">
-    <figure class="media case-hero__media" style="view-transition-name:proj-ember; aspect-ratio:3/2; --lqip:url(data:image/webp;base64,UklGRmgAAABXRUJQVlA4IFwAAAAQBACdASoUAA0APt1cp0yopSOiMAgBEBuJZACdMoADQtaNl5mVodRusAD+5f+gTkJAeuU79jhma1PxFOpTjriumVTPH16QCH3q7wjhIYkXcgLwfYvxRBJwCgewAA==); --focus:50% 50%">
+    <figure class="media case-hero__media" style="view-transition-name:proj-ember; --focus-sm:22% 70%; aspect-ratio:3/2; --lqip:url(data:image/webp;base64,UklGRmgAAABXRUJQVlA4IFwAAAAQBACdASoUAA0APt1cp0yopSOiMAgBEBuJZACdMoADQtaNl5mVodRusAD+5f+gTkJAeuU79jhma1PxFOpTjriumVTPH16QCH3q7wjhIYkXcgLwfYvxRBJwCgewAA==); --focus:50% 50%">
       <img src="../assets/img/photos/rest-c-03-window-plants-1600.webp" srcset="../assets/img/photos/rest-c-03-window-plants-800.webp 800w, ../assets/img/photos/rest-c-03-window-plants-1600.webp 1600w" sizes="(max-aspect-ratio: 1600/1067) calc(100vh * 1.500), 100vw"
            width="1600" height="1067" alt="Terracotta-red brick wall, tall timber sash window, a bank of fiddle-leaf plants over a set dining table" loading="eager" fetchpriority="high" decoding="async">
     </figure>
     <div class="wrap case-hero__top">
-      <a class="case-back t-label" href="../work.html?filter=restaurants"><span class="case-back__arr" aria-hidden="true">←</span>All work</a>
+      <a class="case-back t-label" href="../work.html"><span class="case-back__arr" aria-hidden="true">←</span>All work</a>
     </div>
     <div class="wrap case-hero__inner">
       <div class="case-hero__head">
         <h1 class="t-display-xl case-hero__title" id="case-title" data-split>Ember</h1>
         <p class="t-label case-hero__meta"><span class="seg">Wood-fire restaurant<span class="sep" aria-hidden="true">·</span></span> <span class="seg">Alfama, Lisbon<span class="sep" aria-hidden="true">·</span></span> <span class="seg">2025</span></p>
       </div>
-      <p class="badge badge--placeholder case-hero__badge"><span class="badge__dot" aria-hidden="true"></span><span>Placeholder project. The name, quote and photographs stand in for real work.</span></p>
+      <p class="badge badge--placeholder case-hero__badge"><span class="badge__dot" aria-hidden="true"></span><span>Placeholder project.<span class="case-hero__badge-more"> The name, quote and photographs stand in for real work.</span></span></p>
     </div>
   </section>
 
@@ -197,7 +196,7 @@
   <section class="case-gallery" aria-label="Photographs">
     <div class="case-full case-full--1">
       <figure data-case-parallax="0.06" class="media case-full__media" data-reveal="image" style="aspect-ratio:3/2; --lqip:url(data:image/webp;base64,UklGRmQAAABXRUJQVlA4IFgAAADwAwCdASoUAA0APt1cpkyopSOiMAgBEBuJQBfnBD4ewwmHnEF8TiAAAP7lHCo4sOp58MTYS+nfF4eBovRQX3ZmfRRkt+YupP8jfhu6RuXA5BndRN0NnQAA); --focus:50% 50%">
-        <img src="../assets/img/photos/rest-c-04-bar-counter-1600.webp" srcset="../assets/img/photos/rest-c-04-bar-counter-800.webp 800w, ../assets/img/photos/rest-c-04-bar-counter-1600.webp 1600w" sizes="100vw"
+        <img src="../assets/img/photos/rest-c-04-bar-counter-1600.webp" srcset="../assets/img/photos/rest-c-04-bar-counter-800.webp 800w, ../assets/img/photos/rest-c-04-bar-counter-1600.webp 1600w" sizes="(max-width: 900px) and (orientation: portrait) 187vw, 100vw"
              width="1600" height="1067" alt="Long dark bar counter receding into shadow, caged ship-lamp pendant in focus, bottles out of focus behind" loading="lazy" decoding="async">
       </figure>
     </div>
@@ -213,20 +212,20 @@
       </div>
     </div>
     <div class="wrap">
-      <div class="case-pair case-pair--portrait">
+      <div class="case-pair case-pair--portrait" data-float="0.6">
         <figure class="media case-pair__a" data-reveal="image" style="aspect-ratio:3/4; --lqip:url(data:image/webp;base64,UklGRmgAAABXRUJQVlA4IFwAAADQAwCdASoNABQAPt1cpkyopSOiMAgBEBuJYwCdACHP0GD8/bweRAAA/I5XVizQdaXylJZl8q/oz0lDtpj+WeC2y9uvxIxTzhbLOYTuXWuFWxAEI1FLPEBkDv3gAA==); --focus:50% 50%">
-          <img src="../assets/img/photos/rest-c-02-brick-stair-1600.webp" srcset="../assets/img/photos/rest-c-02-brick-stair-800.webp 800w, ../assets/img/photos/rest-c-02-brick-stair-1600.webp 1600w" sizes="(max-width: 900px) 50vw, 46vw"
+          <img src="../assets/img/photos/rest-c-02-brick-stair-1600.webp" srcset="../assets/img/photos/rest-c-02-brick-stair-800.webp 800w, ../assets/img/photos/rest-c-02-brick-stair-1600.webp 1600w" sizes="(max-width: 600px) 100vw, (max-width: 900px) 50vw, 46vw"
                width="1067" height="1600" alt="Exposed red brick, steel-and-timber stair, framed period portrait painting, doorway light" loading="lazy" decoding="async">
         </figure>
         <figure class="media case-pair__b" data-reveal="image" style="aspect-ratio:3/4; --lqip:url(data:image/webp;base64,UklGRlwAAABXRUJQVlA4IFAAAAAQBACdASoNABQAPt1iqUyopiQiMAgBEBuJZwDCgGlgC+4PvclIP9XaAAD+/rb4utwAv+y5We/lJmUdTskhMT9hghHzKPCttyH1pniXumwAAA==); --focus:50% 50%">
-          <img src="../assets/img/photos/rest-c-05-dark-stair-bar-1600.webp" srcset="../assets/img/photos/rest-c-05-dark-stair-bar-800.webp 800w, ../assets/img/photos/rest-c-05-dark-stair-bar-1600.webp 1600w" sizes="(max-width: 900px) 50vw, 46vw"
+          <img src="../assets/img/photos/rest-c-05-dark-stair-bar-1600.webp" srcset="../assets/img/photos/rest-c-05-dark-stair-bar-800.webp 800w, ../assets/img/photos/rest-c-05-dark-stair-bar-1600.webp 1600w" sizes="(max-width: 600px) 100vw, (max-width: 900px) 50vw, 46vw"
                width="1067" height="1600" alt="Very dark view down the bar towards the stair, row of glowing pendants, polished bar edge" loading="lazy" decoding="async">
         </figure>
       </div>
     </div>
     <div class="case-full case-full--2">
       <figure data-case-parallax="0.06" class="media case-full__media" data-reveal="image" style="aspect-ratio:3/2; --lqip:url(data:image/webp;base64,UklGRmwAAABXRUJQVlA4IGAAAAAwBACdASoUAA0APt1apkyopSOiMAgBEBuJYwCdACPg/p9ynerwSuW3oYAA9rt7ZfMQMwBfLOkPM7r5dSJhg+CaTQoGqw8PXIg5SKf8zpw6seRUnQaaMqZN8pvjxU0AAAA=); --focus:50% 50%">
-        <img src="../assets/img/photos/rest-c-06-table-detail-1600.webp" srcset="../assets/img/photos/rest-c-06-table-detail-800.webp 800w, ../assets/img/photos/rest-c-06-table-detail-1600.webp 1600w" sizes="100vw"
+        <img src="../assets/img/photos/rest-c-06-table-detail-1600.webp" srcset="../assets/img/photos/rest-c-06-table-detail-800.webp 800w, ../assets/img/photos/rest-c-06-table-detail-1600.webp 1600w" sizes="(max-width: 900px) and (orientation: portrait) 187vw, 100vw"
              width="1600" height="1067" alt="Plates of food and a yellow cocktail on a weathered dark timber table, warm bokeh of the room behind" loading="lazy" decoding="async">
       </figure>
     </div>
@@ -243,9 +242,9 @@
               <img src="../assets/img/photos/material-04-terrazzo-chips-1600.webp" srcset="../assets/img/photos/material-04-terrazzo-chips-800.webp 800w, ../assets/img/photos/material-04-terrazzo-chips-1600.webp 1600w" sizes="(max-width: 900px) 1px, 40vw"
                    width="1067" height="1600" alt="Dense terrazzo with white, black, grey, ochre and rust stone chips, shot flat from above" loading="lazy" decoding="async">
             </figure>
-            <figure data-i="1" class="media case-details__fig" style="aspect-ratio:4/5; --lqip:url(data:image/webp;base64,UklGRlAAAABXRUJQVlA4IEQAAACwAwCdASoNABQAPt1apkyopSOiMAgBEBuJZQC7ACHhT8PQPV9QwAD+5yjfXVNq3OXLsyMM2PJsK3x1iQAOrjxLzCAAAA==); --focus:50% 50%">
-              <img src="../assets/img/photos/build-06-tiling-hands-1600.webp" srcset="../assets/img/photos/build-06-tiling-hands-800.webp 800w, ../assets/img/photos/build-06-tiling-hands-1600.webp 1600w" sizes="(max-width: 900px) 1px, 40vw"
-                   width="1067" height="1600" alt="A hand sets a white tile with spacers onto adhesive-combed wall above an oak worktop" loading="lazy" decoding="async">
+            <figure data-i="1" class="media case-details__fig" style="aspect-ratio:4/5; --lqip:url(data:image/webp;base64,UklGRkoAAABXRUJQVlA4ID4AAAAQAwCdASoUAA0APt1cpkyopSOiMAgBEBuJZQAAetGAUQAA/uBV/XBISS4Oo/3J+l77JbsVRCXxnEvv0oAAAA==); --focus:50% 50%">
+              <img src="../assets/img/photos/material-14-plaster-slat-shadow-1600.webp" srcset="../assets/img/photos/material-14-plaster-slat-shadow-800.webp 800w, ../assets/img/photos/material-14-plaster-slat-shadow-1600.webp 1600w" sizes="(max-width: 900px) 1px, 40vw"
+                   width="1600" height="1067" alt="Warm sand-coloured lime/clay plaster wall with raking sun casting diagonal slat shadows" loading="lazy" decoding="async">
             </figure>
             <figure data-i="2" class="media case-details__fig" style="aspect-ratio:4/5; --lqip:url(data:image/webp;base64,UklGRlAAAABXRUJQVlA4IEQAAABwAwCdASoNABQAPt1apkyopSOiMAgBEBuJYwCdACDHTh8yXQAA/qeL+L+Tq30cnNHIDg8OddkgZyzBCAomqOTzTgAAAA==); --focus:50% 50%">
               <img src="../assets/img/photos/material-11-brass-pendants-1600.webp" srcset="../assets/img/photos/material-11-brass-pendants-800.webp 800w, ../assets/img/photos/material-11-brass-pendants-1600.webp 1600w" sizes="(max-width: 900px) 1px, 40vw"
@@ -262,17 +261,17 @@
                  width="1067" height="1600" alt="Dense terrazzo with white, black, grey, ochre and rust stone chips, shot flat from above" loading="lazy" decoding="async">
           </figure>
           <div class="case-details__text">
-            <h3 class="t-label case-details__name"><span class="case-details__num">01</span>Materials</h3>
+            <h3 class="t-label case-details__name"><span class="case-details__num">01<span class="case-details__of" aria-hidden="true"> / 03</span></span>Materials</h3>
             <p class="t-lede" data-reveal>Four materials, no more: lime plaster, blackened steel, oak and a hand-glazed terracotta tile.</p>
           </div>
         </li>
         <li class="case-details__item" data-i="1">
-          <figure class="media case-details__inline" data-reveal="image" style="aspect-ratio:4/5; --lqip:url(data:image/webp;base64,UklGRlAAAABXRUJQVlA4IEQAAACwAwCdASoNABQAPt1apkyopSOiMAgBEBuJZQC7ACHhT8PQPV9QwAD+5yjfXVNq3OXLsyMM2PJsK3x1iQAOrjxLzCAAAA==); --focus:50% 50%">
-            <img src="../assets/img/photos/build-06-tiling-hands-1600.webp" srcset="../assets/img/photos/build-06-tiling-hands-800.webp 800w, ../assets/img/photos/build-06-tiling-hands-1600.webp 1600w" sizes="(max-width: 600px) 100vw, (max-width: 900px) 50vw, 32vw"
-                 width="1067" height="1600" alt="A hand sets a white tile with spacers onto adhesive-combed wall above an oak worktop" loading="lazy" decoding="async">
+          <figure class="media case-details__inline" data-reveal="image" style="aspect-ratio:4/5; --lqip:url(data:image/webp;base64,UklGRkoAAABXRUJQVlA4ID4AAAAQAwCdASoUAA0APt1cpkyopSOiMAgBEBuJZQAAetGAUQAA/uBV/XBISS4Oo/3J+l77JbsVRCXxnEvv0oAAAA==); --focus:50% 50%">
+            <img src="../assets/img/photos/material-14-plaster-slat-shadow-1600.webp" srcset="../assets/img/photos/material-14-plaster-slat-shadow-800.webp 800w, ../assets/img/photos/material-14-plaster-slat-shadow-1600.webp 1600w" sizes="(max-width: 600px) 100vw, (max-width: 900px) 50vw, 32vw"
+                 width="1600" height="1067" alt="Warm sand-coloured lime/clay plaster wall with raking sun casting diagonal slat shadows" loading="lazy" decoding="async">
           </figure>
           <div class="case-details__text">
-            <h3 class="t-label case-details__name"><span class="case-details__num">02</span>Tile</h3>
+            <h3 class="t-label case-details__name"><span class="case-details__num">02<span class="case-details__of" aria-hidden="true"> / 03</span></span>Tile</h3>
             <p class="t-lede" data-reveal>The terracotta runs unbroken from the bar front to the kitchen pass: 26 metres of it, set out by one tiler.</p>
           </div>
         </li>
@@ -282,7 +281,7 @@
                  width="1067" height="1600" alt="Cluster of satin-brass dome pendant lamps hung at staggered heights against a warm grey wall" loading="lazy" decoding="async">
           </figure>
           <div class="case-details__text">
-            <h3 class="t-label case-details__name"><span class="case-details__num">03</span>Light</h3>
+            <h3 class="t-label case-details__name"><span class="case-details__num">03<span class="case-details__of" aria-hidden="true"> / 03</span></span>Light</h3>
             <p class="t-lede" data-reveal>Warm and low throughout, with a single scene change at dusk. In March, that’s 19:40.</p>
           </div>
         </li>
@@ -337,8 +336,8 @@
   <!-- 10 · next project: full-width strip; its image morphs into the next page's hero -->
   <section class="case-next" aria-label="Next project">
     <a class="case-next__link" href="stillroom.html" data-cursor="View">
-      <figure aria-hidden="true" class="media case-next__media" style="view-transition-name:proj-stillroom; aspect-ratio:13/9; --lqip:url(data:image/webp;base64,UklGRmYAAABXRUJQVlA4IFoAAADwAwCdASoUAA4APt1cpkyopSOiMAgBEBuJZgCdMoADSJlqqT2S6BmAAP7xaHnPB+ybWAljE3VfluiurLaFuSsLmVXII0Gw8m74KRzJZCgzs0N+XJysSJoAAAA=); --focus:50% 50%">
-        <img src="../assets/img/photos/bar-a-01-red-lounge-wide-1600.webp" srcset="../assets/img/photos/bar-a-01-red-lounge-wide-800.webp 800w, ../assets/img/photos/bar-a-01-red-lounge-wide-1600.webp 1600w" sizes="100vw"
+      <figure aria-hidden="true" class="media case-next__media" style="view-transition-name:proj-stillroom; --focus-sm:56% 60%; aspect-ratio:13/9; --lqip:url(data:image/webp;base64,UklGRmYAAABXRUJQVlA4IFoAAADwAwCdASoUAA4APt1cpkyopSOiMAgBEBuJZgCdMoADSJlqqT2S6BmAAP7xaHnPB+ybWAljE3VfluiurLaFuSsLmVXII0Gw8m74KRzJZCgzs0N+XJysSJoAAAA=); --focus:50% 50%">
+        <img src="../assets/img/photos/bar-a-01-red-lounge-wide-1600.webp" srcset="../assets/img/photos/bar-a-01-red-lounge-wide-800.webp 800w, ../assets/img/photos/bar-a-01-red-lounge-wide-1600.webp 1600w" sizes="(max-width: 600px) and (orientation: portrait) calc(78vh * 1.447), (max-width: 900px) and (orientation: portrait) calc(80vh * 1.447), 100vw"
              width="1600" height="1106" alt="" loading="lazy" decoding="async">
       </figure>
       <span class="wrap case-next__inner">
@@ -360,7 +359,7 @@
         <p class="t-lede" data-reveal>Send us the floor plan and the opening date. We’ll come back with how the room could work.</p>
         <div class="case-cta__actions" data-reveal>
           <a class="btn btn--solid" href="../contact.html?venue=restaurant&amp;from=case-study&amp;item=ember">Start a project <span class="arr" aria-hidden="true">→</span></a>
-          <a class="btn" href="../work.html?filter=restaurants">All work</a>
+          <a class="btn" href="../work.html">All work</a>
         </div>
       </div>
     </div>
@@ -398,9 +397,9 @@
       <nav aria-label="Follow">
         <h2 class="t-label">Follow</h2>
         <ul class="t-small">
-          <li><a href="#" rel="noopener" data-placeholder>Instagram</a></li>
-          <li><a href="#" rel="noopener" data-placeholder>Pinterest</a></li>
-          <li><a href="#" rel="noopener" data-placeholder>LinkedIn</a></li>
+          <li><a href="#" rel="noopener" data-placeholder aria-disabled="true">Instagram</a></li>
+          <li><a href="#" rel="noopener" data-placeholder aria-disabled="true">Pinterest</a></li>
+          <li><a href="#" rel="noopener" data-placeholder aria-disabled="true">LinkedIn</a></li>
         </ul>
       </nav>
     </div>

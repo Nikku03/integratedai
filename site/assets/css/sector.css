@@ -18,7 +18,9 @@
   box-shadow: inset 0 0 0 1px rgb(var(--paper-rgb) / 0.34);
   transition: background var(--t-micro), box-shadow var(--t-micro);
 }
-[data-page="sector"] .film-toggle:hover { background: rgb(var(--shade-rgb) / 0.5); box-shadow: inset 0 0 0 1px rgb(var(--paper-rgb) / 0.6); }
+@media (hover: hover) and (pointer: fine) {
+  [data-page="sector"] .film-toggle:hover { background: rgb(var(--shade-rgb) / 0.5); box-shadow: inset 0 0 0 1px rgb(var(--paper-rgb) / 0.6); }
+}
 [data-page="sector"] .film-toggle:focus-visible { outline: 2px solid var(--sand); outline-offset: 3px; border-radius: 50%; }
 [data-page="sector"] .film-toggle__icon { position: relative; width: 12px; height: 12px; }
 /* playing: pause bars · paused (aria-pressed="true"): a play triangle */
@@ -72,23 +74,48 @@
   [data-page="sector"] .sector-hero__title { grid-column: 1 / span 7; }
   [data-page="sector"] .sector-hero__side { grid-column: 8 / -1; }
 }
+/* ≤900 (round 4): the film covers the whole panel, the panel is a full screen tall (svh: never under the
+   toolbar), and the headline, intro and actions sit at its foot over the gradient */
 @media (max-width: 900px) {
-  [data-page="sector"] .sector-hero { min-height: 0; grid-template-rows: auto auto; }
-  [data-page="sector"] .sector-hero__media { bottom: auto; height: min(76svh, 150vw); }
+  [data-page="sector"] .sector-hero { min-height: calc(100svh - 2 * var(--panel-inset)); grid-template-rows: auto 1fr; }
   [data-page="sector"] .sector-hero__scrim {
-    bottom: auto; height: min(76svh, 150vw);
     background:
-      linear-gradient(180deg, rgb(var(--shade-rgb) / 0.5) 0%, rgb(var(--shade-rgb) / 0) 22%),
-      linear-gradient(0deg, var(--green-deep) 0%, rgb(var(--deep-rgb) / 0.86) 20%, rgb(var(--deep-rgb) / 0.35) 44%, rgb(var(--deep-rgb) / 0) 62%);
+      linear-gradient(180deg, rgb(var(--shade-rgb) / 0.52) 0%, rgb(var(--shade-rgb) / 0.18) 14%, rgb(var(--shade-rgb) / 0) 26%),
+      linear-gradient(0deg, rgb(var(--deep-rgb) / 0.95) 0%, rgb(var(--deep-rgb) / 0.86) 24%, rgb(var(--deep-rgb) / 0.55) 44%, rgb(var(--deep-rgb) / 0.18) 60%, rgb(var(--deep-rgb) / 0) 72%);
   }
-  [data-page="sector"] .sector-hero__inner { grid-template-columns: 1fr; padding-top: max(26svh, 170px); row-gap: 22px; }
+  [data-page="sector"] .sector-hero__inner { grid-template-columns: 1fr; padding-top: 32px; padding-bottom: max(24px, env(safe-area-inset-bottom)); row-gap: 18px; }
   [data-page="sector"] .sector-hero__title, [data-page="sector"] .sector-hero__side { grid-column: 1 / -1; }
   [data-page="sector"] .sector-hero__title { font-size: clamp(2.9rem, 11.5vw, 5rem); }
-  [data-page="sector"] .sector-hero__intro { font-size: 0.9688rem; }
+  [data-page="sector"] .sector-hero__intro { font-size: 1rem; line-height: 1.5; }
+  [data-page="sector"] .sector-hero__actions { margin-top: 20px; }
+  /* the ghost button reads on the deep olive */
+  [data-page="sector"] .sector-hero .btn--on-dark { --btn-bd: rgb(var(--paper-rgb) / 0.5); background: rgb(var(--shade-rgb) / 0.2); }
 }
 @media (max-width: 600px) {
+  [data-page="sector"] .sector-hero { min-height: 100svh; border-radius: 0 0 var(--r-xl) var(--r-xl); }
   [data-page="sector"] .sector-hero__note { display: none; }
   [data-page="sector"] .sector-hero__actions .btn { flex: 1 1 auto; }
+  /* the time label on a small glass pill, so it holds over a bright lamp or a dark cabinet edge */
+  [data-page="sector"] .sector-time {
+    min-height: 32px; padding: 0 13px 0 11px; border-radius: 999px;
+    background: rgb(var(--shade-rgb) / 0.46); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+    box-shadow: inset 0 0 0 1px rgb(var(--paper-rgb) / 0.16); text-shadow: none;
+  }
+  [data-page="sector"] .sector-time__dot { box-shadow: 0 0 0 3px rgb(var(--sand-rgb) / 0.25); }
+}
+@media (orientation: landscape) and (max-height: 500px) {
+  [data-page="sector"] .sector-time {
+    min-height: 32px; padding: 0 13px 0 11px; border-radius: 999px;
+    background: rgb(var(--shade-rgb) / 0.46); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+    box-shadow: inset 0 0 0 1px rgb(var(--paper-rgb) / 0.16); text-shadow: none;
+  }
+}
+/* phones and landscape phones: the intro's first sentence only (the rest stays for screen readers; the
+   "What a … needs" section below makes the same points in full) */
+@media (max-width: 600px), (orientation: landscape) and (max-height: 500px) {
+  [data-page="sector"] .sector-hero__more {
+    position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+  }
 }
 
 /* ------------------------------------------------------------ 2 · what the room needs */
@@ -114,20 +141,18 @@
   [data-page="sector"] .sector-need--2, [data-page="sector"] .sector-need--4 { margin-top: 72px; }
   [data-page="sector"] .sector-need--3 { margin-top: 0; }
 }
-/* phones: media-object rows, alternating sides */
+/* phones (round 4): each point stacked — a wide image nearly edge to edge, then the number, a real title and
+   16px body. The section keeps a bottom pad so the last image's soft shadow isn't cut by the build below. */
 @media (max-width: 600px) {
-  [data-page="sector"] .sector-needs__list { row-gap: 36px; }
-  [data-page="sector"] .sector-need {
-    grid-column: 1 / -1; margin-top: 0 !important;
-    display: grid; grid-template-columns: minmax(0, 42fr) minmax(0, 58fr); column-gap: 18px; align-items: center;
-  }
-  [data-page="sector"] .sector-need:nth-child(even) { grid-template-columns: minmax(0, 58fr) minmax(0, 42fr); }
-  [data-page="sector"] .sector-need:nth-child(even) .sector-need__media { order: 2; }
-  [data-page="sector"] .sector-need__media { --media-r: var(--r-md); }
-  [data-page="sector"] .sector-need__text { margin-top: 0; padding-right: 0; }
-  [data-page="sector"] .sector-need__title { font-size: 1.3rem; margin: 8px 0 6px; }
-  [data-page="sector"] .sector-need__body { font-size: 0.875rem; line-height: 1.45; }
-  [data-page="sector"] .film-toggle--sm { right: 8px; bottom: 8px; }
+  [data-page="sector"] .sector-needs { padding-bottom: 40px; }
+  [data-page="sector"] .sector-needs__head { margin-bottom: 36px; row-gap: 16px; }
+  [data-page="sector"] .sector-needs__list { row-gap: 44px; }
+  [data-page="sector"] .sector-need { grid-column: 1 / -1; margin-top: 0 !important; }
+  [data-page="sector"] .sector-need__media { aspect-ratio: 16 / 10 !important; }
+  [data-page="sector"] .sector-need__text { margin-top: 18px; padding-right: 0; }
+  [data-page="sector"] .sector-need__title { font-size: 1.5rem; line-height: 1.12; margin: 10px 0 8px; }
+  [data-page="sector"] .sector-need__body { font-size: 1rem; line-height: 1.55; max-width: 60ch; }
+  [data-page="sector"] .film-toggle--sm { right: 12px; bottom: 12px; }
 }
 
 /* ------------------------------------------------------------ 3 · the build sits between (build.css) */
@@ -143,8 +168,11 @@
 [data-page="sector"] .sector-project__media { box-shadow: var(--shadow-soft); }
 [data-page="sector"] .sector-project__text { margin-top: 36px; max-width: 46ch; }   /* clear of the image's liquid lag (up to ~30px while scrolling fast) */
 [data-page="sector"] .sector-project__meta { color: var(--ink-3); }
-[data-page="sector"] .sector-project__meta .seg { white-space: nowrap; }
-[data-page="sector"] .sector-project__meta .sep { margin-inline: 0.5em; }
+/* "type · city · year": the gap between segments is a widened space; each segment's dot hangs centred in the gap
+   before it, so the dot at the start of a wrapped line falls outside the clip (no dangling "·" either end) */
+[data-page="sector"] .sector-project__meta { overflow: hidden; word-spacing: 1.35em; }
+[data-page="sector"] .sector-project__meta .seg { position: relative; white-space: nowrap; word-spacing: normal; }
+[data-page="sector"] .sector-project__meta .sep { position: absolute; right: 100%; margin-right: 0.92em; }
 [data-page="sector"] .sector-project__name { margin: 12px 0 12px; }
 [data-page="sector"] .sector-project__link {
   background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat;
@@ -153,10 +181,14 @@
 [data-page="sector"] .sector-project__link::after { content: ""; position: absolute; inset: -8px; z-index: 1; border-radius: var(--r-lg); }
 [data-page="sector"] .sector-project__link:focus-visible { outline: none; }
 [data-page="sector"] .sector-project__link:focus-visible::after { outline: 2px solid var(--focus); outline-offset: 4px; }
-[data-page="sector"] .sector-project:hover .sector-project__link { background-size: 100% 1px; color: var(--green); }
+@media (hover: hover) and (pointer: fine) {
+  [data-page="sector"] .sector-project:hover .sector-project__link { background-size: 100% 1px; color: var(--green); }
+}
 [data-page="sector"] .sector-project__cta { display: inline-flex; gap: 0.5em; margin-top: 18px; font-weight: 500; color: var(--green); }
 [data-page="sector"] .sector-project__cta .arr { display: inline-block; transition: transform var(--t-ui) var(--ease-cut); }
-[data-page="sector"] .sector-project:hover .sector-project__cta .arr { transform: translateX(5px); }
+@media (hover: hover) and (pointer: fine) {
+  [data-page="sector"] .sector-project:hover .sector-project__cta .arr { transform: translateX(5px); }
+}
 /* two projects: a wide one and a tall one, offset */
 [data-page="sector"] .sector-projects--2 .sector-project--1 { grid-column: 1 / span 7; }
 [data-page="sector"] .sector-projects--2 .sector-project--2 { grid-column: 9 / -1; margin-top: clamp(96px, 13vw, 220px); }
@@ -175,7 +207,13 @@
   [data-page="sector"] .sector-projects--1 .sector-project__text { margin-top: 36px; }
 }
 @media (max-width: 600px) {
-  [data-page="sector"] .sector-projects--2 .sector-project--2 .sector-project__media { width: 88%; }
+  [data-page="sector"] .sector-projects { padding-top: 48px; }
+  [data-page="sector"] .sector-projects__head { margin-bottom: 36px; }
+  [data-page="sector"] .sector-projects__list { row-gap: 56px; }
+  [data-page="sector"] .sector-projects--2 .sector-project--2 .sector-project__media { width: 100%; margin-left: 0; aspect-ratio: 4 / 3 !important; }
+  [data-page="sector"] .sector-project__text { margin-top: 24px; }
+  [data-page="sector"] .sector-project__meta { letter-spacing: 0.1em; }
+  [data-page="sector"] .sector-project__cta { margin-top: 12px; }
 }
 
 /* ------------------------------------------------------------ 5 · what we'd do for you (a printed menu on sand) */
@@ -207,8 +245,13 @@
   [data-page="sector"] .sector-menu__sheet { grid-column: 1 / -1; }
 }
 @media (max-width: 600px) {
-  [data-page="sector"] .sector-menu__item { grid-template-columns: 1fr; }
-  [data-page="sector"] .sector-menu__order { justify-self: start; }
+  [data-page="sector"] .sector-menu { padding-block: 56px 44px; }
+  [data-page="sector"] .sector-menu__head { margin-bottom: 30px; gap: 16px; }
+  [data-page="sector"] .sector-menu__sheet { padding: 0; background: none; box-shadow: none; border-radius: 0; }
+  [data-page="sector"] .sector-menu__masthead { padding-bottom: 14px; border-color: rgb(var(--ink-rgb) / 0.16); }
+  [data-page="sector"] .sector-menu__item { grid-template-columns: 1fr; gap: 10px; padding-block: 24px; border-color: rgb(var(--ink-rgb) / 0.16); }
+  [data-page="sector"] .sector-menu__item:last-child { padding-bottom: 0; }
+  [data-page="sector"] .sector-menu__order { justify-self: stretch; justify-content: space-between; min-height: 48px; margin-top: 6px; padding-inline: 1.25em; font-size: 0.9375rem; }
   [data-page="sector"] .sector-menu__masthead span:last-child { display: none; }
 }
 
@@ -255,7 +298,9 @@
   content: ""; position: absolute; left: 50%; top: 50%; width: 13px; height: 1.5px; margin: -0.75px 0 0 -6.5px; background: currentColor; border-radius: 1px;
 }
 [data-page="sector"] .sector-faq__icon::after { transform: rotate(90deg); }
-[data-page="sector"] .sector-faq__q:hover .sector-faq__icon { background: var(--green); color: var(--paper); box-shadow: none; }
+@media (hover: hover) and (pointer: fine) {
+  [data-page="sector"] .sector-faq__q:hover .sector-faq__icon { background: var(--green); color: var(--paper); box-shadow: none; }
+}
 [data-page="sector"] .sector-faq__item[open] .sector-faq__icon { transform: rotate(45deg); }
 [data-page="sector"] .sector-faq__a { padding: 0 28px 28px; }
 [data-page="sector"] .sector-faq__item:not([open]) .sector-faq__a { display: none; }   /* the UA hides it anyway; keeps its text out of layout */
@@ -299,17 +344,23 @@
   padding: 8px 18px 8px 8px; border-radius: var(--r-md);
   background: rgb(var(--paper-rgb) / 0.55); transition: background var(--t-ui) var(--ease-out), box-shadow var(--t-ui) var(--ease-out);
 }
-[data-page="sector"] .sector-others__link:hover { background: var(--paper); box-shadow: var(--shadow-soft); }
+@media (hover: hover) and (pointer: fine) {
+  [data-page="sector"] .sector-others__link:hover { background: var(--paper); box-shadow: var(--shadow-soft); }
+}
 [data-page="sector"] .sector-others__link:focus-visible { border-radius: var(--r-md); }
 [data-page="sector"] .sector-others__thumb { display: block; width: 52px; aspect-ratio: 1; overflow: hidden; border-radius: var(--r-sm); background: var(--paper-3); }
 [data-page="sector"] .sector-others__thumb img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.9s var(--ease-out); }
-[data-page="sector"] .sector-others__link:hover .sector-others__thumb img { transform: scale(1.08); }
+@media (hover: hover) and (pointer: fine) {
+  [data-page="sector"] .sector-others__link:hover .sector-others__thumb img { transform: scale(1.08); }
+}
 [data-page="sector"] .sector-others__text { display: grid; gap: 3px; }
 [data-page="sector"] .sector-others__time { display: inline-flex; align-items: center; gap: 7px; color: var(--ink-3); }
 [data-page="sector"] .sector-others__time::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--accent, var(--green)); }
 [data-page="sector"] .sector-others__name { font-family: var(--f-display); font-size: 1.45rem; line-height: 1.05; }
 [data-page="sector"] .sector-others__arr { transition: transform var(--t-ui) var(--ease-cut); }
-[data-page="sector"] .sector-others__link:hover .sector-others__arr { transform: translateX(4px); }
+@media (hover: hover) and (pointer: fine) {
+  [data-page="sector"] .sector-others__link:hover .sector-others__arr { transform: translateX(4px); }
+}
 @media (max-width: 1100px) {
   [data-page="sector"] .sector-others { grid-template-columns: 1fr; }
 }
@@ -320,4 +371,73 @@
 @media (max-width: 700px) {
   [data-page="sector"] .sector-others { margin-top: 64px; }
   [data-page="sector"] .sector-others__list { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  [data-page="sector"] .sector-cta { padding-top: 104px; }
+  [data-page="sector"] .sector-cta__actions { flex-direction: column; align-items: stretch; gap: 12px; margin-top: 24px; }
+  [data-page="sector"] .sector-cta__actions .btn { width: 100%; }
+}
+
+/* ------------------------------------------------------------ round 4 · touch-size targets (≥ 44px; the visual is unchanged) */
+@media (max-width: 900px) {
+  [data-page="sector"] .sector-projects__all,
+  [data-page="sector"] .sector-menu__all,
+  [data-page="sector"] .sector-faq__all { display: inline-block; padding-block: 11px; line-height: 22px; background-position: 0 calc(100% - 11px); }
+  [data-page="sector"] .sector-projects__all { margin-bottom: 0; }
+  [data-page="sector"] .sector-quote__link,
+  [data-page="sector"] .sector-menu__order { min-height: 44px; }
+  [data-page="sector"] .sector-project__link { display: inline-block; padding-block: 6px; }
+}
+
+/* ------------------------------------------------------------ round 4 · landscape phones (and any very short window):
+   nothing portrait is stretched to 844px wide — media are capped to the screen, points and projects run image | text */
+@media (orientation: landscape) and (max-height: 500px) {
+  /* hero: headline left, first sentence + actions right, all inside one screen */
+  [data-page="sector"] .sector-hero { min-height: calc(100svh - 2 * var(--panel-inset)); }
+  [data-page="sector"] .sector-hero__top { padding-top: calc(var(--header-h) + 2px); }
+  [data-page="sector"] .sector-hero__inner {
+    grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--gutter);
+    padding-top: 12px; padding-bottom: 18px; row-gap: 12px;
+  }
+  [data-page="sector"] .sector-hero__title { grid-column: 1 / span 7; font-size: clamp(2.3rem, 5.6vw, 3.1rem); max-width: 13ch; }
+  [data-page="sector"] .sector-hero__side { grid-column: 8 / -1; }
+  [data-page="sector"] .sector-hero__intro { font-size: 0.9375rem; line-height: 1.45; }
+  [data-page="sector"] .sector-hero__actions { margin-top: 14px; gap: 10px; }
+  [data-page="sector"] .sector-hero__actions .btn { min-height: 44px; padding-block: 0.5em; flex: 1 1 auto; }
+  [data-page="sector"] .sector-hero__note { display: none; }
+
+  /* what the room needs: one point per row, image | text */
+  [data-page="sector"] .sector-needs__list { row-gap: 40px; }
+  [data-page="sector"] .sector-need {
+    grid-column: 1 / -1; margin-top: 0 !important;
+    display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); column-gap: 32px; align-items: center;
+  }
+  [data-page="sector"] .sector-need__media { aspect-ratio: 3 / 2 !important; max-height: 70svh; }
+  [data-page="sector"] .sector-need__text { margin-top: 0; }
+
+  /* projects: image | text, landscape crops, never taller than the screen */
+  [data-page="sector"] .sector-projects__list { row-gap: 48px; }
+  [data-page="sector"] .sector-projects--2 .sector-project,
+  [data-page="sector"] .sector-projects--1 .sector-project {
+    grid-column: 1 / -1; margin-top: 0;
+    display: grid; grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); column-gap: 32px; align-items: center;
+  }
+  [data-page="sector"] .sector-projects--2 .sector-project .sector-project__media,
+  [data-page="sector"] .sector-projects--1 .sector-project__media {
+    grid-column: 1; width: 100%; margin-left: 0; aspect-ratio: 3 / 2 !important; max-height: 78svh;
+  }
+  [data-page="sector"] .sector-projects--2 .sector-project__text,
+  [data-page="sector"] .sector-projects--1 .sector-project__text { grid-column: 2; margin-top: 0; padding-bottom: 0; }
+
+  /* in their words: the round image beside the quote, capped */
+  [data-page="sector"] .sector-quote { padding-block: 64px; }
+  [data-page="sector"] .sector-quote__media { grid-column: 1 / span 2; width: min(100%, 60svh); margin-bottom: 0; }
+  [data-page="sector"] .sector-quote__body { grid-column: 3 / -1; }
+  [data-page="sector"] .sector-quote__text { font-size: clamp(1.9rem, 4vw, 2.6rem); }
+
+  /* the menu: head beside the sheet again */
+  [data-page="sector"] .sector-menu { padding-block: 64px; }
+  [data-page="sector"] .sector-menu__head { grid-column: 1 / span 2; margin-bottom: 0; }
+  [data-page="sector"] .sector-menu__sheet { grid-column: 3 / -1; }
+  [data-page="sector"] .sector-cta { padding-top: 96px; }
 }

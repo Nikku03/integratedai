@@ -57,6 +57,10 @@
 [data-page="404"] .nf__actions .btn:not(.btn--solid) { background: var(--paper); }
 [data-page="404"] .nf__more { margin-top: 20px; color: var(--ink-2); }
 [data-page="404"] .nf__more .text-link { color: var(--ink); }
+/* the way back is the page's only job: the lede and the actions arrive on a timer after the headline,
+   never waiting for a scroll trigger (a short phone screen may never cross one) */
+.js-motion [data-page="404"] .nf__in { animation: nf-rise 0.9s var(--ease-drift) both; animation-delay: calc(0.75s + var(--i, 0) * 0.08s); }
+@keyframes nf-rise { from { opacity: 0; translate: 0 16px; } to { opacity: 1; translate: none; } }
 
 /* ---- the floor */
 [data-page="404"] .nf__floor {
@@ -73,13 +77,32 @@
   [data-page="404"] .nf__text { grid-column: 4 / -1; }
 }
 @media (max-width: 600px) {
-  [data-page="404"] .nf { min-height: 0; }
-  [data-page="404"] .nf__inner { row-gap: 36px; }
-  [data-page="404"] .nf__frame { grid-column: 1 / -1; width: 64%; }
+  /* the door, the words and every way out in the first screen (360×780 up); no empty floor band */
+  [data-page="404"] .nf { min-height: 0; padding-top: calc(var(--header-h) + 12px); padding-bottom: 36px; }
+  [data-page="404"] .nf__floor { display: none; }
+  [data-page="404"] .nf__inner { row-gap: 26px; }
+  [data-page="404"] .nf__frame { grid-column: 1 / -1; width: min(64%, calc((34svh - 84px) * 0.8)); padding-top: 38px; }
+  /* the plaque may be wider than the small frame: one line per phrase, centred under it */
+  [data-page="404"] .nf__plaque { display: block; width: max-content; position: relative; left: 50%; translate: -50% 0; margin: 14px 0 0; white-space: nowrap; }
+  [data-page="404"] .nf__text .t-lede { margin-top: 14px; }
+  [data-page="404"] .nf__actions { margin-top: 22px; gap: 10px; }
+  [data-page="404"] .nf__more { margin-top: 14px; }
   [data-page="404"] .nf__plaque { text-align: center; padding-inline: 14px; }
   [data-page="404"] .nf__time { display: block; margin-bottom: 4px; }
   [data-page="404"] .nf__dash { display: none; }
   [data-page="404"] .nf__text { grid-column: 1 / -1; text-align: center; }
   [data-page="404"] .nf__text .t-lede { margin-inline: auto; }
   [data-page="404"] .nf__actions { justify-content: center; }
+}
+
+/* landscape phones: the framed door beside the words, sized to the short screen */
+@media (orientation: landscape) and (max-height: 500px) {
+  [data-page="404"] .nf { min-height: 0; padding-top: calc(var(--header-h) + 4px); padding-bottom: 20px; }
+  [data-page="404"] .nf__floor { display: none; }
+  [data-page="404"] .nf__frame { width: min(100%, calc((100svh - var(--header-h) - 134px) * 0.8)); padding-top: 34px; }
+  [data-page="404"] .nf__plaque { display: block; width: max-content; position: relative; left: 50%; translate: -50% 0; margin: 12px 0 0; white-space: nowrap; }
+  [data-page="404"] .nf__text .t-display-xl { font-size: clamp(2.8rem, 16svh, 4.6rem); margin-top: 0.6rem; }
+  [data-page="404"] .nf__text .t-lede { margin-top: 12px; }
+  [data-page="404"] .nf__actions { margin-top: 18px; }
+  [data-page="404"] .nf__more { margin-top: 10px; }
 }

@@ -91,8 +91,7 @@
 </header>
 <script src="../assets/js/nav.js" defer></script>
 <div class="nav-overlay" id="nav-overlay" role="dialog" aria-modal="true" aria-label="Site index" data-lenis-prevent>
-  <span class="nav-overlay__shape nav-overlay__shape--a" aria-hidden="true"></span>
-  <span class="nav-overlay__shape nav-overlay__shape--b" aria-hidden="true"></span>
+  <span class="nav-overlay__shapes" aria-hidden="true"><span class="nav-overlay__shape nav-overlay__shape--a"></span><span class="nav-overlay__shape nav-overlay__shape--b"></span></span>
   <div class="wrap nav-overlay__top">
     <a href="../index.html" aria-label="Two Squares, home"><span class="logo logo--mark" aria-hidden="true"></span></a>
     <button class="nav-overlay__close" type="button">Close <i aria-hidden="true"></i></button>
@@ -124,19 +123,19 @@
 
   <!-- 1 · hero: full-bleed photograph, shared view-transition name with the Work index card -->
   <section class="case-hero on-dark" data-header="dark" aria-labelledby="case-title">
-    <figure class="media case-hero__media" style="view-transition-name:proj-common-hours; aspect-ratio:4/3; --lqip:url(data:image/webp;base64,UklGRmQAAABXRUJQVlA4IFgAAACwAwCdASoUAA8APt1cpkyopSOiMAgBEBuJZQC7ABjHaHHUsMtPvAD+3NupiC5nx7IzoE4vGUsC+cF2VUPJFcyi8MaejwA0S6N5G6c0c0t4Zt9hUpBmqgAA); --focus:50% 50%">
+    <figure class="media case-hero__media" style="view-transition-name:proj-common-hours; --focus-sm:46% 62%; aspect-ratio:4/3; --lqip:url(data:image/webp;base64,UklGRmQAAABXRUJQVlA4IFgAAACwAwCdASoUAA8APt1cpkyopSOiMAgBEBuJZQC7ABjHaHHUsMtPvAD+3NupiC5nx7IzoE4vGUsC+cF2VUPJFcyi8MaejwA0S6N5G6c0c0t4Zt9hUpBmqgAA); --focus:50% 50%">
       <img src="../assets/img/photos/hero-05-black-windows-cafe-1600.webp" srcset="../assets/img/photos/hero-05-black-windows-cafe-800.webp 800w, ../assets/img/photos/hero-05-black-windows-cafe-1600.webp 1600w" sizes="(max-aspect-ratio: 1600/1200) calc(100vh * 1.333), 100vw"
            width="1600" height="1200" alt="Cafe corner: black steel grid windows, oak cross-back high chairs and table with a red flower, trailing plants, timber post" loading="eager" fetchpriority="high" decoding="async">
     </figure>
     <div class="wrap case-hero__top">
-      <a class="case-back t-label" href="../work.html?filter=cafes"><span class="case-back__arr" aria-hidden="true">←</span>All work</a>
+      <a class="case-back t-label" href="../work.html"><span class="case-back__arr" aria-hidden="true">←</span>All work</a>
     </div>
     <div class="wrap case-hero__inner">
       <div class="case-hero__head">
         <h1 class="t-display-xl case-hero__title" id="case-title" data-split>Common Hours</h1>
         <p class="t-label case-hero__meta"><span class="seg">Café &amp; bakery<span class="sep" aria-hidden="true">·</span></span> <span class="seg">Indiranagar, Bengaluru<span class="sep" aria-hidden="true">·</span></span> <span class="seg">2025</span></p>
       </div>
-      <p class="badge badge--placeholder case-hero__badge"><span class="badge__dot" aria-hidden="true"></span><span>Placeholder project. The name, quote and photographs stand in for real work.</span></p>
+      <p class="badge badge--placeholder case-hero__badge"><span class="badge__dot" aria-hidden="true"></span><span>Placeholder project.<span class="case-hero__badge-more"> The name, quote and photographs stand in for real work.</span></span></p>
     </div>
   </section>
 
@@ -197,7 +196,7 @@
   <section class="case-gallery" aria-label="Photographs">
     <div class="case-full case-full--1">
       <figure data-case-parallax="0.06" class="media case-full__media" data-reveal="image" style="aspect-ratio:3/2; --lqip:url(data:image/webp;base64,UklGRmQAAABXRUJQVlA4IFgAAACwAwCdASoUAA0APt1apkyopSOiMAgBEBuJQBOgAqfZoydwY+wngAD+WzDNNhRbOJDsBmlB9+GSSjt3S04xTiTRRcMhiFWAIED/BnFGmS+W26AHLcIFDkAA); --focus:50% 50%">
-        <img src="../assets/img/photos/hero-03-plant-hall-cafe-1600.webp" srcset="../assets/img/photos/hero-03-plant-hall-cafe-800.webp 800w, ../assets/img/photos/hero-03-plant-hall-cafe-1600.webp 1600w" sizes="100vw"
+        <img src="../assets/img/photos/hero-03-plant-hall-cafe-1600.webp" srcset="../assets/img/photos/hero-03-plant-hall-cafe-800.webp 800w, ../assets/img/photos/hero-03-plant-hall-cafe-1600.webp 1600w" sizes="(max-width: 900px) and (orientation: portrait) 187vw, 100vw"
              width="1600" height="1067" alt="Converted-warehouse café: white timber-truss roof, exposed brick, a black steel stair and hanging plants" loading="lazy" decoding="async">
       </figure>
     </div>
@@ -213,20 +212,20 @@
       </div>
     </div>
     <div class="wrap">
-      <div class="case-pair case-pair--portrait">
+      <div class="case-pair case-pair--portrait" data-float="0.6">
         <figure class="media case-pair__a" data-reveal="image" style="aspect-ratio:3/4; --lqip:url(data:image/webp;base64,UklGRl4AAABXRUJQVlA4IFIAAAAwBACdASoLABQAPt1ep00opSOiMAgBEBuJZQC7ACB0iw+VTZbJ2fzyYsgA/uUcjiXVJS21nbynaQ2W3lAb34jQTEQWDTXS52A+/cdi/xgF5wAA); --focus:50% 50%">
-          <img src="../assets/img/photos/cafe-a-02-rattan-table-plant-1600.webp" srcset="../assets/img/photos/cafe-a-02-rattan-table-plant-800.webp 800w, ../assets/img/photos/cafe-a-02-rattan-table-plant-1600.webp 1600w" sizes="(max-width: 900px) 50vw, 46vw"
+          <img src="../assets/img/photos/cafe-a-02-rattan-table-plant-1600.webp" srcset="../assets/img/photos/cafe-a-02-rattan-table-plant-800.webp 800w, ../assets/img/photos/cafe-a-02-rattan-table-plant-1600.webp 1600w" sizes="(max-width: 600px) 100vw, (max-width: 900px) 50vw, 46vw"
                width="901" height="1600" alt="Spindle-back timber chair beside rattan table, large potted bird-of-paradise against steel window, cream wall" loading="lazy" decoding="async">
         </figure>
         <figure class="media case-pair__b" data-reveal="image" style="aspect-ratio:3/4; --lqip:url(data:image/webp;base64,UklGRl4AAABXRUJQVlA4IFIAAACwAwCdASoLABQAPt1ep00opSOiMAgBEBuJYwDCgB6THaQY3dAF2AD+1hXAv1vyGaJGpdZjP/OMOP8TSotXo/ozQecOsKMF2xcAnbb/BD105IAA); --focus:50% 50%">
-          <img src="../assets/img/photos/cafe-a-03-timber-chair-plant-1600.webp" srcset="../assets/img/photos/cafe-a-03-timber-chair-plant-800.webp 800w, ../assets/img/photos/cafe-a-03-timber-chair-plant-1600.webp 1600w" sizes="(max-width: 900px) 50vw, 46vw"
+          <img src="../assets/img/photos/cafe-a-03-timber-chair-plant-1600.webp" srcset="../assets/img/photos/cafe-a-03-timber-chair-plant-800.webp 800w, ../assets/img/photos/cafe-a-03-timber-chair-plant-1600.webp 1600w" sizes="(max-width: 600px) 100vw, (max-width: 900px) 50vw, 46vw"
                width="901" height="1600" alt="Pale timber armchair and table in front of big glazing with tropical plant; bright, airy, honey timber on concrete" loading="lazy" decoding="async">
         </figure>
       </div>
     </div>
     <div class="case-full case-full--2">
       <figure data-case-parallax="0.06" class="media case-full__media" data-reveal="image" style="aspect-ratio:3/2; --lqip:url(data:image/webp;base64,UklGRkoAAABXRUJQVlA4ID4AAAAQAwCdASoUAA0APt1cpkyopSOiMAgBEBuJZQAAetGAUQAA/uBV/XBISS4Oo/3J+l77JbsVRCXxnEvv0oAAAA==); --focus:50% 50%">
-        <img src="../assets/img/photos/material-14-plaster-slat-shadow-1600.webp" srcset="../assets/img/photos/material-14-plaster-slat-shadow-800.webp 800w, ../assets/img/photos/material-14-plaster-slat-shadow-1600.webp 1600w" sizes="100vw"
+        <img src="../assets/img/photos/material-14-plaster-slat-shadow-1600.webp" srcset="../assets/img/photos/material-14-plaster-slat-shadow-800.webp 800w, ../assets/img/photos/material-14-plaster-slat-shadow-1600.webp 1600w" sizes="(max-width: 900px) and (orientation: portrait) 187vw, 100vw"
              width="1600" height="1067" alt="Warm sand-coloured lime/clay plaster wall with raking sun casting diagonal slat shadows" loading="lazy" decoding="async">
       </figure>
     </div>
@@ -262,7 +261,7 @@
                  width="1531" height="1600" alt="A dark marble bowl on unfilled travertine beside a stack of linen-bound books" loading="lazy" decoding="async">
           </figure>
           <div class="case-details__text">
-            <h3 class="t-label case-details__name"><span class="case-details__num">01</span>Counter</h3>
+            <h3 class="t-label case-details__name"><span class="case-details__num">01<span class="case-details__of" aria-hidden="true"> / 03</span></span>Counter</h3>
             <p class="t-lede" data-reveal>The espresso machine sits in a section of counter dropped by 150 mm, so the barista faces the queue, not the back of a machine.</p>
           </div>
         </li>
@@ -272,7 +271,7 @@
                  width="1067" height="1600" alt="Three slatted light-timber cone pendants glowing warm against a dark background" loading="lazy" decoding="async">
           </figure>
           <div class="case-details__text">
-            <h3 class="t-label case-details__name"><span class="case-details__num">02</span>Light</h3>
+            <h3 class="t-label case-details__name"><span class="case-details__num">02<span class="case-details__of" aria-hidden="true"> / 03</span></span>Light</h3>
             <p class="t-lede" data-reveal>Daylight carries the morning. From 16:00 the scene steps down to 2,700 K, with the pastry case held at 500 lux and the tables at 150.</p>
           </div>
         </li>
@@ -282,7 +281,7 @@
                  width="1200" height="1600" alt="Close-up of a curved, sanded pale timber edge with strong flame grain in soft light" loading="lazy" decoding="async">
           </figure>
           <div class="case-details__text">
-            <h3 class="t-label case-details__name"><span class="case-details__num">03</span>Joinery</h3>
+            <h3 class="t-label case-details__name"><span class="case-details__num">03<span class="case-details__of" aria-hidden="true"> / 03</span></span>Joinery</h3>
             <p class="t-lede" data-reveal>Window benches in teak reclaimed from the house’s original doors, with a charging point under every second cushion.</p>
           </div>
         </li>
@@ -337,8 +336,8 @@
   <!-- 10 · next project: full-width strip; its image morphs into the next page's hero -->
   <section class="case-next" aria-label="Next project">
     <a class="case-next__link" href="ember.html" data-cursor="View">
-      <figure aria-hidden="true" class="media case-next__media" style="view-transition-name:proj-ember; aspect-ratio:3/2; --lqip:url(data:image/webp;base64,UklGRmgAAABXRUJQVlA4IFwAAAAQBACdASoUAA0APt1cp0yopSOiMAgBEBuJZACdMoADQtaNl5mVodRusAD+5f+gTkJAeuU79jhma1PxFOpTjriumVTPH16QCH3q7wjhIYkXcgLwfYvxRBJwCgewAA==); --focus:50% 50%">
-        <img src="../assets/img/photos/rest-c-03-window-plants-1600.webp" srcset="../assets/img/photos/rest-c-03-window-plants-800.webp 800w, ../assets/img/photos/rest-c-03-window-plants-1600.webp 1600w" sizes="100vw"
+      <figure aria-hidden="true" class="media case-next__media" style="view-transition-name:proj-ember; --focus-sm:22% 70%; aspect-ratio:3/2; --lqip:url(data:image/webp;base64,UklGRmgAAABXRUJQVlA4IFwAAAAQBACdASoUAA0APt1cp0yopSOiMAgBEBuJZACdMoADQtaNl5mVodRusAD+5f+gTkJAeuU79jhma1PxFOpTjriumVTPH16QCH3q7wjhIYkXcgLwfYvxRBJwCgewAA==); --focus:50% 50%">
+        <img src="../assets/img/photos/rest-c-03-window-plants-1600.webp" srcset="../assets/img/photos/rest-c-03-window-plants-800.webp 800w, ../assets/img/photos/rest-c-03-window-plants-1600.webp 1600w" sizes="(max-width: 600px) and (orientation: portrait) calc(78vh * 1.500), (max-width: 900px) and (orientation: portrait) calc(80vh * 1.500), 100vw"
              width="1600" height="1067" alt="" loading="lazy" decoding="async">
       </figure>
       <span class="wrap case-next__inner">
@@ -360,7 +359,7 @@
         <p class="t-lede" data-reveal>Send us the floor plan and the opening date. We’ll come back with how the room could work.</p>
         <div class="case-cta__actions" data-reveal>
           <a class="btn btn--solid" href="../contact.html?venue=cafe&amp;from=case-study&amp;item=common-hours">Start a project <span class="arr" aria-hidden="true">→</span></a>
-          <a class="btn" href="../work.html?filter=cafes">All work</a>
+          <a class="btn" href="../work.html">All work</a>
         </div>
       </div>
     </div>
@@ -398,9 +397,9 @@
       <nav aria-label="Follow">
         <h2 class="t-label">Follow</h2>
         <ul class="t-small">
-          <li><a href="#" rel="noopener" data-placeholder>Instagram</a></li>
-          <li><a href="#" rel="noopener" data-placeholder>Pinterest</a></li>
-          <li><a href="#" rel="noopener" data-placeholder>LinkedIn</a></li>
+          <li><a href="#" rel="noopener" data-placeholder aria-disabled="true">Instagram</a></li>
+          <li><a href="#" rel="noopener" data-placeholder aria-disabled="true">Pinterest</a></li>
+          <li><a href="#" rel="noopener" data-placeholder aria-disabled="true">LinkedIn</a></li>
         </ul>
       </nav>
     </div>

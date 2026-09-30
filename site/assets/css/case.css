@@ -51,7 +51,7 @@ html.js-motion [data-page="case"] .case-hero__badge { opacity: 0; visibility: hi
   display: inline-flex; align-items: center; gap: 12px; min-height: 44px; color: var(--on-dark);
 }
 [data-page="case"] .case-back__arr { display: inline-block; font-size: 1rem; letter-spacing: 0; transition: transform var(--t-ui) var(--ease-cut); }
-[data-page="case"] .case-back:hover .case-back__arr { transform: translateX(-4px); }
+@media (hover: hover) and (pointer: fine) { [data-page="case"] .case-back:hover .case-back__arr { transform: translateX(-4px); } }
 [data-page="case"] .case-hero__inner {
   display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--gutter);
   align-items: end; padding-bottom: clamp(28px, 6.5vh, 76px);
@@ -173,9 +173,12 @@ html.js-motion [data-page="case"] .case-hero__badge { opacity: 0; visibility: hi
 [data-page="case"] .case-loop__toggle[aria-pressed="true"] .case-loop__icon::after { content: none; }
 [data-page="case"] .case-loop__toggle[aria-pressed="false"] .case-loop__word::after { content: "Pause"; }
 [data-page="case"] .case-loop__toggle[aria-pressed="true"] .case-loop__word::after { content: "Play"; }
-[data-page="case"] .case-loop__toggle:hover .case-loop__icon { background: var(--green); border-color: var(--green); color: var(--paper); }
+@media (hover: hover) and (pointer: fine) {
+  [data-page="case"] .case-loop__toggle:hover .case-loop__icon { background: var(--green); border-color: var(--green); color: var(--paper); }
+}
 
 [data-page="case"] .case-pair { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--gutter); }
+[data-page="case"] .case-pair { rotate: none !important; }   /* floats as one (data-float), level: no per-frame resampling */
 [data-page="case"] .case-pair__a { grid-column: 1 / 7; }
 [data-page="case"] .case-pair__b { grid-column: 7 / 13; }
 
@@ -194,6 +197,7 @@ html.js-motion [data-page="case"] .case-hero__badge { opacity: 0; visibility: hi
 @media (min-width: 601px) { [data-page="case"] .case-details__item { gap: 36px; } }   /* the photo floats: keep its liquid lag clear of the label */
 [data-page="case"] .case-details__name { display: flex; align-items: baseline; gap: 14px; margin-bottom: 14px; color: var(--ink); }
 [data-page="case"] .case-details__num { color: var(--ink-3); font-variant-numeric: tabular-nums; }
+[data-page="case"] .case-details__of { display: none; }   /* "/ 03": phones only (the swipe carousel) */
 [data-page="case"] .case-details__text .t-lede { max-width: 36ch; }
 
 /* desktop with motion: the photo column holds still (CSS sticky) and swaps as each callout passes.
@@ -276,8 +280,8 @@ html.js-motion [data-page="case"] .case-hero__badge { opacity: 0; visibility: hi
   position: absolute; inset: 0; z-index: -2; aspect-ratio: auto !important; view-transition-class: proj;
 }
 [data-page="case"] .case-next__media > img { transition: opacity 0.5s var(--ease-out), transform 1.2s var(--ease-out); }
-[data-page="case"] .case-next__link:hover .case-next__media > img,
 [data-page="case"] .case-next__link:focus-visible .case-next__media > img { transform: scale(1.045); }
+@media (hover: hover) and (pointer: fine) { [data-page="case"] .case-next__link:hover .case-next__media > img { transform: scale(1.045); } }
 [data-page="case"] .case-next__link::after {
   content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
   background:
@@ -302,9 +306,11 @@ html.js-motion [data-page="case"] .case-hero__badge { opacity: 0; visibility: hi
   transition: background var(--t-ui) var(--ease-cut), color var(--t-ui) var(--ease-cut), border-color var(--t-ui) var(--ease-cut);
 }
 [data-page="case"] .case-next__arrow span { transition: transform var(--t-ui) var(--ease-cut); }
-[data-page="case"] .case-next__link:hover .case-next__arrow,
 [data-page="case"] .case-next__link:focus-visible .case-next__arrow { background: var(--paper); color: var(--green-deep); border-color: var(--paper); }
-[data-page="case"] .case-next__link:hover .case-next__arrow span { transform: translateX(4px); }
+@media (hover: hover) and (pointer: fine) {
+  [data-page="case"] .case-next__link:hover .case-next__arrow { background: var(--paper); color: var(--green-deep); border-color: var(--paper); }
+  [data-page="case"] .case-next__link:hover .case-next__arrow span { transform: translateX(4px); }
+}
 [data-page="case"] .case-next__link:focus-visible { outline-offset: -6px; outline-color: var(--sand); }
 
 /* ------------------------------------------------------------ 11 · CTA */
@@ -318,9 +324,15 @@ html.js-motion [data-page="case"] .case-hero__badge { opacity: 0; visibility: hi
 /* ------------------------------------------------------------ tablet (≤ 900: 6-column grid) */
 @media (max-width: 900px) {
   [data-page="case"] .case-hero__inner { grid-template-columns: 1fr; row-gap: 22px; }
-  [data-page="case"] .case-hero__head,
-  [data-page="case"] .case-hero__badge { grid-column: 1 / -1; justify-self: start; }
-  [data-page="case"] .case-hero__badge { order: -1; }
+  [data-page="case"] .case-hero__head { grid-column: 1 / -1; justify-self: start; }
+  /* the placeholder notice leaves the photograph: a one-line chip on the "← All work" row */
+  [data-page="case"] .case-hero__badge {
+    position: absolute; top: calc(var(--header-h) + 2px); right: var(--margin);
+    min-height: 44px; align-items: center; padding: 6px 12px 6px 10px; max-width: calc(100% - 2 * var(--margin) - 9.5rem);
+  }
+  [data-page="case"] .case-hero__badge .badge__dot { margin-top: 0; }
+  [data-page="case"] .case-hero__badge-more { display: none; }
+  [data-page="case"] .case-hero__badge.badge--placeholder { border-radius: 999px; line-height: 1.25; }
 
   [data-page="case"] .case-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 
@@ -333,8 +345,7 @@ html.js-motion [data-page="case"] .case-hero__badge { opacity: 0; visibility: hi
   [data-page="case"] .case-scope .case-scope__media { margin-top: 56px; }
   [data-page="case"] .case-scope--portrait .case-scope__media { grid-column: 2 / -1; }
 
-  [data-page="case"] .case-full { aspect-ratio: 4 / 5; max-height: 86svh; }
-  [data-page="case"] .case-loop__media { grid-column: 1 / -1; aspect-ratio: 4 / 5; }
+  [data-page="case"] .case-loop__media { grid-column: 1 / -1; }
   [data-page="case"] .case-loop__side { grid-column: 1 / -1; flex-direction: row; align-items: center; justify-content: space-between; margin-top: 18px; }
   [data-page="case"] .case-loop__note { border-top: 0; padding-top: 0; width: auto; }
 
@@ -393,4 +404,96 @@ html.js-motion [data-page="case"] .case-hero__badge { opacity: 0; visibility: hi
   [data-page="case"] .case-next__arrow { width: 48px; height: 48px; }
 
   [data-page="case"] .case-cta__actions .btn { flex: 1 1 auto; }
+}
+
+/* ------------------------------------------------------------ phones held upright: portrait crops and art direction */
+@media (max-width: 900px) and (orientation: portrait) {
+  [data-page="case"] .case-full { aspect-ratio: 4 / 5; max-height: 86svh; }
+  [data-page="case"] .case-loop__media { aspect-ratio: 4 / 5; }
+  /* the landscape hero (and the next project's) centred on the room, not the middle of the frame */
+  [data-page="case"] .case-hero__media, [data-page="case"] .case-next__media { background-position: var(--focus-sm, var(--focus, 50% 50%)); }
+  [data-page="case"] .case-hero__media > img, [data-page="case"] .case-next__media > img { object-position: var(--focus-sm, var(--focus, 50% 50%)); }
+  /* scrims: the top one only as deep as the header and the back row; the bottom one darker, over a shorter run */
+  [data-page="case"] .case-hero::after {
+    background:
+      linear-gradient(to top, rgb(var(--shade-rgb) / 0.82) 0%, rgb(var(--shade-rgb) / 0.55) 24%, rgb(var(--shade-rgb) / 0) 46%),
+      linear-gradient(to bottom, rgb(var(--shade-rgb) / 0.66) 0, rgb(var(--shade-rgb) / 0.58) calc(var(--header-h) + 50px), rgb(var(--shade-rgb) / 0) calc(var(--header-h) + 112px));
+  }
+}
+
+/* ------------------------------------------------------------ phones (≤ 600): rhythm, pairs, the details carousel, labels */
+@media (max-width: 600px) {
+  /* spaced-caps rows break between parts, never leaving a dot at a line end: the dots move into the gaps
+     (::before on each part) and the one at a line start is clipped away with the left margin */
+  [data-page="case"] .case-hero__meta, [data-page="case"] .case-next__meta {
+    display: flex; flex-wrap: wrap; column-gap: 1.3em; margin-left: -1.3em; padding-left: 1.3em;
+    clip-path: inset(-1em -1em -1em 1.3em); letter-spacing: 0.14em;
+  }
+  [data-page="case"] .case-hero__meta .sep, [data-page="case"] .case-next__meta .sep { display: none; }
+  [data-page="case"] .case-hero__meta .seg, [data-page="case"] .case-next__meta .seg { position: relative; }
+  [data-page="case"] .case-hero__meta .seg::before, [data-page="case"] .case-next__meta .seg::before {
+    content: "·"; content: "·" / ""; position: absolute; left: -0.82em; top: 0;
+  }
+  [data-page="case"] .case-quote__by { text-wrap: balance; letter-spacing: 0.14em; line-height: 1.6; }
+  [data-page="case"] .case-credits__item { grid-template-columns: auto minmax(0, 1fr); column-gap: 20px; }
+  [data-page="case"] .case-credits__list dt { letter-spacing: 0.14em; min-width: 7.5rem; }
+  [data-page="case"] .case-facts dt { letter-spacing: 0.14em; }
+
+  /* the pair: one above the other at full width, not two 170px thumbnails */
+  [data-page="case"] .case-pair { grid-template-columns: minmax(0, 1fr); row-gap: 12px; }
+
+  /* the details: a sideways swipe, the next one peeking (not three screen-high textures in a row) */
+  [data-page="case"] .case-details__list {
+    display: flex; gap: 12px; overflow-x: auto; overflow-y: hidden; touch-action: pan-x pan-y;
+    scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: none;
+    margin-inline: calc(-1 * var(--margin)); padding: 8px var(--margin) 10px; scroll-padding-inline: var(--margin);
+  }
+  [data-page="case"] .case-details__list::-webkit-scrollbar { display: none; }
+  [data-page="case"] .case-details__item,
+  [data-page="case"] .case-details__item:last-child:nth-child(odd) { flex: 0 0 82%; display: grid; grid-template-columns: none; scroll-snap-align: start; gap: 16px; }
+  [data-page="case"] .case-details__of { display: inline; }
+  [data-page="case"] .case-details__name { margin-bottom: 8px; }
+  [data-page="case"] .case-details__text .t-lede { font-size: 1.0625rem; line-height: 1.5; }
+
+  /* closing panels: phone padding; the two actions stacked full width, "Start a project" first */
+  [data-page="case"] .case-close { padding-bottom: 56px; }
+  [data-page="case"] .case-row--outcome { margin-top: 56px; }
+  [data-page="case"] .case-quote { padding-block: 56px; }
+  [data-page="case"] .case-quote__label { margin-bottom: 28px; }
+  [data-page="case"] .case-quote__by { margin-top: 26px; }
+  [data-page="case"] .case-credits { padding-block: 56px; }
+  [data-page="case"] .case-cta { padding-block: 64px; }
+  [data-page="case"] .case-cta .grid { row-gap: 22px; }
+  [data-page="case"] .case-cta__actions { flex-direction: column; align-items: stretch; margin-top: 24px; }
+  [data-page="case"] .case-cta__actions .btn { justify-content: center; }
+
+  /* the next project: a stronger scrim under a text block that covers half the panel */
+  [data-page="case"] .case-next__link::after {
+    background: linear-gradient(to top, rgb(var(--shade-rgb) / 0.86) 0%, rgb(var(--shade-rgb) / 0.72) 30%, rgb(var(--shade-rgb) / 0.36) 56%, rgb(var(--shade-rgb) / 0) 76%);
+  }
+}
+
+/* ------------------------------------------------------------ landscape phones: every picture fits the short screen */
+@media (max-width: 900px) and (orientation: landscape) {
+  [data-page="case"] .case-full { aspect-ratio: 16 / 9; max-height: none; }
+  [data-page="case"] .case-loop__media { grid-column: 1 / 5; aspect-ratio: 16 / 9; }
+  [data-page="case"] .case-loop__side { grid-column: 5 / -1; flex-direction: column; align-items: flex-start; justify-content: flex-end; margin-top: 0; }
+  [data-page="case"] .case-scope__text { grid-column: 1 / 4; }
+  [data-page="case"] .case-scope .case-scope__media { grid-column: 4 / -1; margin-top: 0; }
+  [data-page="case"] .case-scope--portrait .case-scope__media { grid-column: 4 / -1; width: min(100%, calc(80svh * 0.8)); justify-self: end; }
+  [data-page="case"] .case-pair--portrait .media { max-height: 80svh; }
+  [data-page="case"] .case-pair--portrait { width: min(100%, calc(80svh * 1.5 + 10px)); margin-inline: auto; }
+  [data-page="case"] .case-details__list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  [data-page="case"] .case-details__item:last-child:nth-child(odd) { grid-column: auto; grid-template-columns: none; align-items: start; }
+  [data-page="case"] .case-details__text .t-lede { font-size: 1rem; line-height: 1.5; }
+  [data-page="case"] .case-next__link { min-height: 0; height: calc(100svh - 2 * var(--panel-inset)); }
+}
+@media (orientation: landscape) and (max-height: 500px) {
+  /* the hero is one screen, with the name on it */
+  [data-page="case"] .case-hero { min-height: 0; height: calc(100svh - 2 * var(--panel-inset)); }
+  [data-page="case"] .case-hero__title { font-size: min(21vw, 22svh); margin-bottom: 10px; }
+  [data-page="case"] .case-hero__inner { padding-bottom: 18px; row-gap: 12px; }
+  [data-page="case"] .case-next__name { font-size: min(15.5vw, 24svh); }
+  [data-page="case"] .case-next__inner { padding-bottom: 16px; }
+  [data-page="case"] .case-next__foot { margin-top: 12px; padding-top: 10px; }
 }

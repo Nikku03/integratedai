@@ -91,8 +91,7 @@
 </header>
 <script src="../assets/js/nav.js" defer></script>
 <div class="nav-overlay" id="nav-overlay" role="dialog" aria-modal="true" aria-label="Site index" data-lenis-prevent>
-  <span class="nav-overlay__shape nav-overlay__shape--a" aria-hidden="true"></span>
-  <span class="nav-overlay__shape nav-overlay__shape--b" aria-hidden="true"></span>
+  <span class="nav-overlay__shapes" aria-hidden="true"><span class="nav-overlay__shape nav-overlay__shape--a"></span><span class="nav-overlay__shape nav-overlay__shape--b"></span></span>
   <div class="wrap nav-overlay__top">
     <a href="../index.html" aria-label="Two Squares, home"><span class="logo logo--mark" aria-hidden="true"></span></a>
     <button class="nav-overlay__close" type="button">Close <i aria-hidden="true"></i></button>
@@ -124,19 +123,19 @@
 
   <!-- 1 · hero: full-bleed photograph, shared view-transition name with the Work index card -->
   <section class="case-hero on-dark" data-header="dark" aria-labelledby="case-title">
-    <figure class="media case-hero__media" style="view-transition-name:proj-dhaaga; aspect-ratio:3/2; --lqip:url(data:image/webp;base64,UklGRmoAAABXRUJQVlA4IF4AAACwAwCdASoUAA0APt1cp0yopSOiMAgBEBuJYwC7ACGdDSMgNpARAAD+6D6+z50pnwe/hmMF4CICjgz8Awplbyr1PQV/lDnyE5tmhLooVkwc1R+HdzbgziYpXyCiAAAA); --focus:50% 50%">
+    <figure class="media case-hero__media" style="view-transition-name:proj-dhaaga; --focus-sm:42% 55%; aspect-ratio:3/2; --lqip:url(data:image/webp;base64,UklGRmoAAABXRUJQVlA4IF4AAACwAwCdASoUAA0APt1cp0yopSOiMAgBEBuJYwC7ACGdDSMgNpARAAD+6D6+z50pnwe/hmMF4CICjgz8Awplbyr1PQV/lDnyE5tmhLooVkwc1R+HdzbgziYpXyCiAAAA); --focus:50% 50%">
       <img src="../assets/img/photos/retailA-01-boutique-rail-plants-1600.webp" srcset="../assets/img/photos/retailA-01-boutique-rail-plants-800.webp 800w, ../assets/img/photos/retailA-01-boutique-rail-plants-1600.webp 1600w" sizes="(max-aspect-ratio: 1600/1068) calc(100vh * 1.498), 100vw"
            width="1600" height="1068" alt="A bright atelier boutique: garments on a long rail between potted trees on a pale floor" loading="eager" fetchpriority="high" decoding="async">
     </figure>
     <div class="wrap case-hero__top">
-      <a class="case-back t-label" href="../work.html?filter=retail"><span class="case-back__arr" aria-hidden="true">←</span>All work</a>
+      <a class="case-back t-label" href="../work.html"><span class="case-back__arr" aria-hidden="true">←</span>All work</a>
     </div>
     <div class="wrap case-hero__inner">
       <div class="case-hero__head">
         <h1 class="t-display-xl case-hero__title" id="case-title" data-split>Dhaaga</h1>
         <p class="t-label case-hero__meta"><span class="seg">Textile &amp; homeware store<span class="sep" aria-hidden="true">·</span></span> <span class="seg">Alserkal Avenue, Dubai<span class="sep" aria-hidden="true">·</span></span> <span class="seg">2025</span></p>
       </div>
-      <p class="badge badge--placeholder case-hero__badge"><span class="badge__dot" aria-hidden="true"></span><span>Placeholder project. The name, quote and photographs stand in for real work.</span></p>
+      <p class="badge badge--placeholder case-hero__badge"><span class="badge__dot" aria-hidden="true"></span><span>Placeholder project.<span class="case-hero__badge-more"> The name, quote and photographs stand in for real work.</span></span></p>
     </div>
   </section>
 
@@ -198,7 +197,7 @@
   <section class="case-gallery" aria-label="Photographs">
     <div class="case-full case-full--1">
       <figure data-case-parallax="0.06" class="media case-full__media" data-reveal="image" style="aspect-ratio:3/2; --lqip:url(data:image/webp;base64,UklGRloAAABXRUJQVlA4IE4AAACwAwCdASoUAA0APt1eqU2opSQiMAgBEBuJZwCdABucu5KJ24FqPAD+VHsPyF3lq9CtjuXAAFurIS98cnEwAknCrzsPUNHN8njwL2ECAAA=); --focus:50% 50%">
-        <img src="../assets/img/photos/retailA-06-atelier-workroom-1600.webp" srcset="../assets/img/photos/retailA-06-atelier-workroom-800.webp 800w, ../assets/img/photos/retailA-06-atelier-workroom-1600.webp 1600w" sizes="100vw"
+        <img src="../assets/img/photos/retailA-06-atelier-workroom-1600.webp" srcset="../assets/img/photos/retailA-06-atelier-workroom-800.webp 800w, ../assets/img/photos/retailA-06-atelier-workroom-1600.webp 1600w" sizes="(max-width: 900px) and (orientation: portrait) 187vw, 100vw"
              width="1600" height="1068" alt="Atelier workroom: a timber thread-rack wall, white cutting tables and an oak table with sewing chairs" loading="lazy" decoding="async">
       </figure>
     </div>
@@ -214,20 +213,20 @@
       </div>
     </div>
     <div class="wrap">
-      <div class="case-pair case-pair--portrait">
+      <div class="case-pair case-pair--portrait" data-float="0.6">
         <figure class="media case-pair__a" data-reveal="image" style="aspect-ratio:3/4; --lqip:url(data:image/webp;base64,UklGRmQAAABXRUJQVlA4IFgAAADwAwCdASoNABQAPt1ep00opSOiMAgBEBuJQBYdg9G6Kkd2h7fpO/WAAP6z44XXRcMBqtb+tSLMXKvAXCc4o7M82ehLOMU4RyDBmtN0XS8q1iR2Ek61SAAA); --focus:50% 50%">
-          <img src="../assets/img/photos/retailA-03-fitting-corner-rattan-1600.webp" srcset="../assets/img/photos/retailA-03-fitting-corner-rattan-800.webp 800w, ../assets/img/photos/retailA-03-fitting-corner-rattan-1600.webp 1600w" sizes="(max-width: 900px) 50vw, 46vw"
+          <img src="../assets/img/photos/retailA-03-fitting-corner-rattan-1600.webp" srcset="../assets/img/photos/retailA-03-fitting-corner-rattan-800.webp 800w, ../assets/img/photos/retailA-03-fitting-corner-rattan-1600.webp 1600w" sizes="(max-width: 600px) 100vw, (max-width: 900px) 50vw, 46vw"
                width="1068" height="1600" alt="Fitting corner with terracotta niches, cream curtains, a rattan lounge chair and a ficus on a pale lilac floor" loading="lazy" decoding="async">
         </figure>
         <figure class="media case-pair__b" data-reveal="image" style="aspect-ratio:3/4; --lqip:url(data:image/webp;base64,UklGRmAAAABXRUJQVlA4IFQAAADwAwCdASoNABQAPt1cp0yopSOiMAgBEBuJZQC7ACHhvAXzIS2gBakgAP7ew7C6YSkpaClhYc8Pl3YJZ3KSiQFa/M+KE36xsiRIf7S7cZVWqb4uAAA=); --focus:50% 50%">
-          <img src="../assets/img/photos/retailA-05-haberdashery-wall-1600.webp" srcset="../assets/img/photos/retailA-05-haberdashery-wall-800.webp 800w, ../assets/img/photos/retailA-05-haberdashery-wall-1600.webp 1600w" sizes="(max-width: 900px) 50vw, 46vw"
+          <img src="../assets/img/photos/retailA-05-haberdashery-wall-1600.webp" srcset="../assets/img/photos/retailA-05-haberdashery-wall-800.webp 800w, ../assets/img/photos/retailA-05-haberdashery-wall-1600.webp 1600w" sizes="(max-width: 600px) 100vw, (max-width: 900px) 50vw, 46vw"
                width="1068" height="1600" alt="A wall of thread spools on timber rails, a pothos in macramé and the workroom beyond" loading="lazy" decoding="async">
         </figure>
       </div>
     </div>
     <div class="case-full case-full--2">
       <figure data-case-parallax="0.06" class="media case-full__media" data-reveal="image" style="aspect-ratio:3/2; --lqip:url(data:image/webp;base64,UklGRnIAAABXRUJQVlA4IGYAAAAQBACdASoUAA0APt1cpkyopSOiMAgBEBuJYwCdMoADT41Rze2oJnXlAAD+1BPTiv31LbxAf6in0TdCQDhQNx/r5aZi1gzAhxmoMlkJhYr2NNWX7O3GX8M+6z6adt+I+nvoKiGwAAA=); --focus:50% 50%">
-        <img src="../assets/img/photos/retailA-04-cutting-table-fabrics-1600.webp" srcset="../assets/img/photos/retailA-04-cutting-table-fabrics-800.webp 800w, ../assets/img/photos/retailA-04-cutting-table-fabrics-1600.webp 1600w" sizes="100vw"
+        <img src="../assets/img/photos/retailA-04-cutting-table-fabrics-1600.webp" srcset="../assets/img/photos/retailA-04-cutting-table-fabrics-800.webp 800w, ../assets/img/photos/retailA-04-cutting-table-fabrics-1600.webp 1600w" sizes="(max-width: 900px) and (orientation: portrait) 187vw, 100vw"
              width="1600" height="1068" alt="A white cutting table on a brass-toned frame, its open shelves packed with pink, navy and cream fabric rolls" loading="lazy" decoding="async">
       </figure>
     </div>
@@ -263,7 +262,7 @@
                  width="1600" height="1067" alt="Top-down: hands arrange woven textile swatches, rust and ochre wool yarn and paint-colour cards on a marble table" loading="lazy" decoding="async">
           </figure>
           <div class="case-details__text">
-            <h3 class="t-label case-details__name"><span class="case-details__num">01</span>Rails</h3>
+            <h3 class="t-label case-details__name"><span class="case-details__num">01<span class="case-details__of" aria-hidden="true"> / 03</span></span>Rails</h3>
             <p class="t-lede" data-reveal>Blackened-steel rails and counterweights, each carrying a 12-metre bolt of cloth, lowered by one person with one hand.</p>
           </div>
         </li>
@@ -273,7 +272,7 @@
                  width="1600" height="1067" alt="Hands mark a line on a pale timber board with a pencil, with a chisel and shavings on the bench" loading="lazy" decoding="async">
           </figure>
           <div class="case-details__text">
-            <h3 class="t-label case-details__name"><span class="case-details__num">02</span>Till</h3>
+            <h3 class="t-label case-details__name"><span class="case-details__num">02<span class="case-details__of" aria-hidden="true"> / 03</span></span>Till</h3>
             <p class="t-lede" data-reveal>A 6-metre cutting table in solid sheesham doubles as the till, with a brass rule inlaid along its edge.</p>
           </div>
         </li>
@@ -283,7 +282,7 @@
                  width="1200" height="1600" alt="White plate switch with two knurled brass toggles on a textured white plaster wall, in raking light" loading="lazy" decoding="async">
           </figure>
           <div class="case-details__text">
-            <h3 class="t-label case-details__name"><span class="case-details__num">03</span>Light</h3>
+            <h3 class="t-label case-details__name"><span class="case-details__num">03<span class="case-details__of" aria-hidden="true"> / 03</span></span>Light</h3>
             <p class="t-lede" data-reveal>3,500 K throughout at CRI 97 or higher, so indigo still looks like indigo when you get it home.</p>
           </div>
         </li>
@@ -338,8 +337,8 @@
   <!-- 10 · next project: full-width strip; its image morphs into the next page's hero -->
   <section class="case-next" aria-label="Next project">
     <a class="case-next__link" href="otla.html" data-cursor="View">
-      <figure aria-hidden="true" class="media case-next__media" style="view-transition-name:proj-otla; aspect-ratio:3/2; --lqip:url(data:image/webp;base64,UklGRmoAAABXRUJQVlA4IF4AAADwAwCdASoUAA0APt1ep00opSOiMAgBEBuJYwDE2CHYdKSeOXArejAAAP7tWYRICb53t0nLgex/TEeMm4t3WnkeIsTmuhNbun+zlsVYM4Oeubjon+SRfb7obdnz/AAA); --focus:50% 50%">
-        <img src="../assets/img/photos/rest-a-01-dining-room-banquette-1600.webp" srcset="../assets/img/photos/rest-a-01-dining-room-banquette-800.webp 800w, ../assets/img/photos/rest-a-01-dining-room-banquette-1600.webp 1600w" sizes="100vw"
+      <figure aria-hidden="true" class="media case-next__media" style="view-transition-name:proj-otla; --focus-sm:70% 60%; aspect-ratio:3/2; --lqip:url(data:image/webp;base64,UklGRmoAAABXRUJQVlA4IF4AAADwAwCdASoUAA0APt1ep00opSOiMAgBEBuJYwDE2CHYdKSeOXArejAAAP7tWYRICb53t0nLgex/TEeMm4t3WnkeIsTmuhNbun+zlsVYM4Oeubjon+SRfb7obdnz/AAA); --focus:50% 50%">
+        <img src="../assets/img/photos/rest-a-01-dining-room-banquette-1600.webp" srcset="../assets/img/photos/rest-a-01-dining-room-banquette-800.webp 800w, ../assets/img/photos/rest-a-01-dining-room-banquette-1600.webp 1600w" sizes="(max-width: 600px) and (orientation: portrait) calc(78vh * 1.500), (max-width: 900px) and (orientation: portrait) calc(80vh * 1.500), 100vw"
              width="1600" height="1067" alt="" loading="lazy" decoding="async">
       </figure>
       <span class="wrap case-next__inner">
@@ -361,7 +360,7 @@
         <p class="t-lede" data-reveal>Send us the floor plan and the opening date. We’ll come back with how the room could work.</p>
         <div class="case-cta__actions" data-reveal>
           <a class="btn btn--solid" href="../contact.html?venue=shop&amp;from=case-study&amp;item=dhaaga">Start a project <span class="arr" aria-hidden="true">→</span></a>
-          <a class="btn" href="../work.html?filter=retail">All work</a>
+          <a class="btn" href="../work.html">All work</a>
         </div>
       </div>
     </div>
@@ -399,9 +398,9 @@
       <nav aria-label="Follow">
         <h2 class="t-label">Follow</h2>
         <ul class="t-small">
-          <li><a href="#" rel="noopener" data-placeholder>Instagram</a></li>
-          <li><a href="#" rel="noopener" data-placeholder>Pinterest</a></li>
-          <li><a href="#" rel="noopener" data-placeholder>LinkedIn</a></li>
+          <li><a href="#" rel="noopener" data-placeholder aria-disabled="true">Instagram</a></li>
+          <li><a href="#" rel="noopener" data-placeholder aria-disabled="true">Pinterest</a></li>
+          <li><a href="#" rel="noopener" data-placeholder aria-disabled="true">LinkedIn</a></li>
         </ul>
       </nav>
     </div>

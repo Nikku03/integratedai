@@ -17,8 +17,9 @@
   content: ""; position: absolute; left: 0; right: 18px; bottom: 6px; height: 1px; background: currentColor;
   transform: scaleX(0); transform-origin: right; transition: transform var(--t-ui) var(--ease-cut);
 }
-.nav-sectors__toggle:hover::after, .nav-sectors.is-open .nav-sectors__toggle::after,
+.nav-sectors.is-open .nav-sectors__toggle::after,
 body[data-section="sectors"] .nav-sectors__toggle::after { transform: scaleX(1); transform-origin: left; }
+@media (hover: hover) and (pointer: fine) { .nav-sectors__toggle:hover::after { transform: scaleX(1); transform-origin: left; } }
 .nav-sectors__chev {
   width: 7px; height: 7px; margin-top: -4px;
   border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor;
@@ -72,7 +73,7 @@ body[data-section="sectors"] .nav-sectors__toggle::after { transform: scaleX(1);
 .site-header__nav a.nav-sectors__all { justify-self: end; display: inline-flex; gap: 0.5em; margin-right: 4px; padding-block: 8px; font-size: 0.875rem; }
 .site-header__nav a.nav-sectors__all::after { bottom: 4px; }
 .nav-sectors__all .arr { transition: transform var(--t-ui) var(--ease-cut); }
-.nav-sectors__all:hover .arr { transform: translateX(4px); }
+@media (hover: hover) and (pointer: fine) { .nav-sectors__all:hover .arr { transform: translateX(4px); } }
 
 /* no JS: the panel opens while the toggle (or a link in it) has focus */
 .no-js .nav-sectors:focus-within .nav-sectors__panel { display: grid !important; opacity: 1; transform: none; }
@@ -89,12 +90,23 @@ body[data-section="sectors"] .nav-sectors__toggle::after { transform: scaleX(1);
 .nav-overlay__sector-text .t-label { display: inline-flex; align-items: center; gap: 7px; color: var(--on-dark-2); }
 .nav-overlay__sector-text .t-label::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--sand); }
 .nav-overlay__sector-name { font-family: var(--f-display); font-size: 1.6rem; line-height: 1; transition: color var(--t-micro); }
-.nav-overlay__sector:hover .nav-overlay__sector-name, .nav-overlay__sector[aria-current="page"] .nav-overlay__sector-name { color: var(--sand); }
-@media (max-width: 600px) {
-  .nav-overlay__sector-list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-  .nav-overlay__sector { grid-template-columns: 52px minmax(0, 1fr); align-items: center; gap: 12px; }
+.nav-overlay__sector[aria-current="page"] .nav-overlay__sector-name { color: var(--sand); }
+@media (hover: hover) and (pointer: fine) { .nav-overlay__sector:hover .nav-overlay__sector-name { color: var(--sand); } }
+/* phones (and landscape phones): a compact 2 × 2 list, 52px square thumbnails, whole row tappable */
+@media (max-width: 600px), (max-height: 500px) and (orientation: landscape) {
+  .nav-overlay__sectors { margin-top: 10px; padding-top: 16px; }
+  .nav-overlay__sectors-label { margin-bottom: 10px; }
+  .nav-overlay__sector-list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 12px; }
+  .nav-overlay__sector { grid-template-columns: 52px minmax(0, 1fr); align-items: center; gap: 12px; min-height: 52px; }
   .nav-overlay__thumb { aspect-ratio: 1; border-radius: var(--r-sm); }
   .nav-overlay__sector-name { font-size: 1.3rem; }
+}
+/* landscape phones: the sectors take the right column, beside the links (base.css sets the grid) */
+@media (max-height: 500px) and (orientation: landscape) {
+  .nav-overlay__sectors {
+    grid-column: 2; grid-row: 1 / span 5; align-self: center;
+    margin: 0; padding: 4px 0 4px clamp(20px, 3vw, 32px); border-top: 0; border-left: 1px solid var(--line-dark);
+  }
 }
 @media (prefers-reduced-motion: no-preference) {
   .js-motion .nav-overlay__sectors-label, .js-motion .nav-overlay__sector-list > li {

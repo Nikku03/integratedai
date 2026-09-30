@@ -82,8 +82,7 @@
 </header>
 <script src="assets/js/nav.js" defer></script>
 <div class="nav-overlay" id="nav-overlay" role="dialog" aria-modal="true" aria-label="Site index" data-lenis-prevent>
-  <span class="nav-overlay__shape nav-overlay__shape--a" aria-hidden="true"></span>
-  <span class="nav-overlay__shape nav-overlay__shape--b" aria-hidden="true"></span>
+  <span class="nav-overlay__shapes" aria-hidden="true"><span class="nav-overlay__shape nav-overlay__shape--a"></span><span class="nav-overlay__shape nav-overlay__shape--b"></span></span>
   <div class="wrap nav-overlay__top">
     <a href="index.html" aria-label="Two Squares, home"><span class="logo logo--mark" aria-hidden="true"></span></a>
     <button class="nav-overlay__close" type="button">Close <i aria-hidden="true"></i></button>
@@ -127,13 +126,14 @@
         <span class="work-swap__v" data-f="retail">Retail you walk <em>slower</em> in.</span>
       </h1>
       <div class="work-hero__side" data-reveal data-delay="0.2">
-        <div class="work-hero__intro t-body work-swap" data-swap="intro">
+        <div class="work-hero__intro t-body work-swap" data-swap="intro" id="work-intro">
           <p class="work-swap__v" data-f="all">Cafés that earn their living before ten. Dining rooms that turn tables without rushing anyone. Bars built for 1am, and shops you walk slower in. Every project here was drawn and built by the same team, which is why they look like the drawings and why they’re still holding up.</p>
           <p class="work-swap__v" data-f="cafes">A café is judged at 08:15, with the queue at the door. We plan the counter first — order, make, <span class="work-nb">pick-up</span>, bin — so two baristas can do the work of three. Then the room: seats for laptops and for prams, daylight on the pastry case, power where people actually sit, and a corner table someone will claim every morning.</p>
           <p class="work-swap__v" data-f="restaurants">We walk the service before we choose a finish: host to table, table to pass, pass to <span class="work-nb">wash-up</span>. Every metre a server saves is a metre of calm in the room. Then we make it warm: acoustics you can talk over at full covers, banquettes worth waiting for, and light that flatters the food and the faces.</p>
           <p class="work-swap__v" data-f="bars">Everything in a bar faces one way. We design the <span class="work-nb">back-bar</span> as the stage and the room as the audience, draw the stations with your head bartender, and put the lighting on scenes so the room changes without anyone touching a switch. Finishes are chosen for citrus, sugar and 2am.</p>
           <p class="work-swap__v" data-f="retail">A shopfront gets about three seconds with someone walking past at 4 km/h. We design for those three seconds, then for the walk to the back wall, then for the till. Fixtures that disappear, light that renders colour truthfully, and kits of parts that travel to the next city.</p>
         </div>
+        <button class="work-hero__more" type="button" aria-expanded="false" aria-controls="work-intro"><span class="work-hero__more-txt">More</span><span class="work-hero__more-ico" aria-hidden="true"></span></button>
         <div class="work-hero__cta work-swap" data-swap="cta">
           <p class="work-swap__v" data-f="cafes"><a class="work-hero__cta-link" href="contact.html?venue=cafe&amp;from=work"><span>Talk about your café</span> <span class="arr" aria-hidden="true">→</span></a></p>
           <p class="work-swap__v" data-f="restaurants"><a class="work-hero__cta-link" href="contact.html?venue=restaurant&amp;from=work"><span>Talk about your restaurant</span> <span class="arr" aria-hidden="true">→</span></a></p>
@@ -142,6 +142,11 @@
         </div>
       </div>
 <!-- /@gen:work-hero -->
+    </div>
+  </section>
+
+  <section class="work-index" aria-label="Projects">
+    <div class="wrap">
       <div class="work-bar" data-reveal data-delay="0.3">
         <div class="work-bar__inner">
 <!-- @gen:work-bar -->
@@ -173,11 +178,6 @@
           </div>
         </div>
       </div>
-    </div>
-  </section>
-
-  <section class="work-index" aria-label="Projects">
-    <div class="wrap">
 <!-- @gen:work -->
 <ol class="work-list" id="work-list" aria-label="Projects">
   <li class="work-item" data-filter="bars" data-slug="stillroom" style="--accent:var(--bar)">
@@ -190,7 +190,7 @@
         <p class="work-item__cta" aria-hidden="true" data-reveal><span class="work-item__cta-txt">View project</span> <span class="arr">→</span></p>
       </div>
       <a class="work-item__media" href="work/stillroom.html" tabindex="-1" aria-hidden="true" data-cursor="View">
-        <div class="work-item__strip" data-reveal-group>
+        <div class="work-item__strip" data-reveal-group data-float="0.6">
           <figure class="media work-item__img work-item__lead" data-reveal="image" style="--r:1.4467; view-transition-name:proj-stillroom; aspect-ratio:13/9; --lqip:url(data:image/webp;base64,UklGRmYAAABXRUJQVlA4IFoAAADwAwCdASoUAA4APt1cpkyopSOiMAgBEBuJZgCdMoADSJlqqT2S6BmAAP7xaHnPB+ybWAljE3VfluiurLaFuSsLmVXII0Gw8m74KRzJZCgzs0N+XJysSJoAAAA=); --focus:50% 50%">
             <img src="assets/img/photos/bar-a-01-red-lounge-wide-1600.webp" srcset="assets/img/photos/bar-a-01-red-lounge-wide-800.webp 800w, assets/img/photos/bar-a-01-red-lounge-wide-1600.webp 1600w" sizes="(max-width: 600px) 100vw, (max-width: 1199px) 38vw, 29vw"
                  width="1600" height="1106" alt="Cocktail bar: oxblood-red walls, black lacquered frames, chandelier, sconces, high timber tables and stools" loading="eager" fetchpriority="high" decoding="async">
@@ -223,7 +223,7 @@
         <p class="work-item__cta" aria-hidden="true" data-reveal><span class="work-item__cta-txt">View project</span> <span class="arr">→</span></p>
       </div>
       <a class="work-item__media" href="work/common-hours.html" tabindex="-1" aria-hidden="true" data-cursor="View">
-        <div class="work-item__strip" data-reveal-group>
+        <div class="work-item__strip" data-reveal-group data-float="0.6">
           <figure class="media work-item__img work-item__lead" data-reveal="image" style="--r:1.3333; view-transition-name:proj-common-hours; aspect-ratio:4/3; --lqip:url(data:image/webp;base64,UklGRmQAAABXRUJQVlA4IFgAAACwAwCdASoUAA8APt1cpkyopSOiMAgBEBuJZQC7ABjHaHHUsMtPvAD+3NupiC5nx7IzoE4vGUsC+cF2VUPJFcyi8MaejwA0S6N5G6c0c0t4Zt9hUpBmqgAA); --focus:50% 50%">
             <img src="assets/img/photos/hero-05-black-windows-cafe-1600.webp" srcset="assets/img/photos/hero-05-black-windows-cafe-800.webp 800w, assets/img/photos/hero-05-black-windows-cafe-1600.webp 1600w" sizes="(max-width: 600px) 100vw, (max-width: 1199px) 49vw, 37vw"
                  width="1600" height="1200" alt="Cafe corner: black steel grid windows, oak cross-back high chairs and table with a red flower, trailing plants, timber post" loading="lazy" decoding="async">
@@ -256,7 +256,7 @@
         <p class="work-item__cta" aria-hidden="true" data-reveal><span class="work-item__cta-txt">View project</span> <span class="arr">→</span></p>
       </div>
       <a class="work-item__media" href="work/ember.html" tabindex="-1" aria-hidden="true" data-cursor="View">
-        <div class="work-item__strip" data-reveal-group>
+        <div class="work-item__strip" data-reveal-group data-float="0.6">
           <figure class="media work-item__img work-item__lead" data-reveal="image" style="--r:1.4995; view-transition-name:proj-ember; aspect-ratio:3/2; --lqip:url(data:image/webp;base64,UklGRmgAAABXRUJQVlA4IFwAAAAQBACdASoUAA0APt1cp0yopSOiMAgBEBuJZACdMoADQtaNl5mVodRusAD+5f+gTkJAeuU79jhma1PxFOpTjriumVTPH16QCH3q7wjhIYkXcgLwfYvxRBJwCgewAA==); --focus:50% 50%">
             <img src="assets/img/photos/rest-c-03-window-plants-1600.webp" srcset="assets/img/photos/rest-c-03-window-plants-800.webp 800w, assets/img/photos/rest-c-03-window-plants-1600.webp 1600w" sizes="(max-width: 600px) 100vw, (max-width: 1199px) 39vw, 29vw"
                  width="1600" height="1067" alt="Terracotta-red brick wall, tall timber sash window, a bank of fiddle-leaf plants over a set dining table" loading="lazy" decoding="async">
@@ -289,7 +289,7 @@
         <p class="work-item__cta" aria-hidden="true" data-reveal><span class="work-item__cta-txt">View project</span> <span class="arr">→</span></p>
       </div>
       <a class="work-item__media" href="work/dhaaga.html" tabindex="-1" aria-hidden="true" data-cursor="View">
-        <div class="work-item__strip" data-reveal-group>
+        <div class="work-item__strip" data-reveal-group data-float="0.6">
           <figure class="media work-item__img work-item__lead" data-reveal="image" style="--r:1.4981; view-transition-name:proj-dhaaga; aspect-ratio:3/2; --lqip:url(data:image/webp;base64,UklGRmoAAABXRUJQVlA4IF4AAACwAwCdASoUAA0APt1cp0yopSOiMAgBEBuJYwC7ACGdDSMgNpARAAD+6D6+z50pnwe/hmMF4CICjgz8Awplbyr1PQV/lDnyE5tmhLooVkwc1R+HdzbgziYpXyCiAAAA); --focus:50% 50%">
             <img src="assets/img/photos/retailA-01-boutique-rail-plants-1600.webp" srcset="assets/img/photos/retailA-01-boutique-rail-plants-800.webp 800w, assets/img/photos/retailA-01-boutique-rail-plants-1600.webp 1600w" sizes="(max-width: 600px) 100vw, (max-width: 1199px) 39vw, 29vw"
                  width="1600" height="1068" alt="Wide view of a bright tailor-atelier boutique" loading="lazy" decoding="async">
@@ -322,7 +322,7 @@
         <p class="work-item__cta" aria-hidden="true" data-reveal><span class="work-item__cta-txt">View project</span> <span class="arr">→</span></p>
       </div>
       <a class="work-item__media" href="work/otla.html" tabindex="-1" aria-hidden="true" data-cursor="View">
-        <div class="work-item__strip" data-reveal-group>
+        <div class="work-item__strip" data-reveal-group data-float="0.6">
           <figure class="media work-item__img work-item__lead" data-reveal="image" style="--r:1.4995; view-transition-name:proj-otla; aspect-ratio:3/2; --lqip:url(data:image/webp;base64,UklGRmoAAABXRUJQVlA4IF4AAADwAwCdASoUAA0APt1ep00opSOiMAgBEBuJYwDE2CHYdKSeOXArejAAAP7tWYRICb53t0nLgex/TEeMm4t3WnkeIsTmuhNbun+zlsVYM4Oeubjon+SRfb7obdnz/AAA); --focus:50% 50%">
             <img src="assets/img/photos/rest-a-01-dining-room-banquette-1600.webp" srcset="assets/img/photos/rest-a-01-dining-room-banquette-800.webp 800w, assets/img/photos/rest-a-01-dining-room-banquette-1600.webp 1600w" sizes="(max-width: 600px) 100vw, (max-width: 1199px) 36vw, 27vw"
                  width="1600" height="1067" alt="Bright heritage bistro: white panelled wainscot, green timber shutters, long black channel-tufted leather banquette" loading="lazy" decoding="async">
@@ -355,7 +355,7 @@
         <p class="work-item__cta" aria-hidden="true" data-reveal><span class="work-item__cta-txt">View project</span> <span class="arr">→</span></p>
       </div>
       <a class="work-item__media" href="work/tilt.html" tabindex="-1" aria-hidden="true" data-cursor="View">
-        <div class="work-item__strip" data-reveal-group>
+        <div class="work-item__strip" data-reveal-group data-float="0.6">
           <figure class="media work-item__img work-item__lead" data-reveal="image" style="--r:1.4967; view-transition-name:proj-tilt; aspect-ratio:3/2; --lqip:url(data:image/webp;base64,UklGRpAAAABXRUJQVlA4IIQAAADQAwCdASoUAA0APt1cpkyopSOiMAgBEBuJZACdMoAC2kj1Wn+uOMgA/lTKRAIpTaxZ1CVUtsZ4JaOHAXhDTkVCza6uZngV+FARmlcEMky064P9j52aeu3y4INrv+scDKYAl1s725UPyWu6zeVmQ+E2MY1xM0hCKfGwrRn0mw1vL9J6AAA=); --focus:50% 50%">
             <img src="assets/img/photos/cafe-b-03-counter-edge-light-1600.webp" srcset="assets/img/photos/cafe-b-03-counter-edge-light-800.webp 800w, assets/img/photos/cafe-b-03-counter-edge-light-1600.webp 1600w" sizes="(max-width: 600px) 100vw, (max-width: 1199px) 48vw, 36vw"
                  width="1600" height="1069" alt="Window ledge counter edge in strong sun, cake plate and napkin, blurred street beyond" loading="lazy" decoding="async">
@@ -431,9 +431,9 @@
       <nav aria-label="Follow">
         <h2 class="t-label">Follow</h2>
         <ul class="t-small">
-          <li><a href="#" rel="noopener" data-placeholder>Instagram</a></li>
-          <li><a href="#" rel="noopener" data-placeholder>Pinterest</a></li>
-          <li><a href="#" rel="noopener" data-placeholder>LinkedIn</a></li>
+          <li><a href="#" rel="noopener" data-placeholder aria-disabled="true">Instagram</a></li>
+          <li><a href="#" rel="noopener" data-placeholder aria-disabled="true">Pinterest</a></li>
+          <li><a href="#" rel="noopener" data-placeholder aria-disabled="true">LinkedIn</a></li>
         </ul>
       </nav>
     </div>

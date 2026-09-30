@@ -47,9 +47,13 @@
 [data-page="work"] .work-hero__cta-link > span:first-child {
   background: linear-gradient(currentColor, currentColor) 0 100% / 100% 1px no-repeat; padding-bottom: 2px;
 }
-[data-page="work"] .work-hero__cta-link:hover > span:first-child { animation: work-redraw 0.7s var(--ease-cut); }
 [data-page="work"] .work-hero__cta-link .arr { display: inline-block; transition: transform var(--t-ui) var(--ease-cut); }
-[data-page="work"] .work-hero__cta-link:hover .arr { transform: translateX(4px); }
+@media (hover: hover) and (pointer: fine) {
+  [data-page="work"] .work-hero__cta-link:hover > span:first-child { animation: work-redraw 0.7s var(--ease-cut); }
+  [data-page="work"] .work-hero__cta-link:hover .arr { transform: translateX(4px); }
+}
+/* phones and tablets only: the intro is clamped to three lines there (see ≤ 900) */
+[data-page="work"] .work-hero__more { display: none; }
 @keyframes work-redraw {
   0%   { background-size: 100% 1px; background-position: 100% 100%; }
   49%  { background-size: 0% 1px;   background-position: 100% 100%; }
@@ -67,8 +71,9 @@
 /* intro pre-state: the active headline's lines rise in (work.js); motion only */
 .js-motion [data-page="work"] .work-hero__title { opacity: 0; }
 
-/* ------------------------------------------------------------ filter bar (last row of the hero grid) */
-[data-page="work"] .work-bar { grid-column: 1 / -1; margin-top: clamp(10px, 1.7vw, 30px); }
+/* ------------------------------------------------------------ filter bar (top of the list section; on desktop it sits
+   exactly where the hero grid's last row used to put it: the hero row gap plus its own margin) */
+[data-page="work"] .work-bar { margin-top: calc(clamp(22px, 2.6vw, 40px) + clamp(10px, 1.7vw, 30px)); }
 [data-page="work"] .work-bar__inner {
   display: flex; flex-wrap: wrap; align-items: center; gap: 6px clamp(20px, 2.6vw, 40px);
   min-height: 76px; padding-block: 12px;
@@ -98,8 +103,10 @@
   position: relative; top: -0.62em; margin-left: 0.22em; font-size: 0.75rem; line-height: 0; vertical-align: baseline;
   letter-spacing: 0.04em; font-variant-numeric: tabular-nums lining-nums; color: var(--ink-3);
 }
-[data-page="work"] .work-filter:hover .work-filter__txt { color: var(--ink); }
-[data-page="work"] .work-filter:hover .work-filter__txt::after { transform: scaleX(1); transform-origin: left; }
+@media (hover: hover) and (pointer: fine) {
+  [data-page="work"] .work-filter:hover .work-filter__txt { color: var(--ink); }
+  [data-page="work"] .work-filter:hover .work-filter__txt::after { transform: scaleX(1); transform-origin: left; }
+}
 [data-page="work"] .work-filter__input:focus-visible + .work-filter__txt { outline: 2px solid var(--focus); outline-offset: 8px; border-radius: 2px; }
 /* active filter: from the <html> attribute, so it is right on the first paint */
 :root:not([data-work-filter]) [data-page="work"] .work-filter[data-f="all"] .work-filter__txt,
@@ -135,7 +142,7 @@
   transition: color 0.4s var(--ease-cut);
 }
 [data-page="work"] .work-view__btn svg { width: 14px; height: 14px; fill: currentColor; flex: none; }
-[data-page="work"] .work-view__btn:hover { color: var(--ink); }
+@media (hover: hover) and (pointer: fine) { [data-page="work"] .work-view__btn:hover { color: var(--ink); } }
 :root:not([data-work-view="grid"]) [data-page="work"] .work-view__btn[data-view="rows"],
 [data-work-view="grid"] [data-page="work"] .work-view__btn[data-view="grid"] { color: var(--paper); }
 .no-js [data-page="work"] .work-view, .no-js [data-page="work"] .work-filters { display: none; }
@@ -147,6 +154,15 @@
 [data-page="work"] .work-item { position: relative; }
 [data-page="work"] .work-item.is-out { display: none; }
 [data-page="work"] .work-item__inner { position: relative; }
+/* the whole project is one tap target: the photographs' link (a pointer-only duplicate of the name's link:
+   aria-hidden, out of the tab order) stretches over the row / card, so the text, "View project" and the
+   photographs all open the case study. It hangs off the media link, not the name: the name's heading
+   reveals with a transform, which would re-anchor an overlay inside it mid-reveal (a layout shift). */
+[data-page="work"] .work-item__media::after { content: ""; position: absolute; inset: 0; z-index: 1; }
+/* touch press (work.js): the card squishes a touch and springs back */
+[data-page="work"] .work-item__inner { transition: scale 0.52s cubic-bezier(.34, 1.56, .64, 1); }
+[data-page="work"] .work-item.is-pressed .work-item__inner { scale: 0.985; transition-duration: 0.11s; transition-timing-function: cubic-bezier(.2, .8, .2, 1); }
+@media (prefers-reduced-motion: reduce) { [data-page="work"] .work-item.is-pressed .work-item__inner { scale: none; } }
 [data-page="work"] .work-item__index {
   display: flex; align-items: center; gap: 12px; color: var(--ink-3);
 }
@@ -198,6 +214,10 @@
 :root:not([data-work-view="grid"]) [data-page="work"] .work-item__img { flex: var(--r, 1) 1 0%; min-width: 0; }
 :root:not([data-work-view="grid"]) [data-page="work"] .work-item__cover { display: none; }
 
+/* the strip floats as one unit (data-float), so its photographs stay level with each other; it drifts
+   but never tilts: a rotated strip is resampled every frame (measured ~20% slow frames against ~4%) */
+[data-page="work"] .work-item__strip { rotate: none !important; }
+
 /* ------------------------------------------------------------ Grid */
 [data-work-view="grid"] [data-page="work"] .work-list {
   display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start;
@@ -224,7 +244,8 @@
   [data-page="work"] .work-item:hover .work-item__cta .arr { transform: translateX(4px); }
   [data-page="work"] .work-item:hover .work-item__cta-txt { animation: work-redraw 0.7s var(--ease-cut); }
 }
-[data-page="work"] .work-item:hover .work-item__link, [data-page="work"] .work-item__link:focus-visible { color: var(--green); }
+[data-page="work"] .work-item__link:focus-visible { color: var(--green); }
+@media (hover: hover) and (pointer: fine) { [data-page="work"] .work-item:hover .work-item__link { color: var(--green); } }
 
 /* ------------------------------------------------------------ empty state */
 [data-page="work"] .work-empty {
@@ -262,8 +283,23 @@
 @media (max-width: 900px) {
   [data-page="work"] .work-hero__title { grid-column: 1 / -1; order: 1; }
   [data-page="work"] .work-hero__title > .work-swap__v { align-self: end; }
-  [data-page="work"] .work-bar { order: 2; margin-top: 4px; }
-  [data-page="work"] .work-hero__side { grid-column: 1 / -1; order: 3; padding-top: 4px; padding-bottom: clamp(8px, 2vw, 20px); }
+  [data-page="work"] .work-hero__side {
+    grid-column: 1 / -1; order: 3; padding-top: 0;
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; column-gap: 16px;
+  }
+  /* the intro: three lines and a "More" (the list, not the paragraph, is what a filter tap should show) */
+  [data-page="work"] .work-hero__intro { flex: 1 1 100%; max-width: 60ch; }
+  .js [data-page="work"] .work-hero__intro { max-height: calc(3 * 1.62em); overflow: clip;
+    -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 1.5em), transparent); mask-image: linear-gradient(to bottom, #000 calc(100% - 1.5em), transparent); }
+  .js [data-page="work"] .work-hero__side.is-open .work-hero__intro { max-height: none; -webkit-mask-image: none; mask-image: none; }
+  .js [data-page="work"] .work-hero__more {
+    display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding-right: 8px;
+    font-size: 0.9375rem; font-weight: 500; color: var(--ink);
+  }
+  [data-page="work"] .work-hero__more-ico { width: 7px; height: 7px; margin-top: -4px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; rotate: 45deg; transition: rotate var(--t-ui) var(--ease-cut), margin var(--t-ui) var(--ease-cut); }
+  [data-page="work"] .work-hero__side.is-open .work-hero__more-ico { rotate: -135deg; margin-top: 4px; }
+  [data-page="work"] .work-hero__cta { margin-top: 0; }
+  [data-page="work"] .work-hero__cta-link { min-height: 44px; }
   [data-page="work"] .work-hero__side .work-swap { position: relative; }
   [data-page="work"] .work-hero__side .work-swap > .work-swap__v { display: none; }
   :root:not([data-work-filter]) [data-page="work"] .work-hero__side .work-swap > [data-f="all"],
@@ -274,27 +310,80 @@
   [data-work-filter="retail"] [data-page="work"] .work-hero__side .work-swap > [data-f="retail"],
   [data-page="work"] .work-hero__side .work-swap > .work-swap__v.is-leaving { display: block; }
   [data-page="work"] .work-hero__side .work-swap > .work-swap__v.is-leaving { position: absolute; top: 0; left: 0; right: 0; }
-  :root:not([data-work-filter]) [data-page="work"] .work-hero__cta,
-  [data-work-filter="all"] [data-page="work"] .work-hero__cta { margin-top: 0; }
-  /* filters get their own row; the count and the Rows/Grid pill share the next one */
-  [data-page="work"] .work-bar__inner { row-gap: 4px; }
-  [data-page="work"] .work-filters { flex: 1 1 100%; }
-  [data-page="work"] .work-count { margin-left: 0; text-align: left; }
-  [data-page="work"] .work-count > .work-swap__v { justify-self: start; }
-  [data-page="work"] .work-view { margin-left: auto; }
+  /* the filter bar: one compact row that sticks under the header while the list scrolls (it moves up
+     to the top edge when the header slides away). Pill chips in a sideways scroller, the Rows/Grid pill
+     at the end; the counts ride on the chips, so the separate count line goes. */
+  [data-page="work"] .work-bar {
+    position: sticky; top: calc(var(--header-h) - 1px); z-index: 20; margin-top: 18px;
+    margin-inline: calc(-1 * var(--margin)); padding-inline: var(--margin);
+    background: var(--paper); transition: top 0.45s var(--ease-cut);
+  }
+  [data-page="work"]:has(.site-header.is-hidden) .work-bar { top: 0; }
+  [data-page="work"] .work-bar__inner { flex-wrap: nowrap; gap: 10px; min-height: 0; padding-block: 8px; border-top-color: var(--line); }
+  [data-page="work"] .work-filters {
+    flex: 1 1 auto; min-width: 0; flex-wrap: nowrap; gap: 8px; overflow-x: auto; overflow-y: hidden;
+    scroll-snap-type: x proximity; scrollbar-width: none; overscroll-behavior-x: contain;
+    padding-right: 28px; margin-right: -10px;
+    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 30px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 30px), transparent);
+  }
+  [data-page="work"] .work-filters::-webkit-scrollbar { display: none; }
+  [data-page="work"] .work-filters__label { display: none; }
+  [data-page="work"] .work-filter { flex: none; scroll-snap-align: start; }
+  [data-page="work"] .work-filter__txt {
+    display: inline-flex; align-items: center; min-height: 40px; padding: 0 15px; border-radius: 999px;
+    border: 1px solid var(--line-strong); background: var(--paper); color: var(--ink-2); white-space: nowrap;
+    transition: background-color var(--t-micro), color var(--t-micro), border-color var(--t-micro);
+  }
+  [data-page="work"] .work-filter__txt::after, [data-page="work"] .work-filter__dot { display: none; }
+  [data-page="work"] .work-filter__n { top: -0.5em; }
+  [data-page="work"] .work-filter__input:focus-visible + .work-filter__txt { outline-offset: 2px; border-radius: 999px; }
+  :root:not([data-work-filter]) [data-page="work"] .work-filter[data-f="all"] .work-filter__txt,
+  [data-work-filter="all"] [data-page="work"] .work-filter[data-f="all"] .work-filter__txt,
+  [data-work-filter="cafes"] [data-page="work"] .work-filter[data-f="cafes"] .work-filter__txt,
+  [data-work-filter="restaurants"] [data-page="work"] .work-filter[data-f="restaurants"] .work-filter__txt,
+  [data-work-filter="bars"] [data-page="work"] .work-filter[data-f="bars"] .work-filter__txt,
+  [data-work-filter="retail"] [data-page="work"] .work-filter[data-f="retail"] .work-filter__txt { background: var(--green); border-color: var(--green); color: var(--paper); }
+  :root:not([data-work-filter]) [data-page="work"] .work-filter[data-f="all"] .work-filter__n,
+  [data-work-filter="all"] [data-page="work"] .work-filter[data-f="all"] .work-filter__n,
+  [data-work-filter="cafes"] [data-page="work"] .work-filter[data-f="cafes"] .work-filter__n,
+  [data-work-filter="restaurants"] [data-page="work"] .work-filter[data-f="restaurants"] .work-filter__n,
+  [data-work-filter="bars"] [data-page="work"] .work-filter[data-f="bars"] .work-filter__n,
+  [data-work-filter="retail"] [data-page="work"] .work-filter[data-f="retail"] .work-filter__n { color: var(--paper); }
+  [data-page="work"] .work-count { display: none; }
+  [data-page="work"] .work-view { flex: none; margin-left: 0; }
   [data-work-view="grid"] [data-page="work"] .work-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   [data-page="work"] .work-cta__title, [data-page="work"] .work-cta__side { grid-column: 1 / -1; }
+}
+/* landscape phones: three covers a row (a 4:5 cover two-up is taller than the screen) */
+@media (max-width: 900px) and (orientation: landscape) {
+  [data-work-view="grid"] [data-page="work"] .work-list { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: 32px; }
+  [data-work-view="grid"] [data-page="work"] .work-item__name { font-size: 1.35rem; }
 }
 
 /* ------------------------------------------------------------ ≤ 600: phone */
 @media (max-width: 600px) {
-  [data-page="work"] .work-bar__inner { padding-block: 10px 8px; gap: 2px 16px; }
-  [data-page="work"] .work-filters { gap: 0 26px; }
-  [data-page="work"] .work-view__btn { padding: 0 14px; }
+  [data-page="work"] .work-hero { padding-top: calc(var(--header-h) + 20px); }
+  [data-page="work"] .work-hero__grid { row-gap: 14px; }
+  [data-page="work"] .work-hero__title { font-size: clamp(2.5rem, 11.6vw, 3.25rem); line-height: 1; }
+  /* the Rows / Grid pill keeps its icons; the words stay for screen readers */
+  [data-page="work"] .work-view__btn { padding: 0 13px; min-width: 44px; }
+  [data-page="work"] .work-view__btn span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  :root:not([data-work-view="grid"]) [data-page="work"] .work-item__inner { padding-block: 26px 30px; }
+  :root:not([data-work-view="grid"]) [data-page="work"] .work-item__name { margin-top: 10px; font-size: 2.25rem; }
+  :root:not([data-work-view="grid"]) [data-page="work"] .work-item__media { margin-top: 18px; }
   :root:not([data-work-view="grid"]) [data-page="work"] .work-item__text { display: block; }
   :root:not([data-work-view="grid"]) [data-page="work"] .work-item__line { margin-top: 14px; }
   :root:not([data-work-view="grid"]) [data-page="work"] .work-item__cta { margin-top: 14px; }
   :root:not([data-work-view="grid"]) [data-page="work"] .work-item__strip { flex-wrap: wrap; row-gap: var(--work-img-gap); }
   :root:not([data-work-view="grid"]) [data-page="work"] .work-item__img:first-child { flex: 1 0 100%; }
-  [data-work-view="grid"] [data-page="work"] .work-list { grid-template-columns: minmax(0, 1fr); row-gap: 56px; }
+  /* a real grid: two covers a row, the name under each */
+  [data-work-view="grid"] [data-page="work"] .work-list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 12px; padding-top: 22px; }
+  [data-work-view="grid"] [data-page="work"] .work-item__text { margin-top: 12px; }
+  [data-work-view="grid"] [data-page="work"] .work-item__index { gap: 8px; font-size: 0.6875rem; }
+  [data-work-view="grid"] [data-page="work"] .work-item__name { margin-top: 6px; font-size: 1.25rem; line-height: 1.1; }
+  [data-work-view="grid"] [data-page="work"] .work-item__meta { font-size: 0.8125rem; line-height: 1.4; }
+  /* the closing panel: phone padding, the button full width */
+  [data-page="work"] .work-cta { padding-block: 56px; }
+  [data-page="work"] .work-cta__side { justify-items: stretch; gap: 22px; }
+  [data-page="work"] .work-cta__side .btn { justify-content: center; }
 }

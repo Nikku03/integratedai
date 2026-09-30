@@ -680,6 +680,10 @@
      "at": [
       4.4,
       6.4
+     ],
+     "atP": [
+      9.0,
+      4.8
      ]
     },
     "walls": [
@@ -1045,7 +1049,7 @@
       "Screed polished, brick sealed, walls in a warm white that holds the morning light. Beech tops, a pine counter."
      ],
      [
-      "Week 12 · Lighting and commissioning",
+      "Week 12 · Lighting",
       "Bare lamps on long flex at 2,700 K. 300 lux on the counter, softer everywhere else."
      ],
      [
@@ -1075,12 +1079,12 @@
      {
       "kind": "craft",
       "label": "Planned for the rush",
-      "text": "We plan the counter before the room — order, make, pick-up — so two baristas do the work of three."
+      "text": "We plan the counter first — order, make, pick-up — so two baristas do the work of three."
      },
      {
       "kind": "promise",
       "label": "Approvals",
-      "text": "Fire, exit and extraction drawings done to the conditions from day one. Nothing gets ripped out later."
+      "text": "Drawn to the fire and extraction conditions from day one. Nothing gets ripped out later."
      },
      {
       "kind": "promise",
@@ -1125,7 +1129,11 @@
      0.22,
      0.62
     ],
-    "card": "left"
+    "card": "left",
+    "panPhone": [
+     0.92,
+     0.1
+    ]
    }
   },
   {
@@ -1743,6 +1751,10 @@
      "at": [
       5.0,
       9.4
+     ],
+     "atP": [
+      4.1,
+      3.6
      ]
     },
     "walls": [
@@ -2056,7 +2068,7 @@
       "Ceiling roses restored, arches re-run in lime plaster, columns stripped back to the iron."
      ],
      [
-      "Weeks 7–10 · Booths, tables, the station",
+      "Weeks 7–10 · Booths and the station",
       "Booths on the blind wall. The service station sits behind the column, so the floor team never crosses the room."
      ],
      [
@@ -2068,7 +2080,7 @@
       "Opal globes at 2,700 K for the evening. By day the windows do the work."
      ],
      [
-      "First service · 12:00",
+      "First service",
       "Full but calm by two, and every seat faces something worth looking at."
      ]
     ],
@@ -2142,7 +2154,11 @@
      0.3,
      0.62
     ],
-    "card": "left"
+    "card": "left",
+    "panPhone": [
+     0.04,
+     0.9
+    ]
    }
   },
   {
@@ -2709,6 +2725,10 @@
      "at": [
       3.2,
       4.75
+     ],
+     "atP": [
+      1.5,
+      4.9
      ]
     },
     "walls": [
@@ -2991,7 +3011,7 @@
      {
       "kind": "craft",
       "label": "Scenes, not switches",
-      "text": "The lighting is set as three scenes: early, full and last orders. Staff press one button, not twelve.",
+      "text": "Three lighting scenes: early, full and last orders. Staff press one button, not twelve.",
       "action": {
        "label": "Read the project",
        "href": "work/stillroom.html"
@@ -3011,7 +3031,11 @@
      0.2,
      0.55
     ],
-    "card": "right"
+    "card": "right",
+    "panPhone": [
+     0.75,
+     0.2
+    ]
    },
    "flat": [
     {
@@ -3735,6 +3759,10 @@
      "at": [
       3.0,
       6.9
+     ],
+     "atP": [
+      1.8,
+      4.2
      ]
     },
     "walls": [
@@ -3940,7 +3968,7 @@
       "Drawn from the door, the way a customer first sees the room: the rail, the arch, the curtains at the back."
      ],
      [
-      "Week 3 · Partitions and making good",
+      "Week 3 · Partitions",
       "Fitting-room walls framed and boarded, the arch re-plastered, the ceiling made good for the new panels."
      ],
      [
@@ -4027,7 +4055,11 @@
      0.25,
      0.7
     ],
-    "card": "right"
+    "card": "right",
+    "panPhone": [
+     0.95,
+     0.06
+    ]
    },
    "flat": [
     {
@@ -4278,6 +4310,6 @@
   },
   "siteWalk": "Book a free site walk",
   "readProject": "Read the project",
-  "_note": "Copy for the build partials (tools/build_layers.py html). Pops: one per stage, in stage order; kinds proof | promise | craft | client. An action's 'here' is the fragment used instead when the link points at the page it is on."
+  "_note": "Copy for the build partials (tools/build_layers.py html). Pops: one per stage, in stage order; kinds proof | promise | craft | client. An action's 'here' is the fragment used instead when the link points at the page it is on. stage.pan: the laptop's short camera move (fraction of the overflow, from → to, over the shell to the open room); stage.panPhone: the full-screen phone move (over the whole build, from the sketch). plan.label.atP: where the upright room label sits on the turned (portrait) drawing, in plan metres."
  }
 }

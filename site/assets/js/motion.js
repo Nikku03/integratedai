@@ -41,13 +41,22 @@
  *             morph runs only then; see base.css).
  *   API       Motion.float(el[, strength]) / Motion.unfloat(el) for elements added
  *             after boot. Floating elements carry .is-float.
+ *
+ * ROUND 4 — TOUCH (v1.3). On touch / coarse pointers (not env.fine) text never moves under a
+ *   finger: text columns and cards (anything marked data-float that isn't itself a .media
+ *   figure) don't float at all, nor do the figures inside them. Standalone .media figures keep
+ *   a gentle float only: ±2.5–4px drift, no tilt, a scroll lag of at most 0.3 × velocity,
+ *   clamped to ±8px and well damped (no overshoot). Tune with Motion.config.liquidTouch.
+ *   One-shot reveals (data-reveal, data-split) start as the element enters the screen
+ *   (top 96%) and run a little faster on touch, so the bottom of a phone screen is never an
+ *   empty band while you scroll.
  */
 (function (w, d) {
   "use strict";
   const root = d.documentElement;
   const gsap = w.gsap, ST = w.ScrollTrigger, SplitText = w.SplitText;
   const Motion = (w.Motion = w.Motion || {});
-  Motion.version = "1.2.0";
+  Motion.version = "1.3.0";
   Motion.effects = Motion.effects || {};
   Motion.pages = Motion.pages || {};
   Motion.lenis = null;
@@ -177,8 +186,11 @@
   };
   Motion.radiusOf = radiusOf;
 
-  Motion.effect("reveal", (el) => {
+  // touch: start as it enters (a phone screen is short; "top 88%" left an empty band at the bottom)
+  const revealStart = (env, fine, touch) => (env && env.fine === false ? touch : fine);
+  Motion.effect("reveal", (el, env) => {
     const isImage = el.dataset.reveal === "image";
+    const touch = env && env.fine === false;
     const img = isImage && el.querySelector(":scope > img, :scope > picture > img, :scope > video");
     // no layout (inside display:none — tabs, accordions, filtered lists): a once-trigger here
     // would measure 0/0, fire and kill itself mid-refresh (ScrollTrigger throws) → just show it
@@ -186,18 +198,18 @@
     const group = el.parentElement && el.parentElement.closest("[data-reveal-group]");
     const idx = group ? [...group.querySelectorAll(":scope [data-reveal]")].indexOf(el) : 0;
     const delay = (parseFloat(el.dataset.delay) || 0) + introDelayFor(el) + Math.max(0, idx) * 0.06;
-    const st = () => ({ trigger: el, start: "top 88%", once: true });
+    const st = () => ({ trigger: el, start: revealStart(env, "top 88%", "top 96%"), once: true });
     if (isImage) {
       // two tweens, not a timeline: a timeline's ScrollTrigger refreshes lazily, and a page that
       // boots scrolled down (history back) then threw inside ScrollTrigger when `once` killed it
       const R = radiusOf(el);
-      gsap.fromTo(el, { clipPath: `inset(8% 8% 8% 8% round ${R})` }, { clipPath: `inset(0% 0% 0% 0% round ${R})`, duration: 1.2, ease: DRIFT, delay,
+      gsap.fromTo(el, { clipPath: `inset(8% 8% 8% 8% round ${R})` }, { clipPath: `inset(0% 0% 0% 0% round ${R})`, duration: touch ? 0.9 : 1.2, ease: DRIFT, delay,
         scrollTrigger: st(), onComplete: () => { gsap.set(el, { clipPath: "none" }); el.setAttribute("data-revealed", ""); } });
       if (img) gsap.fromTo(img, { scale: 1.12 }, { scale: 1, duration: 1.4, ease: EASE, delay, scrollTrigger: st() });
       return;
     }
-    gsap.fromTo(el, { opacity: 0, y: 24 }, {
-      opacity: 1, y: 0, duration: 1, ease: DRIFT, delay,
+    gsap.fromTo(el, { opacity: 0, y: touch ? 16 : 24 }, {
+      opacity: 1, y: 0, duration: touch ? 0.75 : 1, ease: DRIFT, delay,
       clearProps: "transform",
       onComplete: () => el.setAttribute("data-revealed", ""),
       scrollTrigger: st(),
@@ -220,7 +232,7 @@
   });
 
   // data-split[="lines"]  → masked line reveal; re-splits on font load / width change
-  Motion.effect("split", (el) => {
+  Motion.effect("split", (el, env) => {
     if (!SplitText || !el.getClientRects().length) { gsap.set(el, { opacity: 1 }); return; }
     el._split = SplitText.create(el, {
       type: "lines",
@@ -236,8 +248,8 @@
         // 120 not 100: the padded mask (motion.css) would otherwise show the top
         // 0.12em of a hidden line with tight leading
         return gsap.from(self.lines, {
-          yPercent: 120, duration: 1.1, stagger: 0.09, ease: DRIFT, delay: (parseFloat(el.dataset.delay) || 0) + introDelayFor(el),
-          scrollTrigger: { trigger: el, start: "top 90%", once: true },
+          yPercent: 120, duration: env && env.fine === false ? 0.9 : 1.1, stagger: 0.09, ease: DRIFT, delay: (parseFloat(el.dataset.delay) || 0) + introDelayFor(el),
+          scrollTrigger: { trigger: el, start: revealStart(env, "top 90%", "top 97%"), once: true },
         });
       },
     });
@@ -285,7 +297,12 @@
   const lerp = (a, b, t) => a + (b - a) * t;
   Motion.float = () => {}; Motion.unfloat = () => {};
 
+  // touch / coarse pointers: images only, gentle, well damped (see the header, ROUND 4)
+  const LIQ_TOUCH = { amp: [2.5, 4], rot: [0, 0], lag: 0.3, lagMax: 8, c: 22 };
+
   function liquid(env) {
+    const touch = !env.fine;
+    const P = touch ? Object.assign({}, LIQ, LIQ_TOUCH, Motion.config.liquidTouch || {}) : LIQ;
     const items = new Map();                 // el → state
     const live = new Set();                  // states near the viewport
     let seq = 0, t0 = 0, lastScroll = null, vel = 0;
@@ -311,7 +328,7 @@
       if (!st) return;
       if (e.isIntersecting) { live.add(st); el.classList.add("is-afloat"); }
       else { live.delete(st); el.classList.remove("is-afloat"); }
-    }), { rootMargin: LIQ.margin });
+    }), { rootMargin: P.margin });
 
     function add(el, strength) {
       if (items.has(el)) return;
@@ -322,15 +339,16 @@
       // only figures a page marks with data-float tilt; the (many) auto-floated .media drift and lag
       // but stay level: a rotated layer is resampled on every frame, and a page of them (the work
       // index, the case-study galleries) measured 5–9% slow frames against ~1% level (qa3)
-      const tilt = !text && el.hasAttribute("data-float");
+      const tilt = !text && !touch && el.hasAttribute("data-float");
+      const lag = (text ? P.lagText : P.lag) * lerp(0.75, 1.3, r2) * Math.min(s, 1.4);
       const st = {
         el, text,
-        amp: (text ? LIQ.ampText : lerp(LIQ.amp[0], LIQ.amp[1], r1)) * s,
-        rot: (tilt ? lerp(LIQ.rot[0], LIQ.rot[1], r2) : LIQ.rotText) * s * (r3 < 0.5 ? -1 : 1),
-        w: (Math.PI * 2) / lerp(LIQ.period[0], LIQ.period[1], r3),
+        amp: Math.min((text ? P.ampText : lerp(P.amp[0], P.amp[1], r1)) * s, touch ? P.amp[1] : Infinity),
+        rot: (tilt ? lerp(P.rot[0], P.rot[1], r2) : P.rotText) * s * (r3 < 0.5 ? -1 : 1),
+        w: (Math.PI * 2) / lerp(P.period[0], P.period[1], r3),
         ph: r1 * Math.PI * 2,
-        lag: (text ? LIQ.lagText : LIQ.lag) * lerp(0.75, 1.3, r2) * Math.min(s, 1.4),
-        k: LIQ.k * lerp(0.8, 1.2, r3),
+        lag: touch ? Math.min(lag, P.lag) : lag,
+        k: P.k * lerp(0.8, 1.2, r3),
         y: 0, v: 0, ramp: 0, baked: false, wrote: false,
       };
       items.set(el, st);
@@ -348,10 +366,21 @@
     }
 
     // candidates: explicit data-float anywhere; .media automatically (with the skips above);
-    // the outermost one wins, so a floating column never double-floats the figure inside it
+    // the outermost one wins, so a floating column never double-floats the figure inside it.
+    // Touch: text never moves under a finger, so only figures float — an explicit data-float on a
+    // .media, or a standalone .media; a column / card marked data-float stays still, contents and all.
     const cands = [];
-    d.querySelectorAll("[data-float]").forEach((el) => { if (el.dataset.float !== "off" && !el.parentElement.closest('[data-float="off"]')) cands.push(el); });
-    d.querySelectorAll(".media").forEach((el) => { if (!el.hasAttribute("data-float") && autoOK(el)) cands.push(el); });
+    const offAbove = (el) => el.parentElement && el.parentElement.closest('[data-float="off"]');
+    if (touch) {
+      d.querySelectorAll(".media").forEach((el) => {
+        if (el.dataset.float === "off" || offAbove(el)) return;
+        if (el.parentElement && el.parentElement.closest("[data-float]")) return;
+        if (el.hasAttribute("data-float") || autoOK(el)) cands.push(el);
+      });
+    } else {
+      d.querySelectorAll("[data-float]").forEach((el) => { if (el.dataset.float !== "off" && !offAbove(el)) cands.push(el); });
+      d.querySelectorAll(".media").forEach((el) => { if (!el.hasAttribute("data-float") && autoOK(el)) cands.push(el); });
+    }
     cands.filter((el) => !cands.some((o) => o !== el && o.contains(el))).forEach((el) => add(el));
     d.querySelectorAll(".blob").forEach((el) => { if (!items.has(el)) io.observe(el); });
 
@@ -381,8 +410,8 @@
         const fy = st.amp * (0.72 * Math.sin(wt) + 0.28 * Math.sin(2.13 * wt + 1.7));
         const fx = st.amp * 0.25 * Math.sin(0.63 * wt + 2.1);
         const fr = st.rot * Math.sin(0.81 * wt + 0.6);
-        const target = Math.max(-LIQ.lagMax, Math.min(LIQ.lagMax, vel * st.lag));
-        st.v += (st.k * (target - st.y) - LIQ.c * st.v) * sec;
+        const target = Math.max(-P.lagMax, Math.min(P.lagMax, vel * st.lag));
+        st.v += (st.k * (target - st.y) - P.c * st.v) * sec;
         st.y += st.v * sec;
         stl.translate = `${(fx * a).toFixed(2)}px ${((fy + st.y) * a).toFixed(2)}px`;
         if (st.rot) stl.rotate = `${(fr * a).toFixed(3)}deg`;
@@ -434,7 +463,11 @@
         .to(disp, { attr: { scale: 0 }, duration: 0.6, ease: "sine.inOut" });
     }
 
-    Motion.float = (el, strength) => { if (el && !items.has(el)) add(el, strength); };
+    Motion.float = (el, strength) => {
+      if (!el || items.has(el)) return;
+      if (touch && (!el.classList.contains("media") || (el.parentElement && el.parentElement.closest("[data-float]")))) return;
+      add(el, strength);
+    };
     Motion.unfloat = (el) => remove(el);
     return () => {
       gsap.ticker.remove(tick);

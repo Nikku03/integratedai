@@ -23,6 +23,19 @@
     $$(".case-details__inline[data-reveal]").forEach((f) => f.removeAttribute("data-reveal"));
   }
 
+  // "← All work" (and the closing "All work" button): straight from the index, step back instead of
+  // loading it afresh, so the list returns with its filter and scroll position as they were
+  d.addEventListener("click", (e) => {
+    const a = e.target.closest && e.target.closest('a[href$="work.html"]');
+    if (!a || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    if (!a.matches(".case-back, .case-cta__actions a")) return;
+    let ref = null;
+    try { ref = d.referrer ? new URL(d.referrer) : null; } catch (_) {}
+    if (!ref || ref.origin !== location.origin || !/\/work\.html$/.test(ref.pathname) || history.length < 2) return;
+    e.preventDefault();
+    history.back();
+  });
+
   M.page("case", (env) => {
     if (!env.motion) return;
     const gsap = w.gsap, ST = w.ScrollTrigger;

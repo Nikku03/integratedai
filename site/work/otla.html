@@ -91,8 +91,7 @@
 </header>
 <script src="../assets/js/nav.js" defer></script>
 <div class="nav-overlay" id="nav-overlay" role="dialog" aria-modal="true" aria-label="Site index" data-lenis-prevent>
-  <span class="nav-overlay__shape nav-overlay__shape--a" aria-hidden="true"></span>
-  <span class="nav-overlay__shape nav-overlay__shape--b" aria-hidden="true"></span>
+  <span class="nav-overlay__shapes" aria-hidden="true"><span class="nav-overlay__shape nav-overlay__shape--a"></span><span class="nav-overlay__shape nav-overlay__shape--b"></span></span>
   <div class="wrap nav-overlay__top">
     <a href="../index.html" aria-label="Two Squares, home"><span class="logo logo--mark" aria-hidden="true"></span></a>
     <button class="nav-overlay__close" type="button">Close <i aria-hidden="true"></i></button>
@@ -124,19 +123,19 @@
 
   <!-- 1 · hero: full-bleed photograph, shared view-transition name with the Work index card -->
   <section class="case-hero on-dark" data-header="dark" aria-labelledby="case-title">
-    <figure class="media case-hero__media" style="view-transition-name:proj-otla; aspect-ratio:3/2; --lqip:url(data:image/webp;base64,UklGRmoAAABXRUJQVlA4IF4AAADwAwCdASoUAA0APt1ep00opSOiMAgBEBuJYwDE2CHYdKSeOXArejAAAP7tWYRICb53t0nLgex/TEeMm4t3WnkeIsTmuhNbun+zlsVYM4Oeubjon+SRfb7obdnz/AAA); --focus:50% 50%">
+    <figure class="media case-hero__media" style="view-transition-name:proj-otla; --focus-sm:70% 60%; aspect-ratio:3/2; --lqip:url(data:image/webp;base64,UklGRmoAAABXRUJQVlA4IF4AAADwAwCdASoUAA0APt1ep00opSOiMAgBEBuJYwDE2CHYdKSeOXArejAAAP7tWYRICb53t0nLgex/TEeMm4t3WnkeIsTmuhNbun+zlsVYM4Oeubjon+SRfb7obdnz/AAA); --focus:50% 50%">
       <img src="../assets/img/photos/rest-a-01-dining-room-banquette-1600.webp" srcset="../assets/img/photos/rest-a-01-dining-room-banquette-800.webp 800w, ../assets/img/photos/rest-a-01-dining-room-banquette-1600.webp 1600w" sizes="(max-aspect-ratio: 1600/1067) calc(100vh * 1.500), 100vw"
            width="1600" height="1067" alt="Bright heritage bistro: white panelling, green shutters, a long black tufted leather banquette and bentwood chairs" loading="eager" fetchpriority="high" decoding="async">
     </figure>
     <div class="wrap case-hero__top">
-      <a class="case-back t-label" href="../work.html?filter=restaurants"><span class="case-back__arr" aria-hidden="true">←</span>All work</a>
+      <a class="case-back t-label" href="../work.html"><span class="case-back__arr" aria-hidden="true">←</span>All work</a>
     </div>
     <div class="wrap case-hero__inner">
       <div class="case-hero__head">
         <h1 class="t-display-xl case-hero__title" id="case-title" data-split>Otla</h1>
         <p class="t-label case-hero__meta"><span class="seg">Gujarati thali restaurant<span class="sep" aria-hidden="true">·</span></span> <span class="seg">Bandra West, Mumbai<span class="sep" aria-hidden="true">·</span></span> <span class="seg">2024</span></p>
       </div>
-      <p class="badge badge--placeholder case-hero__badge"><span class="badge__dot" aria-hidden="true"></span><span>Placeholder project. The name, quote and photographs stand in for real work.</span></p>
+      <p class="badge badge--placeholder case-hero__badge"><span class="badge__dot" aria-hidden="true"></span><span>Placeholder project.<span class="case-hero__badge-more"> The name, quote and photographs stand in for real work.</span></span></p>
     </div>
   </section>
 
@@ -197,7 +196,7 @@
   <section class="case-gallery" aria-label="Photographs">
     <div class="case-full case-full--1">
       <figure data-case-parallax="0.06" class="media case-full__media" data-reveal="image" style="aspect-ratio:3/2; --lqip:url(data:image/webp;base64,UklGRl4AAABXRUJQVlA4IFIAAACwAwCdASoUAA0APt1cp00opSOiMAgBEBuJQBOgBERctmhGTcgLAAD+sWLpYZc80jpuagk3c467tzLiq0ql1/kA1fucsTNvmDAq2GfF6WpwAAAA); --focus:50% 50%">
-        <img src="../assets/img/photos/rest-a-03-long-room-1600.webp" srcset="../assets/img/photos/rest-a-03-long-room-800.webp 800w, ../assets/img/photos/rest-a-03-long-room-1600.webp 1600w" sizes="100vw"
+        <img src="../assets/img/photos/rest-a-03-long-room-1600.webp" srcset="../assets/img/photos/rest-a-03-long-room-800.webp 800w, ../assets/img/photos/rest-a-03-long-room-1600.webp 1600w" sizes="(max-width: 900px) and (orientation: portrait) 187vw, 100vw"
              width="1600" height="1067" alt="Long tan leather banquette, cane-back bistro chairs, framed prints on white panelling, stone floor" loading="lazy" decoding="async">
       </figure>
     </div>
@@ -213,20 +212,20 @@
       </div>
     </div>
     <div class="wrap">
-      <div class="case-pair case-pair--landscape">
+      <div class="case-pair case-pair--landscape" data-float="0.6">
         <figure class="media case-pair__a" data-reveal="image" style="aspect-ratio:3/2; --lqip:url(data:image/webp;base64,UklGRl4AAABXRUJQVlA4IFIAAACwAwCdASoUAA0APt1apkyopSOiMAgBEBuJYwAAUnFEqqde0aggQAD+6rztKaGMD4dw5zsQpNJFTtSBA6N8vHtvXMa9JgRnoeJUXqTkI5aAAAAA); --focus:50% 50%">
-          <img src="../assets/img/photos/rest-a-04-green-door-detail-1600.webp" srcset="../assets/img/photos/rest-a-04-green-door-detail-800.webp 800w, ../assets/img/photos/rest-a-04-green-door-detail-1600.webp 1600w" sizes="(max-width: 900px) 50vw, 46vw"
+          <img src="../assets/img/photos/rest-a-04-green-door-detail-1600.webp" srcset="../assets/img/photos/rest-a-04-green-door-detail-800.webp 800w, ../assets/img/photos/rest-a-04-green-door-detail-1600.webp 1600w" sizes="(max-width: 600px) 100vw, (max-width: 900px) 50vw, 46vw"
                width="1600" height="1067" alt="Same bistro: glossy sage-green panelled door framing the dining room, fireplace, stacked firewood, bentwood chairs" loading="lazy" decoding="async">
         </figure>
         <figure class="media case-pair__b" data-reveal="image" style="aspect-ratio:3/2; --lqip:url(data:image/webp;base64,UklGRmwAAABXRUJQVlA4IGAAAAAQBACdASoUAA0APt1apkyopSOiMAgBEBuJYwCw7CPOHRAsMpc5kWuZgAD4Sh6Usr3kPOK7neGKh59h2nzdlCzPYJchZ+rm84IqyL+r5RIZQ7nKs3ohlEN07nY82/QAAAA=); --focus:50% 50%">
-          <img src="../assets/img/photos/rest-a-05-table-setting-1600.webp" srcset="../assets/img/photos/rest-a-05-table-setting-800.webp 800w, ../assets/img/photos/rest-a-05-table-setting-1600.webp 1600w" sizes="(max-width: 900px) 50vw, 46vw"
+          <img src="../assets/img/photos/rest-a-05-table-setting-1600.webp" srcset="../assets/img/photos/rest-a-05-table-setting-800.webp 800w, ../assets/img/photos/rest-a-05-table-setting-1600.webp 1600w" sizes="(max-width: 600px) 100vw, (max-width: 900px) 50vw, 46vw"
                width="1600" height="1067" alt="Set marble table in the foreground, cane chairs and banquette behind" loading="lazy" decoding="async">
         </figure>
       </div>
     </div>
     <div class="case-full case-full--2">
       <figure data-case-parallax="0.06" class="media case-full__media" data-reveal="image" style="aspect-ratio:3/2; --lqip:url(data:image/webp;base64,UklGRmgAAABXRUJQVlA4IFwAAADwAwCdASoUAA0APt1cp00opSOiMAgBEBuJYwDE2CHZtfb1t7T9isIAAP7x8UdhsifgPKx793aLYPyLbGIb5Dj5MwmTrhVGQJP9SZwM9U1zm/ysen56qbZ02oAAAA==); --focus:50% 50%">
-        <img src="../assets/img/photos/rest-a-02-fireplace-bentwood-1600.webp" srcset="../assets/img/photos/rest-a-02-fireplace-bentwood-800.webp 800w, ../assets/img/photos/rest-a-02-fireplace-bentwood-1600.webp 1600w" sizes="100vw"
+        <img src="../assets/img/photos/rest-a-02-fireplace-bentwood-1600.webp" srcset="../assets/img/photos/rest-a-02-fireplace-bentwood-800.webp 800w, ../assets/img/photos/rest-a-02-fireplace-bentwood-1600.webp 1600w" sizes="(max-width: 900px) and (orientation: portrait) 187vw, 100vw"
              width="1600" height="1067" alt="Same bistro: red marble fireplace with round mirror and greenery, bentwood chairs, marble tables, French doors" loading="lazy" decoding="async">
       </figure>
     </div>
@@ -262,7 +261,7 @@
                  width="1067" height="1600" alt="Close-up of a grey speckled terrazzo slab with a soft diagonal fold of light and shadow" loading="lazy" decoding="async">
           </figure>
           <div class="case-details__text">
-            <h3 class="t-label case-details__name"><span class="case-details__num">01</span>Stone</h3>
+            <h3 class="t-label case-details__name"><span class="case-details__num">01<span class="case-details__of" aria-hidden="true"> / 03</span></span>Stone</h3>
             <p class="t-lede" data-reveal>The otla is grey Kota stone with a rounded edge, cushioned in block-printed cotton covers that unzip for washing.</p>
           </div>
         </li>
@@ -272,7 +271,7 @@
                  width="1061" height="1600" alt="Hands over a timber bistro table with red wine, a bread basket, a cheese board and bottles" loading="lazy" decoding="async">
           </figure>
           <div class="case-details__text">
-            <h3 class="t-label case-details__name"><span class="case-details__num">02</span>Service</h3>
+            <h3 class="t-label case-details__name"><span class="case-details__num">02<span class="case-details__of" aria-hidden="true"> / 03</span></span>Service</h3>
             <p class="t-lede" data-reveal>Refill stations are built into the plinth every six metres, so no server walks more than a dozen steps for more dal.</p>
           </div>
         </li>
@@ -282,7 +281,7 @@
                  width="1067" height="1600" alt="A round marble-top table and bentwood chairs under a tall arched window, ivy outside, herringbone parquet" loading="lazy" decoding="async">
           </figure>
           <div class="case-details__text">
-            <h3 class="t-label case-details__name"><span class="case-details__num">03</span>Light &amp; air</h3>
+            <h3 class="t-label case-details__name"><span class="case-details__num">03<span class="case-details__of" aria-hidden="true"> / 03</span></span>Light &amp; air</h3>
             <p class="t-lede" data-reveal>The original ceiling fans restored and rewired; table light held at 200 lux, so food looks like food.</p>
           </div>
         </li>
@@ -337,8 +336,8 @@
   <!-- 10 · next project: full-width strip; its image morphs into the next page's hero -->
   <section class="case-next" aria-label="Next project">
     <a class="case-next__link" href="tilt.html" data-cursor="View">
-      <figure aria-hidden="true" class="media case-next__media" style="view-transition-name:proj-tilt; aspect-ratio:3/2; --lqip:url(data:image/webp;base64,UklGRpAAAABXRUJQVlA4IIQAAADQAwCdASoUAA0APt1cpkyopSOiMAgBEBuJZACdMoAC2kj1Wn+uOMgA/lTKRAIpTaxZ1CVUtsZ4JaOHAXhDTkVCza6uZngV+FARmlcEMky064P9j52aeu3y4INrv+scDKYAl1s725UPyWu6zeVmQ+E2MY1xM0hCKfGwrRn0mw1vL9J6AAA=); --focus:50% 50%">
-        <img src="../assets/img/photos/cafe-b-03-counter-edge-light-1600.webp" srcset="../assets/img/photos/cafe-b-03-counter-edge-light-800.webp 800w, ../assets/img/photos/cafe-b-03-counter-edge-light-1600.webp 1600w" sizes="100vw"
+      <figure aria-hidden="true" class="media case-next__media" style="view-transition-name:proj-tilt; --focus-sm:30% 55%; aspect-ratio:3/2; --lqip:url(data:image/webp;base64,UklGRpAAAABXRUJQVlA4IIQAAADQAwCdASoUAA0APt1cpkyopSOiMAgBEBuJZACdMoAC2kj1Wn+uOMgA/lTKRAIpTaxZ1CVUtsZ4JaOHAXhDTkVCza6uZngV+FARmlcEMky064P9j52aeu3y4INrv+scDKYAl1s725UPyWu6zeVmQ+E2MY1xM0hCKfGwrRn0mw1vL9J6AAA=); --focus:50% 50%">
+        <img src="../assets/img/photos/cafe-b-03-counter-edge-light-1600.webp" srcset="../assets/img/photos/cafe-b-03-counter-edge-light-800.webp 800w, ../assets/img/photos/cafe-b-03-counter-edge-light-1600.webp 1600w" sizes="(max-width: 600px) and (orientation: portrait) calc(78vh * 1.497), (max-width: 900px) and (orientation: portrait) calc(80vh * 1.497), 100vw"
              width="1600" height="1069" alt="" loading="lazy" decoding="async">
       </figure>
       <span class="wrap case-next__inner">
@@ -360,7 +359,7 @@
         <p class="t-lede" data-reveal>Send us the floor plan and the opening date. We’ll come back with how the room could work.</p>
         <div class="case-cta__actions" data-reveal>
           <a class="btn btn--solid" href="../contact.html?venue=restaurant&amp;from=case-study&amp;item=otla">Start a project <span class="arr" aria-hidden="true">→</span></a>
-          <a class="btn" href="../work.html?filter=restaurants">All work</a>
+          <a class="btn" href="../work.html">All work</a>
         </div>
       </div>
     </div>
@@ -398,9 +397,9 @@
       <nav aria-label="Follow">
         <h2 class="t-label">Follow</h2>
         <ul class="t-small">
-          <li><a href="#" rel="noopener" data-placeholder>Instagram</a></li>
-          <li><a href="#" rel="noopener" data-placeholder>Pinterest</a></li>
-          <li><a href="#" rel="noopener" data-placeholder>LinkedIn</a></li>
+          <li><a href="#" rel="noopener" data-placeholder aria-disabled="true">Instagram</a></li>
+          <li><a href="#" rel="noopener" data-placeholder aria-disabled="true">Pinterest</a></li>
+          <li><a href="#" rel="noopener" data-placeholder aria-disabled="true">LinkedIn</a></li>
         </ul>
       </nav>
     </div>

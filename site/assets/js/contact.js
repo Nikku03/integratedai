@@ -1,6 +1,7 @@
 /*!
  * Two Squares — contact.html: the enquiry form.
- * Prefill from the URL (venue, service, stage, from, item, message), inline
+ * Prefill from the URL (venue, service, stage, from, item, message) and, when the link names no
+ * room, from the room remembered on the last sector page / case study (site.js), inline
  * validation on blur + submit with an error summary, Netlify Forms submission
  * (urlencoded fetch), sending / success / network-error states.
  * Plain DOM code: it works with reduced motion and even if GSAP never loads.
@@ -30,11 +31,22 @@
     "case-study": "From the {item} project. Change anything below.",
     build: "From the {item} you watched being built. Change anything below.",
     sector: "From the {item} page. Change anything below.",
+    work: "From the {item}. Change anything below.",
+    // no source in the link, but this visitor was just on a sector page or case study (site.js memory)
+    memory: "Picked up from the {item}. Change anything below.",
+    // something is preselected and nothing names where it came from
+    plain: "We’ve filled in what we know. Change anything below.",
   };
   const ROOMS = {
     build: { cafe: "café", restaurant: "dining room", bar: "bar", shop: "shop" },
     sector: { cafe: "Cafés", restaurant: "Restaurants", bar: "Bars", shop: "Shops" },
+    work: { cafe: "café projects", restaurant: "restaurant projects", bar: "bar projects", shop: "shop projects" },
+    memory: { cafe: "Cafés page", restaurant: "Restaurants page", bar: "Bars page", shop: "Shops page" },
   };
+  // site.js venue memory (sessionStorage): the last sector page or case study visited this session
+  const MEMORY = { venue: "ts-venue", from: "ts-venue-from", item: "ts-venue-item" };
+  const sget = (k) => { try { return sessionStorage.getItem(k) || ""; } catch (_) { return ""; } };
+  const sdel = (k) => { try { sessionStorage.removeItem(k); } catch (_) {} };
   const SEND = "Send it over", SENDING = "Sending…";
   const NETWORK = "That didn’t send, and it’s our end, not yours. Your details are still here. Try again, or email hello@twosquares.studio.";
   const BUDGET = {
@@ -48,7 +60,8 @@
     "whole-cafe": { name: "The whole café", prefill: { venue: "cafe", service: "whole-venue", message: "We’d like the whole café designed and built." } },
     "just-the-counter": { name: "Just the counter", prefill: { venue: "cafe", service: "counter", message: "We’d like to rework the counter and workstation." } },
     "a-refresh": { name: "A refresh", prefill: { venue: "cafe", service: "refresh", stage: "trading", message: "We’re open and trading, and the room needs a refresh." } },
-    "something-else": { name: "Something else", prefill: { service: "not-sure", message: "" } },
+    // every dish on the café's menu card is for a café: "Something else" keeps Café selected too
+    "something-else": { name: "Something else", prefill: { venue: "cafe", service: "not-sure", message: "" } },
   };
   // services page: contact.html?service=…&stage=…&from=services&item=<id>
   const SERVICES = {
@@ -63,6 +76,8 @@
     signage: { name: "Signage & brand touchpoints", prefill: { service: "signage" } },
     rollout: { name: "Roll-out for multi-site operators", prefill: { service: "rollout", stage: "multi" } },
     aftercare: { name: "Aftercare", prefill: { service: "aftercare", stage: "trading" } },
+    // the page's closing "Not sure what to order?" CTA
+    "not-sure": { name: "Not sure yet", prefill: { service: "not-sure" } },
   };
   // case studies: contact.html?venue=…&from=case-study&item=<slug>
   const CASES = {
@@ -74,6 +89,9 @@
     tilt: { name: "Tilt", prefill: { venue: "cafe" } },
   };
   const SOURCES = { "menu-card": MENU, services: SERVICES, "case-study": CASES };
+  // a source that implies the room even when its link forgets to say so (the café menu card sits
+  // only on cafes.html: any from=menu-card link, known item or not, is for a café)
+  const FROM_VENUE = { "menu-card": "cafe" };
   // tolerate the sector words other pages use (work filters, plurals, accents)
   const VENUE_ALIASES = {
     cafe: "cafe", "café": "cafe", cafes: "cafe", "cafés": "cafe", coffee: "cafe",
@@ -87,7 +105,7 @@
 
   /* ---------------------------------------------------------------- elements */
   const summary = $("#form-errors"), summaryTitle = $("#form-errors-title"), summaryList = $("#form-errors-list");
-  const banner = $("#prefill"), bannerText = $("#prefill-text"), clearBtn = $("#prefill-clear");
+  const banner = $("#prefill"), bannerText = $("#prefill-text"), clearBtn = $("#prefill-clear"), picksEl = $("#prefill-picks");
   const done = $("#enquiry-done"), netErr = $("#enquiry-neterr"), status = $("#enquiry-status");
   const submit = $(".enquiry__submit", form), submitLabel = $(".enquiry__submit-label", form);
   const reqNote = $(".enquiry__req", form);
@@ -143,7 +161,13 @@
   message && message.addEventListener("input", updateCount);
 
   /* ---------------------------------------------------------------- prefill from the URL */
+  // Venue, in order: the link's own venue → the item's default (menu card, services, case study)
+  // → what its source implies (from=menu-card = a café) → the room this visitor last looked at
+  // (site.js memory). Words are matched tolerantly (cafes, café, retail, shops …).
+  const picked = [];                  // the fields filled in on arrival: [{ field, ctl, text }]
+  const venueOf = (raw) => { raw = (raw || "").trim().toLowerCase(); return VENUE_ALIASES[raw] || raw; };
   function prefill() {
+    d.documentElement.classList.remove("has-prefill");     // the inline guess in contact.html; set again below if a banner shows
     const q = new URLSearchParams(location.search);
     const from = (q.get("from") || "").trim().toLowerCase();
     const itemId = (q.get("item") || "").trim().toLowerCase();
@@ -152,26 +176,71 @@
     const defaults = (item && item.prefill) || {};
     const pick = (k) => (q.has(k) ? (q.get(k) || "").trim() : defaults[k] || "");
 
-    const venueRaw = pick("venue").toLowerCase();
-    setRadio("venue", VENUE_ALIASES[venueRaw] || venueRaw);
+    let venue = venueOf(pick("venue")) || FROM_VENUE[from] || "";
+    let remembered = false;
+    if (!venue) { venue = venueOf(sget(MEMORY.venue)); remembered = !!venue; }
+    setRadio("venue", venue);
     setSelect("service", pick("service").toLowerCase());
     setSelect("stage", pick("stage").toLowerCase());
     const msg = pick("message");
     if (msg && message && !message.value) { message.value = msg.slice(0, MAX * 2); updateCount(); }
 
     state.from = from; state.itemId = itemId; state.item = item;
-    $("#f-from").value = from || "";
-    $("#f-item").value = item ? item.name : itemId;
+    $("#f-from").value = from || (remembered ? sget(MEMORY.from) : "");
+    $("#f-item").value = item ? item.name : itemId || (remembered ? sget(MEMORY.item) : "");
 
-    const room = !item && ROOMS[from] ? ROOMS[from][VENUE_ALIASES[venueRaw] || venueRaw] : "";
-    const label = item ? item.name : room;
-    if (label && BANNER[from]) {
-      const [pre, post] = BANNER[from].split("{item}");
-      const em = d.createElement("em"); em.textContent = label;
-      bannerText.replaceChildren(pre, em, post);
-      banner.hidden = false;
+    // what the banner says: the dish, the room of the page they came from, or where the room was remembered
+    let key = from, label = item ? item.name : "";
+    if (!label && !remembered && ROOMS[from]) label = ROOMS[from][venue] || "";
+    if (!label && remembered) {
+      const mf = sget(MEMORY.from), mi = sget(MEMORY.item);
+      key = "memory";
+      label = mf === "case-study" && CASES[mi] ? CASES[mi].name + " project" : ROOMS.memory[venue] || "";
     }
+    markPicked();
+    if (!label && picked.length) key = "plain";
+    if (!BANNER[key] || (!label && key !== "plain")) return;
+    const [pre, post] = BANNER[key].split("{item}");
+    const bits = [pre];
+    if (post != null) { const em = d.createElement("em"); em.textContent = label; bits.push(em, post); }
+    bannerText.replaceChildren(...bits);
+    renderPicks();
+    banner.hidden = false;
+    d.documentElement.classList.add("has-prefill");
   }
+
+  // make the preselected state obvious: each prefilled field wears a tick and a green edge until
+  // it is changed, and the banner lists the choices as small filled pills that jump to their field
+  function markPicked() {
+    picked.length = 0;
+    const v = form.querySelector('input[name="venue"]:checked');
+    if (v) picked.push({ field: v.closest("[data-field]"), ctl: v, text: v.nextElementSibling ? v.nextElementSibling.textContent.trim() : v.value });
+    ["service", "stage"].forEach((id) => {
+      const s = form.querySelector("#f-" + id);
+      if (s && s.value && s.value !== "not-sure") picked.push({ field: s.closest("[data-field]"), ctl: s, text: s.options[s.selectedIndex].text.trim() });
+    });
+    picked.forEach((p) => p.field && p.field.classList.add("is-prefilled"));
+  }
+  function renderPicks() {
+    if (!picksEl) return;
+    picksEl.replaceChildren(...picked.map((p) => {
+      const li = d.createElement("li"), a = d.createElement("a");
+      a.className = "prefill__pick"; a.href = "#" + (p.field && p.field.id ? p.field.id : p.ctl.id);
+      a.textContent = p.text;
+      a.addEventListener("click", (e) => {
+        e.preventDefault();
+        scrollToEl(p.field || p.ctl);
+        p.ctl.focus({ preventScroll: true });
+      });
+      li.appendChild(a); return li;
+    }));
+    picksEl.hidden = !picked.length;
+  }
+  // a prefilled field that the visitor changes is simply theirs now
+  form.addEventListener("change", (e) => {
+    const f = e.target.closest && e.target.closest(".is-prefilled");
+    if (f) f.classList.remove("is-prefilled");
+  });
 
   clearBtn && clearBtn.addEventListener("click", () => {
     form.reset();
@@ -182,6 +251,10 @@
     hideSummary();
     state.from = ""; state.item = null; state.itemId = "";
     banner.hidden = true;
+    d.documentElement.classList.remove("has-prefill");
+    $$(".is-prefilled", form).forEach((f) => f.classList.remove("is-prefilled"));
+    // from scratch means from scratch: forget the remembered room too (a reload stays blank)
+    Object.values(MEMORY).forEach(sdel);
     try { history.replaceState(history.state, "", location.pathname); } catch (_) {}
     const name = $("#f-name");
     name && name.focus();

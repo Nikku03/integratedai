@@ -18,7 +18,8 @@ Regions (build.json): "shell" polygons are structure (the empty model rises over
 ~3% of the width); "fit" polygons are joinery and fit-out (solid over their outline, feathered beyond it,
 where shell and clay are the same pixels); "flat" polygons flatten fine texture (bottles) into plain planes.
 
-    python3 tools/build_layers.py images [venue ...]   # assets/img/build/<venue>-<layer>-{1920,960}.webp
+    python3 tools/build_layers.py images [venue ...]   # assets/img/build/<venue>-<layer>-{1920,960,2400}.webp
+    python3 tools/build_layers.py images --only=2400   # only the full-screen phone set (masks and meta untouched)
     python3 tools/build_layers.py images --clay        # only re-render shell + clay (and the masks)
     python3 tools/build_layers.py html [venue ...]     # partials/build-<venue>.html from assets/data/build.json
     python3 tools/build_layers.py preview [venue ...]  # grid + region overlays (to OUT_PREVIEW) for placing polygons
@@ -43,7 +44,8 @@ DATA = SITE / "assets/data/build.json"
 OUT = SITE / "assets/img/build"
 SRC = Path(os.environ.get("BUILD_SRC", "/tmp/claude-0/-home-user-integratedai/20d3b9a0-766a-5cf0-adc3-7ed0645662b0/scratchpad/media/photos-hospitality"))
 OUT_PREVIEW = Path(os.environ.get("BUILD_PREVIEW", "/tmp/claude-0/-home-user-integratedai/20d3b9a0-766a-5cf0-adc3-7ed0645662b0/scratchpad/build/build-v2"))
-WIDTHS = (1920, 960)
+WIDTHS = (1920, 960, 2400)     # 2400 (the originals' width) is rendered natively for full-screen phones at DPR 2+;
+NATIVE = (1920, 2400)          # 960 is resampled from the 1920 renders so it matches them exactly
 PAPER = np.array([242, 239, 230], np.float32) / 255      # drawing paper, a shade warmer than --paper
 GRAPHITE = np.array([38, 41, 39], np.float32) / 255
 CLAY = np.array([246, 244, 239], np.float32) / 255       # white card / plaster model
@@ -313,7 +315,8 @@ def line_work(rgb: np.ndarray, P: dict, W: int = 1920) -> tuple[np.ndarray, np.n
     E = grow > 0
     ang = np.arctan2(gy, gx) % np.pi
     h, w = E.shape
-    segs = ruled_segments(E, ang, P, sc)
+    # the 2400 set rules the 1920 set's segments (scaled), so the SVG ruler lines land on its pencil lines too
+    segs = line_work.use_segments if getattr(line_work, "use_segments", None) is not None else ruled_segments(E, ang, P, sc)
     line_work.last_segments = segs
     ruled = draw_segments(segs, h, w, sc, P)
     # freehand: what the ruler didn't take, lighter; short fragments fade or go
@@ -620,30 +623,46 @@ def save(a: np.ndarray, venue_id: str, layer: str, W: int, q: int):
 
 
 def images(ids):
+    """Render every layer. --only=<W> renders one width (and leaves the masks and meta alone); --clay only the
+    white model; --masks only the masks and meta."""
     data = json.loads(DATA.read_text())
+    only = next((int(a.split("=", 1)[1]) for a in sys.argv if a.startswith("--only=")), None)
     for v in data["venues"]:
         if ids and v["id"] not in ids:
             continue
         P = v.get("render", {})
-        meta = {"boxes": write_masks(v)}
         rgb0 = load(v, 1920)
-        segs = ruled_segments_for(rgb0, P)
-        meta["segments"] = segs
-        meta["size"] = [rgb0.shape[1], rgb0.shape[0]]
-        (OUT / f"{v['id']}-meta.json").write_text(json.dumps(meta, separators=(",", ":")))
-        print(f"  {v['id']}: {len(meta['boxes'])} masks, {len(segs)} ruled lines")
+        if only is None:
+            meta = {"boxes": write_masks(v)}
+            segs = ruled_segments_for(rgb0, P)
+            meta["segments"] = segs
+            meta["size"] = [rgb0.shape[1], rgb0.shape[0]]
+            (OUT / f"{v['id']}-meta.json").write_text(json.dumps(meta, separators=(",", ":")))
+            print(f"  {v['id']}: {len(meta['boxes'])} masks, {len(segs)} ruled lines")
         if "--masks" in sys.argv:
             continue
-        for W in WIDTHS:
+        if only is not None:
+            line_work(rgb0, P, 1920)                  # (a full run already has them from ruled_segments_for)
+        segs1920 = list(line_work.last_segments)
+        cache = {}
+        widths = (only,) if only else WIDTHS
+        if only and only not in NATIVE:
+            raise SystemExit("--only takes a natively rendered width: " + ", ".join(map(str, NATIVE)))
+        for W in widths:
             rgb = load(v, W)
             only_clay = "--clay" in sys.argv          # re-render just the white model (shell + clay)
-            if W == 1920:
-                lw = line_work(rgb, P, W)
-                cl, sh = render_clay(rgb, P, W, v, line_work.parts)
-                cache = {"shell": sh, "clay": cl}
-                if not only_clay:
-                    cache["sketch"] = render_sketch(rgb, P, W, lw)
-                    cache["dim"] = render_dim(rgb, P, W, [g for g in v.get("glows", []) if g.get("lamp", True)])
+            if W in NATIVE:
+                k = W / 1920
+                line_work.use_segments = None if W == 1920 else [(x0 * k, y0 * k, x1 * k, y1 * k, L * k) for x0, y0, x1, y1, L in segs1920]
+                try:
+                    lw = line_work(rgb, P, W)
+                    cl, sh = render_clay(rgb, P, W, v, line_work.parts)
+                    cache = {"shell": sh, "clay": cl}
+                    if not only_clay:
+                        cache["sketch"] = render_sketch(rgb, P, W, lw)
+                        cache["dim"] = render_dim(rgb, P, W, [g for g in v.get("glows", []) if g.get("lamp", True)])
+                finally:
+                    line_work.use_segments = None
             else:
                 # the phone set is resampled from the 1920 renders so it matches them exactly
                 cache = {k: np.asarray(to_im(a).resize((W, rgb.shape[0]), Image.LANCZOS), np.float32) / 255 for k, a in cache.items()}
@@ -657,13 +676,14 @@ def images(ids):
                     g = 1 - (luma(sk) / luma(PAPER[None, None, :]))
                     g = np.clip(g * 1.25, 0, 1)
                     cache["sketch"] = PAPER[None, None, :] * (1 - g[..., None]) + GRAPHITE[None, None, :] * g[..., None]
-            q = {"sketch": 80, "shell": 80, "clay": 80, "dim": 76}
+            big = W > 1920                            # the full-screen phone set: a touch more compression
+            q = {"sketch": 76 if big else 80, "shell": 76 if big else 80, "clay": 76 if big else 80, "dim": 72 if big else 76}
             for k, a in cache.items():
                 p = save(a, v["id"], k, W, q[k])
                 print(f"  {p.relative_to(SITE)}  {p.stat().st_size // 1024} KB")
             if only_clay:
                 continue
-            p = save(rgb, v["id"], "lit", W, 82)
+            p = save(rgb, v["id"], "lit", W, 78 if big else 82)
             print(f"  {p.relative_to(SITE)}  {p.stat().st_size // 1024} KB")
 
 
@@ -675,15 +695,25 @@ def _f(v):
     return f"{v * PS:.1f}".rstrip("0").rstrip(".")
 
 
-def plan_svg(v: dict, uid: str) -> str:
+def plan_svg(v: dict, uid: str, portrait: bool = False) -> str:
     """A plausible plan of the room in the photograph: poché walls, openings, door swings, joinery, furniture,
     a structural grid, overall dimensions, a scale bar and a north point. Every stroke carries pathLength=1
-    and a data-g group so build.js can draw it in order: grid, walls, open, fixed, furn, anno."""
+    and a data-g group so build.js can draw it in order: grid, walls, open, fixed, furn, anno.
+
+    portrait=True: the same drawing turned a quarter (for a portrait phone screen, where the landscape sheet
+    would be a small drawing in a big empty box). The linework (and the north point) turns with it; the lettering
+    stays upright, in larger type, re-set round the turned plan: grid bubbles on the top and right, the overall
+    dimensions on the right and below, the scale bar, north point and title block at the foot."""
     P = v["plan"]
     W, D = P["size"]
     m = 2.6                                              # margin in metres (grid bubbles, dimensions)
     vb = f"{-m * PS:.0f} {-m * PS:.0f} {(W + 2 * m) * PS:.0f} {(D + 2 * m + 1.4) * PS:.0f}"
-    el = []
+    el = []            # landscape, in drawing order
+    pt = []            # portrait: the lettering, upright, at the turned positions (the linework is in el and turns)
+    rot = lambda x, y: (-y, x)                           # rotate(90): the plan's top edge becomes its right edge
+    def T(cls, g, x, y, txt, extra=""):
+        X, Y = rot(x, y)
+        pt.append(f'<text class="{cls}" data-g="{g}" x="{_f(X)}" y="{_f(Y)}"{extra}>{txt}</text>')
     def L(g, d, cls="pl-l", extra=""):
         draw = not ("pl-dash" in cls or "pl-grid" in cls)     # dashed lines fade in; solid ones draw themselves
         cl, pl = (cls + " pl-draw", ' pathLength="1"') if draw else (cls, "")
@@ -692,12 +722,19 @@ def plan_svg(v: dict, uid: str) -> str:
     def circ(cx, cy, r):
         return f"M{_f(cx - r)} {_f(cy)}a{_f(r)} {_f(r)} 0 1 0 {_f(2 * r)} 0a{_f(r)} {_f(r)} 0 1 0 {_f(-2 * r)} 0Z"
     # structural grid
+    bub = lambda X, Y, r, t: (f'<g data-g="grid" class="pl-bub"><circle cx="{_f(X)}" cy="{_f(Y)}" r="{_f(r)}"/>'
+                              f'<text x="{_f(X)}" y="{_f(Y)}">{t}</text></g>')
+    RP = 0.6                                             # portrait bubbles: bigger, for bigger letters
     for i, x in enumerate(P.get("gx", [])):
         L("grid", f"M{_f(x)} {_f(-1.6)}V{_f(D + 0.6)}", "pl-grid")
-        el.append(f'<g data-g="grid" class="pl-bub"><circle cx="{_f(x)}" cy="{_f(-2.0)}" r="{_f(0.4)}"/><text x="{_f(x)}" y="{_f(-2.0)}">{"ABCDEFGH"[i]}</text></g>')
+        el.append(bub(x, -2.0, 0.4, "ABCDEFGH"[i]))
+        pt.append(bub(*rot(x, -1.6 - RP), RP, "ABCDEFGH"[i]))
+    ny_ = len(P.get("gy", []))
     for i, y in enumerate(P.get("gy", [])):
         L("grid", f"M{_f(-1.6)} {_f(y)}H{_f(W + 0.6)}", "pl-grid")
-        el.append(f'<g data-g="grid" class="pl-bub"><circle cx="{_f(-2.0)}" cy="{_f(y)}" r="{_f(0.4)}"/><text x="{_f(-2.0)}" y="{_f(y)}">{i + 1}</text></g>')
+        el.append(bub(-2.0, y, 0.4, i + 1))
+        # turned, this row of bubbles runs right to left: number it afresh so the sheet reads 1, 2, 3 across
+        pt.append(bub(*rot(-1.6 - RP, y), RP, ny_ - i))
     # walls: poché fill (fades in) + outline (draws)
     for w_ in P["walls"]:
         x0, y0, x1, y1 = w_[:4]
@@ -749,6 +786,7 @@ def plan_svg(v: dict, uid: str) -> str:
             ym = (y0 + y1) / 2
             L("fixed", f"M{_f(x0 + 0.3)} {_f(ym)}H{_f(x1 - 0.35)}M{_f(x1 - 0.7)} {_f(ym - 0.22)}L{_f(x1 - 0.35)} {_f(ym)}L{_f(x1 - 0.7)} {_f(ym + 0.22)}", "pl-l pl-thin")
             el.append(f'<text class="pl-note" data-g="anno" x="{_f(x0 + 0.5)}" y="{_f(y1 + 0.45)}">UP</text>')
+            T("pl-note", "anno", x0 + 0.5, y1 + 0.55, "UP")
         elif kind == "over":                     # overhead: mezzanine edge, trusses, arches
             L("fixed", "M" + "L".join(f"{_f(x)} {_f(y)}" for x, y in f[1]), "pl-l pl-thin pl-dash")
         elif kind == "overc":
@@ -795,29 +833,63 @@ def plan_svg(v: dict, uid: str) -> str:
     yd = -0.9
     L("anno", f"M0 {_f(yd)}H{_f(W)}" + tick(0, yd) + tick(W, yd), "pl-l pl-thin")
     el.append(f'<text class="pl-dim" data-g="anno" x="{_f(W / 2)}" y="{_f(yd - 0.25)}">{int(W * 1000):,}</text>'.replace(",", " "))
+    X, Y = rot(W / 2, yd - 0.45)                         # turned, it reads up the right-hand side
+    pt.append(f'<text class="pl-dim" data-g="anno" x="{_f(X)}" y="{_f(Y)}" transform="rotate(-90 {_f(X)} {_f(Y)})">{int(W * 1000):,}</text>'.replace(",", " "))
     xd = W + 0.9
     L("anno", f"M{_f(xd)} 0V{_f(D)}" + tick(xd, 0) + tick(xd, D), "pl-l pl-thin")
     el.append(f'<text class="pl-dim" data-g="anno" x="{_f(xd + 0.3)}" y="{_f(D / 2)}" transform="rotate(90 {_f(xd + 0.3)} {_f(D / 2)})">{int(D * 1000):,}</text>'.replace(",", " "))
+    T("pl-dim", "anno", xd + 0.45, D / 2, f"{int(D * 1000):,}".replace(",", " "))
     lx, ly = P["label"]["at"]
     el.append(f'<text class="pl-room" data-g="anno" x="{_f(lx)}" y="{_f(ly)}">{H.escape(P["label"]["name"])}</text>')
     el.append(f'<text class="pl-note" data-g="anno" x="{_f(lx)}" y="{_f(ly + 0.75)}">{H.escape(P["label"]["area"])}</text>')
+    plx, ply = P["label"].get("atP", [lx, ly])           # where the upright label sits clear of the furniture, turned
+    T("pl-room", "anno", plx, ply, H.escape(P["label"]["name"]))
+    X, Y = rot(plx, ply)
+    pt.append(f'<text class="pl-note" data-g="anno" x="{_f(X)}" y="{_f(Y + 1.15)}">{H.escape(P["label"]["area"])}</text>')
     # north point (bottom right) and scale bar (bottom left)
     nx, ny = W - 0.6, D + 1.8
     el.append(f'<g data-g="anno" class="pl-north" transform="translate({_f(nx)} {_f(ny)}) rotate({P.get("north", 0)})">'
               f'<circle r="{_f(0.55)}"/><path d="M0 {_f(-0.55)}L{_f(0.2)} {_f(0.3)}L0 {_f(0.12)}L{_f(-0.2)} {_f(0.3)}Z"/>'
               f'<text y="{_f(-0.85)}">N</text></g>')
+    north = lambda x, y, a, r: (f'<g data-g="anno" class="pl-north" transform="translate({_f(x)} {_f(y)}) rotate({a})">'
+                                f'<circle r="{_f(r)}"/><path d="M0 {_f(-r)}L{_f(r * 0.36)} {_f(r * 0.55)}L0 {_f(r * 0.22)}L{_f(-r * 0.36)} {_f(r * 0.55)}Z"/></g>')
+    # portrait: the point turns with the plan; its N stays upright (outside the turned group), just above it
+    fy = W + 2.55                                        # the foot of the turned sheet: scale bar, north, title
+    npx, npy = 1.5, fy + 0.2
+    pt.append(north(npx, npy, P.get("north", 0) + 90, 0.62))
+    na = math.radians(P.get("north", 0) + 90)          # the N sits off the arrow's tip
+    pt.append(f'<text class="pl-north-n" data-g="anno" x="{_f(npx + 1.05 * math.sin(na))}" y="{_f(npy - 1.05 * math.cos(na))}">N</text>')
     sy = D + 1.8
     segs = [(0, 1), (1, 2), (2, 3), (3, 5)]
     for i, (a0, a1) in enumerate(segs):
         el.append(f'<rect class="pl-scale{" is-f" if i % 2 == 0 else ""}" data-g="anno" x="{_f(a0)}" y="{_f(sy - 0.12)}" width="{_f(a1 - a0)}" height="{_f(0.24)}"/>')
+        pt.append(f'<rect class="pl-scale{" is-f" if i % 2 == 0 else ""}" data-g="anno" x="{_f(-D + a0)}" y="{_f(fy - 0.14)}" width="{_f(a1 - a0)}" height="{_f(0.28)}"/>')
     for t in (0, 1, 2, 5):
         el.append(f'<text class="pl-note" data-g="anno" x="{_f(t)}" y="{_f(sy + 0.7)}">{t}</text>')
+        pt.append(f'<text class="pl-note" data-g="anno" x="{_f(-D + t)}" y="{_f(fy + 0.8)}">{t}</text>')
     el.append(f'<text class="pl-note" data-g="anno" x="{_f(5.35)}" y="{_f(sy + 0.7)}" text-anchor="start">m</text>')
+    pt.append(f'<text class="pl-note" data-g="anno" x="{_f(-D + 5.4)}" y="{_f(fy + 0.8)}" text-anchor="start">m</text>')
     el.append(f'<text class="pl-title" data-g="anno" x="0" y="{_f(sy + 1.55)}">{H.escape(P["title"])}</text>')
+    # the title block, in two lines (the name; the sheet)
+    t1, _, t2 = P["title"].partition(" — ")
+    pt.append(f'<text class="pl-title" data-g="anno" x="{_f(-D)}" y="{_f(fy + 1.75)}">{H.escape(t1)}</text>')
+    if t2:
+        pt.append(f'<text class="pl-title" data-g="anno" x="{_f(-D)}" y="{_f(fy + 2.4)}">{H.escape(t2)}</text>')
     defs = (f'<defs><pattern id="hatch-{uid}" width="{_f(0.22)}" height="{_f(0.22)}" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">'
             f'<path d="M0 0V{_f(0.22)}" stroke="currentColor" stroke-width="1.4"/></pattern></defs>')
-    return (f'<svg class="build__plan-svg" viewBox="{vb}" role="img" aria-label="{H.escape(P["aria"])}" preserveAspectRatio="xMidYMid meet">'
-            + defs + f'<g id="build-plan-{uid}">' + "".join(el) + "</g></svg>")
+    if not portrait:
+        return (f'<svg class="build__plan-svg" viewBox="{vb}" role="img" aria-label="{H.escape(P["aria"])}" preserveAspectRatio="xMidYMid meet">'
+                + defs + f'<g id="build-plan-{uid}">' + "".join(el) + "</g></svg>")
+    # portrait: the linework (everything but the lettering) turned a quarter, then the lettering upright
+    keep = [e for e in el if not (e.startswith("<text") or e.startswith('<g data-g="grid" class="pl-bub"')
+                                  or e.startswith('<g data-g="anno" class="pl-north"') or e.startswith('<rect class="pl-scale'))]
+    x0, x1 = -(D + 1.0), 1.6 + 2 * RP + 0.3
+    y0, y1 = -(1.6 + 2 * RP + 0.3), fy + 2.8
+    vbp = f"{x0 * PS:.0f} {y0 * PS:.0f} {(x1 - x0) * PS:.0f} {(y1 - y0) * PS:.0f}"
+    defs_p = defs.replace(f'id="hatch-{uid}"', f'id="hatch-{uid}-p"')
+    keep = [e.replace(f"url(#hatch-{uid})", f"url(#hatch-{uid}-p)") for e in keep]
+    return (f'<svg class="build__plan-svg build__plan-svg--p" viewBox="{vbp}" role="img" aria-label="{H.escape(P["aria"])}" preserveAspectRatio="xMidYMid meet">'
+            + defs_p + '<g transform="rotate(90)">' + "".join(keep) + "</g>" + "".join(pt) + "</svg>")
 
 
 def plan_use(v: dict, uid: str) -> str:
@@ -896,13 +968,13 @@ def end_actions(v: dict, C: dict, solid=False) -> str:
     main = "btn--solid" if solid else "btn--paper"
     if end["kind"] == "cafe":
         cta = (f'<button class="btn {main} build__cta" type="button" data-cafe-seq-open aria-haspopup="dialog" aria-controls="corner-table" '
-               f'aria-label="{e(end["aria"])}" data-cursor="Sit down">{e(end["label"])} {_arr()}</button>')
+               f'aria-label="{e(end["aria"])}">{e(end["label"])} {_arr()}</button>')
         if solid:      # no JS: the dialog opens by :target
             cta += f'<a class="btn btn--solid build__cta cafe-seq-fallback" href="#corner-table">{e(end["label"])} {_arr()}</a>'
         return cta
     here = f' data-here="{e(end["here"])}"' if end.get("here") else ""
     second = "" if solid else " btn--on-dark"
-    return (f'<a class="btn {main} build__cta" href="{_href(end["href"])}"{here} aria-label="{e(end["aria"])}" data-cursor="Enter">{e(end["label"])} {_arr()}</a>'
+    return (f'<a class="btn {main} build__cta" href="{_href(end["href"])}"{here} aria-label="{e(end["aria"])}">{e(end["label"])} {_arr()}</a>'
             f'<a class="btn{second} build__cta build__cta--2" href="{_href(end["start"])}">{e(C["start"]["label"])} {_arr()}</a>')
 
 
@@ -947,18 +1019,20 @@ def venue_html(v: dict, C: dict) -> str:
             f'{e(" ".join(C["skip"].split(" ")[1:]))}</span> <span class="build__skip-arr" aria-hidden="true">↓</span></a>')
     stage = (f'<div class="build__track" data-track><div class="build__stage" data-stage>'
              f'<div class="build__frame" data-frame>'
-             f'<div class="build__plan" data-plan aria-hidden="true">{plan}</div>'
+             f'<div class="build__plan" data-plan aria-hidden="true">{plan}{plan_svg(v, vid, portrait=True)}</div>'
              f'<div class="build__paper" data-paper aria-hidden="true"></div>{box}'
              f'<div class="build__scrim" data-scrim aria-hidden="true"></div>'
              f'<div class="build__end" data-end><p class="build__end-time t-label"><span class="t-num">{c["time"]}</span> · {e(c["diary"][-1][0].split(" · ")[0])}</p>'
              f'<h3 class="build__title t-display-xl" id="build-{vid}-title"><em>{e(end["title"])}</em></h3>'
              f'<div class="build__actions">{end_actions(v, C)}</div></div></div>'
-             f'<div class="build__card" data-card><div class="build__card-head t-label"><span class="build__card-where"><span class="t-num">{c["time"]}</span> · {e(c["name"])}</span>'
+             f'<div class="build__card" data-card><div class="build__card-head t-label"><span class="build__card-where"><span class="build__card-time"><span class="t-num">{c["time"]}</span> · </span>{e(c["name"])}</span>'
              f'<span class="build__count t-num" aria-hidden="true"><b data-now>01</b> / {len(stages):02d}</span>{skip}</div>'
              f'<ol class="build__diary">{diary}</ol><ol class="build__index" aria-hidden="true">{index}</ol></div>'
              f'{pops_html(v, C)}'
              f'</div></div>')
     sizes = "(max-width: 900px) 100vw, 31vw"
+    # a still's label: "01 · The drawing" and "Week 1 · Measured survey", each kept whole (it wraps between them)
+    cap_label = lambda n, name, wk: f'<span class="build__nw">{n} · {e(name)}</span> · <span class="build__nw">{e(wk)}</span>'
     def fig(layer, alt, cap):
         src = f"{ROOT}assets/img/build/{vid}-{layer}"
         return (f'<figure class="build__spread-fig"><div class="media" style="aspect-ratio:{Wm}/{Hm}">'
@@ -972,13 +1046,15 @@ def venue_html(v: dict, C: dict) -> str:
               f'<h3 class="build__spread-title t-display-m">{e(end["title"])}</h3></div>'
               f'<div class="build__spread-row">'
               f'<figure class="build__spread-fig build__spread-fig--plan"><div class="build__spread-plan" style="aspect-ratio:{Wm}/{Hm}">{plan_use(v, vid)}</div>'
-              f'<figcaption class="build__spread-cap"><span class="t-label">01 · {e(L3[0])} · {e(d[0][0])}</span><span class="t-small">{e(d[0][1])}</span></figcaption></figure>'
-              + fig("clay", c["alts"]["clay"], (f"03 · {e(L3[1])} · {e(d[2][0])}", d[2][1]))
-              + fig("lit", c["alts"]["lit"], (f"07 · {e(L3[2])} · {e(d[6][0])}", d[6][1]))
+              f'<figcaption class="build__spread-cap"><span class="t-label">{cap_label("01", L3[0], d[0][0])}</span><span class="t-small">{e(d[0][1])}</span></figcaption></figure>'
+              + fig("clay", c["alts"]["clay"], (cap_label("03", L3[1], d[2][0]), d[2][1]))
+              + fig("lit", c["alts"]["lit"], (cap_label("07", L3[2], d[6][0]), d[6][1]))
               + f'</div>{notes_html(v, C)}<div class="build__spread-end">{end_actions(v, C, solid=True)}</div></div>')
     pan = st.get("pan", [0.5, 0.5])
+    pp = st.get("panPhone")
+    pan_phone = f' data-pan-phone="{pp[0]},{pp[1]}"' if pp else ""
     return (f'<article class="build__venue" id="build-{vid}-room" data-venue="{vid}" aria-labelledby="build-{vid}-title" '
-            f'style="--ar:{ar:.4f};--fx:{st.get("fx", 0.5)};--fy:{st.get("fy", 0.5)}" data-pan="{pan[0]},{pan[1]}" data-card="{st.get("card", "left")}">'
+            f'style="--ar:{ar:.4f};--fx:{st.get("fx", 0.5)};--fy:{st.get("fy", 0.5)}" data-pan="{pan[0]},{pan[1]}"{pan_phone} data-card="{st.get("card", "left")}">'
             f'{stage}{spread}</article>')
 
 
@@ -991,13 +1067,17 @@ def write_html(ids=()):
         if ids and v["id"] not in ids:
             continue
         vid, c = v["id"], v["copy"]
+        # the first sentence ("Scroll, and the café builds itself: …") only makes sense when it does: CSS hides it
+        # under reduced motion and without JS, where the build is three stills
+        first, sep, rest = c["intro"].partition(". ")
+        intro = f'<span class="build__body-scroll">{e(first)}.</span> {e(rest)}' if sep else e(c["intro"])
         out = f"""<!-- The build: {e(c["name"])} ({c["time"]}). GENERATED by tools/build_layers.py html from assets/data/build.json: edit those, not this.
      Needs assets/css/build.css and assets/js/build.js{" (and the cafe-seq partial, css and js for the corner table)" if c["end"]["kind"] == "cafe" else ""}. -->
 <section class="build" id="build-{vid}" data-build data-build-root="{ROOT}assets/img/build/" aria-labelledby="build-{vid}-heading">
   <div class="build__intro wrap">
     <p class="build__eyebrow t-label" data-reveal>{e(C["eyebrow"])}</p>
     <h2 class="build__headline t-display-l" id="build-{vid}-heading" data-split>{C["headline"]}</h2>
-    <p class="build__body t-lede" data-reveal data-float="0.6">{e(c["intro"])}</p>
+    <p class="build__body t-lede" data-reveal data-float="0.6">{intro}</p>
     <p class="sr-only">{e(c["srSummary"])}</p>
     <p class="build__rm-note t-small">{e(C["rmNote"])}</p>
   </div>

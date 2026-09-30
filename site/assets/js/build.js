@@ -4,23 +4,33 @@
  * Loads after motion.js and site.js (and cafe-seq.js on a page with the café). Works on any page: every
  * [data-build] section on it is set up, each with its [data-venue] rooms.
  *
- * Each venue is a tall track (about five screens) with a sticky, inset stage (no ScrollTrigger pin) and
- * ONE scrubbed timeline: 01 the drawing (plan strokes draw themselves) → 02 the sketch (paper, the ruler's
- * lines, then the pencil drawing) → 03 the shell (the empty white model rises over the sketch, structure
- * first) → 04 joinery & fit-out (each piece is set down in white card) → 05 finishes (the real materials
- * wash across the room in one soft sweep) → 06 lights on (the lamps come up, the room warms) → 07 open
- * (the real photograph, the end title and its actions).
- * At each stage a note pops up opposite the site diary (scroll-driven, so it reverses), is read once by a
- * polite live region, and can be put away with its close button.
+ * Each venue is a tall track with a sticky stage (no ScrollTrigger pin) and ONE scrubbed timeline: 01 the drawing
+ * (plan strokes draw themselves) → 02 the sketch (paper, the ruler's lines, then the pencil drawing) → 03 the shell
+ * (the empty white model rises over the sketch, structure first) → 04 joinery & fit-out (each piece is set down in
+ * white card) → 05 finishes (the real materials wash across the room in one soft sweep) → 06 lights on (the lamps
+ * come up, the room warms) → 07 open (the real photograph, the end title and its actions).
+ * The site diary and the notes are NOT scrubbed: when the stage changes they cross-fade on a short clock that always
+ * finishes, so a thumb that stops between two stages never leaves a half-faded note or an empty diary.
  *
- * Only opacity, transform and clip-path move. Layers load (and decode) a screen ahead, and are released two
- * screens behind; what's finished and covered stops painting (data-past).
+ * Three layouts (the same media queries as build.css):
+ *   desk  an inset, rounded panel; the diary card and the note beside the drawing (the approved laptop layout)
+ *   fsp   phones and portrait tablets: the stage fills the screen edge to edge, the drawing is turned to portrait,
+ *         the diary is a compact glass card at the foot, the note a compact toast at the top, and the camera pans
+ *         across the wide photograph over the whole build; a flick settles on a stage (proximity snap, touch only)
+ *   fsl   phones on their side (short landscape screens): full bleed, the diary as a small side card
+ * The layout decides the timeline's details, so a venue is rebuilt when the layout changes (a phone turned over).
+ *
+ * Only opacity, transform and clip-path move. Layers are fetched a screen ahead; each is decoded before it is handed
+ * to CSS. Full screen (phones), a layer is held only while the stage is within one step of needing it and let go
+ * once it is covered (iOS image memory at 2400px); the laptop holds all five while the build is near.
+ * The image set follows the size the photograph is actually drawn at (960 / 1920 / 2400 px wide).
  * Reduced motion: nothing here runs except the link fix below; CSS shows the stills and the notes as a list.
  */
 (function (w, d) {
   "use strict";
   const $ = (s, r = d) => r.querySelector(s);
   const $$ = (s, r = d) => Array.from(r.querySelectorAll(s));
+  const root = d.documentElement;
 
   // a link to the page it's on (the restaurant's "See the dining rooms" on restaurants.html) goes to a section of it instead
   $$("[data-build] a[data-here]").forEach((a) => {
@@ -32,48 +42,96 @@
   const M = w.Motion;
   if (!M || !w.gsap || !w.ScrollTrigger) return;
   const gsap = w.gsap, ST = w.ScrollTrigger;
-  const phoneMQ = w.matchMedia("(max-width: 600px)");
+
+  // keep these in step with build.css
+  const MQ = {
+    fsp: w.matchMedia("(max-aspect-ratio: 5/4)"),
+    fsl: w.matchMedia("(max-height: 500px) and (orientation: landscape)"),
+    touch: w.matchMedia("(hover: none) and (pointer: coarse)"),
+  };
+  const layout = () => (MQ.fsl.matches ? "fsl" : MQ.fsp.matches ? "fsp" : "desk");
+
   const LAYERS = ["sketch", "shell", "clay", "dim", "lit"];
+  // the stages each layer is drawn in (as a layer, or through the regions that reveal it)
+  const USED = { sketch: [1, 2], shell: [2, 3], clay: [3, 4], dim: [4, 5], lit: [5, 6] };
 
   // stage boundaries on the timeline (seconds of timeline time; the scroll maps onto them)
   const T = { sketch: 1.5, shell: 2.8, fit: 3.9, finish: 5.0, lights: 6.2, open: 7.3, end: 8.8 };
   const STARTS = [0, T.sketch, T.shell, T.fit, T.finish, T.lights, T.open];
+  // where each stage is complete and its note is up: a flick settles here on a touch screen
+  const REST = [1.25, 2.5, 3.72, 4.85, 6.12, 7.14, 8.4];
   const SWEEP = 1.0;                                    // the finishes' sweep, in timeline seconds
   // when a layer has fully covered what's under it (so the covered parts can stop painting)
   const PAST = [["plan", T.sketch + 0.42], ["sketch", T.shell - 0.08], ["shell", T.fit - 0.02], ["clay", T.finish - 0.02],
     ["dim", T.finish + 0.08 + SWEEP], ["lit", T.lights + 0.82]];
-  const POP = { in: 0.14, dur: 0.2, out: 0.16 };        // a note arrives just after its stage, leaves just before the next
+  const POP = { in: 0.14, out: 0.04 };                   // a note arrives just after its stage, leaves just before the next
 
   /* ---------------------------------------------------------------- loading */
-  function urls(v, root) {
-    const id = v.dataset.venue, size = phoneMQ.matches ? 960 : 1920;
-    const o = {};
-    LAYERS.forEach((k) => { o[k] = new URL(`${id}-${k}-${size}.webp`, root).href; });
-    return o;
+  function sizeFor(box, mode) {
+    if (mode === "desk") return 1920;                   // the approved laptop layout keeps its set
+    const need = box.offsetWidth * Math.min(w.devicePixelRatio || 1, 3);
+    return need <= 960 * 1.15 ? 960 : need <= 1920 * 1.1 ? 1920 : 2400;
   }
-  function load(v, root) {
+  // fetch every layer (encoded bytes only, into the HTTP cache) when the track comes near
+  function load(v, base) {
     if (v.__loaded) return;
     v.__loaded = true;
-    const u = urls(v, root);
-    // decode off the main thread first, then hand them to CSS: no decode hitch when a layer first shows
+    const u = v.__urls;
+    LAYERS.forEach((k) => { const img = new Image(); img.decoding = "async"; img.src = u[k]; });
+    $$(".build__reg", v).forEach((r) => r.style.setProperty("--m", `url("${new URL(r.dataset.m, base).href}")`));
+    sync(v);
+  }
+  // hand CSS the layers the stage is within one step of drawing (decoded first: no hitch when one shows), and
+  // take back the ones it has left behind
+  function sync(v) {
+    if (!v.__loaded) return;
+    const at = v.__stage || 0, u = v.__urls;
     LAYERS.forEach((k) => {
-      const img = new Image();
-      img.decoding = "async";
-      img.src = u[k];
-      const set = () => { if (v.__loaded) v.style.setProperty(`--u-${k}`, `url("${u[k]}")`); };
-      (img.decode ? img.decode() : Promise.resolve()).then(set, set);
+      const want = USED[k].some((s) => Math.abs(s - at) <= v.__win);
+      if (want && !v.__set[k] && !v.__pending[k]) {
+        v.__pending[k] = true;
+        const img = new Image();
+        img.decoding = "async";
+        img.src = u[k];
+        const set = () => {
+          v.__pending[k] = false;
+          if (!v.__loaded || img.src !== v.__urls[k]) return;
+          const still = USED[k].some((s) => Math.abs(s - (v.__stage || 0)) <= v.__win);
+          if (still) { v.style.setProperty(`--u-${k}`, `url("${u[k]}")`); v.__set[k] = true; }
+        };
+        (img.decode ? img.decode() : Promise.resolve()).then(set, set);
+      } else if (!want && v.__set[k]) {
+        v.style.removeProperty(`--u-${k}`);
+        v.__set[k] = false;
+      }
     });
-    $$(".build__reg", v).forEach((r) => r.style.setProperty("--m", `url("${new URL(r.dataset.m, root).href}")`));
   }
   function release(v) {
-    if (!v.__loaded) return;
     v.__loaded = false;
     LAYERS.forEach((k) => v.style.removeProperty(`--u-${k}`));
+    v.__set = {}; v.__pending = {};
   }
 
+  /* ---------------------------------------------------------------- snapping (touch screens, full-screen layouts) */
+  // the marks sit inside the track at each stage's rest point; html gets scroll-snap-type only while a track is on
+  // screen, and never while a link or a key is scrolling the page (a programmatic scroll would be caught by them)
+  let snapOn = 0, snapPause = 0;
+  const snapClass = () => root.classList.toggle("build-snap", snapOn > 0 && !snapPause);
+  const pauseSnap = (ms = 2000) => {
+    snapPause++; snapClass();
+    setTimeout(() => { snapPause = Math.max(0, snapPause - 1); snapClass(); }, ms);
+  };
+  d.addEventListener("click", (e) => {
+    const a = e.target.closest && e.target.closest('a[href*="#"]');
+    if (a && snapOn) pauseSnap();
+  }, true);
+
   /* ---------------------------------------------------------------- one venue */
-  function venue(v, env, root) {
+  function venue(v, base) {
+    const mode = layout();
+    const fs = mode !== "desk";
     const track = $("[data-track]", v);
+    const stage = $("[data-stage]", v);
     const frame = $("[data-frame]", v);
     const box = $("[data-box]", v);
     const plan = $("[data-plan]", v);
@@ -89,6 +147,7 @@
     const end = $("[data-end]", v);
     const endParts = Array.from(end.children);
     const ctas = $$("a, button", end);
+    const card = $(".build__card", v);
     const entries = $$(".build__entry", v);
     const ticks = $$(".build__index li", v);
     const now = $("[data-now]", v);
@@ -98,12 +157,22 @@
     const pg = (g) => $$(`[data-g="${g}"]`, plan);
     const draw = (els) => els.filter((e) => e.classList.contains("pl-draw"));
     const fade = (els) => els.filter((e) => !e.classList.contains("pl-draw"));
-    const pan = (v.dataset.pan || "0.5,0.5").split(",").map(Number);
+    const nums = (s, dflt) => (s || dflt).split(",").map(Number);
+    const pan = fs && v.dataset.panPhone ? nums(v.dataset.panPhone) : nums(v.dataset.pan, "0.5,0.5");
     const fx = parseFloat(getComputedStyle(v).getPropertyValue("--fx")) || 0.5;
+
+    // this layout's image set
+    const size = sizeFor(box, mode);
+    v.__urls = {};
+    LAYERS.forEach((k) => { v.__urls[k] = new URL(`${v.dataset.venue}-${k}-${size}.webp`, base).href; });
+    v.__set = v.__set || {}; v.__pending = v.__pending || {};
+    v.__stage = 0;
+    v.__win = fs ? 1 : 9;                               // full screen (phones): one step either side; the laptop keeps them all
 
     const tl = gsap.timeline({ defaults: { ease: "none" }, paused: true });
 
-    /* 01 — the drawing: grid, walls, poché, openings, joinery, furniture, notes */
+    /* 01 — the drawing: the grid is on when the sheet arrives, the walls start at once, then openings, joinery,
+       furniture and the notes; the finished drawing holds for a moment before the paper comes over it */
     const drawIn = (els, at, dur, each = 0.2) => {
       if (!els.length) return;
       tl.to(els, { strokeDashoffset: 0, duration: each, ease: "power1.inOut", stagger: { amount: Math.max(0, dur - each) } }, at);
@@ -112,25 +181,35 @@
       if (!els.length) return;
       tl.to(els, { opacity: to, duration: Math.min(0.2, dur), stagger: { amount: Math.max(0, dur - 0.2) } }, at);
     };
-    fadeIn(fade(pg("grid")), 0.04, 0.28, 1);
-    drawIn(draw(pg("walls")), 0.18, 0.42, 0.24);
-    tl.to(pg("poche"), { opacity: 0.92, duration: 0.2 }, 0.56);
-    drawIn(draw(pg("open")), 0.66, 0.28, 0.18);
-    fadeIn(fade(pg("open")), 0.74, 0.24);
-    drawIn(draw(pg("fixed")), 0.84, 0.28, 0.18);
-    fadeIn(fade(pg("fixed")), 0.88, 0.28);
-    drawIn(draw(pg("furn")), 0.98, 0.32, 0.12);
-    fadeIn(fade(pg("furn")), 1.02, 0.28);
-    drawIn(draw(pg("anno")), 1.1, 0.24, 0.15);
-    fadeIn(fade(pg("anno")), 1.12, 0.28);
+    fadeIn(fade(pg("grid")), 0.02, 0.2, 1);
+    drawIn(draw(pg("walls")), 0.02, 0.34, 0.22);
+    tl.to(pg("poche"), { opacity: 0.92, duration: 0.18 }, 0.3);
+    drawIn(draw(pg("open")), 0.4, 0.24, 0.16);
+    fadeIn(fade(pg("open")), 0.46, 0.2);
+    drawIn(draw(pg("fixed")), 0.54, 0.24, 0.16);
+    fadeIn(fade(pg("fixed")), 0.58, 0.24);
+    drawIn(draw(pg("furn")), 0.64, 0.3, 0.12);
+    fadeIn(fade(pg("furn")), 0.68, 0.26);
+    drawIn(draw(pg("anno")), 0.78, 0.22, 0.14);
+    fadeIn(fade(pg("anno")), 0.8, 0.26);
 
-    /* 02 — the sketch: a sheet of paper over the plan, the ruler's lines, then the drawing */
-    tl.fromTo(paper, { clipPath: "inset(100% 0% 0% 0%)" }, { clipPath: "inset(0% 0% 0% 0%)", duration: 0.36, ease: "power2.inOut" }, T.sketch + 0.05);
-    tl.to(plan, { opacity: 0, yPercent: -3, duration: 0.3, ease: "power1.in" }, T.sketch + 0.08);
-    tl.set(rule, { opacity: 1 }, T.sketch + 0.38);
-    if (rulePaths.length) tl.to(rulePaths, { strokeDashoffset: 0, duration: 0.14, ease: "power1.inOut", stagger: { amount: 0.46 } }, T.sketch + 0.4);
-    tl.to(L.sketch, { opacity: 1, duration: 0.34, ease: "power1.inOut" }, T.sketch + 0.8);
-    tl.to(rule, { opacity: 0, duration: 0.15 }, T.sketch + 1.06);
+    /* 02 — the sketch: a sheet of paper over the plan, the ruler's lines, then the drawing. On the laptop the sheet
+       wipes up over the plan; full screen it dissolves in (no hard edge across a phone) and the ruler starts at once */
+    if (fs) {
+      tl.fromTo(paper, { clipPath: "inset(0% 0% 0% 0%)", opacity: 0 }, { opacity: 1, duration: 0.24, ease: "power1.inOut" }, T.sketch + 0.02);
+      tl.to(plan, { opacity: 0, duration: 0.24, ease: "power1.in" }, T.sketch + 0.02);
+      tl.set(rule, { opacity: 0.62 }, T.sketch + 0.1);
+      if (rulePaths.length) tl.to(rulePaths, { strokeDashoffset: 0, duration: 0.14, ease: "power1.inOut", stagger: { amount: 0.4 } }, T.sketch + 0.12);
+      tl.to(L.sketch, { opacity: 1, duration: 0.34, ease: "power1.inOut" }, T.sketch + 0.56);
+      tl.to(rule, { opacity: 0, duration: 0.24 }, T.sketch + 0.64);
+    } else {
+      tl.fromTo(paper, { clipPath: "inset(100% 0% 0% 0%)" }, { clipPath: "inset(0% 0% 0% 0%)", duration: 0.3, ease: "power2.inOut" }, T.sketch + 0.05);
+      tl.to(plan, { opacity: 0, yPercent: -3, duration: 0.26, ease: "power1.in" }, T.sketch + 0.08);
+      tl.set(rule, { opacity: 1 }, T.sketch + 0.3);
+      if (rulePaths.length) tl.to(rulePaths, { strokeDashoffset: 0, duration: 0.14, ease: "power1.inOut", stagger: { amount: 0.44 } }, T.sketch + 0.32);
+      tl.to(L.sketch, { opacity: 1, duration: 0.34, ease: "power1.inOut" }, T.sketch + 0.72);
+      tl.to(rule, { opacity: 0, duration: 0.15 }, T.sketch + 0.94);
+    }
 
     /* 03 — the shell: the empty white model rises over the sketch, structure first (floor, walls, roof) */
     const shell = regs("shell");
@@ -161,48 +240,52 @@
     tl.fromTo(endParts, { opacity: 0, y: 28 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out", stagger: 0.08 }, T.open + 0.2);
     tl.set({}, {}, T.end);
 
-    /* the site diary: one entry per stage */
-    entries.forEach((en, i) => {
-      if (i > 0) tl.fromTo(en, { autoAlpha: 0, y: 10 }, { autoAlpha: 1, y: 0, duration: 0.12, immediateRender: false }, STARTS[i] + 0.04);
-      if (i < entries.length - 1) tl.to(en, { autoAlpha: 0, y: -10, duration: 0.08 }, STARTS[i + 1] - 0.04);
-    });
-
-    /* the notes: each pops up as its stage arrives and is put away before the next one */
-    const popAt = (i) => STARTS[i] + POP.in + (i === 0 ? 0.12 : 0);
-    pops.forEach((p, i) => {
-      if (i >= STARTS.length) return;
-      tl.fromTo(p, { autoAlpha: 0, y: 16, scale: 0.94 }, { autoAlpha: 1, y: 0, scale: 1, duration: POP.dur, ease: "ts.drift", immediateRender: false }, popAt(i));
-      if (i < STARTS.length - 1) tl.to(p, { autoAlpha: 0, y: -10, scale: 0.97, duration: 0.12, ease: "power1.in" }, STARTS[i + 1] - POP.out);
-    });
-
-    /* wide boxes (phones, portrait tablets) pan across the room as it's built */
+    /* the camera: a box wider than the frame (portrait screens) pans across the room. Full screen, it travels
+       across nearly the whole photograph over the whole build (per venue: build.json stage.panPhone), slowly, and
+       comes to rest on the room's best view before the title; the laptop keeps its short move */
     const panX = (f) => () => {
       const fw = frame.clientWidth, bw = box.offsetWidth;
       return bw - fw < 8 ? 0 : (fw - bw) * (f - fx);
     };
-    tl.fromTo(box, { x: panX(pan[0]) }, { x: panX(pan[1]), duration: T.open - T.shell, ease: "power1.inOut", immediateRender: true }, T.shell);
+    if (fs) tl.fromTo(box, { x: panX(pan[0]) }, { x: panX(pan[1]), duration: T.open + 0.5 - T.sketch, ease: "sine.inOut", immediateRender: true }, T.sketch);
+    else tl.fromTo(box, { x: panX(pan[0]) }, { x: panX(pan[1]), duration: T.open - T.shell, ease: "power1.inOut", immediateRender: true }, T.shell);
 
-    /* scroll drives it */
+    /* the diary and the notes: a short cross-fade on a clock whenever the stage (or the note) changes */
+    const gone = { autoAlpha: 0 };
+    gsap.set(entries, gone); gsap.set(pops, gone);
     let cur = -1, past = "", pop = -1, quiet = false;
     const heard = new Set();
+    const popAt = (i) => STARTS[i] + POP.in + (i === 0 ? 0.12 : 0);
+    // full screen, the last note goes before the end title rises, so the end is the room, the title and its actions
+    const popOut = (i) => (i < STARTS.length - 1 ? STARTS[i + 1] - POP.out : fs ? T.open + 0.55 : Infinity);
+    const swap = (list, from, to, dir, first, inV) => {
+      const a = list[from], b = list[to];
+      if (first) { if (b) gsap.set(b, { autoAlpha: 1, y: 0, scale: 1 }); return; }
+      if (a) gsap.to(a, { autoAlpha: 0, y: -8 * dir, scale: inV ? 0.97 : 1, duration: 0.18, ease: "power1.in", overwrite: true });
+      if (b) gsap.fromTo(b, { autoAlpha: 0, y: 10 * dir, scale: inV ? 0.96 : 1 },
+        { autoAlpha: 1, y: 0, scale: 1, duration: inV ? 0.42 : 0.34, delay: a ? 0.08 : 0, ease: inV ? "ts.drift" : "power2.out", overwrite: true });
+    };
+
     const onUpdate = () => {
       const t = tl.time();
       let s = 0;
       for (let i = STARTS.length - 1; i >= 0; i--) if (t >= STARTS[i]) { s = i; break; }
       if (s !== cur) {
+        const first = cur < 0, dir = s > cur ? 1 : -1;
+        swap(entries, cur, s, dir, first, false);
         cur = s;
         now.textContent = String(s + 1).padStart(2, "0");
         ticks.forEach((li, i) => li.classList.toggle("is-on", i <= s));
         v.classList.toggle("is-open", s === 6);
         v.dataset.at = s;
+        v.__stage = s;
+        sync(v);
       }
       // the note on show (between its arrival and its departure): it floats, and is read out the first time
       let p = -1;
-      for (let i = 0; i < pops.length && i < STARTS.length; i++) {
-        const out = i < STARTS.length - 1 ? STARTS[i + 1] - POP.out : Infinity;
-        if (t >= popAt(i) && t < out) { p = i; break; }
-      }
+      for (let i = 0; i < pops.length && i < STARTS.length; i++) if (t >= popAt(i) && t < popOut(i)) { p = i; break; }
       if (p !== pop) {
+        swap(pops, pop, p, p > pop ? 1 : -1, false, true);
         if (pops[pop]) pops[pop].classList.remove("is-on");
         pop = p;
         if (pops[p]) {
@@ -219,27 +302,61 @@
     };
     // the timeline's own update (not the trigger's): with a smoothed scrub it keeps moving after the scroll stops
     tl.eventCallback("onUpdate", onUpdate);
+
+    // the scrub ends where the stage stops sticking (full screen, the stage is 100lvh: taller than the view while
+    // a phone's toolbar is showing), so the end title is up before the stage moves
+    const snaps = [];
+    const placeSnaps = (self) => {
+      if (!snaps.length) return;
+      const pad = parseFloat(getComputedStyle(root).scrollPaddingTop) || 0;
+      snaps.forEach((m, i) => { m.style.top = `${Math.round((REST[i] / T.end) * (self.end - self.start) + pad)}px`; });
+    };
     const st = ST.create({
-      trigger: track, start: "top top", end: "bottom bottom",
-      scrub: phoneMQ.matches ? 0.35 : true,
+      trigger: track, start: "top top",
+      end: fs ? () => `+=${Math.max(1, track.offsetHeight - stage.offsetHeight)}` : "bottom bottom",
+      scrub: fs ? 0.35 : true,
       animation: tl, invalidateOnRefresh: true,
+      onRefresh: placeSnaps,
     });
     onUpdate();
 
-    // near: load a screen ahead, release two screens behind; live: layers and floating only while on screen
+    // touch screens, full screen: a flick settles on a stage
+    const snapping = fs && MQ.touch.matches;
+    if (snapping) {
+      REST.forEach(() => { const m = d.createElement("i"); m.className = "build__snap"; m.setAttribute("aria-hidden", "true"); track.appendChild(m); snaps.push(m); });
+      placeSnaps(st);
+    }
+
+    // near: fetch a screen ahead, let go two screens behind; live: floating only while on screen (and the snap marks)
     const near = ST.create({
       trigger: track, start: "top bottom+=100%", end: "bottom top-=100%",
-      onToggle: (self) => (self.isActive ? load(v, root) : release(v)),
+      onToggle: (self) => (self.isActive ? load(v, base) : release(v)),
     });
-    if (near.isActive) load(v, root);
+    if (near.isActive) load(v, base);
+    let snapMine = false;
+    const setSnap = (on) => { if (!snapping || on === snapMine) return; snapMine = on; snapOn += on ? 1 : -1; snapClass(); };
     const onScreen = ST.create({
       trigger: track, start: "top bottom", end: "bottom top",
-      onToggle: (self) => v.classList.toggle("is-live", self.isActive),
+      onToggle: (self) => { v.classList.toggle("is-live", self.isActive); setSnap(self.isActive); },
     });
+    if (onScreen.isActive) { v.classList.add("is-live"); setSnap(true); }
+    // as the stage leaves, the diary goes with the build (nothing trails into the next section)
+    const leaving = ST.create({
+      trigger: track, start: "bottom bottom-=40", end: "bottom top",
+      onToggle: (self) => v.classList.toggle("is-leaving", self.isActive),
+    });
+
+    // full screen: the end title keeps clear of the diary card, whatever its height
+    let ro = null;
+    if (fs && w.ResizeObserver) {
+      ro = new ResizeObserver(() => v.style.setProperty("--card-h", `${Math.round(card.offsetHeight)}px`));
+      ro.observe(card);
+    }
 
     // keyboard: tabbing onto an end action takes you to the end of the build, where it's visible
     const toEnd = () => {
       if (tl.time() >= T.open + 0.5) return;
+      if (snapOn) pauseSnap(600);
       M.scrollTo(st.start + (st.end - st.start) * ((T.open + 0.9) / T.end), { immediate: true });
     };
     ctas.forEach((c) => c.addEventListener("focus", toEnd));
@@ -258,9 +375,16 @@
     return () => {
       ctas.forEach((c) => c.removeEventListener("focus", toEnd));
       v.removeEventListener("click", onClose);
+      if (ro) ro.disconnect();
+      setSnap(false);
+      snaps.forEach((m) => m.remove());
       tl.eventCallback("onUpdate", null);
-      st.kill(); near.kill(); onScreen.kill(); tl.kill();
-      v.classList.remove("is-live", "is-open");
+      st.kill(); near.kill(); onScreen.kill(); leaving.kill();
+      gsap.killTweensOf(entries.concat(pops));
+      gsap.set(entries.concat(pops), { clearProps: "opacity,visibility,transform" });
+      tl.revert();
+      v.classList.remove("is-live", "is-open", "is-leaving");
+      v.style.removeProperty("--card-h");
       pops.forEach((p) => p.classList.remove("is-on"));
       delete v.dataset.past; delete v.dataset.at;
       release(v);
@@ -275,10 +399,23 @@
       const base = new URL(r.dataset.buildRoot || "assets/img/build/", d.baseURI);
       $$("[data-venue]", r).forEach((v) => all.push([v, base]));
     });
-    const offs = all.map(([v, base]) => venue(v, env, base));
-    // phones and desktops use different image sets: swap if the viewport crosses the line
-    const onMQ = () => all.forEach(([v, base]) => { if (v.__loaded) { release(v); load(v, base); } });
-    phoneMQ.addEventListener("change", onMQ);
-    return () => { phoneMQ.removeEventListener("change", onMQ); offs.forEach((f) => f && f()); };
+    let offs = all.map(([v, base]) => venue(v, base));
+    let mode = layout();
+    // the layout decides the timeline (and the image set): rebuild when it changes (a phone turned over)
+    const onMQ = () => {
+      const m = layout();
+      if (m === mode) return;
+      mode = m;
+      offs.forEach((f) => f && f());
+      offs = all.map(([v, base]) => venue(v, base));
+      ST.refresh();
+    };
+    MQ.fsp.addEventListener("change", onMQ);
+    MQ.fsl.addEventListener("change", onMQ);
+    return () => {
+      MQ.fsp.removeEventListener("change", onMQ);
+      MQ.fsl.removeEventListener("change", onMQ);
+      offs.forEach((f) => f && f());
+    };
   });
 })(window, document);
