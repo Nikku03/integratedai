@@ -91,7 +91,8 @@ class Retriever:
     def retrieve(self, query: str, principal: Principal, scope_id: uuid.UUID, *, filters: dict | None = None,
                  k: int = 80, at: datetime | None = None, use_graph: bool = True, use_vector: bool = True,
                  use_lexical: bool = True, use_sections: bool = True, use_exact: bool = True, max_records: int | None = None,
-                 min_records: int | None = None, token_budget: int | None = None, graph_mode: str = "rem") -> RetrievalResult:
+                 min_records: int | None = None, token_budget: int | None = None, graph_mode: str = "rem",
+                 lexical_engine: str | None = None) -> RetrievalResult:
         """``graph_mode``: ``rem`` (bounded-horizon expansion), ``cliques`` (the topological
         recruitment cascade in its place) or ``cliques+bonus`` (cascade plus a rerank bonus
         for records inside high-dimensional activated simplices)."""
@@ -124,11 +125,19 @@ class Retriever:
         # (the exact stage's 1.0 hits) is weak evidence and must not ride on the exact list's weight
         lists: dict[str, list] = {"exact": [(rid, sc) for rid, sc in exact_hits if sc >= 2.0],
                                   "keywords": [(rid, sc) for rid, sc in exact_hits if sc < 2.0]}
+        engine = lexical_engine or self.settings.lexical_engine
+        lex_info: dict[str, dict] = {}
         if use_lexical:
             t = time.perf_counter()
-            lists["lex_rec"] = lexical.search_records(s, query, rec_filter, k, tenant_id=principal.tenant_id)
+            lex_info["records"] = {}
+            lists["lex_rec"] = lexical.search_records(s, query, rec_filter, k, tenant_id=principal.tenant_id, engine=engine,
+                                                      document_ids=filters.get("document_id") and [filters["document_id"]],
+                                                      info=lex_info["records"])
             if use_sections:
-                lists["lex_sec"] = [(("sec", i), sc) for i, sc in lexical.search_sections(s, query, sec_filter, k, tenant_id=principal.tenant_id)]
+                lex_info["sections"] = {}
+                lists["lex_sec"] = [(("sec", i), sc) for i, sc in lexical.search_sections(
+                    s, query, sec_filter, k, tenant_id=principal.tenant_id, engine=engine,
+                    document_ids=filters.get("document_id") and [filters["document_id"]], info=lex_info["sections"])]
             timings["lexical_ms"] = (time.perf_counter() - t) * 1000
         t = time.perf_counter()
         qvec = self.embedder.embed([query])[0] if use_vector else None
@@ -149,9 +158,11 @@ class Retriever:
             doc_sec = and_(sec_filter, Section.document_id.in_(named_docs))
             kd = max(k, 300)  # the named-document pool is small; do not let ties cut it
             if use_lexical:
-                lists["lex_doc"] = lexical.search_records(s, query, doc_rec, kd, tenant_id=principal.tenant_id)
+                lists["lex_doc"] = lexical.search_records(s, query, doc_rec, kd, tenant_id=principal.tenant_id, engine=engine,
+                                                          document_ids=named_docs)
                 if use_sections:
-                    lists["lex_doc_sec"] = [(("sec", i), sc) for i, sc in lexical.search_sections(s, query, doc_sec, kd, tenant_id=principal.tenant_id)]
+                    lists["lex_doc_sec"] = [(("sec", i), sc) for i, sc in lexical.search_sections(
+                        s, query, doc_sec, kd, tenant_id=principal.tenant_id, engine=engine, document_ids=named_docs)]
             if use_vector:
                 lists["vec_doc"] = vector.search_records(s, qvec, doc_rec, kd)
             timings["named_docs_ms"] = (time.perf_counter() - t) * 1000
@@ -250,6 +261,7 @@ class Retriever:
                  "lists": {k_: len(v) for k_, v in lists.items()}, "as_of": at.isoformat() if at else None,
                  "embedding_provider": getattr(self.embedder, "name", "?"), "scopes_allowed": len(allowed),
                  "arms": {"exact": use_exact, "lexical": use_lexical, "vector": use_vector, "graph": use_graph, "graph_mode": graph_mode},
+                 "lexical": lex_info,
                  "topology": topo_stats, "edges_used": [(str(e.via), str(e.record_id)) for e in expanded]}
         pk = packet.build(s, tenant_id=principal.tenant_id, principal_id=principal.id, query=query, intent=intent.kind,
                           scope_ids=allowed, filters=filters, ranked=ranked, conflicts=conflicts,

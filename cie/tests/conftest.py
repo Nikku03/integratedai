@@ -69,6 +69,10 @@ def engine():
             for c in t.columns:
                 if c.name not in have:
                     conn.execute(text(f'ALTER TABLE {t.name} ADD COLUMN IF NOT EXISTS "{c.name}" {c.type.compile(dialect=eng.dialect)}'))
+    from cie.retrieval import bm25
+
+    with eng.begin() as conn:
+        bm25.install(conn)  # the queue triggers of the BM25 index (created by the migration outside tests)
     return eng
 
 

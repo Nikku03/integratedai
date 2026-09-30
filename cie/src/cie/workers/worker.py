@@ -50,6 +50,11 @@ def handle(session: Session, job: Job, **deps) -> dict:
         from cie.agents.runtime import run_agent_job
 
         return run_agent_job(session, job)
+    if job.kind == "lexical_sync":
+        from cie.core.settings import get_settings
+        from cie.retrieval import bm25
+
+        return {"taken_in": bm25.sync(get_settings().database_url, job.tenant_id)} if job.tenant_id else bm25.sync_all(get_settings().database_url)
     if job.kind == "execute_action":
         from cie.actions.connectors import connectors_from_settings
         from cie.actions.gateway import execute
@@ -122,7 +127,17 @@ def drain(session_factory=session_scope, worker_id: str | None = None, kinds: li
 def main_loop(poll_seconds: float = 2.0) -> None:  # pragma: no cover - service entrypoint
     worker_id = f"{socket.gethostname()}-{uuid.uuid4().hex[:6]}"
     log.info("worker.start", worker_id=worker_id)
+    last_sync = 0.0
     while True:
         n = drain(worker_id=worker_id)
         if n == 0:
+            if time.monotonic() - last_sync > 10 * poll_seconds:  # when idle, take waiting rows into the BM25 indexes
+                last_sync = time.monotonic()
+                try:
+                    from cie.core.settings import get_settings
+                    from cie.retrieval import bm25
+
+                    bm25.sync_all(get_settings().database_url)
+                except Exception as e:  # noqa: BLE001 - search scores waiting rows from the database meanwhile
+                    log.warning("lexical.sync_failed", error=str(e))
             time.sleep(poll_seconds)

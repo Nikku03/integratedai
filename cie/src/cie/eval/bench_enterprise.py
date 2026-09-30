@@ -55,9 +55,14 @@ from cie.retrieval.pipeline import Retriever
 SOURCES = ["slack", "gmail", "linear", "google_drive", "hubspot", "fireflies", "github", "jira", "confluence"]
 ENTITY_FIELDS = {"person": ["author", "owner", "creator", "assignee", "reporter", "mailbox_owner", "redwood_owner", "account_owner"],
                  "organization": ["customer_company", "related_account", "company_name", "company"]}
-ARMS = {"hybrid+graph(REM)": {}, "hybrid+cliques+bonus": {"graph_mode": "cliques+bonus"},
+# the historical arms keep PostgreSQL full text as their keyword engine, so their numbers stay comparable across runs;
+# the BM25 arms (cie.retrieval.bm25) differ from them only in the keyword engine
+ARMS = {"hybrid+graph(REM)": {"lexical_engine": "fts"}, "hybrid+cliques+bonus": {"graph_mode": "cliques+bonus", "lexical_engine": "fts"},
         "vector-only": {"use_lexical": False, "use_exact": False, "use_graph": False},
-        "lexical-only": {"use_vector": False, "use_exact": False, "use_graph": False}}
+        "lexical-only": {"use_vector": False, "use_exact": False, "use_graph": False, "lexical_engine": "fts"},
+        "hybrid+graph(REM) [BM25]": {"lexical_engine": "bm25"},
+        "lexical-only [BM25]": {"use_vector": False, "use_exact": False, "use_graph": False, "lexical_engine": "bm25"}}
+BM25_ARMS = [k for k, v in ARMS.items() if v.get("lexical_engine") == "bm25"]
 ASSISTED_ARM = "hybrid+graph(REM), composed answers"  # added by --assisted: the default arm with answers composed by the configured model
 
 
@@ -232,7 +237,19 @@ def load_full(url: str, root: Path, index: dict[str, str], dsids: list[str], emb
             "refs_ambiguous": stats.get("refs_ambiguous", 0), "same_key_collisions": stats.get("same_key_collisions", 0),
             "load_seconds": round(time.perf_counter() - t0, 1), "embed_seconds": round(loader.t_embed, 1),
             "embedding_cache_hits": cached.hits, "embedded_texts": cached.misses, "finish_seconds": stats.get("finish_seconds"),
-            "index_build_seconds": index_build}
+            "index_build_seconds": index_build, "lexical_index": _bm25_build(url, tenant_id, log)}
+
+
+def _bm25_build(url: str, tenant_id, log) -> dict[str, Any]:
+    """The tenant's BM25 keyword index (cie.retrieval.bm25), built from the loaded memory bank."""
+    from cie.retrieval import bm25
+
+    try:
+        out = bm25.build(url, tenant_id, log=log)
+    except Exception as e:  # noqa: BLE001 - the full-text arms do not need it; the BM25 arms report the fallback
+        log(f"  BM25 index not built: {type(e).__name__}: {e}")
+        return {"error": f"{type(e).__name__}: {e}"}
+    return {k: out[k] for k in ("records", "sections", "bytes", "seconds")}
 
 
 def _fill(loader, cached, root: Path, index: dict[str, str], dsids: list[str], *, batch: int, workers: int | None, t0: float,
@@ -393,7 +410,8 @@ def load(url: str, root: Path, index: dict[str, str], dsids: list[str], embedder
     return {"tenant_id": str(tenant_id), "tenant_name": tenant_name, "company_id": str(company_id), "memory": "chunks", "documents": len(dsids),
             "sections": n_sections, "records": n_records,
             "entities": n_entities, "load_seconds": round(time.perf_counter() - t0, 1), "embed_seconds": round(embed_s, 1),
-            "embed_texts_per_s": round((n_sections + n_records) / max(embed_s, 1e-6), 1), "index_build_seconds": index_build}
+            "embed_texts_per_s": round((n_sections + n_records) / max(embed_s, 1e-6), 1), "index_build_seconds": index_build,
+            "lexical_index": _bm25_build(url, tenant_id, log)}
 
 
 def _link_entities(tenant_id, doc_meta: dict, log) -> int:
@@ -439,6 +457,7 @@ def evaluate(session, retriever: Retriever, admin, company_id, questions: list[d
         per_cat: dict[str, dict[str, list]] = defaultdict(lambda: defaultdict(list))
         answers = []
         lat = []
+        engines: dict[str, int] = defaultdict(int)
         for qi, q in enumerate(questions):
             gold = set(q["expected_doc_ids"])
             t = time.perf_counter()
@@ -463,6 +482,8 @@ def evaluate(session, retriever: Retriever, admin, company_id, questions: list[d
                             break
                 answer_text = result.answer
                 status = result.status
+                for part in (res.trace.get("lexical") or {}).values():
+                    engines[part.get("engine", "?")] += 1
             except Exception as e:  # noqa: BLE001 - a failed question is a result (zero recall), never an abstention
                 session.rollback()
                 ms, docs, answer_text, status = 60_000.0, [], f"error: {type(e).__name__}: {e}"[:300], "error"
@@ -503,7 +524,7 @@ def evaluate(session, retriever: Retriever, admin, company_id, questions: list[d
                    "abstained_on_info_not_found": _mean(per_cat["info_not_found"]["abstained"]) if "info_not_found" in per_cat else None,
                    "false_abstentions": _mean([a for cat, c in per_cat.items() if c["recall"] for a in c["abstained"]]),
                    "errors": sum(sum(c["errors"]) for c in per_cat.values()),
-                   "p50_ms": _p(lat, 0.5), "p95_ms": _p(lat, 0.95)}
+                   "p50_ms": _p(lat, 0.5), "p95_ms": _p(lat, 0.95), "lexical_engines": dict(engines)}
         if mode == "assisted":
             overall["answer_mode"] = "assisted"
             overall["llm"] = {**spend, "cost_usd": round(spend["cost_usd"], 2), "model": getattr(provider, "model", None),
@@ -613,6 +634,14 @@ def run(root: Path, out: Path, n_docs: int | None, questions_file: Path | None =
                                   entities=entities, batch=batch, cache=cache or out / "emb_cache.sqlite", log=log)
         report["load"]["code_version"] = report["code_version"]
         log(f"loaded: {report['load']}")
+    if not load_only and any((cfg or {}).get("lexical_engine") == "bm25" for cfg in (arms or ARMS).values()):
+        from cie.retrieval import bm25
+
+        with session_scope() as s:
+            have = bm25.ready(s, uuid.UUID(report["load"]["tenant_id"]))
+        if not have:
+            log("building the BM25 keyword index of the reused memory bank ...")
+            report["load"]["lexical_index"] = _bm25_build(url, uuid.UUID(report["load"]["tenant_id"]), log)
     out.mkdir(parents=True, exist_ok=True)
     (out / "load.json").write_text(json.dumps(report["load"], indent=2, default=str))  # kept even if the questions fail
     if load_only:
@@ -672,6 +701,11 @@ def to_markdown(rep: dict[str, Any]) -> str:
     elif "embed_texts_per_s" in ld:
         lines += [f"Load: {ld['documents']:,} documents → {ld['sections']:,} sections, {ld['records']:,} document records, {ld['entities']:,} entity links; "
                   f"{ld['load_seconds']} s ({ld['embed_seconds']} s embedding, {ld['embed_texts_per_s']} texts/s).", ""]
+    lx = ld.get("lexical_index") or {}
+    if lx.get("bytes"):
+        lines += [f"BM25 keyword index: {lx['records']:,} records and {lx['sections']:,} sections, {lx['bytes'] / 1e6:.1f} MB, built in {lx['seconds']} s.", ""]
+    elif lx.get("error"):
+        lines += [f"BM25 keyword index not built: {lx['error']}.", ""]
     if not rep.get("arms"):
         return "\n".join(lines + [f"Memory bank {ld.get('tenant_name')}: loaded, no questions asked (`--load-only`)."])
     lines += ["| arm | doc recall@10 | recall@5 | MRR | hit@1 | hit@10 | all gold found | extra docs@10 | abstained on info-not-found | false abstentions | p50 / p95 ms |",
@@ -680,6 +714,10 @@ def to_markdown(rep: dict[str, Any]) -> str:
         o = v["overall"]
         lines.append(f"| {arm} | {o['recall@10']} | {o['recall@5']} | {o['mrr']} | {o['hit@1']} | {o['hit@10']} | {o['all_gold_found']} | {o['extras@10']} | "
                      f"{o['abstained_on_info_not_found']} | {o['false_abstentions']} | {o['p50_ms']} / {o['p95_ms']} |")
+    used = {arm: v["overall"].get("lexical_engines") for arm, v in rep["arms"].items() if v["overall"].get("lexical_engines")}
+    if used:
+        lines += ["", "Keyword engine that served each keyword search: " + "; ".join(
+            f"{arm}: " + ", ".join(f"{e} {n:,}" for e, n in sorted(c.items())) for arm, c in used.items()) + "."]
     first = next(iter(rep["arms"]))
     lines += ["", f"By category ({first}):", "", "| category | n | doc recall@10 | MRR | hit@1 | hit@10 | all gold found | extra docs@10 | abstained | p50 ms |",
               "|---|---|---|---|---|---|---|---|---|---|"]

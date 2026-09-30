@@ -1,4 +1,4 @@
-"""Lexical search: PostgreSQL full text (default) and an in-memory BM25 for benchmarks."""
+"""Lexical search: PostgreSQL full text, a BM25 index per tenant (``cie.retrieval.bm25``), and an in-memory BM25 for\nbenchmarks."""
 
 from __future__ import annotations
 
@@ -135,7 +135,22 @@ def _tsqueries(q: str, session: Session | None = None, table: str = "memory_reco
     return tiers
 
 
-def _search(session: Session, model, q: str, base_filter, k: int, tenant_id: uuid.UUID | None = None) -> list[tuple[uuid.UUID, float]]:
+def _search(session: Session, model, q: str, base_filter, k: int, tenant_id: uuid.UUID | None = None, *, engine: str | None = None,
+            document_ids: list | None = None, info: dict | None = None) -> list[tuple[uuid.UUID, float]]:
+    """``engine``: ``bm25`` uses the tenant's BM25 index when it is ready (``cie.retrieval.bm25``) and full text
+    otherwise; ``fts`` (or None, with the ``lexical_engine`` setting at ``fts``) always uses full text.
+    ``document_ids`` narrows a BM25 search to those documents (``base_filter`` already does for full text)."""
+    from cie.core.settings import get_settings
+
+    engine = engine or get_settings().lexical_engine
+    if engine == "bm25" and tenant_id is not None:
+        from cie.retrieval import bm25
+
+        hits = bm25.search(session, model, q, base_filter, k, tenant_id, document_ids=document_ids, info=info)
+        if hits is not None:
+            return hits
+    if info is not None:
+        info["engine"] = "fts"
     out: list[tuple[uuid.UUID, float]] = []
     seen: set = set()
     tiers = _tsqueries(q, session, model.__tablename__, tenant_id)
@@ -155,12 +170,14 @@ def _search(session: Session, model, q: str, base_filter, k: int, tenant_id: uui
     return out[:k]
 
 
-def search_records(session: Session, q: str, base_filter, k: int = 50, at=None, tenant_id: uuid.UUID | None = None) -> list[tuple[uuid.UUID, float]]:
-    return _search(session, MemoryRecord, q, base_filter, k, tenant_id)
+def search_records(session: Session, q: str, base_filter, k: int = 50, at=None, tenant_id: uuid.UUID | None = None,
+                   **kw) -> list[tuple[uuid.UUID, float]]:
+    return _search(session, MemoryRecord, q, base_filter, k, tenant_id, **kw)
 
 
-def search_sections(session: Session, q: str, base_filter, k: int = 50, tenant_id: uuid.UUID | None = None) -> list[tuple[uuid.UUID, float]]:
-    return _search(session, Section, q, base_filter, k, tenant_id)
+def search_sections(session: Session, q: str, base_filter, k: int = 50, tenant_id: uuid.UUID | None = None,
+                    **kw) -> list[tuple[uuid.UUID, float]]:
+    return _search(session, Section, q, base_filter, k, tenant_id, **kw)
 
 
 class BM25Index:

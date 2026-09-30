@@ -137,6 +137,42 @@ def cmd_agents(a) -> int:
     return 0
 
 
+def cmd_lexical(a) -> int:
+    """BM25 keyword index: build a tenant's index, take in waiting rows, or list the indexes."""
+    import json
+
+    from sqlalchemy import or_, select
+
+    from cie.core.db import session_scope
+    from cie.core.models import Tenant
+    from cie.retrieval import bm25
+
+    url = get_settings().database_url
+    if a.lexical_cmd == "status":
+        with session_scope() as s:
+            print(json.dumps(bm25.status(s), indent=2, default=str))
+        return 0
+    if a.lexical_cmd == "sync" and not a.tenant:
+        print(json.dumps(bm25.sync_all(url), indent=2))
+        return 0
+    with session_scope() as s:
+        cond = [Tenant.name == a.tenant]
+        try:
+            cond.append(Tenant.id == uuid.UUID(a.tenant))
+        except ValueError:
+            pass
+        t = s.scalar(select(Tenant).where(or_(*cond)))
+        if t is None:
+            print(f"no tenant named {a.tenant!r}")
+            return 1
+        tid = t.id
+    if a.lexical_cmd == "build":
+        print(json.dumps(bm25.build(url, tid), indent=2, default=str))
+    else:
+        print(f"{bm25.sync(url, tid)} row(s) taken in")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     configure_logging(get_settings().log_level)
     ap = argparse.ArgumentParser(prog="cie")
@@ -201,6 +237,13 @@ def main(argv: list[str] | None = None) -> int:
     r.add_argument("--erb-root", default=None)
     r.add_argument("--questions", type=int, default=0)
     rm.set_defaults(fn=cmd_rem)
+    lx = sub.add_parser("lexical", help="BM25 keyword index: build, sync, status")
+    lxs = lx.add_subparsers(dest="lexical_cmd", required=True)
+    for name, hlp in (("build", "index a tenant from scratch (atomic switch)"), ("sync", "take in rows written since (every tenant if none given)")):
+        p_ = lxs.add_parser(name, help=hlp)
+        p_.add_argument("--tenant", required=name == "build", default=None, help="tenant name or id")
+    lxs.add_parser("status", help="every index, its version and the rows waiting")
+    lx.set_defaults(fn=cmd_lexical)
     args = ap.parse_args(argv)
     args.fn(args)
     return 0
