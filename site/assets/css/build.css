@@ -577,13 +577,6 @@ html.js-motion .build__entry:not([data-i="0"]) { opacity: 0; visibility: hidden;
   .build__venue.is-live .build__pop.is-on .build__pop-in, .build__venue.is-live .build__card { animation: none; }
 }
 
-/* snapping (touch screens, full screen): build.js puts a mark at each stage's rest point and sets html.build-snap
-   while a build is on screen, so a flick settles on a stage */
-.build__snap { position: absolute; left: 0; top: 0; width: 1px; height: 1px; pointer-events: none; scroll-snap-align: start; }
-@media (hover: none) and (pointer: coarse) {
-  html.build-snap { scroll-snap-type: y proximity; }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .build__skip, .build__index li, .build__pop-link, .build__pop-close { transition: none; }
   .build__pop-in, .build__card { animation: none !important; }

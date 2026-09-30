@@ -16,7 +16,8 @@
  *   desk  an inset, rounded panel; the diary card and the note beside the drawing (the approved laptop layout)
  *   fsp   phones and portrait tablets: the stage fills the screen edge to edge, the drawing is turned to portrait,
  *         the diary is a compact glass card at the foot, the note a compact toast at the top, and the camera pans
- *         across the wide photograph over the whole build; a flick settles on a stage (proximity snap, touch only)
+ *         across the wide photograph over the whole build (no scroll snapping: a flick that dies just short of a
+ *         stage's rest point glides on to it, nothing else moves the page)
  *   fsl   phones on their side (short landscape screens): full bleed, the diary as a small side card
  * The layout decides the timeline's details, so a venue is rebuilt when the layout changes (a phone turned over).
  *
@@ -30,7 +31,6 @@
   "use strict";
   const $ = (s, r = d) => r.querySelector(s);
   const $$ = (s, r = d) => Array.from(r.querySelectorAll(s));
-  const root = d.documentElement;
 
   // a link to the page it's on (the restaurant's "See the dining rooms" on restaurants.html) goes to a section of it instead
   $$("[data-build] a[data-here]").forEach((a) => {
@@ -112,19 +112,78 @@
     v.__set = {}; v.__pending = {};
   }
 
-  /* ---------------------------------------------------------------- snapping (touch screens, full-screen layouts) */
-  // the marks sit inside the track at each stage's rest point; html gets scroll-snap-type only while a track is on
-  // screen, and never while a link or a key is scrolling the page (a programmatic scroll would be caught by them)
-  let snapOn = 0, snapPause = 0;
-  const snapClass = () => root.classList.toggle("build-snap", snapOn > 0 && !snapPause);
-  const pauseSnap = (ms = 2000) => {
-    snapPause++; snapClass();
-    setTimeout(() => { snapPause = Math.max(0, snapPause - 1); snapClass(); }, ms);
+  /* ---------------------------------------------------------------- settling (touch screens, full-screen layouts)
+     No CSS scroll snapping: a proximity snap caught every slow drag that ended near a mark and sprang it back, so a
+     visitor reading slowly or stepping back one stage found the page stuck. The track's length alone paces the build
+     (about two half-screen swipes a stage). The one help left: after a real FLICK (released faster than 1000 px/s)
+     whose momentum dies within 8% of a screen short of a stage's rest point, the page glides on to that rest point
+     (0.4 s). Never after a slow drag, never backwards against the flick, and a new touch stops it at once. */
+  const FLING = 1000, NEAR = 0.08, IDLE = 150;
+  const settlers = new Set();                           // { st } for each full-screen venue built on a touch screen
+  let tv = [], flingDir = 0, glide = null, watchFn = null;
+  const unwatch = () => { if (watchFn) { gsap.ticker.remove(watchFn); watchFn = null; } };
+  const settle = (y) => {
+    const H = w.innerHeight;
+    let best = null;
+    settlers.forEach(({ st }) => {
+      if (y <= st.start || y >= st.end) return;
+      REST.forEach((r) => {
+        const ry = st.start + (r / T.end) * (st.end - st.start);
+        const ahead = (ry - y) * flingDir;                // how far on, in the flick's direction
+        if (ahead > 1 && ahead <= NEAR * H && (best === null || Math.abs(ry - y) < Math.abs(best - y))) best = ry;
+      });
+    });
+    if (best === null) return;
+    const o = { y };
+    glide = gsap.to(o, {
+      y: Math.round(best), duration: 0.4, ease: "power2.out",
+      onUpdate: () => w.scrollTo(0, Math.round(o.y)),          // html is scroll-behavior: auto (base.css)
+      onComplete: () => { glide = null; },
+    });
   };
-  d.addEventListener("click", (e) => {
-    const a = e.target.closest && e.target.closest('a[href*="#"]');
-    if (a && snapOn) pauseSnap();
-  }, true);
+  // wait for the flick's momentum to die (the scroll position still for IDLE ms), then settle
+  const watch = () => {
+    unwatch();
+    let lastY = w.scrollY, still = performance.now(), began = still;
+    watchFn = () => {
+      const y = w.scrollY, now = performance.now();
+      if (Math.abs(y - lastY) > 0.5) { lastY = y; still = now; }
+      if (now - began > 5000) return unwatch();
+      if (now - still >= IDLE) { unwatch(); settle(y); }
+    };
+    gsap.ticker.add(watchFn);
+  };
+  const onTouchStart = () => {
+    tv = []; flingDir = 0; unwatch();
+    if (glide) { glide.kill(); glide = null; }
+  };
+  const onTouchMove = (e) => {
+    const t = e.touches[0];
+    if (!t) return;
+    tv.push([t.clientY, e.timeStamp]);
+    if (tv.length > 8) tv.shift();
+  };
+  const onTouchEnd = (e) => {
+    if (e.touches.length || !settlers.size || tv.length < 2) return;
+    const [y1, t1] = tv[tv.length - 1];
+    if (e.timeStamp - t1 > 80) return;                  // the finger stopped before it lifted: no flick
+    let k = tv.length - 2;
+    while (k > 0 && t1 - tv[k][1] < 50) k--;            // the finger's speed over its last ~50 ms
+    const [y0, t0] = tv[k], dt = (t1 - t0) / 1000;
+    if (dt <= 0) return;
+    const vel = (y0 - y1) / dt;                          // px/s; > 0 moves the page down
+    if (Math.abs(vel) < FLING) return;
+    flingDir = Math.sign(vel);
+    watch();
+  };
+  let touchOn = false;
+  const listenTouch = (on) => {
+    if (on === touchOn) return;
+    touchOn = on;
+    const f = on ? "addEventListener" : "removeEventListener", o = { passive: true };
+    w[f]("touchstart", onTouchStart, o); w[f]("touchmove", onTouchMove, o); w[f]("touchend", onTouchEnd, o);
+    if (!on) { unwatch(); if (glide) { glide.kill(); glide = null; } }
+  };
 
   /* ---------------------------------------------------------------- one venue */
   function venue(v, base) {
@@ -172,10 +231,12 @@
     const tl = gsap.timeline({ defaults: { ease: "none" }, paused: true });
 
     /* 01 — the drawing: the grid is on when the sheet arrives, the walls start at once, then openings, joinery,
-       furniture and the notes; the finished drawing holds for a moment before the paper comes over it */
+       furniture and the notes; the finished drawing holds for a moment before the paper comes over it.
+       The strokes have pathLength=1, so their dash offset runs 1 → 0: autoRound off, or GSAP rounds the px value
+       and each line pops in whole at the middle of its tween instead of drawing itself */
     const drawIn = (els, at, dur, each = 0.2) => {
       if (!els.length) return;
-      tl.to(els, { strokeDashoffset: 0, duration: each, ease: "power1.inOut", stagger: { amount: Math.max(0, dur - each) } }, at);
+      tl.to(els, { strokeDashoffset: 0, autoRound: false, duration: each, ease: "power1.inOut", stagger: { amount: Math.max(0, dur - each) } }, at);
     };
     const fadeIn = (els, at, dur, to = 1) => {
       if (!els.length) return;
@@ -196,17 +257,20 @@
     /* 02 — the sketch: a sheet of paper over the plan, the ruler's lines, then the drawing. On the laptop the sheet
        wipes up over the plan; full screen it dissolves in (no hard edge across a phone) and the ruler starts at once */
     if (fs) {
-      tl.fromTo(paper, { clipPath: "inset(0% 0% 0% 0%)", opacity: 0 }, { opacity: 1, duration: 0.24, ease: "power1.inOut" }, T.sketch + 0.02);
-      tl.to(plan, { opacity: 0, duration: 0.24, ease: "power1.in" }, T.sketch + 0.02);
-      tl.set(rule, { opacity: 0.62 }, T.sketch + 0.1);
-      if (rulePaths.length) tl.to(rulePaths, { strokeDashoffset: 0, duration: 0.14, ease: "power1.inOut", stagger: { amount: 0.4 } }, T.sketch + 0.12);
-      tl.to(L.sketch, { opacity: 1, duration: 0.34, ease: "power1.inOut" }, T.sketch + 0.56);
-      tl.to(rule, { opacity: 0, duration: 0.24 }, T.sketch + 0.64);
+      // full screen the camera shows a third of the room, where the ruler's lines alone read as scratches on blank
+      // paper: the ruler is quick and the pencil drawing follows close behind, so the sketch is up by T.sketch + 0.4
+      // (every half-screen swipe into stage 02 lands on the drawing, not on an empty sheet)
+      tl.fromTo(paper, { clipPath: "inset(0% 0% 0% 0%)", opacity: 0 }, { opacity: 1, duration: 0.2, ease: "power1.inOut" }, T.sketch + 0.02);
+      tl.to(plan, { opacity: 0, duration: 0.2, ease: "power1.in" }, T.sketch + 0.02);
+      tl.set(rule, { opacity: 0.62 }, T.sketch + 0.02);
+      if (rulePaths.length) tl.to(rulePaths, { strokeDashoffset: 0, autoRound: false, duration: 0.1, ease: "power1.inOut", stagger: { amount: 0.18 } }, T.sketch + 0.03);
+      tl.to(L.sketch, { opacity: 1, duration: 0.3, ease: "power1.inOut" }, T.sketch + 0.1);
+      tl.to(rule, { opacity: 0, duration: 0.2 }, T.sketch + 0.36);
     } else {
       tl.fromTo(paper, { clipPath: "inset(100% 0% 0% 0%)" }, { clipPath: "inset(0% 0% 0% 0%)", duration: 0.3, ease: "power2.inOut" }, T.sketch + 0.05);
       tl.to(plan, { opacity: 0, yPercent: -3, duration: 0.26, ease: "power1.in" }, T.sketch + 0.08);
       tl.set(rule, { opacity: 1 }, T.sketch + 0.3);
-      if (rulePaths.length) tl.to(rulePaths, { strokeDashoffset: 0, duration: 0.14, ease: "power1.inOut", stagger: { amount: 0.44 } }, T.sketch + 0.32);
+      if (rulePaths.length) tl.to(rulePaths, { strokeDashoffset: 0, autoRound: false, duration: 0.14, ease: "power1.inOut", stagger: { amount: 0.44 } }, T.sketch + 0.32);
       tl.to(L.sketch, { opacity: 1, duration: 0.34, ease: "power1.inOut" }, T.sketch + 0.72);
       tl.to(rule, { opacity: 0, duration: 0.15 }, T.sketch + 0.94);
     }
@@ -258,21 +322,24 @@
     const popAt = (i) => STARTS[i] + POP.in + (i === 0 ? 0.12 : 0);
     // full screen, the last note goes before the end title rises, so the end is the room, the title and its actions
     const popOut = (i) => (i < STARTS.length - 1 ? STARTS[i + 1] - POP.out : fs ? T.open + 0.55 : Infinity);
-    const swap = (list, from, to, dir, first, inV) => {
+    // first / instant: no cross-fade, straight to the state (the first frame, and after a refresh)
+    const swap = (list, from, to, dir, first, inV, instant) => {
       const a = list[from], b = list[to];
-      if (first) { if (b) gsap.set(b, { autoAlpha: 1, y: 0, scale: 1 }); return; }
+      if (instant) list.forEach((e) => { if (e !== b) { gsap.killTweensOf(e); gsap.set(e, { autoAlpha: 0 }); } });
+      if (first || instant) { if (b) { gsap.killTweensOf(b); gsap.set(b, { autoAlpha: 1, y: 0, scale: 1 }); } return; }
       if (a) gsap.to(a, { autoAlpha: 0, y: -8 * dir, scale: inV ? 0.97 : 1, duration: 0.18, ease: "power1.in", overwrite: true });
       if (b) gsap.fromTo(b, { autoAlpha: 0, y: 10 * dir, scale: inV ? 0.96 : 1 },
         { autoAlpha: 1, y: 0, scale: 1, duration: inV ? 0.42 : 0.34, delay: a ? 0.08 : 0, ease: inV ? "ts.drift" : "power2.out", overwrite: true });
     };
 
-    const onUpdate = () => {
+    const onUpdate = (instant) => {
+      instant = instant === true;
       const t = tl.time();
       let s = 0;
       for (let i = STARTS.length - 1; i >= 0; i--) if (t >= STARTS[i]) { s = i; break; }
       if (s !== cur) {
         const first = cur < 0, dir = s > cur ? 1 : -1;
-        swap(entries, cur, s, dir, first, false);
+        swap(entries, cur, s, dir, first, false, instant);
         cur = s;
         now.textContent = String(s + 1).padStart(2, "0");
         ticks.forEach((li, i) => li.classList.toggle("is-on", i <= s));
@@ -285,7 +352,7 @@
       let p = -1;
       for (let i = 0; i < pops.length && i < STARTS.length; i++) if (t >= popAt(i) && t < popOut(i)) { p = i; break; }
       if (p !== pop) {
-        swap(pops, pop, p, p > pop ? 1 : -1, false, true);
+        swap(pops, pop, p, p > pop ? 1 : -1, false, true, instant);
         if (pops[pop]) pops[pop].classList.remove("is-on");
         pop = p;
         if (pops[p]) {
@@ -304,42 +371,43 @@
     tl.eventCallback("onUpdate", onUpdate);
 
     // the scrub ends where the stage stops sticking (full screen, the stage is 100lvh: taller than the view while
-    // a phone's toolbar is showing), so the end title is up before the stage moves
-    const snaps = [];
-    const placeSnaps = (self) => {
-      if (!snaps.length) return;
-      const pad = parseFloat(getComputedStyle(root).scrollPaddingTop) || 0;
-      snaps.forEach((m, i) => { m.style.top = `${Math.round((REST[i] / T.end) * (self.end - self.start) + pad)}px`; });
-    };
+    // a phone's toolbar is showing), so the end title is up before the stage moves.
+    // The progress is kept (v.__prog) so a phone turned over mid-build lands on the same point of the new track;
+    // updates at another width than the last refresh's (the turn itself, before the rebuild) are not kept
+    v.__w = w.innerWidth;
     const st = ST.create({
       trigger: track, start: "top top",
       end: fs ? () => `+=${Math.max(1, track.offsetHeight - stage.offsetHeight)}` : "bottom bottom",
       scrub: fs ? 0.35 : true,
       animation: tl, invalidateOnRefresh: true,
-      onRefresh: placeSnaps,
+      onUpdate: (self) => { if (w.innerWidth === v.__w) v.__prog = self.progress; },
+      // A refresh (a resize, late content above) runs the timeline back to 0 to measure and then puts it back
+      // without events (scrub: true), which left the diary on 01 over a finished room: re-read the stage after it.
+      // A refresh in another layout (gsap.matchMedia refreshes as the phone turns, before the rebuild) is not kept
+      onRefresh: (self) => {
+        onUpdate(true);
+        if (layout() !== mode) return;
+        v.__w = w.innerWidth; v.__prog = self.progress;
+      },
     });
+    v.__st = st;
     onUpdate();
 
-    // touch screens, full screen: a flick settles on a stage
-    const snapping = fs && MQ.touch.matches;
-    if (snapping) {
-      REST.forEach(() => { const m = d.createElement("i"); m.className = "build__snap"; m.setAttribute("aria-hidden", "true"); track.appendChild(m); snaps.push(m); });
-      placeSnaps(st);
-    }
+    // touch screens, full screen: a flick that dies just short of a stage glides on to it (see settle above)
+    const settler = fs && MQ.touch.matches ? { st } : null;
+    if (settler) { settlers.add(settler); listenTouch(true); }
 
-    // near: fetch a screen ahead, let go two screens behind; live: floating only while on screen (and the snap marks)
+    // near: fetch a screen ahead, let go two screens behind; live: floating only while on screen
     const near = ST.create({
       trigger: track, start: "top bottom+=100%", end: "bottom top-=100%",
       onToggle: (self) => (self.isActive ? load(v, base) : release(v)),
     });
     if (near.isActive) load(v, base);
-    let snapMine = false;
-    const setSnap = (on) => { if (!snapping || on === snapMine) return; snapMine = on; snapOn += on ? 1 : -1; snapClass(); };
     const onScreen = ST.create({
       trigger: track, start: "top bottom", end: "bottom top",
-      onToggle: (self) => { v.classList.toggle("is-live", self.isActive); setSnap(self.isActive); },
+      onToggle: (self) => v.classList.toggle("is-live", self.isActive),
     });
-    if (onScreen.isActive) { v.classList.add("is-live"); setSnap(true); }
+    if (onScreen.isActive) v.classList.add("is-live");
     // as the stage leaves, the diary goes with the build (nothing trails into the next section)
     const leaving = ST.create({
       trigger: track, start: "bottom bottom-=40", end: "bottom top",
@@ -356,7 +424,6 @@
     // keyboard: tabbing onto an end action takes you to the end of the build, where it's visible
     const toEnd = () => {
       if (tl.time() >= T.open + 0.5) return;
-      if (snapOn) pauseSnap(600);
       M.scrollTo(st.start + (st.end - st.start) * ((T.open + 0.9) / T.end), { immediate: true });
     };
     ctas.forEach((c) => c.addEventListener("focus", toEnd));
@@ -376,8 +443,8 @@
       ctas.forEach((c) => c.removeEventListener("focus", toEnd));
       v.removeEventListener("click", onClose);
       if (ro) ro.disconnect();
-      setSnap(false);
-      snaps.forEach((m) => m.remove());
+      if (settler) { settlers.delete(settler); if (!settlers.size) listenTouch(false); }
+      if (v.__st === st) delete v.__st;
       tl.eventCallback("onUpdate", null);
       st.kill(); near.kill(); onScreen.kill(); leaving.kill();
       gsap.killTweensOf(entries.concat(pops));
@@ -402,13 +469,25 @@
     let offs = all.map(([v, base]) => venue(v, base));
     let mode = layout();
     // the layout decides the timeline (and the image set): rebuild when it changes (a phone turned over)
+    // The same scroll offset is a different stage on the new track (760svh portrait, 3400px landscape), so the viewer
+    // inside a build is put back at the same point of it: its progress is read before the teardown and restored
+    // on the rebuilt track, and the timeline jumps there (no scrub replaying the build from the start)
     const onMQ = () => {
       const m = layout();
       if (m === mode) return;
       mode = m;
+      const keep = all.map(([v]) => (typeof v.__prog === "number" ? v.__prog : -1));
       offs.forEach((f) => f && f());
       offs = all.map(([v, base]) => venue(v, base));
       ST.refresh();
+      const i = keep.findIndex((p) => p > 0 && p < 1);
+      const st = i >= 0 && all[i][0].__st;
+      if (!st) return;
+      M.scrollTo(Math.round(st.start + keep[i] * (st.end - st.start)), { immediate: true, force: true });
+      ST.update();
+      const tw = st.getTween && st.getTween();
+      if (tw) tw.progress(1);
+      else if (st.animation) st.animation.progress(st.progress);
     };
     MQ.fsp.addEventListener("change", onMQ);
     MQ.fsl.addEventListener("change", onMQ);
