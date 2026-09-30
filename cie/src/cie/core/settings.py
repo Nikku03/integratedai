@@ -45,8 +45,12 @@ class Settings(BaseSettings):
     ocr_backend: Literal["auto", "pymupdf", "tesseract", "unlimited_ocr"] = "auto"
     ocr_dpi: int = 200
     ocr_min_chars_per_page: int = 25  # below this a PDF page is treated as scanned
-    unlimited_ocr_url: str = ""
+    unlimited_ocr_url: str = ""  # an OpenAI-compatible server (vLLM or SGLang) serving the model
     unlimited_ocr_model: str = "Unlimited-OCR"
+    # with no server, load the model in this process (transformers on a CUDA GPU): always with ocr_backend=unlimited_ocr,
+    # and under auto only when this is set, because it loads 6.7 GB of weights
+    unlimited_ocr_local: bool = False
+    unlimited_ocr_max_tokens: int = 8192
 
     redis_url: str = "redis://localhost:6379/0"
 

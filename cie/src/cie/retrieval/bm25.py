@@ -260,8 +260,11 @@ def search(session: Session, model, q: str, base_filter, k: int, tenant_id: uuid
         return []
     kind = _kind(model)
     sch = r.index.schema
-    parts = [(tantivy.Occur.Must, r.index.parse_query(" ".join(terms), ["title", "body"], field_boosts={"title": TITLE_BOOST})),
-             (tantivy.Occur.Must, tantivy.Query.term_query(sch, "kind", kind))]
+    # the terms are already stemmed: term queries, not the query parser, which would stem them again ("propos" -> "propo")
+    words = tantivy.Query.boolean_query(
+        [(tantivy.Occur.Should, tantivy.Query.boost_query(tantivy.Query.term_query(sch, "title", t), TITLE_BOOST)) for t in terms]
+        + [(tantivy.Occur.Should, tantivy.Query.term_query(sch, "body", t)) for t in terms])
+    parts = [(tantivy.Occur.Must, words), (tantivy.Occur.Must, tantivy.Query.term_query(sch, "kind", kind))]
     if document_ids:
         parts.append((tantivy.Occur.Must, tantivy.Query.term_set_query(sch, "doc", [str(d) for d in document_ids])))
     query = tantivy.Query.boolean_query(parts)

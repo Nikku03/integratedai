@@ -62,6 +62,15 @@ def test_rows_are_queued_by_the_triggers_and_build_takes_them_in(session, world,
     assert i["engine"] == "bm25" and ids(hits)[0] == a.id
 
 
+def test_query_terms_are_stemmed_once(session, world, lexdir):
+    a = rec(session, world, "Pricing proposal", "Redwood's proposal for the Year 1 package.")
+    session.commit()
+    bm25.build(url(), world.tenant.id, log=lambda *a: None)
+    assert bm25.query_terms("What did the proposal say?") == ["propos"]
+    assert ids(lexical.search_records(session, "proposal", base(world), 5, tenant_id=world.tenant.id, engine="bm25")) == [a.id], \
+        "stemming the stem ('propo') would miss the indexed term"
+
+
 def test_sql_disposes_what_bm25_proposes(session, world, lexdir):
     seen = rec(session, world, "Budget for Project Falcon", "Project Falcon budget is 120,000 USD.")
     hidden = rec(session, world, "Budget for Project Falcon (board)", "Project Falcon budget is 150,000 USD per the board.",

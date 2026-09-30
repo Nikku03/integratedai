@@ -14,8 +14,8 @@ answers, five agents in-process. Measured in BENCHMARKS.md.
   replication) with a documented RTO/RPO.
 * Live LLM providers: assisted answers and LLM specialist strategy behind the
   existing claim verifier; record provider usage for real token/cost metrics.
-* Unlimited-OCR on GPU for scans; compare against Tesseract on the acceptance
-  corpus (page accuracy, confidence, cost per page).
+* Unlimited-OCR on GPU for scans: built (server and in-process paths); the
+  comparison with Tesseract is pre-registered in `docs/OCR_PREREGISTRATION.md`.
 * Connectors: IMAP, Drive/SharePoint, Git; incremental sync with version
   detection (the folder connector already does this).
 
@@ -23,8 +23,9 @@ answers, five agents in-process. Measured in BENCHMARKS.md.
 * Partition `sections` and `memory_records` by tenant/scope; HNSW per
   partition; `ef_search` tuning; materialized "current" view for point-in-time
   queries.
-* Move lexical search to OpenSearch (the `LexicalIndex` swap point) when
-  Postgres FTS latency exceeds the 2 s p95 budget under load.
+* Keyword search without the full-text tail: a BM25 index per tenant is built
+  (`cie.retrieval.bm25`, see `docs/BM25_PREREGISTRATION.md`). OpenSearch remains
+  an option for multi-host deployments.
 * Learned reranker (cross-encoder) behind the `rerank()` interface, trained
   on graded packets from the evaluation set and human corrections.
 * Agent memory: per-agent scopes get summarization records (glyph rollups) so

@@ -80,7 +80,10 @@ Llama 3.1 8B or Llama 3.2 3B, set with `CIE_LLM_MODEL` and `CIE_LLM_BASE_URL`, a
 deterministic, length-bounded generation and a budgeted share of the evidence,
 `CIE_LLM_LOCAL_EVIDENCE_CHARS`), `CIE_EMBEDDING_PROVIDER` (`fastembed` local ONNX model,
 `hashed` no-model fallback, `openai`), `CIE_OCR_BACKEND` (`auto`, `tesseract`,
-`unlimited_ocr` with `CIE_UNLIMITED_OCR_URL` pointing at a vLLM/SGLang server),
+`unlimited_ocr`: Baidu's Unlimited-OCR through `CIE_UNLIMITED_OCR_URL`, a vLLM/SGLang
+server, or loaded on this machine's CUDA GPU; `CIE_UNLIMITED_OCR_LOCAL=true` lets `auto`
+use it), `CIE_LEXICAL_ENGINE` (`fts`, PostgreSQL full text, or `bm25`, a BM25 index per
+tenant built with `cie lexical build --tenant <name>` and kept current by the worker),
 `CIE_ENCRYPTION_KEY` (AES-GCM at rest for the vault).
 
 ## Layout

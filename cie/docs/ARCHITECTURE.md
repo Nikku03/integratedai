@@ -92,9 +92,10 @@ Two rules govern every layer:
   300-page scan therefore needs 300 short OCR calls, never one giant response.
 * Scanned pages (fewer than `ocr_min_chars_per_page` characters from the text
   layer) go to the OCR backend. `tesseract` returns word boxes and confidences;
-  `unlimited_ocr` talks to a vLLM/SGLang OpenAI-compatible endpoint serving
-  `baidu/Unlimited-OCR` and parses its `<|det|>type [bbox]<|/det|>` layout
-  markers. The system never depends on one OCR model.
+  `unlimited_ocr` runs `baidu/Unlimited-OCR` (3.3B parameters) behind a
+  vLLM/SGLang OpenAI-compatible endpoint, or in the process on a CUDA GPU, and
+  parses its `<|det|>` / `<|ref|>` layout markers (boxes on a 0–999 grid). The
+  system never depends on one OCR model.
 * `corrections.py` proposes conservative fixes (character confusions inside
   dictionary words, broken hyphenation, common ligatures). Corrections are
   stored in their own table; the original block text is never modified.
@@ -202,7 +203,8 @@ encodings that fail exact round-trip or searchability are rejected.
    history is asked for) are compiled into one SQL filter used by every search.
 3. `exact.lookup`: record ids, clause numbers, quoted phrases, entity names
    (trigram), keyword overlap.
-4. Lexical (PostgreSQL FTS, OR of content terms ranked by `ts_rank_cd`) ∥
+4. Lexical (PostgreSQL FTS ranked by `ts_rank_cd`, or a BM25 index per tenant
+   whose candidates pass the same SQL filter: `cie.retrieval.bm25`) ∥
    vector (pgvector cosine, HNSW) over records and sections. When the query
    names a document or supplier that appears in a file title, an extra search
    restricted to those documents is added, because templated files tie on text

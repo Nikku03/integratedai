@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import pytest
+
 from cie.agents import providers
 from cie.extraction.corrections import propose
 from cie.extraction.extractors.ocr_unlimited import UnlimitedOCR
@@ -28,7 +30,10 @@ def test_unlimited_ocr_parser_maps_layout_markers_to_blocks():
     page = ocr.parse(SAMPLE_UNLIMITED, px_width=1000, px_height=1000, dpi=72)
     kinds = [b.kind for b in page.blocks]
     assert kinds == ["heading", "text", "table", "figure", "footer"]
-    assert page.blocks[0].bbox == [40.0, 30.0, 960.0, 80.0]  # normalised 0-1000 grid -> 1000px @72dpi = points
+    # the model's boxes are on a 0-999 grid (its drawing code divides by 999); 999 px at 72 dpi are 999 points
+    page999 = ocr.parse(SAMPLE_UNLIMITED, px_width=999, px_height=999, dpi=72)
+    assert page999.blocks[0].bbox == [40.0, 30.0, 960.0, 80.0]
+    assert page.blocks[0].bbox == pytest.approx([40.04, 30.03, 960.96, 80.08], abs=0.01)
     assert "continued on the next line" in page.blocks[1].text
     assert page.blocks[2].content["rows"] == [["Item", "Amount"], ["Monthly fee", "USD 82,000"]]
     assert page.method == "ocr" and page.width == 1000.0
@@ -36,6 +41,41 @@ def test_unlimited_ocr_parser_maps_layout_markers_to_blocks():
     ocr_px = UnlimitedOCR("http://ocr.invalid", coord_scale="pixels")
     page2 = ocr_px.parse(SAMPLE_UNLIMITED, px_width=2000, px_height=2000, dpi=144)
     assert page2.blocks[0].bbox == [20.0, 15.0, 480.0, 40.0]
+
+
+SAMPLE_REF_FORM = """<|ref|>title<|/ref|><|det|>[[100, 50, 900, 90]]<|/det|>Invoice 4471
+<|ref|>text<|/ref|><|det|>[[100, 120, 900, 300]]<|/det|>Total due: EUR 12,480.00 by 2026-10-15.
+<｜end▁of▁sentence｜>"""
+
+
+def test_unlimited_ocr_reads_the_ref_form_nested_boxes_and_pages():
+    from cie.extraction.extractors.ocr_unlimited import split_pages
+
+    ocr = UnlimitedOCR("http://ocr.invalid")
+    page = ocr.parse(SAMPLE_REF_FORM, px_width=999, px_height=999, dpi=72)
+    assert [(b.kind, b.text) for b in page.blocks] == [("heading", "Invoice 4471"), ("text", "Total due: EUR 12,480.00 by 2026-10-15.")]
+    assert page.blocks[1].bbox == pytest.approx([100.0, 120.0, 900.0, 300.0])
+    nested = ocr.parse("<|det|>section-header [[10, 10, 500, 40]]<|/det|>2. Term", 999, 999, 72)
+    assert nested.blocks[0].kind == "heading" and nested.blocks[0].bbox == pytest.approx([10.0, 10.0, 500.0, 40.0])
+    assert split_pages("<PAGE>\npage one\n<PAGE>\npage two<｜end▁of▁sentence｜>") == ["page one", "page two"]
+    assert split_pages("just one page") == ["just one page"]
+
+
+def test_ocr_engine_choice(monkeypatch):
+    from cie.core.settings import Settings
+    from cie.extraction import registry
+    from cie.extraction.extractors.ocr_unlimited import UnlimitedOCRLocal
+
+    monkeypatch.setattr(UnlimitedOCRLocal, "available", staticmethod(lambda: False))
+    with pytest.raises(RuntimeError, match="needs CIE_UNLIMITED_OCR_URL or a CUDA GPU"):
+        registry.build_ocr(Settings(ocr_backend="unlimited_ocr"))
+    assert registry.build_ocr(Settings(ocr_backend="unlimited_ocr", unlimited_ocr_url="http://ocr.invalid")).name == "unlimited_ocr"
+    auto = registry.build_ocr(Settings(ocr_backend="auto", unlimited_ocr_local=True))
+    assert auto is None or auto.name == "tesseract", "no GPU: auto falls back"
+    monkeypatch.setattr(UnlimitedOCRLocal, "available", staticmethod(lambda: True))
+    local = registry.build_ocr(Settings(ocr_backend="auto", unlimited_ocr_local=True))
+    assert isinstance(local, UnlimitedOCRLocal) and local._model is None, "the weights load on first use, not at choice"
+    assert registry.build_ocr(Settings(ocr_backend="auto", unlimited_ocr_local=True)) is local, "one copy per process"
 
 
 def test_scanners_detect_secrets_pii_injection_and_redact():

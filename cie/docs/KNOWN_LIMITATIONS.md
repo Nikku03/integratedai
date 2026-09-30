@@ -8,17 +8,30 @@ Stated plainly so nobody mistakes a scaffold for a finished capability.
   available, so assisted answers, the LLM planner and the LLM specialist
   strategy were tested only through `FakeProvider`. All shipped numbers use the
   deterministic extractive strategies.
-* **Unlimited-OCR.** The adapter follows the published vLLM/SGLang API and its
-  `<|det|>` layout markers are parsed by unit tests, but no GPU was available
-  to run the model. Tesseract is the OCR engine behind every reported number.
+* **Unlimited-OCR.** Two paths are implemented: a vLLM/SGLang server, and the
+  model loaded in the process on a CUDA GPU (`transformers`, revision pinned).
+  The layout markers are parsed by unit tests written from the model's own code,
+  but the model has not been run in this build environment (no GPU). The
+  comparison with Tesseract is pre-registered (`docs/OCR_PREREGISTRATION.md`)
+  and runs on Colab. Until then Tesseract is the OCR engine behind every
+  reported number, and Unlimited-OCR is opt-in.
 * **S3/MinIO backend and the compose stack.** `S3Backend` is implemented with
   boto3 but tests use the local filesystem backend; the Docker daemon was not
   available in the build environment, so `docker compose up` was not executed
   here. The Dockerfile and compose file are complete but unverified end to end.
 * **Connectors.** Only the local-folder connector works. IMAP, Google Drive,
   SharePoint, Slack and Git connectors raise `NotImplementedError`.
-* **OpenSearch/Elasticsearch.** Not implemented; PostgreSQL full text is the
-  lexical engine. The class exists only to mark the swap point and raises on use.
+* **OpenSearch/Elasticsearch.** Not implemented. The keyword engines are PostgreSQL
+  full text and a BM25 index per tenant (Tantivy, `cie.retrieval.bm25`). The
+  OpenSearch class only marks a swap point and raises on use.
+* **The BM25 index lives on one machine's disk** (`CIE_LEXICAL_INDEX_DIR`). Processes
+  on the same host share it. Several API or worker hosts each need the directory
+  on shared storage, or their own build. Rows written since the index last synced
+  are scored from the database with the index's statistics (document frequencies
+  and average lengths), so their scores approximate what the index would give.
+  A tenant with more than `lexical_tail_max` rows waiting falls back to full text
+  until the worker syncs. Deleted rows stay in the index until the next build;
+  the SQL filter removes them from results.
 * **Temporal.** Not integrated; the durable queue is a PostgreSQL table with
   leases and checkpoints.
 

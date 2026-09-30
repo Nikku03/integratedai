@@ -27,16 +27,33 @@ class NoOCR:
         raise RuntimeError("No OCR engine configured (CIE_OCR_BACKEND)")
 
 
+_local_ocr: dict[tuple, OCREngine] = {}
+
+
 def build_ocr(settings: Settings | None = None) -> OCREngine | None:
+    """The OCR engine for scanned pages and images.
+
+    ``unlimited_ocr``: the configured server, else the model on this machine's GPU (an error without one).
+    ``auto``: Unlimited-OCR when its server answers, or when ``unlimited_ocr_local`` is set and a GPU is present;
+    otherwise Tesseract; otherwise none (scanned pages then fail extraction instead of yielding invented text).
+    """
     settings = settings or get_settings()
     backend = settings.ocr_backend
-    if backend == "unlimited_ocr" or (backend == "auto" and settings.unlimited_ocr_url):
-        from cie.extraction.extractors.ocr_unlimited import UnlimitedOCR
+    if backend == "unlimited_ocr" or (backend == "auto" and (settings.unlimited_ocr_url or settings.unlimited_ocr_local)):
+        from cie.extraction.extractors.ocr_unlimited import UnlimitedOCR, UnlimitedOCRLocal
 
         if settings.unlimited_ocr_url:
-            engine = UnlimitedOCR(settings.unlimited_ocr_url, settings.unlimited_ocr_model)
+            engine = UnlimitedOCR(settings.unlimited_ocr_url, settings.unlimited_ocr_model, max_tokens=settings.unlimited_ocr_max_tokens)
             if backend == "unlimited_ocr" or engine.available():
                 return engine
+        elif backend == "unlimited_ocr" or settings.unlimited_ocr_local:
+            if UnlimitedOCRLocal.available():
+                key = (str(settings.model_cache), settings.unlimited_ocr_max_tokens)
+                if key not in _local_ocr:  # one copy of the weights per process
+                    _local_ocr[key] = UnlimitedOCRLocal(cache_dir=str(settings.model_cache), max_length=settings.unlimited_ocr_max_tokens)
+                return _local_ocr[key]
+            if backend == "unlimited_ocr":
+                raise RuntimeError("Unlimited-OCR needs CIE_UNLIMITED_OCR_URL or a CUDA GPU with torch and transformers")
     if backend in ("auto", "tesseract"):
         from cie.extraction.extractors.ocr_tesseract import TesseractOCR
 

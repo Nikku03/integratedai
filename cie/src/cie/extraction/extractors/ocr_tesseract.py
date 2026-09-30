@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import io
+import os
 import shutil
 
 from PIL import Image
@@ -16,6 +17,9 @@ class TesseractOCR:
     def __init__(self, lang: str = "eng", psm: int = 3):
         import pytesseract
 
+        # Tesseract's OpenMP threads can stall for minutes on a shared or containerised CPU (one 200-dpi page took 578 s
+        # instead of 2 s); one thread per page is fast and predictable. pytesseract passes the environment to the binary.
+        os.environ.setdefault("OMP_THREAD_LIMIT", "1")
         self._pt = pytesseract
         self.lang = lang
         self.psm = psm

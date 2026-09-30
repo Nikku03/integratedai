@@ -66,6 +66,18 @@ afterwards with memory and workers sized to the machine (`CIE_INDEX_BUILD_MEM`,
 cores). They are rebuilt even when the load fails, and any that are missing are
 rebuilt when a run starts.
 
+After the load, a BM25 keyword index of the tenant is built (`cie.retrieval.bm25`,
+Tantivy): about 7 s and 16 MB for the 5,000-document memory bank. It proposes
+keyword candidates that SQL then filters with the same permissions and validity
+rules as full-text search. Triggers queue every record or section written later;
+search scores queued rows from the database until the worker takes them into the
+index. Search uses it when `CIE_LEXICAL_ENGINE=bm25`; whether it becomes the
+default is decided by the pre-registered test in `docs/BM25_PREREGISTRATION.md`.
+
+Scanned PDFs and images, which the EnterpriseRAG-Bench exports do not contain, are
+read by OCR in the extraction pipeline: Tesseract, or Baidu's Unlimited-OCR on a GPU
+(`docs/OCR_PREREGISTRATION.md`).
+
 ## What it measured (EnterpriseRAG-Bench, 5,000-document haystack, 500 questions)
 
 Same haystack, same questions, same code version, evaluated back to back (tables in
