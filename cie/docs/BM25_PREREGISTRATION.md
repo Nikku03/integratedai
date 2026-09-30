@@ -66,3 +66,19 @@ BM25 becomes the default keyword engine (`lexical_engine = "bm25"`) if all of th
 - **B fails any criterion.** The default goes back to full text, and BM25 stays optional.
 
 Every result is reported, including failures.
+
+## Outcome of test A (added after the run)
+
+**Every criterion was met** on the 5,000-document memory bank:
+- recall@10 0.878 against 0.848;
+- MRR 0.761 against 0.719;
+- p95 838 ms against 1,907 ms, and p50 414 ms against 546 ms;
+- 1,000 of 1,000 keyword searches were served by BM25.
+
+The default keyword engine is now BM25. Test B (50,000 documents, Colab) confirms or reverts it.
+
+Two starts were stopped before any result was printed:
+- the first because another benchmark was using the same CPUs;
+- the second because code review found that query terms were stemmed twice.
+
+Details are in `docs/BM25_RESULTS.md`.

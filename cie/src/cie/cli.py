@@ -71,6 +71,14 @@ def cmd_bootstrap(args) -> None:
         grant_role(s, tenant_id=tenant.id, principal=p, role=admin_role, scope=company)
         print(json.dumps({"tenant_id": str(tenant.id), "company_scope_id": str(company.id), "principal_id": str(p.id),
                           "api_key": key}, indent=2))
+        tenant_id = tenant.id
+    # the tenant's BM25 keyword index, empty or not: what is written from now on is queued for it and searched at once
+    from cie.retrieval import bm25
+
+    try:
+        bm25.build(get_settings().database_url, tenant_id, log=lambda *a: None)
+    except Exception as e:  # noqa: BLE001 - keyword search falls back to full text; `cie lexical build` can be run later
+        print(f"BM25 index not built ({type(e).__name__}: {e}); keyword search uses full text until `cie lexical build`")
 
 
 def cmd_worker(args) -> None:

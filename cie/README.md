@@ -82,8 +82,10 @@ deterministic, length-bounded generation and a budgeted share of the evidence,
 `hashed` no-model fallback, `openai`), `CIE_OCR_BACKEND` (`auto`, `tesseract`,
 `unlimited_ocr`: Baidu's Unlimited-OCR through `CIE_UNLIMITED_OCR_URL`, a vLLM/SGLang
 server, or loaded on this machine's CUDA GPU; `CIE_UNLIMITED_OCR_LOCAL=true` lets `auto`
-use it), `CIE_LEXICAL_ENGINE` (`fts`, PostgreSQL full text, or `bm25`, a BM25 index per
-tenant built with `cie lexical build --tenant <name>` and kept current by the worker),
+use it), `CIE_LEXICAL_ENGINE` (`bm25`, the default: a BM25 index per tenant, built by
+`cie bootstrap`, by bulk loads or with `cie lexical build --tenant <name>`, and kept current
+by the worker; `fts`: PostgreSQL full text, which is also the fallback for a tenant without
+an index),
 `CIE_ENCRYPTION_KEY` (AES-GCM at rest for the vault).
 
 ## Layout

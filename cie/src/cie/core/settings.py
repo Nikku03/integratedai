@@ -63,9 +63,10 @@ class Settings(BaseSettings):
     packet_min_records: int = 20
     packet_max_records: int = 100
     packet_token_budget: int = 12000
-    # keyword search: PostgreSQL full text (fts) or a BM25 index per tenant (cie.retrieval.bm25). bm25 serves a tenant
-    # only once its index is built (`cie lexical build`), and falls back to full text otherwise
-    lexical_engine: Literal["fts", "bm25"] = "fts"
+    # keyword search: a BM25 index per tenant (cie.retrieval.bm25), or PostgreSQL full text (fts). bm25 serves a tenant
+    # once its index is built (bootstrap, bulk loads, `cie lexical build`) and falls back to full text otherwise. The
+    # default follows the pre-registered test in docs/BM25_RESULTS.md
+    lexical_engine: Literal["fts", "bm25"] = "bm25"
     lexical_index_dir: Path = Path("./.cie_data/lexical")
     lexical_tail_max: int = 20000  # above this many rows waiting for the index, a tenant is served by full text
     graph_budget_coefficient: float = 4.0  # expansion budget = ceil(coef * log2(N))

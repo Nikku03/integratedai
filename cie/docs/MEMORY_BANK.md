@@ -71,8 +71,10 @@ Tantivy): about 7 s and 16 MB for the 5,000-document memory bank. It proposes
 keyword candidates that SQL then filters with the same permissions and validity
 rules as full-text search. Triggers queue every record or section written later;
 search scores queued rows from the database until the worker takes them into the
-index. Search uses it when `CIE_LEXICAL_ENGINE=bm25`; whether it becomes the
-default is decided by the pre-registered test in `docs/BM25_PREREGISTRATION.md`.
+index. It is the default keyword engine since its pre-registered test
+(`docs/BM25_RESULTS.md`). On the 5,000-document memory bank, hybrid search found the
+right document in the top 10 for 0.878 of questions against 0.848 with full text,
+and its p95 latency fell from 1.9 s to 0.84 s. A tenant without an index uses full text.
 
 Scanned PDFs and images, which the EnterpriseRAG-Bench exports do not contain, are
 read by OCR in the extraction pipeline: Tesseract, or Baidu's Unlimited-OCR on a GPU
