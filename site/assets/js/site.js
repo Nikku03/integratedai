@@ -184,7 +184,16 @@
     // page scripts that run after this one (work.js on work.html?filter=…) may already have set a room
     d.addEventListener("DOMContentLoaded", all, { once: true });
     // links added later (build pop-ups, menus): carry the room at the moment of use
-    const onUse = (e) => { const a = e.target.closest && e.target.closest('a[href*="contact.html"]'); if (a) carry(a); };
+    // A tap also leaves the link's query for the form to read once: the preview host can drop a query string on
+    // the way (contact.html prefers the URL's own)
+    const onUse = (e) => {
+      const a = e.target.closest && e.target.closest('a[href*="contact.html"]');
+      if (!a) return;
+      carry(a);
+      if (e.type === "click" && !e.defaultPrevented && e.button === 0 && !(e.metaKey || e.ctrlKey || e.shiftKey || e.altKey)) {
+        store.sset("ts-contact-q", new URL(a.href, location.href).search);
+      }
+    };
     d.addEventListener("click", onUse, true);
     d.addEventListener("pointerdown", onUse, true);
     d.addEventListener("focusin", onUse, true);

@@ -15,6 +15,20 @@
     try { if (!("CSSViewTransitionRule" in w) && sessionStorage.getItem("ts-curtain")) r.classList.add("curtain-in"); } catch (e) {}
   }
   w.addEventListener("pagereveal", function (e) { w.__vt = e.viewTransition || null; }, { once: true });
+  // a new page opens at its top. Only back/forward (the browser's own restore) and a link to a #section keep a
+  // scroll position: a host that reloads or swaps pages inside one frame (the preview) would otherwise carry the
+  // last page's position over, clamped to the new page's bottom, and nothing settling in (fonts, a frame resize,
+  // the builds) can nudge it either. Lets go at the visitor's first wheel, touch, key or press, or 1.5s after load.
+  try {
+    var nav = performance.getEntriesByType("navigation")[0];
+    if ((!nav || nav.type !== "back_forward") && location.hash.length < 2) {
+      var held = true, hold = function () { if (held && w.scrollY > 0) w.scrollTo(0, 0); };
+      var letGo = function () { held = false; w.removeEventListener("scroll", hold); };
+      ["wheel", "touchstart", "keydown", "pointerdown"].forEach(function (t) { w.addEventListener(t, letGo, { once: true, passive: true, capture: true }); });
+      w.addEventListener("scroll", hold, { passive: true });
+      w.addEventListener("load", function () { hold(); setTimeout(letGo, 1500); }, { once: true });
+    }
+  } catch (e) {}
   setTimeout(function () { if (!w.Motion || !w.Motion.booted) r.classList.remove("curtain-in"); }, 2500);
   setTimeout(function () { if (!w.Motion || !w.Motion.booted) r.classList.remove("js-motion"); }, 4000);
 })(document, window);
