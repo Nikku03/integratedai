@@ -1,8 +1,10 @@
 /*!
  * Two Squares — contact.html: the enquiry form.
- * Prefill from the URL (venue, service, stage, from, item, message) and, when the link names no
- * room, from the room remembered on the last sector page / case study (site.js), inline
- * validation on blur + submit with an error summary, Netlify Forms submission
+ * What an arrival preselects (venue, service, stage, from, item, message; the room remembered on the
+ * last sector page / case study when the link names none) is worked out by the inline script at the
+ * top of <main> in contact.html, which also draws the banner and sets the fields before first paint
+ * (window.__tsPrefill), so nothing moves. This file wires the behaviour: the banner's pills, "Start
+ * from scratch", inline validation on blur + submit with an error summary, Netlify Forms submission
  * (urlencoded fetch), sending / success / network-error states.
  * Plain DOM code: it works with reduced motion and even if GSAP never loads.
  */
@@ -22,31 +24,6 @@
     message: { tooLong: "That’s a lot of detail, and we like it. Trim it to 2,000 characters, or attach it as a file." },
   };
   const SUMMARY = { one: "One thing needs a look before this can go.", many: "{n} things need a look before this can go." };
-  const BANNER = {
-    "menu-card": "From the corner table: {item}. Change anything below.",
-    services: "From the menu: {item}. Change anything below.",
-    // case studies send venue + item too (the deck only gives the two menu lines; this one is in its voice)
-    // the build's notes / end actions and the sector pages send venue + from (no item): a short
-    // banner names the room they came from, so the form picks up where the page left off
-    "case-study": "From the {item} project. Change anything below.",
-    build: "From the {item} you watched being built. Change anything below.",
-    sector: "From the {item} page. Change anything below.",
-    work: "From the {item}. Change anything below.",
-    // no source in the link, but this visitor was just on a sector page or case study (site.js memory)
-    memory: "Picked up from the {item}. Change anything below.",
-    // something is preselected and nothing names where it came from
-    plain: "We’ve filled in what we know. Change anything below.",
-  };
-  const ROOMS = {
-    build: { cafe: "café", restaurant: "dining room", bar: "bar", shop: "shop" },
-    sector: { cafe: "Cafés", restaurant: "Restaurants", bar: "Bars", shop: "Shops" },
-    work: { cafe: "café projects", restaurant: "restaurant projects", bar: "bar projects", shop: "shop projects" },
-    memory: { cafe: "Cafés page", restaurant: "Restaurants page", bar: "Bars page", shop: "Shops page" },
-  };
-  // site.js venue memory (sessionStorage): the last sector page or case study visited this session
-  const MEMORY = { venue: "ts-venue", from: "ts-venue-from", item: "ts-venue-item" };
-  const sget = (k) => { try { return sessionStorage.getItem(k) || ""; } catch (_) { return ""; } };
-  const sdel = (k) => { try { sessionStorage.removeItem(k); } catch (_) {} };
   const SEND = "Send it over", SENDING = "Sending…";
   const NETWORK = "That didn’t send, and it’s our end, not yours. Your details are still here. Try again, or email hello@twosquares.studio.";
   const BUDGET = {
@@ -54,62 +31,13 @@
     USD: [["not-sure", "Not sure yet"], ["under-50k", "Under US$50k"], ["50-150k", "US$50k–150k"], ["150-400k", "US$150k–400k"], ["over-400k", "Over US$400k"]],
   };
 
-  /* ---------------------------------------------------------------- what the other pages send */
-  // café menu card (home): contact.html?venue=cafe&service=whole-venue&from=menu-card&item=whole-cafe
-  const MENU = {
-    "whole-cafe": { name: "The whole café", prefill: { venue: "cafe", service: "whole-venue", message: "We’d like the whole café designed and built." } },
-    "just-the-counter": { name: "Just the counter", prefill: { venue: "cafe", service: "counter", message: "We’d like to rework the counter and workstation." } },
-    "a-refresh": { name: "A refresh", prefill: { venue: "cafe", service: "refresh", stage: "trading", message: "We’re open and trading, and the room needs a refresh." } },
-    // every dish on the café's menu card is for a café: "Something else" keeps Café selected too
-    "something-else": { name: "Something else", prefill: { venue: "cafe", service: "not-sure", message: "" } },
-  };
-  // services page: contact.html?service=…&stage=…&from=services&item=<id>
-  const SERVICES = {
-    "site-visit": { name: "Site visit & feasibility", prefill: { service: "feasibility", stage: "looking" } },
-    "test-fit": { name: "The test-fit", prefill: { service: "feasibility", stage: "looking" } },
-    "whole-venue": { name: "The whole venue, designed & built", prefill: { service: "whole-venue" } },
-    "design-only": { name: "Design only", prefill: { service: "design-only" } },
-    "build-only": { name: "Build only", prefill: { service: "build-only", stage: "drawings" } },
-    counter: { name: "The counter or workstation", prefill: { service: "counter" } },
-    refresh: { name: "A refresh", prefill: { service: "refresh", stage: "trading" } },
-    lighting: { name: "Lighting only", prefill: { service: "lighting" } },
-    signage: { name: "Signage & brand touchpoints", prefill: { service: "signage" } },
-    rollout: { name: "Roll-out for multi-site operators", prefill: { service: "rollout", stage: "multi" } },
-    aftercare: { name: "Aftercare", prefill: { service: "aftercare", stage: "trading" } },
-    // the page's closing "Not sure what to order?" CTA
-    "not-sure": { name: "Not sure yet", prefill: { service: "not-sure" } },
-  };
-  // case studies: contact.html?venue=…&from=case-study&item=<slug>
-  const CASES = {
-    "common-hours": { name: "Common Hours", prefill: { venue: "cafe" } },
-    ember: { name: "Ember", prefill: { venue: "restaurant" } },
-    stillroom: { name: "Stillroom", prefill: { venue: "bar" } },
-    dhaaga: { name: "Dhaaga", prefill: { venue: "shop" } },
-    otla: { name: "Otla", prefill: { venue: "restaurant" } },
-    tilt: { name: "Tilt", prefill: { venue: "cafe" } },
-  };
-  const SOURCES = { "menu-card": MENU, services: SERVICES, "case-study": CASES };
-  // a source that implies the room even when its link forgets to say so (the café menu card sits
-  // only on cafes.html: any from=menu-card link, known item or not, is for a café)
-  const FROM_VENUE = { "menu-card": "cafe" };
-  // tolerate the sector words other pages use (work filters, plurals, accents)
-  const VENUE_ALIASES = {
-    cafe: "cafe", "café": "cafe", cafes: "cafe", "cafés": "cafe", coffee: "cafe",
-    restaurant: "restaurant", restaurants: "restaurant",
-    bar: "bar", bars: "bar",
-    shop: "shop", shops: "shop", retail: "shop", store: "shop",
-    bakery: "bakery", bakeries: "bakery",
-    hotel: "hotel", "hotel-fb": "hotel", hotels: "hotel",
-    other: "other", "something-else": "other",
-  };
-
   /* ---------------------------------------------------------------- elements */
   const summary = $("#form-errors"), summaryTitle = $("#form-errors-title"), summaryList = $("#form-errors-list");
-  const banner = $("#prefill"), bannerText = $("#prefill-text"), clearBtn = $("#prefill-clear"), picksEl = $("#prefill-picks");
+  const banner = $("#prefill"), clearBtn = $("#prefill-clear"), picksEl = $("#prefill-picks");
   const done = $("#enquiry-done"), netErr = $("#enquiry-neterr"), status = $("#enquiry-status");
   const submit = $(".enquiry__submit", form), submitLabel = $(".enquiry__submit-label", form);
   const reqNote = $(".enquiry__req", form);
-  const state = { from: "", item: null, itemId: "", sending: false };
+  const state = { from: "", itemName: "", sending: false };
   const reduce = () => w.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   const scrollToEl = (el) => {
@@ -123,19 +51,6 @@
   const fmt = (n) => n.toLocaleString("en-IN");
 
   /* ---------------------------------------------------------------- controls */
-  const setRadio = (name, value) => {
-    const r = value && form.querySelector(`input[type="radio"][name="${name}"][value="${CSS.escape(value)}"]`);
-    if (r) r.checked = true;
-    return !!r;
-  };
-  const setSelect = (id, value) => {
-    const s = form.querySelector("#f-" + id);
-    if (!s || !value) return false;
-    const opt = Array.from(s.options).find((o) => o.value === value);
-    if (opt) s.value = value;
-    return !!opt;
-  };
-
   // budget currency toggle: same five bands, so the chosen position carries across
   const budget = $("#f-budget"), currencyInput = $("#f-currency");
   function setCurrency(cur) {
@@ -160,53 +75,22 @@
   }
   message && message.addEventListener("input", updateCount);
 
-  /* ---------------------------------------------------------------- prefill from the URL */
-  // Venue, in order: the link's own venue → the item's default (menu card, services, case study)
-  // → what its source implies (from=menu-card = a café) → the room this visitor last looked at
-  // (site.js memory). Words are matched tolerantly (cafes, café, retail, shops …).
+  /* ---------------------------------------------------------------- the preselected arrival */
+  // contact.html has already drawn the banner and set the fields (window.__tsPrefill). Here: make
+  // sure the fields are set (harmless if they are), check the pills against what the form really
+  // holds, and make each pill jump to its field.
+  const P = w.__tsPrefill || null;
+  const MEMORY = ["ts-venue", "ts-venue-from", "ts-venue-item"];   // site.js venue memory (sessionStorage)
   const picked = [];                  // the fields filled in on arrival: [{ field, ctl, text }]
-  const venueOf = (raw) => { raw = (raw || "").trim().toLowerCase(); return VENUE_ALIASES[raw] || raw; };
   function prefill() {
-    d.documentElement.classList.remove("has-prefill");     // the inline guess in contact.html; set again below if a banner shows
-    const q = new URLSearchParams(location.search);
-    const from = (q.get("from") || "").trim().toLowerCase();
-    const itemId = (q.get("item") || "").trim().toLowerCase();
-    const source = SOURCES[from];
-    const item = source && itemId ? source[itemId] : null;
-    const defaults = (item && item.prefill) || {};
-    const pick = (k) => (q.has(k) ? (q.get(k) || "").trim() : defaults[k] || "");
-
-    let venue = venueOf(pick("venue")) || FROM_VENUE[from] || "";
-    let remembered = false;
-    if (!venue) { venue = venueOf(sget(MEMORY.venue)); remembered = !!venue; }
-    setRadio("venue", venue);
-    setSelect("service", pick("service").toLowerCase());
-    setSelect("stage", pick("stage").toLowerCase());
-    const msg = pick("message");
-    if (msg && message && !message.value) { message.value = msg.slice(0, MAX * 2); updateCount(); }
-
-    state.from = from; state.itemId = itemId; state.item = item;
-    $("#f-from").value = from || (remembered ? sget(MEMORY.from) : "");
-    $("#f-item").value = item ? item.name : itemId || (remembered ? sget(MEMORY.item) : "");
-
-    // what the banner says: the dish, the room of the page they came from, or where the room was remembered
-    let key = from, label = item ? item.name : "";
-    if (!label && !remembered && ROOMS[from]) label = ROOMS[from][venue] || "";
-    if (!label && remembered) {
-      const mf = sget(MEMORY.from), mi = sget(MEMORY.item);
-      key = "memory";
-      label = mf === "case-study" && CASES[mi] ? CASES[mi].name + " project" : ROOMS.memory[venue] || "";
-    }
+    if (!P) return;
+    if (P.apply) P.apply();
+    if (P.show && banner.hidden && P.render) P.render();
+    state.from = P.from || ""; state.itemName = P.itemName || "";
     markPicked();
-    if (!label && picked.length) key = "plain";
-    if (!BANNER[key] || (!label && key !== "plain")) return;
-    const [pre, post] = BANNER[key].split("{item}");
-    const bits = [pre];
-    if (post != null) { const em = d.createElement("em"); em.textContent = label; bits.push(em, post); }
-    bannerText.replaceChildren(...bits);
-    renderPicks();
-    banner.hidden = false;
-    d.documentElement.classList.add("has-prefill");
+    // the pills were written from the same data before first paint; redraw them only if the form disagrees
+    const have = $$(".prefill__pick", picksEl).map((a) => a.textContent).join("|");
+    if (!banner.hidden && have !== picked.map((p) => p.text).join("|")) renderPicks();
   }
 
   // make the preselected state obvious: each prefilled field wears a tick and a green edge until
@@ -227,15 +111,23 @@
       const li = d.createElement("li"), a = d.createElement("a");
       a.className = "prefill__pick"; a.href = "#" + (p.field && p.field.id ? p.field.id : p.ctl.id);
       a.textContent = p.text;
-      a.addEventListener("click", (e) => {
-        e.preventDefault();
-        scrollToEl(p.field || p.ctl);
-        p.ctl.focus({ preventScroll: true });
-      });
       li.appendChild(a); return li;
     }));
     picksEl.hidden = !picked.length;
   }
+  // a pill jumps to its field and focuses the chosen control (without JS it is a plain anchor)
+  picksEl && picksEl.addEventListener("click", (e) => {
+    const a = e.target.closest && e.target.closest("a.prefill__pick");
+    const target = a && d.getElementById(decodeURIComponent(a.hash.slice(1)));
+    if (!target) return;
+    e.preventDefault();
+    const field = target.closest("[data-field]") || target;
+    // the chosen chip, not the first one (a selector list would match in document order)
+    const ctl = target.matches("input, select, textarea") ? target
+      : field.querySelector("input:checked") || field.querySelector("select, textarea, input:not([type=hidden])") || target;
+    scrollToEl(field);
+    ctl.focus({ preventScroll: true });
+  });
   // a prefilled field that the visitor changes is simply theirs now
   form.addEventListener("change", (e) => {
     const f = e.target.closest && e.target.closest(".is-prefilled");
@@ -249,12 +141,12 @@
     updateCount();
     $$("[data-field]", form).forEach((f) => { setError(f, ""); delete f.dataset.dirty; });
     hideSummary();
-    state.from = ""; state.item = null; state.itemId = "";
+    state.from = ""; state.itemName = "";
     banner.hidden = true;
     d.documentElement.classList.remove("has-prefill");
     $$(".is-prefilled", form).forEach((f) => f.classList.remove("is-prefilled"));
     // from scratch means from scratch: forget the remembered room too (a reload stays blank)
-    Object.values(MEMORY).forEach(sdel);
+    MEMORY.forEach((k) => { try { sessionStorage.removeItem(k); } catch (_) {} });
     try { history.replaceState(history.state, "", location.pathname); } catch (_) {}
     const name = $("#f-name");
     name && name.focus();
@@ -355,11 +247,11 @@
   function showSuccess(preview) {
     const nameVal = ($("#f-name") && $("#f-name").value.trim()) || "";
     const first = nameVal.split(/\s+/)[0] || "there";
-    const fromMenu = !!state.item && (state.from === "menu-card" || state.from === "services");
+    const fromMenu = !!state.itemName && (state.from === "menu-card" || state.from === "services");
     const title = $("#done-title"), body = $("#done-body");
     if (fromMenu) {
       title.innerHTML = "Order’s <em>in</em>.";
-      body.textContent = `Thanks, ${first}. ${state.item.name}, noted. We’ll reply within two working days with a few questions and a time to talk.`;
+      body.textContent = `Thanks, ${first}. ${state.itemName}, noted. We’ll reply within two working days with a few questions and a time to talk.`;
       $("#done-secondary").hidden = true;
       $("#done-button-label").textContent = "Back to the street";
       $("#done-button").setAttribute("href", "index.html");

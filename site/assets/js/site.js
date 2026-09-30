@@ -110,49 +110,101 @@
   // session. Every contact.html link that doesn't name a venue — the header's "Start a project", the
   // Index's Contact, the footer's Contact, the services "Order this" links — then carries it, so the
   // form opens with that venue chip selected and the "From the … page / project" banner (contact.js).
-  // Keys (sessionStorage): ts-venue (cafe|restaurant|bar|shop), ts-venue-from (sector|case-study),
-  // ts-venue-item (the project slug, case studies only). contact.js may read ts-venue as a fallback.
+  // Keys (sessionStorage): ts-venue (cafe|restaurant|bar|shop), ts-venue-from (sector|case-study|work),
+  // ts-venue-item (the project slug, case studies only). contact.js reads ts-venue as a fallback.
+  // The latest choice wins: a work filter tap (from=work) replaces the room, and every link is rebuilt
+  // from its author's href with the memory as it is now (on load, on each change, and at the moment of use).
+  // Page code that changes the room: TS.venue.set(venue, from, item) / TS.venue.restore(from), or write
+  // the keys and dispatch "ts:venue" on document.
   (function venueMemory() {
     const SECTOR = { cafes: "cafe", restaurants: "restaurant", bars: "bar", retail: "shop" };
     const PROJECT = { "common-hours": "cafe", tilt: "cafe", ember: "restaurant", otla: "restaurant", stillroom: "bar", dhaaga: "shop" };
+    const KEYS = ["ts-venue", "ts-venue-from", "ts-venue-item"];
+    const get = () => KEYS.map((k) => store.sget(k) || "");            // [venue, from, item]
+    function put(venue, from, item) {
+      if (venue) { store.sset(KEYS[0], venue); store.sset(KEYS[1], from || "sector"); store.sset(KEYS[2], item || ""); }
+      else KEYS.forEach((k) => { try { sessionStorage.removeItem(k); } catch (_) {} });
+    }
     const b = d.body, sector = b.dataset.sector, project = b.dataset.project;
-    if (sector && SECTOR[sector]) {
-      store.sset("ts-venue", SECTOR[sector]); store.sset("ts-venue-from", "sector"); store.sset("ts-venue-item", "");
-    } else if (project) {
+    if (sector && SECTOR[sector]) put(SECTOR[sector], "sector", "");
+    else if (project) {
       // unknown slug: the page's own prefilled contact link names the room
       let v = PROJECT[project] || "";
       if (!v) { const a = $('a[href*="contact.html"][href*="venue="]'); v = a ? new URL(a.href).searchParams.get("venue") || "" : ""; }
-      if (v) { store.sset("ts-venue", v); store.sset("ts-venue-from", "case-study"); store.sset("ts-venue-item", project); }
+      if (v) put(v, "case-study", project);
     }
+    // the room this page opened with, before any of its own controls changed it
+    const base = get();
+    let all = () => {};
+    const changed = () => all();
+    TS.venue = {
+      get() { const m = get(); return m[0] ? { venue: m[0], from: m[1], item: m[2] } : null; },
+      set(venue, from, item) { put(venue, from, item); changed(); },
+      // the page's own choice is undone (the work index's "All"): back to the room it opened with, unless
+      // that room was this same page's earlier choice, in which case no room is chosen now
+      restore(from) { if (base[0] && base[1] !== from) put(base[0], base[1], base[2]); else put(""); changed(); },
+    };
     if (b.dataset.page === "contact") return;               // the form itself: nothing to carry
     const CONTACT = /(^|\/)contact\.html(?=$|[?#])/;
+    // sources whose banner is worded from the room itself (contact.js ROOMS): a link like the work index's
+    // own "Start a project" (?from=work, no room while All is on) only takes a room remembered from that
+    // same source; otherwise it is left as it is, and contact.js picks the remembered room up with the
+    // banner that says where it came from ("Picked up from the Cafés page", not "From the café projects")
+    const ROOM_FROM = /^(work|sector|build)$/i;
+    const own = new WeakMap();                               // link -> { href: the author's, out: what we wrote }
     function carry(a) {
-      const href = a && a.getAttribute("href");
-      if (!href || !CONTACT.test(href) || /^[a-z]+:/i.test(href)) return;   // relative links to our own form only
-      const venue = store.sget("ts-venue");
-      if (!venue) return;
+      const cur = a && a.getAttribute("href");
+      if (!cur) return;
+      const seen = own.get(a);
+      // rebuild from the author's href; page code that rewrote the link since (work.js) set a new one
+      const href = seen && seen.out === cur ? seen.href : cur;
+      if (!CONTACT.test(href) || /^[a-z]+:/i.test(href)) { own.delete(a); return; }   // relative links to our own form only
+      const [venue, from, item] = get();
       const hashAt = href.indexOf("#"), hash = hashAt >= 0 ? href.slice(hashAt) : "";
       const noHash = hashAt >= 0 ? href.slice(0, hashAt) : href;
       const qAt = noHash.indexOf("?"), path = qAt >= 0 ? noHash.slice(0, qAt) : noHash;
       const q = new URLSearchParams(qAt >= 0 ? noHash.slice(qAt + 1) : "");
-      if (q.has("venue")) return;                            // the link already names its room
-      q.set("venue", venue);
-      if (!q.has("from")) {
-        const from = store.sget("ts-venue-from") || "sector", item = store.sget("ts-venue-item");
-        q.set("from", from);
-        if (from === "case-study" && item) q.set("item", item);
+      const src = (q.get("from") || "").toLowerCase();
+      let out = href;
+      // the author's link names its room, or its source words the banner from another room: leave it;
+      // no room remembered: the author's link as written
+      if (venue && !q.has("venue") && !(src && !q.has("item") && ROOM_FROM.test(src) && src !== from)) {
+        q.set("venue", venue);
+        if (!q.has("from")) {
+          q.set("from", from || "sector");
+          if (from === "case-study" && item) q.set("item", item);
+        }
+        out = path + "?" + q.toString() + hash;
       }
-      a.setAttribute("href", path + "?" + q.toString() + hash);
+      if (out !== cur) a.setAttribute("href", out);
+      if (out !== href) own.set(a, { href, out }); else own.delete(a);
     }
-    const all = () => $$('a[href*="contact.html"]').forEach(carry);
+    all = () => $$('a[href*="contact.html"]').forEach(carry);
     all();
+    // page scripts that run after this one (work.js on work.html?filter=…) may already have set a room
+    d.addEventListener("DOMContentLoaded", all, { once: true });
     // links added later (build pop-ups, menus): carry the room at the moment of use
     const onUse = (e) => { const a = e.target.closest && e.target.closest('a[href*="contact.html"]'); if (a) carry(a); };
     d.addEventListener("click", onUse, true);
     d.addEventListener("pointerdown", onUse, true);
     d.addEventListener("focusin", onUse, true);
-    // back/forward cache: another tab or page may have changed the room since
+    d.addEventListener("ts:venue", changed);
+    // back/forward cache: another page may have changed the room since (or "Start from scratch" cleared it)
     w.addEventListener("pageshow", (e) => { if (e.persisted) all(); });
+    // the work index: its filter (html[data-work-filter], work.js) is the visitor's latest choice of room.
+    // A sector filter is that room; going from one back to "All" undoes the page's own choice
+    // (TS.venue.restore). Opening the page on All (work.js re-sets the attribute at init) keeps the room.
+    if (b.dataset.page === "work" && w.MutationObserver) {
+      let last = root.dataset.workFilter;                  // set before first paint by the <head> script
+      new MutationObserver(() => {
+        const f = root.dataset.workFilter, was = last, m = get();
+        last = f;
+        if (f === was) changed();
+        else if (SECTOR[f]) { if (m[0] !== SECTOR[f] || m[1] !== "work") put(SECTOR[f], "work", ""); changed(); }
+        else if (f === "all" && SECTOR[was] && m[1] === "work") TS.venue.restore("work");
+        else changed();
+      }).observe(root, { attributes: true, attributeFilter: ["data-work-filter"] });
+    }
   })();
 
   /* ---------------------------------------------------------------- placeholder links (footer socials until the real URLs exist) */

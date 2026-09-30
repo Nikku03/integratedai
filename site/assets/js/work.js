@@ -97,7 +97,7 @@
   // "Start a project" (closing panel) and the empty state's "Ask us": with a sector filter on, they
   // carry its room, so the form opens with that venue chip selected (and the room is remembered for
   // the header's own contact links, via site.js)
-  function syncContact() {
+  function syncContact(init) {
     const v = VENUE[filter] || "";
     $$('.work-cta a[href*="contact.html"], #work-empty a[href*="contact.html"]').forEach((a) => {
       const href = a.getAttribute("href"), qAt = href.indexOf("?");
@@ -106,7 +106,10 @@
       if (!q.has("from")) q.set("from", "work");
       a.setAttribute("href", (qAt >= 0 ? href.slice(0, qAt) : href) + "?" + q.toString());
     });
-    if (v) { sset("ts-venue", v); sset("ts-venue-from", "work"); sset("ts-venue-item", ""); }
+    // the visitor's latest choice of room (site.js re-carries every contact link on it); only a filter
+    // change back to "All" gives the room back, opening the page on All keeps the room it came with
+    if (w.TS && w.TS.venue) { if (v) w.TS.venue.set(v, "work"); else if (!init) w.TS.venue.restore("work"); }
+    else if (v) { sset("ts-venue", v); sset("ts-venue-from", "work"); sset("ts-venue-item", ""); }
   }
   function announce(n) {
     if (!status) return;
@@ -236,7 +239,7 @@
   // first sync: the <head> script already set the attributes; make everything agree with them
   root.dataset.workFilter = filter;
   root.dataset.workView = view;
-  applyItems(); syncControls(); syncSEO(); syncVT(); syncContact();
+  applyItems(); syncControls(); syncSEO(); syncVT(); syncContact(true);
   // Projects hidden by a ?filter= load get no scroll reveal (motion.js boots after this file):
   // a display:none trigger measures start = end = 0, fires inside another trigger's refresh
   // and, being `once`, kills itself mid-loop, which makes ScrollTrigger 3.15 throw. They

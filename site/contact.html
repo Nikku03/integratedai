@@ -98,14 +98,140 @@
 <!-- /@partial:header -->
 <main id="main">
 <script>
-/* contact: an arrival that will be prefilled gets the short phone hero before first paint (contact.js confirms or drops it) */
-(function (d) {
+/* contact: what this arrival preselects, worked out before first paint, so nothing moves when it shows.
+   Venue, in order: the link's own venue → the item's default (menu card, services, case study) → what its
+   source implies (from=menu-card = a café) → the room site.js remembered (sessionStorage ts-venue*).
+   Words are matched tolerantly (cafes, café, retail, shops …). A prefilled arrival gets the short phone hero
+   here; the one-liner after #prefill writes the banner, the one after the form sets the fields, and
+   contact.js only wires the behaviour (window.__tsPrefill). */
+(function (w, d) {
+  var P = w.__tsPrefill = { show: false, applied: false, venue: "", service: "", stage: "", message: "", from: "", itemName: "",
+    fromField: "", itemField: "", text: [], picks: [], render: function () {}, apply: function () {} };
   try {
-    var q = new URLSearchParams(location.search), f = (q.get("from") || "").toLowerCase();
-    if (q.get("venue") || q.get("service") || q.get("stage") || /^(menu-card|services|case-study)$/.test(f) || sessionStorage.getItem("ts-venue"))
+    // the form's own choices (chip / option labels, as in the markup below)
+    var VENUE = { cafe: "Café", restaurant: "Restaurant", bar: "Bar", shop: "Shop", bakery: "Bakery", hotel: "Hotel F&B", other: "Something else" };
+    var ALIAS = { "café": "cafe", cafes: "cafe", "cafés": "cafe", coffee: "cafe", restaurants: "restaurant", bars: "bar", shops: "shop",
+      retail: "shop", store: "shop", stores: "shop", bakeries: "bakery", "hotel-fb": "hotel", hotels: "hotel", "something-else": "other" };
+    var SERVICE = { feasibility: "A site visit or test-fit", "whole-venue": "Design & build, the whole venue", "design-only": "Design only",
+      "build-only": "Build only", counter: "The counter or workstation", refresh: "A refresh", lighting: "Lighting only",
+      signage: "Signage & brand touchpoints", rollout: "A roll-out across several sites", aftercare: "Aftercare", "not-sure": "Not sure yet" };
+    var STAGE = { looking: "Looking at sites", signed: "Lease signed, no design yet", drawings: "Have drawings, need a builder",
+      trading: "Open and trading, want to change it", multi: "Planning several sites" };
+    // what the other pages send: from → item → [its name, what it preselects]
+    var SOURCES = {
+      // the café menu card (cafes.html): ?venue=cafe&service=whole-venue&from=menu-card&item=whole-cafe
+      "menu-card": {
+        "whole-cafe": ["The whole café", { venue: "cafe", service: "whole-venue", message: "We’d like the whole café designed and built." }],
+        "just-the-counter": ["Just the counter", { venue: "cafe", service: "counter", message: "We’d like to rework the counter and workstation." }],
+        "a-refresh": ["A refresh", { venue: "cafe", service: "refresh", stage: "trading", message: "We’re open and trading, and the room needs a refresh." }],
+        // every dish on the café's menu card is for a café: "Something else" keeps Café selected too
+        "something-else": ["Something else", { venue: "cafe", service: "not-sure" }]
+      },
+      // the services page: ?service=…&stage=…&from=services&item=<id> (+ venue, carried by site.js from the last sector page)
+      services: {
+        "site-visit": ["Site visit & feasibility", { service: "feasibility", stage: "looking" }],
+        "test-fit": ["The test-fit", { service: "feasibility", stage: "looking" }],
+        "whole-venue": ["The whole venue, designed & built", { service: "whole-venue" }],
+        "design-only": ["Design only", { service: "design-only" }],
+        "build-only": ["Build only", { service: "build-only", stage: "drawings" }],
+        counter: ["The counter or workstation", { service: "counter" }],
+        refresh: ["A refresh", { service: "refresh", stage: "trading" }],
+        lighting: ["Lighting only", { service: "lighting" }],
+        signage: ["Signage & brand touchpoints", { service: "signage" }],
+        rollout: ["Roll-out for multi-site operators", { service: "rollout", stage: "multi" }],
+        aftercare: ["Aftercare", { service: "aftercare", stage: "trading" }],
+        "not-sure": ["Not sure yet", { service: "not-sure" }]    // the closing "Not sure what to order?"
+      },
+      // case studies: ?venue=…&from=case-study&item=<slug>
+      "case-study": { "common-hours": ["Common Hours", { venue: "cafe" }], ember: ["Ember", { venue: "restaurant" }],
+        stillroom: ["Stillroom", { venue: "bar" }], dhaaga: ["Dhaaga", { venue: "shop" }], otla: ["Otla", { venue: "restaurant" }],
+        tilt: ["Tilt", { venue: "cafe" }] }
+    };
+    var FROM_VENUE = { "menu-card": "cafe" };      // a source that implies the room even when its link forgets to say so
+    var BANNER = {
+      "menu-card": "From the corner table: {item}. Change anything below.",
+      services: "From the menu: {item}. Change anything below.",
+      "case-study": "From the {item} project. Change anything below.",
+      build: "From the {item} you watched being built. Change anything below.",
+      sector: "From the {item} page. Change anything below.",
+      work: "From the {item}. Change anything below.",
+      memory: "Picked up from the {item}. Change anything below.",     // no source in the link: the room site.js remembered
+      plain: "We’ve filled in what we know. Change anything below."    // preselected, and nothing names where from
+    };
+    var ROOMS = {
+      build: { cafe: "café", restaurant: "dining room", bar: "bar", shop: "shop" },
+      sector: { cafe: "Cafés", restaurant: "Restaurants", bar: "Bars", shop: "Shops" },
+      work: { cafe: "café projects", restaurant: "restaurant projects", bar: "bar projects", shop: "shop projects" },
+      memory: { cafe: "Cafés page", restaurant: "Restaurants page", bar: "Bars page", shop: "Shops page" }
+    };
+    var mem = function (k) { try { return sessionStorage.getItem("ts-venue" + k) || ""; } catch (e) { return ""; } };
+    var low = function (s) { return (s || "").trim().toLowerCase(); };
+    var room = function (v) { v = low(v); v = ALIAS[v] || v; return VENUE.hasOwnProperty(v) ? v : ""; };
+    var q = new URLSearchParams(location.search), from = low(q.get("from")), itemId = low(q.get("item"));
+    var item = (SOURCES.hasOwnProperty(from) && SOURCES[from].hasOwnProperty(itemId) && SOURCES[from][itemId]) || null;
+    var defs = item ? item[1] : {};
+    var pick = function (k) { return q.has(k) ? (q.get(k) || "").trim() : defs[k] || ""; };
+    var venue = room(pick("venue")) || FROM_VENUE[from] || "", remembered = false;
+    if (!venue) { venue = room(mem("")); remembered = !!venue; }
+    var service = low(pick("service")), stage = low(pick("stage"));
+    if (!SERVICE.hasOwnProperty(service)) service = "";
+    if (!STAGE.hasOwnProperty(stage)) stage = "";
+    P.venue = venue; P.service = service; P.stage = stage; P.message = pick("message"); P.from = from; P.itemName = item ? item[0] : "";
+    P.fromField = from || (remembered ? mem("-from") : "");
+    P.itemField = item ? item[0] : itemId || (remembered ? mem("-item") : "");
+    if (venue) P.picks.push({ id: "f-venue", text: VENUE[venue] });
+    if (service && service !== "not-sure") P.picks.push({ id: "f-service", text: SERVICE[service] });
+    if (stage) P.picks.push({ id: "f-stage", text: STAGE[stage] });
+    // what the banner says: the dish, the room of the page they came from, or where the room was remembered
+    var key = from, label = P.itemName;
+    if (!label && !remembered && ROOMS.hasOwnProperty(from)) label = ROOMS[from][venue] || "";
+    if (!label && remembered) {
+      var mf = mem("-from"), mi = mem("-item"), c = SOURCES["case-study"].hasOwnProperty(mi) && SOURCES["case-study"][mi];
+      key = "memory";
+      label = mf === "case-study" && c ? c[0] + " project" : (mf === "work" ? ROOMS.work : ROOMS.memory)[venue] || "";
+    }
+    if (!label && P.picks.length) key = "plain";
+    if (BANNER.hasOwnProperty(key) && (label || key === "plain")) {
+      var t = BANNER[key].split("{item}");
+      P.text = t.length > 1 ? [t[0], label, t[1]] : t;
+      P.show = true;
       d.documentElement.classList.add("has-prefill");
+    }
+    // the banner, built in place before the form below it is parsed (called right after #prefill)
+    P.render = function () {
+      var box = d.getElementById("prefill"), txt = d.getElementById("prefill-text"), ul = d.getElementById("prefill-picks");
+      if (!P.show || !box || !txt || !ul || !box.hidden) return;
+      txt.textContent = P.text[0];
+      if (P.text.length > 1) { var em = d.createElement("em"); em.textContent = P.text[1]; txt.appendChild(em); txt.appendChild(d.createTextNode(P.text[2])); }
+      for (var i = 0; i < P.picks.length; i++) {
+        var li = d.createElement("li"), a = d.createElement("a");
+        a.className = "prefill__pick"; a.href = "#" + P.picks[i].id; a.textContent = P.picks[i].text;
+        li.appendChild(a); ul.appendChild(li);
+      }
+      ul.hidden = !P.picks.length;
+      box.hidden = false;
+    };
+    // the fields, set as soon as the form exists (called right after it; contact.js calls it again, harmlessly)
+    P.apply = function () {
+      var f = d.getElementById("enquiry");
+      if (P.applied || !f) return;
+      P.applied = true;
+      var r = P.venue && f.querySelector('input[name="venue"][value="' + P.venue + '"]');
+      if (r) r.checked = true;
+      if (P.service) d.getElementById("f-service").value = P.service;
+      if (P.stage) d.getElementById("f-stage").value = P.stage;
+      var m = d.getElementById("f-message"), n = f.querySelector("[data-count-now]");
+      if (P.message && m && !m.value) { m.value = P.message.slice(0, 4000); if (n) n.textContent = m.value.length.toLocaleString("en-IN"); }
+      d.getElementById("f-from").value = P.fromField;
+      d.getElementById("f-item").value = P.itemField;
+      // each preselected field wears a tick and a green edge until it is changed
+      for (var i = 0; i < P.picks.length; i++) {
+        var el = d.getElementById(P.picks[i].id), fld = el && el.closest("[data-field]");
+        if (fld) fld.classList.add("is-prefilled");
+      }
+    };
   } catch (e) {}
-})(document);
+})(window, document);
 </script>
 
   <!-- ============================================================ hero -->
@@ -133,6 +259,7 @@
           <ul class="prefill__picks" id="prefill-picks" aria-label="Already chosen" hidden></ul>
           <button type="button" class="prefill__clear" id="prefill-clear">Start from scratch</button>
         </div>
+        <script>window.__tsPrefill && window.__tsPrefill.render();</script>
 
         <form class="enquiry" id="enquiry" name="project" method="POST" action="contact.html?sent=1" data-netlify="true" netlify-honeypot="bot-field" novalidate>
           <input type="hidden" name="form-name" value="project">
@@ -284,6 +411,7 @@
             <button class="btn btn--solid enquiry__submit" type="submit"><span class="enquiry__submit-label">Send it over</span> <span class="arr" aria-hidden="true">→</span></button>
           </div>
         </form>
+        <script>window.__tsPrefill && window.__tsPrefill.apply();</script>
 
         <div class="enquiry-done" id="enquiry-done" hidden>
           <p class="t-label enquiry-done__label">Start a project</p>

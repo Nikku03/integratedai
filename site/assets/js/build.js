@@ -20,6 +20,8 @@
  *         stage's rest point glides on to it, nothing else moves the page)
  *   fsl   phones on their side (short landscape screens): full bleed, the diary as a small side card
  * The layout decides the timeline's details, so a venue is rebuilt when the layout changes (a phone turned over).
+ * A turn keeps the viewer's place: inside a build its progress, outside it (above or below) the block they were
+ * reading, which is kept when the scroll stops and put back after the rebuild.
  *
  * Only opacity, transform and clip-path move. Layers are fetched a screen ahead; each is decoded before it is handed
  * to CSS. Full screen (phones), a layer is held only while the stage is within one step of needing it and let go
@@ -468,32 +470,137 @@
     });
     let offs = all.map(([v, base]) => venue(v, base));
     let mode = layout();
+
+    /* A viewer reading OUTSIDE the build keeps their place when the phone turns. Below it (its projects, "Pick your
+       room") the track's height changes by thousands of px above them (760svh portrait, 3400px landscape); above it
+       the sections reflow. iOS Safari has no scroll anchoring, and Chromium's picks an anchor it loses on the way
+       back, so a turn and a turn back used to drop a reader below the build into the middle of it. So whenever the
+       stage is not on screen, the first block on screen is kept with its offset from the top. It is read when the
+       scroll stops (a timer after ScrollTrigger's updates, never inside a scroll handler) and put back after the
+       rebuild (a turn) or after a resize that changes the track's height in the same layout. Inside a build its
+       progress is kept instead (onMQ). */
+    const tracks = all.map(([v]) => $("[data-track]", v)).filter(Boolean);
+    let anchor = null, tm = 0;
+    // positions from the layout (the offsetTop chain), not the painted box: the liquid float moves cards and images
+    // by a few px all the time, and that must not creep into the place kept
+    const docTop = (el) => { let y = 0; for (let e = el; e; e = e.offsetParent) y += e.offsetTop; return y; };
+    const inFlow = (x) => {
+      if (!x.offsetHeight) return false;
+      const s = getComputedStyle(x);
+      return s.display !== "inline" && (s.position === "static" || s.position === "relative");
+    };
+    // the first block reaching below the top of the screen, from the page down to the deepest one (a card, a
+    // paragraph) still starting in the upper half of the screen: a grid that reflows when the phone turns keeps its
+    // place by the card, not by its own top. Never a build's own track: its height is what changes
+    const pick = () => {
+      const y0 = w.scrollY, H = w.innerHeight;
+      for (const t of tracks) {
+        const r = t.getBoundingClientRect();
+        if (r.top < 1 && r.bottom > H + 1) return null;                              // in a build: onMQ keeps its progress
+      }
+      const passed = (x) => x.hasAttribute("data-build") && tracks.some((t) => x.contains(t) && t.getBoundingClientRect().top < 1);
+      const reaches = (x) => inFlow(x) && !passed(x) && docTop(x) + x.offsetHeight > y0 + 1;
+      let el = d.body;
+      for (let k = 0; k < 14; k++) {
+        let c = null;
+        for (const x of el.children) if (reaches(x)) { c = x; break; }
+        if (!c || docTop(c) > y0 + H * 0.5 || c.matches(".build__venues")) break;
+        el = c;
+      }
+      if (el === d.body || tracks.some((t) => el.contains(t))) return null;             // (a build's end strip: onMQ)
+      const top = docTop(el) - y0;
+      return top < H ? { el, top } : null;
+    };
+    // after putting the viewer back, the place stands until they scroll from it: headings re-set their lines and
+    // ScrollTrigger refreshes a few hundred ms after a turn, moving blocks above them, so it is checked again
+    let hold = null, heldT = [];
+    // 0: they scrolled away (let go); 1: on the place (the browser's own scroll anchoring may have moved scrollY with
+    // the page); 2: the page moved under them and scrollY did not follow (iOS Safari): put them back
+    const holding = () => {
+      if (!hold || !hold.a.el.isConnected) return (hold = null, 0);
+      const off = Math.abs(docTop(hold.a.el) - w.scrollY - hold.a.top);
+      if (off <= 2) { hold.y = w.scrollY; return 1; }
+      if (Math.abs(w.scrollY - hold.y) <= 2) return 2;
+      return (hold = null, 0);
+    };
+    const record = () => {
+      tm = 0;
+      const h = holding();
+      if (h === 2) toAnchor(hold.a, true);
+      if (h) return;
+      anchor = pick();
+    };
+    const later = () => { if (tm) clearTimeout(tm); tm = setTimeout(record, 160); };
+    const watcher = ST.create({ start: 0, end: "max", onUpdate: later });
+    later();
+    // every venue's scrub straight to where its trigger is (no replay of the build off screen)
+    const land = () => {
+      ST.update();
+      all.forEach(([v]) => {
+        const st = v.__st, tw = st && st.getTween && st.getTween();
+        if (tw) tw.progress(1);
+        else if (st && st.animation) st.animation.progress(st.progress);
+      });
+    };
+    const toAnchor = (a, again) => {
+      if (!a || !a.el.isConnected) return false;
+      if (M.lenis) M.lenis.resize();                     // Lenis re-measures on a 250 ms debounce: its limit is stale
+      M.scrollTo(Math.round(docTop(a.el) - a.top), { immediate: true, force: true });
+      land();
+      hold = { a, y: w.scrollY };
+      if (again) return true;
+      heldT.forEach(clearTimeout);
+      heldT = [260, 650, 1300].map((ms) => setTimeout(() => { if (holding() === 2) toAnchor(a, true); }, ms));
+      return true;
+    };
+    const trackH = () => all.reduce((s, [v]) => s + ($("[data-track]", v) || { offsetHeight: 0 }).offsetHeight, 0);
+    let lastH = trackH();
+    // a resize that changes the track in the same layout (a tablet's split view, a window made taller); a turn into
+    // another layout is left to onMQ (the resize steps run before the media queries report the change)
+    const onResize = () => {
+      const h = trackH();
+      if (h === lastH) return;
+      lastH = h;
+      if (layout() !== mode) return;
+      if (tm) { clearTimeout(tm); tm = 0; }
+      toAnchor(anchor);
+    };
+    w.addEventListener("resize", onResize, { passive: true });
+
     // the layout decides the timeline (and the image set): rebuild when it changes (a phone turned over)
     // The same scroll offset is a different stage on the new track (760svh portrait, 3400px landscape), so the viewer
     // inside a build is put back at the same point of it: its progress is read before the teardown and restored
-    // on the rebuilt track, and the timeline jumps there (no scrub replaying the build from the start)
+    // on the rebuilt track, and the timeline jumps there (no scrub replaying the build from the start). A viewer
+    // below it goes back to what they were reading (above); one at its very end, to the end of the new track
     const onMQ = () => {
       const m = layout();
       if (m === mode) return;
       mode = m;
       const keep = all.map(([v]) => (typeof v.__prog === "number" ? v.__prog : -1));
+      const a = anchor;
+      if (tm) { clearTimeout(tm); tm = 0; }
       offs.forEach((f) => f && f());
       offs = all.map(([v, base]) => venue(v, base));
       ST.refresh();
+      if (M.lenis) M.lenis.resize();
+      lastH = trackH();
       const i = keep.findIndex((p) => p > 0 && p < 1);
-      const st = i >= 0 && all[i][0].__st;
+      if (i < 0 && toAnchor(a)) return;
+      const j = i >= 0 ? i : keep.lastIndexOf(1);
+      const st = j >= 0 && all[j][0].__st;
       if (!st) return;
-      M.scrollTo(Math.round(st.start + keep[i] * (st.end - st.start)), { immediate: true, force: true });
-      ST.update();
-      const tw = st.getTween && st.getTween();
-      if (tw) tw.progress(1);
-      else if (st.animation) st.animation.progress(st.progress);
+      M.scrollTo(Math.round(st.start + keep[j] * (st.end - st.start)), { immediate: true, force: true });
+      land();
     };
     MQ.fsp.addEventListener("change", onMQ);
     MQ.fsl.addEventListener("change", onMQ);
     return () => {
       MQ.fsp.removeEventListener("change", onMQ);
       MQ.fsl.removeEventListener("change", onMQ);
+      w.removeEventListener("resize", onResize);
+      if (tm) clearTimeout(tm);
+      heldT.forEach(clearTimeout);
+      watcher.kill();
       offs.forEach((f) => f && f());
     };
   });

@@ -10,6 +10,10 @@ same photograph, so the layers line up pixel for pixel and the last stage is the
     dim     the finishes in working light, before the lights come on (bloom removed, highlights pulled, cool)
     lit     the finished photograph
 
+A dark room gives the photograph-derived white model little to hold on to (the bar: black joinery, a back-bar of
+out-of-focus bottles), so a venue can also carry authored model pieces in build.json "model" (card planes, drawn
+edges, shelves, rows of card bottles, in the photograph's own coordinates): see model_layers() below.
+
 Venues: cafe, restaurant, bar, retail. Each partial is self-contained (intro, the scrubbed build with its trust
 notes, the reduced-motion stills and notes); a page includes it with <!-- @partial:build-<venue> --> plus
 assets/css/build.css and assets/js/build.js.
@@ -512,21 +516,274 @@ def fit_ghost(v: dict, w: int, h: int) -> np.ndarray:
     return np.clip(gauss(m, s * w), 0, 1)
 
 
+# ------------------------------------------------------------------ the model's authored pieces
+# A dark room (the bar: black joinery, a back-bar of out-of-focus bottles) gives the photograph-derived model almost
+# nothing to hold on to: one pale plane with a few dashes. build.json "model" draws what a model maker would build
+# for it, in the photograph's own coordinates (fractions of its width and height), so every layer stays aligned:
+#   {"k": "tone",    "g": "shell|fit", "poly"|"box": …, "v": 0.8, "grad": [a0, a1], "line": 2.4, "ink": 0.9, "over": [fit ids]}
+#       a card plane (or a shadow: "grad" fades its opacity from the top of its box to the bottom), outlined if "line"
+#   {"k": "line",    "g": …, "pts": [[x, y], …], "w": 2.2, "ink": 0.95, "over": […]}      a drawn edge (px at 1920)
+#   {"k": "shelf",   "g": "fit", "x": [x0, x1], "y": y, "t": 0.011, "v": 0.97, "shadow": 0.14}   a plank and its shadow
+#   {"k": "bottles", "g": "fit", "x": [x0, x1], "y": [top, base], "gaps": [[x0, x1], …], "seed": 1}   a row of card bottles
+#   {"k": "mute",    "g": …, "poly"|"box": …, "v": 0.2}   the photograph's own lines there, turned down (the pieces replace them)
+# "shell" pieces are structure: drawn the same in the shell and the clay. "fit" pieces are joinery: only in the clay,
+# inside the fit-out's ghost (where the two layers may differ). "over": fit regions standing in front of a shell piece;
+# in the clay the piece stops at their outline (a stool in front of the counter front keeps its own shading).
+MSS = 3                     # supersampling for the authored pieces
+
+
+def _arc(cx, cy, rx, ry, a0, a1, n):
+    return [[cx + rx * math.cos(math.radians(a0 + (a1 - a0) * i / n)), cy + ry * math.sin(math.radians(a0 + (a1 - a0) * i / n))]
+            for i in range(n + 1)]
+
+
+def _box_poly(p: dict):
+    """A piece's outline: "box" [x0, y0, x1, y1], "ellipse" [cx, cy, rx, ry] (a globe, a seat's top), "cyl"
+    [x0, x1, top, bottom, ry] (the side of a short cylinder seen a little from above: a stool's cushion), or "poly"."""
+    if "box" in p:
+        x0, y0, x1, y1 = p["box"]
+        return [[x0, y0], [x1, y0], [x1, y1], [x0, y1]]
+    if "ellipse" in p:
+        cx, cy, rx, ry = p["ellipse"]
+        return _arc(cx, cy, rx, ry, 0, 360, 72)[:-1]
+    if "cyl" in p:
+        x0, x1, top, bot, ry = p["cyl"]
+        cx, rx = (x0 + x1) / 2, (x1 - x0) / 2
+        return [[x0, top + ry]] + _arc(cx, bot - ry, rx, ry, 180, 0, 36) + [[x1, top + ry]]
+    return p["poly"]
+
+
+def bottle_row(p: dict) -> list:
+    """Card bottles standing on a shelf, packed along it (fractions of the photo). Deterministic per seed, the same at
+    every width. Each bottle: body, shoulder, neck; a few are squat (tins, decanters), a few tall (wine)."""
+    rng = np.random.default_rng(p.get("seed", 1))
+    x0, x1 = p["x"]
+    top, base = p["y"]
+    hb = base - top
+    gaps = p.get("gaps", [])
+    out, x = [], x0 + rng.uniform(0.0, 0.004)
+    while True:
+        kind = rng.choice(["std", "std", "std", "tall", "squat", "slim"])
+        bw = {"std": rng.uniform(0.0085, 0.0115), "tall": rng.uniform(0.008, 0.0095), "squat": rng.uniform(0.012, 0.016),
+              "slim": rng.uniform(0.0055, 0.007)}[kind]
+        if x + bw > x1:
+            break
+        if any(g0 - bw < x < g1 for g0, g1 in gaps):
+            x = max(x + bw, min(g1 for g0, g1 in gaps if g0 - bw < x < g1)) + rng.uniform(0.001, 0.003)
+            continue
+        H = hb * {"std": rng.uniform(0.66, 0.84), "tall": rng.uniform(0.84, 0.95), "squat": rng.uniform(0.42, 0.56),
+                  "slim": rng.uniform(0.7, 0.9)}[kind]
+        body = H * {"std": 0.6, "tall": 0.58, "squat": 0.8, "slim": 0.7}[kind]
+        neck_w = bw * {"std": 0.34, "tall": 0.3, "squat": 0.5, "slim": 0.5}[kind]
+        out.append((x, base, bw, H, body, neck_w))
+        x += bw + rng.uniform(0.0008, 0.0032)
+    return out
+
+
+def model_layers(v: dict, P: dict, w: int, h: int, group: str, excl: dict | None = None):
+    """The authored pieces of one group at w x h: (premultiplied tone, its opacity, drawn lines, line mute).
+    excl: fit-region masks to cut the "over" pieces with (the clay); None draws them whole (the shell)."""
+    sc = w / 1920
+    TP = np.zeros((h, w), np.float32)
+    A = np.zeros((h, w), np.float32)
+    LN = np.zeros((h, w), np.float32)
+    MU = np.ones((h, w), np.float32)
+    S = MSS
+
+    def canvas(xs, ys, pad):
+        bx0 = max(0, int(min(xs) * w - pad)); by0 = max(0, int(min(ys) * h - pad))
+        bx1 = min(w, int(math.ceil(max(xs) * w + pad))); by1 = min(h, int(math.ceil(max(ys) * h + pad)))
+        return bx0, by0, bx1, by1
+
+    def P2(pts, bx0, by0):
+        return [((x * w - bx0) * S, (y * h - by0) * S) for x, y in pts]
+
+    def down(im, bw, bh):
+        return np.asarray(im.resize((bw, bh), Image.BOX), np.float32) / 255
+
+    def cut(p, bx0, by0, bx1, by1):
+        if excl is None or not p.get("over"):
+            return 1.0
+        m = np.zeros((by1 - by0, bx1 - bx0), np.float32)
+        for o in p["over"]:                              # a fit region's id, or an outline of its own
+            if not isinstance(o, str):
+                key = json.dumps(o)
+                if key not in excl:
+                    excl[key] = np.clip(gauss(poly_grow(o, w, h, 0.001 * w), 0.0008 * w), 0, 1)
+                o = key
+            if o in excl:
+                m = np.maximum(m, excl[o][by0:by1, bx0:bx1])
+        return 1 - m
+
+    def put(bx0, by0, bx1, by1, val=None, al=None, ln=None, k=1.0):
+        nonlocal TP, A, LN
+        sl = (slice(by0, by1), slice(bx0, bx1))
+        if al is not None:                               # painter's order: a piece hides the lines drawn before it
+            a = al * k
+            TP[sl] = TP[sl] * (1 - a) + val * a
+            A[sl] = A[sl] * (1 - a) + a
+            LN[sl] = LN[sl] * (1 - a)
+        if ln is not None:
+            LN[sl] = np.maximum(LN[sl], ln * k)
+
+    for p in v.get("model", []):
+        if p.get("g", "shell") != group:
+            continue
+        kind = p["k"]
+        if kind in ("tone", "mute"):
+            pts = _box_poly(p)
+            xs, ys = [q[0] for q in pts], [q[1] for q in pts]
+            lw = p.get("line", 0) * sc
+            bx0, by0, bx1, by1 = canvas(xs, ys, lw + 4)
+            bw, bh = bx1 - bx0, by1 - by0
+            im = Image.new("L", (bw * S, bh * S), 0)
+            ImageDraw.Draw(im).polygon(P2(pts, bx0, by0), fill=255)
+            m = down(im, bw, bh)
+            if p.get("soft"):
+                m = np.clip(gauss(m, p["soft"] * w), 0, 1)
+            k = cut(p, bx0, by0, bx1, by1)
+            if kind == "mute":
+                MU[by0:by1, bx0:bx1] = np.minimum(MU[by0:by1, bx0:bx1], 1 - m * (1 - p.get("v", 0.2)) * k)
+                continue
+            if "grad" in p:                                  # opacity from the box's top to its bottom
+                a0, a1 = p["grad"]
+                yy = (np.arange(by0, by1, dtype=np.float32) + 0.5) / h
+                t = np.clip((yy - min(ys)) / max(1e-6, max(ys) - min(ys)), 0, 1)
+                m = m * (a0 + (a1 - a0) * smoothstep(0, 1, t))[:, None]
+            ln = None
+            if lw:
+                li = Image.new("L", (bw * S, bh * S), 0)
+                q = P2(pts, bx0, by0)
+                ImageDraw.Draw(li).line(q + [q[0]], fill=int(255 * p.get("ink", 0.9)), width=max(1, round(lw * S)), joint="curve")
+                ln = down(li, bw, bh)
+            put(bx0, by0, bx1, by1, p.get("v", 0.8), m * p.get("mix", 1.0), ln, k)
+        elif kind == "line":
+            pts = p["pts"]
+            xs, ys = [q[0] for q in pts], [q[1] for q in pts]
+            lw = p.get("w", 2.2) * sc
+            bx0, by0, bx1, by1 = canvas(xs, ys, lw + 4)
+            bw, bh = bx1 - bx0, by1 - by0
+            li = Image.new("L", (bw * S, bh * S), 0)
+            q = P2(pts, bx0, by0) + ([P2(pts, bx0, by0)[0]] if p.get("closed") else [])
+            dl, ink, wd = ImageDraw.Draw(li), int(255 * p.get("ink", 0.95)), max(1, round(lw * S))
+            if p.get("dash"):                            # a set-out line: dashes of [on, off] (fractions of the width)
+                on, off = (a * w * S for a in p["dash"])
+                for (xa, ya), (xb, yb) in zip(q, q[1:]):
+                    L_ = math.hypot(xb - xa, yb - ya) or 1
+                    t = 0.0
+                    while t < L_:
+                        t1 = min(L_, t + on)
+                        dl.line((xa + (xb - xa) * t / L_, ya + (yb - ya) * t / L_, xa + (xb - xa) * t1 / L_, ya + (yb - ya) * t1 / L_), fill=ink, width=wd)
+                        t = t1 + off
+            else:
+                dl.line(q, fill=ink, width=wd, joint="curve")
+            put(bx0, by0, bx1, by1, ln=down(li, bw, bh), k=cut(p, bx0, by0, bx1, by1))
+        elif kind == "shelf":
+            x0, x1 = p["x"]
+            y, t = p["y"], p.get("t", 0.011)
+            sh = p.get("shadow", 0.14)
+            lw = p.get("line", 2.0) * sc
+            bx0, by0, bx1, by1 = canvas([x0, x1], [y, y + t + sh * 0.3], lw + 4)
+            bw, bh = bx1 - bx0, by1 - by0
+            # the shadow it throws on the back wall: soft, darkest under the plank
+            yy = (np.arange(by0, by1, dtype=np.float32) + 0.5) / h
+            d = (yy - (y + t)) / max(1e-6, sh * 0.3)
+            s = np.where(d >= 0, np.exp(-np.clip(d, 0, None) * 2.6), 0).astype(np.float32)
+            xx = (np.arange(bx0, bx1, dtype=np.float32) + 0.5) / w
+            s = s[:, None] * ((xx >= x0) & (xx <= x1)).astype(np.float32)[None, :]
+            put(bx0, by0, bx1, by1, p.get("shade", 0.6), s * p.get("shadow_k", 0.55))
+            # the plank: its front edge in card, drawn top and bottom
+            im = Image.new("L", (bw * S, bh * S), 0)
+            li = Image.new("L", (bw * S, bh * S), 0)
+            face = P2([[x0, y], [x1, y], [x1, y + t], [x0, y + t]], bx0, by0)
+            ImageDraw.Draw(im).polygon(face, fill=255)
+            dl = ImageDraw.Draw(li)
+            ink = int(255 * p.get("ink", 0.95))
+            dl.line([face[0], face[1]], fill=int(ink * 0.8), width=max(1, round(lw * 0.8 * S)))
+            dl.line([face[3], face[2]], fill=ink, width=max(1, round(lw * S)))
+            dl.line([face[0], face[3]], fill=ink, width=max(1, round(lw * S)))
+            dl.line([face[1], face[2]], fill=ink, width=max(1, round(lw * S)))
+            put(bx0, by0, bx1, by1, p.get("v", 0.97), down(im, bw, bh), down(li, bw, bh))
+        elif kind == "bottles":
+            row = bottle_row(p)
+            if not row:
+                continue
+            top, base = p["y"]
+            x0, x1 = p["x"]
+            lw = p.get("line", 1.5) * sc
+            bx0, by0, bx1, by1 = canvas([x0, x1], [top, base], lw + 4)
+            bw, bh = bx1 - bx0, by1 - by0
+            val = Image.new("L", (bw * S, bh * S), 0)
+            al = Image.new("L", (bw * S, bh * S), 0)
+            li = Image.new("L", (bw * S, bh * S), 0)
+            dv, da, dl = ImageDraw.Draw(val), ImageDraw.Draw(al), ImageDraw.Draw(li)
+            V, Vs = p.get("v", 0.97), p.get("side", 0.84)
+            ink = int(255 * p.get("ink", 0.8))
+            for (bx, by, bw_, bh_, body, nw) in row:
+                cx = bx + bw_ / 2
+                sh_h = min(bw_ * 0.9 * w / h, (bh_ - body) * 0.45)          # the shoulder, in height units
+                pts = [[bx, by], [bx, by - body], [cx - nw / 2, by - body - sh_h], [cx - nw / 2, by - bh_],
+                       [cx + nw / 2, by - bh_], [cx + nw / 2, by - body - sh_h], [bx + bw_, by - body], [bx + bw_, by]]
+                q = P2(pts, bx0, by0)
+                da.polygon(q, fill=255)
+                dv.polygon(q, fill=int(255 * V))
+                # the turned side of the bottle, in shade: a card cylinder lit from the left
+                side = P2([[bx + bw_ * 0.66, by], [bx + bw_ * 0.66, by - body], [bx + bw_, by - body], [bx + bw_, by]], bx0, by0)
+                dv.polygon(side, fill=int(255 * Vs))
+                dl.line(q + [q[0]], fill=ink, width=max(1, round(lw * S)), joint="curve")
+            A_ = down(al, bw, bh)
+            V_ = down(val, bw, bh) / np.maximum(A_, 1e-4)
+            put(bx0, by0, bx1, by1, np.clip(V_, 0, 1), A_, down(li, bw, bh))
+    return TP, A, LN, MU
+
+
 def render_clay(rgb: np.ndarray, P: dict, W: int, v: dict, parts) -> tuple[np.ndarray, np.ndarray]:
     """(clay, shell): the white model with its fit-out, and the same model before the fit-out: the joinery
     and furniture are only set out there (the walls and floor carried through, a faint outline), so each
-    piece can be set down in its place."""
+    piece can be set down in its place. Authored pieces (build.json "model", above) are drawn over both."""
     sc = W / 1920
     shade, flat = clay_tone(rgb, P, W, v.get("flat", []))
     lines = clay_lines(parts, flat, P)
-    clay = clay_ink(clay_colour(shade), lines, P)
     h, w = shade.shape
     G = fit_ghost(v, w, h)
     known = (G < 0.01).astype(np.float32)
     filled = push_pull(shade[..., None], known)[..., 0]
     filled = gauss(filled, 4 * sc) * (1 - known) + filled * known
     empty = shade * (1 - G) + (filled * 0.6 + shade * 0.4) * G
-    shell = clay_ink(clay_colour(empty), lines * (1 - G * (1 - P.get("ghost_lines", 0.28))), P)
+    if not v.get("model"):
+        clay = clay_ink(clay_colour(shade), lines, P)
+        shell = clay_ink(clay_colour(empty), lines * (1 - G * (1 - P.get("ghost_lines", 0.28))), P)
+        return clay, shell
+    # the model's own weight of line: the photograph's edges a touch darker and fuller (the same in both layers, so
+    # they still match outside the fit-out), and bolder again on the fit-out pieces themselves in the clay
+    lg = P.get("clay_lgamma", 1.0)
+    if lg != 1.0:
+        lines = np.clip(lines, 0, 1) ** lg
+    if P.get("clay_lw", 0):
+        lines = np.maximum(lines, np.clip(gauss(maxf(lines, 3), 0.5 * sc) * P["clay_lw"], 0, 1))
+    Gc = np.clip(G * 1.6, 0, 1)                         # inside the fit-out's ghost (where the layers may differ)
+    lines_clay = lines
+    if P.get("fit_bold", 0):
+        bold = np.clip(np.maximum(lines, gauss(maxf(lines, 3), 0.6 * sc)) * (1 + P["fit_bold"]), 0, 1)
+        lines_clay = lines * (1 - Gc) + bold * Gc
+    # the fit-out's own outlines, to cut the structure pieces standing behind them (clay only)
+    excl = {r["id"]: np.clip(gauss(poly_grow(r["poly"], w, h, 0.0015 * w), 0.001 * w), 0, 1)
+            for r in v["regions"] if r["group"] == "fit"}
+    sTP, sA, sLN, sMU = model_layers(v, P, w, h, "shell", None)
+    cTP, cA, cLN, cMU = model_layers(v, P, w, h, "shell", excl)
+    fTP, fA, fLN, fMU = model_layers(v, P, w, h, "fit", None)
+    fA, fTP, fLN = fA * Gc, fTP * Gc, fLN * Gc
+    fMU = 1 - (1 - fMU) * Gc
+    # the clay: structure pieces (stopping at the fit-out in front of them), then the fit-out pieces, which hide the
+    # lines behind them (a panel joint does not run through the bottles standing in front of it)
+    s_clay = shade * (1 - cA) + cTP
+    s_clay = s_clay * (1 - fA) + fTP
+    l_clay = np.maximum(np.maximum(lines_clay * cMU * fMU, cLN) * (1 - fA), fLN)
+    clay = clay_ink(clay_colour(s_clay), l_clay, P)
+    # the shell: the empty model, the structure pieces whole
+    s_shell = empty * (1 - sA) + sTP
+    l_shell = np.maximum(lines * sMU * (1 - G * (1 - P.get("ghost_lines", 0.28))), sLN)
+    shell = clay_ink(clay_colour(s_shell), l_shell, P)
     return clay, shell
 
 
@@ -1047,7 +1304,8 @@ def venue_html(v: dict, C: dict) -> str:
               f'<div class="build__spread-row">'
               f'<figure class="build__spread-fig build__spread-fig--plan"><div class="build__spread-plan" style="aspect-ratio:{Wm}/{Hm}">{plan_use(v, vid)}</div>'
               f'<figcaption class="build__spread-cap"><span class="t-label">{cap_label("01", L3[0], d[0][0])}</span><span class="t-small">{e(d[0][1])}</span></figcaption></figure>'
-              + fig("clay", c["alts"]["clay"], (cap_label("03", L3[1], d[2][0]), d[2][1]))
+              # the middle still is the white model with its fit-out set down (the clay layer): stage 04's caption
+              + fig("clay", c["alts"]["clay"], (cap_label("04", L3[1], d[3][0]), d[3][1]))
               + fig("lit", c["alts"]["lit"], (cap_label("07", L3[2], d[6][0]), d[6][1]))
               + f'</div>{notes_html(v, C)}<div class="build__spread-end">{end_actions(v, C, solid=True)}</div></div>')
     pan = st.get("pan", [0.5, 0.5])
