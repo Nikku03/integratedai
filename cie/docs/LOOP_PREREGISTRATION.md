@@ -202,3 +202,26 @@ measures, not a guarantee of the loop.
   cannot catch (at-risk judgments).
 
 Every result is reported, including failures. The model run is done once, on these three worlds.
+
+## Outcome of study 2 (added after the single test run)
+
+**Every criterion was met:** `loop` met 1 to 6, `loop-relied` 1 to 7, and `llm-relied` 1 to 4, over worlds 304 to
+306 (36 tasks, 60 changes).
+
+| Criterion | loop | loop-relied | llm-relied |
+|---|---|---|---|
+| stale answers served / stale published findings | 0 / 0 | 0 / 0 | 0 / 0 |
+| missed dependencies | 0 of 119 | 0 of 119 | 0 of 117 |
+| duplicate actions | 0 / 0 / 0 / 0 | 0 / 0 / 0 / 0 | 0 / 0 / 0 / 0 |
+| needed records in the context; incomplete scans | 1.0; 0 | 1.0; 0 | 1.0; 0 |
+| findings verified / published answers correct | 1.0 / 1.0 | 1.0 / 1.0 | not applied |
+| tasks completed | 36 of 36 | 36 of 36 | not applied |
+| re-runs of unaffected projects | – | 0 | – |
+
+The first decision fixed in advance applies: relied inputs are the recommended setting for tasks whose results
+carry state references, and workers whose results carry none keep `inputs="all"`.
+
+Answer accuracy, which has no pass mark: none of Llama 3.1 8B's answers was right. Verification blocked all 152
+wrong cost or budget figures, and no right one, so no model answer was published; the tasks still completed holding
+their wrong answers. Without routing, the model arm missed 115 of 115 affected projects. Details are in
+`docs/LOOP_RESULTS.md`.

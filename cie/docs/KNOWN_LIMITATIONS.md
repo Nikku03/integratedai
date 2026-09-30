@@ -177,9 +177,18 @@ Stated plainly so nobody mistakes a scaffold for a finished capability.
 
 **Measured only on generated projects so far.** `cie.eval.bench_loop` measures the one-project loop
 (retrieval completeness, citation accuracy, stale-state errors, missed dependencies, duplicate actions, task
-completion, latency, cost) on generated worlds, with a deterministic analyst. The pre-registered test run met every
-criterion (`docs/LOOP_RESULTS.md`). It is not measured on a real project. The run with a model doing the work
-(study 2, Llama 3.1 8B) is pre-registered but not yet run.
+completion, latency, cost) on generated worlds. Both pre-registered test runs met every criterion
+(`docs/LOOP_RESULTS.md`). It is not measured on a real project.
+
+**A small model cannot do the project analysis.** In study 2, none of Llama 3.1 8B's answers was right. It never got
+the cost of the open orders right (it wrote out the arithmetic instead of the result), and it judged the milestones
+at risk correctly in 20% of answers. Verification caught every wrong figure. It cannot catch a wrong at-risk
+judgment, which has no recalculation. No stronger model has been measured.
+
+**A blocked answer still completes its task.** The publication gate keeps a finding that fails verification, and an
+answer resting on it, out of shared memory. It does not send the task back: the task completes holding that
+answer as its result, and anything reading the result gets it. In study 2, 735 checks found a completed task
+holding a wrong model answer.
 
 **Over-invalidation.** By default every live-state record in a task's context becomes an input, so changes to
 records a task read but did not rely on still reopen it. Workers that declare their inputs avoid this with
@@ -205,7 +214,9 @@ neatly, and the schedule order depends on duration estimates.
 
 **Relied inputs trust the citations.** With `inputs="relied"`, a task's inputs are the records its result cites,
 so a worker that relies on a record without citing it is not refreshed when that record changes. A result with no
-state references gets no inputs at all. Study 2 measures whether this is safe when a model decides what to cite.
+state references gets no inputs at all. In study 2 the model's answers cited 99.4% of the records they needed, and
+no change hit a record they left out, so nothing was missed. With a model that cites less, a change to an uncited
+record would not reach the task.
 
 **Authority.**
 - Ranks come from rules or the kind of source. A value written directly by an import becomes a system-of-record

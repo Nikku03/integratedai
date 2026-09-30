@@ -453,6 +453,11 @@ counts as used:
 trusts the result to cite what it used. A result with no state references gets no inputs and is never refreshed,
 so use `relied` only for workers whose findings carry them.
 
+`relied` is the recommended setting for workers whose findings carry state references. In the pre-registered study
+2 it kept every answer right and removed every re-run of an unaffected project, both with the deterministic analyst
+and with Llama 3.1 8B citing its own records (`docs/LOOP_RESULTS.md`). `all` stays the default for workers that
+cite nothing.
+
 **Exhaustive mode** answers questions about a whole collection, for example "which open orders of Project A arrive
 after October 15?":
 - The collection is a record type, optionally limited to one project.
@@ -620,8 +625,15 @@ These layers are built and tested (unit, integration and API tests; see `tests/t
 bank) met every criterion: no stale answers, no missed dependencies and no duplicate actions over 104 affected
 project changes. Without routing, 347 stale answers were served. See `docs/LOOP_RESULTS.md`.
 
-Study 2 is pre-registered but not yet run. It covers inputs from what an answer relied on (`loop-relied`) and
-Llama 3.1 8B as the analyst (`llm-relied`, `llm-no-routing`), on test worlds 304 to 306.
+Study 2 (test worlds 304 to 306) also met every pre-registered criterion:
+- **Relied inputs.** `loop-relied` kept every answer right with exactly one re-run per affected project (119),
+  against 173 re-runs for `loop`. It used 21% fewer context tokens, and the typical time to refresh answers fell
+  from 9.9 s to 5.1 s.
+- **Llama 3.1 8B as the analyst.** The loop's guarantees held: no stale answers, no missed dependencies, no
+  duplicate actions. But none of the model's answers was right: it never got the cost right, and judged the
+  milestones at risk correctly in 20% of answers. Verification blocked all 152 wrong figures, so no model answer
+  was published.
+- **A gap.** A task whose answer the gate blocks still completes, holding that answer as its result.
 
 Work requests between agents, their merging, limits and release on decline or failure, the evidence round, and
 questions answered by a person are covered by tests (`tests/test_requests.py`). One test runs the whole flow with a
@@ -649,6 +661,7 @@ These tests use scripted models and simulated connectors. They are not measureme
 external systems.
 
 **Not built yet:**
+- Sending a task back when the publication gate blocks its answer. Today the task completes holding the answer.
 - Connectors to real systems (ERP, email, payments). The gateway has an outbox and a webhook connector.
 - Search limited to a task's period.
 - Re-planning that proposes new tasks: the head relaxes constraints within authority, or asks a person.
