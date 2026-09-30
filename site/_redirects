@@ -1,0 +1,8 @@
+# Netlify redirects.
+# The sector pages are real pages again (cafes.html, restaurants.html, bars.html, retail.html): the old
+# prototype's sector URLs resolve to them directly (Netlify serves /bars from bars.html), so they need no rules.
+# "Shops" is the retail page.
+/shops              /retail.html       301
+/shops.html         /retail.html       301
+/project.html       /work.html         301
+/menu               /services.html     301
