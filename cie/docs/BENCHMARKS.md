@@ -218,6 +218,11 @@ Full tables: `docs/benchmarks/enterprise_rag_bench_50k_full_memory.md`. The embe
 
 The p95 comes from the lexical path, whose own p95 is 5,636 ms.
 
+**With BM25 as the keyword engine** (now the default; `docs/BM25_RESULTS.md`):
+- hybrid search reached recall@10 0.734 and MRR 0.638;
+- its latency was p50 376 ms and p95 861 ms;
+- fusion now adds 4.9 points over vector search alone, without the slow tail.
+
 **Composed answers (Llama 3.1 8B).** The model abstained on 19 of the 20 questions whose answer is not in the
 corpus, against 3 of 20 for the extractive answers. It also abstained on 29% of the answerable questions, against
 2% extractive, which is why its document recall is lower (0.599).

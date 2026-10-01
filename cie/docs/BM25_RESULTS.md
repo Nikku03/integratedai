@@ -2,7 +2,8 @@
 
 The rules were fixed in `docs/BM25_PREREGISTRATION.md`, and committed (4fa32a0) before the test ran. Test A used the
 local 5,000-document EnterpriseRAG-Bench memory bank and all 500 questions, on 4 CPUs with nothing else running. The
-raw report is `docs/benchmarks/bm25/bench_bm25_5k.md`. Test B, at 50,000 documents on Colab, has not run yet.
+raw report is `docs/benchmarks/bm25/bench_bm25_5k.md`. Test B used a fresh load of the 50,000-document memory bank on
+Colab (A100); its raw report is `docs/benchmarks/bm25/bench_bm25_50k_colab.md`.
 
 ## Two stopped starts
 
@@ -17,8 +18,36 @@ The run below is the third start, with the fixed code (97f079f).
 
 ## Outcome
 
-**Every criterion was met.** Following the decision fixed in advance, **BM25 is now the default keyword engine**.
-Test B confirms or reverts this.
+**Every criterion was met in both tests.** Following the decisions fixed in advance, **BM25 is the default keyword
+engine**: test A made it the default, and test B, at ten times the size, confirmed it.
+
+### Test B: 50,000 documents
+
+| Criterion | Full text | BM25 | Rule | Met |
+|---|---|---|---|---|
+| 1. doc recall@10 (hybrid) | 0.691 | 0.734 | at least 0.681 | yes |
+| 1. MRR (hybrid) | 0.593 | 0.638 | at least 0.583 | yes |
+| 2. p95 latency (hybrid) | 5,950.1 ms | 860.8 ms | at most 3,570.1 ms | yes |
+| 2. p50 latency (hybrid) | 773.1 ms | 376.0 ms | at most 850.4 ms | yes |
+| 3. keyword searches served by BM25 | – | 1,000 of 1,000 | all | yes |
+
+At 50,000 documents, BM25's lead grew:
+- **The slow tail is gone.** The slowest 5% of questions took 0.86 s instead of 5.95 s, about 7 times faster.
+  Typical questions took 0.38 s instead of 0.77 s.
+- **Better ranking.** Recall@10 rose by 4.3 points, MRR by 4.5, and the right document came first for 56% of
+  questions against 51%.
+- **Keyword search alone** went from 0.517 to 0.721 recall@10, and its p95 from 5.64 s to 0.19 s. On its own it now
+  beats vector search (0.685).
+- **Fusion now pays.** With full text, hybrid search added under a point over vector search alone (0.691 against
+  0.685) at 26 times its p95. With BM25 it adds 4.9 points (0.734), at a p95 of 0.86 s.
+- **The index.** 254,077 records and 316,223 sections came to 136.2 MB, built in 76.6 s, after a 790 s load.
+- **One loss repeats.** On the 20 questions whose answer is not in the corpus, the hybrid search abstained on none,
+  against 3 with full text. False abstentions on answerable questions halved (0.009 against 0.019).
+- **Composed answers.** The Llama arm uses the default engine, now BM25. Its recall@10 was 0.650, against 0.599 in
+  the earlier 50k runs with full text, and its p95 3.9 s against 9.2 s. That arm was not part of the pre-registered
+  comparison.
+
+### Test A: 5,000 documents
 
 | Criterion | Full text | BM25 | Rule | Met |
 |---|---|---|---|---|
@@ -82,8 +111,8 @@ documents (completeness, constrained, semantic).
 
 ## What this does not show
 
-- **Scale.** Test B, at 50,000 documents on Colab, is the confirmation: 10 times the text and a GPU machine. If it
-  fails any criterion, the default returns to full text.
+- **Larger scale.** 50,000 documents is a tenth of the corpus. The BM25 index grew about linearly (16 MB at 5,000
+  documents, 136 MB at 50,000), but the full 512,000 documents were not tested.
 - **Load.** One question at a time. Several at once were not measured.
 - **Freshness under writes.** Rows written after the index was built are scored from the database until the worker
   takes them in. Tests cover this path; the benchmark's memory bank did not change during the run.

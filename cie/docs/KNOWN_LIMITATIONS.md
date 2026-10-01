@@ -24,6 +24,10 @@ Stated plainly so nobody mistakes a scaffold for a finished capability.
 * **OpenSearch/Elasticsearch.** Not implemented. The keyword engines are PostgreSQL
   full text and a BM25 index per tenant (Tantivy, `cie.retrieval.bm25`). The
   OpenSearch class only marks a swap point and raises on use.
+* **With BM25, search no longer abstains when the answer is not in the corpus.** Without a model, the extractive
+  answer abstained on 3 of the 20 such questions at 50,000 documents with full text, and on none with BM25. BM25
+  finds partly matching text for almost any question, so the evidence threshold is passed more often. False
+  abstentions on answerable questions halved. A model composing answers still abstains (0.9 of those questions).
 * **The BM25 index lives on one machine's disk** (`CIE_LEXICAL_INDEX_DIR`). Processes
   on the same host share it. Several API or worker hosts each need the directory
   on shared storage, or their own build. Rows written since the index last synced

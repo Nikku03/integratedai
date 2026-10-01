@@ -82,3 +82,13 @@ Two starts were stopped before any result was printed:
 - the second because code review found that query terms were stemmed twice.
 
 Details are in `docs/BM25_RESULTS.md`.
+
+## Outcome of test B (added after the run)
+
+**Every criterion was met** on a fresh load of the 50,000-document memory bank (Colab A100):
+- recall@10 0.734 against 0.691;
+- MRR 0.638 against 0.593;
+- p95 861 ms against 5,950 ms, and p50 376 ms against 773 ms;
+- 1,000 of 1,000 keyword searches were served by BM25.
+
+The default stays BM25. Details are in `docs/BM25_RESULTS.md`.
