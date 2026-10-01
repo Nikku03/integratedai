@@ -8,13 +8,13 @@ Stated plainly so nobody mistakes a scaffold for a finished capability.
   available, so assisted answers, the LLM planner and the LLM specialist
   strategy were tested only through `FakeProvider`. All shipped numbers use the
   deterministic extractive strategies.
-* **Unlimited-OCR.** Two paths are implemented: a vLLM/SGLang server, and the
-  model loaded in the process on a CUDA GPU (`transformers`, revision pinned).
-  The layout markers are parsed by unit tests written from the model's own code,
-  but the model has not been run in this build environment (no GPU). The
-  comparison with Tesseract is pre-registered (`docs/OCR_PREREGISTRATION.md`)
-  and runs on Colab. Until then Tesseract is the OCR engine behind every
-  reported number, and Unlimited-OCR is opt-in.
+* **Unlimited-OCR.** It is the OCR engine on machines with a GPU since its
+  pre-registered test (`docs/OCR_RESULTS.md`): fewer errors than Tesseract and
+  every number kept, on typeset pages with simulated scanning. Real paper (stamps,
+  handwriting, photos, forms) was not tested. In the process it took 33.6 s per
+  page on an A100, against 2.3 s for Tesseract on one CPU core; a vLLM/SGLang
+  server batches pages, but its speed was not measured. The pipeline sends one
+  page at a time, so the model's multi-page mode is not used.
 * **S3/MinIO backend and the compose stack.** `S3Backend` is implemented with
   boto3 but tests use the local filesystem backend; the Docker daemon was not
   available in the build environment, so `docker compose up` was not executed

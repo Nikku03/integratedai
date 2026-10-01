@@ -222,3 +222,34 @@ model answer was right in the first place.
    worker with the failed check (one retry), and then go to a person. It should not complete holding the answer.
 3. **A stronger model.** Run the two model arms again with a stronger model, on new test worlds.
 4. **One tenant per arm,** so that search measures are comparable across arms.
+
+## A repeat of study 2's worlds (BM25 as the keyword engine)
+
+Study 2's test worlds (304 to 306) were run again on Colab, inside a fresh load of the 50,000-document memory bank,
+with later code (c00ed8d). The main difference is that BM25 is now the default keyword engine. This is a repeat, not
+a new pre-registered test; the raw report is `docs/benchmarks/loop/bench_loop_50k_colab_study2_rerun.md`.
+
+**Every study-2 criterion was met again**: no stale answers, no missed dependencies (0 of 119), no duplicate
+actions, every task completed, and no re-runs of unaffected projects with relied inputs.
+
+| | Study 2 | Repeat |
+|---|---|---|
+| loop-relied: re-runs (one per affected project) | 119 | 119 |
+| loop-relied: context tokens | 8.5 M | 8.3 M |
+| loop-relied: change to refreshed answers, p50 / worst p95 | 5.1 s / 27.4 s | 2.9 s / 12.4 s |
+| context build p50, by arm | 2.7–3.7 s | 1.3–1.8 s |
+| llm-relied: answers right / wrong figures blocked | 0% / 152 of 152 | 0% / 155 of 155 |
+| llm-no-routing: missed / stale published findings | 115 of 115 / 347 | 113 of 113 / 393 |
+
+The model results repeated closely. Llama 3.1 8B again got no answer right and never got the cost right: once more,
+it wrote out the sum (`10800.0 + 12301.0 + 840.0`) instead of the result.
+
+**Two measures moved, and their cause was not isolated.**
+- **Search over passages** found 89–93% of the delay notices, against 95–99% in study 2. To test whether BM25 is the
+  cause, the benchmark can now ask every delay question with both engines at the same moment
+  (`CIE_LOOP_COMPARE_KEYWORD_ENGINES=1`). On development worlds 1 and 2, inside the local 5,000-document memory bank,
+  the two engines found the same share: 0.993 and 0.993, with the BM25 index ready for every question. So the engine
+  does not explain the drop there. The notebook now runs this comparison at 50,000 documents too.
+- **The `loop` arm** (every record in the context counts as an input) routed 165 unaffected projects, against 54 in
+  study 2, and re-ran 284 times, against 173. The arm that the results recommend, `loop-relied`, is unaffected: it
+  re-ran exactly once per affected project in both runs.

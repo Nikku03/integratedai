@@ -14,8 +14,9 @@ answers, five agents in-process. Measured in BENCHMARKS.md.
   replication) with a documented RTO/RPO.
 * Live LLM providers: assisted answers and LLM specialist strategy behind the
   existing claim verifier; record provider usage for real token/cost metrics.
-* Unlimited-OCR on GPU for scans: built (server and in-process paths); the
-  comparison with Tesseract is pre-registered in `docs/OCR_PREREGISTRATION.md`.
+* Unlimited-OCR on GPU for scans: built and the default on GPU machines
+  (`docs/OCR_RESULTS.md`). Next: measure a batching vLLM server, and real scans
+  (stamps, handwriting, forms).
 * Connectors: IMAP, Drive/SharePoint, Git; incremental sync with version
   detection (the folder connector already does this).
 

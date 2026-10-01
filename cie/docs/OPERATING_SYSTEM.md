@@ -593,6 +593,9 @@ The pass criteria are fixed in advance in `docs/LOOP_PREREGISTRATION.md`:
 - study 1: `loop` and `loop-explicit`, test worlds 301 to 303;
 - study 2: `loop-relied` and the model arms, test worlds 304 to 306.
 
+With `CIE_LOOP_COMPARE_KEYWORD_ENGINES=1`, every delay question is also asked with each keyword engine (full text
+and BM25) at the same moment, so the engine's effect on search is measured apart from everything else.
+
 The Colab notebook `notebooks/enterprise_rag_bench_colab.ipynb` runs the benchmark as Part 2, inside the
 50,000-document memory bank. For the model arms, it runs Llama 3.1 8B on the GPU through Ollama.
 

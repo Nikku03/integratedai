@@ -76,3 +76,14 @@ Every result is reported, including failures.
 - **Other languages.** The text is English, typeset in ASCII.
 - **Its long, multi-page mode.** The model can read many pages in one pass ("unlimited" context). The pipeline sends
   one page at a time, so that every block keeps its page number for citations.
+
+## Outcome (added after the single test run)
+
+**Every criterion was met:**
+- hard pages: median CER 0.0025 against Tesseract's 0.0065;
+- office scans: 0.0 against 0.0019;
+- numbers kept: 1.0 against 0.9851 (2,080 numbers);
+- failed pages: 0.
+
+`unlimited_ocr_local` now defaults to true. Unlimited-OCR read a page in 33.6 s (p50) on the A100, against 2.3 s for
+Tesseract on one CPU core. Details are in `docs/OCR_RESULTS.md`.

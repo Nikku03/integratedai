@@ -77,8 +77,9 @@ right document in the top 10 for 0.878 of questions against 0.848 with full text
 and its p95 latency fell from 1.9 s to 0.84 s. A tenant without an index uses full text.
 
 Scanned PDFs and images, which the EnterpriseRAG-Bench exports do not contain, are
-read by OCR in the extraction pipeline: Tesseract, or Baidu's Unlimited-OCR on a GPU
-(`docs/OCR_PREREGISTRATION.md`).
+read by OCR in the extraction pipeline: Baidu's Unlimited-OCR on a machine with a GPU,
+and Tesseract elsewhere. In its pre-registered test it kept every one of 2,080 numbers,
+against 2,049 for Tesseract, but read a page in 34 s against 2 s (`docs/OCR_RESULTS.md`).
 
 ## What it measured (EnterpriseRAG-Bench, 5,000-document haystack, 500 questions)
 

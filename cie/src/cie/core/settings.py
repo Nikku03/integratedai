@@ -47,9 +47,10 @@ class Settings(BaseSettings):
     ocr_min_chars_per_page: int = 25  # below this a PDF page is treated as scanned
     unlimited_ocr_url: str = ""  # an OpenAI-compatible server (vLLM or SGLang) serving the model
     unlimited_ocr_model: str = "Unlimited-OCR"
-    # with no server, load the model in this process (transformers on a CUDA GPU): always with ocr_backend=unlimited_ocr,
-    # and under auto only when this is set, because it loads 6.7 GB of weights
-    unlimited_ocr_local: bool = False
+    # with no server, load the model in this process (transformers on a CUDA GPU) when a scanned page needs it. On by
+    # default since its pre-registered test (docs/OCR_RESULTS.md); without a GPU, auto uses Tesseract. 6.7 GB of weights,
+    # about 34 s per page on an A100: a vLLM or SGLang server (unlimited_ocr_url) is the way to read scans in volume
+    unlimited_ocr_local: bool = True
     unlimited_ocr_max_tokens: int = 8192
 
     redis_url: str = "redis://localhost:6379/0"

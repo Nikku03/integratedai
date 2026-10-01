@@ -61,6 +61,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import os
 import random
 import time
 import uuid
@@ -346,7 +347,8 @@ class Run:
         self.tasks: dict[str, uuid.UUID] = {}
         self.m: dict[str, Any] = {k: [] for k in ("event_ms", "context_ms", "analyse_ms", "publish_ms", "reaction_ms", "question_ms",
                                                   "needed_recall", "inputs_recall", "question_recall", "question_recall_search",
-                                                  "context_tokens", "model_ms")}
+                                                  "context_tokens", "model_ms", "question_recall_search_fts", "question_recall_search_bm25",
+                                                  "question_bm25_ready")}
         self.c: dict[str, int] = {k: 0 for k in ("findings", "verified", "published_answers", "published_answers_right", "runs", "reruns",
                                                  "stale_answers", "stale_published", "affected", "missed", "reopened_unaffected", "routed",
                                                  "dup_versions", "dup_reopenings", "dup_transitions", "dup_suggestions", "redelivered",
@@ -720,6 +722,17 @@ class Run:
         passages = {g for g in gold if g.startswith("passage:")}
         if passages:
             self.m["question_recall_search"].append(len(passages & found_search) / len(passages))
+        if passages and os.environ.get("CIE_LOOP_COMPARE_KEYWORD_ENGINES") == "1":
+            # the same question at the same moment with each keyword engine: isolates the engine from everything else
+            from cie.retrieval import bm25
+
+            self.m["question_bm25_ready"].append(1.0 if bm25.ready(self.s, self.tenant.id) else 0.0)
+            for eng in ("fts", "bm25"):
+                st = self.settings.model_copy(update={"lexical_engine": eng})
+                d2 = build_context(self.s, self.tenant.id, self.analyst_principal, ContextRequest(question=q["text"], scope_id=self.root.id,
+                                   budget_tokens=8000, channels=("traversal", "retrieval")), embedder=self.emb, settings=st, record=False).data
+                found = {(i.get("content") or {}).get("state_key") for i in d2.get("memory_evidence", [])} - {None}
+                self.m[f"question_recall_search_{eng}"].append(len(passages & found) / len(passages))
 
     def check(self, j: int) -> None:
         """After the reaction: answers that are wrong now and were not reopened or flagged are stale-state errors."""
@@ -767,7 +780,11 @@ class Run:
                                        "needed_records_relied_on": ratio(sum(m["inputs_recall"]), len(m["inputs_recall"])),
                                        "question_evidence_found": ratio(sum(m["question_recall"]), len(m["question_recall"])),
                                        "question_passages_found_by_search": ratio(sum(m["question_recall_search"]), len(m["question_recall_search"])),
-                                       "questions": len(m["question_recall"]), "exhaustive_scans_incomplete": c["exhaustive_incomplete"]},
+                                       "questions": len(m["question_recall"]), "exhaustive_scans_incomplete": c["exhaustive_incomplete"],
+                                       **({"passages_found_by_search_by_engine": {
+                                           e: ratio(sum(m[f"question_recall_search_{e}"]), len(m[f"question_recall_search_{e}"])) for e in ("fts", "bm25")},
+                                           "bm25_index_ready": ratio(sum(m["question_bm25_ready"]), len(m["question_bm25_ready"]))}
+                                          if m["question_recall_search_fts"] else {})},
             "citation_accuracy": {"findings_verified": ratio(c["verified"], c["findings"]), "findings": c["findings"],
                                   "published_answers_correct": ratio(c["published_answers_right"], c["published_answers"]),
                                   "published_answers": c["published_answers"]},
@@ -835,7 +852,7 @@ def aggregate(rows: list[dict[str, Any]]) -> dict[str, Any]:
         for r in rows:
             x: Any = r
             for p in path:
-                x = x[p]
+                x = x.get(p) if isinstance(x, dict) else None  # a measure a world did not take is left out
             if x is not None:
                 xs.append(x)
         return round(sum(xs) / len(xs), 4) if xs else None
@@ -846,7 +863,11 @@ def aggregate(rows: list[dict[str, Any]]) -> dict[str, Any]:
                                    "needed_records_relied_on": mean(["retrieval_completeness", "needed_records_relied_on"]),
                                    "question_evidence_found": mean(["retrieval_completeness", "question_evidence_found"]),
                                    "question_passages_found_by_search": mean(["retrieval_completeness", "question_passages_found_by_search"]),
-                                   "exhaustive_scans_incomplete": int(total(["retrieval_completeness", "exhaustive_scans_incomplete"]))},
+                                   "exhaustive_scans_incomplete": int(total(["retrieval_completeness", "exhaustive_scans_incomplete"])),
+                                   **({"passages_found_by_search_by_engine": {e: mean(["retrieval_completeness", "passages_found_by_search_by_engine", e])
+                                                                              for e in ("fts", "bm25")},
+                                       "bm25_index_ready": mean(["retrieval_completeness", "bm25_index_ready"])}
+                                      if any("passages_found_by_search_by_engine" in r["retrieval_completeness"] for r in rows) else {})},
         "citation_accuracy": {"findings_verified": ratio(sum(r["citation_accuracy"]["findings_verified"] * r["citation_accuracy"]["findings"]
                                                              for r in rows if r["citation_accuracy"]["findings_verified"] is not None),
                                                          total(["citation_accuracy", "findings"])),
@@ -930,6 +951,11 @@ def markdown(report: dict[str, Any]) -> str:
              row("Needed records the answer relied on (its inputs)", lambda a: a["retrieval_completeness"]["needed_records_relied_on"]),
              row("Delay-question evidence found (traversal + search)", lambda a: a["retrieval_completeness"]["question_evidence_found"]),
              row("… of which passages found by search over the whole memory", lambda a: a["retrieval_completeness"]["question_passages_found_by_search"]),
+             *([row("… same questions, same moment: full text / BM25 (BM25 index ready)", lambda a: "{} / {} ({})".format(
+                 a["retrieval_completeness"]["passages_found_by_search_by_engine"]["fts"],
+                 a["retrieval_completeness"]["passages_found_by_search_by_engine"]["bm25"], a["retrieval_completeness"]["bm25_index_ready"])
+                 if "passages_found_by_search_by_engine" in a["retrieval_completeness"] else "–")]
+               if any("passages_found_by_search_by_engine" in a["retrieval_completeness"] for a in arms.values()) else []),
              row("Exhaustive scans incomplete", lambda a: a["retrieval_completeness"]["exhaustive_scans_incomplete"]),
              row("Findings passing verification", lambda a: a["citation_accuracy"]["findings_verified"]),
              row("Published answers matching the oracle", lambda a: a["citation_accuracy"]["published_answers_correct"]),
