@@ -85,7 +85,9 @@ server, or loaded on this machine's CUDA GPU; `auto` uses it whenever a GPU or s
 there, and Tesseract otherwise: see `docs/OCR_RESULTS.md`), `CIE_LEXICAL_ENGINE` (`bm25`, the default: a BM25 index per tenant, built by
 `cie bootstrap`, by bulk loads or with `cie lexical build --tenant <name>`, and kept current
 by the worker; `fts`: PostgreSQL full text, which is also the fallback for a tenant without
-an index),
+an index), `CIE_PACKET_EXPAND_DOCUMENTS` (3, the default: the best passages of the first 3
+documents join the packet, `CIE_PACKET_EXPAND_SECTIONS` each; 0 turns it off: see
+`docs/EXPANSION_RESULTS.md`),
 `CIE_ENCRYPTION_KEY` (AES-GCM at rest for the vault).
 
 ## Layout

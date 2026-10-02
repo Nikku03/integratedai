@@ -1,0 +1,182 @@
+{
+  "benchmark": "EnterpriseRAG-Bench (onyx-dot-app)",
+  "corpus_documents": 511958,
+  "questions": 500,
+  "question_ids_sha1": "2ee1c234a3d7",
+  "embedding": "fastembed",
+  "code_version": "f320d4e+modified",
+  "load": {
+    "tenant_id": "410f29d0-7eae-46cc-9fc4-00420cac3756",
+    "tenant_name": "erbfull-5000-9688c2",
+    "company_id": "d4652ee7-00b3-40e2-9254-bbc0ecb70e92",
+    "documents": 5000,
+    "reused": true
+  },
+  "haystack_documents": 5000,
+  "haystack_sha1": "f691f6c1eb72",
+  "arms": {
+    "hybrid+graph(REM) [BM25+expansion]": {
+      "overall": {
+        "questions": 500,
+        "with_gold": 470,
+        "recall@10": 0.876,
+        "recall@5": 0.817,
+        "mrr": 0.761,
+        "hit@10": 0.909,
+        "hit@1": 0.677,
+        "extras@10": 8.532,
+        "all_gold_found": 0.832,
+        "abstained_on_info_not_found": 0,
+        "false_abstentions": 0.015,
+        "errors": 0,
+        "p50_ms": 436.5,
+        "p95_ms": 880.7,
+        "lexical_engines": {
+          "bm25": 1000
+        }
+      },
+      "by_category": {
+        "basic": {
+          "n": 175,
+          "recall@10": 0.971,
+          "recall@5": 0.949,
+          "hit@1": 0.76,
+          "hit@5": 0.949,
+          "hit@10": 0.971,
+          "mrr": 0.84,
+          "all_gold_found": 0.971,
+          "extras@10": 8.96,
+          "abstained": 0.006,
+          "errors": 0,
+          "p50_ms": 389.9
+        },
+        "semantic": {
+          "n": 125,
+          "recall@10": 0.728,
+          "recall@5": 0.632,
+          "hit@1": 0.368,
+          "hit@5": 0.632,
+          "hit@10": 0.728,
+          "mrr": 0.478,
+          "all_gold_found": 0.728,
+          "extras@10": 9.024,
+          "abstained": 0.024,
+          "errors": 0,
+          "p50_ms": 414.0
+        },
+        "intra_document_reasoning": {
+          "n": 40,
+          "recall@10": 0.975,
+          "recall@5": 0.95,
+          "hit@1": 0.775,
+          "hit@5": 0.95,
+          "hit@10": 0.975,
+          "mrr": 0.857,
+          "all_gold_found": 0.975,
+          "extras@10": 8.775,
+          "abstained": 0.025,
+          "errors": 0,
+          "p50_ms": 703.1
+        },
+        "project_related": {
+          "n": 40,
+          "recall@10": 0.814,
+          "recall@5": 0.672,
+          "hit@1": 0.85,
+          "hit@5": 1,
+          "hit@10": 1,
+          "mrr": 0.921,
+          "all_gold_found": 0.5,
+          "extras@10": 6.4,
+          "abstained": 0,
+          "errors": 0,
+          "p50_ms": 631.0
+        },
+        "constrained": {
+          "n": 30,
+          "recall@10": 0.933,
+          "recall@5": 0.933,
+          "hit@1": 0.833,
+          "hit@5": 0.967,
+          "hit@10": 0.967,
+          "mrr": 0.889,
+          "all_gold_found": 0.9,
+          "extras@10": 8.333,
+          "abstained": 0.033,
+          "errors": 0,
+          "p50_ms": 725.3
+        },
+        "conflicting_info": {
+          "n": 20,
+          "recall@10": 0.95,
+          "recall@5": 0.85,
+          "hit@1": 0.95,
+          "hit@5": 0.95,
+          "hit@10": 1,
+          "mrr": 0.958,
+          "all_gold_found": 0.9,
+          "extras@10": 8.15,
+          "abstained": 0,
+          "errors": 0,
+          "p50_ms": 617.1
+        },
+        "completeness": {
+          "n": 20,
+          "recall@10": 0.649,
+          "recall@5": 0.518,
+          "hit@1": 0.6,
+          "hit@5": 0.95,
+          "hit@10": 0.95,
+          "mrr": 0.758,
+          "all_gold_found": 0.35,
+          "extras@10": 6.15,
+          "abstained": 0,
+          "errors": 0,
+          "p50_ms": 793.4
+        },
+        "miscellaneous": {
+          "n": 20,
+          "recall@10": 0.95,
+          "recall@5": 0.95,
+          "hit@1": 0.9,
+          "hit@5": 0.95,
+          "hit@10": 0.95,
+          "mrr": 0.925,
+          "all_gold_found": 0.95,
+          "extras@10": 8.55,
+          "abstained": 0.05,
+          "errors": 0,
+          "p50_ms": 340.5
+        },
+        "high_level": {
+          "n": 10,
+          "recall@10": null,
+          "recall@5": null,
+          "hit@1": null,
+          "hit@5": null,
+          "hit@10": null,
+          "mrr": null,
+          "all_gold_found": null,
+          "extras@10": null,
+          "abstained": 0.2,
+          "errors": 0,
+          "p50_ms": 776.3
+        },
+        "info_not_found": {
+          "n": 20,
+          "recall@10": null,
+          "recall@5": null,
+          "hit@1": null,
+          "hit@5": null,
+          "hit@10": null,
+          "mrr": null,
+          "all_gold_found": null,
+          "extras@10": null,
+          "abstained": 0,
+          "errors": 0,
+          "p50_ms": 679.2
+        }
+      }
+    }
+  }
+}

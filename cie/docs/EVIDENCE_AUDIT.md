@@ -27,14 +27,20 @@ finds a fact that is not there.
 
 ## Results: 5,000 documents, the 470 questions with gold documents (local, extractive answers)
 
-| Stage | BM25 (the default) | Full text |
-|---|---|---|
-| 1. search missed the document | 15 (4%) | 22 (6%) |
-| 2. right document, wrong part | 91 (24%) | 100 (26%) |
-| 3. cut before the model | 27 (7%) | 29 (8%) |
-| 4. everything reached the model | **246 (65%)** | 228 (60%) |
-| answer facts in the packet | 1,033 of 1,325 (78%) | 963 (73%) |
-| answer facts in what a small model reads | 911 (69%) | 832 (63%) |
+| Stage | BM25 + document expansion (the default) | BM25 | Full text |
+|---|---|---|---|
+| 1. search missed the document | 15 (4%) | 15 (4%) | 22 (6%) |
+| 2. right document, wrong part | 69 (18%) | 91 (24%) | 100 (26%) |
+| 3. cut before the model | 21 (6%) | 27 (7%) | 29 (8%) |
+| 4. everything reached the model | **274 (72%)** | 246 (65%) | 228 (60%) |
+| answer facts in the packet | 1,082 of 1,325 (82%) | 1,033 (78%) | 963 (73%) |
+| answer facts in what a small model reads | 964 (73%) | 911 (69%) | 832 (63%) |
+
+Document expansion came after the first two columns. It searches inside the first 3 documents for their best passages
+(`docs/EXPANSION_RESULTS.md`). The odd half of these questions was used to choose its setting. On the even half
+alone, everything reached the model in 71.6% of questions, against 66.3% without expansion.
+
+The findings below describe BM25 without expansion, where the audit started.
 
 - **Search finds the document.** It missed the answer document in only 4% of questions. 14 of those 15 misses were
   "semantic" questions, worded unlike the document.
@@ -43,6 +49,9 @@ finds a fact that is not there.
   - project questions: 22 of 40;
   - completeness questions: 8 of 17;
   - semantic questions: 37 of 91.
+
+  Document expansion brings it to 18% (semantic questions 24 of 91). Project and completeness questions do not
+  improve: their answers span several documents.
 - **Packaging loses 7%.** Every fact was in the packet, but Llama reads only the first 24,000 characters. A model with
   a larger context, such as Claude, gets the whole packet, so these questions would reach stage 4.
 - **For 65% of questions, everything needed reached the model.** A wrong answer there is the model's fault.
@@ -76,4 +85,5 @@ The Colab notebook runs this (Part 1b) with Llama 3.1 8B at 50,000 documents.
   grades answers; it was not run.
 - **50,000 documents.** These numbers are from the 5,000-document memory bank. The notebook measures them at 50k.
 
-Raw results: `docs/benchmarks/audit/evidence_audit_5k_bm25.json` and `evidence_audit_5k_fts.json`.
+Raw results: `docs/benchmarks/audit/evidence_audit_5k_bm25.json` and `evidence_audit_5k_fts.json`; with document
+expansion, `docs/benchmarks/expansion/`.

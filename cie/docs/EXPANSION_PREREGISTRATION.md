@@ -108,3 +108,18 @@ What this does not measure: whether a model's answers improve. Local runs have n
 - **B fails any criterion.** The default goes back to off.
 
 Every result is reported, including failures.
+
+## Outcome of test A (added after the run)
+
+**Every criterion was met** on the 5,000-document memory bank:
+- everything reached the model: 71.6% against 66.3% on the even half (+5.3 points);
+- facts in the model view: 487 against 464; search missed the document: 9 against 9;
+- recall@10 0.872 against 0.878, and MRR 0.756 against 0.761;
+- p50 401 ms against 419 ms, and p95 861 ms against 879 ms.
+
+Document expansion is now on by default (3 documents × 5 passages). Test B (50,000 documents, Colab) confirms or
+reverts it.
+
+Two measures with no threshold got worse: facts in the extractive answer, and false abstentions. The extractive
+answer read expansion's passages as leading items. It now reads the packet without them. This fix was made after the
+test and was re-measured separately. Details are in `docs/EXPANSION_RESULTS.md`.

@@ -83,22 +83,25 @@ def _value_phrase(item: dict) -> str | None:
 
 def extractive(packet: EvidencePacket, intent: Intent, min_score: float = 0.25, min_support: float = 0.34) -> AnswerResult:
     t0 = time.perf_counter()
-    records = [it for it in packet.items if it.get("kind") == "record"]
+    # passages placed by document expansion are context for a model; this answer reads the packet in search's own order
+    # (with them, the leading items it judges and quotes would often be one document's passages)
+    ranked = [it for it in packet.items if not it.get("expanded")] or packet.items
+    records = [it for it in ranked if it.get("kind") == "record"]
     if intent.as_of is not None or intent.include_history:
         items = records  # point-in-time question: the packet already holds the records valid at that time
     else:
         items = [it for it in records if not it.get("superseded")] or records
-    sections = [it for it in packet.items if it.get("kind") == "section"]
+    sections = [it for it in ranked if it.get("kind") == "section"]
     if not items and not sections:
         return AnswerResult("Insufficient evidence in the addressable memory to answer this question.",
                             "insufficient_evidence", [], 0.0, "strict", latency_ms=(time.perf_counter() - t0) * 1000)
     top = items[0] if items else None
     top_score = (top or sections[0]).get("score") or 0.0
     # evidence strength is judged on the leading items: a weak match buried deep in the packet does not count
-    best_support = max((it.get("support") or 0.0) for it in packet.items[:5])
+    best_support = max((it.get("support") or 0.0) for it in ranked[:5])
     if (top_score < min_score or best_support < min_support) and not intent.record_ids:
         return AnswerResult("Insufficient evidence: no record scored above the evidence threshold for this question.",
-                            "insufficient_evidence", [_cite(it, i + 1) for i, it in enumerate(packet.items[:3])], 0.2,
+                            "insufficient_evidence", [_cite(it, i + 1) for i, it in enumerate(ranked[:3])], 0.2,
                             "strict", latency_ms=(time.perf_counter() - t0) * 1000)
 
     # conflict: one of the leading records contradicts something in the packet

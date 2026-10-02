@@ -41,6 +41,8 @@ def section_item(s: Section, c: Candidate | None, text_chars: int = 1200) -> dic
         "page_start": s.page_start, "page_end": s.page_end,
         "score": round(c.final, 4) if c else None, "support": c.support if c else None, "reasons": c.reasons if c else {},
         "scope_id": str(s.scope_id),
+        # placed by document expansion (retrieval.pipeline._expand_documents), next to its document's first item
+        "expanded": bool(c is not None and "document_expansion" in c.sources),
     }
 
 

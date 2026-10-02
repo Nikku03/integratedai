@@ -181,3 +181,25 @@ def test_document_expansion_adds_the_documents_best_passages_next_to_it(session,
     session.rollback()
     no_kw = r.retrieve(q, world.admin, world.project.id, expand_documents=1, use_lexical=False, max_records=8, min_records=4)
     assert no_kw.trace["document_expansion"] == {}, "no keyword search inside documents when keyword search is off"
+
+
+def test_extractive_answer_reads_the_packet_without_expansion_passages():
+    """Passages placed by document expansion sit right after their document's first item. The evidence-only answer
+    judges and quotes the packet's leading items, so it reads the packet as search ranked it, without them."""
+    import uuid as _uuid
+
+    from cie.retrieval.answer import extractive
+    from cie.retrieval.intent import classify
+    from cie.retrieval.packet import EvidencePacket
+
+    def sec(i, support, doc="d1", expanded=False):
+        return {"id": f"s{i}", "kind": "section", "type": "section", "summary": f"Section {i}", "detail": f"Passage {i} text.",
+                "document_id": doc, "citations": [], "score": 0.6, "support": support, "expanded": expanded}
+
+    q = "What does the onboarding checklist require?"
+    first, strong = sec(0, 0.1), sec(9, 0.8, doc="d2")
+    placed = [sec(i, 0.1, expanded=True) for i in range(1, 6)]  # five passages: the strong item is sixth
+    with_exp = extractive(EvidencePacket(tenant_id=_uuid.uuid4(), query=q, items=[first, *placed, strong]), classify(q))
+    without = extractive(EvidencePacket(tenant_id=_uuid.uuid4(), query=q, items=[first, strong]), classify(q))
+    assert without.status == "answered", "the strong item is among the leading items without expansion"
+    assert (with_exp.status, with_exp.answer) == (without.status, without.answer)

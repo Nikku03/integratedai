@@ -65,8 +65,9 @@ class Settings(BaseSettings):
     packet_max_records: int = 100
     packet_token_budget: int = 12000
     # document expansion: for the first N documents of the ranked list, a keyword search inside each document adds its
-    # best passages next to it (the right document often comes with the wrong passage). 0 turns it off
-    packet_expand_documents: int = 0
+    # best passages next to it (the right document often comes with the wrong passage). 0 turns it off. 3 x 5 met every
+    # pre-registered criterion (docs/EXPANSION_PREREGISTRATION.md, docs/EXPANSION_RESULTS.md)
+    packet_expand_documents: int = 3
     packet_expand_sections: int = 5
     # keyword search: a BM25 index per tenant (cie.retrieval.bm25), or PostgreSQL full text (fts). bm25 serves a tenant
     # once its index is built (bootstrap, bulk loads, `cie lexical build`) and falls back to full text otherwise. The

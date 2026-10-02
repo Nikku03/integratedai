@@ -225,13 +225,19 @@ encodings that fail exact round-trip or searchability are rejected.
    stubs, drafts unless asked, entity records for non-entity questions, hubs,
    graph distance, other documents when a document is named).
 7. `contradictions.check` pulls the other side of every `contradicts` edge.
+   Then document expansion: for each of the first 3 documents in the ranked
+   list, a keyword search inside that document finds its 5 best passages,
+   which are placed right after the document's first item (moved up if ranked
+   lower, added if not candidates). The right document often arrived through
+   the wrong passage (`docs/EXPANSION_RESULTS.md`).
 8. `packet.build`: 20–100 records within a token budget; flagged
    prompt-injection sentences are redacted in packet text; the packet and its
    trace are stored so any answer can be reproduced.
 9. `answer`: strict mode is extractive (value + quote for exact-field
    questions, summary + quoted detail otherwise; a `conflict` status when a
    leading record has a contradiction partner in the packet; `insufficient
-   evidence` when no leading item has support ≥ 0.34). Assisted mode calls the
+   evidence` when no leading item has support ≥ 0.34; it reads the packet
+   without expansion's passages). Assisted mode calls the
    LLM with items wrapped as untrusted data and drops claims the packet does
    not support.
 10. Raw pages are fetched only via `/sources/{document_id}/pages/{n}`.

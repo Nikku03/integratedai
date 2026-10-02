@@ -1,0 +1,255 @@
+{
+ "d10_m1": {
+  "half": "odd",
+  "expand_documents": 10,
+  "overall": {
+   "questions": 235,
+   "judged": 189,
+   "unjudged_no_checkable_fact": 46,
+   "stages": {
+    "search_missed_document": 6,
+    "right_document_wrong_part": 42,
+    "cut_before_model": 15,
+    "everything_reached_model": 126
+   },
+   "facts": 1098,
+   "checkable_facts": 673,
+   "facts_in_packet": 530,
+   "facts_in_model_view": 453,
+   "facts_in_answer": 75,
+   "everything_reached_model_but_answer_missed_a_fact": 107,
+   "everything_reached_model_and_answer_had_every_fact": 19,
+   "everything_reached_model_but_answer_declined": 1
+  }
+ },
+ "d10_m2": {
+  "half": "odd",
+  "expand_documents": 10,
+  "overall": {
+   "questions": 235,
+   "judged": 189,
+   "unjudged_no_checkable_fact": 46,
+   "stages": {
+    "search_missed_document": 6,
+    "right_document_wrong_part": 38,
+    "cut_before_model": 16,
+    "everything_reached_model": 129
+   },
+   "facts": 1098,
+   "checkable_facts": 673,
+   "facts_in_packet": 528,
+   "facts_in_model_view": 464,
+   "facts_in_answer": 75,
+   "everything_reached_model_but_answer_missed_a_fact": 110,
+   "everything_reached_model_and_answer_had_every_fact": 19,
+   "everything_reached_model_but_answer_declined": 1
+  }
+ },
+ "d1_m5": {
+  "half": "odd",
+  "expand_documents": 1,
+  "overall": {
+   "questions": 235,
+   "judged": 189,
+   "unjudged_no_checkable_fact": 46,
+   "stages": {
+    "search_missed_document": 6,
+    "right_document_wrong_part": 40,
+    "cut_before_model": 13,
+    "everything_reached_model": 130
+   },
+   "facts": 1098,
+   "checkable_facts": 673,
+   "facts_in_packet": 527,
+   "facts_in_model_view": 463,
+   "facts_in_answer": 75,
+   "everything_reached_model_but_answer_missed_a_fact": 112,
+   "everything_reached_model_and_answer_had_every_fact": 18,
+   "everything_reached_model_but_answer_declined": 1
+  }
+ },
+ "d20_m1": {
+  "half": "odd",
+  "expand_documents": 20,
+  "overall": {
+   "questions": 235,
+   "judged": 189,
+   "unjudged_no_checkable_fact": 46,
+   "stages": {
+    "search_missed_document": 7,
+    "right_document_wrong_part": 45,
+    "cut_before_model": 12,
+    "everything_reached_model": 125
+   },
+   "facts": 1098,
+   "checkable_facts": 673,
+   "facts_in_packet": 515,
+   "facts_in_model_view": 448,
+   "facts_in_answer": 75,
+   "everything_reached_model_but_answer_missed_a_fact": 106,
+   "everything_reached_model_and_answer_had_every_fact": 19,
+   "everything_reached_model_but_answer_declined": 1
+  }
+ },
+ "d2_m3": {
+  "half": "odd",
+  "expand_documents": 2,
+  "overall": {
+   "questions": 235,
+   "judged": 189,
+   "unjudged_no_checkable_fact": 46,
+   "stages": {
+    "search_missed_document": 6,
+    "right_document_wrong_part": 39,
+    "cut_before_model": 14,
+    "everything_reached_model": 130
+   },
+   "facts": 1098,
+   "checkable_facts": 673,
+   "facts_in_packet": 532,
+   "facts_in_model_view": 472,
+   "facts_in_answer": 75,
+   "everything_reached_model_but_answer_missed_a_fact": 111,
+   "everything_reached_model_and_answer_had_every_fact": 19,
+   "everything_reached_model_but_answer_declined": 1
+  }
+ },
+ "d3_m12": {
+  "half": "odd",
+  "expand_documents": 3,
+  "overall": {
+   "questions": 235,
+   "judged": 189,
+   "unjudged_no_checkable_fact": 46,
+   "stages": {
+    "search_missed_document": 8,
+    "right_document_wrong_part": 30,
+    "cut_before_model": 14,
+    "everything_reached_model": 137
+   },
+   "facts": 1098,
+   "checkable_facts": 673,
+   "facts_in_packet": 532,
+   "facts_in_model_view": 475,
+   "facts_in_answer": 75,
+   "everything_reached_model_but_answer_missed_a_fact": 119,
+   "everything_reached_model_and_answer_had_every_fact": 18,
+   "everything_reached_model_but_answer_declined": 1
+  }
+ },
+ "d3_m3": {
+  "half": "odd",
+  "expand_documents": 3,
+  "overall": {
+   "questions": 235,
+   "judged": 189,
+   "unjudged_no_checkable_fact": 46,
+   "stages": {
+    "search_missed_document": 6,
+    "right_document_wrong_part": 38,
+    "cut_before_model": 13,
+    "everything_reached_model": 132
+   },
+   "facts": 1098,
+   "checkable_facts": 673,
+   "facts_in_packet": 533,
+   "facts_in_model_view": 473,
+   "facts_in_answer": 75,
+   "everything_reached_model_but_answer_missed_a_fact": 113,
+   "everything_reached_model_and_answer_had_every_fact": 19,
+   "everything_reached_model_but_answer_declined": 1
+  }
+ },
+ "d3_m5": {
+  "half": "odd",
+  "expand_documents": 3,
+  "overall": {
+   "questions": 235,
+   "judged": 189,
+   "unjudged_no_checkable_fact": 46,
+   "stages": {
+    "search_missed_document": 6,
+    "right_document_wrong_part": 34,
+    "cut_before_model": 11,
+    "everything_reached_model": 138
+   },
+   "facts": 1098,
+   "checkable_facts": 673,
+   "facts_in_packet": 537,
+   "facts_in_model_view": 477,
+   "facts_in_answer": 75,
+   "everything_reached_model_but_answer_missed_a_fact": 119,
+   "everything_reached_model_and_answer_had_every_fact": 19,
+   "everything_reached_model_but_answer_declined": 1
+  }
+ },
+ "d3_m8": {
+  "half": "odd",
+  "expand_documents": 3,
+  "overall": {
+   "questions": 235,
+   "judged": 189,
+   "unjudged_no_checkable_fact": 46,
+   "stages": {
+    "search_missed_document": 6,
+    "right_document_wrong_part": 34,
+    "cut_before_model": 14,
+    "everything_reached_model": 135
+   },
+   "facts": 1098,
+   "checkable_facts": 673,
+   "facts_in_packet": 536,
+   "facts_in_model_view": 475,
+   "facts_in_answer": 75,
+   "everything_reached_model_but_answer_missed_a_fact": 117,
+   "everything_reached_model_and_answer_had_every_fact": 18,
+   "everything_reached_model_but_answer_declined": 1
+  }
+ },
+ "d5_m3": {
+  "half": "odd",
+  "expand_documents": 5,
+  "overall": {
+   "questions": 235,
+   "judged": 189,
+   "unjudged_no_checkable_fact": 46,
+   "stages": {
+    "search_missed_document": 6,
+    "right_document_wrong_part": 39,
+    "cut_before_model": 12,
+    "everything_reached_model": 132
+   },
+   "facts": 1098,
+   "checkable_facts": 673,
+   "facts_in_packet": 536,
+   "facts_in_model_view": 471,
+   "facts_in_answer": 75,
+   "everything_reached_model_but_answer_missed_a_fact": 113,
+   "everything_reached_model_and_answer_had_every_fact": 19,
+   "everything_reached_model_but_answer_declined": 1
+  }
+ },
+ "d5_m5": {
+  "half": "odd",
+  "expand_documents": 5,
+  "overall": {
+   "questions": 235,
+   "judged": 189,
+   "unjudged_no_checkable_fact": 46,
+   "stages": {
+    "search_missed_document": 7,
+    "right_document_wrong_part": 34,
+    "cut_before_model": 11,
+    "everything_reached_model": 137
+   },
+   "facts": 1098,
+   "checkable_facts": 673,
+   "facts_in_packet": 536,
+   "facts_in_model_view": 475,
+   "facts_in_answer": 75,
+   "everything_reached_model_but_answer_missed_a_fact": 118,
+   "everything_reached_model_and_answer_had_every_fact": 19,
+   "everything_reached_model_but_answer_declined": 1
+  }
+ }
+}
