@@ -92,7 +92,7 @@ class Retriever:
                  k: int = 80, at: datetime | None = None, use_graph: bool = True, use_vector: bool = True,
                  use_lexical: bool = True, use_sections: bool = True, use_exact: bool = True, max_records: int | None = None,
                  min_records: int | None = None, token_budget: int | None = None, graph_mode: str = "rem",
-                 lexical_engine: str | None = None) -> RetrievalResult:
+                 lexical_engine: str | None = None, expand_documents: int | None = None) -> RetrievalResult:
         """``graph_mode``: ``rem`` (bounded-horizon expansion), ``cliques`` (the topological
         recruitment cascade in its place) or ``cliques+bonus`` (cascade plus a rerank bonus
         for records inside high-dimensional activated simplices)."""
@@ -255,13 +255,21 @@ class Retriever:
 
         timings["contradictions_ms"] = (time.perf_counter() - t) * 1000
         t = time.perf_counter()
+        # 7b. document expansion (a keyword search inside each of the first documents; off when keyword or section search is)
+        n_expand = self.settings.packet_expand_documents if expand_documents is None else expand_documents
+        expansion: dict[str, Any] = {}
+        if n_expand > 0 and use_lexical and use_sections:
+            ranked = self._expand_documents(ranked, query, sec_filter, principal.tenant_id, engine, n_expand,
+                                            self.settings.packet_expand_sections, expansion)
+            timings["expansion_ms"] = (time.perf_counter() - t) * 1000
+        t = time.perf_counter()
         # 8. packet
         latency = (time.perf_counter() - t0) * 1000
         trace = {"timings_ms": timings, "graph_budget": budget, "expanded": len(expanded), "candidates": len(cands),
                  "lists": {k_: len(v) for k_, v in lists.items()}, "as_of": at.isoformat() if at else None,
                  "embedding_provider": getattr(self.embedder, "name", "?"), "scopes_allowed": len(allowed),
                  "arms": {"exact": use_exact, "lexical": use_lexical, "vector": use_vector, "graph": use_graph, "graph_mode": graph_mode},
-                 "lexical": lex_info,
+                 "lexical": lex_info, "document_expansion": expansion,
                  "topology": topo_stats, "edges_used": [(str(e.via), str(e.record_id)) for e in expanded]}
         pk = packet.build(s, tenant_id=principal.tenant_id, principal_id=principal.id, query=query, intent=intent.kind,
                           scope_ids=allowed, filters=filters, ranked=ranked, conflicts=conflicts,
@@ -301,6 +309,64 @@ class Retriever:
             self.session.add(Metric(tenant_id=principal.tenant_id, name=name, value=float(val), labels={"mode": result.mode}))
         result.answer_id = row.id  # type: ignore[attr-defined]
         return result, res
+
+    def _expand_documents(self, ranked: list[rerank.Candidate], query: str, sec_filter, tenant_id: uuid.UUID, engine: str,
+                          n_docs: int, per_doc: int, info: dict[str, Any]) -> list[rerank.Candidate]:
+        """The best passages of the first ``n_docs`` documents of the ranked list, by a keyword search inside each one.
+
+        Passages of every document compete for the packet, so a document can arrive through one passage (or a record)
+        while the passage that holds the answer loses to other documents' passages. On the development half of the
+        EnterpriseRAG-Bench questions, 89% of the answer facts missing from a packet sat in a document that was in it,
+        mostly in one of that document's best-matching passages (docs/EXPANSION_PREREGISTRATION.md). Each document's
+        top ``per_doc`` passages are placed right after the document's first item: moved up when they were ranked
+        lower, added when they were not candidates at all. They pass the same permission filter (``sec_filter``); an
+        added passage gets the same evidence-support measure as every other candidate. The packet's token budget still
+        decides what fits."""
+        from sqlalchemy.orm import defer
+
+        s = self.session
+        first: dict[uuid.UUID, int] = {}
+        for i, c in enumerate(ranked):
+            d = c.record.source_document_id if c.record is not None else c.section.document_id
+            if d is not None and d not in first:
+                first[d] = i
+                if len(first) >= n_docs:
+                    break
+        pos = {c.section.id: j for j, c in enumerate(ranked) if c.section is not None}
+        after: dict[int, list[rerank.Candidate]] = {}
+        moved: set[int] = set()
+        added = 0
+        for d, i in first.items():
+            hits = lexical.search_sections(s, query, and_(sec_filter, Section.document_id == d), per_doc, tenant_id=tenant_id,
+                                           engine=engine, document_ids=[d])
+            # a passage already ranked above the document's first item stays; one ranked below it moves up (most
+            # candidates never fit the packet); one not among the candidates is added
+            todo = [(rank, sid, sc) for rank, (sid, sc) in enumerate(hits, start=1) if pos.get(sid, len(ranked)) > i]
+            missing = [sid for _, sid, _ in todo if sid not in pos]
+            secs = {x.id: x for x in s.scalars(select(Section).where(Section.id.in_(missing))
+                                                 .options(defer(Section.embedding), defer(Section.tsv)))} if missing else {}
+            for rank, sid, sc in todo:
+                if sid in pos:
+                    c = ranked[pos[sid]]
+                    moved.add(pos[sid])
+                elif sid in secs:
+                    c = rerank.Candidate(None, secs[sid], 0.0, {}, via=f"document:{d}")
+                    c.support = round(rerank.support_of(c, query), 3)
+                    c.final = ranked[i].final  # shown with the item whose document it expands
+                    added += 1
+                else:
+                    continue
+                c.sources = {**c.sources, "document_expansion": (rank, sc)}
+                after.setdefault(i, []).append(c)
+                pos[sid] = i  # placed: a later document cannot claim it again
+        info.update({"documents": len(first), "added": added, "moved": len(moved)})
+        out: list[rerank.Candidate] = []
+        for j, c in enumerate(ranked):
+            if j in moved:
+                continue
+            out.append(c)
+            out.extend(after.get(j, []))
+        return out
 
     def _named_documents(self, query: str, tenant_id: uuid.UUID, allowed: list[uuid.UUID], vis: Visibility) -> list[uuid.UUID]:
         """Documents whose title or filename carries a capitalised name from the query.

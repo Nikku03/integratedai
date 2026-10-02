@@ -129,6 +129,11 @@ def classify(facts: list[str], gold_passages: list[str], packet_docs: list[str],
     return out
 
 
+def _half(question_id: str) -> str:
+    """``odd`` or ``even`` by the question's number: the development half and the test half."""
+    return "odd" if int(re.sub(r"\D", "", question_id) or 0) % 2 else "even"
+
+
 def summarise(rows: list[dict[str, Any]]) -> dict[str, Any]:
     judged = [r for r in rows if r["stage"]]
     stages = Counter(r["stage"] for r in judged)
@@ -147,7 +152,7 @@ def summarise(rows: list[dict[str, Any]]) -> dict[str, Any]:
 
 
 def run(tenant_name: str, root: Path, out: Path, engine: str | None = None, n: int | None = None, assisted: bool = False,
-        log=print) -> dict[str, Any]:
+        expand_documents: int | None = None, half: str | None = None, log=print) -> dict[str, Any]:
     """Ask every question with gold documents against a loaded memory bank and audit where its answer facts go."""
     from sqlalchemy import select, text
 
@@ -167,7 +172,10 @@ def run(tenant_name: str, root: Path, out: Path, engine: str | None = None, n: i
             raise SystemExit("--assisted needs a model: set CIE_LLM_PROVIDER and CIE_LLM_MODEL")
     budget = getattr(provider, "evidence_budget_chars", None) if provider else settings.llm_local_evidence_chars
     qs = [json.loads(line) for line in (root / "questions.jsonl").read_text().splitlines() if line.strip()]
-    qs = [q for q in qs if q["expected_doc_ids"]][: n or None]
+    qs = [q for q in qs if q["expected_doc_ids"]]
+    if half:  # odd or even question numbers: a development half and a test half
+        qs = [q for q in qs if _half(q["question_id"]) == half]
+    qs = qs[: n or None]
     rows = []
     with session_scope() as s:
         tenant = s.scalar(select(Tenant).where(Tenant.name == tenant_name))
@@ -183,7 +191,7 @@ def run(tenant_name: str, root: Path, out: Path, engine: str | None = None, n: i
             gold_ids = [doc_of[g] for g in gold if g in doc_of]
             gold_passages = [t or "" for t in s.scalars(select(Section.text).where(Section.document_id.in_(gold_ids)))] if gold_ids else []
             result, res = r.answer(q["question"], admin, company, mode="assisted" if provider else "strict", provider=provider,
-                                   lexical_engine=engine)
+                                   lexical_engine=engine, expand_documents=expand_documents)
             items = res.packet.items
             docs: list[str] = []
             for it in items:
@@ -196,9 +204,12 @@ def run(tenant_name: str, root: Path, out: Path, engine: str | None = None, n: i
             s.rollback()
             if (i + 1) % 100 == 0:
                 log(f"  {i + 1}/{len(qs)} questions")
-    report = {"tenant": tenant_name, "engine": engine or settings.lexical_engine, "model_view_chars": budget,
+    report = {"tenant": tenant_name, "engine": engine or settings.lexical_engine, "model_view_chars": budget, "half": half or "all",
+              "expand_documents": settings.packet_expand_documents if expand_documents is None else expand_documents,
+              "expand_sections": settings.packet_expand_sections,
               "answers": f"composed by {getattr(provider, 'model', '?')}" if provider else "extractive (no model)",
               "fact_cover": COVER, "overall": summarise(rows),
+              "by_half": {h: summarise([x for x in rows if _half(x["question_id"]) == h]) for h in ("odd", "even")},
               "by_category": {c: summarise([x for x in rows if x["category"] == c]) for c in sorted({x["category"] for x in rows})}}
     out.mkdir(parents=True, exist_ok=True)
     (out / "evidence_audit.json").write_text(json.dumps(report, indent=2))
@@ -214,8 +225,10 @@ def main(argv: list[str] | None = None) -> dict:
     ap.add_argument("--engine", choices=["fts", "bm25"], default=None)
     ap.add_argument("--questions", type=int, default=None)
     ap.add_argument("--assisted", action="store_true", help="answers composed by the configured model (CIE_LLM_PROVIDER)")
+    ap.add_argument("--expand-documents", type=int, default=None, help="document expansion: how many documents (0: off; default: the setting)")
+    ap.add_argument("--half", choices=["odd", "even"], default=None, help="only odd or even question numbers")
     a = ap.parse_args(argv)
-    rep = run(a.tenant, Path(a.root), Path(a.out), a.engine, a.questions, a.assisted)
+    rep = run(a.tenant, Path(a.root), Path(a.out), a.engine, a.questions, a.assisted, a.expand_documents, a.half)
     print(json.dumps(rep["overall"], indent=2))
     return rep
 

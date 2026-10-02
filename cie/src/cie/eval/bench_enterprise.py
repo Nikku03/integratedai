@@ -55,13 +55,16 @@ from cie.retrieval.pipeline import Retriever
 SOURCES = ["slack", "gmail", "linear", "google_drive", "hubspot", "fireflies", "github", "jira", "confluence"]
 ENTITY_FIELDS = {"person": ["author", "owner", "creator", "assignee", "reporter", "mailbox_owner", "redwood_owner", "account_owner"],
                  "organization": ["customer_company", "related_account", "company_name", "company"]}
-# the historical arms keep PostgreSQL full text as their keyword engine, so their numbers stay comparable across runs;
-# the BM25 arms (cie.retrieval.bm25) differ from them only in the keyword engine
-ARMS = {"hybrid+graph(REM)": {"lexical_engine": "fts"}, "hybrid+cliques+bonus": {"graph_mode": "cliques+bonus", "lexical_engine": "fts"},
-        "vector-only": {"use_lexical": False, "use_exact": False, "use_graph": False},
-        "lexical-only": {"use_vector": False, "use_exact": False, "use_graph": False, "lexical_engine": "fts"},
-        "hybrid+graph(REM) [BM25]": {"lexical_engine": "bm25"},
-        "lexical-only [BM25]": {"use_vector": False, "use_exact": False, "use_graph": False, "lexical_engine": "bm25"}}
+# the historical arms keep PostgreSQL full text as their keyword engine and no document expansion, so their numbers stay
+# comparable across runs; the BM25 arms (cie.retrieval.bm25) differ from them only in the keyword engine, and the
+# expansion arm from "[BM25]" only in document expansion (docs/EXPANSION_PREREGISTRATION.md)
+_OFF = {"expand_documents": 0}
+ARMS = {"hybrid+graph(REM)": {"lexical_engine": "fts", **_OFF}, "hybrid+cliques+bonus": {"graph_mode": "cliques+bonus", "lexical_engine": "fts", **_OFF},
+        "vector-only": {"use_lexical": False, "use_exact": False, "use_graph": False, **_OFF},
+        "lexical-only": {"use_vector": False, "use_exact": False, "use_graph": False, "lexical_engine": "fts", **_OFF},
+        "hybrid+graph(REM) [BM25]": {"lexical_engine": "bm25", **_OFF},
+        "lexical-only [BM25]": {"use_vector": False, "use_exact": False, "use_graph": False, "lexical_engine": "bm25", **_OFF},
+        "hybrid+graph(REM) [BM25+expansion]": {"lexical_engine": "bm25", "expand_documents": 3}}
 BM25_ARMS = [k for k, v in ARMS.items() if v.get("lexical_engine") == "bm25"]
 ASSISTED_ARM = "hybrid+graph(REM), composed answers"  # added by --assisted: the default arm with answers composed by the configured model
 

@@ -160,3 +160,24 @@ def test_fake_llm_assisted_mode_verifies_claims(session, world, embedder, indexe
     assert "cheese" not in result.answer and result.unsupported_claims and "cheese" in result.unsupported_claims[0]
     assert "<untrusted_document" in provider.calls[0][1]
     assert [r_.type.value for r_ in session.scalars(select(MemoryRecord).where(MemoryRecord.type == RecordType.metric))]
+
+
+def test_document_expansion_adds_the_documents_best_passages_next_to_it(session, world, embedder, indexed):
+    r = Retriever(session, embedder=embedder)
+    q = "What is the monthly fee and when may either party terminate the agreement?"
+    base = r.retrieve(q, world.admin, world.project.id, expand_documents=0, max_records=8, min_records=4)
+    session.rollback()
+    exp = r.retrieve(q, world.admin, world.project.id, expand_documents=1, max_records=8, min_records=4)
+    assert base.trace["document_expansion"] == {} and exp.trace["document_expansion"]["documents"] == 1
+    added = [c for c in exp.ranked if "document_expansion" in c.sources]
+    info = exp.trace["document_expansion"]
+    assert len(added) == info["added"] + info["moved"] <= r.settings.packet_expand_sections
+    assert all(c.section.document_id == indexed.id for c in added), "passages of the expanded document only"
+    ids = [c.id for c in exp.ranked]
+    assert len(ids) == len(set(ids)), "no passage twice"
+    first = next(i for i, c in enumerate(exp.ranked) if (c.record.source_document_id if c.record is not None else c.section.document_id) == indexed.id)
+    assert all(ids.index(c.id) > first for c in added), "placed after the document's first item"
+    assert all(0.0 <= c.support <= 1.0 for c in added)
+    session.rollback()
+    no_kw = r.retrieve(q, world.admin, world.project.id, expand_documents=1, use_lexical=False, max_records=8, min_records=4)
+    assert no_kw.trace["document_expansion"] == {}, "no keyword search inside documents when keyword search is off"
