@@ -1,0 +1,451 @@
+{
+ "qst_0003.F1": {
+  "status": "one_passage",
+  "passages": [
+   "dsid_3fd6af404fae48e6b8ea5a57875ef78f#1"
+  ],
+  "why_words_differ": "words match (acceptance criterion 1 nearly verbatim)"
+ },
+ "qst_0007.F1": {
+  "status": "one_passage",
+  "passages": [
+   "dsid_72ec4a9962ba43e88acd61abbba1052d#1"
+  ],
+  "why_words_differ": "paraphrase: 'first pass', 'baseline average rubric' vs 'triage rubric score'; build named by version id"
+ },
+ "qst_0007.F2": {
+  "status": "one_passage",
+  "passages": [
+   "dsid_72ec4a9962ba43e88acd61abbba1052d#1"
+  ],
+  "why_words_differ": "paraphrase: 'new average 1.9'; optimized build only as version id v2026-03-01-opt"
+ },
+ "qst_0007.F3": {
+  "status": "inferred",
+  "passages": [
+   "dsid_72ec4a9962ba43e88acd61abbba1052d#1"
+  ],
+  "why_words_differ": "computed (2.7 - 1.9 = 0.8); 0.8 never written"
+ },
+ "qst_0181.F2": {
+  "status": "one_passage",
+  "passages": [
+   "dsid_8f80516053a24beba08e603cb1831dd6#5"
+  ],
+  "why_words_differ": "number written differently ('30\u2013120s')"
+ },
+ "qst_0181.F3": {
+  "status": "several_passages",
+  "passages": [
+   "dsid_8f80516053a24beba08e603cb1831dd6#1",
+   "dsid_8f80516053a24beba08e603cb1831dd6#2"
+  ],
+  "why_words_differ": "paraphrase/synonyms: signed cookies vs credentials, 'simultaneous'/'clustered at restart time' vs 'all at once after a restart'; split across sentences"
+ },
+ "qst_0181.F4": {
+  "status": "several_passages",
+  "passages": [
+   "dsid_8f80516053a24beba08e603cb1831dd6#2",
+   "dsid_8f80516053a24beba08e603cb1831dd6#3"
+  ],
+  "why_words_differ": "paraphrase: 'stagger refreshes' recommendation separate from cause (simultaneous renewals exhausting refill credits); 429 only in title"
+ },
+ "qst_0341.F5": {
+  "status": "one_passage",
+  "passages": [
+   "dsid_1980f45c3fb4455f943a2b030892ae90#8"
+  ],
+  "why_words_differ": "paraphrase: 'guarded exception', 'increase burst multiplier', '14-day expiry' vs 'temporary region-scoped policy override'"
+ },
+ "qst_0341.F6": {
+  "status": "one_passage",
+  "passages": [
+   "dsid_1980f45c3fb4455f943a2b030892ae90#11"
+  ],
+  "why_words_differ": "paraphrase: '14-day expiry' / 'automated rollback guardrails'"
+ },
+ "qst_0341.F7": {
+  "status": "inferred",
+  "passages": [
+   "dsid_1980f45c3fb4455f943a2b030892ae90#8",
+   "dsid_1980f45c3fb4455f943a2b030892ae90#9",
+   "dsid_49fa5cfd95624dbeb6eaa535f9959470#2"
+  ],
+  "why_words_differ": "concluded from post-change review on 'enterprise SLO dashboards' plus SLO doc's per route x region x tier SLIs; never written as a verification step"
+ },
+ "qst_0341.F9": {
+  "status": "inferred",
+  "passages": [
+   "dsid_1980f45c3fb4455f943a2b030892ae90#3",
+   "dsid_49fa5cfd95624dbeb6eaa535f9959470#2",
+   "dsid_49fa5cfd95624dbeb6eaa535f9959470#9"
+  ],
+  "why_words_differ": "concluded: 5xx counted as availability failures and burn-rate thresholds defined separately; no passage says to verify 5xx vs burn thresholds for the exception"
+ },
+ "qst_0341.F10": {
+  "status": "several_passages",
+  "passages": [
+   "dsid_1980f45c3fb4455f943a2b030892ae90#8",
+   "dsid_49fa5cfd95624dbeb6eaa535f9959470#9",
+   "dsid_49fa5cfd95624dbeb6eaa535f9959470#10"
+  ],
+  "why_words_differ": "split across docs: 'must monitor shed rates' in ticket; 'non-zero sustained' enterprise shedding trigger and shed_rate > 0.1% for 10 min page in SLO doc; 'near zero' is paraphrase"
+ },
+ "qst_0345.F3": {
+  "status": "one_passage",
+  "passages": [
+   "dsid_98d7acbda29a4260a413c8d6da7207a3#5"
+  ],
+  "why_words_differ": "paraphrase/synonyms: 'need-to-know' vs least-privilege, 'logged' vs auditable, 'no Redwood personnel outside US can ever access' vs US-persons-only"
+ },
+ "qst_0345.F13": {
+  "status": "one_passage",
+  "passages": [
+   "dsid_a9a67d815b07451e90ed8c3d1734d007#7"
+  ],
+  "why_words_differ": "paraphrase: request list (company name, recipients, requested artifacts) with NDA executed in eligibility checklist; 'only' implied"
+ },
+ "qst_0383.F3": {
+  "status": "one_passage",
+  "passages": [
+   "dsid_3fb8a400e0cf42d0b19dc134e2b7f46c#4"
+  ],
+  "why_words_differ": "paraphrase: 'NormalizeUnicode(strip BOM and control chars) ... before splitting', 'strings.Split on comma and then TrimSpace'"
+ },
+ "qst_0411.F2": {
+  "status": "one_passage",
+  "passages": [
+   "dsid_8ffbd9fe82df457ca67d4fbc9ff1090c#4"
+  ],
+  "why_words_differ": "words match ('Updated reservation target: reserve 30% (previous internal suggestion was 20%)')"
+ },
+ "qst_0415.F5": {
+  "status": "one_passage",
+  "passages": [
+   "dsid_05841423a55e4c35abd276d9899b7134#4"
+  ],
+  "why_words_differ": "words match"
+ },
+ "qst_0415.F6": {
+  "status": "one_passage",
+  "passages": [
+   "dsid_05841423a55e4c35abd276d9899b7134#4"
+  ],
+  "why_words_differ": "paraphrase: 'Explicit generator passed into generation APIs' and 'setting a global seed is insufficient'; 'torch.Generator' named only in #1"
+ },
+ "qst_0415.F7": {
+  "status": "one_passage",
+  "passages": [
+   "dsid_05841423a55e4c35abd276d9899b7134#4"
+  ],
+  "why_words_differ": "words match"
+ },
+ "qst_0415.F8": {
+  "status": "inferred",
+  "passages": [
+   "dsid_1d487c52d79a44c2b40eb19a0db51122#2",
+   "dsid_05841423a55e4c35abd276d9899b7134#3",
+   "dsid_05841423a55e4c35abd276d9899b7134#4"
+  ],
+  "why_words_differ": "stated as absence: omission found only by comparing Slack list (do_sample, temperature, top_k, generator) with current required set"
+ },
+ "qst_0433.F3": {
+  "status": "several_passages",
+  "passages": [
+   "dsid_cf06e75be4f94156ac338f62e3ee028b#0",
+   "dsid_cf06e75be4f94156ac338f62e3ee028b#1",
+   "dsid_74ebb73359364bc791707a92a3227e3a#0"
+  ],
+  "why_words_differ": "split across passages/docs; steps paraphrased ('deprecation window'), 60 min for Tier 0 only in verification checklist"
+ },
+ "qst_0433.F5": {
+  "status": "several_passages",
+  "passages": [
+   "dsid_74ebb73359364bc791707a92a3227e3a#0",
+   "dsid_74ebb73359364bc791707a92a3227e3a#1"
+  ],
+  "why_words_differ": "summary of a long checklist split across passages ('canary requests', 'Audit checks')"
+ },
+ "qst_0433.F8": {
+  "status": "several_passages",
+  "passages": [
+   "dsid_a898d2541b944cdebeec03ec9d9ba130#0",
+   "dsid_a898d2541b944cdebeec03ec9d9ba130#1"
+  ],
+  "why_words_differ": "split across passages: grants/60-minute/logging in #0, 'approved workflow' in #1"
+ },
+ "qst_0439.F1": {
+  "status": "inferred",
+  "passages": [
+   "dsid_4e016427a93c49ffadd31fcdc1dca792#0",
+   "dsid_d3edd63b9ec54523ad12bd9be3d7e996#0",
+   "dsid_faf3246a6ce845e6b5df0ae52f439399#1",
+   "dsid_bf7e79dc1331447598c4eebdc5d2897d#0",
+   "dsid_a277ed2dc74c4bad82bc71b534b6356f#0"
+  ],
+  "why_words_differ": "computed: count across separate postmortems, excluding the 2025-04-19 one where fallback was the problem"
+ },
+ "qst_0439.F2": {
+  "status": "one_passage",
+  "passages": [
+   "dsid_4e016427a93c49ffadd31fcdc1dca792#0"
+  ],
+  "why_words_differ": "words match"
+ },
+ "qst_0439.F3": {
+  "status": "one_passage",
+  "passages": [
+   "dsid_d3edd63b9ec54523ad12bd9be3d7e996#0"
+  ],
+  "why_words_differ": "words match ('automatic region fallback')"
+ },
+ "qst_0439.F4": {
+  "status": "one_passage",
+  "passages": [
+   "dsid_bf7e79dc1331447598c4eebdc5d2897d#0"
+  ],
+  "why_words_differ": "words match"
+ },
+ "qst_0439.F5": {
+  "status": "one_passage",
+  "passages": [
+   "dsid_a277ed2dc74c4bad82bc71b534b6356f#0"
+  ],
+  "why_words_differ": "words match ('As a mitigation ... activated automatic region fallback')"
+ },
+ "qst_0005.F4": {
+  "status": "one_passage",
+  "passages": [
+   "dsid_8e838ab6a98f4cbcb672d41f210ff89c#4"
+  ],
+  "why_words_differ": "paraphrase/synonyms (cross-region failover permitted vs shifting traffic; max 4 hours vs capped)"
+ },
+ "qst_0179.F4": {
+  "status": "several_passages",
+  "passages": [
+   "dsid_a0f25cffcb264f0ea6eba5e501de0e08#3",
+   "dsid_a0f25cffcb264f0ea6eba5e501de0e08#4"
+  ],
+  "why_words_differ": "split across passages; DNS rebinds on eu-edge NATs in a comment, EU auth timeouts only as a conditional in investigation notes"
+ },
+ "qst_0179.F5": {
+  "status": "several_passages",
+  "passages": [
+   "dsid_a0f25cffcb264f0ea6eba5e501de0e08#1",
+   "dsid_a0f25cffcb264f0ea6eba5e501de0e08#4"
+  ],
+  "why_words_differ": "split across passages; cause-to-fallback link says 'APAC edges' while ap-southeast is named elsewhere"
+ },
+ "qst_0179.F6": {
+  "status": "one_passage",
+  "passages": [
+   "dsid_a0f25cffcb264f0ea6eba5e501de0e08#0"
+  ],
+  "why_words_differ": "region codes (eu-west / ap-southeast) vs plain names (Western Europe / Southeast Asia)"
+ },
+ "qst_0179.F7": {
+  "status": "one_passage",
+  "passages": [
+   "dsid_a0f25cffcb264f0ea6eba5e501de0e08#0"
+  ],
+  "why_words_differ": "number written differently (~220ms network RTT); region code; 'downstream timeouts in ingestion pipeline'"
+ },
+ "qst_0301.F2": {
+  "status": "one_passage",
+  "passages": [
+   "dsid_ca18eee975d34f4da7b1b880ea5ac271#5"
+  ],
+  "why_words_differ": "notation differs ('99.9 latency increase > 2x over baseline' vs 99.9th-percentile, more than 2x)"
+ },
+ "qst_0343.F1": {
+  "status": "one_passage",
+  "passages": [
+   "dsid_85ee9562e05d457b9e32785343777359#9"
+  ],
+  "why_words_differ": "paraphrase (compute-cost attribution aggregates GPU-sec + token pricing; trailing 7d baseline + stale_as_of) split across bullets"
+ },
+ "qst_0343.F4": {
+  "status": "one_passage",
+  "passages": [
+   "dsid_85ee9562e05d457b9e32785343777359#6"
+  ],
+  "why_words_differ": "paraphrase ('billing is per-day UTC; customer initially compared to local-time days'; no 'day boundary' wording)"
+ },
+ "qst_0343.F5": {
+  "status": "one_passage",
+  "passages": [
+   "dsid_85ee9562e05d457b9e32785343777359#4"
+  ],
+  "why_words_differ": "paraphrase (phased rollout at 50% traffic for ~12 hours; observed savings ~25% of headline daily number)"
+ },
+ "qst_0343.F7": {
+  "status": "one_passage",
+  "passages": [
+   "dsid_ae2e969d0b924ebbb19ab2f5d1b95125#5"
+  ],
+  "why_words_differ": "stated via log line (price_source=catalog_fallback reason=missing_effective_price project=prod-vpc) plus 'using list price' / 'explains the $ inflation'"
+ },
+ "qst_0343.F9": {
+  "status": "inferred",
+  "passages": [
+   "dsid_85ee9562e05d457b9e32785343777359#9"
+  ],
+  "why_words_differ": "recommendation not written; derived from time-window/local-time mismatch cause"
+ },
+ "qst_0343.F10": {
+  "status": "one_passage",
+  "passages": [
+   "dsid_85ee9562e05d457b9e32785343777359#10"
+  ],
+  "why_words_differ": "paraphrase (promote assumption text '100% adoption'; UI control to scale savings by rollout percentage)"
+ },
+ "qst_0343.F11": {
+  "status": "several_passages",
+  "passages": [
+   "dsid_ae2e969d0b924ebbb19ab2f5d1b95125#5",
+   "dsid_ae2e969d0b924ebbb19ab2f5d1b95125#9"
+  ],
+  "why_words_differ": "split across chat messages; 'hide $ or flag it prominently', '% savings as primary' (sortable not stated)"
+ },
+ "qst_0343.F12": {
+  "status": "inferred",
+  "passages": [
+   "dsid_85ee9562e05d457b9e32785343777359#9",
+   "dsid_85ee9562e05d457b9e32785343777359#10"
+  ],
+  "why_words_differ": "usage-analytics apples-to-apples comparison is stated as Support/CS guidance, not a UI change; docs section + discounts/credits text in product follow-ups"
+ },
+ "qst_0343.F13": {
+  "status": "several_passages",
+  "passages": [
+   "dsid_ae2e969d0b924ebbb19ab2f5d1b95125#6",
+   "dsid_ae2e969d0b924ebbb19ab2f5d1b95125#9"
+  ],
+  "why_words_differ": "split across chat messages (bubble price_source into response; savings_usd_is_estimated_from_list_price field)"
+ },
+ "qst_0343.F14": {
+  "status": "inferred",
+  "passages": [
+   "dsid_85ee9562e05d457b9e32785343777359#9"
+  ],
+  "why_words_differ": "API recommendation not written; derived from baseline-window/stale_as_of mismatch"
+ },
+ "qst_0343.F15": {
+  "status": "one_passage",
+  "passages": [
+   "dsid_85ee9562e05d457b9e32785343777359#10"
+  ],
+  "why_words_differ": "paraphrase ('optional field in suggestion payload for adoption_factor' vs API)"
+ },
+ "qst_0343.F16": {
+  "status": "one_passage",
+  "passages": [
+   "dsid_ae2e969d0b924ebbb19ab2f5d1b95125#7"
+  ],
+  "why_words_differ": "paraphrase (degrade confidence when core assumption missing; shouldn't read 'Medium')"
+ },
+ "qst_0381.F1": {
+  "status": "several_passages",
+  "passages": [
+   "dsid_d844cc30147b49c69ea5275b4993b571#3",
+   "dsid_d844cc30147b49c69ea5275b4993b571#4"
+  ],
+  "why_words_differ": "split across timeline and root-cause sections; premature recovery described as 'interprets as recovery + triggers rollback sooner than expected'"
+ },
+ "qst_0381.F2": {
+  "status": "one_passage",
+  "passages": [
+   "dsid_d844cc30147b49c69ea5275b4993b571#0"
+  ],
+  "why_words_differ": "paraphrase ('insufficient rollback/anti-flap guardrails caused repeated routing policy changes')"
+ },
+ "qst_0385.F2": {
+  "status": "one_passage",
+  "passages": [
+   "dsid_e34b1f14719d45d98b175cb1351fb540#4"
+  ],
+  "why_words_differ": "spread across chat turns (baseline fetch keyed on full labelset, prompt_bucket, newly emitted kernel_id, 'config regression')"
+ },
+ "qst_0385.F3": {
+  "status": "several_passages",
+  "passages": [
+   "dsid_58bdb9f3bb4241e089f4f2b102765db4#3",
+   "dsid_58bdb9f3bb4241e089f4f2b102765db4#5"
+  ],
+  "why_words_differ": "split across timeline and root cause; 'baseline not found' vs missed; 'intentionally conservative' default thresholds"
+ },
+ "qst_0385.F4": {
+  "status": "one_passage",
+  "passages": [
+   "dsid_58bdb9f3bb4241e089f4f2b102765db4#0"
+  ],
+  "why_words_differ": "summary paraphrase (cardinality inflation fragmented time series, defeating min-sample gating and dedupe; repeatedly reopened)"
+ },
+ "qst_0385.F9": {
+  "status": "several_passages",
+  "passages": [
+   "dsid_e34b1f14719d45d98b175cb1351fb540#6",
+   "dsid_58bdb9f3bb4241e089f4f2b102765db4#8"
+  ],
+  "why_words_differ": "split across documents; config flag names (emit_kernel_labels=false, emit_prompt_bucket_label=false) and label names (workload_run_id, prompt_template_id, route)"
+ },
+ "qst_0413.F1": {
+  "status": "one_passage",
+  "passages": [
+   "dsid_6df52fdb96ae4edcb76464738bca3340#3"
+  ],
+  "why_words_differ": "words match ('Cost-ops approves termination once grace window expires')"
+ },
+ "qst_0413.F2": {
+  "status": "partly",
+  "passages": [
+   "dsid_6df52fdb96ae4edcb76464738bca3340#3"
+  ],
+  "why_words_differ": "Miguel's approval request stated (not specifically infra manager); infra manager approval is actually recorded (Nina Hwang), contradicting 'not recorded'"
+ },
+ "qst_0413.F3": {
+  "status": "partly",
+  "passages": [
+   "dsid_6df52fdb96ae4edcb76464738bca3340#0",
+   "dsid_6df52fdb96ae4edcb76464738bca3340#3"
+  ],
+  "why_words_differ": "72h appears only as superseded value; passages say grace window is 5 business days (contradicts)"
+ },
+ "qst_0413.F6": {
+  "status": "partly",
+  "passages": [
+   "dsid_6df52fdb96ae4edcb76464738bca3340#1"
+  ],
+  "why_words_differ": "runbook says notify owners and wait 5 business days; 48 hours not stated"
+ },
+ "qst_0431.F6": {
+  "status": "one_passage",
+  "passages": [
+   "dsid_f6e3b7ad413142019dbb5a5fed07f548#2"
+  ],
+  "why_words_differ": "paraphrase of numbered list (non-critical region, remaining canary cohort, all regions on the bad release)"
+ },
+ "qst_0435.F2": {
+  "status": "several_passages",
+  "passages": [
+   "dsid_a134a3fd3c244a52a8d3e1ff515fdf58#0",
+   "dsid_ce60931a1aea428b8186228ee40bb497#0",
+   "dsid_431b0713c42847bbac15f3354776db68#0"
+  ],
+  "why_words_differ": "split across separate weekly docs; dates only in titles, status as 'Overall: At Risk'"
+ },
+ "qst_0455.F1": {
+  "status": "one_passage",
+  "passages": [
+   "dsid_a5503307a8bc45d1b2155968543598df#1"
+  ],
+  "why_words_differ": "paraphrase ('Sneakers are fine for first few weeks')"
+ },
+ "qst_0455.F2": {
+  "status": "one_passage",
+  "passages": [
+   "dsid_a5503307a8bc45d1b2155968543598df#1"
+  ],
+  "why_words_differ": "words match ('cleats optional'); 'not required right away' is implied"
+ }
+}

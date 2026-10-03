@@ -1,0 +1,3513 @@
+[
+ {
+  "fid": "qst_0001.F1",
+  "question_id": "qst_0001",
+  "question": "What are the default size limits for file uploads and total request size for the new multipart upload support on the OpenAI-compatible API endpoints?",
+  "question_type": "basic",
+  "gold_documents": 1,
+  "fact": "The default per file upload size limit (max_file_size) for multipart uploads on OpenAI-compatible endpoints is 10 MiB.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "github"
+  ],
+  "holder_rank": 0,
+  "has_number": true,
+  "words": 20,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "figure",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0001.F2",
+  "question_id": "qst_0001",
+  "question": "What are the default size limits for file uploads and total request size for the new multipart upload support on the OpenAI-compatible API endpoints?",
+  "question_type": "basic",
+  "gold_documents": 1,
+  "fact": "The default total request size limit (max_total_request_size) for multipart uploads on OpenAI-compatible endpoints is 50 MiB.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "github"
+  ],
+  "holder_rank": 0,
+  "has_number": true,
+  "words": 20,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "figure",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0431.F1",
+  "question_id": "qst_0431",
+  "question": "What is the procedure for an emergency rollback of a Serving Runtime release (Hosted and Dedicated)?",
+  "question_type": "completeness",
+  "gold_documents": 2,
+  "fact": "In an emergency rollback of a Serving Runtime release, first pause or freeze any in-flight progressive rollout so it cannot auto-advance.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "confluence"
+  ],
+  "holder_rank": 2,
+  "has_number": false,
+  "words": 23,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0431.F2",
+  "question_id": "qst_0431",
+  "question": "What is the procedure for an emergency rollback of a Serving Runtime release (Hosted and Dedicated)?",
+  "question_type": "completeness",
+  "gold_documents": 2,
+  "fact": "Re-pin the serving runtime to a known-good prior runtime release tag.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "confluence"
+  ],
+  "holder_rank": 2,
+  "has_number": false,
+  "words": 13,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0431.F3",
+  "question_id": "qst_0431",
+  "question": "What is the procedure for an emergency rollback of a Serving Runtime release (Hosted and Dedicated)?",
+  "question_type": "completeness",
+  "gold_documents": 2,
+  "fact": "Trigger a redeploy after re-pinning the runtime tag.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "confluence"
+  ],
+  "holder_rank": 5,
+  "has_number": false,
+  "words": 9,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0431.F4",
+  "question_id": "qst_0431",
+  "question": "What is the procedure for an emergency rollback of a Serving Runtime release (Hosted and Dedicated)?",
+  "question_type": "completeness",
+  "gold_documents": 2,
+  "fact": "Verify fleet health after the rollback using metrics such as 5xx rate, p95 TTFT, and GPU OOMs.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "confluence"
+  ],
+  "holder_rank": 7,
+  "has_number": true,
+  "words": 17,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0431.F5",
+  "question_id": "qst_0431",
+  "question": "What is the procedure for an emergency rollback of a Serving Runtime release (Hosted and Dedicated)?",
+  "question_type": "completeness",
+  "gold_documents": 2,
+  "fact": "Close the incident or change record only after verification is complete.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "confluence"
+  ],
+  "holder_rank": 7,
+  "has_number": false,
+  "words": 11,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0431.F6",
+  "question_id": "qst_0431",
+  "question": "What is the procedure for an emergency rollback of a Serving Runtime release (Hosted and Dedicated)?",
+  "question_type": "completeness",
+  "gold_documents": 2,
+  "fact": "For Hosted, apply the rollback across regions in order: non-critical or canary first, then remaining canary, then all affected regions.",
+  "reached": null,
+  "where": "not checkable (worded differently from the documents)",
+  "holder_sources": [],
+  "holder_rank": null,
+  "has_number": false,
+  "words": 21,
+  "outcome": "reworded_reached",
+  "judge": {
+   "status": "one_passage",
+   "passages": [
+    "dsid_f6e3b7ad413142019dbb5a5fed07f548#2"
+   ],
+   "why_words_differ": "paraphrase of numbered list (non-critical region, remaining canary cohort, all regions on the bad release)"
+  },
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0431.F7",
+  "question_id": "qst_0431",
+  "question": "What is the procedure for an emergency rollback of a Serving Runtime release (Hosted and Dedicated)?",
+  "question_type": "completeness",
+  "gold_documents": 2,
+  "fact": "For Hosted, lock the runtime tag to prevent re-advance after rollback.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "confluence"
+  ],
+  "holder_rank": 6,
+  "has_number": false,
+  "words": 12,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0431.F8",
+  "question_id": "qst_0431",
+  "question": "What is the procedure for an emergency rollback of a Serving Runtime release (Hosted and Dedicated)?",
+  "question_type": "completeness",
+  "gold_documents": 2,
+  "fact": "For Dedicated, identify the impacted tenant clusters.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "confluence"
+  ],
+  "holder_rank": 0,
+  "has_number": false,
+  "words": 7,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0431.F9",
+  "question_id": "qst_0431",
+  "question": "What is the procedure for an emergency rollback of a Serving Runtime release (Hosted and Dedicated)?",
+  "question_type": "completeness",
+  "gold_documents": 2,
+  "fact": "For Dedicated, pin and redeploy per impacted tenant cluster.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "confluence"
+  ],
+  "holder_rank": 5,
+  "has_number": false,
+  "words": 9,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0431.F10",
+  "question_id": "qst_0431",
+  "question": "What is the procedure for an emergency rollback of a Serving Runtime release (Hosted and Dedicated)?",
+  "question_type": "completeness",
+  "gold_documents": 2,
+  "fact": "For Dedicated, coordinate customer communications as required during the rollback.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "confluence"
+  ],
+  "holder_rank": 6,
+  "has_number": false,
+  "words": 10,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0431.F11",
+  "question_id": "qst_0431",
+  "question": "What is the procedure for an emergency rollback of a Serving Runtime release (Hosted and Dedicated)?",
+  "question_type": "completeness",
+  "gold_documents": 2,
+  "fact": "Keep the incident open until metrics are stable, approximately 30 minutes for Hosted and approximately 60 minutes for Dedicated.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "confluence"
+  ],
+  "holder_rank": 0,
+  "has_number": true,
+  "words": 19,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "date_time",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0431.F12",
+  "question_id": "qst_0431",
+  "question": "What is the procedure for an emergency rollback of a Serving Runtime release (Hosted and Dedicated)?",
+  "question_type": "completeness",
+  "gold_documents": 2,
+  "fact": "Capture incident evidence including CI/CD job links, affected regions or clusters, runtime tags, timings, and verification evidence.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "confluence"
+  ],
+  "holder_rank": 8,
+  "has_number": false,
+  "words": 18,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0411.F1",
+  "question_id": "qst_0411",
+  "question": "On Streamly AI's dedicated pool dp-132-usw, what % of interactive burst credits should be reserved exclusively for priority=high routes?",
+  "question_type": "conflicting_info",
+  "gold_documents": 2,
+  "fact": "The answer must state that the updated reservation target is 30% of interactive burst credits exclusively for priority=high routes on dp-132-usw.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "google_drive"
+  ],
+  "holder_rank": 1,
+  "has_number": true,
+  "words": 24,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "figure",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0411.F2",
+  "question_id": "qst_0411",
+  "question": "On Streamly AI's dedicated pool dp-132-usw, what % of interactive burst credits should be reserved exclusively for priority=high routes?",
+  "question_type": "conflicting_info",
+  "gold_documents": 2,
+  "fact": "The answer may mention that an earlier/internal suggestion was 20%, but it must clearly indicate 30% is the current/applied target.",
+  "reached": null,
+  "where": "not checkable (worded differently from the documents)",
+  "holder_sources": [],
+  "holder_rank": null,
+  "has_number": true,
+  "words": 22,
+  "outcome": "reworded_reached",
+  "judge": {
+   "status": "one_passage",
+   "passages": [
+    "dsid_8ffbd9fe82df457ca67d4fbc9ff1090c#4"
+   ],
+   "why_words_differ": "words match ('Updated reservation target: reserve 30% (previous internal suggestion was 20%)')"
+  },
+  "kind": "decision_status",
+  "list_item": false,
+  "combines": true,
+  "negative": false
+ },
+ {
+  "fid": "qst_0381.F1",
+  "question_id": "qst_0381",
+  "question": "In the planned controlled failover game day on 2026-01-15 (Hosted API us-east \u2192 eu-west), what caused the routing automation to oscillate (flip/rollback), and what follow-up ticket and target ship date were created to fix the streaming disconnect/reconnect behavior clients saw during cross-region redirects?",
+  "question_type": "constrained",
+  "gold_documents": 2,
+  "fact": "The routing automation oscillation (flip/rollback) was caused by noisy or false-positive reachability health signals, including a premature recovery signal.",
+  "reached": null,
+  "where": "not checkable (worded differently from the documents)",
+  "holder_sources": [],
+  "holder_rank": null,
+  "has_number": false,
+  "words": 21,
+  "outcome": "reworded_reached",
+  "judge": {
+   "status": "several_passages",
+   "passages": [
+    "dsid_d844cc30147b49c69ea5275b4993b571#3",
+    "dsid_d844cc30147b49c69ea5275b4993b571#4"
+   ],
+   "why_words_differ": "split across timeline and root-cause sections; premature recovery described as 'interprets as recovery + triggers rollback sooner than expected'"
+  },
+  "kind": "cause_reason",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0381.F2",
+  "question_id": "qst_0381",
+  "question": "In the planned controlled failover game day on 2026-01-15 (Hosted API us-east \u2192 eu-west), what caused the routing automation to oscillate (flip/rollback), and what follow-up ticket and target ship date were created to fix the streaming disconnect/reconnect behavior clients saw during cross-region redirects?",
+  "question_type": "constrained",
+  "gold_documents": 2,
+  "fact": "The routing automation oscillation was also enabled by overly permissive hold-down or anti-flap and rollback guardrails, which allowed repeated failover and rollback.",
+  "reached": null,
+  "where": "not checkable (worded differently from the documents)",
+  "holder_sources": [],
+  "holder_rank": null,
+  "has_number": false,
+  "words": 24,
+  "outcome": "reworded_reached",
+  "judge": {
+   "status": "one_passage",
+   "passages": [
+    "dsid_d844cc30147b49c69ea5275b4993b571#0"
+   ],
+   "why_words_differ": "paraphrase ('insufficient rollback/anti-flap guardrails caused repeated routing policy changes')"
+  },
+  "kind": "cause_reason",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0381.F3",
+  "question_id": "qst_0381",
+  "question": "In the planned controlled failover game day on 2026-01-15 (Hosted API us-east \u2192 eu-west), what caused the routing automation to oscillate (flip/rollback), and what follow-up ticket and target ship date were created to fix the streaming disconnect/reconnect behavior clients saw during cross-region redirects?",
+  "question_type": "constrained",
+  "gold_documents": 2,
+  "fact": "The follow-up ticket created to fix the streaming redirect disconnect/reconnect behavior was ENG-2422.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "confluence"
+  ],
+  "holder_rank": 0,
+  "has_number": true,
+  "words": 16,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "name_identifier",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0381.F4",
+  "question_id": "qst_0381",
+  "question": "In the planned controlled failover game day on 2026-01-15 (Hosted API us-east \u2192 eu-west), what caused the routing automation to oscillate (flip/rollback), and what follow-up ticket and target ship date were created to fix the streaming disconnect/reconnect behavior clients saw during cross-region redirects?",
+  "question_type": "constrained",
+  "gold_documents": 2,
+  "fact": "The target ship date for the ENG-2422 fix was 2026-02-07 (production ship behind a flag).",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "confluence"
+  ],
+  "holder_rank": 0,
+  "has_number": true,
+  "words": 18,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "date_time",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0301.F1",
+  "question_id": "qst_0301",
+  "question": "During the 2025-02-10 capacity incident, what two thresholds should trigger noisy-tenant detection in the runbook update, and how long were SLA targets breached?",
+  "question_type": "intra_document_reasoning",
+  "gold_documents": 1,
+  "fact": "The runbook should flag a noisy tenant when eviction_rate exceeds 0.5%",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "linear"
+  ],
+  "holder_rank": 0,
+  "has_number": true,
+  "words": 13,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "figure",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0301.F2",
+  "question_id": "qst_0301",
+  "question": "During the 2025-02-10 capacity incident, what two thresholds should trigger noisy-tenant detection in the runbook update, and how long were SLA targets breached?",
+  "question_type": "intra_document_reasoning",
+  "gold_documents": 1,
+  "fact": "The runbook should flag a noisy tenant when 99.9th-percentile latency rises to more than 2x baseline",
+  "reached": null,
+  "where": "not checkable (worded differently from the documents)",
+  "holder_sources": [],
+  "holder_rank": null,
+  "has_number": true,
+  "words": 18,
+  "outcome": "reworded_reached",
+  "judge": {
+   "status": "one_passage",
+   "passages": [
+    "dsid_ca18eee975d34f4da7b1b880ea5ac271#5"
+   ],
+   "why_words_differ": "notation differs ('99.9 latency increase > 2x over baseline' vs 99.9th-percentile, more than 2x)"
+  },
+  "kind": "figure",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0301.F3",
+  "question_id": "qst_0301",
+  "question": "During the 2025-02-10 capacity incident, what two thresholds should trigger noisy-tenant detection in the runbook update, and how long were SLA targets breached?",
+  "question_type": "intra_document_reasoning",
+  "gold_documents": 1,
+  "fact": "During the 2025-02-10 capacity incident, SLA targets were breached for about 45 minutes",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "linear"
+  ],
+  "holder_rank": 1,
+  "has_number": true,
+  "words": 15,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "date_time",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0451.F1",
+  "question_id": "qst_0451",
+  "question": "In the team chat about posting jokes when an AI makes things up in production, what tagging requirement did someone propose for the memes?",
+  "question_type": "miscellaneous",
+  "gold_documents": 1,
+  "fact": "Ava proposed that any memes posted should be tagged with the model version.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "slack"
+  ],
+  "holder_rank": 0,
+  "has_number": false,
+  "words": 13,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "rule_requirement",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0341.F1",
+  "question_id": "qst_0341",
+  "question": "For the Proxima Bank 429 spike after priority routing rollout, what caused the throttling and what temporary policy exception did we apply, and how do we verify it is not burning the enterprise route SLOs?",
+  "question_type": "project_related",
+  "gold_documents": 2,
+  "fact": "The 429 throttling was triggered by hot-route protection admission control in us-east.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "confluence",
+   "jira"
+  ],
+  "holder_rank": 5,
+  "has_number": true,
+  "words": 14,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "cause_reason",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0341.F2",
+  "question_id": "qst_0341",
+  "question": "For the Proxima Bank 429 spike after priority routing rollout, what caused the throttling and what temporary policy exception did we apply, and how do we verify it is not burning the enterprise route SLOs?",
+  "question_type": "project_related",
+  "gold_documents": 2,
+  "fact": "Proxima bursty combined chat and embeddings traffic exceeded the enterprise route-group burst or budget during a regional pressure window (elevated queue depth or scheduler lag).",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "jira"
+  ],
+  "holder_rank": 10,
+  "has_number": false,
+  "words": 26,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "cause_reason",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0341.F3",
+  "question_id": "qst_0341",
+  "question": "For the Proxima Bank 429 spike after priority routing rollout, what caused the throttling and what temporary policy exception did we apply, and how do we verify it is not burning the enterprise route SLOs?",
+  "question_type": "project_related",
+  "gold_documents": 2,
+  "fact": "Requests were denied with reason overload_protection_admission/admission_over_budget and included a Retry-After of 1 to 2 seconds.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "jira"
+  ],
+  "holder_rank": 1,
+  "has_number": true,
+  "words": 21,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "name_identifier",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0341.F4",
+  "question_id": "qst_0341",
+  "question": "For the Proxima Bank 429 spike after priority routing rollout, what caused the throttling and what temporary policy exception did we apply, and how do we verify it is not burning the enterprise route SLOs?",
+  "question_type": "project_related",
+  "gold_documents": 2,
+  "fact": "The throttling was not primarily caused by quota limits.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "confluence"
+  ],
+  "holder_rank": 13,
+  "has_number": false,
+  "words": 9,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "cause_reason",
+  "list_item": false,
+  "combines": false,
+  "negative": true
+ },
+ {
+  "fid": "qst_0341.F5",
+  "question_id": "qst_0341",
+  "question": "For the Proxima Bank 429 spike after priority routing rollout, what caused the throttling and what temporary policy exception did we apply, and how do we verify it is not burning the enterprise route SLOs?",
+  "question_type": "project_related",
+  "gold_documents": 2,
+  "fact": "A temporary region-scoped policy override was applied for PROXIMA-ENT-014 to increase the burst multiplier or budget for chat and embeddings in us-east only.",
+  "reached": null,
+  "where": "not checkable (worded differently from the documents)",
+  "holder_sources": [],
+  "holder_rank": null,
+  "has_number": true,
+  "words": 27,
+  "outcome": "reworded_reached",
+  "judge": {
+   "status": "one_passage",
+   "passages": [
+    "dsid_1980f45c3fb4455f943a2b030892ae90#8"
+   ],
+   "why_words_differ": "paraphrase: 'guarded exception', 'increase burst multiplier', '14-day expiry' vs 'temporary region-scoped policy override'"
+  },
+  "kind": "action_step",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0341.F6",
+  "question_id": "qst_0341",
+  "question": "For the Proxima Bank 429 spike after priority routing rollout, what caused the throttling and what temporary policy exception did we apply, and how do we verify it is not burning the enterprise route SLOs?",
+  "question_type": "project_related",
+  "gold_documents": 2,
+  "fact": "The override was time-boxed for 14 days and included guardrails or auto-rollback.",
+  "reached": null,
+  "where": "not checkable (worded differently from the documents)",
+  "holder_sources": [],
+  "holder_rank": null,
+  "has_number": true,
+  "words": 14,
+  "outcome": "reworded_reached",
+  "judge": {
+   "status": "one_passage",
+   "passages": [
+    "dsid_1980f45c3fb4455f943a2b030892ae90#11"
+   ],
+   "why_words_differ": "paraphrase: '14-day expiry' / 'automated rollback guardrails'"
+  },
+  "kind": "date_time",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0341.F7",
+  "question_id": "qst_0341",
+  "question": "For the Proxima Bank 429 spike after priority routing rollout, what caused the throttling and what temporary policy exception did we apply, and how do we verify it is not burning the enterprise route SLOs?",
+  "question_type": "project_related",
+  "gold_documents": 2,
+  "fact": "To verify the exception is not burning enterprise route SLOs, monitor enterprise protected route by-region dashboards for chat/completions and embeddings.",
+  "reached": null,
+  "where": "not checkable (worded differently from the documents)",
+  "holder_sources": [],
+  "holder_rank": null,
+  "has_number": false,
+  "words": 22,
+  "outcome": "inferred",
+  "judge": {
+   "status": "inferred",
+   "passages": [
+    "dsid_1980f45c3fb4455f943a2b030892ae90#8",
+    "dsid_1980f45c3fb4455f943a2b030892ae90#9",
+    "dsid_49fa5cfd95624dbeb6eaa535f9959470#2"
+   ],
+   "why_words_differ": "concluded from post-change review on 'enterprise SLO dashboards' plus SLO doc's per route x region x tier SLIs; never written as a verification step"
+  },
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0341.F8",
+  "question_id": "qst_0341",
+  "question": "For the Proxima Bank 429 spike after priority routing rollout, what caused the throttling and what temporary policy exception did we apply, and how do we verify it is not burning the enterprise route SLOs?",
+  "question_type": "project_related",
+  "gold_documents": 2,
+  "fact": "Verify enterprise error-budget burn or availability and p95 or p99 latency remain within SLO targets.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "confluence"
+  ],
+  "holder_rank": 20,
+  "has_number": true,
+  "words": 16,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0341.F9",
+  "question_id": "qst_0341",
+  "question": "For the Proxima Bank 429 spike after priority routing rollout, what caused the throttling and what temporary policy exception did we apply, and how do we verify it is not burning the enterprise route SLOs?",
+  "question_type": "project_related",
+  "gold_documents": 2,
+  "fact": "Verify 5xx rates stay below burn thresholds.",
+  "reached": null,
+  "where": "not checkable (worded differently from the documents)",
+  "holder_sources": [],
+  "holder_rank": null,
+  "has_number": true,
+  "words": 7,
+  "outcome": "inferred",
+  "judge": {
+   "status": "inferred",
+   "passages": [
+    "dsid_1980f45c3fb4455f943a2b030892ae90#3",
+    "dsid_49fa5cfd95624dbeb6eaa535f9959470#2",
+    "dsid_49fa5cfd95624dbeb6eaa535f9959470#9"
+   ],
+   "why_words_differ": "concluded: 5xx counted as availability failures and burn-rate thresholds defined separately; no passage says to verify 5xx vs burn thresholds for the exception"
+  },
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0341.F10",
+  "question_id": "qst_0341",
+  "question": "For the Proxima Bank 429 spike after priority routing rollout, what caused the throttling and what temporary policy exception did we apply, and how do we verify it is not burning the enterprise route SLOs?",
+  "question_type": "project_related",
+  "gold_documents": 2,
+  "fact": "Verify enterprise overload or admission-control 429s and enterprise shed_rate remain near zero (alert if sustained).",
+  "reached": null,
+  "where": "not checkable (worded differently from the documents)",
+  "holder_sources": [],
+  "holder_rank": null,
+  "has_number": true,
+  "words": 17,
+  "outcome": "reworded_reached",
+  "judge": {
+   "status": "several_passages",
+   "passages": [
+    "dsid_1980f45c3fb4455f943a2b030892ae90#8",
+    "dsid_49fa5cfd95624dbeb6eaa535f9959470#9",
+    "dsid_49fa5cfd95624dbeb6eaa535f9959470#10"
+   ],
+   "why_words_differ": "split across docs: 'must monitor shed rates' in ticket; 'non-zero sustained' enterprise shedding trigger and shed_rate > 0.1% for 10 min page in SLO doc; 'near zero' is paraphrase"
+  },
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0177.F1",
+  "question_id": "qst_0177",
+  "question": "What were the final concession terms approved for the retail partner purchase through the major cloud providers marketplace, specifically the first year price reduction and the referral payout schedule after launch?",
+  "question_type": "semantic",
+  "gold_documents": 1,
+  "fact": "The final approved concession was a 30% discount off list price for the first 12 months.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "gmail"
+  ],
+  "holder_rank": 0,
+  "has_number": true,
+  "words": 16,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "figure",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0177.F2",
+  "question_id": "qst_0177",
+  "question": "What were the final concession terms approved for the retail partner purchase through the major cloud providers marketplace, specifically the first year price reduction and the referral payout schedule after launch?",
+  "question_type": "semantic",
+  "gold_documents": 1,
+  "fact": "The referral or partner payout was set at 15% revenue share for the first two quarters after go-live.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "gmail"
+  ],
+  "holder_rank": 1,
+  "has_number": true,
+  "words": 19,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "figure",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0177.F3",
+  "question_id": "qst_0177",
+  "question": "What were the final concession terms approved for the retail partner purchase through the major cloud providers marketplace, specifically the first year price reduction and the referral payout schedule after launch?",
+  "question_type": "semantic",
+  "gold_documents": 1,
+  "fact": "After the first two quarters post launch, the referral or partner payout stepped down to 8% unless renewed via executive review.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "gmail"
+  ],
+  "holder_rank": 0,
+  "has_number": true,
+  "words": 21,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "figure",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0003.F1",
+  "question_id": "qst_0003",
+  "question": "What are the acceptance criteria for the project introducing an algorithm to generate interactive UI color states and a Kappa-style elevation scale for dense table and grid components?",
+  "question_type": "basic",
+  "gold_documents": 1,
+  "fact": "Deliver a stable design JSON token spec that includes the base palette, interactive derivative tokens (for example color.interactive.primary.hover), and elevation.kappa.0-6 with explicit shadow parameters",
+  "reached": null,
+  "where": "not checkable (worded differently from the documents)",
+  "holder_sources": [],
+  "holder_rank": null,
+  "has_number": true,
+  "words": 30,
+  "outcome": "reworded_reached",
+  "judge": {
+   "status": "one_passage",
+   "passages": [
+    "dsid_3fd6af404fae48e6b8ea5a57875ef78f#1"
+   ],
+   "why_words_differ": "words match (acceptance criterion 1 nearly verbatim)"
+  },
+  "kind": "rule_requirement",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0003.F2",
+  "question_id": "qst_0003",
+  "question": "What are the acceptance criteria for the project introducing an algorithm to generate interactive UI color states and a Kappa-style elevation scale for dense table and grid components?",
+  "question_type": "basic",
+  "gold_documents": 1,
+  "fact": "Land an implementation-ready tokens PR in the frontend repo with DataGrid and Table consuming the new tokens behind a feature flag",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "linear"
+  ],
+  "holder_rank": 1,
+  "has_number": false,
+  "words": 22,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "rule_requirement",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0003.F3",
+  "question_id": "qst_0003",
+  "question": "What are the acceptance criteria for the project introducing an algorithm to generate interactive UI color states and a Kappa-style elevation scale for dense table and grid components?",
+  "question_type": "basic",
+  "gold_documents": 1,
+  "fact": "Pass accessibility contrast checks for all interactive states, meeting 3:1 where applicable and 4.5:1 for primary actionable text",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "linear"
+  ],
+  "holder_rank": 1,
+  "has_number": true,
+  "words": 21,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "rule_requirement",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0003.F4",
+  "question_id": "qst_0003",
+  "question": "What are the acceptance criteria for the project introducing an algorithm to generate interactive UI color states and a Kappa-style elevation scale for dense table and grid components?",
+  "question_type": "basic",
+  "gold_documents": 1,
+  "fact": "Add per-component visual regression snapshots and tolerances with no regressions beyond approved deltas",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "linear"
+  ],
+  "holder_rank": 1,
+  "has_number": false,
+  "words": 14,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "rule_requirement",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0003.F5",
+  "question_id": "qst_0003",
+  "question": "What are the acceptance criteria for the project introducing an algorithm to generate interactive UI color states and a Kappa-style elevation scale for dense table and grid components?",
+  "question_type": "basic",
+  "gold_documents": 1,
+  "fact": "Update the Figma design kit with tokenized components and guidance notes",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "linear"
+  ],
+  "holder_rank": 1,
+  "has_number": false,
+  "words": 11,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "rule_requirement",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0003.F6",
+  "question_id": "qst_0003",
+  "question": "What are the acceptance criteria for the project introducing an algorithm to generate interactive UI color states and a Kappa-style elevation scale for dense table and grid components?",
+  "question_type": "basic",
+  "gold_documents": 1,
+  "fact": "Execute a rollout plan from an internal canary on analytics dashboards to staged rollout and full migration with a fallback",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "linear"
+  ],
+  "holder_rank": 2,
+  "has_number": false,
+  "words": 20,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "rule_requirement",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0433.F1",
+  "question_id": "qst_0433",
+  "question": "What is Redwood Inference's end-to-end process for rotating secrets and credentials used by production services (including emergency rotation)?",
+  "question_type": "completeness",
+  "gold_documents": 6,
+  "fact": "For planned rotation, the owning service team identifies the secret (Vault path) and all consumers via the Credential Dependencies inventory.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "confluence"
+  ],
+  "holder_rank": 4,
+  "has_number": false,
+  "words": 20,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0433.F2",
+  "question_id": "qst_0433",
+  "question": "What is Redwood Inference's end-to-end process for rotating secrets and credentials used by production services (including emergency rotation)?",
+  "question_type": "completeness",
+  "gold_documents": 6,
+  "fact": "For planned rotation, the owning service team confirms tier and cadence and access before rotating.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "confluence"
+  ],
+  "holder_rank": 1,
+  "has_number": false,
+  "words": 15,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0433.F3",
+  "question_id": "qst_0433",
+  "question": "What is Redwood Inference's end-to-end process for rotating secrets and credentials used by production services (including emergency rotation)?",
+  "question_type": "completeness",
+  "gold_documents": 6,
+  "fact": "Preferred planned rotation method is dual-valid overlap: generate a new credential, write it as a new Vault version without deleting the old, deploy/update consumers to read the latest and if applicable accept both old and new, monitor authentication and service health for at least 30 minutes (at least 60 minutes for Tier 0), then disable or deprecate the old credential at the issuer, and remove the old Vault version after the overlap window (default 7 days).",
+  "reached": null,
+  "where": "not checkable (worded differently from the documents)",
+  "holder_sources": [],
+  "holder_rank": null,
+  "has_number": true,
+  "words": 78,
+  "outcome": "reworded_reached",
+  "judge": {
+   "status": "several_passages",
+   "passages": [
+    "dsid_cf06e75be4f94156ac338f62e3ee028b#0",
+    "dsid_cf06e75be4f94156ac338f62e3ee028b#1",
+    "dsid_74ebb73359364bc791707a92a3227e3a#0"
+   ],
+   "why_words_differ": "split across passages/docs; steps paraphrased ('deprecation window'), 60 min for Tier 0 only in verification checklist"
+  },
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0433.F4",
+  "question_id": "qst_0433",
+  "question": "What is Redwood Inference's end-to-end process for rotating secrets and credentials used by production services (including emergency rotation)?",
+  "question_type": "completeness",
+  "gold_documents": 6,
+  "fact": "If overlap is not possible, planned rotation uses a cutover: schedule a change window, change the credential at the issuer, immediately update Vault, restart or redeploy all consumers, and validate with rollback if needed.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "confluence"
+  ],
+  "holder_rank": 6,
+  "has_number": false,
+  "words": 34,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0433.F5",
+  "question_id": "qst_0433",
+  "question": "What is Redwood Inference's end-to-end process for rotating secrets and credentials used by production services (including emergency rotation)?",
+  "question_type": "completeness",
+  "gold_documents": 6,
+  "fact": "After any rotation, the team completes a verification checklist that includes ensuring all rollouts/reloads completed, monitoring auth/dependency metrics, running critical canaries, confirming audit logs, and revoking any break-glass access.",
+  "reached": false,
+  "where": "its passage reached the model but was cut at 1,200 characters",
+  "holder_sources": [
+   "confluence"
+  ],
+  "holder_rank": 12,
+  "has_number": false,
+  "words": 32,
+  "outcome": "reworded_reached",
+  "judge": {
+   "status": "several_passages",
+   "passages": [
+    "dsid_74ebb73359364bc791707a92a3227e3a#0",
+    "dsid_74ebb73359364bc791707a92a3227e3a#1"
+   ],
+   "why_words_differ": "summary of a long checklist split across passages ('canary requests', 'Audit checks')"
+  },
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0433.F6",
+  "question_id": "qst_0433",
+  "question": "What is Redwood Inference's end-to-end process for rotating secrets and credentials used by production services (including emergency rotation)?",
+  "question_type": "completeness",
+  "gold_documents": 6,
+  "fact": "After any rotation, the rotation event is recorded in a change record.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "confluence"
+  ],
+  "holder_rank": 1,
+  "has_number": false,
+  "words": 12,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0433.F7",
+  "question_id": "qst_0433",
+  "question": "What is Redwood Inference's end-to-end process for rotating secrets and credentials used by production services (including emergency rotation)?",
+  "question_type": "completeness",
+  "gold_documents": 6,
+  "fact": "For emergency rotation (suspected compromise, exposure, or anomalies), an incident is opened and emergency secret rotation is declared using secret names/paths only.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "confluence"
+  ],
+  "holder_rank": 5,
+  "has_number": false,
+  "words": 23,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0433.F8",
+  "question_id": "qst_0433",
+  "question": "What is Redwood Inference's end-to-end process for rotating secrets and credentials used by production services (including emergency rotation)?",
+  "question_type": "completeness",
+  "gold_documents": 6,
+  "fact": "During emergency rotation, break-glass access may be used via the approved workflow for time-limited (60 minute) Tier 0/1 rotate access with full audit logging.",
+  "reached": null,
+  "where": "not checkable (worded differently from the documents)",
+  "holder_sources": [],
+  "holder_rank": null,
+  "has_number": true,
+  "words": 27,
+  "outcome": "reworded_reached",
+  "judge": {
+   "status": "several_passages",
+   "passages": [
+    "dsid_a898d2541b944cdebeec03ec9d9ba130#0",
+    "dsid_a898d2541b944cdebeec03ec9d9ba130#1"
+   ],
+   "why_words_differ": "split across passages: grants/60-minute/logging in #0, 'approved workflow' in #1"
+  },
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0433.F9",
+  "question_id": "qst_0433",
+  "question": "What is Redwood Inference's end-to-end process for rotating secrets and credentials used by production services (including emergency rotation)?",
+  "question_type": "completeness",
+  "gold_documents": 6,
+  "fact": "During emergency rotation, IC/Security/SRE prioritize rotating Tier 0 then Tier 1.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "confluence"
+  ],
+  "holder_rank": 11,
+  "has_number": true,
+  "words": 13,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0433.F10",
+  "question_id": "qst_0433",
+  "question": "What is Redwood Inference's end-to-end process for rotating secrets and credentials used by production services (including emergency rotation)?",
+  "question_type": "completeness",
+  "gold_documents": 6,
+  "fact": "During emergency rotation, they use dual-valid overlap where possible or cutover otherwise, update the issuer and Vault, and restart/redeploy all consumers.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "confluence"
+  ],
+  "holder_rank": 6,
+  "has_number": false,
+  "words": 23,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0433.F11",
+  "question_id": "qst_0433",
+  "question": "What is Redwood Inference's end-to-end process for rotating secrets and credentials used by production services (including emergency rotation)?",
+  "question_type": "completeness",
+  "gold_documents": 6,
+  "fact": "During emergency rotation, they pause to reassess if impact worsens and record exact timestamps.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "confluence"
+  ],
+  "holder_rank": 9,
+  "has_number": false,
+  "words": 14,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0433.F12",
+  "question_id": "qst_0433",
+  "question": "What is Redwood Inference's end-to-end process for rotating secrets and credentials used by production services (including emergency rotation)?",
+  "question_type": "completeness",
+  "gold_documents": 6,
+  "fact": "After emergency rotation, break-glass access is revoked immediately and the rotated secrets/services and any follow-up rotations (derived/cached tokens) are documented in the incident timeline and post-incident summary for Security review.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "confluence"
+  ],
+  "holder_rank": 10,
+  "has_number": false,
+  "words": 35,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0413.F1",
+  "question_id": "qst_0413",
+  "question": "Who approves terminating STALE-ORPHAN test instances after the 72h grace window-infra manager or cost-ops?",
+  "question_type": "conflicting_info",
+  "gold_documents": 2,
+  "fact": "The answer must state that Priya Desai (cost-ops) says cost-ops approves termination after the grace window.",
+  "reached": null,
+  "where": "not checkable (worded differently from the documents)",
+  "holder_sources": [],
+  "holder_rank": null,
+  "has_number": false,
+  "words": 18,
+  "outcome": "reworded_reached",
+  "judge": {
+   "status": "one_passage",
+   "passages": [
+    "dsid_6df52fdb96ae4edcb76464738bca3340#3"
+   ],
+   "why_words_differ": "words match ('Cost-ops approves termination once grace window expires')"
+  },
+  "kind": "who",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0413.F2",
+  "question_id": "qst_0413",
+  "question": "Who approves terminating STALE-ORPHAN test instances after the 72h grace window-infra manager or cost-ops?",
+  "question_type": "conflicting_info",
+  "gold_documents": 2,
+  "fact": "The answer must mention that Miguel Reyes asked about needing a short approval from the infra manager, but that this approval is not confirmed/recorded in the ticket.",
+  "reached": null,
+  "where": "not checkable (worded differently from the documents)",
+  "holder_sources": [],
+  "holder_rank": null,
+  "has_number": false,
+  "words": 28,
+  "outcome": "partly",
+  "judge": {
+   "status": "partly",
+   "passages": [
+    "dsid_6df52fdb96ae4edcb76464738bca3340#3"
+   ],
+   "why_words_differ": "Miguel's approval request stated (not specifically infra manager); infra manager approval is actually recorded (Nina Hwang), contradicting 'not recorded'"
+  },
+  "kind": "decision_status",
+  "list_item": false,
+  "combines": false,
+  "negative": true
+ },
+ {
+  "fid": "qst_0413.F3",
+  "question_id": "qst_0413",
+  "question": "Who approves terminating STALE-ORPHAN test instances after the 72h grace window-infra manager or cost-ops?",
+  "question_type": "conflicting_info",
+  "gold_documents": 2,
+  "fact": "The answer must keep the grace window as 72 hours (not a different duration).",
+  "reached": null,
+  "where": "not checkable (worded differently from the documents)",
+  "holder_sources": [],
+  "holder_rank": null,
+  "has_number": true,
+  "words": 14,
+  "outcome": "partly",
+  "judge": {
+   "status": "partly",
+   "passages": [
+    "dsid_6df52fdb96ae4edcb76464738bca3340#0",
+    "dsid_6df52fdb96ae4edcb76464738bca3340#3"
+   ],
+   "why_words_differ": "72h appears only as superseded value; passages say grace window is 5 business days (contradicts)"
+  },
+  "kind": "date_time",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0413.F6",
+  "question_id": "qst_0413",
+  "question": "Who approves terminating STALE-ORPHAN test instances after the 72h grace window-infra manager or cost-ops?",
+  "question_type": "conflicting_info",
+  "gold_documents": 2,
+  "fact": "The answer may mention that the runbook suggests notifying owners for 48 hours before cleanup, but must not change that duration.",
+  "reached": null,
+  "where": "not checkable (worded differently from the documents)",
+  "holder_sources": [],
+  "holder_rank": null,
+  "has_number": true,
+  "words": 21,
+  "outcome": "partly",
+  "judge": {
+   "status": "partly",
+   "passages": [
+    "dsid_6df52fdb96ae4edcb76464738bca3340#1"
+   ],
+   "why_words_differ": "runbook says notify owners and wait 5 business days; 48 hours not stated"
+  },
+  "kind": "date_time",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0383.F1",
+  "question_id": "qst_0383",
+  "question": "In a Private/VPC deployment, some users could complete SAML SSO but then immediately hit 403s because their admin group wasn't being recognized after an IdP/AD-connector upgrade (early March 2026). What was the underlying parsing problem with the comma-separated \"groups\" SAML attribute (why the first group didn't match), and what server-side patch fixed it?",
+  "question_type": "constrained",
+  "gold_documents": 1,
+  "fact": "The IdP upgrade caused the comma-separated SAML groups attribute to be emitted with a leading UTF-8 BOM (U+FEFF, bytes EF BB BF).",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "jira"
+  ],
+  "holder_rank": 5,
+  "has_number": true,
+  "words": 25,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "cause_reason",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0383.F2",
+  "question_id": "qst_0383",
+  "question": "In a Private/VPC deployment, some users could complete SAML SSO but then immediately hit 403s because their admin group wasn't being recognized after an IdP/AD-connector upgrade (early March 2026). What was the underlying parsing problem with the comma-separated \"groups\" SAML attribute (why the first group didn't match), and what server-side patch fixed it?",
+  "question_type": "constrained",
+  "gold_documents": 1,
+  "fact": "Because of the leading BOM, the first group value in the groups attribute was BOM-prefixed and did not exactly match the configured admin group string.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "jira"
+  ],
+  "holder_rank": 2,
+  "has_number": false,
+  "words": 26,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "cause_reason",
+  "list_item": false,
+  "combines": false,
+  "negative": true
+ },
+ {
+  "fid": "qst_0383.F3",
+  "question_id": "qst_0383",
+  "question": "In a Private/VPC deployment, some users could complete SAML SSO but then immediately hit 403s because their admin group wasn't being recognized after an IdP/AD-connector upgrade (early March 2026). What was the underlying parsing problem with the comma-separated \"groups\" SAML attribute (why the first group didn't match), and what server-side patch fixed it?",
+  "question_type": "constrained",
+  "gold_documents": 1,
+  "fact": "The server-side patch fixed the issue by normalizing and sanitizing the groups attribute before role mapping (stripping BOM and other invisible control characters, then trimming whitespace and splitting on commas).",
+  "reached": null,
+  "where": "not checkable (worded differently from the documents)",
+  "holder_sources": [],
+  "holder_rank": null,
+  "has_number": false,
+  "words": 31,
+  "outcome": "reworded_reached",
+  "judge": {
+   "status": "one_passage",
+   "passages": [
+    "dsid_3fb8a400e0cf42d0b19dc134e2b7f46c#4"
+   ],
+   "why_words_differ": "paraphrase: 'NormalizeUnicode(strip BOM and control chars) ... before splitting', 'strings.Split on comma and then TrimSpace'"
+  },
+  "kind": "action_step",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0303.F1",
+  "question_id": "qst_0303",
+  "question": "Which teams are required to sign off on the dedicated capacity intake rubric, and what two follow-up dependencies were noted for the next steps work?",
+  "question_type": "intra_document_reasoning",
+  "gold_documents": 1,
+  "fact": "The dedicated capacity intake rubric requires sign-off from Solutions, Sales, Runtime Eng, Capacity Ops, and Security.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "linear"
+  ],
+  "holder_rank": 1,
+  "has_number": false,
+  "words": 17,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "who",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0303.F2",
+  "question_id": "qst_0303",
+  "question": "Which teams are required to sign off on the dedicated capacity intake rubric, and what two follow-up dependencies were noted for the next steps work?",
+  "question_type": "intra_document_reasoning",
+  "gold_documents": 1,
+  "fact": "A follow-up dependency for next steps work was ENG-23145 for autoscaler safety checks.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "linear"
+  ],
+  "holder_rank": 0,
+  "has_number": true,
+  "words": 15,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "name_identifier",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0303.F3",
+  "question_id": "qst_0303",
+  "question": "Which teams are required to sign off on the dedicated capacity intake rubric, and what two follow-up dependencies were noted for the next steps work?",
+  "question_type": "intra_document_reasoning",
+  "gold_documents": 1,
+  "fact": "A follow-up dependency for next steps work was PM-904321 for Console intake form redesign.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "linear"
+  ],
+  "holder_rank": 0,
+  "has_number": true,
+  "words": 16,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "name_identifier",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0453.F1",
+  "question_id": "qst_0453",
+  "question": "Who is responsible for the stock canyon hero placeholder image that is suggested for demo slides, and what is its current status?",
+  "question_type": "miscellaneous",
+  "gold_documents": 1,
+  "fact": "Priya Desai is responsible for the hero-placeholder-canyon.jpg stock canyon hero placeholder image suggested for demo slides.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "google_drive"
+  ],
+  "holder_rank": 0,
+  "has_number": false,
+  "words": 19,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "who",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0453.F2",
+  "question_id": "qst_0453",
+  "question": "Who is responsible for the stock canyon hero placeholder image that is suggested for demo slides, and what is its current status?",
+  "question_type": "miscellaneous",
+  "gold_documents": 1,
+  "fact": "The current status of the hero-placeholder-canyon.jpg stock canyon hero image is needs crop.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "google_drive"
+  ],
+  "holder_rank": 0,
+  "has_number": false,
+  "words": 16,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "decision_status",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0343.F1",
+  "question_id": "qst_0343",
+  "question": "What caused the savings $/day estimates in Optimization Suggestions beta to not match Arkadia Finance billing, and what UI or API changes should we make to prevent this confusion going forward?",
+  "question_type": "project_related",
+  "gold_documents": 3,
+  "fact": "The Optimization Suggestions beta savings $/day value is an estimated compute cost delta derived from telemetry aggregates (for example GPU seconds and tokens) over a trailing baseline window (typically the last 7 days) and includes a stale_as_of timestamp.",
+  "reached": null,
+  "where": "not checkable (worded differently from the documents)",
+  "holder_sources": [],
+  "holder_rank": null,
+  "has_number": true,
+  "words": 40,
+  "outcome": "reworded_reached",
+  "judge": {
+   "status": "one_passage",
+   "passages": [
+    "dsid_85ee9562e05d457b9e32785343777359#9"
+   ],
+   "why_words_differ": "paraphrase (compute-cost attribution aggregates GPU-sec + token pricing; trailing 7d baseline + stale_as_of) split across bullets"
+  },
+  "kind": "description",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0343.F2",
+  "question_id": "qst_0343",
+  "question": "What caused the savings $/day estimates in Optimization Suggestions beta to not match Arkadia Finance billing, and what UI or API changes should we make to prevent this confusion going forward?",
+  "question_type": "project_related",
+  "gold_documents": 3,
+  "fact": "The Optimization Suggestions beta savings $/day estimate is not intended to match net invoiced or billed totals.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "jira"
+  ],
+  "holder_rank": 0,
+  "has_number": false,
+  "words": 17,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "description",
+  "list_item": false,
+  "combines": false,
+  "negative": true
+ },
+ {
+  "fid": "qst_0343.F3",
+  "question_id": "qst_0343",
+  "question": "What caused the savings $/day estimates in Optimization Suggestions beta to not match Arkadia Finance billing, and what UI or API changes should we make to prevent this confusion going forward?",
+  "question_type": "project_related",
+  "gold_documents": 3,
+  "fact": "Arkadia compared the headline savings $/day estimate to Billing export total_cost net of credits and committed use discounts, contributing to the mismatch.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "jira"
+  ],
+  "holder_rank": 4,
+  "has_number": false,
+  "words": 23,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "cause_reason",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0343.F4",
+  "question_id": "qst_0343",
+  "question": "What caused the savings $/day estimates in Optimization Suggestions beta to not match Arkadia Finance billing, and what UI or API changes should we make to prevent this confusion going forward?",
+  "question_type": "project_related",
+  "gold_documents": 3,
+  "fact": "There was an initial day boundary mismatch due to local time versus UTC alignment when comparing the estimate to billing.",
+  "reached": null,
+  "where": "not checkable (worded differently from the documents)",
+  "holder_sources": [],
+  "holder_rank": null,
+  "has_number": false,
+  "words": 20,
+  "outcome": "reworded_reached",
+  "judge": {
+   "status": "one_passage",
+   "passages": [
+    "dsid_85ee9562e05d457b9e32785343777359#6"
+   ],
+   "why_words_differ": "paraphrase ('billing is per-day UTC; customer initially compared to local-time days'; no 'day boundary' wording)"
+  },
+  "kind": "cause_reason",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0343.F5",
+  "question_id": "qst_0343",
+  "question": "What caused the savings $/day estimates in Optimization Suggestions beta to not match Arkadia Finance billing, and what UI or API changes should we make to prevent this confusion going forward?",
+  "question_type": "project_related",
+  "gold_documents": 3,
+  "fact": "Caching was only rolled out to about 50% of traffic for about 12 hours, so realized first day savings were much lower than a full adoption daily estimate.",
+  "reached": null,
+  "where": "not checkable (worded differently from the documents)",
+  "holder_sources": [],
+  "holder_rank": null,
+  "has_number": true,
+  "words": 28,
+  "outcome": "reworded_reached",
+  "judge": {
+   "status": "one_passage",
+   "passages": [
+    "dsid_85ee9562e05d457b9e32785343777359#4"
+   ],
+   "why_words_differ": "paraphrase (phased rollout at 50% traffic for ~12 hours; observed savings ~25% of headline daily number)"
+  },
+  "kind": "cause_reason",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0343.F6",
+  "question_id": "qst_0343",
+  "question": "What caused the savings $/day estimates in Optimization Suggestions beta to not match Arkadia Finance billing, and what UI or API changes should we make to prevent this confusion going forward?",
+  "question_type": "project_related",
+  "gold_documents": 3,
+  "fact": "Cache warm up during the first 6 to 12+ hours reduced cache hit uplift compared to the estimator steady state assumption, lowering realized savings versus the estimate.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "jira"
+  ],
+  "holder_rank": 14,
+  "has_number": true,
+  "words": 27,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "cause_reason",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0343.F7",
+  "question_id": "qst_0343",
+  "question": "What caused the savings $/day estimates in Optimization Suggestions beta to not match Arkadia Finance billing, and what UI or API changes should we make to prevent this confusion going forward?",
+  "question_type": "project_related",
+  "gold_documents": 3,
+  "fact": "For Arkadia dedicated or VPC deployments, the estimator could not access effective contracted pricing and fell back to catalog or list token pricing, inflating the USD per day estimate.",
+  "reached": null,
+  "where": "not checkable (worded differently from the documents)",
+  "holder_sources": [],
+  "holder_rank": null,
+  "has_number": false,
+  "words": 29,
+  "outcome": "reworded_reached",
+  "judge": {
+   "status": "one_passage",
+   "passages": [
+    "dsid_ae2e969d0b924ebbb19ab2f5d1b95125#5"
+   ],
+   "why_words_differ": "stated via log line (price_source=catalog_fallback reason=missing_effective_price project=prod-vpc) plus 'using list price' / 'explains the $ inflation'"
+  },
+  "kind": "cause_reason",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0343.F8",
+  "question_id": "qst_0343",
+  "question": "What caused the savings $/day estimates in Optimization Suggestions beta to not match Arkadia Finance billing, and what UI or API changes should we make to prevent this confusion going forward?",
+  "question_type": "project_related",
+  "gold_documents": 3,
+  "fact": "UI should label the savings $/day metric as a compute cost estimate and explicitly note it is not the invoice total.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "jira"
+  ],
+  "holder_rank": 2,
+  "has_number": false,
+  "words": 21,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0343.F9",
+  "question_id": "qst_0343",
+  "question": "What caused the savings $/day estimates in Optimization Suggestions beta to not match Arkadia Finance billing, and what UI or API changes should we make to prevent this confusion going forward?",
+  "question_type": "project_related",
+  "gold_documents": 3,
+  "fact": "UI should display the baseline window used for the estimate and the stale_as_of timestamp with timezone.",
+  "reached": null,
+  "where": "not checkable (worded differently from the documents)",
+  "holder_sources": [],
+  "holder_rank": null,
+  "has_number": false,
+  "words": 18,
+  "outcome": "inferred",
+  "judge": {
+   "status": "inferred",
+   "passages": [
+    "dsid_85ee9562e05d457b9e32785343777359#9"
+   ],
+   "why_words_differ": "recommendation not written; derived from time-window/local-time mismatch cause"
+  },
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0343.F10",
+  "question_id": "qst_0343",
+  "question": "What caused the savings $/day estimates in Optimization Suggestions beta to not match Arkadia Finance billing, and what UI or API changes should we make to prevent this confusion going forward?",
+  "question_type": "project_related",
+  "gold_documents": 3,
+  "fact": "UI should clearly call out that the estimate assumes 100% traffic adoption for the shown scope and provide a rollout or adoption scaling control or a scaled range for partial rollouts.",
+  "reached": null,
+  "where": "not checkable (worded differently from the documents)",
+  "holder_sources": [],
+  "holder_rank": null,
+  "has_number": true,
+  "words": 31,
+  "outcome": "reworded_reached",
+  "judge": {
+   "status": "one_passage",
+   "passages": [
+    "dsid_85ee9562e05d457b9e32785343777359#10"
+   ],
+   "why_words_differ": "paraphrase (promote assumption text '100% adoption'; UI control to scale savings by rollout percentage)"
+  },
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0343.F11",
+  "question_id": "qst_0343",
+  "question": "What caused the savings $/day estimates in Optimization Suggestions beta to not match Arkadia Finance billing, and what UI or API changes should we make to prevent this confusion going forward?",
+  "question_type": "project_related",
+  "gold_documents": 3,
+  "fact": "When price_source is catalog_fallback or effective pricing is unavailable, UI should de emphasize or suppress the USD per day figure or show a strong warning, and consider making percent savings the primary sortable metric.",
+  "reached": null,
+  "where": "not checkable (worded differently from the documents)",
+  "holder_sources": [],
+  "holder_rank": null,
+  "has_number": false,
+  "words": 36,
+  "outcome": "several",
+  "judge": {
+   "status": "several_passages",
+   "passages": [
+    "dsid_ae2e969d0b924ebbb19ab2f5d1b95125#5",
+    "dsid_ae2e969d0b924ebbb19ab2f5d1b95125#9"
+   ],
+   "why_words_differ": "split across chat messages; 'hide $ or flag it prominently', '% savings as primary' (sortable not stated)"
+  },
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0343.F12",
+  "question_id": "qst_0343",
+  "question": "What caused the savings $/day estimates in Optimization Suggestions beta to not match Arkadia Finance billing, and what UI or API changes should we make to prevent this confusion going forward?",
+  "question_type": "project_related",
+  "gold_documents": 3,
+  "fact": "UI should include a link or explanation for how to compare to billing, including the effects of discounts and credits, and recommend comparing against compute only inference cost in usage analytics for an apples to apples view.",
+  "reached": null,
+  "where": "not checkable (worded differently from the documents)",
+  "holder_sources": [],
+  "holder_rank": null,
+  "has_number": false,
+  "words": 37,
+  "outcome": "inferred",
+  "judge": {
+   "status": "inferred",
+   "passages": [
+    "dsid_85ee9562e05d457b9e32785343777359#9",
+    "dsid_85ee9562e05d457b9e32785343777359#10"
+   ],
+   "why_words_differ": "usage-analytics apples-to-apples comparison is stated as Support/CS guidance, not a UI change; docs section + discounts/credits text in product follow-ups"
+  },
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0343.F13",
+  "question_id": "qst_0343",
+  "question": "What caused the savings $/day estimates in Optimization Suggestions beta to not match Arkadia Finance billing, and what UI or API changes should we make to prevent this confusion going forward?",
+  "question_type": "project_related",
+  "gold_documents": 3,
+  "fact": "API should expose pricing and assumption metadata including price_source (effective versus catalog_fallback) and whether savings USD uses list price.",
+  "reached": null,
+  "where": "not checkable (worded differently from the documents)",
+  "holder_sources": [],
+  "holder_rank": null,
+  "has_number": false,
+  "words": 21,
+  "outcome": "several",
+  "judge": {
+   "status": "several_passages",
+   "passages": [
+    "dsid_ae2e969d0b924ebbb19ab2f5d1b95125#6",
+    "dsid_ae2e969d0b924ebbb19ab2f5d1b95125#9"
+   ],
+   "why_words_differ": "split across chat messages (bubble price_source into response; savings_usd_is_estimated_from_list_price field)"
+  },
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0343.F14",
+  "question_id": "qst_0343",
+  "question": "What caused the savings $/day estimates in Optimization Suggestions beta to not match Arkadia Finance billing, and what UI or API changes should we make to prevent this confusion going forward?",
+  "question_type": "project_related",
+  "gold_documents": 3,
+  "fact": "API should return the exact baseline window and stale_as_of values used to compute the estimate.",
+  "reached": null,
+  "where": "not checkable (worded differently from the documents)",
+  "holder_sources": [],
+  "holder_rank": null,
+  "has_number": false,
+  "words": 17,
+  "outcome": "inferred",
+  "judge": {
+   "status": "inferred",
+   "passages": [
+    "dsid_85ee9562e05d457b9e32785343777359#9"
+   ],
+   "why_words_differ": "API recommendation not written; derived from baseline-window/stale_as_of mismatch"
+  },
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0343.F15",
+  "question_id": "qst_0343",
+  "question": "What caused the savings $/day estimates in Optimization Suggestions beta to not match Arkadia Finance billing, and what UI or API changes should we make to prevent this confusion going forward?",
+  "question_type": "project_related",
+  "gold_documents": 3,
+  "fact": "API should support adoption scaling via an adoption_factor and or scaled_savings field or inputs to compute scaled savings client side.",
+  "reached": null,
+  "where": "not checkable (worded differently from the documents)",
+  "holder_sources": [],
+  "holder_rank": null,
+  "has_number": false,
+  "words": 22,
+  "outcome": "reworded_reached",
+  "judge": {
+   "status": "one_passage",
+   "passages": [
+    "dsid_85ee9562e05d457b9e32785343777359#10"
+   ],
+   "why_words_differ": "paraphrase ('optional field in suggestion payload for adoption_factor' vs API)"
+  },
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0343.F16",
+  "question_id": "qst_0343",
+  "question": "What caused the savings $/day estimates in Optimization Suggestions beta to not match Arkadia Finance billing, and what UI or API changes should we make to prevent this confusion going forward?",
+  "question_type": "project_related",
+  "gold_documents": 3,
+  "fact": "API should downgrade or flag confidence when core pricing inputs are missing so the system does not present medium confidence while dollars are based on fallback pricing.",
+  "reached": null,
+  "where": "not checkable (worded differently from the documents)",
+  "holder_sources": [],
+  "holder_rank": null,
+  "has_number": false,
+  "words": 27,
+  "outcome": "reworded_reached",
+  "judge": {
+   "status": "one_passage",
+   "passages": [
+    "dsid_ae2e969d0b924ebbb19ab2f5d1b95125#7"
+   ],
+   "why_words_differ": "paraphrase (degrade confidence when core assumption missing; shouldn't read 'Medium')"
+  },
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0179.F1",
+  "question_id": "qst_0179",
+  "question": "What caused an enterprise tenant in Western Europe to suddenly get routed to a Southeast Asia edge during a short mid March 2026 load spike on the vectorization service, adding about 200ms and triggering ingestion timeouts, even though the tenant was supposed to stay in Europe?",
+  "question_type": "semantic",
+  "gold_documents": 1,
+  "fact": "A transient control-plane heartbeat lag occurred during high concurrent embedding load.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "jira"
+  ],
+  "holder_rank": 2,
+  "has_number": false,
+  "words": 12,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "cause_reason",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0179.F2",
+  "question_id": "qst_0179",
+  "question": "What caused an enterprise tenant in Western Europe to suddenly get routed to a Southeast Asia edge during a short mid March 2026 load spike on the vectorization service, adding about 200ms and triggering ingestion timeouts, even though the tenant was supposed to stay in Europe?",
+  "question_type": "semantic",
+  "gold_documents": 1,
+  "fact": "The heartbeat lag delayed the tenants residency-stamp refresh.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "jira"
+  ],
+  "holder_rank": 1,
+  "has_number": false,
+  "words": 9,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "cause_reason",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0179.F3",
+  "question_id": "qst_0179",
+  "question": "What caused an enterprise tenant in Western Europe to suddenly get routed to a Southeast Asia edge during a short mid March 2026 load spike on the vectorization service, adding about 200ms and triggering ingestion timeouts, even though the tenant was supposed to stay in Europe?",
+  "question_type": "semantic",
+  "gold_documents": 1,
+  "fact": "The delayed refresh caused the residency stamp to be treated as stale and triggered fallback routing.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "jira"
+  ],
+  "holder_rank": 2,
+  "has_number": false,
+  "words": 16,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "cause_reason",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0179.F4",
+  "question_id": "qst_0179",
+  "question": "What caused an enterprise tenant in Western Europe to suddenly get routed to a Southeast Asia edge during a short mid March 2026 load spike on the vectorization service, adding about 200ms and triggering ingestion timeouts, even though the tenant was supposed to stay in Europe?",
+  "question_type": "semantic",
+  "gold_documents": 1,
+  "fact": "EU-edge NAT or DNS rebinds and brief EU authentication timeouts also occurred during the event.",
+  "reached": null,
+  "where": "not checkable (worded differently from the documents)",
+  "holder_sources": [],
+  "holder_rank": null,
+  "has_number": false,
+  "words": 16,
+  "outcome": "reworded_reached",
+  "judge": {
+   "status": "several_passages",
+   "passages": [
+    "dsid_a0f25cffcb264f0ea6eba5e501de0e08#3",
+    "dsid_a0f25cffcb264f0ea6eba5e501de0e08#4"
+   ],
+   "why_words_differ": "split across passages; DNS rebinds on eu-edge NATs in a comment, EU auth timeouts only as a conditional in investigation notes"
+  },
+  "kind": "cause_reason",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0179.F5",
+  "question_id": "qst_0179",
+  "question": "What caused an enterprise tenant in Western Europe to suddenly get routed to a Southeast Asia edge during a short mid March 2026 load spike on the vectorization service, adding about 200ms and triggering ingestion timeouts, even though the tenant was supposed to stay in Europe?",
+  "question_type": "semantic",
+  "gold_documents": 1,
+  "fact": "Because of these issues, routing selected a nearest healthy edge bucket that included ap-southeast.",
+  "reached": null,
+  "where": "not checkable (worded differently from the documents)",
+  "holder_sources": [],
+  "holder_rank": null,
+  "has_number": false,
+  "words": 15,
+  "outcome": "reworded_reached",
+  "judge": {
+   "status": "several_passages",
+   "passages": [
+    "dsid_a0f25cffcb264f0ea6eba5e501de0e08#1",
+    "dsid_a0f25cffcb264f0ea6eba5e501de0e08#4"
+   ],
+   "why_words_differ": "split across passages; cause-to-fallback link says 'APAC edges' while ap-southeast is named elsewhere"
+  },
+  "kind": "cause_reason",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0179.F6",
+  "question_id": "qst_0179",
+  "question": "What caused an enterprise tenant in Western Europe to suddenly get routed to a Southeast Asia edge during a short mid March 2026 load spike on the vectorization service, adding about 200ms and triggering ingestion timeouts, even though the tenant was supposed to stay in Europe?",
+  "question_type": "semantic",
+  "gold_documents": 1,
+  "fact": "Some requests from the Western Europe tenant were routed to a Southeast Asia edge.",
+  "reached": null,
+  "where": "not checkable (worded differently from the documents)",
+  "holder_sources": [],
+  "holder_rank": null,
+  "has_number": false,
+  "words": 14,
+  "outcome": "reworded_reached",
+  "judge": {
+   "status": "one_passage",
+   "passages": [
+    "dsid_a0f25cffcb264f0ea6eba5e501de0e08#0"
+   ],
+   "why_words_differ": "region codes (eu-west / ap-southeast) vs plain names (Western Europe / Southeast Asia)"
+  },
+  "kind": "decision_status",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0179.F7",
+  "question_id": "qst_0179",
+  "question": "What caused an enterprise tenant in Western Europe to suddenly get routed to a Southeast Asia edge during a short mid March 2026 load spike on the vectorization service, adding about 200ms and triggering ingestion timeouts, even though the tenant was supposed to stay in Europe?",
+  "question_type": "semantic",
+  "gold_documents": 1,
+  "fact": "The Southeast Asia routing added about 200 ms (about 220 ms RTT) latency and caused ingestion timeouts.",
+  "reached": null,
+  "where": "not checkable (worded differently from the documents)",
+  "holder_sources": [],
+  "holder_rank": null,
+  "has_number": true,
+  "words": 17,
+  "outcome": "reworded_reached",
+  "judge": {
+   "status": "one_passage",
+   "passages": [
+    "dsid_a0f25cffcb264f0ea6eba5e501de0e08#0"
+   ],
+   "why_words_differ": "number written differently (~220ms network RTT); region code; 'downstream timeouts in ingestion pipeline'"
+  },
+  "kind": "figure",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0005.F1",
+  "question_id": "qst_0005",
+  "question": "What failover sequence and recovery targets did MedThink specify for handling an EU region outage, including any limits on how long traffic can shift to the US?",
+  "question_type": "basic",
+  "gold_documents": 1,
+  "fact": "MedThink specified a failover hierarchy of EU primary to EU warm standby to US emergency failover for an EU region outage.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "gmail"
+  ],
+  "holder_rank": 5,
+  "has_number": false,
+  "words": 21,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "rule_requirement",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0005.F2",
+  "question_id": "qst_0005",
+  "question": "What failover sequence and recovery targets did MedThink specify for handling an EU region outage, including any limits on how long traffic can shift to the US?",
+  "question_type": "basic",
+  "gold_documents": 1,
+  "fact": "MedThink set an RPO target of 15 minutes for active datasets.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "gmail"
+  ],
+  "holder_rank": 5,
+  "has_number": true,
+  "words": 11,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "date_time",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0005.F3",
+  "question_id": "qst_0005",
+  "question": "What failover sequence and recovery targets did MedThink specify for handling an EU region outage, including any limits on how long traffic can shift to the US?",
+  "question_type": "basic",
+  "gold_documents": 1,
+  "fact": "MedThink set an RTO target of 30 minutes for critical APIs.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "gmail"
+  ],
+  "holder_rank": 5,
+  "has_number": true,
+  "words": 11,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "date_time",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0005.F4",
+  "question_id": "qst_0005",
+  "question": "What failover sequence and recovery targets did MedThink specify for handling an EU region outage, including any limits on how long traffic can shift to the US?",
+  "question_type": "basic",
+  "gold_documents": 1,
+  "fact": "MedThink allows shifting traffic to the US only during declared, pre-approved emergency windows capped at 4 hours.",
+  "reached": null,
+  "where": "not checkable (worded differently from the documents)",
+  "holder_sources": [],
+  "holder_rank": null,
+  "has_number": true,
+  "words": 18,
+  "outcome": "reworded_reached",
+  "judge": {
+   "status": "one_passage",
+   "passages": [
+    "dsid_8e838ab6a98f4cbcb672d41f210ff89c#4"
+   ],
+   "why_words_differ": "paraphrase/synonyms (cross-region failover permitted vs shifting traffic; max 4 hours vs capped)"
+  },
+  "kind": "date_time",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0435.F1",
+  "question_id": "qst_0435",
+  "question": "How many weekly status updates for Project Orion marked the project as 'At Risk'?",
+  "question_type": "completeness",
+  "gold_documents": 6,
+  "fact": "Three weekly status updates for Project Orion were marked as At Risk",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "confluence"
+  ],
+  "holder_rank": 0,
+  "has_number": false,
+  "words": 12,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "figure",
+  "list_item": false,
+  "combines": true,
+  "negative": false
+ },
+ {
+  "fid": "qst_0435.F2",
+  "question_id": "qst_0435",
+  "question": "How many weekly status updates for Project Orion marked the project as 'At Risk'?",
+  "question_type": "completeness",
+  "gold_documents": 6,
+  "fact": "The At Risk weekly status updates occurred on 2026-01-16, 2026-01-23, and 2026-02-06",
+  "reached": null,
+  "where": "not checkable (worded differently from the documents)",
+  "holder_sources": [],
+  "holder_rank": null,
+  "has_number": true,
+  "words": 18,
+  "outcome": "reworded_reached",
+  "judge": {
+   "status": "several_passages",
+   "passages": [
+    "dsid_a134a3fd3c244a52a8d3e1ff515fdf58#0",
+    "dsid_ce60931a1aea428b8186228ee40bb497#0",
+    "dsid_431b0713c42847bbac15f3354776db68#0"
+   ],
+   "why_words_differ": "split across separate weekly docs; dates only in titles, status as 'Overall: At Risk'"
+  },
+  "kind": "date_time",
+  "list_item": false,
+  "combines": true,
+  "negative": false
+ },
+ {
+  "fid": "qst_0415.F1",
+  "question_id": "qst_0415",
+  "question": "What must `--deterministic true` enforce in the eval runner (decoding settings)?",
+  "question_type": "conflicting_info",
+  "gold_documents": 2,
+  "fact": "The answer must state that deterministic mode enforces `do_sample = false`.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "confluence"
+  ],
+  "holder_rank": 1,
+  "has_number": false,
+  "words": 11,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "rule_requirement",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0415.F2",
+  "question_id": "qst_0415",
+  "question": "What must `--deterministic true` enforce in the eval runner (decoding settings)?",
+  "question_type": "conflicting_info",
+  "gold_documents": 2,
+  "fact": "The answer must state that deterministic mode enforces `temperature = 0.0`.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "confluence"
+  ],
+  "holder_rank": 2,
+  "has_number": true,
+  "words": 11,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "rule_requirement",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0415.F3",
+  "question_id": "qst_0415",
+  "question": "What must `--deterministic true` enforce in the eval runner (decoding settings)?",
+  "question_type": "conflicting_info",
+  "gold_documents": 2,
+  "fact": "The answer must state that deterministic mode enforces `top_k = 1`.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "confluence"
+  ],
+  "holder_rank": 1,
+  "has_number": true,
+  "words": 11,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "rule_requirement",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0415.F4",
+  "question_id": "qst_0415",
+  "question": "What must `--deterministic true` enforce in the eval runner (decoding settings)?",
+  "question_type": "conflicting_info",
+  "gold_documents": 2,
+  "fact": "The answer must state that deterministic mode enforces `top_p = 1.0`.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "confluence"
+  ],
+  "holder_rank": 2,
+  "has_number": true,
+  "words": 12,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "rule_requirement",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0415.F5",
+  "question_id": "qst_0415",
+  "question": "What must `--deterministic true` enforce in the eval runner (decoding settings)?",
+  "question_type": "conflicting_info",
+  "gold_documents": 2,
+  "fact": "The answer must state that deterministic mode enforces `num_beams = 1`, with an exception if a suite explicitly tests beam search.",
+  "reached": null,
+  "where": "not checkable (worded differently from the documents)",
+  "holder_sources": [],
+  "holder_rank": null,
+  "has_number": true,
+  "words": 21,
+  "outcome": "reworded_reached",
+  "judge": {
+   "status": "one_passage",
+   "passages": [
+    "dsid_05841423a55e4c35abd276d9899b7134#4"
+   ],
+   "why_words_differ": "words match"
+  },
+  "kind": "rule_requirement",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0415.F6",
+  "question_id": "qst_0415",
+  "question": "What must `--deterministic true` enforce in the eval runner (decoding settings)?",
+  "question_type": "conflicting_info",
+  "gold_documents": 2,
+  "fact": "The answer must mention that an explicit generator (`torch.Generator`) is passed into generation APIs (not just setting a global seed).",
+  "reached": null,
+  "where": "not checkable (worded differently from the documents)",
+  "holder_sources": [],
+  "holder_rank": null,
+  "has_number": false,
+  "words": 21,
+  "outcome": "reworded_reached",
+  "judge": {
+   "status": "one_passage",
+   "passages": [
+    "dsid_05841423a55e4c35abd276d9899b7134#4"
+   ],
+   "why_words_differ": "paraphrase: 'Explicit generator passed into generation APIs' and 'setting a global seed is insufficient'; 'torch.Generator' named only in #1"
+  },
+  "kind": "rule_requirement",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0415.F7",
+  "question_id": "qst_0415",
+  "question": "What must `--deterministic true` enforce in the eval runner (decoding settings)?",
+  "question_type": "conflicting_info",
+  "gold_documents": 2,
+  "fact": "The answer must mention stable batching/order (e.g., no shuffling; stable sort by example_id).",
+  "reached": null,
+  "where": "not checkable (worded differently from the documents)",
+  "holder_sources": [],
+  "holder_rank": null,
+  "has_number": false,
+  "words": 16,
+  "outcome": "reworded_reached",
+  "judge": {
+   "status": "one_passage",
+   "passages": [
+    "dsid_05841423a55e4c35abd276d9899b7134#4"
+   ],
+   "why_words_differ": "words match"
+  },
+  "kind": "rule_requirement",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0415.F8",
+  "question_id": "qst_0415",
+  "question": "What must `--deterministic true` enforce in the eval runner (decoding settings)?",
+  "question_type": "conflicting_info",
+  "gold_documents": 2,
+  "fact": "The answer may mention that earlier guidance omitted `top_p`, `num_beams`, and stable ordering, but if it does it must still present the updated required set above as current.",
+  "reached": null,
+  "where": "not checkable (worded differently from the documents)",
+  "holder_sources": [],
+  "holder_rank": null,
+  "has_number": false,
+  "words": 30,
+  "outcome": "inferred",
+  "judge": {
+   "status": "inferred",
+   "passages": [
+    "dsid_1d487c52d79a44c2b40eb19a0db51122#2",
+    "dsid_05841423a55e4c35abd276d9899b7134#3",
+    "dsid_05841423a55e4c35abd276d9899b7134#4"
+   ],
+   "why_words_differ": "stated as absence: omission found only by comparing Slack list (do_sample, temperature, top_k, generator) with current required set"
+  },
+  "kind": "decision_status",
+  "list_item": false,
+  "combines": true,
+  "negative": true
+ },
+ {
+  "fid": "qst_0385.F1",
+  "question_id": "qst_0385",
+  "question": "What caused the production perf-canary paging storm on 2026-02-12 right after canary coverage was expanded (and paging rules were enabled), and what immediate mitigations/config changes were applied to stop the repeated pages?",
+  "question_type": "constrained",
+  "gold_documents": 2,
+  "fact": "The paging storm began when paging was enabled immediately after canary coverage was expanded.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "confluence"
+  ],
+  "holder_rank": 0,
+  "has_number": false,
+  "words": 14,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "cause_reason",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0385.F2",
+  "question_id": "qst_0385",
+  "question": "What caused the production perf-canary paging storm on 2026-02-12 right after canary coverage was expanded (and paging rules were enabled), and what immediate mitigations/config changes were applied to stop the repeated pages?",
+  "question_type": "constrained",
+  "gold_documents": 2,
+  "fact": "The storm exposed a config and telemetry mismatch in the canary baseline lookup: the baseline lookup key included extra or transient labels (such as prompt_bucket and newly emitted runtime or kernel related labels).",
+  "reached": false,
+  "where": "its document reached the model, but not the passage that holds it",
+  "holder_sources": [
+   "slack"
+  ],
+  "holder_rank": 32,
+  "has_number": false,
+  "words": 34,
+  "outcome": "lost",
+  "judge": {
+   "status": "one_passage",
+   "passages": [
+    "dsid_e34b1f14719d45d98b175cb1351fb540#4"
+   ],
+   "why_words_differ": "spread across chat turns (baseline fetch keyed on full labelset, prompt_bucket, newly emitted kernel_id, 'config regression')"
+  },
+  "kind": "cause_reason",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0385.F3",
+  "question_id": "qst_0385",
+  "question": "What caused the production perf-canary paging storm on 2026-02-12 right after canary coverage was expanded (and paging rules were enabled), and what immediate mitigations/config changes were applied to stop the repeated pages?",
+  "question_type": "constrained",
+  "gold_documents": 2,
+  "fact": "Because the baseline lookup key included extra or transient labels, baseline fetches frequently missed and fell back to conservative default thresholds.",
+  "reached": null,
+  "where": "not checkable (worded differently from the documents)",
+  "holder_sources": [],
+  "holder_rank": null,
+  "has_number": false,
+  "words": 21,
+  "outcome": "several",
+  "judge": {
+   "status": "several_passages",
+   "passages": [
+    "dsid_58bdb9f3bb4241e089f4f2b102765db4#3",
+    "dsid_58bdb9f3bb4241e089f4f2b102765db4#5"
+   ],
+   "why_words_differ": "split across timeline and root cause; 'baseline not found' vs missed; 'intentionally conservative' default thresholds"
+  },
+  "kind": "cause_reason",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0385.F4",
+  "question_id": "qst_0385",
+  "question": "What caused the production perf-canary paging storm on 2026-02-12 right after canary coverage was expanded (and paging rules were enabled), and what immediate mitigations/config changes were applied to stop the repeated pages?",
+  "question_type": "constrained",
+  "gold_documents": 2,
+  "fact": "High-cardinality labels fragmented metrics into many sparse time series, which broke alert or evaluator minimum sample assumptions and also broke incident-bot or alert deduplication, leading to repeated re-pages.",
+  "reached": null,
+  "where": "not checkable (worded differently from the documents)",
+  "holder_sources": [],
+  "holder_rank": null,
+  "has_number": false,
+  "words": 31,
+  "outcome": "reworded_reached",
+  "judge": {
+   "status": "one_passage",
+   "passages": [
+    "dsid_58bdb9f3bb4241e089f4f2b102765db4#0"
+   ],
+   "why_words_differ": "summary paraphrase (cardinality inflation fragmented time series, defeating min-sample gating and dedupe; repeatedly reopened)"
+  },
+  "kind": "cause_reason",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0385.F5",
+  "question_id": "qst_0385",
+  "question": "What caused the production perf-canary paging storm on 2026-02-12 right after canary coverage was expanded (and paging rules were enabled), and what immediate mitigations/config changes were applied to stop the repeated pages?",
+  "question_type": "constrained",
+  "gold_documents": 2,
+  "fact": "Immediate mitigation was to silence or disable the paging rules to stop the pages.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "confluence",
+   "slack"
+  ],
+  "holder_rank": 3,
+  "has_number": false,
+  "words": 14,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0385.F6",
+  "question_id": "qst_0385",
+  "question": "What caused the production perf-canary paging storm on 2026-02-12 right after canary coverage was expanded (and paging rules were enabled), and what immediate mitigations/config changes were applied to stop the repeated pages?",
+  "question_type": "constrained",
+  "gold_documents": 2,
+  "fact": "Immediate mitigation was to roll back canary coverage to the prior smaller model set.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "confluence"
+  ],
+  "holder_rank": 3,
+  "has_number": false,
+  "words": 14,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0385.F7",
+  "question_id": "qst_0385",
+  "question": "What caused the production perf-canary paging storm on 2026-02-12 right after canary coverage was expanded (and paging rules were enabled), and what immediate mitigations/config changes were applied to stop the repeated pages?",
+  "question_type": "constrained",
+  "gold_documents": 2,
+  "fact": "Immediate mitigation was to pin to fixed baseline artifacts (stop rolling baselines).",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "confluence"
+  ],
+  "holder_rank": 3,
+  "has_number": false,
+  "words": 12,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0385.F8",
+  "question_id": "qst_0385",
+  "question": "What caused the production perf-canary paging storm on 2026-02-12 right after canary coverage was expanded (and paging rules were enabled), and what immediate mitigations/config changes were applied to stop the repeated pages?",
+  "question_type": "constrained",
+  "gold_documents": 2,
+  "fact": "A config change was applied to normalize baseline_key_labels to stable labels such as model, model_version, region, sku, and tier.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "slack"
+  ],
+  "holder_rank": 8,
+  "has_number": false,
+  "words": 22,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0385.F9",
+  "question_id": "qst_0385",
+  "question": "What caused the production perf-canary paging storm on 2026-02-12 right after canary coverage was expanded (and paging rules were enabled), and what immediate mitigations/config changes were applied to stop the repeated pages?",
+  "question_type": "constrained",
+  "gold_documents": 2,
+  "fact": "A config change was applied to drop or stop emitting high-cardinality labels including kernel labels, prompt_bucket, and run, template, or route related labels.",
+  "reached": null,
+  "where": "not checkable (worded differently from the documents)",
+  "holder_sources": [],
+  "holder_rank": null,
+  "has_number": false,
+  "words": 25,
+  "outcome": "several",
+  "judge": {
+   "status": "several_passages",
+   "passages": [
+    "dsid_e34b1f14719d45d98b175cb1351fb540#6",
+    "dsid_58bdb9f3bb4241e089f4f2b102765db4#8"
+   ],
+   "why_words_differ": "split across documents; config flag names (emit_kernel_labels=false, emit_prompt_bucket_label=false) and label names (workload_run_id, prompt_template_id, route)"
+  },
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0385.F10",
+  "question_id": "qst_0385",
+  "question": "What caused the production perf-canary paging storm on 2026-02-12 right after canary coverage was expanded (and paging rules were enabled), and what immediate mitigations/config changes were applied to stop the repeated pages?",
+  "question_type": "constrained",
+  "gold_documents": 2,
+  "fact": "Paging min-sample and dampening were temporarily increased so alerts stopped re-firing.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "slack"
+  ],
+  "holder_rank": 5,
+  "has_number": false,
+  "words": 13,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0305.F1",
+  "question_id": "qst_0305",
+  "question": "When using the python async batching helper for embeddings then rerank, what singleton-wrapped rerank response shape can show up during auth refresh, and what redwood.utils normalizer did the sampleapp add to fix the output shape?",
+  "question_type": "intra_document_reasoning",
+  "gold_documents": 1,
+  "fact": "During auth refresh the async batcher can return a singleton-wrapped dict shaped like {\"result\": {\"scores\": [...], \"meta\": {...}}} for rerank responses",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "slack"
+  ],
+  "holder_rank": 2,
+  "has_number": false,
+  "words": 20,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "description",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0305.F2",
+  "question_id": "qst_0305",
+  "question": "When using the python async batching helper for embeddings then rerank, what singleton-wrapped rerank response shape can show up during auth refresh, and what redwood.utils normalizer did the sampleapp add to fix the output shape?",
+  "question_type": "intra_document_reasoning",
+  "gold_documents": 1,
+  "fact": "The singleton-wrapped dict shape appears instead of the expected list-of-lists rerank response shape",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "slack"
+  ],
+  "holder_rank": 2,
+  "has_number": false,
+  "words": 16,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "description",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0305.F3",
+  "question_id": "qst_0305",
+  "question": "When using the python async batching helper for embeddings then rerank, what singleton-wrapped rerank response shape can show up during auth refresh, and what redwood.utils normalizer did the sampleapp add to fix the output shape?",
+  "question_type": "intra_document_reasoning",
+  "gold_documents": 1,
+  "fact": "The sampleapp fixed the rerank output shape by calling the redwood.utils normalizer ensure_rerank_groups(reranks)",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "slack"
+  ],
+  "holder_rank": 0,
+  "has_number": false,
+  "words": 17,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "name_identifier",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0455.F1",
+  "question_id": "qst_0455",
+  "question": "Are sneakers acceptable for the first few weeks of the company summer softball league, or do we need cleats right away?",
+  "question_type": "miscellaneous",
+  "gold_documents": 1,
+  "fact": "Sneakers are acceptable for the first few weeks of the company summer softball league",
+  "reached": null,
+  "where": "not checkable (worded differently from the documents)",
+  "holder_sources": [],
+  "holder_rank": null,
+  "has_number": false,
+  "words": 14,
+  "outcome": "reworded_reached",
+  "judge": {
+   "status": "one_passage",
+   "passages": [
+    "dsid_a5503307a8bc45d1b2155968543598df#1"
+   ],
+   "why_words_differ": "paraphrase ('Sneakers are fine for first few weeks')"
+  },
+  "kind": "rule_requirement",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0455.F2",
+  "question_id": "qst_0455",
+  "question": "Are sneakers acceptable for the first few weeks of the company summer softball league, or do we need cleats right away?",
+  "question_type": "miscellaneous",
+  "gold_documents": 1,
+  "fact": "Cleats are optional and not required right away",
+  "reached": null,
+  "where": "not checkable (worded differently from the documents)",
+  "holder_sources": [],
+  "holder_rank": null,
+  "has_number": false,
+  "words": 8,
+  "outcome": "reworded_reached",
+  "judge": {
+   "status": "one_passage",
+   "passages": [
+    "dsid_a5503307a8bc45d1b2155968543598df#1"
+   ],
+   "why_words_differ": "words match ('cleats optional'); 'not required right away' is implied"
+  },
+  "kind": "rule_requirement",
+  "list_item": false,
+  "combines": false,
+  "negative": true
+ },
+ {
+  "fid": "qst_0345.F1",
+  "question_id": "qst_0345",
+  "question": "For the Trident Financial Private VPC deal, what is our approved stance on US-only data residency and 7-year audit log retention/export, and which evidence pack artifacts should we share (and how) to back it up?",
+  "question_type": "project_related",
+  "gold_documents": 2,
+  "fact": "For the Trident Financial Private VPC deal, we can commit that customer content (prompts and outputs) is processed and stored within the agreed US region and VPC.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "gmail"
+  ],
+  "holder_rank": 3,
+  "has_number": false,
+  "words": 27,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "decision_status",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0345.F2",
+  "question_id": "qst_0345",
+  "question": "For the Trident Financial Private VPC deal, what is our approved stance on US-only data residency and 7-year audit log retention/export, and which evidence pack artifacts should we share (and how) to back it up?",
+  "question_type": "project_related",
+  "gold_documents": 2,
+  "fact": "For the Trident Financial Private VPC deal, we should not agree to absolute language such as no processing outside the US or no cross-border access ever.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "gmail"
+  ],
+  "holder_rank": 12,
+  "has_number": false,
+  "words": 27,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "rule_requirement",
+  "list_item": false,
+  "combines": false,
+  "negative": true
+ },
+ {
+  "fid": "qst_0345.F3",
+  "question_id": "qst_0345",
+  "question": "For the Trident Financial Private VPC deal, what is our approved stance on US-only data residency and 7-year audit log retention/export, and which evidence pack artifacts should we share (and how) to back it up?",
+  "question_type": "project_related",
+  "gold_documents": 2,
+  "fact": "Admin and support access should be framed as controlled, least-privilege, customer-policy-restrictable, and auditable rather than as an absolute US-persons-only guarantee.",
+  "reached": null,
+  "where": "not checkable (worded differently from the documents)",
+  "holder_sources": [],
+  "holder_rank": null,
+  "has_number": false,
+  "words": 25,
+  "outcome": "reworded_reached",
+  "judge": {
+   "status": "one_passage",
+   "passages": [
+    "dsid_98d7acbda29a4260a413c8d6da7207a3#5"
+   ],
+   "why_words_differ": "paraphrase/synonyms: 'need-to-know' vs least-privilege, 'logged' vs auditable, 'no Redwood personnel outside US can ever access' vs US-persons-only"
+  },
+  "kind": "rule_requirement",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0345.F4",
+  "question_id": "qst_0345",
+  "question": "For the Trident Financial Private VPC deal, what is our approved stance on US-only data residency and 7-year audit log retention/export, and which evidence pack artifacts should we share (and how) to back it up?",
+  "question_type": "project_related",
+  "gold_documents": 2,
+  "fact": "We support audit logging and audit log export for the Trident Financial Private VPC deal.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "gmail"
+  ],
+  "holder_rank": 0,
+  "has_number": false,
+  "words": 15,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "decision_status",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0345.F5",
+  "question_id": "qst_0345",
+  "question": "For the Trident Financial Private VPC deal, what is our approved stance on US-only data residency and 7-year audit log retention/export, and which evidence pack artifacts should we share (and how) to back it up?",
+  "question_type": "project_related",
+  "gold_documents": 2,
+  "fact": "The 7-year audit log retention requirement should be met by Trident exporting logs to Trident-controlled storage or a SIEM and retaining them there, rather than requiring Redwood to retain audit logs for 7 years.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "gmail"
+  ],
+  "holder_rank": 0,
+  "has_number": true,
+  "words": 36,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "decision_status",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0345.F6",
+  "question_id": "qst_0345",
+  "question": "For the Trident Financial Private VPC deal, what is our approved stance on US-only data residency and 7-year audit log retention/export, and which evidence pack artifacts should we share (and how) to back it up?",
+  "question_type": "project_related",
+  "gold_documents": 2,
+  "fact": "Evidence pack artifacts to share include SOC 2 Type II, provided under NDA.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "confluence"
+  ],
+  "holder_rank": 7,
+  "has_number": true,
+  "words": 13,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "name_identifier",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0345.F7",
+  "question_id": "qst_0345",
+  "question": "For the Trident Financial Private VPC deal, what is our approved stance on US-only data residency and 7-year audit log retention/export, and which evidence pack artifacts should we share (and how) to back it up?",
+  "question_type": "project_related",
+  "gold_documents": 2,
+  "fact": "Evidence pack artifacts to share include a data residency or region availability statement.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "confluence"
+  ],
+  "holder_rank": 7,
+  "has_number": false,
+  "words": 13,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "name_identifier",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0345.F8",
+  "question_id": "qst_0345",
+  "question": "For the Trident Financial Private VPC deal, what is our approved stance on US-only data residency and 7-year audit log retention/export, and which evidence pack artifacts should we share (and how) to back it up?",
+  "question_type": "project_related",
+  "gold_documents": 2,
+  "fact": "Evidence pack artifacts to share include a data retention policy statement.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "confluence"
+  ],
+  "holder_rank": 7,
+  "has_number": false,
+  "words": 11,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "name_identifier",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0345.F9",
+  "question_id": "qst_0345",
+  "question": "For the Trident Financial Private VPC deal, what is our approved stance on US-only data residency and 7-year audit log retention/export, and which evidence pack artifacts should we share (and how) to back it up?",
+  "question_type": "project_related",
+  "gold_documents": 2,
+  "fact": "Evidence pack artifacts to share include a redacted audit log sample and an audit log field reference.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "confluence"
+  ],
+  "holder_rank": 7,
+  "has_number": false,
+  "words": 17,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "name_identifier",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0345.F10",
+  "question_id": "qst_0345",
+  "question": "For the Trident Financial Private VPC deal, what is our approved stance on US-only data residency and 7-year audit log retention/export, and which evidence pack artifacts should we share (and how) to back it up?",
+  "question_type": "project_related",
+  "gold_documents": 2,
+  "fact": "Evidence pack artifacts to share include an audit log export patterns overview.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "confluence"
+  ],
+  "holder_rank": 7,
+  "has_number": false,
+  "words": 12,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "name_identifier",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0345.F11",
+  "question_id": "qst_0345",
+  "question": "For the Trident Financial Private VPC deal, what is our approved stance on US-only data residency and 7-year audit log retention/export, and which evidence pack artifacts should we share (and how) to back it up?",
+  "question_type": "project_related",
+  "gold_documents": 2,
+  "fact": "Evidence pack artifacts to share include architecture artifacts such as a data flow or request processing diagram and a network boundary overview.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "confluence"
+  ],
+  "holder_rank": 7,
+  "has_number": false,
+  "words": 22,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "name_identifier",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0345.F12",
+  "question_id": "qst_0345",
+  "question": "For the Trident Financial Private VPC deal, what is our approved stance on US-only data residency and 7-year audit log retention/export, and which evidence pack artifacts should we share (and how) to back it up?",
+  "question_type": "project_related",
+  "gold_documents": 2,
+  "fact": "Evidence pack artifacts may optionally include an encryption overview.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "confluence"
+  ],
+  "holder_rank": 7,
+  "has_number": false,
+  "words": 9,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "name_identifier",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0345.F13",
+  "question_id": "qst_0345",
+  "question": "For the Trident Financial Private VPC deal, what is our approved stance on US-only data residency and 7-year audit log retention/export, and which evidence pack artifacts should we share (and how) to back it up?",
+  "question_type": "project_related",
+  "gold_documents": 2,
+  "fact": "Artifacts should be shared only via the evidence pack process by submitting an evidence request that includes the prospect, recipients, NDA status, and the specific artifacts needed.",
+  "reached": false,
+  "where": "its document reached the model, but not the passage that holds it",
+  "holder_sources": [
+   "confluence"
+  ],
+  "holder_rank": 24,
+  "has_number": false,
+  "words": 27,
+  "outcome": "lost",
+  "judge": {
+   "status": "one_passage",
+   "passages": [
+    "dsid_a9a67d815b07451e90ed8c3d1734d007#7"
+   ],
+   "why_words_differ": "paraphrase: request list (company name, recipients, requested artifacts) with NDA executed in eligibility checklist; 'only' implied"
+  },
+  "kind": "rule_requirement",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0345.F14",
+  "question_id": "qst_0345",
+  "question": "For the Trident Financial Private VPC deal, what is our approved stance on US-only data residency and 7-year audit log retention/export, and which evidence pack artifacts should we share (and how) to back it up?",
+  "question_type": "project_related",
+  "gold_documents": 2,
+  "fact": "Security or GRC should share artifacts via a secure, access-controlled link that is recipient-specific or expiring and includes a watermarked SOC 2 report.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "confluence"
+  ],
+  "holder_rank": 8,
+  "has_number": true,
+  "words": 25,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "rule_requirement",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0345.F15",
+  "question_id": "qst_0345",
+  "question": "For the Trident Financial Private VPC deal, what is our approved stance on US-only data residency and 7-year audit log retention/export, and which evidence pack artifacts should we share (and how) to back it up?",
+  "question_type": "project_related",
+  "gold_documents": 2,
+  "fact": "SOC 2 should not be emailed as an attachment.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "confluence"
+  ],
+  "holder_rank": 8,
+  "has_number": true,
+  "words": 9,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "rule_requirement",
+  "list_item": true,
+  "combines": false,
+  "negative": true
+ },
+ {
+  "fid": "qst_0345.F16",
+  "question_id": "qst_0345",
+  "question": "For the Trident Financial Private VPC deal, what is our approved stance on US-only data residency and 7-year audit log retention/export, and which evidence pack artifacts should we share (and how) to back it up?",
+  "question_type": "project_related",
+  "gold_documents": 2,
+  "fact": "Recipients, dates, and NDAs for shared artifacts should be tracked in the deal record or CRM.",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "confluence"
+  ],
+  "holder_rank": 8,
+  "has_number": false,
+  "words": 16,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "rule_requirement",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0181.F1",
+  "question_id": "qst_0181",
+  "question": "During a large overnight upload run using short lived credentials refreshed by many transient workers, what client side scheduling change was recommended to stop periodic too many requests errors after a partial worker restart caused refresh bursts?",
+  "question_type": "semantic",
+  "gold_documents": 1,
+  "fact": "Support recommended staggering credential (signed-cookie) refreshes by adding randomized jitter to the refresh schedule",
+  "reached": true,
+  "where": "reached the model",
+  "holder_sources": [
+   "jira"
+  ],
+  "holder_rank": 2,
+  "has_number": false,
+  "words": 15,
+  "outcome": "reached",
+  "judge": null,
+  "kind": "action_step",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0181.F2",
+  "question_id": "qst_0181",
+  "question": "During a large overnight upload run using short lived credentials refreshed by many transient workers, what client side scheduling change was recommended to stop periodic too many requests errors after a partial worker restart caused refresh bursts?",
+  "question_type": "semantic",
+  "gold_documents": 1,
+  "fact": "The recommended jitter range was about 30 to 120 seconds",
+  "reached": null,
+  "where": "not checkable (worded differently from the documents)",
+  "holder_sources": [],
+  "holder_rank": null,
+  "has_number": true,
+  "words": 10,
+  "outcome": "reworded_reached",
+  "judge": {
+   "status": "one_passage",
+   "passages": [
+    "dsid_8f80516053a24beba08e603cb1831dd6#5"
+   ],
+   "why_words_differ": "number written differently ('30\u2013120s')"
+  },
+  "kind": "date_time",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0181.F3",
+  "question_id": "qst_0181",
+  "question": "During a large overnight upload run using short lived credentials refreshed by many transient workers, what client side scheduling change was recommended to stop periodic too many requests errors after a partial worker restart caused refresh bursts?",
+  "question_type": "semantic",
+  "gold_documents": 1,
+  "fact": "The goal was to prevent workers from all renewing credentials at once after a restart",
+  "reached": null,
+  "where": "not checkable (worded differently from the documents)",
+  "holder_sources": [],
+  "holder_rank": null,
+  "has_number": false,
+  "words": 15,
+  "outcome": "reworded_reached",
+  "judge": {
+   "status": "several_passages",
+   "passages": [
+    "dsid_8f80516053a24beba08e603cb1831dd6#1",
+    "dsid_8f80516053a24beba08e603cb1831dd6#2"
+   ],
+   "why_words_differ": "paraphrase/synonyms: signed cookies vs credentials, 'simultaneous'/'clustered at restart time' vs 'all at once after a restart'; split across sentences"
+  },
+  "kind": "cause_reason",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0181.F4",
+  "question_id": "qst_0181",
+  "question": "During a large overnight upload run using short lived credentials refreshed by many transient workers, what client side scheduling change was recommended to stop periodic too many requests errors after a partial worker restart caused refresh bursts?",
+  "question_type": "semantic",
+  "gold_documents": 1,
+  "fact": "Staggering refreshes was intended to stop 429 too many requests rate limit errors caused by refresh bursts",
+  "reached": null,
+  "where": "not checkable (worded differently from the documents)",
+  "holder_sources": [],
+  "holder_rank": null,
+  "has_number": true,
+  "words": 17,
+  "outcome": "reworded_reached",
+  "judge": {
+   "status": "several_passages",
+   "passages": [
+    "dsid_8f80516053a24beba08e603cb1831dd6#2",
+    "dsid_8f80516053a24beba08e603cb1831dd6#3"
+   ],
+   "why_words_differ": "paraphrase: 'stagger refreshes' recommendation separate from cause (simultaneous renewals exhausting refill credits); 429 only in title"
+  },
+  "kind": "cause_reason",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0007.F1",
+  "question_id": "qst_0007",
+  "question": "In a rolling investigation of a model regression on policy-related prompts after a recent deploy, what was the average triage rubric score change between the older baseline build and the newer optimized build in the first comparison run?",
+  "question_type": "basic",
+  "gold_documents": 1,
+  "fact": "In the first comparison run, the older baseline build averaged a triage rubric score of 2.7",
+  "reached": null,
+  "where": "not checkable (worded differently from the documents)",
+  "holder_sources": [],
+  "holder_rank": null,
+  "has_number": true,
+  "words": 17,
+  "outcome": "reworded_reached",
+  "judge": {
+   "status": "one_passage",
+   "passages": [
+    "dsid_72ec4a9962ba43e88acd61abbba1052d#1"
+   ],
+   "why_words_differ": "paraphrase: 'first pass', 'baseline average rubric' vs 'triage rubric score'; build named by version id"
+  },
+  "kind": "figure",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0007.F2",
+  "question_id": "qst_0007",
+  "question": "In a rolling investigation of a model regression on policy-related prompts after a recent deploy, what was the average triage rubric score change between the older baseline build and the newer optimized build in the first comparison run?",
+  "question_type": "basic",
+  "gold_documents": 1,
+  "fact": "In the first comparison run, the newer optimized build averaged a triage rubric score of 1.9",
+  "reached": null,
+  "where": "not checkable (worded differently from the documents)",
+  "holder_sources": [],
+  "holder_rank": null,
+  "has_number": true,
+  "words": 17,
+  "outcome": "reworded_reached",
+  "judge": {
+   "status": "one_passage",
+   "passages": [
+    "dsid_72ec4a9962ba43e88acd61abbba1052d#1"
+   ],
+   "why_words_differ": "paraphrase: 'new average 1.9'; optimized build only as version id v2026-03-01-opt"
+  },
+  "kind": "figure",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0007.F3",
+  "question_id": "qst_0007",
+  "question": "In a rolling investigation of a model regression on policy-related prompts after a recent deploy, what was the average triage rubric score change between the older baseline build and the newer optimized build in the first comparison run?",
+  "question_type": "basic",
+  "gold_documents": 1,
+  "fact": "The average triage rubric score decreased by 0.8 points from the baseline build to the newer optimized build in the first comparison run",
+  "reached": null,
+  "where": "not checkable (worded differently from the documents)",
+  "holder_sources": [],
+  "holder_rank": null,
+  "has_number": true,
+  "words": 24,
+  "outcome": "inferred",
+  "judge": {
+   "status": "inferred",
+   "passages": [
+    "dsid_72ec4a9962ba43e88acd61abbba1052d#1"
+   ],
+   "why_words_differ": "computed (2.7 - 1.9 = 0.8); 0.8 never written"
+  },
+  "kind": "figure",
+  "list_item": false,
+  "combines": true,
+  "negative": false
+ },
+ {
+  "fid": "qst_0439.F1",
+  "question_id": "qst_0439",
+  "question": "How many internal incident writeups at Redwood Inference describe activating automatic fallback (to a different model or region) as part of mitigation?",
+  "question_type": "completeness",
+  "gold_documents": 5,
+  "fact": "4 internal incident writeups at Redwood Inference describe activating automatic fallback as part of mitigation",
+  "reached": null,
+  "where": "not checkable (worded differently from the documents)",
+  "holder_sources": [],
+  "holder_rank": null,
+  "has_number": true,
+  "words": 15,
+  "outcome": "inferred",
+  "judge": {
+   "status": "inferred",
+   "passages": [
+    "dsid_4e016427a93c49ffadd31fcdc1dca792#0",
+    "dsid_d3edd63b9ec54523ad12bd9be3d7e996#0",
+    "dsid_faf3246a6ce845e6b5df0ae52f439399#1",
+    "dsid_bf7e79dc1331447598c4eebdc5d2897d#0",
+    "dsid_a277ed2dc74c4bad82bc71b534b6356f#0"
+   ],
+   "why_words_differ": "computed: count across separate postmortems, excluding the 2025-04-19 one where fallback was the problem"
+  },
+  "kind": "figure",
+  "list_item": false,
+  "combines": true,
+  "negative": false
+ },
+ {
+  "fid": "qst_0439.F2",
+  "question_id": "qst_0439",
+  "question": "How many internal incident writeups at Redwood Inference describe activating automatic fallback (to a different model or region) as part of mitigation?",
+  "question_type": "completeness",
+  "gold_documents": 5,
+  "fact": "The incident writeup dated 2025-02-11 describes activating automatic fallback as part of mitigation",
+  "reached": null,
+  "where": "not checkable (worded differently from the documents)",
+  "holder_sources": [],
+  "holder_rank": null,
+  "has_number": true,
+  "words": 15,
+  "outcome": "reworded_reached",
+  "judge": {
+   "status": "one_passage",
+   "passages": [
+    "dsid_4e016427a93c49ffadd31fcdc1dca792#0"
+   ],
+   "why_words_differ": "words match"
+  },
+  "kind": "date_time",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0439.F3",
+  "question_id": "qst_0439",
+  "question": "How many internal incident writeups at Redwood Inference describe activating automatic fallback (to a different model or region) as part of mitigation?",
+  "question_type": "completeness",
+  "gold_documents": 5,
+  "fact": "The incident writeup dated 2025-03-03 describes activating automatic fallback as part of mitigation",
+  "reached": null,
+  "where": "not checkable (worded differently from the documents)",
+  "holder_sources": [],
+  "holder_rank": null,
+  "has_number": true,
+  "words": 15,
+  "outcome": "reworded_reached",
+  "judge": {
+   "status": "one_passage",
+   "passages": [
+    "dsid_d3edd63b9ec54523ad12bd9be3d7e996#0"
+   ],
+   "why_words_differ": "words match ('automatic region fallback')"
+  },
+  "kind": "date_time",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0439.F4",
+  "question_id": "qst_0439",
+  "question": "How many internal incident writeups at Redwood Inference describe activating automatic fallback (to a different model or region) as part of mitigation?",
+  "question_type": "completeness",
+  "gold_documents": 5,
+  "fact": "The incident writeup dated 2025-06-08 describes activating automatic fallback as part of mitigation",
+  "reached": null,
+  "where": "not checkable (worded differently from the documents)",
+  "holder_sources": [],
+  "holder_rank": null,
+  "has_number": true,
+  "words": 15,
+  "outcome": "reworded_reached",
+  "judge": {
+   "status": "one_passage",
+   "passages": [
+    "dsid_bf7e79dc1331447598c4eebdc5d2897d#0"
+   ],
+   "why_words_differ": "words match"
+  },
+  "kind": "date_time",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ {
+  "fid": "qst_0439.F5",
+  "question_id": "qst_0439",
+  "question": "How many internal incident writeups at Redwood Inference describe activating automatic fallback (to a different model or region) as part of mitigation?",
+  "question_type": "completeness",
+  "gold_documents": 5,
+  "fact": "The incident writeup dated 2025-07-22 describes activating automatic fallback as part of mitigation",
+  "reached": null,
+  "where": "not checkable (worded differently from the documents)",
+  "holder_sources": [],
+  "holder_rank": null,
+  "has_number": true,
+  "words": 15,
+  "outcome": "reworded_reached",
+  "judge": {
+   "status": "one_passage",
+   "passages": [
+    "dsid_a277ed2dc74c4bad82bc71b534b6356f#0"
+   ],
+   "why_words_differ": "words match ('As a mitigation ... activated automatic region fallback')"
+  },
+  "kind": "date_time",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ }
+]

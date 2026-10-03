@@ -1,0 +1,884 @@
+{
+ "qst_0343.F9": {
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0415.F3": {
+  "kind": "rule_requirement",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0433.F3": {
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0177.F1": {
+  "kind": "figure",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0303.F3": {
+  "kind": "name_identifier",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0341.F2": {
+  "kind": "cause_reason",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0341.F4": {
+  "kind": "cause_reason",
+  "list_item": false,
+  "combines": false,
+  "negative": true
+ },
+ "qst_0415.F1": {
+  "kind": "rule_requirement",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0415.F7": {
+  "kind": "rule_requirement",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0413.F1": {
+  "kind": "who",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0433.F7": {
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0005.F1": {
+  "kind": "rule_requirement",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0007.F1": {
+  "kind": "figure",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0179.F2": {
+  "kind": "cause_reason",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0381.F1": {
+  "kind": "cause_reason",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0413.F2": {
+  "kind": "decision_status",
+  "list_item": false,
+  "combines": false,
+  "negative": true
+ },
+ "qst_0341.F9": {
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0341.F10": {
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0005.F3": {
+  "kind": "date_time",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0179.F6": {
+  "kind": "decision_status",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0345.F8": {
+  "kind": "name_identifier",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0383.F2": {
+  "kind": "cause_reason",
+  "list_item": false,
+  "combines": false,
+  "negative": true
+ },
+ "qst_0305.F1": {
+  "kind": "description",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0001.F2": {
+  "kind": "figure",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0453.F1": {
+  "kind": "who",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0433.F9": {
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0433.F10": {
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0439.F5": {
+  "kind": "date_time",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0431.F10": {
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0181.F4": {
+  "kind": "cause_reason",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0001.F1": {
+  "kind": "figure",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0343.F12": {
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0435.F1": {
+  "kind": "figure",
+  "list_item": false,
+  "combines": true,
+  "negative": false
+ },
+ "qst_0385.F3": {
+  "kind": "cause_reason",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0385.F10": {
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0381.F4": {
+  "kind": "date_time",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0431.F2": {
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0003.F5": {
+  "kind": "rule_requirement",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0341.F7": {
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0385.F7": {
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0385.F9": {
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0179.F1": {
+  "kind": "cause_reason",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0341.F6": {
+  "kind": "date_time",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0345.F10": {
+  "kind": "name_identifier",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0415.F5": {
+  "kind": "rule_requirement",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0179.F7": {
+  "kind": "figure",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0345.F16": {
+  "kind": "rule_requirement",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0433.F2": {
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0345.F12": {
+  "kind": "name_identifier",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0301.F1": {
+  "kind": "figure",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0305.F2": {
+  "kind": "description",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0439.F3": {
+  "kind": "date_time",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0177.F2": {
+  "kind": "figure",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0303.F1": {
+  "kind": "who",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0431.F3": {
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0003.F6": {
+  "kind": "rule_requirement",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0431.F1": {
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0179.F4": {
+  "kind": "cause_reason",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0345.F2": {
+  "kind": "rule_requirement",
+  "list_item": false,
+  "combines": false,
+  "negative": true
+ },
+ "qst_0435.F2": {
+  "kind": "date_time",
+  "list_item": false,
+  "combines": true,
+  "negative": false
+ },
+ "qst_0453.F2": {
+  "kind": "decision_status",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0005.F2": {
+  "kind": "date_time",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0433.F6": {
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0301.F2": {
+  "kind": "figure",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0345.F14": {
+  "kind": "rule_requirement",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0385.F1": {
+  "kind": "cause_reason",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0181.F1": {
+  "kind": "action_step",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0177.F3": {
+  "kind": "figure",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0413.F3": {
+  "kind": "date_time",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0433.F1": {
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0179.F3": {
+  "kind": "cause_reason",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0343.F1": {
+  "kind": "description",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0343.F11": {
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0431.F9": {
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0343.F10": {
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0415.F4": {
+  "kind": "rule_requirement",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0341.F8": {
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0439.F4": {
+  "kind": "date_time",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0433.F4": {
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0413.F6": {
+  "kind": "date_time",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0415.F2": {
+  "kind": "rule_requirement",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0383.F1": {
+  "kind": "cause_reason",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0003.F4": {
+  "kind": "rule_requirement",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0181.F2": {
+  "kind": "date_time",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0343.F2": {
+  "kind": "description",
+  "list_item": false,
+  "combines": false,
+  "negative": true
+ },
+ "qst_0303.F2": {
+  "kind": "name_identifier",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0341.F3": {
+  "kind": "name_identifier",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0343.F13": {
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0455.F2": {
+  "kind": "rule_requirement",
+  "list_item": false,
+  "combines": false,
+  "negative": true
+ },
+ "qst_0345.F7": {
+  "kind": "name_identifier",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0431.F7": {
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0343.F4": {
+  "kind": "cause_reason",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0439.F2": {
+  "kind": "date_time",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0433.F5": {
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0007.F2": {
+  "kind": "figure",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0343.F15": {
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0415.F8": {
+  "kind": "decision_status",
+  "list_item": false,
+  "combines": true,
+  "negative": true
+ },
+ "qst_0305.F3": {
+  "kind": "name_identifier",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0431.F12": {
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0007.F3": {
+  "kind": "figure",
+  "list_item": false,
+  "combines": true,
+  "negative": false
+ },
+ "qst_0179.F5": {
+  "kind": "cause_reason",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0345.F15": {
+  "kind": "rule_requirement",
+  "list_item": true,
+  "combines": false,
+  "negative": true
+ },
+ "qst_0003.F3": {
+  "kind": "rule_requirement",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0455.F1": {
+  "kind": "rule_requirement",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0345.F6": {
+  "kind": "name_identifier",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0343.F3": {
+  "kind": "cause_reason",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0439.F1": {
+  "kind": "figure",
+  "list_item": false,
+  "combines": true,
+  "negative": false
+ },
+ "qst_0433.F11": {
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0003.F1": {
+  "kind": "rule_requirement",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0345.F13": {
+  "kind": "rule_requirement",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0385.F6": {
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0343.F5": {
+  "kind": "cause_reason",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0431.F4": {
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0345.F4": {
+  "kind": "decision_status",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0431.F5": {
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0433.F8": {
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0345.F1": {
+  "kind": "decision_status",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0343.F7": {
+  "kind": "cause_reason",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0431.F6": {
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0343.F8": {
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0345.F5": {
+  "kind": "decision_status",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0343.F14": {
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0341.F5": {
+  "kind": "action_step",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0345.F3": {
+  "kind": "rule_requirement",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0345.F9": {
+  "kind": "name_identifier",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0343.F6": {
+  "kind": "cause_reason",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0385.F2": {
+  "kind": "cause_reason",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0411.F2": {
+  "kind": "decision_status",
+  "list_item": false,
+  "combines": true,
+  "negative": false
+ },
+ "qst_0385.F5": {
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0451.F1": {
+  "kind": "rule_requirement",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0383.F3": {
+  "kind": "action_step",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0381.F2": {
+  "kind": "cause_reason",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0385.F4": {
+  "kind": "cause_reason",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0385.F8": {
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0301.F3": {
+  "kind": "date_time",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0431.F8": {
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0433.F12": {
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0345.F11": {
+  "kind": "name_identifier",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0411.F1": {
+  "kind": "figure",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0005.F4": {
+  "kind": "date_time",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0341.F1": {
+  "kind": "cause_reason",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0181.F3": {
+  "kind": "cause_reason",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0381.F3": {
+  "kind": "name_identifier",
+  "list_item": false,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0431.F11": {
+  "kind": "date_time",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0415.F6": {
+  "kind": "rule_requirement",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0003.F2": {
+  "kind": "rule_requirement",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ },
+ "qst_0343.F16": {
+  "kind": "action_step",
+  "list_item": true,
+  "combines": false,
+  "negative": false
+ }
+}
