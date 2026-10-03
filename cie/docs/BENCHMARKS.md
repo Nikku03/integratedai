@@ -223,6 +223,12 @@ The p95 comes from the lexical path, whose own p95 is 5,636 ms.
 - its latency was p50 376 ms and p95 861 ms;
 - fusion now adds 4.9 points over vector search alone, without the slow tail.
 
+**Grading answers.** `cie.eval.grade_answers` runs the benchmark's own judge (`metrics_based_eval --no-correction`)
+on the answers files: is each answer correct, and which gold facts does it state. The notebook's Part 1c runs it
+through Claude and splits correctness by where the evidence audit found the answer facts. No graded run is recorded
+yet. `--read-more` adds a composed-answer arm that reads more evidence, tested against criteria fixed in advance
+(`docs/READ_MORE_PREREGISTRATION.md`).
+
 **With document expansion** (now the default; `docs/EXPANSION_RESULTS.md`): at 5,000 documents, every answer fact
 reached what a small model reads for 72% of judged questions, against 65% without it. Recall@10 was 0.876 against
 0.878, and MRR 0.761 for both. It has not been run at 50,000 documents yet.

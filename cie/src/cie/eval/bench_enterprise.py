@@ -67,6 +67,10 @@ ARMS = {"hybrid+graph(REM)": {"lexical_engine": "fts", **_OFF}, "hybrid+cliques+
         "hybrid+graph(REM) [BM25+expansion]": {"lexical_engine": "bm25", "expand_documents": 3}}
 BM25_ARMS = [k for k, v in ARMS.items() if v.get("lexical_engine") == "bm25"]
 ASSISTED_ARM = "hybrid+graph(REM), composed answers"  # added by --assisted: the default arm with answers composed by the configured model
+# added by --read-more: the same model reads more. The packet holds twice the evidence and expands 10 documents, and a
+# small-context model reads 60,000 characters of it instead of llm_local_evidence_chars (docs/READ_MORE_PREREGISTRATION.md)
+READ_MORE_ARM = "hybrid+graph(REM), composed answers, read more"
+READ_MORE = {"mode": "assisted", "token_budget": 24000, "max_records": 200, "expand_documents": 10, "evidence_chars": 60000}
 
 
 # ------------------------------------------------------------------ corpus
@@ -453,9 +457,12 @@ def evaluate(session, retriever: Retriever, admin, company_id, questions: list[d
     for arm, cfg in arms.items():
         cfg = dict(cfg)
         mode = cfg.pop("mode", "strict")
+        evidence_chars = cfg.pop("evidence_chars", None)
         provider = None
         if mode == "assisted":
             provider = assisted_provider(retriever.settings)
+            if evidence_chars and getattr(provider, "evidence_budget_chars", None):
+                provider.evidence_budget_chars = evidence_chars  # a small-context model reads more; a long-context one reads it all
         spend = {"tokens_in": 0, "tokens_out": 0, "cost_usd": 0.0, "declined": 0, "unverifiable": 0, "citations_attributed": 0, "cost_unknown": 0}
         per_cat: dict[str, dict[str, list]] = defaultdict(lambda: defaultdict(list))
         answers = []
@@ -531,7 +538,8 @@ def evaluate(session, retriever: Retriever, admin, company_id, questions: list[d
         if mode == "assisted":
             overall["answer_mode"] = "assisted"
             overall["llm"] = {**spend, "cost_usd": round(spend["cost_usd"], 2), "model": getattr(provider, "model", None),
-                              "cost_complete": spend["cost_unknown"] == 0}
+                              "cost_complete": spend["cost_unknown"] == 0,
+                              "evidence_chars": getattr(provider, "evidence_budget_chars", None)}  # None: the whole packet
         results[arm] = {"overall": overall, "by_category": summary}
         out.mkdir(parents=True, exist_ok=True)
         safe = re.sub(r"[^a-z0-9]+", "_", arm.lower()).strip("_")
@@ -746,6 +754,8 @@ def main(argv: list[str] | None = None) -> dict:
     ap.add_argument("--cache", default=None, help="embedding cache file (default: <out>/emb_cache.sqlite); share one across runs to embed each text once")
     ap.add_argument("--assisted", action="store_true",
                     help="also compose answers with the configured model (CIE_LLM_PROVIDER / CIE_LLM_MODEL and its API key) on the default arm")
+    ap.add_argument("--read-more", action="store_true",
+                    help="with --assisted, also a composed-answer arm that reads more evidence (docs/READ_MORE_PREREGISTRATION.md)")
     ap.add_argument("--load-only", action="store_true",
                     help="build (or reuse) the memory bank and stop, without asking the questions; load.json names it")
     a = ap.parse_args(argv)
@@ -754,8 +764,12 @@ def main(argv: list[str] | None = None) -> dict:
     if unknown or not wanted:
         raise SystemExit(f"unknown arm(s) {unknown}; choose from: {', '.join(ARMS)}")
     arms = {k: ARMS[k] for k in wanted}
+    if a.read_more and not a.assisted:
+        raise SystemExit("--read-more compares composed answers: add --assisted")
     if a.assisted:
         arms[ASSISTED_ARM] = {"mode": "assisted"}
+    if a.read_more:
+        arms[READ_MORE_ARM] = dict(READ_MORE)
     return run(Path(a.root), Path(a.out), a.docs, arms=arms, entities=not a.no_entities, reuse_tenant=a.reuse_tenant, n_questions=a.questions,
                batch=a.batch, memory=a.memory, workers=a.workers, cache=Path(a.cache) if a.cache else None, load_only=a.load_only)
 
