@@ -52,3 +52,58 @@ labels).
 
 The run happens once. No default changes on its result. If an arm helps, it gets a pre-registered test on the
 5,000-document memory bank.
+
+## Results (added after the single run)
+
+**Neighbours.** They take 66 ms to build for 50 documents.
+
+| signal | links joining two gold documents of one question | gold-document pairs linked |
+|---|---|---|
+| similar content | 66 of 150 | 39 of 50 |
+| shared names and identifiers | 64 of 147 | 36 of 50 |
+| both | 67 of 150 | 40 of 50 |
+
+The links find most pairs of documents that one question needs together. More than half the links, though, join
+documents that no question needs together: they relate to the document, not to the question.
+
+**What reaches the model.** Findable facts reached, of 136; in brackets, gold-document recall on the 12
+multi-document questions:
+
+| arm | 6,000 characters | 12,000 characters | 24,000 characters |
+|---|---|---|---|
+| **today** | **75** (0.48) | **116** (0.83) | 129 (0.96) |
+| related: similar content | 74 (0.48) | 99 (0.86) | 126 (0.96) |
+| related: shared names and identifiers | 75 (0.52) | 101 (0.89) | 128 (0.96) |
+| related: both | 74 (0.48) | 99 (0.89) | 128 (0.96) |
+| today + next passage | 70 (0.48) | 103 (0.75) | **130** (0.96) |
+| related: both + next passage | 69 (0.48) | 94 (0.72) | 125 (0.93) |
+
+Today at 24,000 characters reaches 129 facts here. The missing-facts analysis said 130 because it also accepted the
+judge's passages for one fact the word check missed (qst_0433.F5).
+
+**By question** (related: both against today, `split.py`):
+
+| budget | single-document questions (45 facts) | multi-document questions (91 facts) |
+|---|---|---|
+| 12,000 characters | 45 → 38 | 71 → 61 |
+| 24,000 characters | 45 → 45 | 84 → 83 |
+
+**Why it does not help here:**
+- **Search already brings the related documents.** On 50 documents, multi-document questions get 83% of their gold
+  documents at 12,000 characters and 96% at 24,000 without any links. The neighbours add little that was missing.
+- **Neighbour passages take room.** They are placed early, so they push out the first documents' own deeper
+  passages. In the first single-document question, the gold document's passages in what the model reads fell from 8
+  to 5 at 12,000 characters.
+- **The next passage costs as much as it gains:** +1 fact at 24,000 characters, −13 at 12,000.
+
+**Decision.** No default changes, and no test at 5,000 documents follows from this result.
+
+**What this cannot show.** The idea's real case is where search cannot find the related document: on the
+5,000-document memory bank, 131 of the 196 missed facts sat in documents outside the first 5. 50 documents is too few
+for that. A test there would need three things:
+- neighbours added after what search found, not before it;
+- a larger reading budget (the read-more arm), so they add rather than replace;
+- links used only for questions that ask across documents.
+
+Files: `related50.py` (the run), `split.py` (single against multi-document questions), `results.json` (every arm,
+the neighbour lists and their quality).
