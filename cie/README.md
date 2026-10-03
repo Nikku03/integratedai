@@ -100,7 +100,10 @@ by the worker; `fts`: PostgreSQL full text, which is also the fallback for a ten
 an index), `CIE_PACKET_EXPAND_DOCUMENTS` (3, the default: the best passages of the first 3
 documents join the packet, `CIE_PACKET_EXPAND_SECTIONS` each; 0 turns it off: see
 `docs/EXPANSION_RESULTS.md`),
-`CIE_ENCRYPTION_KEY` (AES-GCM at rest for the vault).
+`CIE_LLM_PROVIDER` (`openai` for ChatGPT models with `OPENAI_API_KEY`, `anthropic`, `local`, `gemini`, or `none`),
+`CIE_LLM_MODEL` (e.g. `gpt-5.4`), `CIE_LLM_REASONING_EFFORT` (OpenAI reasoning models: `low`, `medium`, `high`),
+`CIE_LLM_PRICE_IN` / `CIE_LLM_PRICE_OUT` (USD per million tokens, for a model missing from the price list; without
+them its cost is reported unknown), `CIE_ENCRYPTION_KEY` (AES-GCM at rest for the vault).
 
 ## Layout
 

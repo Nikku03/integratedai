@@ -180,3 +180,63 @@ def test_claims_join_labels_and_bare_citations_and_miscounted_items_are_correcte
     res = assisted(pk, classify(pk.query), Miscounts())
     assert res.answer.endswith("time limit [2]."), res.answer
     assert [c["n"] for c in res.citations] == [2] and res.citations_attributed == 1
+
+
+def _fake_openai(calls, content="The fee is USD 4,500 [1].", refusal=None, finish="stop"):
+    class Completions:
+        def create(self, **kw):
+            calls.append(kw)
+            msg = SimpleNamespace(content=content, refusal=refusal)
+            return SimpleNamespace(choices=[SimpleNamespace(message=msg, finish_reason=finish)],
+                                   usage=SimpleNamespace(prompt_tokens=6000, completion_tokens=800))
+
+    return SimpleNamespace(chat=SimpleNamespace(completions=Completions()))
+
+
+def test_openai_api_gets_max_completion_tokens_and_reasoning_effort_only_when_set():
+    from cie.agents.providers import OpenAIProvider
+
+    calls = []
+    p = OpenAIProvider("sk-test", "gpt-5.4", reasoning_effort="low")
+    p.client = _fake_openai(calls)
+    r = p.complete("sys", "user", max_tokens=16000)
+    assert calls[0]["max_completion_tokens"] == 16000 and "max_tokens" not in calls[0], "current models reject max_tokens"
+    assert calls[0]["reasoning_effort"] == "low" and "temperature" not in calls[0], "reasoning models take no temperature"
+    assert r.text.startswith("The fee") and r.tokens_out == 800 and p.evidence_budget_chars is None
+    calls.clear()
+    q = OpenAIProvider("sk-test", "gpt-4o")
+    q.client = _fake_openai(calls)
+    q.complete("sys", "user")
+    assert "reasoning_effort" not in calls[0]
+
+
+def test_openai_cost_uses_given_prices_and_is_unknown_without_them():
+    from cie.agents.providers import OpenAIProvider
+
+    p = OpenAIProvider("sk-test", "gpt-5.4")
+    p.client = _fake_openai([])
+    r = p.complete("sys", "user")
+    assert r.cost_usd == 0.0 and r.cost_known is False, "an unlisted model is never reported as free"
+    q = OpenAIProvider("sk-test", "gpt-5.4", prices=(1.0, 10.0))
+    q.client = _fake_openai([])
+    r = q.complete("sys", "user")
+    assert r.cost_known and abs(r.cost_usd - (6000 * 1.0 + 800 * 10.0) / 1e6) < 1e-9
+
+
+def test_openai_refusal_is_reported_as_a_refusal():
+    from cie.agents.providers import OpenAIProvider
+
+    p = OpenAIProvider("sk-test", "gpt-5.4")
+    p.client = _fake_openai([], content=None, refusal="I can't help with that.")
+    r = p.complete("sys", "user")
+    assert r.stop_reason == "refusal" and r.text == ""
+
+
+def test_settings_reach_the_openai_provider(monkeypatch):
+    from cie.agents.providers import OpenAIProvider, get_provider
+    from cie.core.settings import Settings
+
+    s = Settings(llm_provider="openai", llm_model="gpt-5.4", llm_reasoning_effort="low", llm_price_in=1.25, llm_price_out=10.0,
+                 OPENAI_API_KEY="sk-test")
+    p = get_provider(s)
+    assert isinstance(p, OpenAIProvider) and p.model == "gpt-5.4" and p.reasoning_effort == "low" and p.prices == (1.25, 10.0)

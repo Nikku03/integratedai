@@ -40,6 +40,11 @@ class Settings(BaseSettings):
     # a local open model (Ollama, vLLM) has a small context and follows long prompts poorly: give it the best evidence
     # items up to this many characters (about 6k tokens) and let it answer in at most this many tokens
     llm_local_evidence_chars: int = 24000
+    # OpenAI reasoning models (gpt-5 family, o-series): minimal | low | medium | high; empty: the model's default
+    llm_reasoning_effort: str = ""
+    # USD per million tokens (input, output) for a model missing from the price list; 0: the cost is reported unknown
+    llm_price_in: float = 0.0
+    llm_price_out: float = 0.0
     llm_local_max_output_tokens: int = 1024
 
     ocr_backend: Literal["auto", "pymupdf", "tesseract", "unlimited_ocr"] = "auto"

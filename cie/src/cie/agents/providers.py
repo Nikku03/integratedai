@@ -133,14 +133,20 @@ class AnthropicProvider:
 
 
 class OpenAIProvider:
-    """The OpenAI API, or with ``base_url`` any OpenAI-compatible server running an open model locally (Ollama,
-    vLLM, llama.cpp): then generation is deterministic (temperature 0) and bounded, the evidence given to the model
-    is budgeted (``evidence_budget_chars``), and the cost is zero."""
+    """The OpenAI API (ChatGPT models), or with ``base_url`` any OpenAI-compatible server running an open model
+    locally (Ollama, vLLM, llama.cpp): then generation is deterministic (temperature 0) and bounded, the evidence
+    given to the model is budgeted (``evidence_budget_chars``), and the cost is zero.
+
+    On the OpenAI API the output limit is ``max_completion_tokens``: current models (the gpt-5 family, the o-series)
+    reject ``max_tokens``, and a reasoning model spends part of the limit thinking, so callers keep it generous.
+    ``reasoning_effort`` is sent only when set. ``prices`` (USD per million tokens, input and output) cost a model
+    missing from the price list; without them its cost is reported unknown, never as free."""
 
     name = "openai"
 
     def __init__(self, api_key: str, model: str, base_url: str | None = None, *, max_output_tokens: int = 1024,
-                 evidence_chars: int | None = None):
+                 evidence_chars: int | None = None, reasoning_effort: str | None = None,
+                 prices: tuple[float, float] | None = None):
         from openai import OpenAI
 
         self.client = OpenAI(api_key=api_key or "none", base_url=base_url or None, timeout=600)
@@ -148,6 +154,8 @@ class OpenAIProvider:
         self.local = bool(base_url)
         self.max_output_tokens = max_output_tokens
         self.evidence_budget_chars = evidence_chars if self.local else None
+        self.reasoning_effort = (reasoning_effort or "").strip() or None
+        self.prices = prices if prices and any(prices) else None
         if self.local:
             self.name = "local"
 
@@ -155,19 +163,27 @@ class OpenAIProvider:
         t = time.perf_counter()
         kw: dict = {}
         if self.local:
-            max_tokens = min(max_tokens, self.max_output_tokens)  # callers size max_tokens for thinking models
+            kw["max_tokens"] = min(max_tokens, self.max_output_tokens)  # callers size max_tokens for thinking models
             kw["temperature"] = 0
-        r = self.client.chat.completions.create(model=self.model, max_tokens=max_tokens,
-                                                messages=[{"role": "system", "content": system},
-                                                          {"role": "user", "content": user}], **kw)
-        text = r.choices[0].message.content or ""
+        else:
+            kw["max_completion_tokens"] = max_tokens
+            if self.reasoning_effort:
+                kw["reasoning_effort"] = self.reasoning_effort
+        r = self.client.chat.completions.create(model=self.model, messages=[{"role": "system", "content": system},
+                                                                            {"role": "user", "content": user}], **kw)
+        choice = r.choices[0]
+        text = choice.message.content or ""
+        stop = "refusal" if getattr(choice.message, "refusal", None) else getattr(choice, "finish_reason", None)
         ti = r.usage.prompt_tokens if r.usage else 0
-        to = r.usage.completion_tokens if r.usage else 0
+        to = r.usage.completion_tokens if r.usage else 0  # reasoning tokens included: they are billed as output
+        ms = (time.perf_counter() - t) * 1000
         if self.local:  # runs on our own hardware: no per-token price
-            return LLMResponse(text, self.model, ti, to, (time.perf_counter() - t) * 1000, 0.0, usage_is_estimate=r.usage is None,
-                               stop_reason=getattr(r.choices[0], "finish_reason", None))
-        return LLMResponse(text, self.model, ti, to, (time.perf_counter() - t) * 1000, estimate_cost(self.model, ti, to),
-                           usage_is_estimate=r.usage is None, cost_known=price_of(self.model) is not None)
+            return LLMResponse(text, self.model, ti, to, ms, 0.0, usage_is_estimate=r.usage is None, stop_reason=stop)
+        if self.prices:
+            cost, known = ti * self.prices[0] / 1e6 + to * self.prices[1] / 1e6, True
+        else:
+            cost, known = estimate_cost(self.model, ti, to), price_of(self.model) is not None
+        return LLMResponse(text, self.model, ti, to, ms, cost, usage_is_estimate=r.usage is None, cost_known=known, stop_reason=stop)
 
 
 class GeminiProvider:
@@ -201,7 +217,8 @@ def get_provider(settings: Settings | None = None) -> LLMProvider:
     if s.llm_provider == "anthropic":
         return AnthropicProvider(s.anthropic_api_key, s.llm_model)
     if s.llm_provider == "openai":
-        return OpenAIProvider(s.openai_api_key, s.llm_model)
+        return OpenAIProvider(s.openai_api_key, s.llm_model, reasoning_effort=s.llm_reasoning_effort,
+                              prices=(s.llm_price_in, s.llm_price_out))
     if s.llm_provider == "local":
         return OpenAIProvider("none", s.llm_model, s.llm_base_url or "http://localhost:11434/v1",
                               max_output_tokens=s.llm_local_max_output_tokens, evidence_chars=s.llm_local_evidence_chars)

@@ -9,6 +9,11 @@ It runs with ``--no-correction``: answers are scored against the benchmark's ori
 the gold set is never rewritten. The judge lives in its own virtual environment (its requirements are not this
 package's), reads its key from ``LLM_API_KEY`` and its model from ``LLM_MODEL_NAME``.
 
+The judge model decides the provider: ``gpt-*`` and ``o*`` models run on the OpenAI API (key from ``OPENAI_API_KEY``),
+``claude-*`` models on the Anthropic API (key from ``ANTHROPIC_API_KEY``). The default, ``gpt-5.4``, is the benchmark's
+own default judge. Its OpenAI requests ask for reasoning summaries, which an OpenAI organisation must be verified to
+receive; the judge here drops that request (the summaries are only printed, never scored).
+
 **A failed judge call is scored as a wrong answer by the benchmark's code**, with no error. So the judge is checked
 with one call before grading, and every summary counts the answers whose correctness call returned nothing
 (``judge_failed``). A run with more than 5% of them is reported as unusable rather than as a low score.
@@ -31,7 +36,7 @@ from pathlib import Path
 from typing import Any
 
 JUDGE_MODULE = "src.scripts.answer_evaluation.metrics_based_eval"
-DEFAULT_MODEL = "claude-sonnet-4-6"  # the benchmark's own default judge
+DEFAULT_MODEL = "gpt-5.4"  # the benchmark's own default judge (its default provider is OpenAI)
 MAX_FAILED_SHARE = 0.05
 STAGES = ["search_missed_document", "right_document_wrong_part", "cut_before_model", "everything_reached_model"]
 
@@ -39,7 +44,33 @@ STAGES = ["search_missed_document", "right_document_wrong_part", "cut_before_mod
 # The benchmark's requirements pin no versions. Its judge was written for the 0.x Anthropic SDK: the 1.x SDK rejects
 # the arguments it sends with extended thinking (``temperature`` in ``messages.stream``).
 JUDGE_PINS = ["anthropic>=0.80,<1"]
-_RECIPE = "requirements + " + " ".join(JUDGE_PINS)
+_RECIPE = "requirements + " + " ".join(JUDGE_PINS) + " + runner 1"
+# Runs a module (or -c code) of the benchmark's checkout with one change: the OpenAI judge's requests ask for no
+# reasoning summary. Everything else is the benchmark's own code.
+_RUNNER = """import os, runpy, sys
+sys.path.insert(0, os.getcwd())
+try:
+    from openai.resources.responses import Responses
+    _create = Responses.create
+    def create(self, *a, **kw):
+        r = kw.get("reasoning")
+        if isinstance(r, dict) and "summary" in r:
+            kw["reasoning"] = {k: v for k, v in r.items() if k != "summary"}
+        return _create(self, *a, **kw)
+    Responses.create = create
+except Exception:
+    pass
+if sys.argv[1] == "-c":
+    exec(compile(sys.argv[2], "<judge>", "exec"), {"__name__": "__main__"})
+else:
+    mod = sys.argv[1]
+    sys.argv = [mod] + sys.argv[2:]
+    runpy.run_module(mod, run_name="__main__", alter_sys=True)
+"""
+
+
+def provider_of(model: str) -> str:
+    return "anthropic" if model.startswith("claude") else "openai"
 
 
 def _clean_env(base: dict[str, str] | None = None) -> dict[str, str]:
@@ -72,17 +103,24 @@ def ensure_venv(path: Path, bench: Path, log=print) -> Path:
         subprocess.run([str(py), "-m", "pip", "install", "-q", "-r", str(bench / "requirements.txt")], check=True, env=env)
         subprocess.run([str(py), "-m", "pip", "install", "-q", *JUDGE_PINS], check=True, env=env)
         marker.write_text(_RECIPE + "\n")
+    (path / "cie_judge_run.py").write_text(_RUNNER)
     return py
 
 
+def _runner(py: Path) -> str:
+    return str(py.parent.parent / "cie_judge_run.py")
+
+
 def judge_env(model: str, key: str | None = None, base: dict[str, str] | None = None) -> dict[str, str]:
-    """The judge's environment: Claude through the benchmark's Anthropic client. The key is taken from
-    ``ANTHROPIC_API_KEY`` when not given, and is never printed."""
+    """The judge's environment: the benchmark's OpenAI or Anthropic client, by the model's name. The key is taken
+    from ``OPENAI_API_KEY`` or ``ANTHROPIC_API_KEY`` when not given, and is never printed."""
     env = _clean_env(base)
-    key = key or env.get("LLM_API_KEY") or env.get("ANTHROPIC_API_KEY")
+    provider = provider_of(model)
+    var = "ANTHROPIC_API_KEY" if provider == "anthropic" else "OPENAI_API_KEY"
+    key = key or env.get(var)
     if not key:
-        raise SystemExit("the judge needs a Claude key: set ANTHROPIC_API_KEY (on Colab, the ANTHROPIC_API_KEY secret)")
-    env.update({"LLM_PROVIDER": "anthropic", "LLM_MODEL_NAME": model, "LLM_API_KEY": key, "PYTHONUNBUFFERED": "1"})
+        raise SystemExit(f"the judge {model} needs {var} (on Colab, a secret named {var})")
+    env.update({"LLM_PROVIDER": provider, "LLM_MODEL_NAME": model, "LLM_API_KEY": key, "PYTHONUNBUFFERED": "1"})
     return env
 
 
@@ -91,7 +129,7 @@ def preflight(py: Path, bench: Path, env: dict[str, str]) -> str:
     code = ("from src.llm import get_llm, Message\n"
             "out = ''.join(c for c in get_llm(quiet=True).generate([Message(role='user', content='Reply with the single word: ready')])"
             " if isinstance(c, str))\nprint(out.strip()[:200])")
-    r = subprocess.run([str(py), "-c", code], cwd=bench, env=env, capture_output=True, text=True, timeout=300)
+    r = subprocess.run([str(py), _runner(py), "-c", code], cwd=bench, env=env, capture_output=True, text=True, timeout=300)
     if r.returncode != 0 or not r.stdout.strip():
         tail = (r.stderr or r.stdout).strip().splitlines()[-5:]
         raise SystemExit("the judge's test call failed:\n  " + "\n  ".join(tail))
@@ -101,7 +139,7 @@ def preflight(py: Path, bench: Path, env: dict[str, str]) -> str:
 def run_judge(py: Path, bench: Path, answers: Path, results: Path, env: dict[str, str], parallelism: int = 8,
               limit: int | None = None, log=print) -> None:
     """The benchmark's judge on one answers file. ``--resume`` lets an interrupted run continue where it stopped."""
-    args = [str(py), "-m", JUDGE_MODULE, "--answers-file", str(answers.resolve()), "--questions-file", str(bench / "questions.jsonl"),
+    args = [str(py), _runner(py), JUDGE_MODULE, "--answers-file", str(answers.resolve()), "--questions-file", str(bench / "questions.jsonl"),
             "--results-file", str(results.resolve()), "--no-correction", "--parallelism", str(parallelism), "--resume"]
     if limit:
         args += ["--limit", str(limit)]

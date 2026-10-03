@@ -28,12 +28,38 @@ def test_summary_counts_failed_judge_calls_and_splits_declined_and_audit_stages(
     assert s["by_audit_stage"]["not judged by the audit"]["n"] == 2
 
 
-def test_judge_env_takes_the_claude_key_and_hides_this_package():
-    env = g.judge_env("claude-sonnet-4-6", base={"ANTHROPIC_API_KEY": "k", "PYTHONPATH": "src", "PATH": "/bin"})
+def test_judge_env_takes_the_key_of_the_models_provider_and_hides_this_package():
+    env = g.judge_env("claude-sonnet-4-6", base={"ANTHROPIC_API_KEY": "k", "OPENAI_API_KEY": "o", "PYTHONPATH": "src", "PATH": "/bin"})
     assert env["LLM_API_KEY"] == "k" and env["LLM_PROVIDER"] == "anthropic" and env["LLM_MODEL_NAME"] == "claude-sonnet-4-6"
     assert "PYTHONPATH" not in env and env["PATH"] == "/bin"
+    env = g.judge_env("gpt-5.4", base={"ANTHROPIC_API_KEY": "k", "OPENAI_API_KEY": "o"})
+    assert env["LLM_API_KEY"] == "o" and env["LLM_PROVIDER"] == "openai" and env["LLM_MODEL_NAME"] == "gpt-5.4"
+    assert g.DEFAULT_MODEL == "gpt-5.4", "the benchmark's own default judge"
     with pytest.raises(SystemExit):
-        g.judge_env("claude-sonnet-4-6", base={"PATH": "/bin"})
+        g.judge_env("claude-sonnet-4-6", base={"OPENAI_API_KEY": "o"})
+    with pytest.raises(SystemExit):
+        g.judge_env("gpt-5.4", base={"ANTHROPIC_API_KEY": "k"})
+
+
+def test_the_runner_drops_only_the_reasoning_summary(tmp_path, monkeypatch):
+    import sys
+    import types
+
+    seen = {}
+
+    class Responses:
+        def create(self, *a, **kw):
+            seen.update(kw)
+
+    fake = types.ModuleType("openai.resources.responses")
+    fake.Responses = Responses
+    monkeypatch.setitem(sys.modules, "openai", types.ModuleType("openai"))
+    monkeypatch.setitem(sys.modules, "openai.resources", types.ModuleType("openai.resources"))
+    monkeypatch.setitem(sys.modules, "openai.resources.responses", fake)
+    monkeypatch.setattr(sys, "argv", ["runner", "-c", "pass"])
+    exec(compile(g._RUNNER, "runner", "exec"), {"__name__": "__main__"})
+    Responses().create(model="gpt-5.4", input=[], stream=True, reasoning={"effort": "medium", "summary": "auto"})
+    assert seen["reasoning"] == {"effort": "medium"} and seen["stream"] is True
 
 
 def test_detail_file_sits_beside_the_answers_file(tmp_path):

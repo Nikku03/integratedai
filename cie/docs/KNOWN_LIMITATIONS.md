@@ -4,10 +4,13 @@ Stated plainly so nobody mistakes a scaffold for a finished capability.
 
 ## Not exercised against live services in this build
 * **LLM providers.** Anthropic, OpenAI, Gemini and local (OpenAI-compatible)
-  adapters are implemented against the public APIs but no API key was
-  available, so assisted answers, the LLM planner and the LLM specialist
-  strategy were tested only through `FakeProvider`. All shipped numbers use the
-  deterministic extractive strategies.
+  adapters are implemented against the public APIs. Llama ran on Colab through
+  Ollama. No Anthropic or OpenAI key was available in the build environment: the
+  OpenAI path (ChatGPT answers, and the benchmark judge on `gpt-5.4`) was run end
+  to end against a local stand-in for the OpenAI API, which checks the requests
+  sent (`max_completion_tokens`, `reasoning_effort`, no reasoning summary), not
+  the quality of the answers. ChatGPT's answer quality is unmeasured until a run
+  with a key.
 * **Unlimited-OCR.** It is the OCR engine on machines with a GPU since its
   pre-registered test (`docs/OCR_RESULTS.md`): fewer errors than Tesseract and
   every number kept, on typeset pages with simulated scanning. Real paper (stamps,
