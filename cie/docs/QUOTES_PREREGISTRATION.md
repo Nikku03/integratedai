@@ -71,3 +71,14 @@ at least 70% of its content words appear after stemming. It is lexical, not a ju
 - **Any criterion fails.** The default stays `cards`, and `quotes` stays available.
 
 Every result is reported, including failures.
+
+## Outcome of the test (added after the run)
+
+**Every criterion was met** on the even half: 233 facts in the answer against 85 (2.74 times), 65 questions with every
+fact against 18, mean length 1,050 against 1,141 characters (longest 1,087), and declines and conflicts identical.
+The default evidence-only answer is now `quotes`.
+
+After the test, an acceptance test showed that quoting raw passages mixed an old fee with a later amendment's for an
+"as of" question. Questions that name a date or ask for an earlier version now keep the card answer, and superseded
+records are never quoted. Re-measured (not pre-registered): 227 facts against 85, 64 complete answers against 18.
+Details are in `docs/QUOTES_RESULTS.md`.

@@ -1,0 +1,284 @@
+{
+  "tenant": "erbfull-5000-9688c2",
+  "engine": "bm25",
+  "model_view_chars": 24000,
+  "half": "odd",
+  "expand_documents": 3,
+  "expand_sections": 5,
+  "answers": "extractive (no model)",
+  "fact_cover": 0.7,
+  "overall": {
+    "questions": 235,
+    "judged": 189,
+    "unjudged_no_checkable_fact": 46,
+    "stages": {
+      "search_missed_document": 6,
+      "right_document_wrong_part": 34,
+      "cut_before_model": 11,
+      "everything_reached_model": 138
+    },
+    "facts": 1098,
+    "checkable_facts": 673,
+    "facts_in_packet": 537,
+    "facts_in_model_view": 477,
+    "answer_chars_mean": 1034.5,
+    "answer_chars_max": 1088,
+    "status": {
+      "answered": 185,
+      "insufficient_evidence": 4
+    },
+    "facts_in_answer": 171,
+    "questions_with_every_fact_in_answer": 51,
+    "everything_reached_model_but_answer_missed_a_fact": 89,
+    "everything_reached_model_and_answer_had_every_fact": 49,
+    "everything_reached_model_but_answer_declined": 1
+  },
+  "by_half": {
+    "odd": {
+      "questions": 235,
+      "judged": 189,
+      "unjudged_no_checkable_fact": 46,
+      "stages": {
+        "search_missed_document": 6,
+        "right_document_wrong_part": 34,
+        "cut_before_model": 11,
+        "everything_reached_model": 138
+      },
+      "facts": 1098,
+      "checkable_facts": 673,
+      "facts_in_packet": 537,
+      "facts_in_model_view": 477,
+      "answer_chars_mean": 1034.5,
+      "answer_chars_max": 1088,
+      "status": {
+        "answered": 185,
+        "insufficient_evidence": 4
+      },
+      "facts_in_answer": 171,
+      "questions_with_every_fact_in_answer": 51,
+      "everything_reached_model_but_answer_missed_a_fact": 89,
+      "everything_reached_model_and_answer_had_every_fact": 49,
+      "everything_reached_model_but_answer_declined": 1
+    },
+    "even": {
+      "questions": 0,
+      "judged": 0,
+      "unjudged_no_checkable_fact": 0,
+      "stages": {
+        "search_missed_document": 0,
+        "right_document_wrong_part": 0,
+        "cut_before_model": 0,
+        "everything_reached_model": 0
+      },
+      "facts": 0,
+      "checkable_facts": 0,
+      "facts_in_packet": 0,
+      "facts_in_model_view": 0
+    }
+  },
+  "by_category": {
+    "basic": {
+      "questions": 88,
+      "judged": 67,
+      "unjudged_no_checkable_fact": 21,
+      "stages": {
+        "search_missed_document": 0,
+        "right_document_wrong_part": 5,
+        "cut_before_model": 1,
+        "everything_reached_model": 61
+      },
+      "facts": 225,
+      "checkable_facts": 173,
+      "facts_in_packet": 161,
+      "facts_in_model_view": 158,
+      "answer_chars_mean": 1055.2,
+      "answer_chars_max": 1088,
+      "status": {
+        "answered": 67
+      },
+      "facts_in_answer": 67,
+      "questions_with_every_fact_in_answer": 27,
+      "everything_reached_model_but_answer_missed_a_fact": 35,
+      "everything_reached_model_and_answer_had_every_fact": 26,
+      "everything_reached_model_but_answer_declined": 0
+    },
+    "completeness": {
+      "questions": 10,
+      "judged": 8,
+      "unjudged_no_checkable_fact": 2,
+      "stages": {
+        "search_missed_document": 1,
+        "right_document_wrong_part": 4,
+        "cut_before_model": 0,
+        "everything_reached_model": 3
+      },
+      "facts": 140,
+      "checkable_facts": 115,
+      "facts_in_packet": 71,
+      "facts_in_model_view": 52,
+      "answer_chars_mean": 1056.4,
+      "answer_chars_max": 1084,
+      "status": {
+        "answered": 8
+      },
+      "facts_in_answer": 6,
+      "questions_with_every_fact_in_answer": 2,
+      "everything_reached_model_but_answer_missed_a_fact": 2,
+      "everything_reached_model_and_answer_had_every_fact": 1,
+      "everything_reached_model_but_answer_declined": 0
+    },
+    "conflicting_info": {
+      "questions": 10,
+      "judged": 7,
+      "unjudged_no_checkable_fact": 3,
+      "stages": {
+        "search_missed_document": 0,
+        "right_document_wrong_part": 0,
+        "cut_before_model": 1,
+        "everything_reached_model": 6
+      },
+      "facts": 49,
+      "checkable_facts": 17,
+      "facts_in_packet": 17,
+      "facts_in_model_view": 14,
+      "answer_chars_mean": 1051.9,
+      "answer_chars_max": 1074,
+      "status": {
+        "answered": 7
+      },
+      "facts_in_answer": 5,
+      "questions_with_every_fact_in_answer": 1,
+      "everything_reached_model_but_answer_missed_a_fact": 5,
+      "everything_reached_model_and_answer_had_every_fact": 1,
+      "everything_reached_model_but_answer_declined": 0
+    },
+    "constrained": {
+      "questions": 15,
+      "judged": 14,
+      "unjudged_no_checkable_fact": 1,
+      "stages": {
+        "search_missed_document": 0,
+        "right_document_wrong_part": 3,
+        "cut_before_model": 2,
+        "everything_reached_model": 9
+      },
+      "facts": 147,
+      "checkable_facts": 51,
+      "facts_in_packet": 47,
+      "facts_in_model_view": 39,
+      "answer_chars_mean": 986.0,
+      "answer_chars_max": 1083,
+      "status": {
+        "answered": 13,
+        "insufficient_evidence": 1
+      },
+      "facts_in_answer": 4,
+      "questions_with_every_fact_in_answer": 0,
+      "everything_reached_model_but_answer_missed_a_fact": 9,
+      "everything_reached_model_and_answer_had_every_fact": 0,
+      "everything_reached_model_but_answer_declined": 0
+    },
+    "intra_document_reasoning": {
+      "questions": 20,
+      "judged": 19,
+      "unjudged_no_checkable_fact": 1,
+      "stages": {
+        "search_missed_document": 0,
+        "right_document_wrong_part": 1,
+        "cut_before_model": 0,
+        "everything_reached_model": 18
+      },
+      "facts": 53,
+      "checkable_facts": 39,
+      "facts_in_packet": 37,
+      "facts_in_model_view": 37,
+      "answer_chars_mean": 1051.4,
+      "answer_chars_max": 1084,
+      "status": {
+        "answered": 19
+      },
+      "facts_in_answer": 24,
+      "questions_with_every_fact_in_answer": 7,
+      "everything_reached_model_but_answer_missed_a_fact": 11,
+      "everything_reached_model_and_answer_had_every_fact": 7,
+      "everything_reached_model_but_answer_declined": 0
+    },
+    "miscellaneous": {
+      "questions": 10,
+      "judged": 8,
+      "unjudged_no_checkable_fact": 2,
+      "stages": {
+        "search_missed_document": 0,
+        "right_document_wrong_part": 0,
+        "cut_before_model": 0,
+        "everything_reached_model": 8
+      },
+      "facts": 21,
+      "checkable_facts": 18,
+      "facts_in_packet": 18,
+      "facts_in_model_view": 18,
+      "answer_chars_mean": 938.4,
+      "answer_chars_max": 1083,
+      "status": {
+        "insufficient_evidence": 1,
+        "answered": 7
+      },
+      "facts_in_answer": 16,
+      "questions_with_every_fact_in_answer": 6,
+      "everything_reached_model_but_answer_missed_a_fact": 2,
+      "everything_reached_model_and_answer_had_every_fact": 6,
+      "everything_reached_model_but_answer_declined": 1
+    },
+    "project_related": {
+      "questions": 20,
+      "judged": 20,
+      "unjudged_no_checkable_fact": 0,
+      "stages": {
+        "search_missed_document": 0,
+        "right_document_wrong_part": 9,
+        "cut_before_model": 5,
+        "everything_reached_model": 6
+      },
+      "facts": 239,
+      "checkable_facts": 120,
+      "facts_in_packet": 87,
+      "facts_in_model_view": 71,
+      "answer_chars_mean": 1052.0,
+      "answer_chars_max": 1082,
+      "status": {
+        "answered": 20
+      },
+      "facts_in_answer": 14,
+      "questions_with_every_fact_in_answer": 0,
+      "everything_reached_model_but_answer_missed_a_fact": 6,
+      "everything_reached_model_and_answer_had_every_fact": 0,
+      "everything_reached_model_but_answer_declined": 0
+    },
+    "semantic": {
+      "questions": 62,
+      "judged": 46,
+      "unjudged_no_checkable_fact": 16,
+      "stages": {
+        "search_missed_document": 5,
+        "right_document_wrong_part": 12,
+        "cut_before_model": 2,
+        "everything_reached_model": 27
+      },
+      "facts": 224,
+      "checkable_facts": 140,
+      "facts_in_packet": 99,
+      "facts_in_model_view": 88,
+      "answer_chars_mean": 1014.6,
+      "answer_chars_max": 1088,
+      "status": {
+        "answered": 44,
+        "insufficient_evidence": 2
+      },
+      "facts_in_answer": 35,
+      "questions_with_every_fact_in_answer": 8,
+      "everything_reached_model_but_answer_missed_a_fact": 19,
+      "everything_reached_model_and_answer_had_every_fact": 8,
+      "everything_reached_model_but_answer_declined": 0
+    }
+  }
+}

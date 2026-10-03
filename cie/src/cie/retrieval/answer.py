@@ -126,8 +126,12 @@ def extractive(packet: EvidencePacket, intent: Intent, min_score: float = 0.25, 
         return AnswerResult(" ".join(lines), "conflict", cites, 0.4, "strict",
                             latency_ms=(time.perf_counter() - t0) * 1000)
 
-    if style == "quotes" and not (intent.kind == "exact_field" and top is not None and _value_phrase(top)):
-        quoted = quote_answer(packet.items, packet.query)
+    # quotes come from raw passages, which carry no validity dates: a point-in-time question (a date, or words that ask
+    # for an earlier version) keeps the card answer, which reads the records valid at that time, and a superseded record
+    # is never quoted. (intent.include_history also fires on "was" and "before", so it is not the test here.)
+    point_in_time = intent.as_of is not None or bool(_EARLIER_VERSION.search(packet.query or ""))
+    if style == "quotes" and not point_in_time and not (intent.kind == "exact_field" and top is not None and _value_phrase(top)):
+        quoted = quote_answer([it for it in packet.items if not it.get("superseded")], packet.query)
         if quoted is not None:
             text_, cites_ = quoted
             conf = _confidence(top or sections[0], top_score, len([i for i in items[:3] if i.get("score", 0) >= min_score]))
@@ -165,6 +169,8 @@ def extractive(packet: EvidencePacket, intent: Intent, min_score: float = 0.25, 
     return AnswerResult(" ".join(parts), "answered", cites, conf, "strict", latency_ms=(time.perf_counter() - t0) * 1000)
 
 
+_EARLIER_VERSION = re.compile(r"\b(previous(ly)?|superseded|history|historical|original(ly)?|earlier version|old value|"
+                              r"used to|changed from|as of|prior to)\b", re.I)
 _SENT_SPLIT = re.compile(r"(?<=[.!?])\s+(?=[A-Z0-9\"'(])|\n+")
 # memory-card lines (the summary repeated, tags, people) carry little an answer needs
 _CARD_LINE = re.compile(r"^(Summary|Tags|People|Owner|Participants|Labels|Status|Assignee|Reporter)\s*:", re.I)

@@ -69,8 +69,9 @@ class Settings(BaseSettings):
     # pre-registered criterion (docs/EXPANSION_PREREGISTRATION.md, docs/EXPANSION_RESULTS.md)
     packet_expand_documents: int = 3
     # the evidence-only answer (strict mode, no model): "cards" gives the top records' summaries and the start of their
-    # text; "quotes" quotes the sentences of the leading items that best match the question (docs/QUOTES_PREREGISTRATION.md)
-    extractive_answer: str = "cards"
+    # text; "quotes" quotes the sentences of the leading items that best match the question. quotes met every
+    # pre-registered criterion (docs/QUOTES_PREREGISTRATION.md, docs/QUOTES_RESULTS.md)
+    extractive_answer: str = "quotes"
     packet_expand_sections: int = 5
     # keyword search: a BM25 index per tenant (cie.retrieval.bm25), or PostgreSQL full text (fts). bm25 serves a tenant
     # once its index is built (bootstrap, bulk loads, `cie lexical build`) and falls back to full text otherwise. The
