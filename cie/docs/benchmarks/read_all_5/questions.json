@@ -1,0 +1,6 @@
+{
+ "qst_0269": "In our internal admin UI, what are the requirements for a small collapsible tenant sidebar that summarizes inter-region service connectivity and recent liveness, highlights the three most important issues, and includes guarded remediation actions plus an estimated failover cost impact?",
+ "qst_0353": "Before we re-enable paging and hook perf-canary into rollout gates, what exact baseline key, min-sample requirements, and incident-bot dedupe key should we enforce to avoid another false-positive alert storm?",
+ "qst_0385": "What caused the production perf-canary paging storm on 2026-02-12 right after canary coverage was expanded (and paging rules were enabled), and what immediate mitigations/config changes were applied to stop the repeated pages?",
+ "qst_0409": "In a Private deployment incident in early March 2026, a scheduled KMS envelope key rotation caused about an 18-minute gap where audit events weren't being indexed and some requests saw stale SSO attributes that broke RBAC reconciliation. What was the root cause, and what immediate mitigation/hotfix was applied?"
+}

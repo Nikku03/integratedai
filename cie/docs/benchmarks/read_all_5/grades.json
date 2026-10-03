@@ -1,0 +1,62 @@
+{
+ "qst_0269": {
+  "F1": {"grade": "covered", "note": "Compact tenant panel as a collapsible strip in the tenant overview"},
+  "F2": {"grade": "covered", "note": "Collapsed fits within 340px height"},
+  "F3": {"grade": "covered", "note": "Expands to transient overlay with per-path details"},
+  "F4": {"grade": "covered", "note": "Simplified cross-region connectivity map"},
+  "F5": {"grade": "covered", "note": "Last-5-heartbeats visualization / sparkline"},
+  "F6": {"grade": "covered", "note": "Top-3 by default, algorithmically ranked, human-readable, severity color"},
+  "F7": {"grade": "covered", "note": "Open runbook quick action"},
+  "F8": {"grade": "covered", "note": "Route to alternate region previews cost delta"},
+  "F9": {"grade": "covered", "note": "Two-step confirm rollback running canary first"},
+  "F10": {"grade": "covered", "note": "Conservative 95th-percentile delta from cost-service"},
+  "F11": {"grade": "covered", "note": "USD/hr vs monthly unit labels"},
+  "F12": {"grade": "covered", "note": "Actions audited; modal has explicit audit warning"},
+  "F13": {"grade": "covered", "note": "Defaults collapsed; active-incident tenants auto-expand (30s)"},
+  "F14": {"grade": "covered", "note": "Status pill plus overflow menu on narrow viewports"},
+  "F15": {"grade": "covered", "note": "Events for expand/collapse, action clicks, confirm steps"}
+ },
+ "qst_0353": {
+  "F1": {"grade": "partly", "note": "ADR five-field key listed but not committed to (postmortem key without kernel_set_id offered too); fixed/immutable baseline not stated"},
+  "F2": {"grade": "partly", "note": "Region/capacity_tier optional, but condition given as 'variance differs materially', not 'separate baselines maintained'; postmortem key always includes region"},
+  "F3": {"grade": "partly", "note": "Excludes prompt bucket, run IDs, kernel_id, request_id; route not mentioned"},
+  "F4": {"grade": "covered", "note": ">=200 successful requests per key per 10-min window; no state change below"},
+  "F5": {"grade": "covered", "note": ">=200 requests AND >=50,000 tokens; no state change below"},
+  "F6": {"grade": "partly", "note": "All members listed as ADR spec, but not recommended; alternatives lacking kernel_set_id/severity offered as equally valid"},
+  "F7": {"grade": "covered", "note": "'+ region if present' in ADR dedupe key"}
+ },
+ "qst_0385": {
+  "F1": {"grade": "covered", "note": "Coverage expanded 3->8 models and paging rule enabled at 16:05"},
+  "F2": {"grade": "covered", "note": "Key included prompt_shape_bucket / full labelset incl. newly emitted kernel_id"},
+  "F3": {"grade": "covered", "note": "Lookups missed and fell back to conservative default thresholds"},
+  "F4": {"grade": "covered", "note": "Small-N series defeated min-sample; dedupe failures caused new threads/pages"},
+  "F5": {"grade": "covered", "note": "Paging rules disabled and Alertmanager silence"},
+  "F6": {"grade": "covered", "note": "Rolled back to stable 3-model config"},
+  "F7": {"grade": "covered", "note": "Evaluator pinned to fixed baseline artifacts"},
+  "F8": {"grade": "covered", "note": "baseline_key_labels=model,model_version,region,sku,tier"},
+  "F9": {"grade": "covered", "note": "Kernel labels, prompt_bucket, run/template/route labels dropped"},
+  "F10": {"grade": "covered", "note": "min_samples_paging 50->200 and dampening window increased"},
+  "F11": {"grade": "respected", "note": "No kernel-selection v2 / chosen_kernel PromQL attribution"},
+  "F12": {"grade": "respected", "note": "No FP8/INT8 cohort attribution"},
+  "F13": {"grade": "respected", "note": "No CI baseline/gpu-perf-ci attribution"},
+  "F14": {"grade": "respected", "note": "No CPU throttling/AMI drift attribution"},
+  "F15": {"grade": "respected", "note": "States alerting/config failure, no confirmed customer impact"}
+ },
+ "qst_0409": {
+  "F1": {"grade": "covered", "note": "KMS envelope key rotation interacting with audit-forwarder and SSO cache"},
+  "F2": {"grade": "covered", "note": "Re-encrypt of batched events; 403 plus key ID mapping change"},
+  "F3": {"grade": "covered", "note": "Retry logic mishandled change, dropped events"},
+  "F4": {"grade": "covered", "note": "Invalidation tied to signer fingerprint lagged index update"},
+  "F5": {"grade": "covered", "note": "RBAC reconciliation read stale cache, wrote stale grants"},
+  "F6": {"grade": "covered", "note": "Envelope key auto-rotation paused"},
+  "F7": {"grade": "covered", "note": "Manual backfill from forwarder local buffer"},
+  "F8": {"grade": "covered", "note": "Strict invalidation mode forcing miss on fingerprint drift"},
+  "F9": {"grade": "covered", "note": "Hotpatch makes key ID changes retryable and buffers events"},
+  "F10": {"grade": "respected", "note": "No SAML group sync/outbox attribution"},
+  "F11": {"grade": "respected", "note": "No 3-hour gap / event_v1-v2 / IdP failover"},
+  "F12": {"grade": "respected", "note": "No KMS_DECRYPT_FAIL placeholder claim"},
+  "F13": {"grade": "respected", "note": "No SAML claim normalization / DEK tombstones"},
+  "F14": {"grade": "respected", "note": "No aud-claim rejection / fail-closed fix"},
+  "F15": {"grade": "respected", "note": "Paused rotation, not rolled back; no parallel SAML sync disabling"}
+ }
+}
