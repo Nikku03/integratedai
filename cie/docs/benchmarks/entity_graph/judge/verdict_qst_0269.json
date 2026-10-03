@@ -1,0 +1,17 @@
+{"question_id": "qst_0269", "facts": {
+"F1": {"passage_sets": [["C5.0"]], "graph_sets": [["G5.e5", "G5.L51"]], "graph_missing": null, "note": "C5.0 has compact, information-dense, collapsible strip in tenant overview; graph e5 gives compact panel/strip in tenant overview, L51 gives density rationale."},
+"F2": {"passage_sets": [["C5.2"]], "graph_sets": [["G5.L30"], ["G5.e5"]], "graph_missing": null, "note": "340px collapsed height stated in C5.2, G5.L30 and G5.e5."},
+"F3": {"passage_sets": [["C5.0", "C5.2"]], "graph_sets": [["G5.e5", "G5.e21"], ["G5.L13", "G5.L31"], ["G5.L13", "G5.e21"]], "graph_missing": null, "note": "'transient overlay' (C5.0/L13/e5) and 'per-path details' (C5.2/L31/e21) come from separate units."},
+"F4": {"passage_sets": [["C5.0"]], "graph_sets": [["G5.L16"]], "graph_missing": null, "note": "Simplified cross-region connectivity map."},
+"F5": {"passage_sets": [["C5.2"]], "graph_sets": [["G5.L17"]], "graph_missing": null, "note": "Last-5-heartbeat sparkline; C5.0 lacks 'sparkline'."},
+"F6": {"passage_sets": [["C5.2", "C5.3"]], "graph_sets": [["G5.L32", "G5.L42"], ["G5.L32", "G5.e24"]], "graph_missing": null, "note": "Ranking/label/severity color in C5.2/L32; 'by default' in C5.3/L42/e24."},
+"F7": {"passage_sets": [["C5.2"], ["C5.7"]], "graph_sets": [["G5.L33"]], "graph_missing": null, "note": "Open runbook quick action."},
+"F8": {"passage_sets": [["C5.2"]], "graph_sets": [["G5.L35"]], "graph_missing": null, "note": "Route traffic to alternate region with cost delta preview."},
+"F9": {"passage_sets": [["C5.2", "C5.3"], ["C5.3", "C5.7"]], "graph_sets": [["G5.L47"], ["G5.e33"], ["G5.L34", "G5.L47"]], "graph_missing": null, "note": "C5.3 has two-step flow + canary first but not 'confirm'/'safe' explicitly; L47 alone has safe rollback, 2 confirmation steps, canary first."},
+"F10": {"passage_sets": [["C5.0", "C5.3"], ["C5.1", "C5.3"]], "graph_sets": [["G5.e32"], ["G5.L26", "G5.L44"]], "graph_missing": null, "note": "C5.3 has conservative p95 from cost-service but not 'failover' (C5.0/C5.1); e32 has all in one."},
+"F11": {"passage_sets": [["C5.8"]], "graph_sets": [["G5.e32"], ["G5.L100", "G5.L101"]], "graph_missing": null, "note": "USD/hr vs monthly unit labels for cost delta."},
+"F12": {"passage_sets": [["C5.4", "C5.7"], ["C5.4", "C5.8"]], "graph_sets": [["G5.L97"], ["G5.L55", "G5.L97"], ["G5.L55", "G5.e52"]], "graph_missing": null, "note": "Audited actions in C5.4; explicit audit warning in confirm modal in C5.7/C5.8; L97 links modal warning to audit requirement for rollback/routing actions."},
+"F13": {"passage_sets": [["C5.3"]], "graph_sets": [["G5.L52"], ["G5.e45"]], "graph_missing": null, "note": "Default collapsed; auto-expand up to 30 s for active incidents."},
+"F14": {"passage_sets": [["C5.4"]], "graph_sets": [["G5.e70"], ["G5.L58", "G5.L59"]], "graph_missing": null, "note": "Very narrow viewports show status pill and overflow menu."},
+"F15": {"passage_sets": [["C5.2"]], "graph_sets": [["G5.L39", "G5.L40", "G5.L41"], ["G5.L39", "G5.L111", "G5.L112"]], "graph_missing": null, "note": "Analytics for expand/collapse, action clicks, (rollback) confirm steps; C5.9 lacks collapse."}
+}}

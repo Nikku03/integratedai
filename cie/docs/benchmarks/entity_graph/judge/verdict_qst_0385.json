@@ -1,0 +1,12 @@
+{"question_id": "qst_0385", "facts": {
+"F1": {"passage_sets": [["C1.2"], ["C1.0"]], "graph_sets": [["G1.L16"], ["G1.L15"], ["G1.L37", "G1.L38", "G1.L41"]], "graph_missing": null, "note": "Timeline 16:05 expansion 3->8 models + paging enabled, storm followed; graph L15/L16 state same."},
+"F2": {"passage_sets": [["C4.4"]], "graph_sets": [["G4.L63", "G4.L60", "G4.L66"], ["G4.L63", "G4.L58", "G4.L66"]], "graph_missing": null, "note": "Baseline fetch keyed on full labelset (baseline_key_labels unset in prod); prompt_bucket and newly emitted kernel_id cause misses. Doc1 version lacks kernel labels."},
+"F3": {"passage_sets": [["C1.3", "C1.5"], ["C1.5", "C4.7"]], "graph_sets": [["G1.L47", "G1.L62", "G1.L59"], ["G1.L53", "G1.L62", "G1.L59"]], "graph_missing": null, "note": "Frequent baseline-not-found -> default thresholds (C1.3/G1.L47); conservative + prompt_shape_bucket key mismatch (C1.5/G1.L59,L62)."},
+"F4": {"passage_sets": [["C1.0"], ["C1.3", "C1.4"]], "graph_sets": [["G1.L21", "G1.L22"], ["G1.L21", "G1.L73"]], "graph_missing": null, "note": "Cardinality fragmented series, defeating min-sample gating and dedupe; repeated re-pages from dedupe failures."},
+"F5": {"passage_sets": [["C1.8"], ["C1.3"], ["C4.10"]], "graph_sets": [["G1.L82"], ["G4.L124"], ["G1.L45"]], "graph_missing": null, "note": "Disabled/silenced perf-canary paging rules as immediate mitigation."},
+"F6": {"passage_sets": [["C1.8"], ["C1.3"]], "graph_sets": [["G1.L48"], ["G1.L83"]], "graph_missing": null, "note": "Canary coverage rolled back to previous 3-model set."},
+"F7": {"passage_sets": [["C1.8"]], "graph_sets": [["G1.L84"], ["G1.L85"]], "graph_missing": null, "note": "Evaluator pinned to fixed baseline artifacts, no rolling updates."},
+"F8": {"passage_sets": [["C4.6"]], "graph_sets": [["G4.L84"], ["G4.e31"]], "graph_missing": null, "note": "baseline_key_labels=model,model_version,region,sku,tier applied."},
+"F9": {"passage_sets": [["C1.8", "C4.6"]], "graph_sets": [["G4.L82", "G4.L83", "G1.e78"], ["G4.e32", "G4.e33", "G1.e78"]], "graph_missing": null, "note": "Kernel/prompt_bucket emission disabled (doc4) plus hotfix dropping workload_run_id, prompt_template_id, route (doc1); needs both docs."},
+"F10": {"passage_sets": [["C1.3", "C4.6"]], "graph_sets": [["G4.L85", "G1.L46"], ["G4.e34", "G1.L46"]], "graph_missing": null, "note": "min_samples_paging 50->200 temporary (doc4) + dampening window increased (doc1); 'so alerts stopped re-firing' only implied."}
+}}

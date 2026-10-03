@@ -1,0 +1,32 @@
+{
+ "graph lines -> their passages @ 3000": [
+  12,
+  41,
+  9965
+ ],
+ "graph lines -> their passages @ 6000": [
+  26,
+  41,
+  22643
+ ],
+ "graph lines -> their passages @ 12000": [
+  29,
+  41,
+  45344
+ ],
+ "graph by entity -> their passages @ 3000": [
+  11,
+  41,
+  9517
+ ],
+ "graph by entity -> their passages @ 6000": [
+  25,
+  41,
+  22608
+ ],
+ "graph by entity -> their passages @ 12000": [
+  26,
+  41,
+  45541
+ ]
+}

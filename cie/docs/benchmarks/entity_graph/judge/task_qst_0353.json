@@ -1,0 +1,14 @@
+{
+ "question_id": "qst_0353",
+ "question": "Before we re-enable paging and hook perf-canary into rollout gates, what exact baseline key, min-sample requirements, and incident-bot dedupe key should we enforce to avoid another false-positive alert storm?",
+ "question_type": "project_related",
+ "facts": {
+  "F1": "Baseline comparisons must use a fixed or immutable baseline keyed on model_id, model_version, runtime_build_id, kernel_set_id, and hardware_sku.",
+  "F2": "Region and or capacity_tier should be included in the baseline key only if separate baselines are explicitly maintained for them.",
+  "F3": "Prompt bucket or shape, run_id, route, and other transient labels must not be included in the baseline key.",
+  "F4": "Min-samples gating: for latency, require at least 200 successful requests per key per evaluation window; otherwise do not change alert state.",
+  "F5": "Min-samples gating: for tokens per second, require at least 200 successful requests and at least 50,000 total generated tokens per key per evaluation window; otherwise do not change alert state.",
+  "F6": "Incident-bot dedupe key must include model_id, model_version, runtime_build_id, kernel_set_id, hardware_sku, metric_type or alert_type, and severity.",
+  "F7": "Region should be included in the incident-bot dedupe key if region is present in the baseline key."
+ }
+}

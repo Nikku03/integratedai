@@ -52,3 +52,74 @@ check is reported beside it.
 - facts the graph loses, by kind.
 
 This is a pilot with 4 questions. No default changes on its result.
+
+## Results (added after the run)
+
+The documents are the benchmark's generated (fictional) company documents.
+
+**The extraction.**
+- 403 entities, 356 after merging names; 31 entities appear in two or more documents.
+- 649 links: 176 carry a time, 106 carry figures, and 162 carry conditions.
+
+**It lost nothing.** The judge found every one of the 41 answer facts in the graph, as it did in the passages. ("The
+answer must not ..." facts were left out: they constrain an answer and no evidence can hold them.)
+
+**It is bigger than the documents.**
+- Rendered as lines, the graph is 167,000 characters against 61,000 for the passages (2.7 times).
+- As JSON it is 255,000 characters (4.2 times).
+
+**At the same reading budget, passages bring more facts to the model** (answer facts within the budget, of 41, as the
+judge counts them):
+
+| Budget | passages (BM25) | graph lines (BM25) | graph by entity | graph → its passages* |
+|---|---|---|---|---|
+| 3,000 characters | 9 | 8 | 9 | 12 |
+| 6,000 characters | **30** | 11 | 14 | 26 |
+| 12,000 characters | **32** | 18 | 16 | 29 |
+| everything | 41 (61,000 characters) | 41 (167,000 characters) | 41 | — |
+
+\* Added after the planned arms were scored, so it was not planned. It ranks graph lines as the graph-lines arm does,
+maps each line to the passage it came from, and gives the model those passages (`kg_pointer.py`). With the entity
+route instead, it scores 11, 25 and 26.
+
+Per question (`results.json`):
+
+| question | type | facts | passages at 6k / 12k | graph lines at 6k / 12k |
+|---|---|---|---|---|
+| qst_0269 | semantic | 15 | 14 / 15 | 7 / 8 |
+| qst_0353 | project_related | 7 | 2 / 3 | 0 / 2 |
+| qst_0385 | constrained | 10 | 5 / 5 | 3 / 4 |
+| qst_0409 | constrained | 9 | 9 / 9 | 1 / 4 |
+
+The evidence audit's lexical check, for reference, with everything given: 29 facts in the passages and 22 in the graph
+lines. Lexical checks undercount the graph, because its lines paraphrase.
+
+**Why the graph loses at equal size:**
+- **More words for the same facts.** Every link repeats both entity names and the relation. Many links are low value
+  ("X reviewed the postmortem").
+- **Facts are split.** A fact often needs 2 to 4 lines: a threshold on one line, its unit and condition on another.
+  Search ranks each line on its own, so the parts of one fact land far apart.
+- **Search picks the wrong lines.** The lines that share the most words with the question are often descriptions of
+  the entities it names, not the lines with the answer.
+
+**Cost of the extraction.** It writes about 4 characters of JSON per character of document. At the 50,000-document
+load's average document (about 6,000 characters), that is roughly 6,000 output tokens a document. For 512,000
+documents, that is roughly 3 billion output tokens (an estimate; the price depends on the model).
+
+**What this does not show.**
+- **Only 4 questions and 41 facts.** This is a pilot.
+- **One judge per question,** from the same model family as the extractor. Its close calls were applied the same way
+  to passages and graph lines, and are noted in `judge/verdict_*.json`.
+- **Questions that list or count across many documents** ("every incident involving X"). A graph can follow an
+  entity's links into thousands of documents, and passage search cannot. None of these 4 questions needed that.
+
+**Decision.** Passages stay the unit the model reads. The graph did not replace them at any budget. Used as a pointer
+to passages, it was not better beyond 3,000 characters either.
+
+Files:
+- `graph/doc*.json`: the extractions;
+- `judge/`: the tasks and verdicts;
+- `kg_eval.py`: prepare, tasks and score;
+- `kg_pointer.py`;
+- `results*.json`;
+- `meta.json`: the documents.

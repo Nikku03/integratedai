@@ -1,0 +1,11 @@
+{"question_id": "qst_0409", "facts": {
+ "F1": {"passage_sets": [["C2.3"]], "graph_sets": [["G2.L19", "G2.L33"], ["G2.L19", "G2.L20", "G2.L37"]], "graph_missing": null, "note": "C2.3 investigation notes: envelope rotation drops in audit-forwarder + signer index/invalidation race in SSO assertion cache; graph L19 + L33 (SSO staleness root cause) cover same."},
+ "F2": {"passage_sets": [["C2.3"]], "graph_sets": [["G2.L29", "G2.L30"]], "graph_missing": null, "note": "Re-encrypt of stored batched events during envelope rotation; RPC returned 403 then unfamiliar key ID after transient key ID mapping change."},
+ "F3": {"passage_sets": [["C2.3", "C2.5"]], "graph_sets": [["G2.L31", "G2.L47"]], "graph_missing": null, "note": "Retry logic dropping events is in C2.3/L31; the 'buffer until re-encrypt succeeds' contrast only appears with the hotfix (C2.5/L47)."},
+ "F4": {"passage_sets": [["C2.3"]], "graph_sets": [["G2.L32", "G2.L33", "G2.L34"], ["G2.e72", "G2.L33", "G2.L34"]], "graph_missing": null, "note": "Invalidation hook tied to signing-key fingerprint; index updated before invalidation propagated; stale attributes served."},
+ "F5": {"passage_sets": [["C2.3"]], "graph_sets": [["G2.L14", "G2.L36"], ["G2.L36", "G2.L37"]], "graph_missing": null, "note": "Reconciliation reads SSO cache before invalidation and writes stale grants; graph has stale cache blocking reconciliation plus read edge."},
+ "F6": {"passage_sets": [["C2.5"]], "graph_sets": [["G2.L44"], ["G2.L43", "G2.e11"]], "graph_missing": null, "note": "Immediate temporary policy pausing envelope key auto-rotation."},
+ "F7": {"passage_sets": [["C2.5"]], "graph_sets": [["G2.L45"]], "graph_missing": null, "note": "Manual backfill re-ingests dropped audit events from forwarder local buffer (When: immediate)."},
+ "F8": {"passage_sets": [["C2.5"]], "graph_sets": [["G2.L53"], ["G2.L52", "G2.e34"]], "graph_missing": null, "note": "Strict assertion-cache invalidation mode forcing cache miss on key/signer fingerprint drift; source calls it a feature toggle rather than a hotfix."},
+ "F9": {"passage_sets": [["C2.5"]], "graph_sets": [["G2.L47"], ["G2.e32", "G2.L48"]], "graph_missing": null, "note": "Hotpatch private-2026.03.1-hotfix: key ID mapping changes retryable, buffer until successful re-encrypt."}
+}}

@@ -1,0 +1,16 @@
+{
+ "question_id": "qst_0409",
+ "question": "In a Private deployment incident in early March 2026, a scheduled KMS envelope key rotation caused about an 18-minute gap where audit events weren't being indexed and some requests saw stale SSO attributes that broke RBAC reconciliation. What was the root cause, and what immediate mitigation/hotfix was applied?",
+ "question_type": "constrained",
+ "facts": {
+  "F1": "The root cause was a KMS envelope key rotation race affecting the audit-forwarder and SSO assertion cache.",
+  "F2": "During envelope key rotation, the audit-forwarder attempted to re-encrypt buffered or batched audit events and encountered transient KMS 403 errors plus a key-ID mapping change.",
+  "F3": "Because of incorrect retry handling, the audit-forwarder dropped some audit events instead of retrying and buffering until re-encryption succeeded.",
+  "F4": "The SSO assertion cache invalidation was tied to the signing key fingerprint and lagged the signer-fingerprint index update, so stale SSO attributes were served.",
+  "F5": "Stale SSO attributes caused RBAC reconciliation to read stale state.",
+  "F6": "Immediate mitigation included pausing automatic KMS key rotation.",
+  "F7": "Immediate mitigation included manually backfilling or re-ingesting audit events from the audit-forwarders local buffer.",
+  "F8": "A hotfix enabled strict SSO assertion-cache invalidation on signing-key fingerprint drift.",
+  "F9": "A hotpatch changed the audit-forwarder to treat key-ID drift or rotation errors as retryable and to buffer events until re-encryption succeeds."
+ }
+}

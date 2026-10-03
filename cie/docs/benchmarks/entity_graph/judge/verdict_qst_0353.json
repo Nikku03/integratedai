@@ -1,0 +1,9 @@
+{"question_id": "qst_0353", "facts": {
+ "F1": {"passage_sets": [["C3.2"]], "graph_sets": [["G3.L41"]], "graph_missing": null, "note": "C3.2 and G3.L41 both give the fixed (immutable/versioned) primary baseline per model, model_version, runtime_build, kernel_set_id, hardware_sku (model/runtime_build taken as paraphrase of model_id/runtime_build_id)."},
+ "F2": {"passage_sets": [["C3.4"]], "graph_sets": [["G3.L63", "G3.L64"]], "graph_missing": null, "note": "Region and capacity_tier are optional key fields, enabled only when variance or materially different pools require it; the condition is paraphrased."},
+ "F3": {"passage_sets": [["C1.8", "C1.9"]], "graph_sets": [["G1.L90", "G1.L89"], ["G1.e49", "G1.e78"], ["G1.e49", "G1.L89"]], "graph_missing": null, "note": "Canonical key explicitly excludes prompt bucket and run IDs; route comes only from the hotfix dropping the full route label, so it needs the pair."},
+ "F4": {"passage_sets": [["C3.9", "C3.10"]], "graph_sets": [["G3.L91", "G3.L93"], ["G3.e31", "G3.L93"]], "graph_missing": null, "note": "200 requests per key per window is in C3.9; the no-alert-state-change consequence is in C3.10."},
+ "F5": {"passage_sets": [["C3.9", "C3.10"]], "graph_sets": [["G3.L92", "G3.L93"], ["G3.e31", "G3.L93"]], "graph_missing": null, "note": "200 requests AND 50,000 tokens per key per window (C3.9), plus the no-state-change rule (C3.10)."},
+ "F6": {"passage_sets": [["C3.11"]], "graph_sets": [["G3.e29"], ["G3.L102"]], "graph_missing": null, "note": "Dedupe key = model_id+model_version+runtime_build_id+kernel_set_id+hardware_sku+metric_type+severity."},
+ "F7": {"passage_sets": [["C3.11"]], "graph_sets": [["G3.e29"], ["G3.L102"]], "graph_missing": null, "note": "'(+ region if present)' read as region being present in the key; same wording in passage and graph."}
+}}

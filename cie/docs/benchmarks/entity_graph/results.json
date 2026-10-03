@@ -1,0 +1,694 @@
+{
+ "stats": {
+  "documents": 5,
+  "document_chars": 61044,
+  "passages": 66,
+  "entities": 403,
+  "entities_after_merge": 356,
+  "entities_in_two_or_more_documents": 31,
+  "cross_document_entities": [
+   "#eng-runtime",
+   "Alert payload",
+   "Allison Grant",
+   "Baseline artifacts",
+   "Caleb Johnson",
+   "Canary model coverage configuration",
+   "Connor O'Brien",
+   "Logan Wright",
+   "Nadia Rahman",
+   "Noah Patel",
+   "Perf Canary False-Positive Alert Storm",
+   "Queueing time p95",
+   "RC1: Baseline drift + key mismatch",
+   "Rafael Mendes",
+   "Redwood Inference",
+   "Release engineering",
+   "Rollout gates",
+   "Runbook: Responding to perf canary regression alerts",
+   "Runtime on-call",
+   "SRE on-call",
+   "Sean Gallagher",
+   "Sofia Ivanova",
+   "baseline store",
+   "canary regression evaluator",
+   "incident-bot alert handler",
+   "kernel_set_id",
+   "p95 latency",
+   "perf-canary service (prod)",
+   "runtime_build_id",
+   "tokens/sec",
+   "us-east"
+  ],
+  "links": 649,
+  "entity_lines": 371,
+  "graph_chars": 166679,
+  "graph_json_chars": 255147,
+  "links_with_time": 176,
+  "links_with_figures": 106,
+  "links_with_conditions": 162,
+  "per_document": {
+   "1": {
+    "entities": 83,
+    "links": 133,
+    "json_chars": 53800
+   },
+   "2": {
+    "entities": 75,
+    "links": 109,
+    "json_chars": 44431
+   },
+   "3": {
+    "entities": 85,
+    "links": 144,
+    "json_chars": 58083
+   },
+   "4": {
+    "entities": 80,
+    "links": 148,
+    "json_chars": 56503
+   },
+   "5": {
+    "entities": 80,
+    "links": 115,
+    "json_chars": 42330
+   }
+  }
+ },
+ "summary": {
+  "passages @ 3000": {
+   "facts": 41,
+   "judge": 9,
+   "lexical": 16,
+   "chars": 10578,
+   "questions_all_facts": 0
+  },
+  "passages @ 6000": {
+   "facts": 41,
+   "judge": 30,
+   "lexical": 27,
+   "chars": 22655,
+   "questions_all_facts": 1
+  },
+  "passages @ 12000": {
+   "facts": 41,
+   "judge": 32,
+   "lexical": 28,
+   "chars": 46162,
+   "questions_all_facts": 2
+  },
+  "passages @ all": {
+   "facts": 41,
+   "judge": 41,
+   "lexical": 29,
+   "chars": 244440,
+   "questions_all_facts": 4
+  },
+  "graph lines @ 3000": {
+   "facts": 41,
+   "judge": 8,
+   "lexical": 6,
+   "chars": 11500,
+   "questions_all_facts": 0
+  },
+  "graph lines @ 6000": {
+   "facts": 41,
+   "judge": 11,
+   "lexical": 9,
+   "chars": 23639,
+   "questions_all_facts": 0
+  },
+  "graph lines @ 12000": {
+   "facts": 41,
+   "judge": 18,
+   "lexical": 14,
+   "chars": 47470,
+   "questions_all_facts": 0
+  },
+  "graph lines @ all": {
+   "facts": 41,
+   "judge": 41,
+   "lexical": 22,
+   "chars": 670796,
+   "questions_all_facts": 4
+  },
+  "graph by entity @ 3000": {
+   "facts": 41,
+   "judge": 9,
+   "lexical": 6,
+   "chars": 11600,
+   "questions_all_facts": 0
+  },
+  "graph by entity @ 6000": {
+   "facts": 41,
+   "judge": 14,
+   "lexical": 11,
+   "chars": 23864,
+   "questions_all_facts": 0
+  },
+  "graph by entity @ 12000": {
+   "facts": 41,
+   "judge": 16,
+   "lexical": 12,
+   "chars": 47593,
+   "questions_all_facts": 0
+  },
+  "graph by entity @ all": {
+   "facts": 41,
+   "judge": 41,
+   "lexical": 22,
+   "chars": 670796,
+   "questions_all_facts": 4
+  }
+ },
+ "rows": [
+  {
+   "question_id": "qst_0269",
+   "type": "semantic",
+   "arm": "passages",
+   "budget": 3000,
+   "chars": 2955,
+   "facts": 15,
+   "judge": 5,
+   "lexical": 6,
+   "entities_matched": null
+  },
+  {
+   "question_id": "qst_0269",
+   "type": "semantic",
+   "arm": "passages",
+   "budget": 6000,
+   "chars": 5855,
+   "facts": 15,
+   "judge": 14,
+   "lexical": 11,
+   "entities_matched": null
+  },
+  {
+   "question_id": "qst_0269",
+   "type": "semantic",
+   "arm": "passages",
+   "budget": 12000,
+   "chars": 11578,
+   "facts": 15,
+   "judge": 15,
+   "lexical": 11,
+   "entities_matched": null
+  },
+  {
+   "question_id": "qst_0269",
+   "type": "semantic",
+   "arm": "passages",
+   "budget": "all",
+   "chars": 61110,
+   "facts": 15,
+   "judge": 15,
+   "lexical": 11,
+   "entities_matched": null
+  },
+  {
+   "question_id": "qst_0269",
+   "type": "semantic",
+   "arm": "graph lines",
+   "budget": 3000,
+   "chars": 2915,
+   "facts": 15,
+   "judge": 6,
+   "lexical": 5,
+   "entities_matched": null
+  },
+  {
+   "question_id": "qst_0269",
+   "type": "semantic",
+   "arm": "graph lines",
+   "budget": 6000,
+   "chars": 5924,
+   "facts": 15,
+   "judge": 7,
+   "lexical": 6,
+   "entities_matched": null
+  },
+  {
+   "question_id": "qst_0269",
+   "type": "semantic",
+   "arm": "graph lines",
+   "budget": 12000,
+   "chars": 11912,
+   "facts": 15,
+   "judge": 8,
+   "lexical": 6,
+   "entities_matched": null
+  },
+  {
+   "question_id": "qst_0269",
+   "type": "semantic",
+   "arm": "graph lines",
+   "budget": "all",
+   "chars": 167699,
+   "facts": 15,
+   "judge": 15,
+   "lexical": 9,
+   "entities_matched": null
+  },
+  {
+   "question_id": "qst_0269",
+   "type": "semantic",
+   "arm": "graph by entity",
+   "budget": 3000,
+   "chars": 2915,
+   "facts": 15,
+   "judge": 6,
+   "lexical": 5,
+   "entities_matched": 0
+  },
+  {
+   "question_id": "qst_0269",
+   "type": "semantic",
+   "arm": "graph by entity",
+   "budget": 6000,
+   "chars": 5924,
+   "facts": 15,
+   "judge": 7,
+   "lexical": 6,
+   "entities_matched": 0
+  },
+  {
+   "question_id": "qst_0269",
+   "type": "semantic",
+   "arm": "graph by entity",
+   "budget": 12000,
+   "chars": 11912,
+   "facts": 15,
+   "judge": 8,
+   "lexical": 6,
+   "entities_matched": 0
+  },
+  {
+   "question_id": "qst_0269",
+   "type": "semantic",
+   "arm": "graph by entity",
+   "budget": "all",
+   "chars": 167699,
+   "facts": 15,
+   "judge": 15,
+   "lexical": 9,
+   "entities_matched": 0
+  },
+  {
+   "question_id": "qst_0353",
+   "type": "project_related",
+   "arm": "passages",
+   "budget": 3000,
+   "chars": 2064,
+   "facts": 7,
+   "judge": 0,
+   "lexical": 2,
+   "entities_matched": null
+  },
+  {
+   "question_id": "qst_0353",
+   "type": "project_related",
+   "arm": "passages",
+   "budget": 6000,
+   "chars": 5595,
+   "facts": 7,
+   "judge": 2,
+   "lexical": 3,
+   "entities_matched": null
+  },
+  {
+   "question_id": "qst_0353",
+   "type": "project_related",
+   "arm": "passages",
+   "budget": 12000,
+   "chars": 11752,
+   "facts": 7,
+   "judge": 3,
+   "lexical": 3,
+   "entities_matched": null
+  },
+  {
+   "question_id": "qst_0353",
+   "type": "project_related",
+   "arm": "passages",
+   "budget": "all",
+   "chars": 61110,
+   "facts": 7,
+   "judge": 7,
+   "lexical": 3,
+   "entities_matched": null
+  },
+  {
+   "question_id": "qst_0353",
+   "type": "project_related",
+   "arm": "graph lines",
+   "budget": 3000,
+   "chars": 2924,
+   "facts": 7,
+   "judge": 0,
+   "lexical": 0,
+   "entities_matched": null
+  },
+  {
+   "question_id": "qst_0353",
+   "type": "project_related",
+   "arm": "graph lines",
+   "budget": 6000,
+   "chars": 5890,
+   "facts": 7,
+   "judge": 0,
+   "lexical": 0,
+   "entities_matched": null
+  },
+  {
+   "question_id": "qst_0353",
+   "type": "project_related",
+   "arm": "graph lines",
+   "budget": 12000,
+   "chars": 11840,
+   "facts": 7,
+   "judge": 2,
+   "lexical": 2,
+   "entities_matched": null
+  },
+  {
+   "question_id": "qst_0353",
+   "type": "project_related",
+   "arm": "graph lines",
+   "budget": "all",
+   "chars": 167699,
+   "facts": 7,
+   "judge": 7,
+   "lexical": 3,
+   "entities_matched": null
+  },
+  {
+   "question_id": "qst_0353",
+   "type": "project_related",
+   "arm": "graph by entity",
+   "budget": 3000,
+   "chars": 2799,
+   "facts": 7,
+   "judge": 0,
+   "lexical": 0,
+   "entities_matched": 7
+  },
+  {
+   "question_id": "qst_0353",
+   "type": "project_related",
+   "arm": "graph by entity",
+   "budget": 6000,
+   "chars": 5971,
+   "facts": 7,
+   "judge": 2,
+   "lexical": 2,
+   "entities_matched": 7
+  },
+  {
+   "question_id": "qst_0353",
+   "type": "project_related",
+   "arm": "graph by entity",
+   "budget": 12000,
+   "chars": 11866,
+   "facts": 7,
+   "judge": 2,
+   "lexical": 2,
+   "entities_matched": 7
+  },
+  {
+   "question_id": "qst_0353",
+   "type": "project_related",
+   "arm": "graph by entity",
+   "budget": "all",
+   "chars": 167699,
+   "facts": 7,
+   "judge": 7,
+   "lexical": 3,
+   "entities_matched": 7
+  },
+  {
+   "question_id": "qst_0385",
+   "type": "constrained",
+   "arm": "passages",
+   "budget": 3000,
+   "chars": 2994,
+   "facts": 10,
+   "judge": 0,
+   "lexical": 2,
+   "entities_matched": null
+  },
+  {
+   "question_id": "qst_0385",
+   "type": "constrained",
+   "arm": "passages",
+   "budget": 6000,
+   "chars": 5434,
+   "facts": 10,
+   "judge": 5,
+   "lexical": 5,
+   "entities_matched": null
+  },
+  {
+   "question_id": "qst_0385",
+   "type": "constrained",
+   "arm": "passages",
+   "budget": 12000,
+   "chars": 11334,
+   "facts": 10,
+   "judge": 5,
+   "lexical": 6,
+   "entities_matched": null
+  },
+  {
+   "question_id": "qst_0385",
+   "type": "constrained",
+   "arm": "passages",
+   "budget": "all",
+   "chars": 61110,
+   "facts": 10,
+   "judge": 10,
+   "lexical": 7,
+   "entities_matched": null
+  },
+  {
+   "question_id": "qst_0385",
+   "type": "constrained",
+   "arm": "graph lines",
+   "budget": 3000,
+   "chars": 2743,
+   "facts": 10,
+   "judge": 2,
+   "lexical": 1,
+   "entities_matched": null
+  },
+  {
+   "question_id": "qst_0385",
+   "type": "constrained",
+   "arm": "graph lines",
+   "budget": 6000,
+   "chars": 5874,
+   "facts": 10,
+   "judge": 3,
+   "lexical": 2,
+   "entities_matched": null
+  },
+  {
+   "question_id": "qst_0385",
+   "type": "constrained",
+   "arm": "graph lines",
+   "budget": 12000,
+   "chars": 11877,
+   "facts": 10,
+   "judge": 4,
+   "lexical": 3,
+   "entities_matched": null
+  },
+  {
+   "question_id": "qst_0385",
+   "type": "constrained",
+   "arm": "graph lines",
+   "budget": "all",
+   "chars": 167699,
+   "facts": 10,
+   "judge": 10,
+   "lexical": 4,
+   "entities_matched": null
+  },
+  {
+   "question_id": "qst_0385",
+   "type": "constrained",
+   "arm": "graph by entity",
+   "budget": 3000,
+   "chars": 2980,
+   "facts": 10,
+   "judge": 1,
+   "lexical": 0,
+   "entities_matched": 2
+  },
+  {
+   "question_id": "qst_0385",
+   "type": "constrained",
+   "arm": "graph by entity",
+   "budget": 6000,
+   "chars": 6000,
+   "facts": 10,
+   "judge": 1,
+   "lexical": 0,
+   "entities_matched": 2
+  },
+  {
+   "question_id": "qst_0385",
+   "type": "constrained",
+   "arm": "graph by entity",
+   "budget": 12000,
+   "chars": 11898,
+   "facts": 10,
+   "judge": 2,
+   "lexical": 1,
+   "entities_matched": 2
+  },
+  {
+   "question_id": "qst_0385",
+   "type": "constrained",
+   "arm": "graph by entity",
+   "budget": "all",
+   "chars": 167699,
+   "facts": 10,
+   "judge": 10,
+   "lexical": 4,
+   "entities_matched": 2
+  },
+  {
+   "question_id": "qst_0409",
+   "type": "constrained",
+   "arm": "passages",
+   "budget": 3000,
+   "chars": 2565,
+   "facts": 9,
+   "judge": 4,
+   "lexical": 6,
+   "entities_matched": null
+  },
+  {
+   "question_id": "qst_0409",
+   "type": "constrained",
+   "arm": "passages",
+   "budget": 6000,
+   "chars": 5771,
+   "facts": 9,
+   "judge": 9,
+   "lexical": 8,
+   "entities_matched": null
+  },
+  {
+   "question_id": "qst_0409",
+   "type": "constrained",
+   "arm": "passages",
+   "budget": 12000,
+   "chars": 11498,
+   "facts": 9,
+   "judge": 9,
+   "lexical": 8,
+   "entities_matched": null
+  },
+  {
+   "question_id": "qst_0409",
+   "type": "constrained",
+   "arm": "passages",
+   "budget": "all",
+   "chars": 61110,
+   "facts": 9,
+   "judge": 9,
+   "lexical": 8,
+   "entities_matched": null
+  },
+  {
+   "question_id": "qst_0409",
+   "type": "constrained",
+   "arm": "graph lines",
+   "budget": 3000,
+   "chars": 2918,
+   "facts": 9,
+   "judge": 0,
+   "lexical": 0,
+   "entities_matched": null
+  },
+  {
+   "question_id": "qst_0409",
+   "type": "constrained",
+   "arm": "graph lines",
+   "budget": 6000,
+   "chars": 5951,
+   "facts": 9,
+   "judge": 1,
+   "lexical": 1,
+   "entities_matched": null
+  },
+  {
+   "question_id": "qst_0409",
+   "type": "constrained",
+   "arm": "graph lines",
+   "budget": 12000,
+   "chars": 11841,
+   "facts": 9,
+   "judge": 4,
+   "lexical": 3,
+   "entities_matched": null
+  },
+  {
+   "question_id": "qst_0409",
+   "type": "constrained",
+   "arm": "graph lines",
+   "budget": "all",
+   "chars": 167699,
+   "facts": 9,
+   "judge": 9,
+   "lexical": 6,
+   "entities_matched": null
+  },
+  {
+   "question_id": "qst_0409",
+   "type": "constrained",
+   "arm": "graph by entity",
+   "budget": 3000,
+   "chars": 2906,
+   "facts": 9,
+   "judge": 2,
+   "lexical": 1,
+   "entities_matched": 6
+  },
+  {
+   "question_id": "qst_0409",
+   "type": "constrained",
+   "arm": "graph by entity",
+   "budget": 6000,
+   "chars": 5969,
+   "facts": 9,
+   "judge": 4,
+   "lexical": 3,
+   "entities_matched": 6
+  },
+  {
+   "question_id": "qst_0409",
+   "type": "constrained",
+   "arm": "graph by entity",
+   "budget": 12000,
+   "chars": 11917,
+   "facts": 9,
+   "judge": 4,
+   "lexical": 3,
+   "entities_matched": 6
+  },
+  {
+   "question_id": "qst_0409",
+   "type": "constrained",
+   "arm": "graph by entity",
+   "budget": "all",
+   "chars": 167699,
+   "facts": 9,
+   "judge": 9,
+   "lexical": 6,
+   "entities_matched": 6
+  }
+ ],
+ "graph_lost": []
+}

@@ -1,0 +1,22 @@
+{
+ "question_id": "qst_0269",
+ "question": "In our internal admin UI, what are the requirements for a small collapsible tenant sidebar that summarizes inter-region service connectivity and recent liveness, highlights the three most important issues, and includes guarded remediation actions plus an estimated failover cost impact?",
+ "question_type": "semantic",
+ "facts": {
+  "F1": "The tenant sidebar is a compact, information-dense tenant inspector that lives as a collapsible strip in the tenant overview.",
+  "F2": "When collapsed, the sidebar fits within 340px height.",
+  "F3": "When expanded, the sidebar becomes a transient overlay with per-path details.",
+  "F4": "The sidebar includes a simplified cross-region connectivity view.",
+  "F5": "The sidebar includes a liveness visualization showing the last 5 heartbeats (sparkline).",
+  "F6": "By default, the sidebar surfaces the top 3 connectivity or health signals, algorithmically ranked, human-readable, and severity color coded.",
+  "F7": "The sidebar provides quick actions including opening the runbook.",
+  "F8": "The sidebar provides an action to route traffic to an alternate region with a cost preview.",
+  "F9": "The sidebar provides a guarded safe rollback action that requires two-step confirmation and triggers a canary first.",
+  "F10": "The sidebar includes a conservative failover cost delta estimate based on the 95th percentile from the cost-service.",
+  "F11": "The failover cost estimate is shown with clear units such as USD per hour and monthly.",
+  "F12": "Remediation actions are auditable and the confirmation flow includes an explicit warning.",
+  "F13": "The panel defaults to collapsed and may auto-expand briefly for active incidents.",
+  "F14": "The sidebar supports very narrow viewports via a status pill and an overflow menu.",
+  "F15": "The sidebar emits analytics events for expand and collapse, action clicks, and rollback confirmation steps."
+ }
+}
