@@ -203,3 +203,51 @@ def test_extractive_answer_reads_the_packet_without_expansion_passages():
     without = extractive(EvidencePacket(tenant_id=_uuid.uuid4(), query=q, items=[first, strong]), classify(q))
     assert without.status == "answered", "the strong item is among the leading items without expansion"
     assert (with_exp.status, with_exp.answer) == (without.status, without.answer)
+
+
+def test_quote_answer_quotes_the_matching_sentence_with_the_next_one_and_cites_it():
+    from cie.retrieval.answer import quote_answer
+
+    items = [
+        {"id": "a", "kind": "section", "type": "section", "summary": "Upload service notes", "document_id": "d1", "citations": [],
+         "detail": "Summary: Upload service notes. Tags: uploads, limits\nThe team met on Monday to review the backlog items. "
+                   "The upload limit for a single file is set by the gateway configuration. It is 10 MiB per file and 50 MiB per request."},
+        {"id": "b", "kind": "section", "type": "section", "summary": "Unrelated planning page", "document_id": "d2", "citations": [],
+         "detail": "Quarterly planning covers hiring, budgets and the offsite agenda for the design organisation."},
+    ]
+    text_, cites = quote_answer(items, "What is the upload limit for a single file?")
+    assert "set by the gateway configuration" in text_ and "10 MiB per file" in text_, "the matching sentence and the one after it"
+    assert "Tags:" not in text_ and "Summary:" not in text_, "memory-card lines are not quoted"
+    assert text_.startswith("Upload service notes:") and text_.endswith("[1].")
+    assert [c["item_id"] for c in cites] == ["a"]
+    assert len(text_) <= 1100
+
+
+def test_quote_answer_respects_the_length_cap_and_steps_aside_when_nothing_matches():
+    from cie.retrieval.answer import quote_answer
+
+    long_items = [{"id": f"i{k}", "kind": "section", "summary": f"Doc {k}", "document_id": f"d{k}", "citations": [],
+                   "detail": " ".join(f"Invoice approval rules for vendor payments apply in region {k} step {m}." for m in range(30))}
+                  for k in range(5)]
+    text_, cites = quote_answer(long_items, "What are the invoice approval rules for vendor payments?", cap=400)
+    assert len(text_) <= 400 and cites
+    assert quote_answer(long_items, "Who won the chess tournament?") is None
+
+
+def test_extractive_answer_style_is_a_setting_and_exact_values_keep_their_answer():
+    import uuid as _uuid
+
+    from cie.retrieval.answer import extractive
+    from cie.retrieval.intent import classify
+    from cie.retrieval.packet import EvidencePacket
+
+    items = [{"id": "r1", "kind": "record", "type": "fact", "summary": "Monthly fee is USD 4,500", "document_id": "d1",
+              "detail": "The monthly fee for the managed service is USD 4,500, invoiced in advance. Late payment adds 2%.",
+              "citations": [{"quote": "The monthly fee is USD 4,500"}], "score": 0.9, "support": 0.9, "content": {"value": "USD 4,500"}}]
+    q = "What does the managed service cost per month according to the fee terms?"
+    pk = EvidencePacket(tenant_id=_uuid.uuid4(), query=q, items=items)
+    quotes = extractive(pk, classify(q), style="quotes")
+    cards = extractive(pk, classify(q), style="cards")
+    assert quotes.status == cards.status == "answered"
+    assert "invoiced in advance" in quotes.answer and quotes.citations[0]["item_id"] == "r1"
+    assert cards.answer.startswith("Monthly fee is USD 4,500")

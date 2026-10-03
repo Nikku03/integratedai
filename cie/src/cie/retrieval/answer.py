@@ -81,8 +81,15 @@ def _value_phrase(item: dict) -> str | None:
     return None
 
 
-def extractive(packet: EvidencePacket, intent: Intent, min_score: float = 0.25, min_support: float = 0.34) -> AnswerResult:
+def extractive(packet: EvidencePacket, intent: Intent, min_score: float = 0.25, min_support: float = 0.34,
+               style: str | None = None) -> AnswerResult:
+    """``style``: ``quotes`` quotes the sentences of the leading items that best match the question; ``cards`` (the
+    first style) gives the top records' summaries and the start of their text. Default: ``extractive_answer``."""
     t0 = time.perf_counter()
+    if style is None:
+        from cie.core.settings import get_settings
+
+        style = get_settings().extractive_answer
     # passages placed by document expansion are context for a model; this answer reads the packet in search's own order
     # (with them, the leading items it judges and quotes would often be one document's passages)
     ranked = [it for it in packet.items if not it.get("expanded")] or packet.items
@@ -119,6 +126,13 @@ def extractive(packet: EvidencePacket, intent: Intent, min_score: float = 0.25, 
         return AnswerResult(" ".join(lines), "conflict", cites, 0.4, "strict",
                             latency_ms=(time.perf_counter() - t0) * 1000)
 
+    if style == "quotes" and not (intent.kind == "exact_field" and top is not None and _value_phrase(top)):
+        quoted = quote_answer(packet.items, packet.query)
+        if quoted is not None:
+            text_, cites_ = quoted
+            conf = _confidence(top or sections[0], top_score, len([i for i in items[:3] if i.get("score", 0) >= min_score]))
+            return AnswerResult(text_, "answered", cites_, conf, "strict", latency_ms=(time.perf_counter() - t0) * 1000)
+
     cites: list[dict[str, Any]] = []
     parts: list[str] = []
     if top:
@@ -149,6 +163,90 @@ def extractive(packet: EvidencePacket, intent: Intent, min_score: float = 0.25, 
         parts.append(f"The most relevant passage states: \"{snippet}\" [1].")
     conf = _confidence(top or sections[0], top_score, len([i for i in items[:3] if i.get("score", 0) >= min_score]))
     return AnswerResult(" ".join(parts), "answered", cites, conf, "strict", latency_ms=(time.perf_counter() - t0) * 1000)
+
+
+_SENT_SPLIT = re.compile(r"(?<=[.!?])\s+(?=[A-Z0-9\"'(])|\n+")
+# memory-card lines (the summary repeated, tags, people) carry little an answer needs
+_CARD_LINE = re.compile(r"^(Summary|Tags|People|Owner|Participants|Labels|Status|Assignee|Reporter)\s*:", re.I)
+
+
+def _tokens(text: str) -> set[str]:
+    try:
+        from cie.retrieval.bm25 import analyze
+
+        return set(analyze(text))
+    except Exception:  # noqa: BLE001 - no analyzer available: lower-cased words
+        return {w.lower() for w in re.findall(r"[A-Za-z0-9]+", text or "")}
+
+
+def quote_answer(items: list[dict], question: str, cap: int = 1100, pool: int = 20, window: int = 1,
+                 prior: float = 0.15, label_chars: int = 60) -> tuple[str, list[dict[str, Any]]] | None:
+    """An evidence-only answer that quotes the sentences of the first ``pool`` packet items that best match the
+    question, each sentence with the one after it (the answer often follows the sentence that matches), at most
+    ``cap`` characters in all, labels included. Each quoted item is named by its title and cited. A sentence scores
+    the IDF-weighted share of the question's terms it holds, less a small penalty for a lower-ranked item
+    (``prior``). None when no sentence holds a question term (the caller falls back to the card answer).
+
+    Chosen on the development half of the EnterpriseRAG-Bench questions: at a shorter length than the card answer,
+    it held about twice as many of the gold answer facts (docs/QUOTES_PREREGISTRATION.md)."""
+    import math
+    from collections import Counter
+
+    try:
+        from cie.retrieval.bm25 import query_terms
+
+        terms = [t for t in query_terms(question)]
+    except Exception:  # noqa: BLE001
+        terms = sorted(_tokens(question))
+    terms = [t for t in terms if len(t) > 2]
+    head = items[:pool]
+    if not terms or not head:
+        return None
+    sents: list[list[str]] = []
+    for it in head:
+        body = re.sub(r"[ \t]+", " ", it.get("detail") or "")
+        sents.append([x.strip() for x in _SENT_SPLIT.split(body) if len(x.strip()) >= 25 and not _CARD_LINE.match(x.strip())])
+    df = Counter(t for it in head for t in _tokens(f"{it.get('summary', '')} {it.get('detail', '')}"))
+    idf = {t: math.log(1 + len(head) / (1 + df[t])) for t in terms}
+    total = sum(idf.values()) or 1.0
+    scored = []
+    for i, ss in enumerate(sents):
+        for j, x in enumerate(ss):
+            toks = _tokens(x)
+            cover = sum(idf[t] for t in terms if t in toks) / total
+            if cover > 0:
+                scored.append((cover - prior * i / len(head), i, j))
+    if not scored:
+        return None
+    scored.sort(key=lambda x: (-x[0], x[1], x[2]))
+    label = lambda i: re.sub(r"\s+", " ", head[i].get("summary") or "").strip()[:label_chars]  # noqa: E731
+    chosen: dict[int, set[int]] = {}
+    seen: set[str] = set()
+    used = 0
+    for sc, i, j in scored:
+        if sc <= 0:
+            break
+        for k in range(j, min(j + window + 1, len(sents[i]))):
+            x = sents[i][k]
+            key = x[:80].lower()
+            if key in seen:
+                continue
+            cost = len(x) + 5 + (0 if i in chosen else len(label(i)) + 10)
+            if used + cost > cap:
+                continue
+            seen.add(key)
+            chosen.setdefault(i, set()).add(k)
+            used += cost
+        if used >= cap * 0.95:
+            break
+    if not chosen:
+        return None
+    parts, cites = [], []
+    for n, i in enumerate(sorted(chosen), start=1):
+        cites.append(_cite(head[i], n))
+        quote = " ... ".join(sents[i][k] for k in sorted(chosen[i]))
+        parts.append(f"{label(i)}: \"{quote}\" [{n}].")
+    return " ".join(parts), cites
 
 
 def _confidence(item: dict, score: float, support: int) -> float:

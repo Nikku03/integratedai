@@ -1,0 +1,949 @@
+{
+  "worlds": 3,
+  "seeds": [
+    304,
+    305,
+    306
+  ],
+  "events_per_world": 20,
+  "host_tenant": "erbfull-5000-9688c2",
+  "run_id": "84e6",
+  "embedding": "fastembed",
+  "wall_s": 665.3,
+  "arms": {
+    "loop-relied": {
+      "worlds": 3,
+      "retrieval_completeness": {
+        "needed_records_in_context": 1.0,
+        "needed_records_relied_on": 1.0,
+        "question_evidence_found": 0.994,
+        "question_passages_found_by_search": 0.9665,
+        "exhaustive_scans_incomplete": 0
+      },
+      "citation_accuracy": {
+        "findings_verified": 1.0,
+        "published_answers_correct": 1.0
+      },
+      "answers_correct_when_served": 1.0,
+      "answer_accuracy": {
+        "answers_given": 155,
+        "right_when_given": 1.0,
+        "feasible_right": 1.0,
+        "within_budget_right": 1.0,
+        "cost_right": 1.0,
+        "at_risk_set_right": 1.0,
+        "wrong_answers_served_by_model_error": 0,
+        "no_usable_answer": 0
+      },
+      "verification_catch": {
+        "wrong_numbers": 0,
+        "wrong_numbers_blocked": 0,
+        "right_numbers_blocked": 0
+      },
+      "stale_state_errors": {
+        "stale_answers_served": 0,
+        "stale_published_findings": 0,
+        "answer_checks": 756
+      },
+      "missed_dependencies": {
+        "affected_projects": 119,
+        "missed": 0,
+        "routed_but_unaffected": 0,
+        "affected_without_answer": 0
+      },
+      "duplicate_actions": {
+        "redelivered_events": 60,
+        "forwarded_duplicates": 26,
+        "extra_versions": 0,
+        "extra_reopenings": 0,
+        "extra_transitions": 0,
+        "extra_suggestions": 0
+      },
+      "task_completion": {
+        "tasks": 36,
+        "completed": 36,
+        "awaiting_person": 0,
+        "failed": 0,
+        "runs": 155,
+        "reruns": 119
+      },
+      "latency_ms_p50_of_worlds": {
+        "event_ms": 176.5,
+        "context_ms": 1591.9667,
+        "analyse_ms": 0.0,
+        "publish_ms": 222.5333,
+        "reaction_ms": 3701.6,
+        "question_ms": 1117.9,
+        "model_ms": null
+      },
+      "latency_ms_p95_max": {
+        "event_ms": 465.1,
+        "context_ms": 3737.9,
+        "analyse_ms": 0.1,
+        "publish_ms": 432.0,
+        "reaction_ms": 13133.6,
+        "question_ms": 1906.3,
+        "model_ms": 0
+      },
+      "cost": {
+        "context_tokens_total": 6521510,
+        "model": null,
+        "model_calls": 0,
+        "model_tokens_in": 0,
+        "model_tokens_out": 0,
+        "model_bad_json": 0,
+        "model_invented_refs": 0,
+        "model_call_errors": 0,
+        "model_cost_usd": 0.0,
+        "last_model_error": "",
+        "last_invalid_reply": ""
+      }
+    },
+    "no-routing": {
+      "worlds": 3,
+      "retrieval_completeness": {
+        "needed_records_in_context": 1.0,
+        "needed_records_relied_on": 1.0,
+        "question_evidence_found": 0.9628,
+        "question_passages_found_by_search": 0.8977,
+        "exhaustive_scans_incomplete": 0
+      },
+      "citation_accuracy": {
+        "findings_verified": 1.0,
+        "published_answers_correct": 1.0
+      },
+      "answers_correct_when_served": 0.4577,
+      "answer_accuracy": {
+        "answers_given": 36,
+        "right_when_given": 1.0,
+        "feasible_right": 1.0,
+        "within_budget_right": 1.0,
+        "cost_right": 1.0,
+        "at_risk_set_right": 1.0,
+        "wrong_answers_served_by_model_error": 0,
+        "no_usable_answer": 0
+      },
+      "verification_catch": {
+        "wrong_numbers": 0,
+        "wrong_numbers_blocked": 0,
+        "right_numbers_blocked": 0
+      },
+      "stale_state_errors": {
+        "stale_answers_served": 410,
+        "stale_published_findings": 492,
+        "answer_checks": 756
+      },
+      "missed_dependencies": {
+        "affected_projects": 119,
+        "missed": 119,
+        "routed_but_unaffected": 0,
+        "affected_without_answer": 0
+      },
+      "duplicate_actions": {
+        "redelivered_events": 60,
+        "forwarded_duplicates": 26,
+        "extra_versions": 0,
+        "extra_reopenings": 0,
+        "extra_transitions": 0,
+        "extra_suggestions": 0
+      },
+      "task_completion": {
+        "tasks": 36,
+        "completed": 36,
+        "awaiting_person": 0,
+        "failed": 0,
+        "runs": 36,
+        "reruns": 0
+      },
+      "latency_ms_p50_of_worlds": {
+        "event_ms": 153.5,
+        "context_ms": 1740.3667,
+        "analyse_ms": 0.0,
+        "publish_ms": 178.1667,
+        "reaction_ms": 153.5,
+        "question_ms": 1160.5333,
+        "model_ms": null
+      },
+      "latency_ms_p95_max": {
+        "event_ms": 359.7,
+        "context_ms": 3442.9,
+        "analyse_ms": 0.1,
+        "publish_ms": 272.4,
+        "reaction_ms": 359.7,
+        "question_ms": 1632.5,
+        "model_ms": 0
+      },
+      "cost": {
+        "context_tokens_total": 1489767,
+        "model": null,
+        "model_calls": 0,
+        "model_tokens_in": 0,
+        "model_tokens_out": 0,
+        "model_bad_json": 0,
+        "model_invented_refs": 0,
+        "model_call_errors": 0,
+        "model_cost_usd": 0.0,
+        "last_model_error": "",
+        "last_invalid_reply": ""
+      }
+    }
+  },
+  "per_world": {
+    "loop-relied": [
+      {
+        "world": 304,
+        "arm": "loop-relied",
+        "tenant": "erbfull-5000-9688c2",
+        "tag": "w304R84e6",
+        "events": 20,
+        "load_s": 18.7,
+        "memory_docs": 106,
+        "retrieval_completeness": {
+          "needed_records_in_context": 1.0,
+          "needed_records_relied_on": 1.0,
+          "question_evidence_found": 0.993,
+          "question_passages_found_by_search": 0.987,
+          "questions": 11,
+          "exhaustive_scans_incomplete": 0
+        },
+        "citation_accuracy": {
+          "findings_verified": 1.0,
+          "findings": 234,
+          "published_answers_correct": 1.0,
+          "published_answers": 61
+        },
+        "answers_correct_when_served": 1.0,
+        "stale_state_errors": {
+          "stale_answers_served": 0,
+          "stale_published_findings": 0,
+          "answer_checks": 252
+        },
+        "answer_accuracy": {
+          "answers_given": 61,
+          "right_when_given": 1.0,
+          "feasible_right": 1.0,
+          "within_budget_right": 1.0,
+          "cost_right": 1.0,
+          "at_risk_set_right": 1.0,
+          "wrong_answers_served_by_model_error": 0,
+          "no_usable_answer": 0
+        },
+        "verification_catch": {
+          "wrong_numbers": 0,
+          "wrong_numbers_blocked": 0,
+          "right_numbers_blocked": 0
+        },
+        "missed_dependencies": {
+          "affected_projects": 49,
+          "missed": 0,
+          "routed": 49,
+          "affected_without_answer": 0,
+          "routed_but_unaffected": 0
+        },
+        "duplicate_actions": {
+          "redelivered_events": 20,
+          "forwarded_duplicates": 11,
+          "extra_versions": 0,
+          "extra_reopenings": 0,
+          "extra_transitions": 0,
+          "extra_suggestions": 0
+        },
+        "task_completion": {
+          "tasks": 12,
+          "completed": 12,
+          "awaiting_person": 0,
+          "failed": 0,
+          "runs": 61,
+          "reruns": 49
+        },
+        "latency_ms": {
+          "event_ms": {
+            "p50": 191.0,
+            "p95": 380.3,
+            "n": 20
+          },
+          "context_ms": {
+            "p50": 1516.4,
+            "p95": 2970.6,
+            "n": 61
+          },
+          "analyse_ms": {
+            "p50": 0.0,
+            "p95": 0.1,
+            "n": 61
+          },
+          "publish_ms": {
+            "p50": 273.2,
+            "p95": 432.0,
+            "n": 61
+          },
+          "reaction_ms": {
+            "p50": 4523.4,
+            "p95": 12486.6,
+            "n": 20
+          },
+          "question_ms": {
+            "p50": 1039.9,
+            "p95": 1906.3,
+            "n": 11
+          },
+          "model_ms": {
+            "p50": null,
+            "p95": null,
+            "n": 0
+          }
+        },
+        "cost": {
+          "context_tokens_total": 2616325,
+          "context_tokens_per_run": 39770,
+          "model": null,
+          "model_calls": 0,
+          "model_tokens_in": 0,
+          "model_tokens_out": 0,
+          "model_cost_usd": 0.0,
+          "model_bad_json": 0,
+          "model_invented_refs": 0,
+          "model_call_errors": 0,
+          "last_model_error": "",
+          "last_invalid_reply": ""
+        }
+      },
+      {
+        "world": 305,
+        "arm": "loop-relied",
+        "tenant": "erbfull-5000-9688c2",
+        "tag": "w305R84e6",
+        "events": 20,
+        "load_s": 12.2,
+        "memory_docs": 100,
+        "retrieval_completeness": {
+          "needed_records_in_context": 1.0,
+          "needed_records_relied_on": 1.0,
+          "question_evidence_found": 0.9889,
+          "question_passages_found_by_search": 0.9125,
+          "questions": 6,
+          "exhaustive_scans_incomplete": 0
+        },
+        "citation_accuracy": {
+          "findings_verified": 1.0,
+          "findings": 148,
+          "published_answers_correct": 1.0,
+          "published_answers": 44
+        },
+        "answers_correct_when_served": 1.0,
+        "stale_state_errors": {
+          "stale_answers_served": 0,
+          "stale_published_findings": 0,
+          "answer_checks": 252
+        },
+        "answer_accuracy": {
+          "answers_given": 44,
+          "right_when_given": 1.0,
+          "feasible_right": 1.0,
+          "within_budget_right": 1.0,
+          "cost_right": 1.0,
+          "at_risk_set_right": 1.0,
+          "wrong_answers_served_by_model_error": 0,
+          "no_usable_answer": 0
+        },
+        "verification_catch": {
+          "wrong_numbers": 0,
+          "wrong_numbers_blocked": 0,
+          "right_numbers_blocked": 0
+        },
+        "missed_dependencies": {
+          "affected_projects": 32,
+          "missed": 0,
+          "routed": 32,
+          "affected_without_answer": 0,
+          "routed_but_unaffected": 0
+        },
+        "duplicate_actions": {
+          "redelivered_events": 20,
+          "forwarded_duplicates": 6,
+          "extra_versions": 0,
+          "extra_reopenings": 0,
+          "extra_transitions": 0,
+          "extra_suggestions": 0
+        },
+        "task_completion": {
+          "tasks": 12,
+          "completed": 12,
+          "awaiting_person": 0,
+          "failed": 0,
+          "runs": 44,
+          "reruns": 32
+        },
+        "latency_ms": {
+          "event_ms": {
+            "p50": 147.5,
+            "p95": 353.4,
+            "n": 20
+          },
+          "context_ms": {
+            "p50": 1583.1,
+            "p95": 1717.5,
+            "n": 44
+          },
+          "analyse_ms": {
+            "p50": 0.0,
+            "p95": 0.1,
+            "n": 44
+          },
+          "publish_ms": {
+            "p50": 147.9,
+            "p95": 289.2,
+            "n": 44
+          },
+          "reaction_ms": {
+            "p50": 2068.3,
+            "p95": 9769.9,
+            "n": 20
+          },
+          "question_ms": {
+            "p50": 1018.3,
+            "p95": 1561.5,
+            "n": 6
+          },
+          "model_ms": {
+            "p50": null,
+            "p95": null,
+            "n": 0
+          }
+        },
+        "cost": {
+          "context_tokens_total": 1681329,
+          "context_tokens_per_run": 38887,
+          "model": null,
+          "model_calls": 0,
+          "model_tokens_in": 0,
+          "model_tokens_out": 0,
+          "model_cost_usd": 0.0,
+          "model_bad_json": 0,
+          "model_invented_refs": 0,
+          "model_call_errors": 0,
+          "last_model_error": "",
+          "last_invalid_reply": ""
+        }
+      },
+      {
+        "world": 306,
+        "arm": "loop-relied",
+        "tenant": "erbfull-5000-9688c2",
+        "tag": "w306R84e6",
+        "events": 20,
+        "load_s": 10.5,
+        "memory_docs": 104,
+        "retrieval_completeness": {
+          "needed_records_in_context": 1.0,
+          "needed_records_relied_on": 1.0,
+          "question_evidence_found": 1.0,
+          "question_passages_found_by_search": 1.0,
+          "questions": 9,
+          "exhaustive_scans_incomplete": 0
+        },
+        "citation_accuracy": {
+          "findings_verified": 1.0,
+          "findings": 193,
+          "published_answers_correct": 1.0,
+          "published_answers": 50
+        },
+        "answers_correct_when_served": 1.0,
+        "stale_state_errors": {
+          "stale_answers_served": 0,
+          "stale_published_findings": 0,
+          "answer_checks": 252
+        },
+        "answer_accuracy": {
+          "answers_given": 50,
+          "right_when_given": 1.0,
+          "feasible_right": 1.0,
+          "within_budget_right": 1.0,
+          "cost_right": 1.0,
+          "at_risk_set_right": 1.0,
+          "wrong_answers_served_by_model_error": 0,
+          "no_usable_answer": 0
+        },
+        "verification_catch": {
+          "wrong_numbers": 0,
+          "wrong_numbers_blocked": 0,
+          "right_numbers_blocked": 0
+        },
+        "missed_dependencies": {
+          "affected_projects": 38,
+          "missed": 0,
+          "routed": 38,
+          "affected_without_answer": 0,
+          "routed_but_unaffected": 0
+        },
+        "duplicate_actions": {
+          "redelivered_events": 20,
+          "forwarded_duplicates": 9,
+          "extra_versions": 0,
+          "extra_reopenings": 0,
+          "extra_transitions": 0,
+          "extra_suggestions": 0
+        },
+        "task_completion": {
+          "tasks": 12,
+          "completed": 12,
+          "awaiting_person": 0,
+          "failed": 0,
+          "runs": 50,
+          "reruns": 38
+        },
+        "latency_ms": {
+          "event_ms": {
+            "p50": 191.0,
+            "p95": 465.1,
+            "n": 20
+          },
+          "context_ms": {
+            "p50": 1676.4,
+            "p95": 3737.9,
+            "n": 50
+          },
+          "analyse_ms": {
+            "p50": 0.0,
+            "p95": 0.1,
+            "n": 50
+          },
+          "publish_ms": {
+            "p50": 246.5,
+            "p95": 381.5,
+            "n": 50
+          },
+          "reaction_ms": {
+            "p50": 4513.1,
+            "p95": 13133.6,
+            "n": 20
+          },
+          "question_ms": {
+            "p50": 1295.5,
+            "p95": 1669.0,
+            "n": 9
+          },
+          "model_ms": {
+            "p50": null,
+            "p95": null,
+            "n": 0
+          }
+        },
+        "cost": {
+          "context_tokens_total": 2223856,
+          "context_tokens_per_run": 38174,
+          "model": null,
+          "model_calls": 0,
+          "model_tokens_in": 0,
+          "model_tokens_out": 0,
+          "model_cost_usd": 0.0,
+          "model_bad_json": 0,
+          "model_invented_refs": 0,
+          "model_call_errors": 0,
+          "last_model_error": "",
+          "last_invalid_reply": ""
+        }
+      }
+    ],
+    "no-routing": [
+      {
+        "world": 304,
+        "arm": "no-routing",
+        "tenant": "erbfull-5000-9688c2",
+        "tag": "w304N84e6",
+        "events": 20,
+        "load_s": 7.0,
+        "memory_docs": 106,
+        "retrieval_completeness": {
+          "needed_records_in_context": 1.0,
+          "needed_records_relied_on": 1.0,
+          "question_evidence_found": 0.986,
+          "question_passages_found_by_search": 0.974,
+          "questions": 11,
+          "exhaustive_scans_incomplete": 0
+        },
+        "citation_accuracy": {
+          "findings_verified": 1.0,
+          "findings": 36,
+          "published_answers_correct": 1.0,
+          "published_answers": 12
+        },
+        "answers_correct_when_served": 0.4365,
+        "stale_state_errors": {
+          "stale_answers_served": 142,
+          "stale_published_findings": 161,
+          "answer_checks": 252
+        },
+        "answer_accuracy": {
+          "answers_given": 12,
+          "right_when_given": 1.0,
+          "feasible_right": 1.0,
+          "within_budget_right": 1.0,
+          "cost_right": 1.0,
+          "at_risk_set_right": 1.0,
+          "wrong_answers_served_by_model_error": 0,
+          "no_usable_answer": 0
+        },
+        "verification_catch": {
+          "wrong_numbers": 0,
+          "wrong_numbers_blocked": 0,
+          "right_numbers_blocked": 0
+        },
+        "missed_dependencies": {
+          "affected_projects": 49,
+          "missed": 49,
+          "routed": 0,
+          "affected_without_answer": 0,
+          "routed_but_unaffected": 0
+        },
+        "duplicate_actions": {
+          "redelivered_events": 20,
+          "forwarded_duplicates": 11,
+          "extra_versions": 0,
+          "extra_reopenings": 0,
+          "extra_transitions": 0,
+          "extra_suggestions": 0
+        },
+        "task_completion": {
+          "tasks": 12,
+          "completed": 12,
+          "awaiting_person": 0,
+          "failed": 0,
+          "runs": 12,
+          "reruns": 0
+        },
+        "latency_ms": {
+          "event_ms": {
+            "p50": 155.7,
+            "p95": 302.5,
+            "n": 20
+          },
+          "context_ms": {
+            "p50": 1644.8,
+            "p95": 1683.7,
+            "n": 12
+          },
+          "analyse_ms": {
+            "p50": 0.0,
+            "p95": 0.1,
+            "n": 12
+          },
+          "publish_ms": {
+            "p50": 173.8,
+            "p95": 272.4,
+            "n": 12
+          },
+          "reaction_ms": {
+            "p50": 155.7,
+            "p95": 302.5,
+            "n": 20
+          },
+          "question_ms": {
+            "p50": 1247.5,
+            "p95": 1375.5,
+            "n": 11
+          },
+          "model_ms": {
+            "p50": null,
+            "p95": null,
+            "n": 0
+          }
+        },
+        "cost": {
+          "context_tokens_total": 514932,
+          "context_tokens_per_run": 43836,
+          "model": null,
+          "model_calls": 0,
+          "model_tokens_in": 0,
+          "model_tokens_out": 0,
+          "model_cost_usd": 0.0,
+          "model_bad_json": 0,
+          "model_invented_refs": 0,
+          "model_call_errors": 0,
+          "last_model_error": "",
+          "last_invalid_reply": ""
+        }
+      },
+      {
+        "world": 305,
+        "arm": "no-routing",
+        "tenant": "erbfull-5000-9688c2",
+        "tag": "w305N84e6",
+        "events": 20,
+        "load_s": 6.4,
+        "memory_docs": 100,
+        "retrieval_completeness": {
+          "needed_records_in_context": 1.0,
+          "needed_records_relied_on": 1.0,
+          "question_evidence_found": 0.9333,
+          "question_passages_found_by_search": 0.875,
+          "questions": 6,
+          "exhaustive_scans_incomplete": 0
+        },
+        "citation_accuracy": {
+          "findings_verified": 1.0,
+          "findings": 36,
+          "published_answers_correct": 1.0,
+          "published_answers": 12
+        },
+        "answers_correct_when_served": 0.6587,
+        "stale_state_errors": {
+          "stale_answers_served": 86,
+          "stale_published_findings": 117,
+          "answer_checks": 252
+        },
+        "answer_accuracy": {
+          "answers_given": 12,
+          "right_when_given": 1.0,
+          "feasible_right": 1.0,
+          "within_budget_right": 1.0,
+          "cost_right": 1.0,
+          "at_risk_set_right": 1.0,
+          "wrong_answers_served_by_model_error": 0,
+          "no_usable_answer": 0
+        },
+        "verification_catch": {
+          "wrong_numbers": 0,
+          "wrong_numbers_blocked": 0,
+          "right_numbers_blocked": 0
+        },
+        "missed_dependencies": {
+          "affected_projects": 32,
+          "missed": 32,
+          "routed": 0,
+          "affected_without_answer": 0,
+          "routed_but_unaffected": 0
+        },
+        "duplicate_actions": {
+          "redelivered_events": 20,
+          "forwarded_duplicates": 6,
+          "extra_versions": 0,
+          "extra_reopenings": 0,
+          "extra_transitions": 0,
+          "extra_suggestions": 0
+        },
+        "task_completion": {
+          "tasks": 12,
+          "completed": 12,
+          "awaiting_person": 0,
+          "failed": 0,
+          "runs": 12,
+          "reruns": 0
+        },
+        "latency_ms": {
+          "event_ms": {
+            "p50": 147.3,
+            "p95": 233.9,
+            "n": 20
+          },
+          "context_ms": {
+            "p50": 1732.5,
+            "p95": 1858.0,
+            "n": 12
+          },
+          "analyse_ms": {
+            "p50": 0.0,
+            "p95": 0.0,
+            "n": 12
+          },
+          "publish_ms": {
+            "p50": 165.9,
+            "p95": 212.6,
+            "n": 12
+          },
+          "reaction_ms": {
+            "p50": 147.3,
+            "p95": 233.9,
+            "n": 20
+          },
+          "question_ms": {
+            "p50": 1060.7,
+            "p95": 1318.1,
+            "n": 6
+          },
+          "model_ms": {
+            "p50": null,
+            "p95": null,
+            "n": 0
+          }
+        },
+        "cost": {
+          "context_tokens_total": 446109,
+          "context_tokens_per_run": 34674,
+          "model": null,
+          "model_calls": 0,
+          "model_tokens_in": 0,
+          "model_tokens_out": 0,
+          "model_cost_usd": 0.0,
+          "model_bad_json": 0,
+          "model_invented_refs": 0,
+          "model_call_errors": 0,
+          "last_model_error": "",
+          "last_invalid_reply": ""
+        }
+      },
+      {
+        "world": 306,
+        "arm": "no-routing",
+        "tenant": "erbfull-5000-9688c2",
+        "tag": "w306N84e6",
+        "events": 20,
+        "load_s": 11.2,
+        "memory_docs": 104,
+        "retrieval_completeness": {
+          "needed_records_in_context": 1.0,
+          "needed_records_relied_on": 1.0,
+          "question_evidence_found": 0.969,
+          "question_passages_found_by_search": 0.8442,
+          "questions": 9,
+          "exhaustive_scans_incomplete": 0
+        },
+        "citation_accuracy": {
+          "findings_verified": 1.0,
+          "findings": 36,
+          "published_answers_correct": 1.0,
+          "published_answers": 12
+        },
+        "answers_correct_when_served": 0.2778,
+        "stale_state_errors": {
+          "stale_answers_served": 182,
+          "stale_published_findings": 214,
+          "answer_checks": 252
+        },
+        "answer_accuracy": {
+          "answers_given": 12,
+          "right_when_given": 1.0,
+          "feasible_right": 1.0,
+          "within_budget_right": 1.0,
+          "cost_right": 1.0,
+          "at_risk_set_right": 1.0,
+          "wrong_answers_served_by_model_error": 0,
+          "no_usable_answer": 0
+        },
+        "verification_catch": {
+          "wrong_numbers": 0,
+          "wrong_numbers_blocked": 0,
+          "right_numbers_blocked": 0
+        },
+        "missed_dependencies": {
+          "affected_projects": 38,
+          "missed": 38,
+          "routed": 0,
+          "affected_without_answer": 0,
+          "routed_but_unaffected": 0
+        },
+        "duplicate_actions": {
+          "redelivered_events": 20,
+          "forwarded_duplicates": 9,
+          "extra_versions": 0,
+          "extra_reopenings": 0,
+          "extra_transitions": 0,
+          "extra_suggestions": 0
+        },
+        "task_completion": {
+          "tasks": 12,
+          "completed": 12,
+          "awaiting_person": 0,
+          "failed": 0,
+          "runs": 12,
+          "reruns": 0
+        },
+        "latency_ms": {
+          "event_ms": {
+            "p50": 157.5,
+            "p95": 359.7,
+            "n": 20
+          },
+          "context_ms": {
+            "p50": 1843.8,
+            "p95": 3442.9,
+            "n": 12
+          },
+          "analyse_ms": {
+            "p50": 0.0,
+            "p95": 0.0,
+            "n": 12
+          },
+          "publish_ms": {
+            "p50": 194.8,
+            "p95": 238.7,
+            "n": 12
+          },
+          "reaction_ms": {
+            "p50": 157.5,
+            "p95": 359.7,
+            "n": 20
+          },
+          "question_ms": {
+            "p50": 1173.4,
+            "p95": 1632.5,
+            "n": 9
+          },
+          "model_ms": {
+            "p50": null,
+            "p95": null,
+            "n": 0
+          }
+        },
+        "cost": {
+          "context_tokens_total": 528726,
+          "context_tokens_per_run": 37770,
+          "model": null,
+          "model_calls": 0,
+          "model_tokens_in": 0,
+          "model_tokens_out": 0,
+          "model_cost_usd": 0.0,
+          "model_bad_json": 0,
+          "model_invented_refs": 0,
+          "model_call_errors": 0,
+          "last_model_error": "",
+          "last_invalid_reply": ""
+        }
+      }
+    ]
+  },
+  "verdict": [
+    {
+      "arm": "loop-relied",
+      "criterion": "1. no stale answers or stale published findings",
+      "met": true,
+      "value": "0 / 0"
+    },
+    {
+      "arm": "loop-relied",
+      "criterion": "2. no missed dependencies",
+      "met": true,
+      "value": "0 of 119"
+    },
+    {
+      "arm": "loop-relied",
+      "criterion": "3. no duplicate actions",
+      "met": true,
+      "value": "0 / 0 / 0 / 0"
+    },
+    {
+      "arm": "loop-relied",
+      "criterion": "4. every needed record in the context, every scan complete",
+      "met": true,
+      "value": "1.0, incomplete scans 0"
+    },
+    {
+      "arm": "loop-relied",
+      "criterion": "5. findings verified >= 0.99, published answers all correct",
+      "met": true,
+      "value": "1.0, 1.0"
+    },
+    {
+      "arm": "loop-relied",
+      "criterion": "6. every task completed",
+      "met": true,
+      "value": "36 of 36, failed 0, waiting 0"
+    },
+    {
+      "arm": "loop-relied",
+      "criterion": "7. no re-runs of unaffected projects",
+      "met": true,
+      "value": "0"
+    }
+  ]
+}

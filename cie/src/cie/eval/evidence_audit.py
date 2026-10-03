@@ -142,8 +142,13 @@ def summarise(rows: list[dict[str, Any]]) -> dict[str, Any]:
                            "stages": {s: stages.get(s, 0) for s in STAGES},
                            "facts": sum(r["facts"] for r in judged), "checkable_facts": sum(r["checkable"] for r in judged),
                            "facts_in_packet": sum(r["in_packet"] for r in judged), "facts_in_model_view": sum(r["in_model_view"] for r in judged)}
+    if judged and "answer_chars" in judged[0]:
+        out["answer_chars_mean"] = round(sum(r["answer_chars"] for r in judged) / len(judged), 1)
+        out["answer_chars_max"] = max(r["answer_chars"] for r in judged)
+        out["status"] = dict(Counter(r.get("status") for r in judged))
     if judged and "in_answer" in judged[0]:
         out["facts_in_answer"] = sum(r.get("in_answer", 0) for r in judged)
+        out["questions_with_every_fact_in_answer"] = sum(1 for r in judged if r.get("in_answer", 0) == r["checkable"])
         full = [r for r in judged if r["stage"] == STAGES[3]]
         out["everything_reached_model_but_answer_missed_a_fact"] = sum(1 for r in full if r["in_answer"] < r["checkable"])
         out["everything_reached_model_and_answer_had_every_fact"] = sum(1 for r in full if r["in_answer"] == r["checkable"])
@@ -199,7 +204,8 @@ def run(tenant_name: str, root: Path, out: Path, engine: str | None = None, n: i
                 if d and d not in docs:
                     docs.append(d)
             row = classify(q["answer_facts"], gold_passages, docs, gold, passages(items), model_view(items, budget), result.answer or "")
-            row.update({"question_id": q["question_id"], "category": q["question_type"], "status": result.status})
+            row.update({"question_id": q["question_id"], "category": q["question_type"], "status": result.status,
+                        "answer_chars": len(result.answer or "")})
             rows.append(row)
             s.rollback()
             if (i + 1) % 100 == 0:
