@@ -87,3 +87,6 @@ The Colab notebook runs this (Part 1b) with Llama 3.1 8B at 50,000 documents.
 
 Raw results: `docs/benchmarks/audit/evidence_audit_5k_bm25.json` and `evidence_audit_5k_fts.json`; with document
 expansion, `docs/benchmarks/expansion/`.
+
+Tried and not adopted: BM25 over the sentences of the first 5 documents, with the extracts placed first (`docs/benchmarks/inside_bm25/`). On
+the development half it moved at most 2 of 189 questions. Most missed facts sit in documents outside the first 5.

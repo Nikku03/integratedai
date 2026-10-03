@@ -1,0 +1,183 @@
+{
+ "half": "odd",
+ "judged": 189,
+ "checkable_facts": 673,
+ "view_chars": 24000,
+ "first_gold_document_position": {
+  "0": 129,
+  "1": 25,
+  "10+": 6,
+  "2": 9,
+  "3": 3,
+  "4": 1,
+  "5": 2,
+  "7": 1,
+  "8": 4,
+  "9": 3,
+  "None": 6
+ },
+ "extraction_ms_p50": 10.590673000024253,
+ "extraction_ms_p95": 19.30971599995246,
+ "upper_bounds": {
+  "facts anywhere in the first 3 documents": {
+   "reached": 141,
+   "facts": 478
+  },
+  "facts anywhere in the first 5 documents": {
+   "reached": 152,
+   "facts": 520
+  }
+ },
+ "arms": {
+  "today (24k)": {
+   "reached": 139,
+   "facts": 477,
+   "chars": 4445946,
+   "chars_mean": 23524
+  },
+  "3 docs, forward, extracts only (3k)": {
+   "reached": 78,
+   "facts": 267,
+   "chars": 677196,
+   "chars_mean": 3583
+  },
+  "3 docs, forward, 3k extracts then today's items (24k)": {
+   "reached": 138,
+   "facts": 469,
+   "chars": 4446671,
+   "chars_mean": 23527
+  },
+  "3 docs, forward, extracts only (6k)": {
+   "reached": 96,
+   "facts": 347,
+   "chars": 1286431,
+   "chars_mean": 6807
+  },
+  "3 docs, forward, 6k extracts then today's items (24k)": {
+   "reached": 136,
+   "facts": 463,
+   "chars": 4444131,
+   "chars_mean": 23514
+  },
+  "3 docs, forward, extracts only (12k)": {
+   "reached": 117,
+   "facts": 415,
+   "chars": 2349926,
+   "chars_mean": 12433
+  },
+  "3 docs, forward, 12k extracts then today's items (24k)": {
+   "reached": 132,
+   "facts": 461,
+   "chars": 4439200,
+   "chars_mean": 23488
+  },
+  "3 docs, reverse, extracts only (3k)": {
+   "reached": 75,
+   "facts": 262,
+   "chars": 675622,
+   "chars_mean": 3575
+  },
+  "3 docs, reverse, 3k extracts then today's items (24k)": {
+   "reached": 137,
+   "facts": 469,
+   "chars": 4447014,
+   "chars_mean": 23529
+  },
+  "3 docs, reverse, extracts only (6k)": {
+   "reached": 94,
+   "facts": 331,
+   "chars": 1289351,
+   "chars_mean": 6822
+  },
+  "3 docs, reverse, 6k extracts then today's items (24k)": {
+   "reached": 137,
+   "facts": 462,
+   "chars": 4444971,
+   "chars_mean": 23518
+  },
+  "3 docs, reverse, extracts only (12k)": {
+   "reached": 115,
+   "facts": 407,
+   "chars": 2347810,
+   "chars_mean": 12422
+  },
+  "3 docs, reverse, 12k extracts then today's items (24k)": {
+   "reached": 132,
+   "facts": 455,
+   "chars": 4438413,
+   "chars_mean": 23484
+  },
+  "5 docs, forward, extracts only (3k)": {
+   "reached": 78,
+   "facts": 259,
+   "chars": 721108,
+   "chars_mean": 3815
+  },
+  "5 docs, forward, 3k extracts then today's items (24k)": {
+   "reached": 140,
+   "facts": 478,
+   "chars": 4440740,
+   "chars_mean": 23496
+  },
+  "5 docs, forward, extracts only (6k)": {
+   "reached": 94,
+   "facts": 332,
+   "chars": 1333699,
+   "chars_mean": 7057
+  },
+  "5 docs, forward, 6k extracts then today's items (24k)": {
+   "reached": 141,
+   "facts": 475,
+   "chars": 4440816,
+   "chars_mean": 23496
+  },
+  "5 docs, forward, extracts only (12k)": {
+   "reached": 113,
+   "facts": 414,
+   "chars": 2534475,
+   "chars_mean": 13410
+  },
+  "5 docs, forward, 12k extracts then today's items (24k)": {
+   "reached": 134,
+   "facts": 470,
+   "chars": 4443118,
+   "chars_mean": 23509
+  },
+  "5 docs, reverse, extracts only (3k)": {
+   "reached": 74,
+   "facts": 247,
+   "chars": 713869,
+   "chars_mean": 3777
+  },
+  "5 docs, reverse, 3k extracts then today's items (24k)": {
+   "reached": 140,
+   "facts": 480,
+   "chars": 4440162,
+   "chars_mean": 23493
+  },
+  "5 docs, reverse, extracts only (6k)": {
+   "reached": 94,
+   "facts": 317,
+   "chars": 1333371,
+   "chars_mean": 7055
+  },
+  "5 docs, reverse, 6k extracts then today's items (24k)": {
+   "reached": 140,
+   "facts": 475,
+   "chars": 4442627,
+   "chars_mean": 23506
+  },
+  "5 docs, reverse, extracts only (12k)": {
+   "reached": 111,
+   "facts": 408,
+   "chars": 2534544,
+   "chars_mean": 13410
+  },
+  "5 docs, reverse, 12k extracts then today's items (24k)": {
+   "reached": 135,
+   "facts": 467,
+   "chars": 4438799,
+   "chars_mean": 23486
+  }
+ }
+}
