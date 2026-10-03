@@ -223,6 +223,15 @@ The p95 comes from the lexical path, whose own p95 is 5,636 ms.
 - its latency was p50 376 ms and p95 861 ms;
 - fusion now adds 4.9 points over vector search alone, without the slow tail.
 
+**Evidence-only answers quote the evidence** (now the default; `docs/QUOTES_RESULTS.md`). Without a model, the
+answer quotes the sentences of the leading evidence that best match the question. On the test half at 5,000
+documents it held 233 of 652 checkable answer facts, against 85 for the old answer (memory-card summaries), at a
+shorter length.
+
+**The operating loop at 5,000 documents** (local, `docs/benchmarks/loop/bench_loop_5k_local.md`, fictional projects):
+every pre-registered criterion met; 0 stale answers served against 410 without routing, and 119 of 119 affected
+projects reached.
+
 **Grading answers.** `cie.eval.grade_answers` runs the benchmark's own judge (`metrics_based_eval --no-correction`)
 on the answers files: is each answer correct, and which gold facts does it state. The notebook's Part 1c runs it
 through Claude and splits correctness by where the evidence audit found the answer facts. No graded run is recorded

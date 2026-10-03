@@ -12,6 +12,18 @@ agents on dependent work and writes everything to an append-only ledger.
 * Known limitations: [`docs/KNOWN_LIMITATIONS.md`](docs/KNOWN_LIMITATIONS.md) · Roadmap: [`docs/ROADMAP.md`](docs/ROADMAP.md)
 * What was reused from the research repositories: [`docs/REUSE_MAP.md`](docs/REUSE_MAP.md)
 
+## Showcase
+
+`notebooks/showcase_colab.ipynb` (Colab, any GPU) loads 5,000 documents of the EnterpriseRAG-Bench company and runs
+`cie.eval.showcase`:
+1. example questions answered with citations, beside the benchmark's expected answers;
+2. a supplier delay that turns a fictional project's answer from "can deliver" to "cannot", routed and re-answered
+   in seconds;
+3. a cell to ask your own question.
+
+On a loaded memory bank: `python -m cie.eval.showcase --tenant <name> --root <EnterpriseRAG-Bench checkout>`. It
+writes `showcase.html`. Measured results: `docs/BENCHMARKS.md`.
+
 ## Quick start (Docker Compose)
 
 ```bash
