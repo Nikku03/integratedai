@@ -225,7 +225,10 @@ def quote_answer(items: list[dict], question: str, cap: int = 1100, pool: int = 
     if not scored:
         return None
     scored.sort(key=lambda x: (-x[0], x[1], x[2]))
-    label = lambda i: re.sub(r"\s+", " ", head[i].get("summary") or "").strip()[:label_chars]  # noqa: E731
+    def label(i: int) -> str:  # the item's title, cut at a word
+        t = re.sub(r"\s+", " ", head[i].get("summary") or "").strip()
+        return t if len(t) <= label_chars else t[:label_chars].rsplit(" ", 1)[0].rstrip(" ,;:-—") + "…"
+
     chosen: dict[int, set[int]] = {}
     seen: set[str] = set()
     used = 0
