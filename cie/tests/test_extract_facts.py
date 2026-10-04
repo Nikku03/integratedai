@@ -182,3 +182,67 @@ def test_a_judge_whose_calls_all_fail_reports_instead_of_crashing(tmp_path):
     s = ef.judge(work, root, [out], n_retention=3, n_lines=5, call=broken, log=lambda *a: None)
     assert s["failed_share"] == 1.0 and s["correctness"]["fake"]["good_share"] is None
     assert "–" in ef.judge_markdown(s)
+
+
+def test_fast_setting_leaves_out_repeated_text_and_tags(tmp_path):
+    a = "Zoe opened the ticket. Rahul: attach lease_id to billing events within 45s."
+    b = "Rahul: attach lease_id to billing events within 45s. Billing will dedupe by lease_id."
+    assert ef.repeated_start(a, b) == len("Rahul: attach lease_id to billing events within 45s.")
+    assert ef.repeated_start("short", "other text") == 0
+    ps = [{"id": "d#0", "doc": "d", "k": 0, "doc_title": "D", "source": "slack", "title": "", "text": a},
+          {"id": "d#1", "doc": "d", "k": 1, "doc_title": "D", "source": "slack", "title": "", "text": b},
+          {"id": "d#2", "doc": "d", "k": 2, "doc_title": "D", "source": "slack", "title": "", "text": b[-40:]},
+          {"id": "e#0", "doc": "e", "k": 0, "doc_title": "E", "source": "slack", "title": "", "text": b}]
+    out = ef.without_repeats(ps)
+    assert "fresh" not in out[0] and "fresh" not in out[3], "a document's first passage and another document are left whole"
+    assert out[1]["fresh"] == "Billing will dedupe by lease_id." and out[2]["fresh"] == ""
+    user = ef.conversation(out[1], "short")[1]["content"]
+    assert user.startswith(ef.INSTRUCTIONS_SHORT) and "within 45s" not in user and "no tags" in user
+
+    work = tmp_path / "w"
+    work.mkdir()
+    (work / "passages.jsonl").write_text("\n".join(json.dumps(p) for p in ps) + "\n")
+    asked = []
+    out_file = work / "facts_fast.jsonl"
+    ef.run_extraction(work / "passages.jsonl", out_file, _args(prompt="short", strip_overlap=True),
+                      generate=lambda c: asked.extend(c) or _fake_model(c), log=lambda *x: None)
+    assert len(asked) == 3, "the passage that only repeats the previous one is not sent"
+    rows = {r["id"]: r for r in ef.load_facts(out_file)}
+    assert rows["d#2"]["finish_reason"].startswith("skipped") and not ef.failed(rows["d#2"])
+    assert rows["d#1"]["repeated_chars"] > 0
+    meta = json.loads(out_file.with_suffix(".run.json").read_text())
+    assert meta["signature"]["repeats_removed"] is True
+    import pytest
+
+    with pytest.raises(SystemExit):  # the full prompt must not resume into the short prompt's facts
+        ef.run_extraction(work / "passages.jsonl", out_file, _args(prompt="full", strip_overlap=True), generate=_fake_model, log=lambda *x: None)
+
+
+def test_run_1_settings_keep_their_resume_signature(tmp_path):
+    work = tmp_path / "w"
+    work.mkdir()
+    (work / "passages.jsonl").write_text(json.dumps({"id": "d#0", "doc": "d", "k": 0, "doc_title": "D", "source": "x", "title": "",
+                                                     "text": "Fact zero holds."}) + "\n")
+    out = work / "facts_m.jsonl"
+    ef.run_extraction(work / "passages.jsonl", out, _args(), generate=_fake_model, log=lambda *x: None)
+    sig = json.loads(out.with_suffix(".run.json").read_text())["signature"]
+    # facts files written before the fast setting existed carry exactly these keys; a resume must still match them
+    assert set(sig) == {"model", "max_tokens", "quantization", "prompt"}
+    assert sig["prompt"] == __import__("hashlib").sha1((ef.SYSTEM + ef.INSTRUCTIONS).encode()).hexdigest()[:12]
+
+
+def test_word_check_without_tag_lines(tmp_path):
+    root = _bench(tmp_path)
+    work = tmp_path / "work"
+    ef.build_set(root, work, n_docs=None, seed=5, workers=1, log=lambda *a: None)
+    out = work / "facts_tagged.jsonl"
+
+    def tags_only(convs):  # the answer fact's words appear only in a tag line
+        return [{"text": "- Tags: eviction batch capped 64 pages\n- The office has plants.", "prompt_tokens": 5, "output_tokens": 5,
+                 "finish_reason": "stop"} for _ in convs]
+
+    ef.run_extraction(work / "passages.jsonl", out, _args(), generate=tags_only, log=lambda *a: None)
+    rep = ef.score(work, root, [out], log=lambda *a: None)
+    k = rep["kept"]["tagged"]
+    assert k["in_a_passage_list"] >= 1 and k["without_tag_lines"] == 0
+    assert rep["methods"]["tagged"]["output_tokens_per_passage"] == 5.0

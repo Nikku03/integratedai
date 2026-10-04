@@ -68,3 +68,9 @@ generated (fictional) company data.
   GPU time.
 - The notebook stops at once on a GPU that cannot run bf16 (a T4 or V100). On a driver older than 580 it installs
   vLLM's CUDA 12.9 build.
+- A fast setting, pre-registered in `docs/FACT_EXTRACTION_FAST_PREREGISTRATION.md`, makes three changes:
+  - shorter facts with no tag line;
+  - the text a passage repeats from the previous one left out;
+  - 8-bit weights for the GPU (INT8 on an A100, FP8 on an H100).
+
+  It is expected to be about twice as fast, which a run has yet to measure. The notebook's `SPEED` switch chooses it.

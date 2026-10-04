@@ -46,6 +46,11 @@ MODELS: dict[str, list[tuple[str, str | None]]] = {
                      ("unsloth/Llama-3.1-8B-Instruct", "4699cc75b550f9c6f3173fb80f4703b62d946aa5")],
     "llama-3.2-3b": [("meta-llama/Llama-3.2-3B-Instruct", None),
                      ("unsloth/Llama-3.2-3B-Instruct", "006f5dcd1393c3add266de40994ba96225e9689d")],
+    # the same model with 8-bit weights and activations (RedHatAI, from meta-llama's weights; their evaluations recover
+    # about 100% of the bf16 scores). Same tokenizer, chat template and stop tokens as the bf16 repositories (checked
+    # 2026-10-04). INT8 runs on the A100's integer tensor cores; FP8 needs compute capability 8.9 or higher (L4, H100).
+    "llama-3.1-8b-int8": [("RedHatAI/Meta-Llama-3.1-8B-Instruct-quantized.w8a8", "024e24cbe4153670f747383ea3265d0fb197c727")],
+    "llama-3.1-8b-fp8": [("RedHatAI/Meta-Llama-3.1-8B-Instruct-FP8-dynamic", "442e7f522277df12f53d63e8384087af31fbfc4b")],
 }
 # Llama 3.2's chat template writes today's date into every prompt; a fixed date keeps prompts identical from day to day
 CHAT_TEMPLATE_KWARGS = {"date_string": "26 Jul 2024"}
@@ -64,19 +69,55 @@ INSTRUCTIONS = """List every fact the passage below states, one per line, each l
 - Do not add anything the passage does not say, and do not repeat a fact.
 - Put a list of tags or labels on one line.
 - If the passage states no facts, write "- none"."""
+# Shorter output for the fast setting. The model writes about 330 tokens per passage, more than the passage itself, and
+# writing is most of the GPU time. In run 1's samples, the tag line took 18-30% of the output, and lists were split into
+# one line per item with the subject repeated each time. Small models also filled lines with "X is not specified".
+INSTRUCTIONS_SHORT = """List every fact the passage below states, one per line, each line starting with "- ".
+- Write each fact as one short sentence that names who or what it is about; never write "it", "this" or "they".
+- When the passage gives several details of one thing (the items of a list, an owner and a date), put them in one sentence instead of repeating the subject.
+- Keep numbers, units, names, identifiers, dates, thresholds and conditions exactly as written.
+- Keep each person's role exactly as the passage gives it (who asked, decided, owns, approved or was asked); never swap roles.
+- Include decisions and their reasons, causes and effects, owners, deadlines, requirements, steps and status, when the passage states them; never write that something is not stated.
+- Do not add anything the passage does not say, and do not repeat a fact. Write facts only: no tags, no summary.
+- If the passage states no facts, write "- none"."""
+PROMPTS = {"full": INSTRUCTIONS, "short": INSTRUCTIONS_SHORT}
 
 
-def conversation(p: dict[str, Any]) -> list[dict[str, str]]:
-    """The chat messages that ask for the facts of one passage."""
+def conversation(p: dict[str, Any], prompt: str = "full") -> list[dict[str, str]]:
+    """The chat messages that ask for the facts of one passage (its ``fresh`` text when the repeated start is removed)."""
     head = f"Document: {p.get('doc_title') or ''}\nSource: {p.get('source') or ''}"
-    body = f"{p.get('title') or ''}\n{p.get('text') or ''}".strip()[:MAX_PASSAGE_CHARS]
+    text = p["fresh"] if "fresh" in p else p.get("text") or ""
+    body = f"{p.get('title') or ''}\n{text}".strip()[:MAX_PASSAGE_CHARS]
     return [{"role": "system", "content": SYSTEM},
-            {"role": "user", "content": f"{INSTRUCTIONS}\n\n{head}\n\nPassage:\n{body}"}]
+            {"role": "user", "content": f"{PROMPTS[prompt]}\n\n{head}\n\nPassage:\n{body}"}]
+
+
+def repeated_start(prev: str, text: str, least: int = 20, most: int = 400) -> int:
+    """How many characters at the start of ``text`` repeat the end of ``prev`` (the builder overlaps chunks by 120)."""
+    for n in range(min(most, len(prev), len(text)), least - 1, -1):
+        if prev.endswith(text[:n]):
+            return n
+    return 0
+
+
+def without_repeats(passages: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Each passage with ``fresh``: its text without the start that repeats the previous passage of the same document.
+
+    No text is lost: the repeated text is the end of the previous passage, which is extracted with it. A fact whose words
+    run across the cut can lose context; the fast setting's word check (F2 in its pre-registration) measures that.
+    """
+    out = []
+    for i, p in enumerate(passages):
+        prev = passages[i - 1] if i and passages[i - 1]["doc"] == p["doc"] else None
+        n = repeated_start(prev["text"], p["text"]) if prev else 0
+        out.append({**p, "fresh": p["text"][n:].lstrip(), "repeated_chars": n} if n else p)
+    return out
 
 
 _BULLET = re.compile(r"^\s*(?:[-*•‣–]|\d{1,3}[.)])\s+")
 _PREAMBLE = re.compile(r"^(here (are|is)|the following|below (are|is)|sure\b|facts?\b.*:$|passage\b.*:$)", re.I)
 _NONE = {"none", "no facts", "n/a", "no facts stated"}
+_TAG_LINE = re.compile(r"^\W*(tags?|labels?|keywords?)\b\s*:", re.I)
 
 
 def parse_facts(text: str) -> tuple[list[str], dict[str, int]]:
@@ -266,7 +307,11 @@ def _openai_generate(convs: list[list[dict[str, str]]], args: argparse.Namespace
 
 def run_extraction(passages_file: Path, out: Path, args: argparse.Namespace, generate: Callable | None = None, log=print) -> dict[str, Any]:
     """Facts for every passage not yet in ``out``, in chunks; ``out`` gets one line per passage, a sidecar .run.json the timings."""
+    prompt = getattr(args, "prompt", "full") or "full"
+    strip = bool(getattr(args, "strip_overlap", False))
     passages = load_jsonl(passages_file)
+    if strip:
+        passages = without_repeats(passages)
     if args.limit:
         passages = passages[: args.limit]
     done = {r["id"] for r in load_facts(out) if not failed(r)}  # a failed passage is asked again
@@ -275,7 +320,9 @@ def run_extraction(passages_file: Path, out: Path, args: argparse.Namespace, gen
     meta = json.loads(meta_file.read_text()) if meta_file.exists() and done else {"chunks": []}
     # a resumed file must come from the same model, prompt and output settings, or its facts would mix two runs
     signature = {"model": args.model, "max_tokens": args.max_tokens, "quantization": args.quantization or "none",
-                 "prompt": hashlib.sha1((SYSTEM + INSTRUCTIONS).encode()).hexdigest()[:12]}
+                 "prompt": hashlib.sha1((SYSTEM + PROMPTS[prompt]).encode()).hexdigest()[:12]}
+    if strip:  # added only when on, so files written before this option still resume
+        signature["repeats_removed"] = True
     if done and meta.get("signature") and meta["signature"] != signature:
         raise SystemExit(f"{out} holds facts from other settings ({meta['signature']}, now {signature}): "
                          f"give this run another --name, or delete the file to start again")
@@ -290,7 +337,7 @@ def run_extraction(passages_file: Path, out: Path, args: argparse.Namespace, gen
             t = time.time()
             model, revision = resolve_model(args.model, os.environ.get("HF_TOKEN"), log=log)
             engine = _vllm_engine(model, revision, args, log=log)
-            _vllm_generate(engine, [conversation(p) for p in todo[:8]], args)  # warm-up, outside the timing
+            _vllm_generate(engine, [conversation(p, prompt) for p in todo[:8]], args)  # warm-up, outside the timing
             meta.setdefault("model_load_seconds", []).append(round(time.time() - t, 1))
             meta["model_repo"] = f"{model}@{revision}" if revision else model
             generate = lambda convs: _vllm_generate(engine, convs, args)  # noqa: E731
@@ -298,19 +345,24 @@ def run_extraction(passages_file: Path, out: Path, args: argparse.Namespace, gen
             generate = lambda convs: _openai_generate(convs, args)  # noqa: E731
             meta["model_repo"] = f"{args.model} at {args.base_url}"
     meta.update({"model": args.model, "backend": args.backend, "max_tokens": args.max_tokens, "settings": {
-        k: getattr(args, k, None) for k in ("gpu_mem", "max_model_len", "max_num_seqs", "max_num_batched_tokens", "quantization", "chunk")}})
+        k: getattr(args, k, None) for k in ("gpu_mem", "max_model_len", "max_num_seqs", "max_num_batched_tokens", "quantization", "chunk",
+                                            "prompt", "strip_overlap")}})
     meta["gpu"] = _gpu_name()
     out.parent.mkdir(parents=True, exist_ok=True)
     for i in range(0, len(todo), args.chunk):
         part = todo[i: i + args.chunk]
+        asked = [p for p in part if p.get("fresh", "x")]  # a passage that only repeats the previous one needs no request
         t = time.time()
-        res = generate([conversation(p) for p in part])
+        got = dict(zip([p["id"] for p in asked], generate([conversation(p, prompt) for p in asked]) if asked else [], strict=True))
         secs = time.time() - t
+        skipped = {"text": "", "prompt_tokens": 0, "output_tokens": 0, "finish_reason": "skipped: repeats the previous passage"}
+        res = [got.get(p["id"], skipped) for p in part]
         with open(out, "a") as f:
             for p, r in zip(part, res, strict=True):
                 facts, counts = parse_facts(r["text"])
                 f.write(json.dumps({"id": p["id"], "doc": p["doc"], "facts": facts, **counts, "prompt_tokens": r["prompt_tokens"],
-                                    "output_tokens": r["output_tokens"], "finish_reason": r["finish_reason"], "raw": r["text"]}) + "\n")
+                                    "output_tokens": r["output_tokens"], "finish_reason": r["finish_reason"], "raw": r["text"],
+                                    **({"repeated_chars": p["repeated_chars"]} if p.get("repeated_chars") else {})}) + "\n")
         c = {"passages": len(part), "seconds": round(secs, 4), "prompt_tokens": sum(r["prompt_tokens"] for r in res),
              "output_tokens": sum(r["output_tokens"] for r in res), "cached_prompt_tokens": sum(r.get("cached_tokens", 0) for r in res)}
         meta["chunks"].append(c)
@@ -436,22 +488,27 @@ def score(work: Path, root: Path, facts_files: list[Path], out: Path | None = No
         card_free[r["doc"]][r["section"]].append(card_without_passages(r))
     methods[CARD_FREE] = {d: ["\n".join(v) for v in u.values()] for d, u in card_free.items()}
     facts_by_method: dict[str, list[dict]] = {}
+    # the short prompt writes no tag line, and tag lines add words to the check: each model is also checked without them
+    tagless: dict[str, dict[str, list[str]]] = {}
     for f in facts_files:
         rows = load_facts(f)
         name = f.stem.replace("facts_", "")
         facts_by_method[name] = rows
         units: dict[str, list[str]] = defaultdict(list)
+        bare: dict[str, list[str]] = defaultdict(list)
         for r in rows:
             if r["facts"]:
                 units[r["doc"]].append("\n".join(r["facts"]))
+                bare[r["doc"]].append("\n".join(x for x in r["facts"] if not _TAG_LINE.match(x)))
         methods[name] = dict(units)
+        tagless[name] = dict(bare)
     lines_by_method = {name: {d: [ln for u in units for ln in u.split("\n")] for d, units in m.items()} for name, m in methods.items()}
 
     qs = [json.loads(line) for line in (root / "questions.jsonl").read_text().splitlines() if line.strip()]
     qs = qs[: st.get("questions") or None]  # the questions the build used (all, or the first N of a small test)
     qs = [q for q in qs if q["expected_doc_ids"] and set(q["expected_doc_ids"]) <= docs]
     totals = {"facts": 0, "checkable": 0}
-    kept = {name: {"unit": 0, "line": 0} for name in methods}
+    kept = {name: {"unit": 0, "line": 0, "untagged": 0} for name in methods}
     by_type: dict[str, dict[str, Any]] = defaultdict(lambda: {"checkable": 0, **{name: 0 for name in methods}})
     rows_out = []
     for q in qs:
@@ -472,6 +529,8 @@ def score(work: Path, root: Path, facts_files: list[Path], out: Path | None = No
                 l_ok = u_ok and any(present(fact, ln) for ln in lines)
                 kept[name]["unit"] += u_ok
                 kept[name]["line"] += l_ok
+                kept[name]["untagged"] += u_ok if name not in tagless else u_ok and any(
+                    present(fact, u) for d in q["expected_doc_ids"] for u in tagless[name].get(d, []))
                 t[name] += u_ok
                 row[name] = u_ok
             rows_out.append(row)
@@ -479,7 +538,8 @@ def score(work: Path, root: Path, facts_files: list[Path], out: Path | None = No
     report: dict[str, Any] = {
         "set": {k: v for k, v in st.items() if k != "dsids"}, "questions": len(qs), "answer_facts": totals["facts"],
         "checkable_in_passages": totals["checkable"],
-        "kept": {name: {"in_a_passage_list": v["unit"], "in_one_line": v["line"], "share": round(v["unit"] / ck, 3)} for name, v in kept.items()},
+        "kept": {name: {"in_a_passage_list": v["unit"], "in_one_line": v["line"], "share": round(v["unit"] / ck, 3),
+                        "without_tag_lines": v["untagged"], "share_without_tag_lines": round(v["untagged"] / ck, 3)} for name, v in kept.items()},
         "kept_by_question_type": {k: dict(v) for k, v in sorted(by_type.items())},
         "methods": {},
     }
@@ -510,6 +570,8 @@ def score(work: Path, root: Path, facts_files: list[Path], out: Path | None = No
             "fact_chars": sum(len(ln) for r in rows for ln in r["facts"]), "passage_chars": pass_chars,
             "duplicates_dropped": sum(r.get("duplicates", 0) for r in rows), "preamble_dropped": sum(r.get("preamble", 0) for r in rows),
             "hit_output_cap": sum(1 for r in rows if r.get("finish_reason") == "length"),
+            "output_tokens_per_passage": round(sum(r.get("output_tokens", 0) for r in rows) / max(1, len(rows)), 1),
+            "repeated_chars_left_out": sum(r.get("repeated_chars", 0) for r in rows),
             "failed": sum(1 for r in rows if failed(r)),
             "lines_with_numbers": with_num, "lines_with_a_number_not_in_the_passage": with_num - grounded,
             "lines_with_a_number_not_shown_to_the_model": with_num - grounded_each,
@@ -532,13 +594,16 @@ def to_markdown(rep: dict[str, Any]) -> str:
     ck = rep["checkable_in_passages"]
     lines = [f"**Set:** {st.get('documents', 0):,} documents, {st.get('passages', 0):,} passages, {rep['questions']} questions, "
              f"{rep['answer_facts']:,} answer facts, {ck:,} found word for word in a gold passage (the ceiling).", "",
-             "| | answer facts kept (word check) | share | in one line |", "|---|---|---|---|"]
+             "| | answer facts kept (word check) | share | without tag lines | in one line |", "|---|---|---|---|---|"]
     for name, k in rep["kept"].items():
-        lines.append(f"| {name} | {k['in_a_passage_list']:,} of {ck:,} | {k['share']:.0%} | {k['in_one_line']:,} |")
+        nt = k.get("without_tag_lines")
+        lines.append(f"| {name} | {k['in_a_passage_list']:,} of {ck:,} | {k['share']:.0%} | "
+                     f"{'–' if nt is None else f'{nt:,} ({nt / max(1, ck):.0%})'} | {k['in_one_line']:,} |")
     if rep["methods"]:
         lines += ["", "| model | passages done | fact lines | per passage | size against the passages | number not in passage (registered) | "
-                      "number not shown to the model | weak word support | duplicates dropped | hit output cap | output tokens/s | passages/s | "
-                      "hours: 5k / 50k / 512k documents |", "|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
+                      "number not shown to the model | weak word support | duplicates dropped | hit output cap | output tokens per passage | "
+                      "output tokens/s | passages/s | GPU | hours: 5k / 50k / 512k documents |",
+                  "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
         for name, m in rep["methods"].items():
             sp = m["speed"] or {}
             h = m["hours_on_this_gpu"] or {}
@@ -548,8 +613,8 @@ def to_markdown(rep: dict[str, Any]) -> str:
                          f"({m['lines_with_a_number_not_in_the_passage'] / nl:.1%}) | {m['lines_with_a_number_not_shown_to_the_model']:,} "
                          f"({m['lines_with_a_number_not_shown_to_the_model'] / nl:.1%}) | {m['lines_with_weak_word_support']:,} "
                          f"({m['lines_with_weak_word_support'] / nl:.1%}) | {m['duplicates_dropped']:,} | {m['hit_output_cap']:,} | "
-                         f"{sp.get('output_tokens_per_second') or '–'} | {sp.get('passages_per_second') or '–'} | "
-                         f"{' / '.join(str(v) for v in h.values()) or '–'} |")
+                         f"{m.get('output_tokens_per_passage', '–')} | {sp.get('output_tokens_per_second') or '–'} | "
+                         f"{sp.get('passages_per_second') or '–'} | {sp.get('gpu') or '–'} | {' / '.join(str(v) for v in h.values()) or '–'} |")
     lines += ["", "By question type (answer facts kept, word check):", "",
               "| type | checkable | " + " | ".join(rep["kept"]) + " |", "|---|---|" + "---|" * len(rep["kept"])]
     for t, v in rep["kept_by_question_type"].items():
@@ -754,6 +819,8 @@ def main(argv: Iterable[str] | None = None) -> Any:
     r.add_argument("--max-num-seqs", type=int, default=None)
     r.add_argument("--max-num-batched-tokens", type=int, default=None)
     r.add_argument("--quantization", default="none", help="none, or a vLLM quantization such as fp8")
+    r.add_argument("--prompt", choices=sorted(PROMPTS), default="full", help="full: run 1's instructions; short: fewer output tokens")
+    r.add_argument("--strip-overlap", action="store_true", help="leave out each passage's start that repeats the previous passage")
     r.add_argument("--chunk", type=int, default=4096, help="passages per call; results are saved after each")
     r.add_argument("--limit", type=int, default=0, help="only the first N passages (0: all)")
     s = sub.add_parser("score", help="answer facts kept, grounding, size and speed")
