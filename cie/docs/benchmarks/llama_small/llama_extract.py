@@ -1,6 +1,6 @@
 """Load-time extraction with Llama: each passage of a document becomes a list of standalone facts (no question)."""
-import json, re, sys, time, urllib.request
-S = "/tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad"
+import json, os, re, sys, time, urllib.request
+S = os.environ.get("PILOT_DIR", ".")  # holds kg/docs/doc1-5.txt and read5/questions.json
 model, doc, out = sys.argv[1], sys.argv[2], sys.argv[3]
 text = open(f"{S}/kg/docs/{doc}.txt").read()
 parts = re.split(r"\n(?=\[section \d+\])", text)

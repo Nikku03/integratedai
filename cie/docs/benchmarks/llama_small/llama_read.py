@@ -1,6 +1,6 @@
 """Llama reads the 5 documents and answers the 4 questions (same instructions as the earlier reader agent)."""
-import json, sys, time, urllib.request
-S = "/tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad"
+import json, os, sys, time, urllib.request
+S = os.environ.get("PILOT_DIR", ".")  # holds kg/docs/doc1-5.txt and read5/questions.json
 model, out = sys.argv[1], sys.argv[2]
 docs = "\n\n".join(open(f"{S}/kg/docs/doc{i}.txt").read() for i in range(1, 6))
 qs = json.load(open(f"{S}/read5/questions.json"))
