@@ -344,6 +344,45 @@ class Section(Base):
     )
 
 
+class SectionFacts(Base):
+    """The facts a language model extracted from one section, for one extractor (cie.memory.facts).
+
+    One row per section and extractor ``signature`` (model, revision, prompt, output cap): a run that stops halfway
+    leaves rows for what it finished, and the next run extracts only the sections without one. ``facts`` holds each
+    line with the checks made when it was written (numbers not in the section, word support, tag line), so reading
+    never checks again. ``input_sha256`` is the hash of exactly what the model was given: a section whose input
+    matches one already extracted (a new version of a document, with this part unchanged) takes those facts without
+    asking the model. Scope and sensitivity are the section's, copied for permission filters.
+    """
+
+    __tablename__ = "section_facts"
+    id: Mapped[uuid.UUID] = _uuid_pk()
+    tenant_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("tenants.id"), index=True)
+    section_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("sections.id", ondelete="CASCADE"), index=True)
+    document_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("documents.id"), index=True)
+    scope_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("scopes.id"), index=True)
+    sensitivity: Mapped[int] = mapped_column(Integer, default=1)
+    extractor: Mapped[str] = mapped_column(String(200))  # readable: model@revision
+    signature: Mapped[str] = mapped_column(String(32))  # hash of the extractor's settings, see cie.memory.facts.signature
+    settings: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict)
+    section_sha256: Mapped[str] = mapped_column(String(64))  # the section's text when it was extracted
+    input_sha256: Mapped[str] = mapped_column(String(64))  # what the model was given (instructions, titles, text)
+    status: Mapped[str] = mapped_column(String(16))  # done|empty|capped|skipped
+    facts: Mapped[list[Any]] = mapped_column(JSONB, default=list)  # [{"text", "numbers_in_section", "support", "tag"}]
+    text: Mapped[str] = mapped_column(Text, default="")  # the fact lines, one per line, for search
+    n_facts: Mapped[int] = mapped_column(Integer, default=0)
+    prompt_tokens: Mapped[int] = mapped_column(Integer, default=0)
+    output_tokens: Mapped[int] = mapped_column(Integer, default=0)
+    tsv: Mapped[Any] = mapped_column(TSVECTOR, nullable=True)  # computed in SQL as rows are written
+    embedding: Mapped[Any] = mapped_column(Vector(EMBEDDING_DIM), nullable=True)
+    created_at: Mapped[datetime] = _ts_created()
+    __table_args__ = (
+        UniqueConstraint("section_id", "signature", name="uq_section_facts"),
+        Index("ix_section_facts_input", "tenant_id", "signature", "input_sha256"),
+        Index("ix_section_facts_tsv", "tsv", postgresql_using="gin"),
+    )
+
+
 # --------------------------------------------------------------------------
 # Structured memory: typed records, glyphs, sparse graph
 # --------------------------------------------------------------------------

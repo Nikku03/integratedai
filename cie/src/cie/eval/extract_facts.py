@@ -83,13 +83,26 @@ INSTRUCTIONS_SHORT = """List every fact the passage below states, one per line, 
 PROMPTS = {"full": INSTRUCTIONS, "short": INSTRUCTIONS_SHORT}
 
 
-def conversation(p: dict[str, Any], prompt: str = "full") -> list[dict[str, str]]:
-    """The chat messages that ask for the facts of one passage (its ``fresh`` text when the repeated start is removed)."""
+def passage_block(p: dict[str, Any]) -> str:
+    """The part of the prompt that is the passage's own (its ``fresh`` text when the repeated start is removed)."""
     head = f"Document: {p.get('doc_title') or ''}\nSource: {p.get('source') or ''}"
     text = p["fresh"] if "fresh" in p else p.get("text") or ""
     body = f"{p.get('title') or ''}\n{text}".strip()[:MAX_PASSAGE_CHARS]
-    return [{"role": "system", "content": SYSTEM},
-            {"role": "user", "content": f"{PROMPTS[prompt]}\n\n{head}\n\nPassage:\n{body}"}]
+    return f"{head}\n\nPassage:\n{body}"
+
+
+def conversation(p: dict[str, Any], prompt: str = "full") -> list[dict[str, str]]:
+    """The chat messages that ask for the facts of one passage."""
+    return [{"role": "system", "content": SYSTEM}, {"role": "user", "content": f"{PROMPTS[prompt]}\n\n{passage_block(p)}"}]
+
+
+def run_signature(model: str, max_tokens: int, quantization: str | None = "none", prompt: str = "full", strip: bool = False) -> dict[str, Any]:
+    """What a facts file's rows depend on; a resumed run, and the memory bank's facts table, must match it."""
+    sig: dict[str, Any] = {"model": model, "max_tokens": max_tokens, "quantization": quantization or "none",
+                           "prompt": hashlib.sha1((SYSTEM + PROMPTS[prompt]).encode()).hexdigest()[:12]}
+    if strip:  # added only when on, so files written before this option still resume
+        sig["repeats_removed"] = True
+    return sig
 
 
 def repeated_start(prev: str, text: str, least: int = 20, most: int = 400) -> int:
@@ -319,10 +332,7 @@ def run_extraction(passages_file: Path, out: Path, args: argparse.Namespace, gen
     meta_file = out.with_suffix(".run.json")
     meta = json.loads(meta_file.read_text()) if meta_file.exists() and done else {"chunks": []}
     # a resumed file must come from the same model, prompt and output settings, or its facts would mix two runs
-    signature = {"model": args.model, "max_tokens": args.max_tokens, "quantization": args.quantization or "none",
-                 "prompt": hashlib.sha1((SYSTEM + PROMPTS[prompt]).encode()).hexdigest()[:12]}
-    if strip:  # added only when on, so files written before this option still resume
-        signature["repeats_removed"] = True
+    signature = run_signature(args.model, args.max_tokens, args.quantization, prompt, strip)
     if done and meta.get("signature") and meta["signature"] != signature:
         raise SystemExit(f"{out} holds facts from other settings ({meta['signature']}, now {signature}): "
                          f"give this run another --name, or delete the file to start again")

@@ -37,6 +37,7 @@ scope-id set plus a sensitivity ceiling.
 | `blocks` | layout blocks with `bbox [x0,y0,x1,y1]`, `kind`, `text`, `content` (table cells) |
 | `corrections` | OCR corrections; originals untouched |
 | `sections` | semantic sections: `title`, `page_start/end`, `text`, `spans`, `tsv`, `embedding(384)`, `text_sha256` for dedup |
+| `section_facts` | facts a language model extracted from one section, one row per section and extractor `signature`: `facts` (each line with its stored checks), `text`, `status` (done, empty, capped, skipped), `input_sha256` (what the model was given), `section_sha256`, `tsv`, `embedding(384)`, the section's `scope_id` and `sensitivity`. See `docs/FACTS_STORE.md` |
 
 ## Structured memory
 
@@ -81,6 +82,7 @@ tenants ─┬─ principals ─── grants ─── roles
          │              │
          │              ├─ extractions ─ pages ─ blocks ─ corrections
          │              └─ sections (tsv, embedding)
+         │                    └─ section_facts (per extractor)
          ├─ memory_records ──► documents (source), scopes
          │        └─ record_links (sparse graph)
          ├─ agents ─ agent_scorecards

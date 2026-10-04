@@ -318,7 +318,7 @@ class BulkLoader:
                                "application/json", f"export://{m.rel}", False, self.now))
             ident = next((k.split(":", 1)[-1] for k in m.keys), None) or m.dsid or m.title[:120]
             b["docs"].append((did, self.tenant_id, bid, uuid.uuid4(), 1, m.title[:500], f"{m.source}:{ident}"[:500], m.source, scope, m.sensitivity,
-                              Jsonb({}), "default", False, self.now, Jsonb({"dsid": m.dsid, "source": m.source, "summary": m.summary, "tags": m.tags[:20],
+                              Jsonb({}), "default", False, self.now, Jsonb({"dsid": m.dsid, "source": m.source, "display_title": m.display_title[:500], "summary": m.summary, "tags": m.tags[:20],
                                                                             "project": m.project, **{k: v for k, v in list(m.meta_extra.items())[:20]}}),
                               "indexed", Jsonb([]), Jsonb([]), m.source, m.created))
             sec_ids = []
