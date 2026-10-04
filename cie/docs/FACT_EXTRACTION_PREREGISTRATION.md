@@ -64,3 +64,35 @@ Speed is reported, with no threshold. It decides the cost of a full load, not wh
 
 Every result is reported, including failures. A judge with more than 5% failed calls makes its two criteria
 undecided, not met.
+
+## Amendments (2026-10-04, after run 1's word-check table, before any judged result)
+
+Run 1 (`docs/FACT_EXTRACTION_RESULTS.md`) finished the extraction and the word check. Its runtime was then
+disconnected before the judge ran, and its facts were lost. The word-check table had been seen; no judged result had.
+These changes were made before the second run.
+
+1. **Judged retention.** The judge sees the facts of up to three passages that hold the answer fact, not only the
+   first. This applies to every method. A fact often sits in several passages, and the first is not always the one
+   with all its words.
+2. **Judge failures.** The failure share counts the calls actually sent. An answer fact whose passages have nothing
+   extracted is "missed" without a call, and it is not counted as a call.
+3. **Decision.** If any criterion is not met, the result is "not met", even when another criterion is undecided.
+4. **Rounding.** Criterion 1's "+15 points" is compared after rounding the difference to six decimals, so exactly
+   15 points passes.
+5. **Weights.** Without access to `meta-llama/Llama-3.1-8B-Instruct`, the code uses
+   `RedHatAI/Llama-3.1-8B-Instruct` at revision `83c9274` (the same weight files). Next is
+   `unsloth/Llama-3.1-8B-Instruct` at `4699cc7` (the same weights; its config adds a pad token). This replaces the name
+   `unsloth/Meta-Llama-3.1-8B-Instruct` above. Run 1 used RedHatAI.
+6. **Comparison model.** Llama 3.2 3B is optional and not in the default run, since the test is of the 8B model.
+7. **For information only.** No criterion uses these:
+   - the rule-based records without the document card's copied passages;
+   - numbers checked one at a time against all the text the model was shown, including the document title;
+   - the size of the facts against the passages they came from.
+8. **Resuming.** A resumed run refuses to mix settings (model, output cap, weights, prompt) into an earlier facts file.
+
+**Unchanged.**
+- The three criteria and their thresholds.
+- The comparison for criterion 1: the rule-based records as the builder makes them today. Their document card copies
+  the first passages word for word, which makes criterion 1 harder for Llama, not easier.
+- Criterion 3's number check.
+- The judge model, the samples (300 answer facts, 300 lines per model) and seed 7.

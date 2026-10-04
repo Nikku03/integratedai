@@ -23,6 +23,7 @@ What is measured, and what decides, is fixed in ``docs/FACT_EXTRACTION_PREREGIST
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import math
 import os
@@ -168,7 +169,18 @@ def build_set(root: Path, out: Path, n_docs: int | None = 5000, seed: int = 5, n
 
 
 def load_jsonl(path: Path) -> list[dict[str, Any]]:
-    return [json.loads(line) for line in Path(path).read_text().splitlines() if line.strip()] if Path(path).exists() else []
+    """Rows of a JSON-lines file; a last line cut off by a disconnect mid-write is skipped (its passages are asked again)."""
+    if not Path(path).exists():
+        return []
+    lines = [line for line in Path(path).read_text().splitlines() if line.strip()]
+    rows = []
+    for i, line in enumerate(lines):
+        try:
+            rows.append(json.loads(line))
+        except json.JSONDecodeError:
+            if i != len(lines) - 1:
+                raise
+    return rows
 
 
 def failed(row: dict[str, Any]) -> bool:
@@ -261,6 +273,13 @@ def run_extraction(passages_file: Path, out: Path, args: argparse.Namespace, gen
     todo = [p for p in passages if p["id"] not in done]
     meta_file = out.with_suffix(".run.json")
     meta = json.loads(meta_file.read_text()) if meta_file.exists() and done else {"chunks": []}
+    # a resumed file must come from the same model, prompt and output settings, or its facts would mix two runs
+    signature = {"model": args.model, "max_tokens": args.max_tokens, "quantization": args.quantization or "none",
+                 "prompt": hashlib.sha1((SYSTEM + INSTRUCTIONS).encode()).hexdigest()[:12]}
+    if done and meta.get("signature") and meta["signature"] != signature:
+        raise SystemExit(f"{out} holds facts from other settings ({meta['signature']}, now {signature}): "
+                         f"give this run another --name, or delete the file to start again")
+    meta["signature"] = signature
     log(f"  {len(passages):,} passages, {len(done):,} already extracted, {len(todo):,} to go")
     engine = None
     if generate is None:
@@ -348,11 +367,34 @@ def grounded_numbers(fact: str, source: str) -> bool | None:
     return all(_has_number(n, low) for n in nums)
 
 
+def grounded_numbers_each(fact: str, source: str) -> bool | None:
+    """As grounded_numbers, but each number of a range or date is checked on its own ("15-30" is 15 and 30) and the
+    source is everything the model was shown (the document title too)."""
+    from cie.eval.evidence_audit import _has_number
+
+    nums = [n.strip(".,") for n in re.findall(r"\d+(?:[.,]\d+)*", _plain_numbers(fact))]
+    nums = [n for n in nums if n]
+    if not nums:
+        return None
+    low = _plain_numbers(source).lower()
+    return all(_has_number(n, low) for n in nums)
+
+
 def word_support(fact: str, source_stems: set[str]) -> float:
     from cie.eval.evidence_audit import fact_terms
 
     _, words = fact_terms(fact)
     return sum(1 for w in words if w in source_stems) / len(words) if words else 1.0
+
+
+BASELINE = "rule-based records (today)"
+CARD_FREE = "rule-based records, card without its copied passages"
+
+
+def card_without_passages(r: dict[str, Any]) -> str:
+    """A record's text; for the document card, only its own lines (summary, tags, people...): the builder appends the
+    document's first two passages to the card word for word, which is copied text, not extracted facts."""
+    return r["text"].split("\n\n", 1)[0] if r.get("type") == "document" else r["text"]
 
 
 def positive_facts(q: dict[str, Any]) -> list[tuple[str, str]]:
@@ -364,9 +406,12 @@ def score(work: Path, root: Path, facts_files: list[Path], out: Path | None = No
     """Answer facts kept, numbers grounded, duplicates, size and speed, for each facts file and the rule-based records."""
     from cie.eval.evidence_audit import _stems, present
 
+    for stale in ("judge.json", "judge_detail.jsonl"):  # a judge of earlier facts must not decide for these
+        (work / stale).unlink(missing_ok=True)
     st = json.loads((work / "set.json").read_text())
     docs = set(st["dsids"])
     passages = load_jsonl(work / "passages.jsonl")
+    by_pid = {p["id"]: p for p in passages}
     by_doc: dict[str, list[dict]] = defaultdict(list)
     for p in passages:
         by_doc[p["doc"]].append(p)
@@ -384,7 +429,12 @@ def score(work: Path, root: Path, facts_files: list[Path], out: Path | None = No
     rec_units: dict[str, dict[Any, list[str]]] = defaultdict(lambda: defaultdict(list))
     for r in recs:
         rec_units[r["doc"]][r["section"]].append(r["text"])
-    methods["rule-based records (today)"] = {d: ["\n".join(v) for v in u.values()] for d, u in rec_units.items()}
+    methods[BASELINE] = {d: ["\n".join(v) for v in u.values()] for d, u in rec_units.items()}
+    # for information: the document card copies the first two passages word for word; without that copy
+    card_free: dict[str, dict[Any, list[str]]] = defaultdict(lambda: defaultdict(list))
+    for r in recs:
+        card_free[r["doc"]][r["section"]].append(card_without_passages(r))
+    methods[CARD_FREE] = {d: ["\n".join(v) for v in u.values()] for d, u in card_free.items()}
     facts_by_method: dict[str, list[dict]] = {}
     for f in facts_files:
         rows = load_facts(f)
@@ -433,23 +483,26 @@ def score(work: Path, root: Path, facts_files: list[Path], out: Path | None = No
         "kept_by_question_type": {k: dict(v) for k, v in sorted(by_type.items())},
         "methods": {},
     }
-    pass_chars = sum(len(p["text"]) for p in passages)
     for name, rows in facts_by_method.items():
         n_lines = sum(len(r["facts"]) for r in rows)
-        with_num = grounded = weak = 0
+        pass_chars = sum(len(by_pid[r["id"]]["text"]) for r in rows if r["id"] in by_pid)  # the passages this model has done
+        with_num = grounded = grounded_each = 0
+        weak = 0
         for r in rows:
             src = text_of.get(r["id"], "")
+            shown = f"{by_pid[r['id']]['doc_title']}\n{src}" if r["id"] in by_pid else src
             for ln in r["facts"]:
                 g = grounded_numbers(ln, src)
                 if g is not None:
                     with_num += 1
                     grounded += g
+                    grounded_each += bool(grounded_numbers_each(ln, shown))
                 if word_support(ln, stems(r["id"]) if r["id"] in text_of else set()) < 0.5:
                     weak += 1
         meta_file = next((f.with_suffix(".run.json") for f in facts_files if f.stem.replace("facts_", "") == name), None)
         meta = json.loads(meta_file.read_text()) if meta_file and meta_file.exists() else {}
         sp = speed(meta) if meta else {}
-        per_doc = len(passages) / max(1, len({p["doc"] for p in passages}))
+        per_doc = len(passages) / max(1, len({p["doc"] for p in passages}))  # this set's; gold documents run longer than average
         pps = sp.get("passages_per_second")
         report["methods"][name] = {
             "passages_done": len(rows), "passage_count": len(passages), "passages_with_no_fact": sum(1 for r in rows if not r["facts"]),
@@ -459,9 +512,11 @@ def score(work: Path, root: Path, facts_files: list[Path], out: Path | None = No
             "hit_output_cap": sum(1 for r in rows if r.get("finish_reason") == "length"),
             "failed": sum(1 for r in rows if failed(r)),
             "lines_with_numbers": with_num, "lines_with_a_number_not_in_the_passage": with_num - grounded,
+            "lines_with_a_number_not_shown_to_the_model": with_num - grounded_each,
             "lines_with_weak_word_support": weak,
             "speed": sp,
             "hours_on_this_gpu": {f"{n:,} documents": round(n * per_doc / pps / 3600, 2) for n in (5000, 50000, 512000)} if pps else None,
+            "passages_per_document": round(per_doc, 2),
         }
     out = out or work / "report.json"
     out.write_text(json.dumps(report, indent=1))
@@ -481,14 +536,17 @@ def to_markdown(rep: dict[str, Any]) -> str:
     for name, k in rep["kept"].items():
         lines.append(f"| {name} | {k['in_a_passage_list']:,} of {ck:,} | {k['share']:.0%} | {k['in_one_line']:,} |")
     if rep["methods"]:
-        lines += ["", "| model | passages done | fact lines | per passage | number not in passage | weak word support | duplicates dropped | hit output cap | "
-                      "output tokens/s | passages/s | hours: 5k / 50k / 512k documents |", "|---|---|---|---|---|---|---|---|---|---|---|"]
+        lines += ["", "| model | passages done | fact lines | per passage | size against the passages | number not in passage (registered) | "
+                      "number not shown to the model | weak word support | duplicates dropped | hit output cap | output tokens/s | passages/s | "
+                      "hours: 5k / 50k / 512k documents |", "|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
         for name, m in rep["methods"].items():
             sp = m["speed"] or {}
             h = m["hours_on_this_gpu"] or {}
             nl = max(1, m["fact_lines"])
-            lines.append(f"| {name} | {m['passages_done']:,} of {m['passage_count']:,} | {m['fact_lines']:,} | {m['fact_lines_per_passage']} | {m['lines_with_a_number_not_in_the_passage']:,} "
-                         f"({m['lines_with_a_number_not_in_the_passage'] / nl:.1%}) | {m['lines_with_weak_word_support']:,} "
+            lines.append(f"| {name} | {m['passages_done']:,} of {m['passage_count']:,} | {m['fact_lines']:,} | {m['fact_lines_per_passage']} | "
+                         f"{m['fact_chars'] / max(1, m['passage_chars']):.2f}x | {m['lines_with_a_number_not_in_the_passage']:,} "
+                         f"({m['lines_with_a_number_not_in_the_passage'] / nl:.1%}) | {m['lines_with_a_number_not_shown_to_the_model']:,} "
+                         f"({m['lines_with_a_number_not_shown_to_the_model'] / nl:.1%}) | {m['lines_with_weak_word_support']:,} "
                          f"({m['lines_with_weak_word_support'] / nl:.1%}) | {m['duplicates_dropped']:,} | {m['hit_output_cap']:,} | "
                          f"{sp.get('output_tokens_per_second') or '–'} | {sp.get('passages_per_second') or '–'} | "
                          f"{' / '.join(str(v) for v in h.values()) or '–'} |")
@@ -593,9 +651,9 @@ def judge(work: Path, root: Path, facts_files: list[Path], model: str = "gpt-5.4
         raise SystemExit("run the score step first (it writes report_rows.jsonl)")
     rows = load_jsonl(rows_file)
     passages = {p["id"]: p for p in load_jsonl(work / "passages.jsonl")}
-    recs: dict[tuple[str, Any], list[str]] = defaultdict(list)
+    recs: dict[tuple[str, Any], list[dict]] = defaultdict(list)
     for r in load_jsonl(work / "records.jsonl"):
-        recs[(r["doc"], r["section"])].append(r["text"])
+        recs[(r["doc"], r["section"])].append(r)
     qs = {json.loads(line)["question_id"]: json.loads(line) for line in (root / "questions.jsonl").read_text().splitlines() if line.strip()}
     rng = random.Random(seed)
     sample = rng.sample(rows, min(n_retention, len(rows)))
@@ -604,13 +662,14 @@ def judge(work: Path, root: Path, facts_files: list[Path], model: str = "gpt-5.4
     keys: list[dict[str, Any]] = []
     for row in sample:
         fact = dict(positive_facts(qs[row["question_id"]]))[row["fid"]]
-        pid = row["holders"][0]
-        p = passages[pid]
-        units = {"rule-based records (today)": recs.get((p["doc"], p["k"]), [])}
+        # every method gets what it made of the same passages: those that hold the fact word for word (up to 3)
+        pids = row["holders"][:3]
+        rs = [r for pid in pids for r in recs.get((passages[pid]["doc"], passages[pid]["k"]), [])]
+        units = {BASELINE: [r["text"] for r in rs], CARD_FREE: [card_without_passages(r) for r in rs]}
         for name, by_id in facts_by_method.items():
-            units[name] = (by_id.get(pid) or {}).get("facts", [])
+            units[name] = list(dict.fromkeys(f for pid in pids for f in (by_id.get(pid) or {}).get("facts", [])))
         for name, u in units.items():
-            keys.append({"kind": "retention", "method": name, "question_id": row["question_id"], "fid": row["fid"], "passage": pid})
+            keys.append({"kind": "retention", "method": name, "question_id": row["question_id"], "fid": row["fid"], "passages": pids})
             tasks.append(("retention", name, RETENTION_PROMPT.format(fact=fact, units="\n".join(f"- {x}" for x in u)) if u else ""))
     for name, by_id in facts_by_method.items():
         pool = [(pid, ln) for pid, r in by_id.items() for ln in r["facts"] if pid in passages]
@@ -621,8 +680,8 @@ def judge(work: Path, root: Path, facts_files: list[Path], model: str = "gpt-5.4
 
     def go(t):
         kind, _name, prompt = t
-        if not prompt:  # nothing was extracted from that passage
-            return {"verdict": "missed", "note": "nothing extracted", "in": 0, "out": 0}
+        if not prompt:  # nothing was extracted from those passages: missed, without a call
+            return {"verdict": "missed", "note": "nothing extracted", "in": 0, "out": 0, "called": False}
         try:
             return call(prompt, kind)
         except Exception as e:  # noqa: BLE001 - one failed call is counted, not fatal
@@ -642,11 +701,14 @@ def judge(work: Path, root: Path, facts_files: list[Path], model: str = "gpt-5.4
             good = c.get("covered" if kind == "retention" else "correct", 0)
             bad = c.get("wrong", 0) + c.get("unsupported", 0) if kind == "correctness" else c.get("missed", 0) + c.get("contradicted", 0)
             summary[kind][name] = {"n": n, "counts": dict(c), "good_share": round(good / n, 3) if n else None, "good_ci95": wilson(good, n),
-                                   "bad_share": round(bad / n, 3) if n else None, "bad_ci95": wilson(bad, n)}
+                                   "bad_share": round(bad / n, 3) if n else None, "bad_ci95": wilson(bad, n),
+                                   "judge_failed": c.get("judge_failed", 0)}
     tin, tout = sum(d.get("in", 0) for d in detail), sum(d.get("out", 0) for d in detail)
     price = JUDGE_PRICES.get(model)
     summary["tokens"] = {"input": tin, "output": tout, "cost_usd": round(tin / 1e6 * price[0] + tout / 1e6 * price[1], 3) if price else None}
     summary["judge_failed"] = sum(1 for d in detail if d["verdict"] == "judge_failed")
+    summary["calls"] = sum(1 for d in detail if d.get("called", True))  # verdicts the judge was actually asked for
+    summary["failed_share"] = round(summary["judge_failed"] / summary["calls"], 3) if summary["calls"] else None
     out = out or work / "judge.json"
     out.write_text(json.dumps(summary, indent=1))
     out.with_name(out.stem + "_detail.jsonl").write_text("\n".join(json.dumps(d) for d in detail) + "\n")
@@ -655,14 +717,16 @@ def judge(work: Path, root: Path, facts_files: list[Path], model: str = "gpt-5.4
 
 
 def judge_markdown(s: dict[str, Any]) -> str:
-    lines = [f"**Judge:** {s['model']}, {s['retention_sample']} sampled answer facts, {s['line_sample_per_model']} sampled fact lines per model; "
-             f"{s['judge_failed']} failed calls; cost ${s['tokens']['cost_usd']}", "",
+    pct = lambda v, d=0: "–" if v is None else f"{v:.{d}%}"  # noqa: E731
+    lines = [f"**Judge:** {s['model']}" + (f" (served by {s['served_by']})" if s.get("served_by") else "") +
+             f", {s['retention_sample']} sampled answer facts, {s['line_sample_per_model']} sampled fact lines per model; "
+             f"{s['judge_failed']} of {s.get('calls', '?')} calls failed; cost ${s['tokens']['cost_usd']}", "",
              "| | answer facts covered | 95% interval | missed or contradicted |", "|---|---|---|---|"]
     for name, v in s["retention"].items():
-        lines.append(f"| {name} | {v['good_share']:.0%} of {v['n']} | {v['good_ci95'][0]:.0%}–{v['good_ci95'][1]:.0%} | {v['bad_share']:.0%} |")
+        lines.append(f"| {name} | {pct(v['good_share'])} of {v['n']} | {pct(v['good_ci95'][0])}–{pct(v['good_ci95'][1])} | {pct(v['bad_share'])} |")
     lines += ["", "| model | extracted facts correct | wrong or unsupported | 95% interval (wrong or unsupported) |", "|---|---|---|---|"]
     for name, v in s["correctness"].items():
-        lines.append(f"| {name} | {v['good_share']:.0%} of {v['n']} | {v['bad_share']:.1%} | {v['bad_ci95'][0]:.1%}–{v['bad_ci95'][1]:.1%} |")
+        lines.append(f"| {name} | {pct(v['good_share'])} of {v['n']} | {pct(v['bad_share'], 1)} | {pct(v['bad_ci95'][0], 1)}–{pct(v['bad_ci95'][1], 1)} |")
     return "\n".join(lines)
 
 

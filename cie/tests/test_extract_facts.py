@@ -116,7 +116,8 @@ def test_build_extract_score_and_judge_end_to_end(tmp_path):
 
     s = ef.judge(work, root, [out], model="gpt-5.4-mini", n_retention=3, n_lines=50, call=fake_judge, log=lambda *a: None)
     assert s["retention"]["fake"]["n"] == 3 and s["retention"]["fake"]["good_share"] == 1.0
-    assert set(s["retention"]) == {"fake", "rule-based records (today)"}
+    assert set(s["retention"]) == {"fake", ef.BASELINE, ef.CARD_FREE}
+    assert s["calls"] > 0 and s["failed_share"] == 0.0
     c = s["correctness"]["fake"]
     assert c["counts"].get("wrong", 0) >= 1 and c["n"] == sum(len(r["facts"]) for r in rows)
     assert s["tokens"]["cost_usd"] is not None and s["judge_failed"] == 0
@@ -140,3 +141,44 @@ def test_a_failed_passage_is_asked_again_and_counted_once(tmp_path):
     assert len(asked) == 1 and "number 1" in asked[0][1]["content"], "only the failed passage is asked again"
     rows = ef.load_facts(out)
     assert len(rows) == 3 and not any(ef.failed(r) for r in rows)
+
+
+def test_card_copy_numbers_one_by_one_and_resume_settings(tmp_path):
+    card = {"type": "document", "text": "linear: ENG-1 — Cap the batch\nSummary: Cap it\nTags: cache\n\nsource: linear\nWe cap at 64 pages."}
+    assert ef.card_without_passages(card) == "linear: ENG-1 — Cap the batch\nSummary: Cap it\nTags: cache"
+    assert ef.card_without_passages({"type": "risk", "text": "a\n\nb"}) == "a\n\nb"
+    src = "Silences of 15–30 seconds; due 2026-03-13."
+    assert ef.grounded_numbers("Silences last 15-30 seconds.", src) is False, "the registered check compares the range as written"
+    assert ef.grounded_numbers_each("Silences last 15-30 seconds.", src) is True
+    assert ef.grounded_numbers_each("Due 2026-03-14.", src) is False
+
+    work = tmp_path / "w"
+    work.mkdir()
+    (work / "passages.jsonl").write_text(json.dumps({"id": "d#0", "doc": "d", "k": 0, "doc_title": "D", "source": "x", "title": "",
+                                                     "text": "Fact zero holds."}) + "\n")
+    out = work / "facts_m.jsonl"
+    ef.run_extraction(work / "passages.jsonl", out, _args(), generate=_fake_model, log=lambda *a: None)
+    import pytest
+
+    with pytest.raises(SystemExit):  # other settings must not resume into (and mix with) these facts
+        ef.run_extraction(work / "passages.jsonl", out, _args(max_tokens=999, limit=0), generate=_fake_model, log=lambda *a: None)
+    out.write_text(out.read_text() + '{"id": "d#1", "doc"')  # a write cut off by a disconnect
+    assert [r["id"] for r in ef.load_facts(out)] == ["d#0"]
+
+
+def test_a_judge_whose_calls_all_fail_reports_instead_of_crashing(tmp_path):
+    root = _bench(tmp_path)
+    work = tmp_path / "work"
+    ef.build_set(root, work, n_docs=None, seed=5, workers=1, log=lambda *a: None)
+    out = work / "facts_fake.jsonl"
+    ef.run_extraction(work / "passages.jsonl", out, _args(), generate=_fake_model, log=lambda *a: None)
+    (work / "judge.json").write_text("{}")
+    ef.score(work, root, [out], log=lambda *a: None)
+    assert not (work / "judge.json").exists(), "a judge of earlier facts never decides for new ones"
+
+    def broken(prompt, kind):
+        raise RuntimeError("insufficient_quota")
+
+    s = ef.judge(work, root, [out], n_retention=3, n_lines=5, call=broken, log=lambda *a: None)
+    assert s["failed_share"] == 1.0 and s["correctness"]["fake"]["good_share"] is None
+    assert "–" in ef.judge_markdown(s)
