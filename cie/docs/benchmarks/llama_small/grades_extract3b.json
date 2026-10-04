@@ -1,0 +1,947 @@
+{
+ "gold": {
+  "F1": {
+   "grade": "partly",
+   "lines": [
+    1,
+    74,
+    75,
+    87,
+    125
+   ],
+   "note": "Section 0 Goal paragraph was not extracted. Only fragments: a compact tenant panel / Mesh Connectivity Inspector (1, 87), the panel defaults to collapsed in the tenant overview (75), a 'compact strip' (125), and visual language 'preserves density' (74). Nothing states directly that it is information-dense or that it lives as a collapsible strip in the tenant overview."
+  },
+  "F2": {
+   "grade": "partly",
+   "lines": [
+    52
+   ],
+   "note": "Gives the height as exactly 340px. Drops 'fits within' (an upper bound) and the collapsed-state condition."
+  },
+  "F3": {
+   "grade": "partly",
+   "lines": [
+    53
+   ],
+   "note": "Expands to overlay with per-path details is present; 'transient' overlay not stated."
+  },
+  "F4": {
+   "grade": "missed",
+   "lines": [],
+   "note": "The Section 0 Scope was not extracted. No fact mentions the simplified cross-region connectivity map."
+  },
+  "F5": {
+   "grade": "covered",
+   "lines": [
+    53
+   ],
+   "note": "last-5-heartbeat sparkline."
+  },
+  "F6": {
+   "grade": "covered",
+   "lines": [
+    63,
+    54,
+    55
+   ],
+   "note": "top-3 by default; algorithmically ranked, human-readable; label + severity color."
+  },
+  "F7": {
+   "grade": "covered",
+   "lines": [
+    56,
+    57,
+    131
+   ],
+   "note": "Quick actions include Open runbook."
+  },
+  "F8": {
+   "grade": "covered",
+   "lines": [
+    57,
+    58
+   ],
+   "note": "Route traffic to alternate region; cost delta previewed."
+  },
+  "F9": {
+   "grade": "covered",
+   "lines": [
+    57,
+    67,
+    68,
+    132
+   ],
+   "note": "Trigger safe rollback; two-step flow; canary first; two-step confirm modal."
+  },
+  "F10": {
+   "grade": "covered",
+   "lines": [
+    65,
+    66,
+    58
+   ],
+   "note": "Conservative 95th-percentile delta from cost-service (not live billing). 'Failover' is not said; it is only implied by the alternate-region routing preview."
+  },
+  "F11": {
+   "grade": "covered",
+   "lines": [
+    146,
+    147,
+    148,
+    149,
+    159
+   ],
+   "note": "Clearer unit labels USD/hr and monthly; cost_delta{currency, hourly, monthly}."
+  },
+  "F12": {
+   "grade": "covered",
+   "lines": [
+    80,
+    81,
+    133
+   ],
+   "note": "Audit logs for rollback/routing; UI notes actions are audited; modal has explicit audit warning."
+  },
+  "F13": {
+   "grade": "covered",
+   "lines": [
+    75,
+    76
+   ],
+   "note": "Default collapsed; active-incident tenants auto-expand up to 30 seconds after page load."
+  },
+  "F14": {
+   "grade": "partly",
+   "lines": [
+    82,
+    125
+   ],
+   "note": "Only 'mobile devices' get the status pill + overflow menu; the 'very narrow viewports' condition is dropped. Line 125 mentions the overflow menu but drops 'for narrow tenants'."
+  },
+  "F15": {
+   "grade": "covered",
+   "lines": [
+    61,
+    160
+   ],
+   "note": "Analytics for expand/collapse, action clicks, confirm steps; events expand/action_click/rollback_confirm."
+  }
+ },
+ "extracted": [
+  {
+   "i": 0,
+   "verdict": "preamble",
+   "note": ""
+  },
+  {
+   "i": 1,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 2,
+   "verdict": "wrong",
+   "note": "The Private Console is not a compact tenant panel; the Mesh Connectivity Inspector is the compact tenant panel inside the Private Console."
+  },
+  {
+   "i": 3,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 4,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 5,
+   "verdict": "correct",
+   "note": "Priya Desai is creator of the ticket ('Private Console' used as shorthand for the ticket)."
+  },
+  {
+   "i": 6,
+   "verdict": "wrong",
+   "note": "Role inverted: Asha Nair is the assignee, not the one who assigned it."
+  },
+  {
+   "i": 7,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 8,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 9,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 10,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 11,
+   "verdict": "correct",
+   "note": "Partial tag list (omits console-2026-03, linear) but accurate."
+  },
+  {
+   "i": 12,
+   "verdict": "wrong",
+   "note": "console-2026-03 is a tag, not a version number."
+  },
+  {
+   "i": 13,
+   "verdict": "wrong",
+   "note": "console-2026-03 is a tag, not a project version number."
+  },
+  {
+   "i": 14,
+   "verdict": "wrong",
+   "note": "console-2026-03 is a tag; the project name is Private Console UX."
+  },
+  {
+   "i": 15,
+   "verdict": "correct",
+   "note": "console-2026-03 is a tag/label; acceptable."
+  },
+  {
+   "i": 16,
+   "verdict": "wrong",
+   "note": "No project date is stated. 2026-03 is inferred from a tag."
+  },
+  {
+   "i": 17,
+   "verdict": "duplicate",
+   "note": "dup of 8 (priority P1)"
+  },
+  {
+   "i": 18,
+   "verdict": "duplicate",
+   "note": "dup of 9 (key)"
+  },
+  {
+   "i": 19,
+   "verdict": "duplicate",
+   "note": "dup of 10 (team)"
+  },
+  {
+   "i": 20,
+   "verdict": "duplicate",
+   "note": "dup of 11 (tag private-console-ux)"
+  },
+  {
+   "i": 21,
+   "verdict": "duplicate",
+   "note": "dup of 15 (console-2026-03 label/tag)"
+  },
+  {
+   "i": 22,
+   "verdict": "duplicate",
+   "note": "dup of 11"
+  },
+  {
+   "i": 23,
+   "verdict": "duplicate",
+   "note": "dup of 11"
+  },
+  {
+   "i": 24,
+   "verdict": "duplicate",
+   "note": "dup of 11"
+  },
+  {
+   "i": 25,
+   "verdict": "duplicate",
+   "note": "dup of 11"
+  },
+  {
+   "i": 26,
+   "verdict": "duplicate",
+   "note": "dup of 11"
+  },
+  {
+   "i": 27,
+   "verdict": "duplicate",
+   "note": "dup of 11"
+  },
+  {
+   "i": 28,
+   "verdict": "duplicate",
+   "note": "dup of 11"
+  },
+  {
+   "i": 29,
+   "verdict": "duplicate",
+   "note": "dup of 11"
+  },
+  {
+   "i": 30,
+   "verdict": "duplicate",
+   "note": "dup of 11/22"
+  },
+  {
+   "i": 31,
+   "verdict": "duplicate",
+   "note": "dup of 15/21"
+  },
+  {
+   "i": 32,
+   "verdict": "correct",
+   "note": "Tag 'linear' (first mention)."
+  },
+  {
+   "i": 33,
+   "verdict": "duplicate",
+   "note": "dup of 15/21"
+  },
+  {
+   "i": 34,
+   "verdict": "duplicate",
+   "note": "dup of 11/20"
+  },
+  {
+   "i": 35,
+   "verdict": "duplicate",
+   "note": "dup of 15/21"
+  },
+  {
+   "i": 36,
+   "verdict": "duplicate",
+   "note": "dup of 11/22"
+  },
+  {
+   "i": 37,
+   "verdict": "duplicate",
+   "note": "dup of 23"
+  },
+  {
+   "i": 38,
+   "verdict": "duplicate",
+   "note": "dup of 24"
+  },
+  {
+   "i": 39,
+   "verdict": "duplicate",
+   "note": "dup of 25"
+  },
+  {
+   "i": 40,
+   "verdict": "duplicate",
+   "note": "dup of 26"
+  },
+  {
+   "i": 41,
+   "verdict": "duplicate",
+   "note": "dup of 27"
+  },
+  {
+   "i": 42,
+   "verdict": "duplicate",
+   "note": "dup of 28"
+  },
+  {
+   "i": 43,
+   "verdict": "duplicate",
+   "note": "dup of 29"
+  },
+  {
+   "i": 44,
+   "verdict": "duplicate",
+   "note": "dup of 22"
+  },
+  {
+   "i": 45,
+   "verdict": "duplicate",
+   "note": "dup of 21"
+  },
+  {
+   "i": 46,
+   "verdict": "duplicate",
+   "note": "dup of 32 (tag linear)"
+  },
+  {
+   "i": 47,
+   "verdict": "duplicate",
+   "note": "dup of 21"
+  },
+  {
+   "i": 48,
+   "verdict": "duplicate",
+   "note": "dup of 20"
+  },
+  {
+   "i": 49,
+   "verdict": "wrong",
+   "note": "Truncated: 'console-2026' is not a tag (the tag is console-2026-03)."
+  },
+  {
+   "i": 50,
+   "verdict": "preamble",
+   "note": "refusal line"
+  },
+  {
+   "i": 51,
+   "verdict": "preamble",
+   "note": ""
+  },
+  {
+   "i": 52,
+   "verdict": "wrong",
+   "note": "The doc says the panel 'fits within 340px height' in the collapsed state, which is an upper bound for the collapsed state only. The extraction states an exact height and drops the condition."
+  },
+  {
+   "i": 53,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 54,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 55,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 56,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 57,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 58,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 59,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 60,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 61,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 62,
+   "verdict": "preamble",
+   "note": ""
+  },
+  {
+   "i": 63,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 64,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 65,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 66,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 67,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 68,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 69,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 70,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 71,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 72,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 73,
+   "verdict": "wrong",
+   "note": "The doc says sparklines and pills are used instead of large heatmaps. It mentions no small heatmaps."
+  },
+  {
+   "i": 74,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 75,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 76,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 77,
+   "verdict": "preamble",
+   "note": ""
+  },
+  {
+   "i": 78,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 79,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 80,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 81,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 82,
+   "verdict": "correct",
+   "note": "Omits 'very narrow viewports' but the mobile statement is accurate."
+  },
+  {
+   "i": 83,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 84,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 85,
+   "verdict": "preamble",
+   "note": ""
+  },
+  {
+   "i": 86,
+   "verdict": "duplicate",
+   "note": "dup of 1"
+  },
+  {
+   "i": 87,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 88,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 89,
+   "verdict": "correct",
+   "note": "Loose framing: exporting Figma components is a handoff item, not a console capability. Component content is accurate."
+  },
+  {
+   "i": 90,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 91,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 92,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 93,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 94,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 95,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 96,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 97,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 98,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 99,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 100,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 101,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 102,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 103,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 104,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 105,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 106,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 107,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 108,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 109,
+   "verdict": "preamble",
+   "note": ""
+  },
+  {
+   "i": 110,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 111,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 112,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 113,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 114,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 115,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 116,
+   "verdict": "preamble",
+   "note": ""
+  },
+  {
+   "i": 117,
+   "verdict": "duplicate",
+   "note": "dup of 1"
+  },
+  {
+   "i": 118,
+   "verdict": "duplicate",
+   "note": "dup of 87"
+  },
+  {
+   "i": 119,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 120,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 121,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 122,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 123,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 124,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 125,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 126,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 127,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 128,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 129,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 130,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 131,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 132,
+   "verdict": "correct",
+   "note": "It was a modal mock in the design; acceptable."
+  },
+  {
+   "i": 133,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 134,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 135,
+   "verdict": "preamble",
+   "note": ""
+  },
+  {
+   "i": 136,
+   "verdict": "duplicate",
+   "note": "dup of 1"
+  },
+  {
+   "i": 137,
+   "verdict": "duplicate",
+   "note": "dup of 87"
+  },
+  {
+   "i": 138,
+   "verdict": "duplicate",
+   "note": "dup of 119"
+  },
+  {
+   "i": 139,
+   "verdict": "wrong",
+   "note": "The explicit audit warning is in the rollback confirm modal, not in the Comments section."
+  },
+  {
+   "i": 140,
+   "verdict": "wrong",
+   "note": "The estimated recovery window is in the rollback confirm modal, not in the Comments section."
+  },
+  {
+   "i": 141,
+   "verdict": "duplicate",
+   "note": "dup of 134"
+  },
+  {
+   "i": 142,
+   "verdict": "wrong",
+   "note": "The recovery window was not updated on 2026-03-09. That day's update was to the cost-delta unit-label copy."
+  },
+  {
+   "i": 143,
+   "verdict": "wrong",
+   "note": "Refers to the nonexistent recovery-window update from line 142. Priya's 2026-03-09 update was to the unit-label copy."
+  },
+  {
+   "i": 144,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 145,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 146,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 147,
+   "verdict": "correct",
+   "note": "Splits the 'USD/hr vs monthly' unit-label pair; acceptable."
+  },
+  {
+   "i": 148,
+   "verdict": "correct",
+   "note": "Splits the 'USD/hr vs monthly' unit-label pair; acceptable."
+  },
+  {
+   "i": 149,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 150,
+   "verdict": "duplicate",
+   "note": "text identical to 143. In context it refers to Priya's 2026-03-09 copy update, which is accurate, but it repeats an earlier line"
+  },
+  {
+   "i": 151,
+   "verdict": "correct",
+   "note": "Doc: 'ENG confirmed API timeline' in Miguel Ortega (Eng)'s comment; acceptable."
+  },
+  {
+   "i": 152,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 153,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 154,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 155,
+   "verdict": "wrong",
+   "note": "The doc does not say the final handoff was scheduled for review. 'In Review' is the ticket status, and tweaks were requested before final handoff."
+  },
+  {
+   "i": 156,
+   "verdict": "preamble",
+   "note": ""
+  },
+  {
+   "i": 157,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 158,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 159,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 160,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 161,
+   "verdict": "correct",
+   "note": ""
+  },
+  {
+   "i": 162,
+   "verdict": "correct",
+   "note": ""
+  }
+ ]
+}

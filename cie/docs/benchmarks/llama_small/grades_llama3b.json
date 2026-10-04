@@ -1,0 +1,86 @@
+{
+ "qst_0269": {
+  "facts": {
+   "F1": {"grade": "covered", "note": "Compact, density-preserving panel, collapsed in tenant overview; 'strip' wording not used"},
+   "F2": {"grade": "covered", "note": "Fits within 340px height when collapsed"},
+   "F3": {"grade": "covered", "note": "Expands to overlay with per-path details ('transient' implied, not stated)"},
+   "F4": {"grade": "missed", "note": "No simplified cross-region connectivity view stated beyond echoing the question"},
+   "F5": {"grade": "covered", "note": "Last-5-heartbeat sparkline"},
+   "F6": {"grade": "covered", "note": "Top-3 signals, algorithmically ranked, human-readable, severity color"},
+   "F7": {"grade": "covered", "note": "Open runbook quick action"},
+   "F8": {"grade": "covered", "note": "Route traffic to alternate region with cost delta preview"},
+   "F9": {"grade": "partly", "note": "Safe rollback with two-step confirm; omits that it triggers a canary first"},
+   "F10": {"grade": "missed", "note": "No conservative p95 cost-service failover cost estimate"},
+   "F11": {"grade": "missed", "note": "No units (USD/hour, monthly)"},
+   "F12": {"grade": "missed", "note": "No auditability or explicit warning in confirmation flow"},
+   "F13": {"grade": "covered", "note": "Defaults collapsed; active-incident tenants auto-expand (up to 30s)"},
+   "F14": {"grade": "missed", "note": "Status pill mentioned only for density; no narrow-viewport support or overflow menu"},
+   "F15": {"grade": "missed", "note": "No analytics events"}
+  },
+  "errors": []
+ },
+ "qst_0353": {
+  "facts": {
+   "F1": {"grade": "contradicted", "note": "Proposes key built around kernel_id + prompt_bucket instead of fixed key on model_id/model_version/runtime_build_id/kernel_set_id/hardware_sku"},
+   "F2": {"grade": "missed", "note": "No conditional inclusion of region/capacity_tier"},
+   "F3": {"grade": "contradicted", "note": "Says to include prompt_bucket in the baseline key"},
+   "F4": {"grade": "partly", "note": "200 successful requests per window, but not per key, not latency-specific, no 'do not change alert state'"},
+   "F5": {"grade": "partly", "note": "Only generic 200 requests; missing 50,000 tokens and no-state-change rule for tokens/sec"},
+   "F6": {"grade": "missed", "note": "Dedupe key only described as excluding kernel_id/prompt_bucket; none of the required fields listed"},
+   "F7": {"grade": "missed", "note": "No region-in-dedupe-key condition"}
+  },
+  "errors": [
+   "Recommends adding prompt_bucket (and kernel_id) to the baseline key; transient labels must be excluded",
+   "Frames the answer as incident causes ('baseline not found', label explosion) rather than the requested enforcement spec",
+   "Safe rollback mechanism (canary first then global rollback) comes from the tenant sidebar UI doc, unrelated",
+   "Failover cost estimator for egress/reserved capacity comes from the tenant sidebar UI doc, unrelated",
+   "'Increase latency and rate limits for canary metrics' is unsupported and not a gold requirement"
+  ]
+ },
+ "qst_0385": {
+  "facts": {
+   "F1": {"grade": "missed", "note": "Does not state the storm began when paging was enabled right after coverage expansion"},
+   "F2": {"grade": "partly", "note": "Baseline lookup key mismatch stated, but not that it included extra/transient labels (prompt_bucket, runtime/kernel labels)"},
+   "F3": {"grade": "covered", "note": "Baseline not found, evaluator fell back to default thresholds"},
+   "F4": {"grade": "partly", "note": "Fragmentation into many short-lived series stated; omits broken min-sample assumptions and dedupe leading to re-pages"},
+   "F5": {"grade": "covered", "note": "Disabled/silenced paging rules"},
+   "F6": {"grade": "covered", "note": "Rolled back coverage to prior stable 3-model config"},
+   "F7": {"grade": "covered", "note": "Pinned evaluator to fixed baseline artifacts"},
+   "F8": {"grade": "missed", "note": "No normalization of baseline_key_labels to model/model_version/region/sku/tier"},
+   "F9": {"grade": "partly", "note": "Drops run/template/route labels; omits kernel labels and prompt_bucket"},
+   "F10": {"grade": "missed", "note": "No temporary increase of min-sample/dampening"},
+   "F11": {"grade": "respected", "note": "No kernel-selection v2 / PromQL attribution"},
+   "F12": {"grade": "respected", "note": "No FP8/INT8 cohort attribution"},
+   "F13": {"grade": "respected", "note": "No stale CI baseline attribution"},
+   "F14": {"grade": "respected", "note": "No CPU throttling/AMI drift attribution"},
+   "F15": {"grade": "respected", "note": "Describes an alerting failure, no customer regression or driver update claimed"}
+  },
+  "errors": []
+ },
+ "qst_0409": {
+  "facts": {
+   "F1": {"grade": "partly", "note": "Names the KMS envelope key rotation, but not a race or the audit-forwarder/SSO assertion cache"},
+   "F2": {"grade": "missed", "note": "No re-encryption, KMS 403s, or key-ID mapping change"},
+   "F3": {"grade": "missed", "note": "No incorrect retry handling / dropped events"},
+   "F4": {"grade": "missed", "note": "No SSO cache invalidation lag on signer fingerprint"},
+   "F5": {"grade": "partly", "note": "Mentions stale SSO attributes and RBAC issues (echoing the question) but attributes them to the indexing gap"},
+   "F6": {"grade": "missed", "note": "No pausing of automatic KMS rotation"},
+   "F7": {"grade": "missed", "note": "No audit event backfill from local buffer"},
+   "F8": {"grade": "missed", "note": "No strict SSO cache invalidation hotfix"},
+   "F9": {"grade": "missed", "note": "No audit-forwarder retryable/buffer hotpatch"},
+   "F10": {"grade": "respected", "note": "No SAML group sync/outbox attribution"},
+   "F11": {"grade": "respected", "note": "No 3-hour gap / schema / IdP failover claim"},
+   "F12": {"grade": "respected", "note": "No placeholder envelope ID / KMS_DECRYPT_FAIL claim"},
+   "F13": {"grade": "respected", "note": "No SAML normalization / DEK tombstone claim"},
+   "F14": {"grade": "respected", "note": "No aud-claim rejection / fail-closed fix"},
+   "F15": {"grade": "respected", "note": "Mitigation given is perf-canary paging silence, not SAML sync or per-customer KMS rollback"}
+  },
+  "errors": [
+   "Root cause 'baseline drift / baseline key mismatch' comes from the perf-canary paging storm incident",
+   "Root cause 'metric label cardinality inflation' comes from the perf-canary paging storm incident",
+   "Mitigation 'disable/silence perf-canary-*page* paging rules in Alertmanager' comes from the perf-canary incident",
+   "'Marked mitigated by Rafael Mendes (Sev3)' comes from a different incident",
+   "Wrong causal chain: says the audit-indexing gap led to stale SSO attributes; both came from the rotation race"
+  ]
+ }
+}

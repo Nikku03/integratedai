@@ -1,0 +1,30 @@
+{
+ "qst_0269": {
+  "seconds": 692,
+  "prompt_tokens": 14125,
+  "output_tokens": 427,
+  "prompt_tok_per_s": 44.0,
+  "output_tok_per_s": 2.2
+ },
+ "qst_0353": {
+  "seconds": 210,
+  "prompt_tokens": 14116,
+  "output_tokens": 427,
+  "prompt_tok_per_s": 1887.9,
+  "output_tok_per_s": 2.1
+ },
+ "qst_0385": {
+  "seconds": 153,
+  "prompt_tokens": 14122,
+  "output_tokens": 308,
+  "prompt_tok_per_s": 1663.2,
+  "output_tok_per_s": 2.1
+ },
+ "qst_0409": {
+  "seconds": 89,
+  "prompt_tokens": 14139,
+  "output_tokens": 186,
+  "prompt_tok_per_s": 3363.2,
+  "output_tok_per_s": 2.2
+ }
+}
