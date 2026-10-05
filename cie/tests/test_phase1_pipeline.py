@@ -57,7 +57,8 @@ def test_extraction_pipeline_born_digital(session, world, vault, embedder):
     assert len(sections) >= 5
     fees = next(s for s in sections if s.title and s.title.startswith("3."))
     assert fees.page_start == 4 and fees.spans[0]["page_no"] == 4 and len(fees.spans[0]["block_ids"]) > 0
-    assert fees.embedding is not None and len(fees.embedding) == 384
+    session.refresh(fees)
+    assert fees.embedding is not None and len(list(fees.embedding)) == 384, "read back from the 16-bit column"
     records = list(session.scalars(select(MemoryRecord).where(MemoryRecord.source_document_id == doc.id)))
     types = {r.type.value for r in records}
     assert {"document", "contract_clause", "metric", "deadline", "requirement", "organization", "person"} <= types, types

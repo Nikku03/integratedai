@@ -28,7 +28,9 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
+import numpy as np
 import psycopg
+from pgvector import HalfVector
 from pgvector.psycopg import register_vector
 from psycopg.types.json import Jsonb
 from sqlalchemy import select, text
@@ -370,19 +372,19 @@ def load(url: str, root: Path, index: dict[str, str], dsids: list[str], embedder
                                 "VALUES (%s, %s, %s, 'enterprise_loader', '1', 'done', 1, 1, '{}', '{}', %s)", (ext_id, tenant_id, doc_ids[0], _now()))
                 with cur.copy("COPY sections (id, tenant_id, document_id, extraction_id, scope_id, order_index, title, level, page_start, page_end, text, text_sha256, "
                               "token_estimate, spans, embedding, sensitivity) FROM STDIN WITH (FORMAT BINARY)") as cp:
-                    cp.set_types(["uuid", "uuid", "uuid", "uuid", "uuid", "int4", "text", "int4", "int4", "int4", "text", "text", "int4", "jsonb", "vector", "int4"])
+                    cp.set_types(["uuid", "uuid", "uuid", "uuid", "uuid", "int4", "text", "int4", "int4", "int4", "text", "text", "int4", "jsonb", "halfvec", "int4"])
                     for (di, ci), vec in zip(sec_ref, sec_vecs, strict=True):
                         d = docs[di]
                         body = (d["header"] + "\n\n" if ci == 0 and d["header"] else "") + d["chunks"][ci]
                         cp.write_row((uuid.uuid4(), tenant_id, doc_ids[di], ext_id, scope_ids[d["source"]], ci, d["title"][:300], 1, 1, 1, body,
                                       hashlib.sha256(body.encode()).hexdigest(), len(body) // 4, Jsonb([{"page_no": 1, "block_ids": [], "bbox": [0, 0, 0, 0]}]),
-                                      vec, 1))
+                                      HalfVector(np.asarray(vec, dtype=np.float32)), 1))
                         n_sections += 1
                 cols = ("id, tenant_id, scope_id, type, summary, content, detail, source_document_id, source_locations, event_time, valid_from, valid_to, recorded_at, "
                         "producing_agent, confidence, verification, sensitivity, acl, version, family_id, entity_ids, keywords, glyph, embedding, content_sha256")
                 with cur.copy(f"COPY memory_records ({cols}) FROM STDIN WITH (FORMAT BINARY)") as cp:
                     cp.set_types(["uuid", "uuid", "uuid", "record_type", "text", "jsonb", "text", "uuid", "jsonb", "timestamptz", "timestamptz", "timestamptz", "timestamptz",
-                                  "text", "float8", "verification_status", "int4", "jsonb", "int4", "uuid", "jsonb", "varchar[]", "jsonb", "vector", "text"])
+                                  "text", "float8", "verification_status", "int4", "jsonb", "int4", "uuid", "jsonb", "varchar[]", "jsonb", "halfvec", "text"])
                     for d, did, vec in zip(docs, doc_ids, rec_vecs, strict=True):
                         rid = uuid.uuid4()
                         kws = [w for w in re.findall(r"[a-z][a-z0-9_-]{3,}", d["title"].lower())][:8]
@@ -391,18 +393,14 @@ def load(url: str, root: Path, index: dict[str, str], dsids: list[str], embedder
                         glyph = {"v": 1, "id": str(rid), "type": "document", "what": summary[:120], "confidence": 0.8, "status": "current"}
                         cp.write_row((rid, tenant_id, scope_ids[d["source"]], RecordType.document, summary, Jsonb({"dsid": d["dsid"], "source": d["source"], "title": d["title"]}),
                                       detail, did, Jsonb([{"page_no": 1, "quote": d["title"][:120]}]), None, None, None, _now(), "enterprise_loader", 0.8,
-                                      VerificationStatus.unverified, 1, Jsonb({}), 1, uuid.uuid4(), Jsonb([]), kws, Jsonb(glyph), vec,
-                                      hashlib.sha256(detail.encode()).hexdigest()))
+                                      VerificationStatus.unverified, 1, Jsonb({}), 1, uuid.uuid4(), Jsonb([]), kws, Jsonb(glyph),
+                                      HalfVector(np.asarray(vec, dtype=np.float32)), hashlib.sha256(detail.encode()).hexdigest()))
                         n_records += 1
             conn.commit()
             done = start + len(group)
             if done % (batch * 10) == 0 or done == len(dsids):
                 log(f"  loaded {done}/{len(dsids)} documents, {n_sections} sections, {embed_s:.0f} s embedding, {time.perf_counter() - t0:.0f} s total")
         with conn.cursor() as cur:
-            cur.execute("UPDATE memory_records SET tsv = setweight(to_tsvector('english', summary), 'A') || setweight(to_tsvector('english', left(detail, 20000)), 'B') "
-                        "WHERE tenant_id = %s AND tsv IS NULL", (tenant_id,))
-            cur.execute("UPDATE sections SET tsv = setweight(to_tsvector('english', coalesce(title, '')), 'A') || setweight(to_tsvector('english', text), 'B') "
-                        "WHERE tenant_id = %s AND tsv IS NULL", (tenant_id,))
             cur.execute("ANALYZE memory_records")
             cur.execute("ANALYZE sections")
             cur.execute("ANALYZE documents")

@@ -13,7 +13,7 @@ The code is `cie.memory.facts`.
 | `scope_id`, `sensitivity` | copied from the passage, so reads use the same permission filter as everything else |
 | `extractor`, `signature`, `settings` | the model (repository and revision) and a hash of everything that shapes the facts: the model, instructions, output cap, and whether repeated text was left out |
 | `facts` | the lines, each with the checks made when it was stored (below) |
-| `text`, `tsv`, `embedding` | the lines joined, for keyword and vector search |
+| `text`, `embedding` | the lines joined, for keyword search (a GIN index on `cie_facts_tsv(text)`) and vector search |
 | `status` | `done`, `empty` (the passage states no fact), `capped` (the output cap cut the list) or `skipped` (the passage only repeats the previous one) |
 | `section_sha256` | the passage text the model read |
 | `input_sha256` | the passage's own part of the prompt: document title, source, section title and text |
@@ -67,7 +67,7 @@ python -m cie.memory.facts --tenant erbfull-5000-9688c2 extract --model llama-3.
 ```
 
 `--embed` also embeds each passage's facts with the configured embedding provider. Without it, the facts are
-searchable by keyword (`tsv`) only.
+searchable by keyword only.
 
 ## Checked
 
@@ -86,6 +86,6 @@ On 2026-10-04:
 
 ## Not yet
 
-- Search does not use the facts yet. The next step adds them as a retrieval channel: keyword search on `tsv`, vectors
+- Search does not use the facts yet. The next step adds them as a retrieval channel: keyword search on `cie_facts_tsv(text)`, vectors
   on `embedding` for large loads, and each hit leading to its passage.
 - The BM25 index (`cie.retrieval.bm25`) does not include them yet.

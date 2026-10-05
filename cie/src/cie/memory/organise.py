@@ -25,7 +25,7 @@ from cie.memory.entities import normalise
 from cie.memory.records import current_only
 
 ENTITY_TYPES = (RecordType.organization, RecordType.person)
-_LIGHT = (defer(MemoryRecord.embedding), defer(MemoryRecord.tsv))
+_LIGHT = (defer(MemoryRecord.embedding),)
 
 
 def _brief(r: MemoryRecord) -> dict[str, Any]:

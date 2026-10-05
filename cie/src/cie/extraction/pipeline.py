@@ -42,7 +42,6 @@ from cie.memory.autolink import autolink
 from cie.memory.embeddings import EmbeddingProvider, get_embedding_provider
 from cie.memory.entities import link_probable, remember_alias, resolve
 from cie.memory.records import create_record
-from cie.memory.text import tsvector_expr
 from cie.vault.service import VaultService
 from cie.workers import queue
 
@@ -136,7 +135,7 @@ def run_extraction(
                       scope_id=document.scope_id, order_index=i, title=d.title, level=d.level,
                       page_start=d.page_start, page_end=d.page_end, text=d.text,
                       text_sha256=sha256_text(d.text), token_estimate=estimate_tokens(d.text),
-                      spans=d.spans(), tsv=tsvector_expr(d.title, d.text), embedding=vec,
+                      spans=d.spans(), embedding=vec,
                       sensitivity=document.sensitivity)
         session.add(sec)
         section_rows.append((sec, d))

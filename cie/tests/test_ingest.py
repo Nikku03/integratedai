@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 
 import pytest
-from sqlalchemy import select
+from sqlalchemy import func, select
 
 from cie.ingest.builder import build, chunk, sentences
 from cie.ingest.bulk import _conflicting_sentences
@@ -205,7 +205,11 @@ def test_bulk_loader_links_entities_projects_and_contradictions(session, world, 
     assert facts and all(str(r.id) not in r.detail and r.scope_id == world.legal.id for r in facts.values())
     assert any((x, y, LinkKind.contradicts) in links for x in facts for y in facts)
     assert all(k != LinkKind.contradicts for s_, d_, k in links if {s_, d_} == {ra.id, rb.id})
-    assert all(r.tsv is not None for r in recs), "every record is searchable"
+    from cie.memory.text import tsv_of
+
+    empty = session.scalar(select(func.count()).select_from(MemoryRecord).where(MemoryRecord.tenant_id == world.tenant.id,
+                                                                              func.length(tsv_of(MemoryRecord)) == 0))
+    assert empty == 0, "every record is searchable by keyword (its index expression is never empty)"
     cached = CachedEmbedder(HashedEmbedding(384), tmp_path / "cache.sqlite")
     cached.embed([mems[0].records[0].embed])
     assert cached.hits == 1, "embeddings are cached on disk"

@@ -29,9 +29,7 @@ def rec(session, world, summary, detail, scope=None, **kw):
                      verification=VerificationStatus.unverified, sensitivity=kw.pop("sensitivity", 1), acl={}, version=1,
                      family_id=uuid.uuid4(), keywords=kw.pop("keywords", []), content_sha256=uuid.uuid4().hex, **kw)
     session.add(r)
-    session.flush()
-    session.execute(text("UPDATE memory_records SET tsv = to_tsvector('english', summary || ' ' || coalesce(detail, '')) WHERE id = :i"),
-                    {"i": r.id})
+    session.flush()  # keywords are indexed from summary, keywords and detail (cie.memory.text): nothing to fill
     return r
 
 

@@ -2,8 +2,9 @@
 
 For each size N it creates a fresh tenant (company → 5 departments → 20
 projects), bulk-loads N memory records, N/4 sections, N/20 documents and ~3N
-sparse graph edges through binary COPY, recomputes tsvectors in SQL, rebuilds
-the GIN and HNSW indexes the way a bulk load should, and then measures:
+sparse graph edges through binary COPY, rebuilds the GIN (on the keyword
+expressions of cie.memory.text) and HNSW indexes the way a bulk load should,
+and then measures:
 
 * end-to-end hybrid retrieval latency (p50/p95/max, cold and warm) for an admin
   at company scope and for an analyst confined to one department,
@@ -37,6 +38,7 @@ from typing import Any
 
 import numpy as np
 import psycopg
+from pgvector import HalfVector
 from pgvector.psycopg import register_vector
 from psycopg.types.json import Jsonb
 from sqlalchemy import func, select, text
@@ -191,7 +193,7 @@ def _load(conn: psycopg.Connection, tenant_id, scope_ids: list, n: int, embedder
                 "producing_agent, confidence, verification, sensitivity, acl, version, family_id, entity_ids, keywords, glyph, embedding, content_sha256")
         with cur.copy(f"COPY memory_records ({cols}) FROM STDIN WITH (FORMAT BINARY)") as cp:
             cp.set_types(["uuid", "uuid", "uuid", "record_type", "text", "jsonb", "text", "uuid", "jsonb", "timestamptz", "timestamptz", "timestamptz", "timestamptz",
-                          "text", "float8", "verification_status", "int4", "jsonb", "int4", "uuid", "jsonb", "varchar[]", "jsonb", "vector", "text"])
+                          "text", "float8", "verification_status", "int4", "jsonb", "int4", "uuid", "jsonb", "varchar[]", "jsonb", "halfvec", "text"])
             i = 0
             d = 0
             while i < n:
@@ -213,7 +215,7 @@ def _load(conn: psycopg.Connection, tenant_id, scope_ids: list, n: int, embedder
                     cp.write_row((rid, tenant_id, doc_scope[d], RecordType(t), summ[:400], Jsonb(content), det[:2000], doc_ids[d],
                                   Jsonb([{"page_no": 1 + j % 6, "bbox": [72.0, 100.0 + 20 * j, 540.0, 118.0 + 20 * j], "quote": summ[:120]}]),
                                   T0, T0, None, T0, "scale_generator", 0.7, VerificationStatus.unverified,
-                                  1, Jsonb({}), 1, uuid.uuid4(), Jsonb(ents), kws, Jsonb(glyph), noisy(base_idx),
+                                  1, Jsonb({}), 1, uuid.uuid4(), Jsonb(ents), kws, Jsonb(glyph), HalfVector(noisy(base_idx)),
                                   hashlib.sha256(f"{rid}".encode()).hexdigest()))
                     i += 1
                 d = (d + 1) % n_docs
@@ -223,7 +225,7 @@ def _load(conn: psycopg.Connection, tenant_id, scope_ids: list, n: int, embedder
                     "VALUES (%s, %s, %s, 'scale_generator', '1', 'done', 6, 6, '{}', '{}', %s)", (ext_id, tenant_id, doc_ids[0], T0))
         with cur.copy("COPY sections (id, tenant_id, document_id, extraction_id, scope_id, order_index, title, level, page_start, page_end, text, text_sha256, "
                       "token_estimate, spans, embedding, sensitivity) FROM STDIN WITH (FORMAT BINARY)") as cp:
-            cp.set_types(["uuid", "uuid", "uuid", "uuid", "uuid", "int4", "text", "int4", "int4", "int4", "text", "text", "int4", "jsonb", "vector", "int4"])
+            cp.set_types(["uuid", "uuid", "uuid", "uuid", "uuid", "int4", "text", "int4", "int4", "int4", "text", "text", "int4", "jsonb", "halfvec", "int4"])
             for k in range(n_secs):
                 d = k % n_docs
                 sup = supplier_name(d)
@@ -232,7 +234,7 @@ def _load(conn: psycopg.Connection, tenant_id, scope_ids: list, n: int, embedder
                 body = f"{title} {zipf_words(rng, 60)} {sup} {zipf_words(rng, 40)}."
                 cp.write_row((uuid.uuid4(), tenant_id, doc_ids[d], ext_id, doc_scope[d], k % 6, title, 1, 1 + k % 6, 1 + k % 6, body,
                               hashlib.sha256(body.encode()).hexdigest(), 90, Jsonb([{"page_no": 1 + k % 6, "block_ids": [], "bbox": [72, 72, 540, 700]}]),
-                              noisy(rng.randrange(len(tpl_vecs))), 1))
+                              HalfVector(noisy(rng.randrange(len(tpl_vecs)))), 1))
         # sparse graph: part_of chain within a document (consecutive records) + a few relates_to + rare cross-document depends_on
         with cur.copy("COPY record_links (id, tenant_id, src_id, dst_id, kind, weight, evidence, created_at) FROM STDIN WITH (FORMAT BINARY)") as cp:
             cp.set_types(["uuid", "uuid", "uuid", "uuid", "link_kind", "float8", "jsonb", "timestamptz"])
@@ -248,33 +250,22 @@ def _load(conn: psycopg.Connection, tenant_id, scope_ids: list, n: int, embedder
     conn.commit()
     load_s = time.perf_counter() - t0
     t2 = time.perf_counter()
-    with conn.cursor() as cur:
-        cur.execute("UPDATE memory_records SET tsv = setweight(to_tsvector('english', summary), 'A') || setweight(to_tsvector('english', left(detail, 20000)), 'B') "
-                    "WHERE tenant_id = %s AND tsv IS NULL", (tenant_id,))
-        cur.execute("UPDATE sections SET tsv = setweight(to_tsvector('english', coalesce(title, '')), 'A') || setweight(to_tsvector('english', text), 'B') "
-                    "WHERE tenant_id = %s AND tsv IS NULL", (tenant_id,))
-    conn.commit()
+    # no tsvectors to fill: keyword search uses GIN indexes on cie_record_tsv / cie_section_tsv (cie.memory.text)
     tsv_s = time.perf_counter() - t2
     return {"n_records": n, "n_sections": n_secs, "n_documents": n_docs, "n_edges_approx": int(len(rec_ids) * 1.35), "copy_seconds": round(load_s, 1),
             "template_embed_seconds": round(embed_s, 1), "tsvector_seconds": round(tsv_s, 1), "doc_ids": doc_ids}
 
 
 INDEXES = {
-    "ix_records_embedding_hnsw": "CREATE INDEX ix_records_embedding_hnsw ON memory_records USING hnsw (embedding vector_cosine_ops)",
-    "ix_sections_embedding_hnsw": "CREATE INDEX ix_sections_embedding_hnsw ON sections USING hnsw (embedding vector_cosine_ops)",
-    "ix_records_tsv": "CREATE INDEX ix_records_tsv ON memory_records USING gin (tsv)",
-    "ix_sections_tsv": "CREATE INDEX ix_sections_tsv ON sections USING gin (tsv)",
+    "ix_records_embedding_hnsw": "CREATE INDEX ix_records_embedding_hnsw ON memory_records USING hnsw (embedding halfvec_cosine_ops)",
+    "ix_sections_embedding_hnsw": "CREATE INDEX ix_sections_embedding_hnsw ON sections USING hnsw (embedding halfvec_cosine_ops)",
+    "ix_records_tsv": "CREATE INDEX ix_records_tsv ON memory_records USING gin (cie_record_tsv(summary, keywords, detail))",
+    "ix_sections_tsv": "CREATE INDEX ix_sections_tsv ON sections USING gin (cie_section_tsv(title, text))",
     "ix_records_keywords": "CREATE INDEX ix_records_keywords ON memory_records USING gin (keywords)",
     "ix_records_summary_trgm": "CREATE INDEX ix_records_summary_trgm ON memory_records USING gin (summary gin_trgm_ops)",
     "ix_records_entity_ids": "CREATE INDEX ix_records_entity_ids ON memory_records USING gin (entity_ids jsonb_path_ops)",
     "ix_sections_trgm": "CREATE INDEX ix_sections_trgm ON sections USING gin (title gin_trgm_ops)",
 }
-HALFVEC_INDEXES = {
-    "ix_records_embedding_hnsw": "CREATE INDEX ix_records_embedding_hnsw ON memory_records USING hnsw ((embedding::halfvec(384)) halfvec_cosine_ops)",
-    "ix_sections_embedding_hnsw": "CREATE INDEX ix_sections_embedding_hnsw ON sections USING hnsw ((embedding::halfvec(384)) halfvec_cosine_ops)",
-}
-
-
 def pgvector_version(conn: psycopg.Connection) -> tuple[int, int]:
     row = conn.execute("SELECT extversion FROM pg_extension WHERE extname = 'vector'").fetchone()
     parts = [int(x) for x in (row[0] if row else "0.0").split(".")[:2]]
@@ -282,12 +273,8 @@ def pgvector_version(conn: psycopg.Connection) -> tuple[int, int]:
 
 
 def index_ddl(conn: psycopg.Connection) -> dict[str, str]:
-    """The indexes the migration would build on this server: half-precision HNSW
-    (half the size, faster build) from pgvector 0.7 on, float32 HNSW before."""
-    ddl = dict(INDEXES)
-    if pgvector_version(conn) >= (0, 7):
-        ddl.update(HALFVEC_INDEXES)
-    return ddl
+    """The indexes the migrations build: HNSW on the 16-bit embedding column, GIN on the keyword expressions."""
+    return dict(INDEXES)
 
 
 def drop_indexes(conn: psycopg.Connection) -> None:

@@ -13,6 +13,7 @@ from sqlalchemy import func, select, text
 from sqlalchemy.orm import Session
 
 from cie.core.models import MemoryRecord, Section
+from cie.memory.text import TSV_INDEX, tsv_of
 from cie.retrieval.bounded import run_bounded
 
 
@@ -53,7 +54,9 @@ def common_lexemes(session: Session, table: str, tenant_id: uuid.UUID | None = N
     lexeme, ``pg_class.reltuples`` the row estimate, and the ``tenant_id`` column's
     most-common-values list the tenant's share of the table (a tenant absent from that
     list gets the share left over by the listed ones, an upper bound). Free, corpus-derived
-    IDF: it is the selectivity the planner assigns to ``tenant_id = X AND tsv @@ lexeme``.
+    IDF: it is the selectivity the planner assigns to ``tenant_id = X AND tsv @@ lexeme``. The lexeme frequencies are
+    the statistics ANALYZE keeps for the table's GIN expression index (``cie.memory.text.TSV_INDEX``), or for a stored
+    ``tsv`` column in a database not yet migrated.
     Empty until the table has been analysed. The criterion is absolute rows, not a
     fraction: in a 300-record tenant a word in 5% of rows is still a handful of rows,
     while at a million it is a scan."""
@@ -71,7 +74,8 @@ def common_lexemes(session: Session, table: str, tenant_id: uuid.UUID | None = N
             "SELECT e, f * n.rows * COALESCE((SELECT s FROM share), 1.0) FROM pg_stats, n, "
             "unnest(most_common_elems::text::text[], "
             "most_common_elem_freqs[1:array_length(most_common_elems::text::text[], 1)]) AS u(e, f) "
-            "WHERE tablename = :t AND attname = 'tsv'"), {"t": table, "tenant": str(tenant_id) if tenant_id else ""}).all()
+            "WHERE tablename = :ix OR (tablename = :t AND attname = 'tsv')"),
+            {"t": table, "ix": TSV_INDEX.get(table, ""), "tenant": str(tenant_id) if tenant_id else ""}).all()
         expected = {e: float(n) for e, n in rows}
     except Exception:  # noqa: BLE001 - statistics are an optimisation, never a dependency
         session.rollback()
@@ -158,8 +162,9 @@ def _search(session: Session, model, q: str, base_filter, k: int, tenant_id: uui
         bounded = kind == "partial"
         if bounded and len(out) >= k:
             break
-        rank = func.ts_rank_cd(model.tsv, tsq, 32)
-        stmt = (select(model.id, rank).where(base_filter, model.tsv.op("@@")(tsq)).order_by(rank.desc()).limit(k))
+        tsv = tsv_of(model)  # the GIN index's own expression, so the planner uses the index
+        rank = func.ts_rank_cd(tsv, tsq, 32)
+        stmt = (select(model.id, rank).where(base_filter, tsv.op("@@")(tsq)).order_by(rank.desc()).limit(k))
         # every tier ranks all rows that match it, which at millions of rows can take long for common words: each tier
         # has its own time limit (the OR tier the tightest), and a tier that runs out contributes nothing
         rows = run_bounded(session, stmt, PARTIAL_TIER_MS if bounded else TIER_MS, name="lex_tier") or []

@@ -8,6 +8,7 @@ from sqlalchemy import String, cast, func, select
 from sqlalchemy.orm import Session
 
 from cie.core.models import MemoryRecord, RecordType
+from cie.memory.text import tsv_of
 from cie.retrieval.intent import Intent
 
 _ENTITY_TYPES = [RecordType.person, RecordType.organization, RecordType.entity, RecordType.project]
@@ -24,13 +25,13 @@ def lookup(session: Session, intent: Intent, query: str, base_filter, k: int = 3
         for rid in session.scalars(stmt.limit(k)):
             hits[rid] = max(hits.get(rid, 0), 5.0)
         # clauses nested under a section (e.g. 2.2 inside "2. Term"): the number is a token in the GIN-indexed tsvector
-        stmt2 = select(MemoryRecord.id).where(base_filter, MemoryRecord.tsv.op("@@")(func.plainto_tsquery("english", num)))
+        stmt2 = select(MemoryRecord.id).where(base_filter, tsv_of(MemoryRecord).op("@@")(func.plainto_tsquery("english", num)))
         for rid in session.scalars(stmt2.limit(k)):
             hits[rid] = max(hits.get(rid, 0), 3.0)
     for phrase in intent.quoted:
         # phrase search through the GIN index, then confirm the literal substring on the few candidates
         stmt = (select(MemoryRecord.id, MemoryRecord.summary, MemoryRecord.detail)
-                .where(base_filter, MemoryRecord.tsv.op("@@")(func.phraseto_tsquery("english", phrase))).limit(k * 2))
+                .where(base_filter, tsv_of(MemoryRecord).op("@@")(func.phraseto_tsquery("english", phrase))).limit(k * 2))
         low = phrase.lower()
         for rid, summ, det in session.execute(stmt):
             if low in (summ or "").lower() or low in (det or "").lower():
@@ -95,7 +96,7 @@ def by_ids(session: Session, ids: list[uuid.UUID]) -> dict[uuid.UUID, MemoryReco
 
     if not ids:
         return {}
-    stmt = select(MemoryRecord).where(MemoryRecord.id.in_(ids)).options(defer(MemoryRecord.embedding), defer(MemoryRecord.tsv))
+    stmt = select(MemoryRecord).where(MemoryRecord.id.in_(ids)).options(defer(MemoryRecord.embedding))
     return {r.id: r for r in session.scalars(stmt)}
 
 

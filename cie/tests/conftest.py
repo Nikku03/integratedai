@@ -52,6 +52,12 @@ def engine():
     with eng.begin() as conn:
         conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
         conn.execute(text("CREATE EXTENSION IF NOT EXISTS pg_trgm"))
+        # a test database from before the compact-storage migration (32-bit vectors, stored tsvectors) is rebuilt once:
+        # create_all neither changes a column's type nor drops one
+        old = conn.execute(text("SELECT format_type(atttypid, atttypmod) FROM pg_attribute "
+                                "WHERE attrelid = to_regclass('sections') AND attname = 'embedding'")).scalar()
+    if old and not old.startswith("halfvec"):
+        Base.metadata.drop_all(eng)
     Base.metadata.create_all(eng)
     # create_all neither adds values to an enum type that already exists nor columns to a table that already exists;
     # keep a long-lived test database in step with the models

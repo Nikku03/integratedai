@@ -44,6 +44,7 @@ from typing import Any
 
 import numpy as np
 import psycopg
+from pgvector import HalfVector
 from pgvector.psycopg import register_vector
 from psycopg.types.json import Jsonb
 
@@ -63,17 +64,14 @@ MAX_CONFLICTS_PER_PAIR = 2
 REC_COLS = ("id, tenant_id, scope_id, type, summary, content, detail, source_document_id, source_locations, event_time, valid_from, valid_to, "
             "recorded_at, producing_agent, confidence, verification, sensitivity, acl, version, family_id, entity_ids, keywords, glyph, embedding, "
             "content_sha256")
-REC_TSV = ("setweight(to_tsvector('english', summary), 'A') || setweight(to_tsvector('english', array_to_string(keywords, ' ')), 'A') || "
-           "setweight(to_tsvector('english', left(detail, 20000)), 'B')")
 SEC_COLS = ("id, tenant_id, document_id, extraction_id, scope_id, order_index, title, level, page_start, page_end, text, text_sha256, "
             "token_estimate, spans, embedding, sensitivity")
-SEC_TYPES = ["uuid", "uuid", "uuid", "uuid", "uuid", "int4", "text", "int4", "int4", "int4", "text", "text", "int4", "jsonb", "vector", "int4"]
-SEC_TSV = "setweight(to_tsvector('english', coalesce(title, '')), 'A') || setweight(to_tsvector('english', text), 'B')"
+SEC_TYPES = ["uuid", "uuid", "uuid", "uuid", "uuid", "int4", "text", "int4", "int4", "int4", "text", "text", "int4", "jsonb", "halfvec", "int4"]
 BLOB_COLS = "id, tenant_id, sha256, size_bytes, media_type, storage_uri, encrypted, created_at"
 BLOB_TYPES = ["uuid", "uuid", "text", "int8", "text", "text", "bool", "timestamptz"]
 WRITE_ERRORS = (psycopg.Error, UnicodeError, ValueError)
 REC_TYPES = ["uuid", "uuid", "uuid", "record_type", "text", "jsonb", "text", "uuid", "jsonb", "timestamptz", "timestamptz", "timestamptz",
-             "timestamptz", "text", "float8", "verification_status", "int4", "jsonb", "int4", "uuid", "jsonb", "varchar[]", "jsonb", "vector", "text"]
+             "timestamptz", "text", "float8", "verification_status", "int4", "jsonb", "int4", "uuid", "jsonb", "varchar[]", "jsonb", "halfvec", "text"]
 PRODUCER = "structured_ingest_v1"
 
 
@@ -231,18 +229,19 @@ class BulkLoader:
                 cp.write_row(row)
 
     def _copy_records(self, cur, rows: list) -> None:
-        """Records go through the staging table so their tsvector is computed on the way in."""
+        """Records go through a staging table and one INSERT, so the BM25 queue trigger fires once per batch. Keywords are
+        indexed from the row's own text (cie.memory.text); no tsvector is stored."""
         if not rows:
             return
         self._copy(cur, "stage_records", REC_COLS, REC_TYPES, rows)
-        cur.execute(f"INSERT INTO memory_records ({REC_COLS}, tsv) SELECT {REC_COLS}, {REC_TSV} FROM stage_records")
+        cur.execute(f"INSERT INTO memory_records ({REC_COLS}) SELECT {REC_COLS} FROM stage_records")
         cur.execute("TRUNCATE stage_records")
 
     def _copy_sections(self, cur, rows: list) -> None:
         if not rows:
             return
         self._copy(cur, "stage_sections", SEC_COLS, SEC_TYPES, rows)
-        cur.execute(f"INSERT INTO sections ({SEC_COLS}, tsv) SELECT {SEC_COLS}, {SEC_TSV} FROM stage_sections")
+        cur.execute(f"INSERT INTO sections ({SEC_COLS}) SELECT {SEC_COLS} FROM stage_sections")
         cur.execute("TRUNCATE stage_sections")
 
     def _record_row(self, rid, scope_id, r: RecOut, *, doc_id, section_id, sensitivity, entity_ids, vec, project, source, verification=None):
@@ -415,9 +414,15 @@ class BulkLoader:
     def _copy(cur, table: str, cols: str, types: list[str], rows: list) -> None:
         if not rows:
             return
+        half = [i for i, t in enumerate(types) if t == "halfvec"]  # embeddings are stored as 16-bit floats
         with cur.copy(f"COPY {table} ({cols}) FROM STDIN WITH (FORMAT BINARY)") as cp:
             cp.set_types(types)
             for row in rows:
+                if half:
+                    row = list(row)
+                    for i in half:
+                        if row[i] is not None and not isinstance(row[i], HalfVector):
+                            row[i] = HalfVector(np.asarray(row[i], dtype=np.float32))
                 cp.write_row(row)
 
     def _entity_text(self, eid: uuid.UUID) -> str:
@@ -598,9 +603,8 @@ class BulkLoader:
                 cp.set_types(["uuid", "text", "text", "jsonb", "int4"])
                 for row in rows:
                     cp.write_row(row)
-            cur.execute("UPDATE memory_records m SET summary = u.summary, detail = u.detail, content = u.content, sensitivity = u.sens, "
-                        "tsv = setweight(to_tsvector('english', u.summary), 'A') || setweight(to_tsvector('english', array_to_string(m.keywords, ' ')), 'A') || "
-                        "setweight(to_tsvector('english', left(u.detail, 20000)), 'B') FROM ent_upd u WHERE m.id = u.id")
+            cur.execute("UPDATE memory_records m SET summary = u.summary, detail = u.detail, content = u.content, sensitivity = u.sens "
+                        "FROM ent_upd u WHERE m.id = u.id")
         self.conn.commit()
         self.stats["entities"] = sum(1 for i in self.entity_info.values() if i["type"] != "project")
         self.stats["projects"] = sum(1 for i in self.entity_info.values() if i["type"] == "project")

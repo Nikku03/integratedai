@@ -23,8 +23,9 @@ import uuid
 from datetime import datetime
 from typing import Any
 
-from pgvector.sqlalchemy import Vector
+from pgvector.sqlalchemy import HALFVEC
 from sqlalchemy import (
+    DDL,
     JSON,
     BigInteger,
     Boolean,
@@ -37,11 +38,14 @@ from sqlalchemy import (
     String,
     Text,
     UniqueConstraint,
+    event,
     func,
     text,
 )
-from sqlalchemy.dialects.postgresql import ARRAY, JSONB, TSVECTOR, UUID
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB, UUID
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+
+from cie.memory.text import TSV_FUNCTIONS
 
 EMBEDDING_DIM = 384
 
@@ -334,11 +338,11 @@ class Section(Base):
     text_sha256: Mapped[str] = mapped_column(String(64), index=True)
     token_estimate: Mapped[int] = mapped_column(Integer)
     spans: Mapped[list[Any]] = mapped_column(JSONB, default=list)
-    tsv: Mapped[Any] = mapped_column(TSVECTOR)
-    embedding: Mapped[Any] = mapped_column(Vector(EMBEDDING_DIM), nullable=True)
+    # 16-bit floats: half the bytes of 32-bit ones, and what the vector index compares anyway. Keyword search uses the
+    # GIN index on cie_section_tsv(title, text) (cie.memory.text); no tsvector is stored.
+    embedding: Mapped[Any] = mapped_column(HALFVEC(EMBEDDING_DIM), nullable=True)
     sensitivity: Mapped[int] = mapped_column(Integer, default=1)
     __table_args__ = (
-        Index("ix_sections_tsv", "tsv", postgresql_using="gin"),
         Index("ix_sections_trgm", "title", postgresql_using="gin",
               postgresql_ops={"title": "gin_trgm_ops"}),
     )
@@ -373,13 +377,11 @@ class SectionFacts(Base):
     n_facts: Mapped[int] = mapped_column(Integer, default=0)
     prompt_tokens: Mapped[int] = mapped_column(Integer, default=0)
     output_tokens: Mapped[int] = mapped_column(Integer, default=0)
-    tsv: Mapped[Any] = mapped_column(TSVECTOR, nullable=True)  # computed in SQL as rows are written
-    embedding: Mapped[Any] = mapped_column(Vector(EMBEDDING_DIM), nullable=True)
+    embedding: Mapped[Any] = mapped_column(HALFVEC(EMBEDDING_DIM), nullable=True)
     created_at: Mapped[datetime] = _ts_created()
     __table_args__ = (
         UniqueConstraint("section_id", "signature", name="uq_section_facts"),
         Index("ix_section_facts_input", "tenant_id", "signature", "input_sha256"),
-        Index("ix_section_facts_tsv", "tsv", postgresql_using="gin"),
     )
 
 
@@ -464,20 +466,27 @@ class MemoryRecord(Base):
     entity_ids: Mapped[list[Any]] = mapped_column(JSONB, default=list)
     keywords: Mapped[list[str]] = mapped_column(ARRAY(String), default=list)
     glyph: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict)
-    tsv: Mapped[Any] = mapped_column(TSVECTOR)
-    embedding: Mapped[Any] = mapped_column(Vector(EMBEDDING_DIM), nullable=True)
+    embedding: Mapped[Any] = mapped_column(HALFVEC(EMBEDDING_DIM), nullable=True)  # keyword index: cie_record_tsv
     content_sha256: Mapped[str] = mapped_column(String(64), index=True)
     prompt_version: Mapped[str | None] = mapped_column(String(100))
     model_version: Mapped[str | None] = mapped_column(String(100))
     deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     __table_args__ = (
-        Index("ix_records_tsv", "tsv", postgresql_using="gin"),
         Index("ix_records_keywords", "keywords", postgresql_using="gin"),
         Index("ix_records_summary_trgm", "summary", postgresql_using="gin",
               postgresql_ops={"summary": "gin_trgm_ops"}),
         Index("ix_records_scope_type", "scope_id", "type"),
         Index("ix_records_time", "valid_from", "valid_to"),
     )
+
+
+# Keyword indexes on expressions, not on stored tsvectors (cie.memory.text). The functions are created before the
+# tables, so that create_all (tests, fresh installs) can build these indexes; migrations create them too.
+for _sql in TSV_FUNCTIONS.values():
+    event.listen(Base.metadata, "before_create", DDL(_sql))
+Index("ix_sections_tsv", func.cie_section_tsv(Section.title, Section.text), postgresql_using="gin")
+Index("ix_records_tsv", func.cie_record_tsv(MemoryRecord.summary, MemoryRecord.keywords, MemoryRecord.detail), postgresql_using="gin")
+Index("ix_section_facts_tsv", func.cie_facts_tsv(SectionFacts.text), postgresql_using="gin")
 
 
 class LinkKind(str, enum.Enum):

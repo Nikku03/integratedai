@@ -77,7 +77,6 @@ def test_facts_are_stored_in_parts_never_twice_and_with_permissions(session, wor
     # a stored row carries its checks; reading needs no re-check and follows permissions
     rows = list(session.scalars(select(SectionFacts).where(SectionFacts.tenant_id == tid)))
     assert len(rows) == len(passages) and all(r.facts and "numbers_in_section" in r.facts[0] for r in rows if r.n_facts)
-    assert all(r.tsv is not None for r in rows)
     sec_ids = [r.section_id for r in rows]
     analyst = mf.facts_for_sections(session, tid, visible_scopes(session, world.analyst), sec_ids)
     outsider = mf.facts_for_sections(session, tid, visible_scopes(session, world.outsider), sec_ids)
@@ -93,8 +92,8 @@ def test_facts_are_stored_in_parts_never_twice_and_with_permissions(session, wor
                     "SELECT %s, tenant_id, blob_id, family_id, version + 1, id, title, original_filename, source, scope_id, sensitivity, acl, "
                     "retention_policy, legal_hold, now(), extra, status, injection_flags, pii_flags FROM documents WHERE id = %s", (new, old))
         cur.execute("INSERT INTO sections (id, tenant_id, document_id, extraction_id, scope_id, order_index, title, level, page_start, page_end, "
-                    "text, text_sha256, token_estimate, spans, sensitivity, tsv) SELECT gen_random_uuid(), tenant_id, %s, extraction_id, scope_id, "
-                    "order_index, title, level, page_start, page_end, text, text_sha256, token_estimate, spans, sensitivity, tsv FROM sections "
+                    "text, text_sha256, token_estimate, spans, sensitivity) SELECT gen_random_uuid(), tenant_id, %s, extraction_id, scope_id, "
+                    "order_index, title, level, page_start, page_end, text, text_sha256, token_estimate, spans, sensitivity FROM sections "
                     "WHERE document_id = %s", (new, old))
     conn.commit()
     n_new = len(mf.pending(conn, tid, sig))

@@ -36,18 +36,23 @@ scope-id set plus a sensitivity ceiling.
 | `pages` | per page text, size, method (text/ocr), confidence, `text_sha256` |
 | `blocks` | layout blocks with `bbox [x0,y0,x1,y1]`, `kind`, `text`, `content` (table cells) |
 | `corrections` | OCR corrections; originals untouched |
-| `sections` | semantic sections: `title`, `page_start/end`, `text`, `spans`, `tsv`, `embedding(384)`, `text_sha256` for dedup |
-| `section_facts` | facts a language model extracted from one section, one row per section and extractor `signature`: `facts` (each line with its stored checks), `text`, `status` (done, empty, capped, skipped), `input_sha256` (what the model was given), `section_sha256`, `tsv`, `embedding(384)`, the section's `scope_id` and `sensitivity`. See `docs/FACTS_STORE.md` |
+| `sections` | semantic sections: `title`, `page_start/end`, `text`, `spans`, `embedding` (16-bit, `halfvec(384)`), `text_sha256` for dedup |
+| `section_facts` | facts a language model extracted from one section, one row per section and extractor `signature`: `facts` (each line with its stored checks), `text`, `status` (done, empty, capped, skipped), `input_sha256` (what the model was given), `section_sha256`, `embedding` (`halfvec(384)`), the section's `scope_id` and `sensitivity`. See `docs/FACTS_STORE.md` |
 
 ## Structured memory
 
 | table | purpose |
 |---|---|
-| `memory_records` | typed records (22 types). Fields: `summary`, `content` (typed JSON), `detail`, `source_document_id`, `source_locations [{page_no,bbox,section_id,block_id,quote}]`, `event_time`, `valid_from`, `valid_to`, `recorded_at`, `author_id`, `producing_agent`, `confidence`, `verification`, `sensitivity`, `acl`, `version`, `family_id`, `superseded_by_id`, `supersedes_id`, `entity_ids`, `keywords[]`, `glyph`, `tsv`, `embedding`, `content_sha256`, `prompt_version`, `model_version` |
+| `memory_records` | typed records (22 types). Fields: `summary`, `content` (typed JSON), `detail`, `source_document_id`, `source_locations [{page_no,bbox,section_id,block_id,quote}]`, `event_time`, `valid_from`, `valid_to`, `recorded_at`, `author_id`, `producing_agent`, `confidence`, `verification`, `sensitivity`, `acl`, `version`, `family_id`, `superseded_by_id`, `supersedes_id`, `entity_ids`, `keywords[]`, `glyph`, `embedding` (`halfvec(384)`), `content_sha256`, `prompt_version`, `model_version` |
 | `record_links` | sparse graph edges: `kind` (13 kinds incl. `contradicts`, `supersedes`, `shortcut`), `weight`, `justification` |
 
-Indexes: GIN on `tsv` and `keywords`, trigram GIN on `summary`, HNSW cosine on
-`embedding`, btree on (scope, type) and (valid_from, valid_to).
+Indexes: GIN on `keywords`, trigram GIN on `summary`, HNSW cosine on `embedding`, btree on (scope, type) and
+(valid_from, valid_to).
+
+Keyword search has no stored tsvector column. Its GIN indexes are built on expressions that compute the tsvector from
+the row's text: `cie_section_tsv(title, text)`, `cie_record_tsv(summary, keywords, detail)` and `cie_facts_tsv(text)`
+(`cie.memory.text`). Migration `a9b0c1d2e3f4` made this change and stored the vectors as 16-bit floats.
+`python -m cie.memory.compact vector-index binary` swaps the HNSW indexes for smaller binary ones. See `docs/STORAGE.md`.
 
 ## Agents and projects
 
@@ -81,7 +86,7 @@ tenants ─┬─ principals ─── grants ─── roles
          ├─ blobs ◄── documents ──► scopes
          │              │
          │              ├─ extractions ─ pages ─ blocks ─ corrections
-         │              └─ sections (tsv, embedding)
+         │              └─ sections (embedding)
          │                    └─ section_facts (per extractor)
          ├─ memory_records ──► documents (source), scopes
          │        └─ record_links (sparse graph)

@@ -61,7 +61,7 @@ def build_graph(session, tenant_id: uuid.UUID, log=print) -> dict[str, Any]:
                      '{}', '{}', d.scope_id, d.sensitivity, coalesce(d.acl, '{}'::jsonb),
                      jsonb_build_array(jsonb_build_object('document_id', d.id::text, 'filename', d.original_filename)),
                      ARRAY['doc:' || (d.extra->>'dsid')], 'unverified', true, now(),
-                     (SELECT r.embedding FROM memory_records r WHERE r.source_document_id = d.id AND r.type = 'document' LIMIT 1),
+                     (SELECT r.embedding::vector(384) FROM memory_records r WHERE r.source_document_id = d.id AND r.type = 'document' LIMIT 1),
                      to_tsvector('english', coalesce(d.title, '') || ' ' || coalesce(d.extra->>'summary', ''))
               FROM documents d JOIN rem_nodes n ON n.tenant_id = :t AND n.type = 'document' AND n.key = d.extra->>'dsid'
               WHERE d.tenant_id = :t"""), p)
@@ -78,7 +78,7 @@ def build_graph(session, tenant_id: uuid.UUID, log=print) -> dict[str, Any]:
                      '{}', '{}', s.scope_id, s.sensitivity, coalesce(d.acl, '{}'::jsonb),
                      jsonb_build_array(jsonb_build_object('document_id', d.id::text, 'section_id', s.id::text, 'page_start', s.page_start,
                                                           'page_end', s.page_end)),
-                     ARRAY['doc:' || (d.extra->>'dsid')], 'unverified', true, now(), s.embedding, s.tsv
+                     ARRAY['doc:' || (d.extra->>'dsid')], 'unverified', true, now(), s.embedding::vector(384), cie_section_tsv(s.title, s.text)
               FROM sections s JOIN documents d ON d.id = s.document_id
               JOIN rem_nodes n ON n.tenant_id = :t AND n.type = 'passage' AND n.key = s.id::text WHERE s.tenant_id = :t"""), p)
     x(text("ANALYZE rem_nodes"))
@@ -100,7 +100,7 @@ def build_graph(session, tenant_id: uuid.UUID, log=print) -> dict[str, Any]:
                SELECT gen_random_uuid(), :t, n.id, 1, :seq, left(r.summary, 300), left(r.detail, 1000),
                       jsonb_build_object('source_system', 'extracted', 'record_type', r.type::text, 'document', d.extra->>'dsid'),
                       '{{}}', '{{}}', r.scope_id, r.sensitivity, coalesce(r.acl, '{{}}'::jsonb), r.source_locations,
-                      ARRAY['doc:' || (d.extra->>'dsid')], 'unverified', true, now(), r.embedding, r.tsv
+                      ARRAY['doc:' || (d.extra->>'dsid')], 'unverified', true, now(), r.embedding::vector(384), cie_record_tsv(r.summary, r.keywords, r.detail)
                {rec.replace("WHERE r.tenant_id", "JOIN rem_nodes n ON n.tenant_id = :t AND n.key = r.id::text WHERE r.tenant_id")}"""), p)
     x(text("ANALYZE rem_nodes"))
     x(text("ANALYZE rem_node_versions"))

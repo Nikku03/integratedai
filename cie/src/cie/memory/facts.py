@@ -45,8 +45,7 @@ from typing import Any
 COLS = ("id, tenant_id, section_id, document_id, scope_id, sensitivity, extractor, signature, settings, section_sha256, input_sha256, "
         "status, facts, text, n_facts, prompt_tokens, output_tokens, embedding")
 TYPES = ["uuid", "uuid", "uuid", "uuid", "uuid", "int4", "text", "text", "jsonb", "text", "text", "text", "jsonb", "text", "int4", "int4",
-         "int4", "vector"]
-TSV = "to_tsvector('english', text)"
+         "int4", "halfvec"]
 STATUSES = ("done", "empty", "capped", "skipped")
 
 
@@ -121,8 +120,10 @@ def write(conn, rows: list[dict[str, Any]], embedder=None) -> int:
         idx = [i for i, r in enumerate(rows) if r["text"]]
         for i, v in zip(idx, embedder.embed([rows[i]["text"] for i in idx]), strict=True):
             vecs[i] = v
+    from pgvector import HalfVector
     from psycopg.types.json import Jsonb
 
+    vecs = [HalfVector(list(map(float, v))) if v is not None else None for v in vecs]  # stored as 16-bit floats
     with conn.cursor() as cur:
         cur.execute("CREATE TEMP TABLE IF NOT EXISTS stage_section_facts (LIKE section_facts INCLUDING DEFAULTS) ON COMMIT DELETE ROWS")
         with cur.copy(f"COPY stage_section_facts ({COLS}) FROM STDIN WITH (FORMAT BINARY)") as cp:
@@ -131,7 +132,7 @@ def write(conn, rows: list[dict[str, Any]], embedder=None) -> int:
                 cp.write_row((r.get("id") or uuid.uuid4(), r["tenant_id"], r["section_id"], r["document_id"], r["scope_id"], r["sensitivity"],
                               r["extractor"][:200], r["signature"], Jsonb(r["settings"]), r["section_sha256"], r["input_sha256"], r["status"],
                               Jsonb(r["facts"]), r["text"], r["n_facts"], r.get("prompt_tokens", 0), r.get("output_tokens", 0), v))
-        cur.execute(f"INSERT INTO section_facts ({COLS}, tsv) SELECT {COLS}, {TSV} FROM stage_section_facts "
+        cur.execute(f"INSERT INTO section_facts ({COLS}) SELECT {COLS} FROM stage_section_facts "  # keywords: cie_facts_tsv index
                     "ON CONFLICT (section_id, signature) DO NOTHING")
         added = cur.rowcount
     conn.commit()

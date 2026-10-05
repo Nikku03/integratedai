@@ -23,7 +23,6 @@ from cie.core.models import (
 from cie.core.util import sha256_text, utcnow
 from cie.memory.embeddings import EmbeddingProvider
 from cie.memory.glyph import build_glyph
-from cie.memory.text import tsvector_expr
 
 
 def create_record(
@@ -76,7 +75,7 @@ def create_record(
         sensitivity=sensitivity, acl=acl or {}, version=version, family_id=family_id or uuid.uuid4(),
         supersedes_id=supersedes_id, keywords=keywords or [], entity_ids=entity_ids or [],
         embedding=embedding, content_sha256=digest, prompt_version=prompt_version,
-        model_version=model_version, tsv=tsvector_expr(summary, detail),
+        model_version=model_version,
     )
     session.add(rec)
     session.flush()

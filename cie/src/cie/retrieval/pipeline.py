@@ -201,7 +201,7 @@ class Retriever:
         from sqlalchemy.orm import defer
 
         secs = {x.id: x for x in s.scalars(select(Section).where(Section.id.in_(sec_ids))
-                                           .options(defer(Section.embedding), defer(Section.tsv)))} if sec_ids else {}
+                                           .options(defer(Section.embedding)))} if sec_ids else {}
         degrees = graph.degree(s, list(recs))
         cands: list[rerank.Candidate] = []
         for rid, v in fused.items():
@@ -344,7 +344,7 @@ class Retriever:
             todo = [(rank, sid, sc) for rank, (sid, sc) in enumerate(hits, start=1) if pos.get(sid, len(ranked)) > i]
             missing = [sid for _, sid, _ in todo if sid not in pos]
             secs = {x.id: x for x in s.scalars(select(Section).where(Section.id.in_(missing))
-                                                 .options(defer(Section.embedding), defer(Section.tsv)))} if missing else {}
+                                                 .options(defer(Section.embedding)))} if missing else {}
             for rank, sid, sc in todo:
                 if sid in pos:
                     c = ranked[pos[sid]]
