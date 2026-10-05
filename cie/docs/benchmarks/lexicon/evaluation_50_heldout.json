@@ -1,0 +1,35 @@
+{
+ "lexicon_version": "3d8058508efe",
+ "entries": 3328,
+ "test_texts": 377,
+ "exact_round_trips": "377 of 377",
+ "bytes": {
+  "plain text": {
+   "bytes": 335782,
+   "share": 1.0
+  },
+  "symbol dictionary": {
+   "bytes": 236400,
+   "share": 0.704
+  },
+  "zstd": {
+   "bytes": 211689,
+   "share": 0.63
+  },
+  "symbol dictionary, then zstd": {
+   "bytes": 187098,
+   "share": 0.557
+  },
+  "zstd with a 64 KB dictionary trained on the same documents": {
+   "bytes": 143928,
+   "share": 0.429
+  }
+ },
+ "word_coverage": 0.487,
+ "tokens": {
+  "plain": 80637,
+  "symbols": 123201,
+  "symbols_share": 1.528,
+  "legend_for_these_texts": 20458
+ }
+}
