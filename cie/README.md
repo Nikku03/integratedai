@@ -24,6 +24,14 @@ agents on dependent work and writes everything to an append-only ledger.
 On a loaded memory bank: `python -m cie.eval.showcase --tenant <name> --root <EnterpriseRAG-Bench checkout>`. It
 writes `showcase.html`. Measured results: `docs/BENCHMARKS.md`.
 
+## Does the memory bank beat plain search?
+
+`notebooks/memory_test_colab.ipynb` (Colab, A100 or H100) runs `cie.eval.memory_test`. It asks 243 questions that a
+memory bank is meant for: owners, deadlines, lists and conflicts. Each one is answered five ways, with plain search and
+with the memory bank, by the same model. The rules that decide are in
+[`docs/MEMORY_TEST_PREREGISTRATION.md`](docs/MEMORY_TEST_PREREGISTRATION.md); the results go in
+[`docs/MEMORY_TEST.md`](docs/MEMORY_TEST.md).
+
 ## Quick start (Docker Compose)
 
 ```bash

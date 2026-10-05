@@ -662,7 +662,8 @@ def wilson(k: int, n: int, z: float = 1.96) -> tuple[float, float]:
     return (round(max(0.0, (c - r) / d), 3), round(min(1.0, (c + r) / d), 3))
 
 
-VERDICTS = {"retention": ["covered", "partly", "missed", "contradicted"], "correctness": ["correct", "wrong", "unsupported"]}
+VERDICTS = {"retention": ["covered", "partly", "missed", "contradicted"], "correctness": ["correct", "wrong", "unsupported"],
+            "answer": ["correct", "partly", "wrong"]}  # cie.eval.memory_test grades answers with the same judge
 
 
 def openai_judge(model: str, effort: str | None = None) -> Callable[[str, str], dict[str, Any]]:
