@@ -32,6 +32,13 @@ with the memory bank, by the same model. The rules that decide are in
 [`docs/MEMORY_TEST_PREREGISTRATION.md`](docs/MEMORY_TEST_PREREGISTRATION.md); the results go in
 [`docs/MEMORY_TEST.md`](docs/MEMORY_TEST.md).
 
+## Brain-wired reasoning neurons (research)
+
+`cie.neuro` wires the reasoning engine's spiking neurons like a piece of Blue Brain's cortex model (directed cliques of
+up to 5 neurons) and switches them on and off with light (ChR2 and NpHR, with PyRhO's fitted kinetics). The
+pre-registered test found that the brain wiring changes nothing: composition, robustness and speed are no better
+than with random wiring, and a plain network does better. See [`docs/BRAIN_WIRING_RESULTS.md`](docs/BRAIN_WIRING_RESULTS.md).
+
 ## Quick start (Docker Compose)
 
 ```bash

@@ -1,0 +1,1086 @@
+{
+  "held_out_pairs": [
+    [
+      "AND",
+      "AND"
+    ],
+    [
+      "AND",
+      "OR"
+    ],
+    [
+      "AND",
+      "XOR"
+    ],
+    [
+      "OR",
+      "XOR"
+    ],
+    [
+      "NOT",
+      "OR"
+    ],
+    [
+      "NOT",
+      "EXCEPT"
+    ],
+    [
+      "XOR",
+      "OR"
+    ]
+  ],
+  "light": {
+    "mw_per_mm2": 10.0,
+    "pre_ms": 100.0,
+    "amplitude": 2.0,
+    "fraction": 0.25,
+    "draws": 20
+  },
+  "opsins": [
+    {
+      "opsin": "ChR2",
+      "light_mw_mm2": 10.0,
+      "photons_mm2_s": 2.366034786745074e+16,
+      "time_to_peak_ms": 4.9,
+      "peak_over_steady": 2.612,
+      "off_tau_ms": 12.1,
+      "steady_open_fraction": 0.27321
+    },
+    {
+      "opsin": "NpHR",
+      "light_mw_mm2": 10.0,
+      "photons_mm2_s": 2.9701287748501988e+16,
+      "time_to_peak_ms": 54.0,
+      "peak_over_steady": 1.186,
+      "off_tau_ms": 10.0,
+      "steady_open_fraction": 0.00276
+    }
+  ],
+  "topology": {
+    "11": {
+      "center": 3708,
+      "neurons": 64,
+      "connections": 258,
+      "classes": {
+        "EXC": 61,
+        "INH": 3
+      },
+      "layers": {
+        "2": 1,
+        "3": 6,
+        "4": 10,
+        "5": 40,
+        "6": 7
+      },
+      "simplices": {
+        "cortex": {
+          "1": 258,
+          "2": 216,
+          "3": 30
+        },
+        "random": {
+          "1": 258,
+          "2": 59
+        },
+        "degree": {
+          "1": 258,
+          "2": 197,
+          "3": 18
+        }
+      }
+    },
+    "22": {
+      "center": 1432,
+      "neurons": 64,
+      "connections": 223,
+      "classes": {
+        "EXC": 62,
+        "INH": 2
+      },
+      "layers": {
+        "2": 10,
+        "3": 20,
+        "4": 11,
+        "5": 20,
+        "6": 3
+      },
+      "simplices": {
+        "cortex": {
+          "1": 223,
+          "2": 167,
+          "3": 17
+        },
+        "random": {
+          "1": 223,
+          "2": 40
+        },
+        "degree": {
+          "1": 223,
+          "2": 147,
+          "3": 6
+        }
+      }
+    },
+    "33": {
+      "center": 1605,
+      "neurons": 64,
+      "connections": 257,
+      "classes": {
+        "EXC": 63,
+        "INH": 1
+      },
+      "layers": {
+        "2": 4,
+        "3": 16,
+        "4": 18,
+        "5": 23,
+        "6": 3
+      },
+      "simplices": {
+        "cortex": {
+          "1": 257,
+          "2": 226,
+          "3": 36,
+          "4": 1
+        },
+        "random": {
+          "1": 257,
+          "2": 42
+        },
+        "degree": {
+          "1": 257,
+          "2": 218,
+          "3": 27
+        }
+      }
+    }
+  },
+  "runs": [
+    {
+      "seed": 11,
+      "arm": "cortex",
+      "params": 9605,
+      "primitives": 1.0,
+      "train_s_primitives": 3.1,
+      "ms_per_call": 2.301,
+      "light": {
+        "random_off": 0.733333346247673,
+        "random_on": 0.8344444543123245,
+        "populations": {
+          "L2/3": {
+            "neurons": 7,
+            "accuracy": 0.9555555555555556,
+            "broken_operations": [
+              "OR",
+              "XOR"
+            ]
+          },
+          "L4": {
+            "neurons": 10,
+            "accuracy": 0.8666666666666667,
+            "broken_operations": [
+              "AND",
+              "OR",
+              "XOR",
+              "EXCEPT"
+            ]
+          },
+          "L5": {
+            "neurons": 40,
+            "accuracy": 0.6666666666666666,
+            "broken_operations": [
+              "AND",
+              "OR",
+              "NOT",
+              "XOR",
+              "EXCEPT"
+            ]
+          },
+          "L6": {
+            "neurons": 7,
+            "accuracy": 0.8222222222222222,
+            "broken_operations": [
+              "AND",
+              "OR",
+              "NOT",
+              "EXCEPT"
+            ]
+          },
+          "INH": {
+            "neurons": 3,
+            "accuracy": 0.9111111111111111,
+            "broken_operations": [
+              "AND",
+              "XOR",
+              "EXCEPT"
+            ]
+          }
+        }
+      },
+      "compositions_train": 1.0,
+      "compositions_held_out": 0.7089946866035461,
+      "train_s_compositions": 18.2
+    },
+    {
+      "seed": 11,
+      "arm": "random",
+      "params": 9605,
+      "primitives": 1.0,
+      "train_s_primitives": 3.1,
+      "ms_per_call": 1.541,
+      "light": {
+        "random_off": 0.7444444552063942,
+        "random_on": 0.9077777832746505,
+        "populations": {
+          "L2/3": {
+            "neurons": 7,
+            "accuracy": 1.0,
+            "broken_operations": []
+          },
+          "L4": {
+            "neurons": 10,
+            "accuracy": 0.8888888888888888,
+            "broken_operations": [
+              "AND",
+              "OR",
+              "XOR",
+              "EXCEPT"
+            ]
+          },
+          "L5": {
+            "neurons": 40,
+            "accuracy": 0.4888888888888889,
+            "broken_operations": [
+              "AND",
+              "OR",
+              "NOT",
+              "XOR",
+              "EXCEPT"
+            ]
+          },
+          "L6": {
+            "neurons": 7,
+            "accuracy": 0.8444444444444444,
+            "broken_operations": [
+              "AND",
+              "OR",
+              "NOT",
+              "EXCEPT"
+            ]
+          },
+          "INH": {
+            "neurons": 3,
+            "accuracy": 1.0,
+            "broken_operations": []
+          }
+        }
+      },
+      "compositions_train": 1.0,
+      "compositions_held_out": 0.682539701461792,
+      "train_s_compositions": 17.4
+    },
+    {
+      "seed": 11,
+      "arm": "degree",
+      "params": 9605,
+      "primitives": 1.0,
+      "train_s_primitives": 3.0,
+      "ms_per_call": 2.126,
+      "light": {
+        "random_off": 0.7111111268401146,
+        "random_on": 0.8711111187934876,
+        "populations": {
+          "L2/3": {
+            "neurons": 7,
+            "accuracy": 0.9555555555555556,
+            "broken_operations": [
+              "AND",
+              "EXCEPT"
+            ]
+          },
+          "L4": {
+            "neurons": 10,
+            "accuracy": 0.9111111111111111,
+            "broken_operations": [
+              "OR",
+              "XOR",
+              "EXCEPT"
+            ]
+          },
+          "L5": {
+            "neurons": 40,
+            "accuracy": 0.6,
+            "broken_operations": [
+              "AND",
+              "OR",
+              "NOT",
+              "XOR",
+              "EXCEPT"
+            ]
+          },
+          "L6": {
+            "neurons": 7,
+            "accuracy": 0.8222222222222222,
+            "broken_operations": [
+              "AND",
+              "OR",
+              "NOT",
+              "EXCEPT"
+            ]
+          },
+          "INH": {
+            "neurons": 3,
+            "accuracy": 0.9777777777777777,
+            "broken_operations": [
+              "AND"
+            ]
+          }
+        }
+      },
+      "compositions_train": 1.0,
+      "compositions_held_out": 0.7089946866035461,
+      "train_s_compositions": 18.0
+    },
+    {
+      "seed": 11,
+      "arm": "dense",
+      "params": 13379,
+      "primitives": 1.0,
+      "train_s_primitives": 3.3,
+      "ms_per_call": 1.494,
+      "light": {
+        "random_off": 0.766666679084301,
+        "random_on": 0.9011111170053482,
+        "populations": {
+          "L2/3": {
+            "neurons": 7,
+            "accuracy": 0.9333333333333333,
+            "broken_operations": [
+              "AND",
+              "EXCEPT"
+            ]
+          },
+          "L4": {
+            "neurons": 10,
+            "accuracy": 0.8,
+            "broken_operations": [
+              "AND",
+              "OR",
+              "XOR",
+              "EXCEPT"
+            ]
+          },
+          "L5": {
+            "neurons": 40,
+            "accuracy": 0.5777777777777777,
+            "broken_operations": [
+              "AND",
+              "OR",
+              "NOT",
+              "XOR",
+              "EXCEPT"
+            ]
+          },
+          "L6": {
+            "neurons": 7,
+            "accuracy": 0.8222222222222222,
+            "broken_operations": [
+              "AND",
+              "OR",
+              "NOT",
+              "EXCEPT"
+            ]
+          },
+          "INH": {
+            "neurons": 3,
+            "accuracy": 0.9777777777777777,
+            "broken_operations": [
+              "AND"
+            ]
+          }
+        }
+      },
+      "compositions_train": 1.0,
+      "compositions_held_out": 0.7195767164230347,
+      "train_s_compositions": 17.4
+    },
+    {
+      "seed": 11,
+      "arm": "mlp",
+      "params": 5123,
+      "primitives": 1.0,
+      "train_s_primitives": 0.5,
+      "ms_per_call": 0.065,
+      "light": {
+        "random_off": 0.9733333349227905
+      },
+      "compositions_train": 1.0,
+      "compositions_held_out": 0.8941798806190491,
+      "train_s_compositions": 2.0
+    },
+    {
+      "seed": 22,
+      "arm": "cortex",
+      "params": 9570,
+      "primitives": 1.0,
+      "train_s_primitives": 3.1,
+      "ms_per_call": 1.535,
+      "light": {
+        "random_off": 0.7244444593787194,
+        "random_on": 0.7900000125169754,
+        "populations": {
+          "L2/3": {
+            "neurons": 30,
+            "accuracy": 0.6444444444444445,
+            "broken_operations": [
+              "AND",
+              "OR",
+              "NOT",
+              "XOR",
+              "EXCEPT"
+            ]
+          },
+          "L4": {
+            "neurons": 11,
+            "accuracy": 0.7777777777777778,
+            "broken_operations": [
+              "AND",
+              "OR",
+              "NOT",
+              "XOR",
+              "EXCEPT"
+            ]
+          },
+          "L5": {
+            "neurons": 20,
+            "accuracy": 0.7333333333333333,
+            "broken_operations": [
+              "AND",
+              "OR",
+              "NOT",
+              "XOR",
+              "EXCEPT"
+            ]
+          },
+          "L6": {
+            "neurons": 3,
+            "accuracy": 0.9555555555555556,
+            "broken_operations": [
+              "AND"
+            ]
+          },
+          "INH": {
+            "neurons": 2,
+            "accuracy": 0.9111111111111111,
+            "broken_operations": [
+              "NOT",
+              "XOR",
+              "EXCEPT"
+            ]
+          }
+        }
+      },
+      "compositions_train": 1.0,
+      "compositions_held_out": 0.7089946866035461,
+      "train_s_compositions": 18.2
+    },
+    {
+      "seed": 22,
+      "arm": "random",
+      "params": 9570,
+      "primitives": 1.0,
+      "train_s_primitives": 3.1,
+      "ms_per_call": 1.73,
+      "light": {
+        "random_off": 0.7533333465456963,
+        "random_on": 0.8033333450555802,
+        "populations": {
+          "L2/3": {
+            "neurons": 30,
+            "accuracy": 0.7111111111111111,
+            "broken_operations": [
+              "AND",
+              "OR",
+              "NOT",
+              "XOR",
+              "EXCEPT"
+            ]
+          },
+          "L4": {
+            "neurons": 11,
+            "accuracy": 0.7333333333333333,
+            "broken_operations": [
+              "AND",
+              "OR",
+              "NOT",
+              "XOR",
+              "EXCEPT"
+            ]
+          },
+          "L5": {
+            "neurons": 20,
+            "accuracy": 0.6666666666666666,
+            "broken_operations": [
+              "AND",
+              "OR",
+              "NOT",
+              "XOR",
+              "EXCEPT"
+            ]
+          },
+          "L6": {
+            "neurons": 3,
+            "accuracy": 1.0,
+            "broken_operations": []
+          },
+          "INH": {
+            "neurons": 2,
+            "accuracy": 0.9111111111111111,
+            "broken_operations": [
+              "NOT",
+              "XOR",
+              "EXCEPT"
+            ]
+          }
+        }
+      },
+      "compositions_train": 1.0,
+      "compositions_held_out": 0.7513227462768555,
+      "train_s_compositions": 18.1
+    },
+    {
+      "seed": 22,
+      "arm": "degree",
+      "params": 9570,
+      "primitives": 1.0,
+      "train_s_primitives": 3.1,
+      "ms_per_call": 1.966,
+      "light": {
+        "random_off": 0.7233333498239517,
+        "random_on": 0.7800000116229058,
+        "populations": {
+          "L2/3": {
+            "neurons": 30,
+            "accuracy": 0.7777777777777778,
+            "broken_operations": [
+              "AND",
+              "OR",
+              "NOT",
+              "XOR",
+              "EXCEPT"
+            ]
+          },
+          "L4": {
+            "neurons": 11,
+            "accuracy": 0.7111111111111111,
+            "broken_operations": [
+              "AND",
+              "OR",
+              "NOT",
+              "XOR",
+              "EXCEPT"
+            ]
+          },
+          "L5": {
+            "neurons": 20,
+            "accuracy": 0.6444444444444445,
+            "broken_operations": [
+              "AND",
+              "OR",
+              "NOT",
+              "XOR",
+              "EXCEPT"
+            ]
+          },
+          "L6": {
+            "neurons": 3,
+            "accuracy": 0.9333333333333333,
+            "broken_operations": [
+              "AND",
+              "NOT"
+            ]
+          },
+          "INH": {
+            "neurons": 2,
+            "accuracy": 0.9111111111111111,
+            "broken_operations": [
+              "AND",
+              "XOR",
+              "EXCEPT"
+            ]
+          }
+        }
+      },
+      "compositions_train": 1.0,
+      "compositions_held_out": 0.7354497313499451,
+      "train_s_compositions": 17.2
+    },
+    {
+      "seed": 22,
+      "arm": "dense",
+      "params": 13379,
+      "primitives": 1.0,
+      "train_s_primitives": 3.3,
+      "ms_per_call": 1.878,
+      "light": {
+        "random_off": 0.7377777934074402,
+        "random_on": 0.8188888996839523,
+        "populations": {
+          "L2/3": {
+            "neurons": 30,
+            "accuracy": 0.7333333333333333,
+            "broken_operations": [
+              "AND",
+              "OR",
+              "NOT",
+              "XOR",
+              "EXCEPT"
+            ]
+          },
+          "L4": {
+            "neurons": 11,
+            "accuracy": 0.8444444444444444,
+            "broken_operations": [
+              "AND",
+              "OR",
+              "NOT",
+              "EXCEPT"
+            ]
+          },
+          "L5": {
+            "neurons": 20,
+            "accuracy": 0.7333333333333333,
+            "broken_operations": [
+              "AND",
+              "OR",
+              "NOT",
+              "XOR",
+              "EXCEPT"
+            ]
+          },
+          "L6": {
+            "neurons": 3,
+            "accuracy": 0.9777777777777777,
+            "broken_operations": [
+              "AND"
+            ]
+          },
+          "INH": {
+            "neurons": 2,
+            "accuracy": 0.9111111111111111,
+            "broken_operations": [
+              "OR",
+              "XOR",
+              "EXCEPT"
+            ]
+          }
+        }
+      },
+      "compositions_train": 1.0,
+      "compositions_held_out": 0.7724867463111877,
+      "train_s_compositions": 18.2
+    },
+    {
+      "seed": 22,
+      "arm": "mlp",
+      "params": 5123,
+      "primitives": 1.0,
+      "train_s_primitives": 0.5,
+      "ms_per_call": 0.057,
+      "light": {
+        "random_off": 0.9677777796983719
+      },
+      "compositions_train": 1.0,
+      "compositions_held_out": 0.8835979104042053,
+      "train_s_compositions": 2.0
+    },
+    {
+      "seed": 33,
+      "arm": "cortex",
+      "params": 9604,
+      "primitives": 1.0,
+      "train_s_primitives": 3.1,
+      "ms_per_call": 1.512,
+      "light": {
+        "random_off": 0.7044444575905799,
+        "random_on": 0.8422222316265107,
+        "populations": {
+          "L2/3": {
+            "neurons": 20,
+            "accuracy": 0.8444444444444444,
+            "broken_operations": [
+              "AND",
+              "OR",
+              "XOR",
+              "EXCEPT"
+            ]
+          },
+          "L4": {
+            "neurons": 18,
+            "accuracy": 0.7555555555555555,
+            "broken_operations": [
+              "AND",
+              "OR",
+              "NOT",
+              "XOR",
+              "EXCEPT"
+            ]
+          },
+          "L5": {
+            "neurons": 23,
+            "accuracy": 0.7333333333333333,
+            "broken_operations": [
+              "AND",
+              "OR",
+              "NOT",
+              "XOR",
+              "EXCEPT"
+            ]
+          },
+          "L6": {
+            "neurons": 3,
+            "accuracy": 0.7555555555555555,
+            "broken_operations": [
+              "AND",
+              "OR",
+              "NOT",
+              "XOR",
+              "EXCEPT"
+            ]
+          },
+          "INH": {
+            "neurons": 1,
+            "accuracy": 0.8888888888888888,
+            "broken_operations": [
+              "AND",
+              "OR",
+              "NOT",
+              "XOR",
+              "EXCEPT"
+            ]
+          }
+        }
+      },
+      "compositions_train": 1.0,
+      "compositions_held_out": 0.7566137313842773,
+      "train_s_compositions": 17.8
+    },
+    {
+      "seed": 33,
+      "arm": "random",
+      "params": 9604,
+      "primitives": 1.0,
+      "train_s_primitives": 3.1,
+      "ms_per_call": 1.528,
+      "light": {
+        "random_off": 0.7077777922153473,
+        "random_on": 0.8344444543123245,
+        "populations": {
+          "L2/3": {
+            "neurons": 20,
+            "accuracy": 0.8,
+            "broken_operations": [
+              "AND",
+              "OR",
+              "NOT",
+              "XOR"
+            ]
+          },
+          "L4": {
+            "neurons": 18,
+            "accuracy": 0.7777777777777778,
+            "broken_operations": [
+              "AND",
+              "OR",
+              "NOT",
+              "XOR",
+              "EXCEPT"
+            ]
+          },
+          "L5": {
+            "neurons": 23,
+            "accuracy": 0.4666666666666667,
+            "broken_operations": [
+              "AND",
+              "OR",
+              "NOT",
+              "XOR",
+              "EXCEPT"
+            ]
+          },
+          "L6": {
+            "neurons": 3,
+            "accuracy": 0.7555555555555555,
+            "broken_operations": [
+              "AND",
+              "OR",
+              "NOT",
+              "XOR",
+              "EXCEPT"
+            ]
+          },
+          "INH": {
+            "neurons": 1,
+            "accuracy": 0.8222222222222222,
+            "broken_operations": [
+              "OR",
+              "NOT",
+              "XOR",
+              "EXCEPT"
+            ]
+          }
+        }
+      },
+      "compositions_train": 1.0,
+      "compositions_held_out": 0.7354497313499451,
+      "train_s_compositions": 18.0
+    },
+    {
+      "seed": 33,
+      "arm": "degree",
+      "params": 9604,
+      "primitives": 1.0,
+      "train_s_primitives": 3.1,
+      "ms_per_call": 1.666,
+      "light": {
+        "random_off": 0.6666666835546493,
+        "random_on": 0.8222222328186035,
+        "populations": {
+          "L2/3": {
+            "neurons": 20,
+            "accuracy": 0.8,
+            "broken_operations": [
+              "AND",
+              "OR",
+              "XOR",
+              "EXCEPT"
+            ]
+          },
+          "L4": {
+            "neurons": 18,
+            "accuracy": 0.7555555555555555,
+            "broken_operations": [
+              "AND",
+              "OR",
+              "XOR",
+              "EXCEPT"
+            ]
+          },
+          "L5": {
+            "neurons": 23,
+            "accuracy": 0.4666666666666667,
+            "broken_operations": [
+              "AND",
+              "OR",
+              "NOT",
+              "XOR",
+              "EXCEPT"
+            ]
+          },
+          "L6": {
+            "neurons": 3,
+            "accuracy": 0.7555555555555555,
+            "broken_operations": [
+              "AND",
+              "OR",
+              "NOT",
+              "XOR",
+              "EXCEPT"
+            ]
+          },
+          "INH": {
+            "neurons": 1,
+            "accuracy": 0.9111111111111111,
+            "broken_operations": [
+              "OR",
+              "XOR",
+              "EXCEPT"
+            ]
+          }
+        }
+      },
+      "compositions_train": 1.0,
+      "compositions_held_out": 0.7407407164573669,
+      "train_s_compositions": 16.9
+    },
+    {
+      "seed": 33,
+      "arm": "dense",
+      "params": 13379,
+      "primitives": 1.0,
+      "train_s_primitives": 2.9,
+      "ms_per_call": 1.576,
+      "light": {
+        "random_off": 0.687777791917324,
+        "random_on": 0.8500000089406967,
+        "populations": {
+          "L2/3": {
+            "neurons": 20,
+            "accuracy": 0.8888888888888888,
+            "broken_operations": [
+              "AND",
+              "OR",
+              "XOR",
+              "EXCEPT"
+            ]
+          },
+          "L4": {
+            "neurons": 18,
+            "accuracy": 0.7777777777777778,
+            "broken_operations": [
+              "AND",
+              "OR",
+              "NOT",
+              "XOR",
+              "EXCEPT"
+            ]
+          },
+          "L5": {
+            "neurons": 23,
+            "accuracy": 0.6222222222222222,
+            "broken_operations": [
+              "AND",
+              "OR",
+              "NOT",
+              "XOR",
+              "EXCEPT"
+            ]
+          },
+          "L6": {
+            "neurons": 3,
+            "accuracy": 0.8222222222222222,
+            "broken_operations": [
+              "OR",
+              "NOT",
+              "XOR",
+              "EXCEPT"
+            ]
+          },
+          "INH": {
+            "neurons": 1,
+            "accuracy": 1.0,
+            "broken_operations": []
+          }
+        }
+      },
+      "compositions_train": 1.0,
+      "compositions_held_out": 0.7301587462425232,
+      "train_s_compositions": 17.5
+    },
+    {
+      "seed": 33,
+      "arm": "mlp",
+      "params": 5123,
+      "primitives": 1.0,
+      "train_s_primitives": 0.5,
+      "ms_per_call": 0.068,
+      "light": {
+        "random_off": 0.9777777791023254
+      },
+      "compositions_train": 1.0,
+      "compositions_held_out": 0.8783068656921387,
+      "train_s_compositions": 2.0
+    }
+  ],
+  "summary": {
+    "means": {
+      "cortex": {
+        "primitives": 1.0,
+        "compositions_held_out": 0.7248677015304565,
+        "compositions_train": 1.0,
+        "quarter_silenced": 0.7207407544056575,
+        "ms_per_call": 1.7826666666666668
+      },
+      "random": {
+        "primitives": 1.0,
+        "compositions_held_out": 0.7231040596961975,
+        "compositions_train": 1.0,
+        "quarter_silenced": 0.7351851979891459,
+        "ms_per_call": 1.5996666666666666
+      },
+      "degree": {
+        "primitives": 1.0,
+        "compositions_held_out": 0.7283950448036194,
+        "compositions_train": 1.0,
+        "quarter_silenced": 0.7003703867395719,
+        "ms_per_call": 1.9193333333333331
+      },
+      "dense": {
+        "primitives": 1.0,
+        "compositions_held_out": 0.7407407363255819,
+        "compositions_train": 1.0,
+        "quarter_silenced": 0.7307407548030218,
+        "ms_per_call": 1.6493333333333335
+      },
+      "mlp": {
+        "primitives": 1.0,
+        "compositions_held_out": 0.8853615522384644,
+        "compositions_train": 1.0,
+        "quarter_silenced": 0.972962964574496,
+        "ms_per_call": 0.06333333333333334
+      }
+    },
+    "differences": {
+      "1_cortex_vs_random_held_out": {
+        "mean": 0.0017636418342590332,
+        "per_seed": [
+          0.0265,
+          -0.0423,
+          0.0212
+        ],
+        "same_sign_all_seeds": false
+      },
+      "1_cortex_vs_degree_held_out": {
+        "mean": -0.003527343273162842,
+        "per_seed": [
+          0.0,
+          -0.0265,
+          0.0159
+        ],
+        "same_sign_all_seeds": false
+      },
+      "2_cortex_vs_random_quarter_silenced": {
+        "mean": -0.014444443583488509,
+        "per_seed": [
+          -0.0111,
+          -0.0289,
+          -0.0033
+        ],
+        "same_sign_all_seeds": true
+      },
+      "3_cortex_vs_mlp_held_out": {
+        "mean": -0.1604938507080078,
+        "per_seed": [
+          -0.1852,
+          -0.1746,
+          -0.1217
+        ],
+        "same_sign_all_seeds": true
+      }
+    },
+    "rules_met": {
+      "1 brain wiring helps composition": false,
+      "2 brain wiring is more robust": false,
+      "3 better than a plain network": false,
+      "4 the cortex wiring has more cliques of 4+ neurons than both controls": true
+    },
+    "simplices_dim3plus": {
+      "11": {
+        "cortex": 30,
+        "random": 0,
+        "degree": 18
+      },
+      "22": {
+        "cortex": 17,
+        "random": 0,
+        "degree": 6
+      },
+      "33": {
+        "cortex": 37,
+        "random": 0,
+        "degree": 27
+      }
+    }
+  },
+  "circuit": "Blue Brain SSCx toy circuit, Zenodo 12202781 (archive sha256 e2bb3057ea8346718c35940387cb291e5726defe61208aba7634af6292bb5334)"
+}
