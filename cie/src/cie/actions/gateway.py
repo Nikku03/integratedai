@@ -6,18 +6,23 @@ on the action.
    action proposed twice is one action.
 2. *Permission.* An agent may propose only the action kinds granted to it (``Agent.config["actions"]``). A person
    needs write access to the project (checked by the API).
-3. *Approval.* A person must approve when the kind always needs one (``CIE_ACTIONS_ALWAYS_APPROVE``: payments,
-   contract signatures and external messages by default), or when the amount is above the agent's authority for
-   ``authority_kind`` (``Agent.config["authority"]``). Otherwise it is approved as proposed.
+3. *Playbook.* When the action names a playbook, or its kind has one (``CIE_ACTIONS_PLAYBOOKS``), the approved
+   playbook decides from the payload (and ``amount``) and the live state: no refuses the action; unknown asks a
+   person, naming the facts that would settle it; yes lets it go on. The decision's records join the action's basis.
+4. *Approval.* A person must approve when the kind always needs one (``CIE_ACTIONS_ALWAYS_APPROVE``: payments,
+   contract signatures and external messages by default), when the amount is above the agent's authority for
+   ``authority_kind`` (``Agent.config["authority"]``), or when the playbook cannot decide. Otherwise it is approved
+   as proposed.
 
 **Executing** (``execute``, run by the worker for approved actions, or through the API):
-4. *Permission again*, in case the grant was withdrawn.
-5. *Freshness.* The live-state records it rests on must still be at the versions it was based on, and the task that
-   proposed it still completed at the same revision (not reopened). Otherwise it is ``stale`` and not executed.
-6. *Already executed.* An action executed before is not executed again. The status is committed as ``executing``
+5. *Permission again*, in case the grant was withdrawn.
+6. *Freshness.* The live-state records it rests on must still be at the versions it was based on, the task that
+   proposed it still completed at the same revision (not reopened), and its playbook decision, made again since, must
+   not have turned to no (or away from yes). Otherwise it is ``stale`` and not executed.
+7. *Already executed.* An action executed before is not executed again. The status is committed as ``executing``
    before the connector is called, so after a crash the next attempt first asks the connector whether it went
    through, and the connector gets the idempotency key either way.
-7. *Result confirmed.* After executing, the connector reads back what the other side holds: ``confirmed`` or
+8. *Result confirmed.* After executing, the connector reads back what the other side holds: ``confirmed`` or
    ``unconfirmed`` (the receipt is kept; a person should look).
 
 A task proposes actions by listing them in its result (``actions``); they are proposed when the task completes,
@@ -69,7 +74,7 @@ def _record(session: Session, a: Action, what: str, actor: str) -> None:
 def propose(session: Session, *, tenant_id: uuid.UUID, kind: str, target: str, payload: dict[str, Any], requested_by: str,
             agent: Agent | None = None, principal_id: uuid.UUID | None = None, project_id: uuid.UUID | None = None, task: Task | None = None,
             amount: float | None = None, authority_kind: str = "spend_usd", records: list[dict[str, Any]] | None = None,
-            idempotency_key: str | None = None, settings=None) -> Action:
+            idempotency_key: str | None = None, playbook: str | None = None, settings=None) -> Action:
     """Propose an action: the idempotency, permission and approval checks (see the module docstring)."""
     from cie.core.settings import get_settings
 
@@ -105,6 +110,17 @@ def propose(session: Session, *, tenant_id: uuid.UUID, kind: str, target: str, p
     else:
         _check(a, "permission", True, f"proposed by {requested_by}, with write access to the project")
     needs = []
+    rule = playbook or (settings.actions_playbooks or {}).get(kind)
+    if rule:
+        answer, detail = _playbook(session, a, rule, payload, amount, requested_by)
+        _check(a, "playbook", answer == "yes", detail)
+        if answer == "no":
+            a.status = "refused"
+            session.flush()
+            _record(session, a, "refused", requested_by)
+            return a
+        if answer != "yes":
+            needs.append(detail)
     if kind in (settings.actions_always_approve or []):
         needs.append(f"'{kind}' always needs a person's approval")
     if agent is not None and amount is not None:
@@ -126,6 +142,29 @@ def propose(session: Session, *, tenant_id: uuid.UUID, kind: str, target: str, p
     if a.status == "approved":
         enqueue(session, a)
     return a
+
+
+def _playbook(session: Session, a: Action, rule: str, payload: dict[str, Any], amount: float | None, requested_by: str) -> tuple[str, str]:
+    """Decide the action with a playbook (``key`` or ``key:goal``). Returns the answer and a line for the check."""
+    from cie.playbooks import store as playbooks
+
+    key, _, goal = rule.partition(":")
+    given = {**(payload or {}), **({"amount": amount} if amount is not None and "amount" not in (payload or {}) else {})}
+    try:
+        d = playbooks.decide(session, a.tenant_id, key, given=given, goal=goal or None, subject=f"action:{a.id}",
+                             principal_id=a.principal_id, requested_by=requested_by, reason=f"action {a.kind} via {a.target} proposed")
+    except LookupError as e:
+        return "unknown", f"{e}: a person decides"
+    have = {r["ref"] for r in (a.based_on or {}).get("records", [])}
+    a.based_on = {**(a.based_on or {}), "records": list((a.based_on or {}).get("records", []))
+                  + [r for r in (d.based_on or {}).get("records", []) if r["ref"] not in have],
+                  "playbook_decision": {"id": str(d.id), "key": key, "answer": d.answer}}
+    if d.answer == "yes":
+        return "yes", f"playbook {key} says yes" + (f": {d.why[0].strip()}" if d.why else "")
+    if d.answer == "no":
+        return "no", f"playbook {key} says no: " + "; ".join(x.strip() for x in d.why[:3])
+    asks = [m["fact"] for m in d.missing if m.get("settles")] or [m["fact"] for m in d.missing]
+    return "unknown", f"playbook {key} cannot decide" + (f": it needs {', '.join(asks[:4])}" if asks else "") + "; a person decides"
 
 
 def decide(session: Session, action_id: uuid.UUID, *, approve: bool, by: str, reason: str = "") -> Action:
@@ -161,6 +200,18 @@ def freshness(session: Session, a: Action) -> list[str]:
             now_v = cur.get(uuid.UUID(r["ref"]))
             if now_v != r["version"]:
                 out.append(f"{r.get('label') or r['ref']} is at version {now_v if now_v is not None else 'none (deleted)'}, not {r['version']}")
+    pd = (a.based_on or {}).get("playbook_decision")
+    if pd:
+        from cie.playbooks.models import PlaybookDecision
+
+        d = session.get(PlaybookDecision, uuid.UUID(pd["id"]))
+        for _ in range(1000):  # follow the decisions made again since
+            if d is None or d.status != "superseded" or d.superseded_by is None:
+                break
+            d = session.get(PlaybookDecision, d.superseded_by)
+        now = d.answer if d is not None else "nothing"
+        if now == "no" or (pd.get("answer") == "yes" and now != "yes"):
+            out.append(f"playbook {pd.get('key')} now answers {now}, not {pd.get('answer')}")
     tk = (a.based_on or {}).get("task")
     if tk:
         t = session.get(Task, uuid.UUID(tk["id"]))
@@ -247,5 +298,5 @@ def propose_from_result(session: Session, t: Task) -> list[Action]:
                            payload=x.get("payload") if isinstance(x.get("payload"), dict) else {"value": x.get("payload")},
                            requested_by=agent.name if agent else (t.lease_owner or "task"), agent=agent, task=t,
                            amount=engine._amount(x.get("amount")), authority_kind=str(x.get("authority_kind") or "spend_usd"),
-                           records=records))
+                           records=records, playbook=str(x["playbook"])[:200] if x.get("playbook") else None))
     return out

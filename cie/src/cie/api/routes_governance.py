@@ -84,6 +84,14 @@ def decide(approval_id: uuid.UUID, body: Decision, auth: Auth = Depends(current_
             gateway.decide(session, uuid.UUID(a.subject_id), approve=body.approve, by=f"user:{auth.principal.name}", reason=body.reason or "")
         except ValueError:
             pass  # no longer awaiting approval (cancelled meanwhile): the approval is still recorded
+    if a.kind == "playbook":  # approve: this version decides from now on; reject: it never does
+        from cie.playbooks import store as playbooks
+
+        try:
+            playbooks.approve(session, uuid.UUID(a.subject_id), approve=body.approve, by=f"user:{auth.principal.name}",
+                              principal_id=auth.principal.id, reason=body.reason or "")
+        except ValueError as e:
+            raise HTTPException(409, str(e)) from None
     if a.kind == "replan":  # approve: accept the best option found; reject: drop the task (relaxing is POST /tasks/{id}/replan)
         from cie.core.models import Task, TaskStatus
         from cie.workflow import engine

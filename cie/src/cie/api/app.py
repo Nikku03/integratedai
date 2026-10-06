@@ -32,6 +32,9 @@ def create_app() -> FastAPI:
     from cie.api.routes_context import router as context_router
 
     app.include_router(context_router, prefix="/api")
+    from cie.api.routes_playbooks import router as playbooks_router
+
+    app.include_router(playbooks_router, prefix="/api")
     try:
         from cie.api.routes_governance import router as gov_router
 

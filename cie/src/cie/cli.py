@@ -1,4 +1,4 @@
-"""Command line: migrate, bootstrap, ingest, worker, serve, ask, demo, bench."""
+"""Command line: migrate, bootstrap, ingest, worker, serve, ask, demo, bench, playbook."""
 
 from __future__ import annotations
 
@@ -181,6 +181,28 @@ def cmd_lexical(a) -> int:
     return 0
 
 
+def cmd_playbook(a) -> int:
+    """Check a playbook spec, or decide with it, without a database (docs/PLAYBOOKS.md)."""
+    import json
+
+    from cie.playbooks import logic
+
+    spec = json.loads(Path(a.spec).read_text())
+    if a.playbook_cmd == "check":
+        probs = logic.problems(spec)
+        print(json.dumps({"ok": not probs, "problems": probs}, indent=2))
+        return 1 if probs else 0
+    pb = logic.compile_playbook(spec)
+    facts = json.loads(Path(a.facts).read_text() if a.facts.endswith(".json") else a.facts)
+    d = logic.evaluate(pb, facts, a.goal)
+    out = d.to_dict()
+    out["verified"] = not logic.verify(pb, d.proof, d.inputs)
+    if not a.proof:
+        out.pop("proof")
+    print(json.dumps(out, indent=2, default=str))
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     configure_logging(get_settings().log_level)
     ap = argparse.ArgumentParser(prog="cie")
@@ -252,9 +274,19 @@ def main(argv: list[str] | None = None) -> int:
         p_.add_argument("--tenant", required=name == "build", default=None, help="tenant name or id")
     lxs.add_parser("status", help="every index, its version and the rows waiting")
     lx.set_defaults(fn=cmd_lexical)
+    pbk = sub.add_parser("playbook", help="check a playbook spec or decide with it (no database)")
+    pbs = pbk.add_subparsers(dest="playbook_cmd", required=True)
+    p_ = pbs.add_parser("check", help="list every problem with a spec")
+    p_.add_argument("spec", help="path to the playbook JSON")
+    p_ = pbs.add_parser("decide", help="decide from facts given as JSON (or a .json file): answer, why, missing facts")
+    p_.add_argument("spec", help="path to the playbook JSON")
+    p_.add_argument("--facts", default="{}")
+    p_.add_argument("--goal", default=None, help="a rule other than the playbook's decision")
+    p_.add_argument("--proof", action="store_true", help="print the proof too")
+    pbk.set_defaults(fn=cmd_playbook)
     args = ap.parse_args(argv)
-    args.fn(args)
-    return 0
+    rc = args.fn(args)
+    return rc if isinstance(rc, int) else 0
 
 
 if __name__ == "__main__":  # pragma: no cover

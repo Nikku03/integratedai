@@ -62,6 +62,9 @@ class Settings(BaseSettings):
 
     # the action gateway (cie.actions): kinds that always need a person's approval, the outbox file, and webhooks
     actions_always_approve: list[str] = ["payment", "contract_signature", "external_message"]
+    # action kind -> the playbook every action of that kind must pass ("key" or "key:goal"); its facts come from the
+    # action's payload (and "amount"), and from the live state where the playbook binds them
+    actions_playbooks: dict[str, str] = {}
     actions_outbox: str = ""  # default: <vault_path>/actions_outbox.jsonl
     action_webhooks: str = ""  # JSON {"name": {"url": ..., "secret_env": ...}}
 

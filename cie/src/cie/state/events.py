@@ -563,6 +563,9 @@ def process_event(session: Session, event_id: uuid.UUID, *, embedder=None, analy
         from cie.workflow.routing import route_to_tasks
 
         routed = route_to_tasks(session, cs)
+    from cie.playbooks.store import route_change as route_to_decisions
+
+    redecided = route_to_decisions(session, cs)  # playbook decisions that read a changed record are made again
     ev.seq = seq
     ev.status = "done"
     ev.processed_at = datetime.now(UTC)
@@ -573,7 +576,8 @@ def process_event(session: Session, event_id: uuid.UUID, *, embedder=None, analy
                   "access_narrowed": [str(n) for n in narrowed], "invalidated": [str(n) for n in invalidated],
                   "field_decisions": [{"node": str(d.node_id), "field": d.field, "status": d.status, "reason": d.reason,
                                        "conflict": str(d.conflict_id) if d.conflict_id else None} for d in fields.decisions],
-                  "identity": identity.results, "overwritten_statements": overwritten, "stale_results": stale, "tasks": routed, **result}
+                  "identity": identity.results, "overwritten_statements": overwritten, "stale_results": stale, "tasks": routed,
+                  **({"decisions": redecided} if redecided else {}), **result}
     audit(session, tenant_id=ev.tenant_id, principal_id=ev.principal_id, action="state.change", resource_kind="rem_event",
           resource_id=ev.id, details={"seq": seq, "kind": ev.kind, "impacts": result.get("impacts", 0), "analysis": analysis_name})
     savepoint.commit()
