@@ -47,13 +47,12 @@ FEATURES = ["bias", "start_named", "start_rank", "two_starts", "path_len", "path
 # v4 (after the first test, docs/FACTBANK_MULTI_RESULTS.md): the clue rule split by whether the question offers a choice, the
 # kind of answer learned from the question's words instead of fixed patterns, and whether the answer comes from the system the
 # question names
-# v5 (docs/FACTBANK_WORDS_PREREGISTRATION.md): v4 plus word meanings learned from the company's documents
-# (cie.factbank.lexicon). A question word lends its meaning to the known words nearest it, and field and relation names are
-# matched by meaning as well as by spelling.
-MEANING = ["path_sim", "field_sim", "path_anchor", "field_anchor", "type_fits"]
+# v5 (docs/FACTBANK_WORDS_PREREGISTRATION.md) has v4's features. What changes is the words they are computed from: with
+# word meanings learned from the company's documents (cie.factbank.lexicon), a question word brings the kinds of value it
+# goes with, and a word no training question used borrows the known words and field-name words nearest it (Planner.enrich).
 FEATURES_V4 = ["bias", "start_named", "start_rank", "two_starts", "path_len", "path_overlap", "path_assoc", "field_overlap", "field_assoc",
                "kind_assoc", "combine_assoc", "label_field", "answer_named_choice", "answer_named_clue", "system_fits", "fanout"]
-FEATURES_V5 = FEATURES_V4 + MEANING
+FEATURES_V5 = FEATURES_V4
 
 
 @dataclass(frozen=True)
@@ -85,36 +84,33 @@ class Planner:
         self._facts: dict[str, list] = {}
         self._expanded: dict[frozenset, dict[str, float]] = {}
 
-    def expand(self, ws: set[str], plain: set[str], k: int = 3, floor: float = 0.45) -> dict[str, float]:
-        """The question's words, each with weight 1, plus the known words nearest each of its plain words (``plain_words``),
-        weighted by how near."""
-        key = frozenset(ws)
-        if key not in self._expanded:
-            out = dict.fromkeys(ws, 1.0)
-            if self.lex is not None:
-                for w in ws & plain:
-                    for n, sim in self.lex.space.neighbours(w, self.known, k, floor):
-                        out[n] = max(out.get(n, 0.0), sim)
-            self._expanded[key] = out
-        return self._expanded[key]
-
     def enrich(self, ws: set[str], plain: set[str], floor: float = 0.5, type_floor: float = 0.1) -> dict[str, float]:
         """v5: the question's words (weight 1), plus for each plain word the kinds of value it goes with ("zzwhen" for a
-        word about dates), and, for a word no training question used, the known words nearest it in meaning."""
+        word about dates), and, for a word no training question used, the known words and field-name words nearest it in
+        meaning."""
         key = frozenset(ws) | {"\0enrich"}
         if key not in self._expanded:
             out = dict.fromkeys(ws, 1.0)
             known = set(self.known)
+            lenders = sorted(known | self.field_words())
             for w in ws & plain:
                 for t in TYPE_TOKENS:
-                    sc = self.lex.types.score(w, t, k=20.0, min_count=20)
+                    sc = self.lex.kind_of(w, t)
                     if sc >= type_floor:
                         out["zz" + t] = max(out.get("zz" + t, 0.0), sc)
                 if w not in known:
-                    for n, sim in self.lex.space.neighbours(w, self.known, 3, floor):
+                    for n, sim in self.lex.space.neighbours(w, lenders, 3, floor):
                         out[n] = max(out.get(n, 0.0), sim)
             self._expanded[key] = out
         return self._expanded[key]
+
+    def field_words(self) -> set[str]:
+        """The words of the bank's own field and relation names (``due_date`` gives "due" and "date"): a new word may borrow
+        their meaning too."""
+        if not hasattr(self, "_field_words"):
+            params = [r[0] for r in self.b.con.execute("SELECT DISTINCT parameter FROM facts")]
+            self._field_words = {t for p in params if not p.startswith("text_") for t in tokens_of(p[:-3] if p.endswith("_of") else p)}
+        return self._field_words
 
     def plain_words(self, question: str) -> set[str]:
         """The words that may lend their meaning: outside quoted titles, keys and numbers, not a named person's name, and not
@@ -278,24 +274,18 @@ class Planner:
             overlap = lambda t: sum(qx.get(x, 0.0) for x in t) / max(1, len(t))  # noqa: E731 - a borrowed word overlaps as much as it is near
             agg = weighted(agg_assoc, qx, {plan.aggregate})
             kind = weighted_lift(kind_assoc, kx, {okind}) if kind_assoc is not None else 0.0
-            meaning = {"path_sim": float(np.mean([self.lex.field_sim(plain, t) for t in rel_toks])) if rel_toks else 0.0,
-                       "field_sim": self.lex.field_sim(plain, f_toks) if f_toks else 0.0,
-                       "path_anchor": float(np.mean([self.lex.field_anchor(plain, r) for r in plan.path])) if plan.path else 0.0,
-                       "field_anchor": self.lex.field_anchor(plain, plan.field) if plan.field != "label" else 0.0,
-                       "type_fits": self.lex.type_score(plain, value_kinds(plan, okind))}
         else:
             rel = lambda t: rel_assoc.score(qw, t)  # noqa: E731
             overlap = lambda t: len(t & qw) / max(1, len(t))  # noqa: E731
             agg = agg_assoc.score(qw, {plan.aggregate})
             kind = kind_assoc.score(question_words(question), {okind}) if kind_assoc is not None else 0.0
-            meaning = dict.fromkeys(MEANING, 0.0)
         return {"bias": 1.0, "start_named": meta["named"], "start_rank": meta["rank"], "two_starts": float(len(plan.starts) == 2),
                 "path_len": float(len(plan.path)),
                 "path_overlap": float(np.mean([overlap(t) for t in rel_toks])) if rel_toks else 0.0,
                 "path_assoc": float(np.mean([rel(t) for t in rel_toks])) if rel_toks else 0.0,
                 "field_overlap": overlap(f_toks), "field_assoc": rel(f_toks) if f_toks else 0.0,
                 "kind_fits": float(fits), "kind_conflicts": float(conflicts), "kind_assoc": kind,
-                "combine_assoc": agg, "label_field": float(plan.field == "label"), **meaning,
+                "combine_assoc": agg, "label_field": float(plan.field == "label"),
                 "answer_in_question": float(in_q), "answer_named_choice": float(in_q and choice), "answer_named_clue": float(in_q and not choice),
                 "system_fits": float(bool(plan.system)),
                 "fanout": math.log1p(meta["fanout"])}
@@ -304,16 +294,6 @@ class Planner:
           names: list[str] = FEATURES) -> list[float]:
         f = self.features(question, plan, meta, rel_assoc, agg_assoc, kind_assoc)
         return [f[n] for n in names]
-
-
-def value_kinds(plan: Plan, okind: str) -> set[str]:
-    """The kinds of value a plan's answer is, or is chosen by, in the lexicon's terms (``cie.factbank.lexicon.TYPES``)."""
-    out = {"person": {"who"}, "date": {"when"}, "count": {"num"}}.get(okind, set())
-    if okind == "other" and plan.field in ("status", "state"):
-        out = {"state"}
-    if plan.aggregate in ("earliest", "latest"):
-        out = out | {"when"}
-    return out
 
 
 def weighted(assoc: Assoc, qx: dict[str, float], ptoks: set[str]) -> float:

@@ -11,10 +11,9 @@ Two kinds of evidence, both counted:
    often than words usually are ("handled by Sofia", "owner: Sofia") is a word about people. One found next to dates
    ("target Mar 5", "due Friday") is a word about dates, and so on. The names and statuses come from the documents' own
    fields.
-3. **Words that point at a field (anchoring).** Some sentences name a Linear or Jira ticket or a pull request together
-   with one of its field values, for example "Sofia is handling ENG-4278" or "PR #20501, opened by Ava". Such a
-   sentence ties its other words to that field. Counted over many sentences, a word's share of field sentences above
-   the usual share says which field it points at.
+
+(A third kind was tried in development and left out: sentences that name a ticket together with one of its field values,
+"Sofia is handling ENG-4278". There were too few of them: 219 stating an assignee in 200,000 documents.)
 
 The caller says which documents to leave out (every test set). Nothing else is used.
 
@@ -175,7 +174,7 @@ def build_space(sentences: Iterable[list[str]], min_count: int = 10, max_vocab: 
     return WordSpace(vocab, U * np.sqrt(S))
 
 
-# ------------------------------------------------------------------------------------------------------------ field anchoring
+# ------------------------------------------------------------------------------------------------- the documents' own fields
 def _person_forms(v: Any) -> list[str]:
     from cie.ingest.sources import person_name
 
@@ -188,7 +187,8 @@ def _person_forms(v: Any) -> list[str]:
 
 
 def item_facts(raw: dict[str, Any], src: str) -> tuple[str, dict[str, list[str]]] | None:
-    """A ticket's or pull request's reference and the values of its fields, in the forms a sentence would use."""
+    """A ticket's or pull request's reference and the values of its fields, in the forms a sentence would use (the people and
+    statuses that typing marks come from here)."""
     if src == "github":
         n = str(raw.get("pr_number") or "")
         if not n.isdigit():
@@ -215,8 +215,8 @@ def item_facts(raw: dict[str, Any], src: str) -> tuple[str, dict[str, list[str]]
 
 
 class Anchors:
-    """How strongly a word points at a field: its share of sentences that state that field above the usual share. Also used
-    for typing, where the counts are of word occurrences near a marker (``add_near``)."""
+    """How strongly a word goes with a kind of value: its share of occurrences near a marker of that kind, above the usual
+    share (``add_near``). ``add`` counts whole sentences instead."""
 
     def __init__(self, d: dict[str, Any] | None = None):
         d = d or {}
@@ -252,35 +252,6 @@ class Anchors:
         keep = {w for w, c in self.word.items() if c >= min_count}
         return {"n": self.n, "field": dict(self.field), "word": {w: self.word[w] for w in keep},
                 "pair": {w: dict(self.pair[w]) for w in keep if self.pair.get(w)}}
-
-
-def anchor(sentences: list[str], facts: dict[str, dict[str, list[str]]]) -> Anchors:
-    from cie.eval.memory_test import dates_in
-
-    an = Anchors()
-    for s in sentences:
-        refs = [k for k in KEY.findall(s) if k in facts] + [f"pr:{n}" for n in PR_REF.findall(s) if f"pr:{n}" in facts]
-        if not refs:
-            continue
-        low = s.lower()
-        found: set[str] = set()
-        drop: set[str] = set()
-        ds = None
-        for r in dict.fromkeys(refs):
-            for f, forms in facts[r].items():
-                for v in forms:
-                    if f == "due_date":
-                        ds = dates_in(s) if ds is None else ds
-                        hit = v in ds
-                    else:
-                        hit = bool(re.search(r"(?<!\w)" + re.escape(v) + r"(?!\w)", low))
-                    if hit:
-                        found.add(f)
-                        drop |= set(tokens(v))
-        ws = set(tokens(KEY.sub(" ", PR_REF.sub(" ", s)))) - drop
-        ws = {w for w in ws if not w.isdigit() and len(w) > 1}
-        an.add(ws, found)
-    return an
 
 
 _STATUS_RES: dict[frozenset, tuple[re.Pattern | None, re.Pattern | None]] = {}
@@ -325,36 +296,23 @@ def typing(sentences: list[str], people: set[str], statuses: set[str], window: i
 
 # ---------------------------------------------------------------------------------------------------------------- the lexicon
 class Lexicon:
-    def __init__(self, space: WordSpace, anchors: Anchors, info: dict[str, Any] | None = None, types: Anchors | None = None):
+    def __init__(self, space: WordSpace, types: Anchors | None = None, info: dict[str, Any] | None = None):
         self.space = space
-        self.anchors = anchors
         self.types = types or Anchors()
         self.info = info or {}
 
     def save(self, path: str | Path) -> None:
         np.savez_compressed(path, vocab=np.array(self.space.vocab), vectors=self.space.v.astype(np.float16),
-                            anchors=np.array(json.dumps(self.anchors.to_json())), types=np.array(json.dumps(self.types.to_json(min_count=5))),
-                            info=np.array(json.dumps(self.info)))
+                            types=np.array(json.dumps(self.types.to_json(min_count=5))), info=np.array(json.dumps(self.info)))
 
     @classmethod
     def load(cls, path: str | Path) -> Lexicon:
         z = np.load(path, allow_pickle=False)
-        types = Anchors(json.loads(str(z["types"]))) if "types" in z.files else None
-        return cls(WordSpace([str(w) for w in z["vocab"]], z["vectors"]), Anchors(json.loads(str(z["anchors"]))), json.loads(str(z["info"])),
-                   types)
+        return cls(WordSpace([str(w) for w in z["vocab"]], z["vectors"]), Anchors(json.loads(str(z["types"]))), json.loads(str(z["info"])))
 
-    def type_score(self, qwords: set[str], kinds: set[str]) -> float:
-        """How strongly the question's words go with the kinds of value a plan gives (who, when, state, num)."""
-        return max((self.types.score(w, t, k=20.0, min_count=20) for w in qwords for t in kinds), default=0.0)
-
-    def field_anchor(self, qwords: set[str], field: str) -> float:
-        base = field[:-3] if field.endswith("_of") else field
-        return max((self.anchors.score(w, base) for w in qwords), default=0.0)
-
-    def field_sim(self, qwords: set[str], ftoks: set[str]) -> float:
-        if not ftoks or not qwords:
-            return 0.0
-        return float(np.mean([max(self.space.sim(w, t) for w in qwords) for t in ftoks]))
+    def kind_of(self, w: str, kind: str) -> float:
+        """How strongly a word goes with a kind of value (who, when, state, num)."""
+        return self.types.score(w, kind, k=20.0, min_count=20)
 
 
 def build(index_path: Path, root: Path, exclude_dirs: list[Path], out: Path, n_docs: int = 60_000, seed: int = 23, window: int = 4,
@@ -375,7 +333,6 @@ def build(index_path: Path, root: Path, exclude_dirs: list[Path], out: Path, n_d
                 for f in PEOPLE_FIELDS:
                     people.update(p for p in _person_forms(raw.get(f)) if " " in p)
     log(f"  {len(sents):,} sentences from {n_docs:,} documents, {time.perf_counter() - t0:.0f} s")
-    facts: dict[str, dict[str, list[str]]] = {}
     statuses: set[str] = set()
     for d, rel in index.items():
         s = rel.split("/")[0]
@@ -384,20 +341,17 @@ def build(index_path: Path, root: Path, exclude_dirs: list[Path], out: Path, n_d
         raw = _read(src, rel)
         got = item_facts(raw, s) if isinstance(raw, dict) else None
         if got:
-            facts[got[0]] = got[1]
             statuses.update(got[1].get("status", []))
             for f in ("assignee", "creator", "reporter", "author", "reviewers"):
                 people.update(p for p in got[1].get(f, []) if " " in p)
     statuses = {v for v in statuses if len(v) >= 4 and v.replace(" ", "").isalpha()}
     ty = typing(sents, people, statuses)
     log(f"  typing: {len(people):,} people, {len(statuses)} statuses, words near a marker: {dict(ty.field)}")
-    an = anchor(sents, facts)
-    log(f"  anchoring: {len(facts):,} tickets and pull requests, {int(an.n):,} sentences name one, fields stated: {dict(an.field)}")
     space = build_space((tokens(s) for s in sents), window=window, log=log)
     info = {"documents": n_docs, "seed": seed, "window": window, "sentences": len(sents), "excluded_documents": len(exclude), "words": len(space.vocab),
-            "anchor_sentences": int(an.n), "anchor_fields": dict(an.field), "people": len(people), "statuses": sorted(statuses),
+            "people": len(people), "statuses": sorted(statuses),
             "typed": dict(ty.field), "seconds": round(time.perf_counter() - t0, 1)}
-    lex = Lexicon(space, an, info, ty)
+    lex = Lexicon(space, ty, info)
     lex.save(out)
     return info
 
@@ -421,9 +375,8 @@ def main(argv: list[str] | None = None) -> Any:
     for w in a.words:
         s = stem(w)
         near = lex.space.neighbours(s, lex.space.vocab[:20_000], k=8, floor=0.0)
-        fields = {f: round(lex.anchors.score(s, f), 3) for f in lex.anchors.field}
-        kinds = {t: round(lex.types.score(s, t, k=20.0, min_count=20), 3) for t in lex.types.field}
-        print(f"{w}: " + ", ".join(f"{n} {v:.2f}" for n, v in near) + f" | fields {fields} | kinds {kinds}")
+        kinds = {t: round(lex.kind_of(s, t), 3) for t in lex.types.field}
+        print(f"{w}: " + ", ".join(f"{n} {v:.2f}" for n, v in near) + f" | kinds {kinds}")
     return None
 
 

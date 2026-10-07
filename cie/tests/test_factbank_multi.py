@@ -172,7 +172,7 @@ def test_v5_new_words_borrow_meaning_from_the_documents(tmp_path):
         sents += [f"{who} will own the ticket and drive it", f"{who} is assigned the ticket and will drive it",
                   f"the deadline is {rng.choice(['2026-03-05', '2026-04-01'])} for the launch", "the launch looks fine and the pool is warm"]
     space = L.build_space((L.tokens(s) for s in sents), min_count=5, window=4, dim=6, log=lambda *_: None)
-    lex = L.Lexicon(space, L.Anchors(), {}, L.typing(sents, {"omar singh", "liam chen", "maya chen"}, set()))
+    lex = L.Lexicon(space, L.typing(sents, {"omar singh", "liam chen", "maya chen"}, set()), {})
     tb = _bank(tmp_path)
     pl = P.Planner(tb, "v4", lex, known=["assign", "many", "linear", "issu", "date"])
     plain = pl.plain_words('How many Linear issues does Omar Singh own? See "Fix keycard reader" and ENG-11.')

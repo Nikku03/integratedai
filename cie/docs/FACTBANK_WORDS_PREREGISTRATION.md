@@ -94,3 +94,44 @@ The mean is the mean of the three groups (link, combine, compare).
 - the retest set, which has already been seen.
 
 **Not allowed:** looking at the new-words set before the run.
+
+## Frozen before the run (added after development, before the new-words set was asked)
+
+**The method.** v5 keeps v4's plan features and weights scheme. What changes is the words the features are computed from
+(`Planner.enrich` in `cie/src/cie/factbank/plans.py`):
+1. **The kind of value.** Each plain word of the question brings the kinds of value it goes with in the company's text:
+   people, dates, statuses or numbers (`cie/src/cie/factbank/lexicon.py`, typing). For example, "due" goes with dates.
+2. **Borrowed meaning.** A word that no training question used borrows the meaning of the three known words nearest it,
+   when they are at least 0.5 close in the word space. The known words are the training questions' words and the words
+   of the bank's own field names ("due", "date", "assign", "status", "author"…). A borrowed word counts toward
+   associations and toward the overlap with relation and field names, weighted by how near it is.
+
+Plain words exclude names, keys, numbers, quoted titles and the engine's stop words.
+
+**The lexicon.**
+- 200,000 documents, stratified by source, seed 23. None is from the 5,000-document haystack, the retest set or this
+  test set.
+- 11.5 million sentences, 131 million words, 40,000 words kept.
+- Window of 2 words, 150 dimensions.
+- `lexicon200k_w2.npz`, sha256 `f0d531476f707d7f…`.
+
+The file also holds field-anchoring counts from an earlier version of the code. They are not used and were removed
+from the code: there were too few such sentences.
+
+**The plan lessons** are learned from the same 48 training questions: `plan_lessons_v5.json`, sha256
+`61f7930607b92af5…`.
+
+**Development results** (training questions and the retest set only):
+
+| | training, in-sample | training, one wording held out at a time | retest set (seen) |
+|---|---|---|---|
+| v4 | 0.927 | 0.752 | 0.596 |
+| **v5 (frozen)** | 0.927 | 0.752 | 0.631 |
+
+**Tried and dropped in development:**
+- separate learned features for word similarity, field anchoring and the kind of value: no gain;
+- leaving out every question with the same wording while learning: worse (0.435 on the retest set);
+- smaller lexicons (20,000 and 60,000 documents, window 4).
+
+Across the development checks, the gain over v4 is small (+0.035 on the retest set, none on the held-out training
+wordings). So rule 1 (+0.10) may well not be met.
