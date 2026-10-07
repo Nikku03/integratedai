@@ -1,0 +1,2516 @@
+{
+ "weights": [
+  -9.219486888583003,
+  1.0978786277548636,
+  -0.24813406699563403,
+  -3.5592188530867763,
+  0.3590496185381999,
+  1.538712415741242,
+  -0.07588477892488403,
+  0.5083273198683184,
+  4.46874536893117,
+  7.971428780169888,
+  3.4941095428662514,
+  3.693351784359605,
+  5.567320724779665,
+  -2.540297137026965,
+  0.7411013390172286,
+  0.22953764964949833
+ ],
+ "rel_assoc": {
+  "pair": {
+   "issu": {
+    "assign": 13.0,
+    "owner": 9.0,
+    "attend": 4.0,
+    "redwood": 3.0,
+    "creat": 7.0,
+    "date": 7.0,
+    "due": 7.0,
+    "updat": 7.0,
+    "link": 5.0,
+    "linear": 1.0,
+    "key": 2.0,
+    "custom": 2.0,
+    "creator": 7.0,
+    "item": 1.0,
+    "review": 1.0,
+    "relat": 2.0,
+    "action": 1.0,
+    "issu": 2.0,
+    "confluence": 1.0,
+    "dependenci": 2.0,
+    "page": 1.0,
+    "issue": 2.0,
+    "referenc": 2.0,
+    "parent": 2.0,
+    "sub": 1.0
+   },
+   "pool": {
+    "assign": 1.0,
+    "owner": 1.0
+   },
+   "took": {
+    "assign": 4.0,
+    "owner": 4.0,
+    "attend": 1.0,
+    "redwood": 1.0
+   },
+   "logs": {
+    "assign": 1.0,
+    "owner": 1.0
+   },
+   "assign": {
+    "assign": 27.0,
+    "owner": 13.0,
+    "attend": 6.0,
+    "item": 2.0,
+    "custom": 3.0,
+    "attachment": 3.0,
+    "link": 10.0,
+    "action": 2.0,
+    "referenc": 3.0,
+    "author": 1.0,
+    "linear": 2.0,
+    "jira": 1.0,
+    "dependenci": 5.0,
+    "redwood": 4.0,
+    "issue": 3.0,
+    "issu": 5.0,
+    "sub": 2.0,
+    "parent": 3.0,
+    "creator": 9.0,
+    "review": 2.0,
+    "creat": 4.0,
+    "due": 4.0,
+    "date": 4.0,
+    "updat": 4.0,
+    "relat": 2.0,
+    "key": 1.0,
+    "confluence": 1.0,
+    "page": 1.0
+   },
+   "linear": {
+    "assign": 27.0,
+    "owner": 16.0,
+    "referenc": 7.0,
+    "relat": 3.0,
+    "author": 3.0,
+    "link": 12.0,
+    "linear": 6.0,
+    "jira": 2.0,
+    "attend": 7.0,
+    "item": 2.0,
+    "custom": 4.0,
+    "attachment": 3.0,
+    "action": 2.0,
+    "creat": 12.0,
+    "date": 12.0,
+    "updat": 12.0,
+    "due": 12.0,
+    "redwood": 4.0,
+    "issue": 3.0,
+    "issu": 3.0,
+    "sub": 2.0,
+    "parent": 3.0,
+    "creator": 10.0,
+    "review": 3.0,
+    "dependenci": 4.0,
+    "statu": 2.0,
+    "key": 2.0,
+    "confluence": 1.0,
+    "page": 1.0
+   },
+   "queue": {
+    "assign": 1.0,
+    "owner": 1.0
+   },
+   "hot": {
+    "assign": 1.0,
+    "owner": 1.0
+   },
+   "provide": {
+    "assign": 2.0,
+    "owner": 2.0
+   },
+   "scal": {
+    "assign": 1.0,
+    "owner": 1.0
+   },
+   "orion": {
+    "assign": 1.0,
+    "owner": 1.0
+   },
+   "model": {
+    "assign": 1.0,
+    "owner": 1.0
+   },
+   "dive": {
+    "assign": 1.0,
+    "owner": 1.0
+   },
+   "anonymiz": {
+    "assign": 1.0,
+    "owner": 1.0
+   },
+   "item": {
+    "assign": 8.0,
+    "owner": 8.0,
+    "attend": 2.0,
+    "redwood": 2.0
+   },
+   "research": {
+    "assign": 1.0,
+    "owner": 1.0
+   },
+   "keys": {
+    "assign": 8.0,
+    "owner": 8.0,
+    "attend": 2.0,
+    "redwood": 2.0
+   },
+   "prefix": {
+    "assign": 1.0,
+    "owner": 1.0
+   },
+   "theory": {
+    "assign": 1.0,
+    "owner": 1.0
+   },
+   "meet": {
+    "assign": 4.0,
+    "owner": 4.0,
+    "attend": 1.0,
+    "redwood": 1.0
+   },
+   "deep": {
+    "assign": 1.0,
+    "owner": 1.0
+   },
+   "person": {
+    "assign": 6.0,
+    "owner": 4.0,
+    "referenc": 2.0,
+    "creator": 1.0,
+    "review": 1.0,
+    "author": 1.0,
+    "link": 2.0,
+    "linear": 2.0,
+    "dependenci": 1.0,
+    "attend": 1.0,
+    "redwood": 1.0
+   },
+   "action": {
+    "assign": 8.0,
+    "owner": 8.0,
+    "attend": 2.0,
+    "redwood": 2.0
+   },
+   "one": {
+    "issue": 1.0,
+    "creat": 1.0,
+    "referenc": 1.0,
+    "parent": 1.0,
+    "date": 1.0,
+    "updat": 1.0,
+    "due": 1.0,
+    "dependenci": 1.0
+   },
+   "eng": {
+    "issue": 2.0,
+    "creat": 7.0,
+    "referenc": 5.0,
+    "parent": 2.0,
+    "date": 7.0,
+    "updat": 7.0,
+    "due": 7.0,
+    "dependenci": 11.0,
+    "relat": 1.0,
+    "author": 2.0,
+    "assign": 6.0,
+    "link": 5.0,
+    "linear": 3.0,
+    "jira": 1.0,
+    "creator": 6.0,
+    "review": 4.0,
+    "issu": 2.0,
+    "owner": 4.0,
+    "statu": 5.0,
+    "report": 3.0,
+    "key": 1.0
+   },
+   "zzwhen": {
+    "issue": 2.0,
+    "creat": 15.0,
+    "referenc": 3.0,
+    "parent": 2.0,
+    "date": 15.0,
+    "updat": 15.0,
+    "due": 15.0,
+    "dependenci": 2.0,
+    "owner": 4.0,
+    "assign": 7.0,
+    "link": 1.0,
+    "linear": 1.0,
+    "key": 2.0,
+    "attend": 2.0,
+    "redwood": 1.0,
+    "custom": 2.0,
+    "creator": 2.0
+   },
+   "zznum": {
+    "issue": 2.0,
+    "creat": 13.0,
+    "referenc": 3.0,
+    "parent": 2.0,
+    "date": 13.0,
+    "updat": 13.0,
+    "due": 13.0,
+    "dependenci": 2.0,
+    "owner": 4.0,
+    "assign": 7.0,
+    "link": 1.0,
+    "linear": 1.0,
+    "key": 2.0,
+    "attend": 2.0,
+    "redwood": 1.0,
+    "custom": 2.0,
+    "creator": 2.0
+   },
+   "des": {
+    "issue": 2.0,
+    "creat": 2.0,
+    "referenc": 2.0,
+    "parent": 2.0,
+    "date": 2.0,
+    "updat": 2.0,
+    "due": 2.0,
+    "dependenci": 1.0
+   },
+   "first": {
+    "issue": 1.0,
+    "creat": 6.0,
+    "referenc": 1.0,
+    "parent": 1.0,
+    "date": 6.0,
+    "updat": 6.0,
+    "due": 6.0,
+    "dependenci": 1.0,
+    "owner": 4.0,
+    "assign": 5.0,
+    "attend": 2.0,
+    "redwood": 1.0,
+    "custom": 2.0,
+    "creator": 2.0,
+    "key": 1.0
+   },
+   "due": {
+    "issue": 2.0,
+    "creat": 15.0,
+    "referenc": 3.0,
+    "parent": 2.0,
+    "date": 15.0,
+    "updat": 15.0,
+    "due": 15.0,
+    "dependenci": 2.0,
+    "owner": 4.0,
+    "assign": 7.0,
+    "link": 1.0,
+    "linear": 1.0,
+    "key": 2.0,
+    "attend": 2.0,
+    "redwood": 1.0,
+    "custom": 2.0,
+    "creator": 2.0
+   },
+   "issue": {
+    "referenc": 3.0,
+    "relat": 1.0,
+    "author": 2.0,
+    "assign": 7.0,
+    "link": 5.0,
+    "linear": 3.0,
+    "jira": 2.0,
+    "creat": 3.0,
+    "date": 3.0,
+    "updat": 3.0,
+    "due": 3.0,
+    "owner": 5.0,
+    "issu": 2.0,
+    "creator": 3.0,
+    "review": 2.0,
+    "statu": 3.0,
+    "report": 2.0,
+    "dependenci": 3.0,
+    "attend": 1.0,
+    "custom": 1.0
+   },
+   "zzwho": {
+    "referenc": 1.0,
+    "relat": 1.0,
+    "author": 1.0,
+    "assign": 1.0,
+    "link": 1.0,
+    "linear": 1.0,
+    "jira": 1.0
+   },
+   "pull": {
+    "referenc": 3.0,
+    "relat": 1.0,
+    "author": 3.0,
+    "assign": 3.0,
+    "link": 4.0,
+    "linear": 4.0,
+    "jira": 2.0,
+    "statu": 2.0,
+    "creator": 1.0,
+    "review": 1.0,
+    "dependenci": 1.0
+   },
+   "author": {
+    "referenc": 1.0,
+    "relat": 1.0,
+    "author": 1.0,
+    "assign": 1.0,
+    "link": 1.0,
+    "linear": 1.0,
+    "jira": 1.0
+   },
+   "request": {
+    "referenc": 3.0,
+    "relat": 1.0,
+    "author": 3.0,
+    "assign": 3.0,
+    "link": 4.0,
+    "linear": 4.0,
+    "jira": 2.0,
+    "statu": 2.0,
+    "creator": 1.0,
+    "review": 1.0,
+    "dependenci": 1.0
+   },
+   "link": {
+    "referenc": 3.0,
+    "relat": 1.0,
+    "author": 2.0,
+    "assign": 9.0,
+    "link": 7.0,
+    "linear": 2.0,
+    "jira": 2.0,
+    "dependenci": 8.0,
+    "issu": 5.0,
+    "creator": 5.0,
+    "review": 4.0,
+    "owner": 4.0,
+    "statu": 6.0,
+    "report": 3.0,
+    "resolution": 1.0,
+    "issue": 1.0,
+    "parent": 1.0
+   },
+   "reye": {
+    "attend": 1.0,
+    "item": 1.0,
+    "custom": 1.0,
+    "attachment": 1.0,
+    "owner": 2.0,
+    "assign": 2.0,
+    "link": 1.0,
+    "action": 1.0,
+    "creat": 1.0,
+    "date": 1.0,
+    "updat": 1.0,
+    "due": 1.0
+   },
+   "ticket": {
+    "attend": 2.0,
+    "item": 1.0,
+    "custom": 1.0,
+    "attachment": 3.0,
+    "owner": 6.0,
+    "assign": 14.0,
+    "link": 7.0,
+    "action": 1.0,
+    "dependenci": 7.0,
+    "issue": 2.0,
+    "referenc": 3.0,
+    "issu": 4.0,
+    "sub": 1.0,
+    "parent": 2.0,
+    "creator": 5.0,
+    "review": 4.0,
+    "creat": 2.0,
+    "due": 2.0,
+    "date": 2.0,
+    "updat": 2.0,
+    "linear": 2.0,
+    "statu": 5.0,
+    "author": 1.0,
+    "report": 1.0,
+    "redwood": 1.0,
+    "resolution": 1.0
+   },
+   "marco": {
+    "attend": 1.0,
+    "item": 1.0,
+    "custom": 1.0,
+    "attachment": 1.0,
+    "owner": 2.0,
+    "assign": 2.0,
+    "link": 1.0,
+    "action": 1.0,
+    "creat": 1.0,
+    "date": 1.0,
+    "updat": 1.0,
+    "due": 1.0
+   },
+   "numb": {
+    "attend": 1.0,
+    "item": 1.0,
+    "custom": 1.0,
+    "attachment": 3.0,
+    "owner": 2.0,
+    "assign": 3.0,
+    "link": 2.0,
+    "action": 1.0,
+    "issue": 1.0,
+    "referenc": 1.0,
+    "issu": 1.0,
+    "sub": 1.0,
+    "parent": 1.0,
+    "creator": 2.0,
+    "review": 1.0,
+    "dependenci": 1.0
+   },
+   "has": {
+    "creat": 10.0,
+    "date": 10.0,
+    "updat": 10.0,
+    "due": 10.0,
+    "owner": 3.0,
+    "assign": 6.0,
+    "link": 2.0,
+    "linear": 2.0,
+    "key": 1.0,
+    "referenc": 3.0,
+    "attend": 1.0,
+    "custom": 1.0,
+    "issue": 1.0,
+    "parent": 1.0,
+    "dependenci": 1.0
+   },
+   "key": {
+    "creat": 7.0,
+    "date": 7.0,
+    "updat": 7.0,
+    "due": 7.0,
+    "owner": 5.0,
+    "assign": 8.0,
+    "attend": 2.0,
+    "redwood": 1.0,
+    "custom": 2.0,
+    "creator": 2.0,
+    "key": 1.0
+   },
+   "owns": {
+    "attend": 1.0,
+    "owner": 4.0,
+    "redwood": 1.0,
+    "assign": 4.0
+   },
+   "console": {
+    "attend": 1.0,
+    "owner": 1.0,
+    "redwood": 1.0,
+    "assign": 1.0
+   },
+   "economic": {
+    "attend": 1.0,
+    "owner": 1.0,
+    "redwood": 1.0,
+    "assign": 1.0
+   },
+   "spreadsheet": {
+    "attend": 1.0,
+    "owner": 1.0,
+    "redwood": 1.0,
+    "assign": 1.0
+   },
+   "tour": {
+    "attend": 1.0,
+    "owner": 1.0,
+    "redwood": 1.0,
+    "assign": 1.0
+   },
+   "projection": {
+    "attend": 1.0,
+    "owner": 1.0,
+    "redwood": 1.0,
+    "assign": 1.0
+   },
+   "sample": {
+    "attend": 1.0,
+    "owner": 2.0,
+    "redwood": 1.0,
+    "assign": 2.0
+   },
+   "cascadeedge": {
+    "attend": 1.0,
+    "owner": 1.0,
+    "redwood": 1.0,
+    "assign": 1.0
+   },
+   "route": {
+    "attend": 1.0,
+    "owner": 1.0,
+    "redwood": 1.0,
+    "assign": 1.0
+   },
+   "whoev": {
+    "attend": 1.0,
+    "owner": 4.0,
+    "redwood": 1.0,
+    "assign": 4.0
+   },
+   "cost": {
+    "attend": 1.0,
+    "owner": 1.0,
+    "redwood": 1.0,
+    "assign": 1.0
+   },
+   "traffic": {
+    "attend": 1.0,
+    "owner": 2.0,
+    "redwood": 1.0,
+    "assign": 2.0
+   },
+   "run": {
+    "attend": 1.0,
+    "owner": 1.0,
+    "redwood": 1.0,
+    "assign": 1.0
+   },
+   "share": {
+    "attend": 1.0,
+    "owner": 1.0,
+    "redwood": 1.0,
+    "assign": 1.0
+   },
+   "initial": {
+    "attend": 1.0,
+    "owner": 1.0,
+    "redwood": 1.0,
+    "assign": 1.0
+   },
+   "between": {
+    "creat": 5.0,
+    "date": 5.0,
+    "due": 5.0,
+    "updat": 5.0,
+    "link": 1.0,
+    "linear": 1.0,
+    "key": 1.0,
+    "issue": 1.0,
+    "referenc": 2.0,
+    "parent": 1.0,
+    "dependenci": 1.0
+   },
+   "date": {
+    "creat": 7.0,
+    "date": 7.0,
+    "due": 7.0,
+    "updat": 7.0,
+    "assign": 2.0,
+    "link": 1.0,
+    "linear": 1.0,
+    "key": 1.0,
+    "issue": 1.0,
+    "referenc": 2.0,
+    "parent": 1.0,
+    "dependenci": 1.0
+   },
+   "earli": {
+    "creat": 5.0,
+    "date": 5.0,
+    "due": 5.0,
+    "updat": 5.0,
+    "link": 1.0,
+    "linear": 1.0,
+    "key": 1.0,
+    "issue": 1.0,
+    "referenc": 2.0,
+    "parent": 1.0,
+    "dependenci": 1.0
+   },
+   "referenc": {
+    "referenc": 3.0,
+    "creator": 2.0,
+    "review": 2.0,
+    "author": 2.0,
+    "assign": 3.0,
+    "link": 4.0,
+    "linear": 4.0,
+    "dependenci": 2.0,
+    "statu": 2.0
+   },
+   "pr": {
+    "referenc": 2.0,
+    "creator": 1.0,
+    "review": 1.0,
+    "author": 1.0,
+    "assign": 2.0,
+    "link": 2.0,
+    "linear": 2.0,
+    "dependenci": 1.0
+   },
+   "open": {
+    "referenc": 1.0,
+    "creator": 1.0,
+    "review": 1.0,
+    "author": 1.0,
+    "assign": 1.0,
+    "link": 1.0,
+    "linear": 1.0,
+    "dependenci": 1.0
+   },
+   "kapoor": {
+    "issue": 1.0,
+    "referenc": 1.0,
+    "issu": 1.0,
+    "sub": 1.0,
+    "parent": 1.0,
+    "creator": 1.0,
+    "review": 1.0,
+    "attachment": 1.0,
+    "assign": 2.0,
+    "dependenci": 1.0,
+    "creat": 1.0,
+    "due": 1.0,
+    "date": 1.0,
+    "updat": 1.0
+   },
+   "ravi": {
+    "issue": 1.0,
+    "referenc": 1.0,
+    "issu": 1.0,
+    "sub": 1.0,
+    "parent": 1.0,
+    "creator": 1.0,
+    "review": 1.0,
+    "attachment": 1.0,
+    "assign": 2.0,
+    "dependenci": 1.0,
+    "creat": 1.0,
+    "due": 1.0,
+    "date": 1.0,
+    "updat": 1.0
+   },
+   "among": {
+    "creat": 2.0,
+    "due": 2.0,
+    "assign": 2.0,
+    "date": 2.0,
+    "updat": 2.0
+   },
+   "earliest": {
+    "creat": 2.0,
+    "due": 2.0,
+    "assign": 2.0,
+    "date": 2.0,
+    "updat": 2.0
+   },
+   "statu": {
+    "link": 4.0,
+    "linear": 2.0,
+    "statu": 6.0,
+    "issu": 2.0,
+    "creator": 5.0,
+    "review": 3.0,
+    "owner": 3.0,
+    "report": 2.0,
+    "dependenci": 5.0,
+    "referenc": 2.0,
+    "author": 1.0,
+    "assign": 2.0
+   },
+   "leave": {
+    "assign": 1.0,
+    "owner": 1.0
+   },
+   "network": {
+    "assign": 2.0,
+    "owner": 2.0
+   },
+   "pilot": {
+    "assign": 1.0,
+    "owner": 1.0
+   },
+   "constraint": {
+    "assign": 1.0,
+    "owner": 1.0
+   },
+   "bifurcation": {
+    "assign": 1.0,
+    "owner": 1.0
+   },
+   "cannot": {
+    "assign": 1.0,
+    "owner": 1.0
+   },
+   "region": {
+    "assign": 1.0,
+    "owner": 1.0
+   },
+   "benchmark": {
+    "assign": 1.0,
+    "owner": 1.0
+   },
+   "data": {
+    "assign": 3.0,
+    "owner": 3.0
+   },
+   "regulatory": {
+    "assign": 1.0,
+    "owner": 1.0
+   },
+   "egres": {
+    "assign": 1.0,
+    "owner": 1.0
+   },
+   "confirm": {
+    "assign": 2.0,
+    "owner": 2.0
+   },
+   "residency": {
+    "assign": 2.0,
+    "owner": 2.0
+   },
+   "policy": {
+    "assign": 1.0,
+    "owner": 1.0
+   },
+   "scop": {
+    "assign": 3.0,
+    "owner": 3.0
+   },
+   "class": {
+    "assign": 1.0,
+    "owner": 1.0
+   },
+   "nair": {
+    "attend": 1.0,
+    "owner": 2.0,
+    "assign": 2.0,
+    "custom": 1.0,
+    "creator": 1.0,
+    "creat": 1.0,
+    "date": 1.0,
+    "updat": 1.0,
+    "due": 1.0
+   },
+   "priya": {
+    "attend": 1.0,
+    "owner": 2.0,
+    "assign": 2.0,
+    "custom": 1.0,
+    "creator": 1.0,
+    "creat": 1.0,
+    "date": 1.0,
+    "updat": 1.0,
+    "due": 1.0
+   },
+   "count": {
+    "attend": 1.0,
+    "owner": 1.0,
+    "assign": 3.0,
+    "custom": 1.0,
+    "creator": 3.0,
+    "issu": 1.0,
+    "confluence": 1.0,
+    "link": 2.0,
+    "dependenci": 1.0,
+    "relat": 1.0,
+    "page": 1.0,
+    "issue": 1.0,
+    "parent": 1.0
+   },
+   "anoth": {
+    "issu": 3.0,
+    "assign": 5.0,
+    "link": 3.0,
+    "owner": 1.0,
+    "statu": 2.0,
+    "creator": 1.0,
+    "report": 1.0,
+    "review": 2.0,
+    "dependenci": 3.0,
+    "resolution": 1.0,
+    "issue": 1.0,
+    "parent": 1.0
+   },
+   "sup": {
+    "issu": 2.0,
+    "assign": 2.0,
+    "link": 2.0,
+    "review": 1.0,
+    "resolution": 1.0,
+    "statu": 1.0
+   },
+   "upload": {
+    "assign": 1.0,
+    "owner": 1.0
+   },
+   "eval": {
+    "assign": 2.0,
+    "owner": 2.0
+   },
+   "client": {
+    "assign": 2.0,
+    "owner": 2.0
+   },
+   "trac": {
+    "assign": 1.0,
+    "owner": 1.0
+   },
+   "script": {
+    "assign": 2.0,
+    "owner": 2.0
+   },
+   "handshake": {
+    "assign": 2.0,
+    "owner": 2.0
+   },
+   "stream": {
+    "assign": 2.0,
+    "owner": 2.0
+   },
+   "canonical": {
+    "assign": 1.0,
+    "owner": 1.0
+   },
+   "soon": {
+    "creat": 2.0,
+    "date": 2.0,
+    "due": 2.0,
+    "updat": 2.0
+   },
+   "marcu": {
+    "attend": 3.0,
+    "redwood": 2.0,
+    "item": 1.0,
+    "creator": 3.0,
+    "review": 1.0,
+    "relat": 1.0,
+    "owner": 4.0,
+    "assign": 4.0,
+    "link": 2.0,
+    "action": 1.0,
+    "creat": 2.0,
+    "date": 2.0,
+    "custom": 2.0,
+    "updat": 2.0,
+    "due": 2.0,
+    "key": 1.0,
+    "attachment": 1.0
+   },
+   "nguyen": {
+    "attend": 2.0,
+    "redwood": 2.0,
+    "item": 1.0,
+    "creator": 2.0,
+    "review": 1.0,
+    "relat": 1.0,
+    "owner": 2.0,
+    "assign": 2.0,
+    "link": 1.0,
+    "action": 1.0,
+    "creat": 1.0,
+    "date": 1.0,
+    "custom": 1.0,
+    "updat": 1.0,
+    "due": 1.0,
+    "key": 1.0
+   },
+   "many": {
+    "attend": 1.0,
+    "redwood": 1.0,
+    "item": 1.0,
+    "creator": 2.0,
+    "review": 1.0,
+    "relat": 1.0,
+    "owner": 1.0,
+    "assign": 2.0,
+    "link": 2.0,
+    "action": 1.0,
+    "issu": 1.0,
+    "sub": 1.0
+   },
+   "them": {
+    "referenc": 1.0,
+    "assign": 1.0,
+    "link": 1.0,
+    "linear": 1.0
+   },
+   "ips": {
+    "assign": 1.0,
+    "owner": 1.0
+   },
+   "dedicat": {
+    "assign": 1.0,
+    "owner": 1.0
+   },
+   "test": {
+    "assign": 1.0,
+    "owner": 1.0
+   },
+   "allowlist": {
+    "assign": 1.0,
+    "owner": 1.0
+   },
+   "acces": {
+    "assign": 1.0,
+    "owner": 1.0
+   },
+   "daniel": {
+    "creator": 1.0,
+    "issu": 1.0,
+    "confluence": 1.0,
+    "assign": 1.0,
+    "link": 1.0,
+    "dependenci": 1.0,
+    "relat": 1.0,
+    "page": 1.0
+   },
+   "kim": {
+    "creator": 1.0,
+    "issu": 1.0,
+    "confluence": 1.0,
+    "assign": 1.0,
+    "link": 1.0,
+    "dependenci": 1.0,
+    "relat": 1.0,
+    "page": 1.0
+   },
+   "lee": {
+    "creat": 1.0,
+    "attend": 1.0,
+    "date": 1.0,
+    "custom": 1.0,
+    "updat": 1.0,
+    "due": 1.0,
+    "owner": 2.0,
+    "assign": 2.0,
+    "attachment": 1.0,
+    "link": 1.0,
+    "creator": 1.0
+   },
+   "regulator": {
+    "assign": 1.0,
+    "owner": 1.0
+   },
+   "logg": {
+    "assign": 1.0,
+    "owner": 1.0
+   },
+   "constellation": {
+    "assign": 1.0,
+    "owner": 1.0
+   },
+   "sovereignty": {
+    "assign": 1.0,
+    "owner": 1.0
+   },
+   "spec": {
+    "assign": 1.0,
+    "owner": 1.0
+   },
+   "bank": {
+    "assign": 1.0,
+    "owner": 1.0
+   },
+   "notify": {
+    "assign": 1.0,
+    "owner": 1.0
+   },
+   "discovery": {
+    "assign": 1.0,
+    "owner": 1.0
+   },
+   "pm": {
+    "issue": 1.0,
+    "creat": 1.0,
+    "referenc": 1.0,
+    "parent": 1.0,
+    "date": 1.0,
+    "updat": 1.0,
+    "due": 1.0
+   },
+   "torr": {
+    "creat": 1.0,
+    "date": 1.0,
+    "creator": 2.0,
+    "updat": 1.0,
+    "due": 1.0,
+    "assign": 2.0,
+    "issue": 1.0,
+    "link": 1.0,
+    "parent": 1.0
+   },
+   "miguel": {
+    "creat": 2.0,
+    "date": 2.0,
+    "creator": 3.0,
+    "updat": 2.0,
+    "due": 2.0,
+    "assign": 4.0,
+    "issue": 1.0,
+    "link": 2.0,
+    "parent": 1.0,
+    "issu": 1.0,
+    "sub": 1.0
+   },
+   "state": {
+    "owner": 1.0,
+    "statu": 2.0,
+    "creator": 1.0,
+    "report": 1.0,
+    "review": 2.0,
+    "dependenci": 1.0,
+    "issu": 1.0,
+    "resolution": 1.0,
+    "assign": 1.0,
+    "link": 1.0
+   },
+   "deployment": {
+    "attend": 1.0,
+    "owner": 1.0,
+    "redwood": 1.0,
+    "assign": 1.0
+   },
+   "approval": {
+    "attend": 1.0,
+    "owner": 1.0,
+    "redwood": 1.0,
+    "assign": 1.0
+   },
+   "window": {
+    "attend": 1.0,
+    "owner": 1.0,
+    "redwood": 1.0,
+    "assign": 1.0
+   },
+   "sterile": {
+    "attend": 1.0,
+    "owner": 1.0,
+    "redwood": 1.0,
+    "assign": 1.0
+   },
+   "flow": {
+    "attend": 1.0,
+    "owner": 1.0,
+    "redwood": 1.0,
+    "assign": 1.0
+   },
+   "token": {
+    "attend": 1.0,
+    "owner": 1.0,
+    "redwood": 1.0,
+    "assign": 1.0
+   },
+   "someone": {
+    "attend": 1.0,
+    "owner": 2.0,
+    "redwood": 1.0,
+    "assign": 2.0
+   },
+   "choreography": {
+    "attend": 1.0,
+    "owner": 1.0,
+    "redwood": 1.0,
+    "assign": 1.0
+   },
+   "runbook": {
+    "attend": 1.0,
+    "owner": 2.0,
+    "redwood": 1.0,
+    "assign": 2.0
+   },
+   "fallback": {
+    "attend": 1.0,
+    "owner": 1.0,
+    "redwood": 1.0,
+    "assign": 1.0
+   },
+   "edit": {
+    "attend": 1.0,
+    "owner": 1.0,
+    "redwood": 1.0,
+    "assign": 1.0
+   },
+   "ortega": {
+    "creat": 1.0,
+    "due": 1.0,
+    "assign": 2.0,
+    "date": 1.0,
+    "updat": 1.0,
+    "issu": 1.0,
+    "sub": 1.0,
+    "link": 1.0,
+    "creator": 1.0
+   },
+   "review": {
+    "assign": 1.0,
+    "owner": 1.0
+   },
+   "draft": {
+    "assign": 1.0,
+    "owner": 1.0
+   },
+   "manufactur": {
+    "assign": 1.0,
+    "owner": 1.0
+   },
+   "wrap": {
+    "assign": 1.0,
+    "owner": 1.0
+   },
+   "rotation": {
+    "assign": 1.0,
+    "owner": 1.0
+   },
+   "orchid": {
+    "assign": 1.0,
+    "owner": 1.0
+   },
+   "byo": {
+    "assign": 1.0,
+    "owner": 1.0
+   },
+   "guardrail": {
+    "assign": 1.0,
+    "owner": 1.0
+   },
+   "import": {
+    "assign": 1.0,
+    "owner": 1.0
+   },
+   "emergency": {
+    "assign": 1.0,
+    "owner": 1.0
+   },
+   "step": {
+    "assign": 1.0,
+    "owner": 1.0
+   },
+   "hsm": {
+    "assign": 1.0,
+    "owner": 1.0
+   },
+   "int": {
+    "issu": 1.0,
+    "assign": 1.0,
+    "link": 1.0
+   }
+  },
+  "word": {
+   "issu": 18.0,
+   "pool": 1.0,
+   "took": 4.0,
+   "logs": 1.0,
+   "assign": 27.0,
+   "linear": 33.0,
+   "queue": 1.0,
+   "hot": 1.0,
+   "provide": 2.0,
+   "scal": 1.0,
+   "orion": 1.0,
+   "model": 1.0,
+   "dive": 1.0,
+   "anonymiz": 1.0,
+   "item": 8.0,
+   "research": 1.0,
+   "keys": 8.0,
+   "prefix": 1.0,
+   "theory": 1.0,
+   "meet": 4.0,
+   "deep": 1.0,
+   "person": 6.0,
+   "action": 8.0,
+   "one": 1.0,
+   "eng": 17.0,
+   "zzwhen": 15.0,
+   "zznum": 13.0,
+   "des": 2.0,
+   "first": 6.0,
+   "due": 15.0,
+   "issue": 9.0,
+   "zzwho": 1.0,
+   "pull": 4.0,
+   "author": 1.0,
+   "request": 4.0,
+   "link": 13.0,
+   "reye": 2.0,
+   "ticket": 17.0,
+   "marco": 2.0,
+   "numb": 3.0,
+   "has": 11.0,
+   "key": 8.0,
+   "owns": 4.0,
+   "console": 1.0,
+   "economic": 1.0,
+   "spreadsheet": 1.0,
+   "tour": 1.0,
+   "projection": 1.0,
+   "sample": 2.0,
+   "cascadeedge": 1.0,
+   "route": 1.0,
+   "whoev": 4.0,
+   "cost": 1.0,
+   "traffic": 2.0,
+   "run": 1.0,
+   "share": 1.0,
+   "initial": 1.0,
+   "between": 5.0,
+   "date": 7.0,
+   "earli": 5.0,
+   "referenc": 4.0,
+   "pr": 2.0,
+   "open": 1.0,
+   "kapoor": 2.0,
+   "ravi": 2.0,
+   "among": 2.0,
+   "earliest": 2.0,
+   "statu": 6.0,
+   "leave": 1.0,
+   "network": 2.0,
+   "pilot": 1.0,
+   "constraint": 1.0,
+   "bifurcation": 1.0,
+   "cannot": 1.0,
+   "region": 1.0,
+   "benchmark": 1.0,
+   "data": 3.0,
+   "regulatory": 1.0,
+   "egres": 1.0,
+   "confirm": 2.0,
+   "residency": 2.0,
+   "policy": 1.0,
+   "scop": 3.0,
+   "class": 1.0,
+   "nair": 2.0,
+   "priya": 2.0,
+   "count": 3.0,
+   "anoth": 6.0,
+   "sup": 2.0,
+   "upload": 1.0,
+   "eval": 2.0,
+   "client": 2.0,
+   "trac": 1.0,
+   "script": 2.0,
+   "handshake": 2.0,
+   "stream": 2.0,
+   "canonical": 1.0,
+   "soon": 2.0,
+   "marcu": 4.0,
+   "nguyen": 2.0,
+   "many": 2.0,
+   "them": 1.0,
+   "ips": 1.0,
+   "dedicat": 1.0,
+   "test": 1.0,
+   "allowlist": 1.0,
+   "acces": 1.0,
+   "daniel": 1.0,
+   "kim": 1.0,
+   "lee": 2.0,
+   "regulator": 1.0,
+   "logg": 1.0,
+   "constellation": 1.0,
+   "sovereignty": 1.0,
+   "spec": 1.0,
+   "bank": 1.0,
+   "notify": 1.0,
+   "discovery": 1.0,
+   "pm": 1.0,
+   "torr": 2.0,
+   "miguel": 4.0,
+   "state": 2.0,
+   "deployment": 1.0,
+   "approval": 1.0,
+   "window": 1.0,
+   "sterile": 1.0,
+   "flow": 1.0,
+   "token": 1.0,
+   "someone": 2.0,
+   "choreography": 1.0,
+   "runbook": 2.0,
+   "fallback": 1.0,
+   "edit": 1.0,
+   "ortega": 2.0,
+   "review": 1.0,
+   "draft": 1.0,
+   "manufactur": 1.0,
+   "wrap": 1.0,
+   "rotation": 1.0,
+   "orchid": 1.0,
+   "byo": 1.0,
+   "guardrail": 1.0,
+   "import": 1.0,
+   "emergency": 1.0,
+   "step": 1.0,
+   "hsm": 1.0,
+   "int": 1.0
+  }
+ },
+ "agg_assoc": {
+  "pair": {
+   "issu": {
+    "list": 8.0,
+    "earliest": 7.0,
+    "single": 2.0,
+    "count": 5.0
+   },
+   "pool": {
+    "list": 1.0
+   },
+   "took": {
+    "list": 4.0
+   },
+   "logs": {
+    "list": 1.0
+   },
+   "assign": {
+    "list": 16.0,
+    "count": 8.0,
+    "single": 8.0,
+    "earliest": 4.0
+   },
+   "linear": {
+    "list": 13.0,
+    "single": 7.0,
+    "count": 8.0,
+    "earliest": 12.0
+   },
+   "queue": {
+    "list": 1.0
+   },
+   "hot": {
+    "list": 1.0
+   },
+   "provide": {
+    "list": 2.0
+   },
+   "scal": {
+    "list": 1.0
+   },
+   "orion": {
+    "list": 1.0
+   },
+   "model": {
+    "list": 1.0
+   },
+   "dive": {
+    "list": 1.0
+   },
+   "anonymiz": {
+    "list": 1.0
+   },
+   "item": {
+    "list": 8.0
+   },
+   "research": {
+    "list": 1.0
+   },
+   "keys": {
+    "list": 8.0
+   },
+   "prefix": {
+    "list": 1.0
+   },
+   "theory": {
+    "list": 1.0
+   },
+   "meet": {
+    "list": 4.0
+   },
+   "deep": {
+    "list": 1.0
+   },
+   "person": {
+    "list": 6.0,
+    "single": 2.0
+   },
+   "action": {
+    "list": 8.0
+   },
+   "one": {
+    "earliest": 1.0,
+    "latest": 1.0
+   },
+   "eng": {
+    "earliest": 7.0,
+    "latest": 1.0,
+    "list": 6.0,
+    "single": 11.0
+   },
+   "zzwhen": {
+    "earliest": 15.0,
+    "latest": 1.0,
+    "list": 2.0,
+    "single": 2.0
+   },
+   "zznum": {
+    "earliest": 13.0,
+    "latest": 1.0,
+    "list": 2.0,
+    "single": 2.0
+   },
+   "des": {
+    "earliest": 2.0,
+    "latest": 1.0
+   },
+   "first": {
+    "earliest": 6.0,
+    "latest": 1.0,
+    "list": 1.0,
+    "single": 1.0
+   },
+   "due": {
+    "earliest": 15.0,
+    "latest": 1.0,
+    "list": 2.0,
+    "single": 2.0
+   },
+   "issue": {
+    "list": 3.0,
+    "single": 6.0,
+    "earliest": 3.0
+   },
+   "zzwho": {
+    "list": 1.0,
+    "single": 1.0
+   },
+   "pull": {
+    "list": 2.0,
+    "single": 4.0
+   },
+   "author": {
+    "list": 1.0,
+    "single": 1.0
+   },
+   "request": {
+    "list": 2.0,
+    "single": 4.0
+   },
+   "link": {
+    "list": 7.0,
+    "single": 13.0
+   },
+   "reye": {
+    "count": 1.0,
+    "earliest": 1.0
+   },
+   "ticket": {
+    "count": 3.0,
+    "list": 7.0,
+    "single": 10.0,
+    "earliest": 2.0
+   },
+   "marco": {
+    "count": 1.0,
+    "earliest": 1.0
+   },
+   "numb": {
+    "count": 3.0
+   },
+   "has": {
+    "earliest": 10.0,
+    "list": 2.0,
+    "single": 2.0
+   },
+   "key": {
+    "earliest": 7.0,
+    "list": 2.0,
+    "single": 1.0
+   },
+   "owns": {
+    "list": 4.0
+   },
+   "console": {
+    "list": 1.0
+   },
+   "economic": {
+    "list": 1.0
+   },
+   "spreadsheet": {
+    "list": 1.0
+   },
+   "tour": {
+    "list": 1.0
+   },
+   "projection": {
+    "list": 1.0
+   },
+   "sample": {
+    "list": 2.0
+   },
+   "cascadeedge": {
+    "list": 1.0
+   },
+   "route": {
+    "list": 1.0
+   },
+   "whoev": {
+    "list": 4.0
+   },
+   "cost": {
+    "list": 1.0
+   },
+   "traffic": {
+    "list": 2.0
+   },
+   "run": {
+    "list": 1.0
+   },
+   "share": {
+    "list": 1.0
+   },
+   "initial": {
+    "list": 1.0
+   },
+   "between": {
+    "earliest": 5.0,
+    "list": 1.0,
+    "single": 1.0
+   },
+   "date": {
+    "earliest": 7.0,
+    "list": 1.0,
+    "single": 1.0
+   },
+   "earli": {
+    "earliest": 5.0,
+    "list": 1.0,
+    "single": 1.0
+   },
+   "referenc": {
+    "list": 2.0,
+    "single": 4.0
+   },
+   "pr": {
+    "list": 2.0,
+    "single": 2.0
+   },
+   "open": {
+    "list": 1.0,
+    "single": 1.0
+   },
+   "kapoor": {
+    "count": 1.0,
+    "earliest": 1.0
+   },
+   "ravi": {
+    "count": 1.0,
+    "earliest": 1.0
+   },
+   "among": {
+    "earliest": 2.0
+   },
+   "earliest": {
+    "earliest": 2.0
+   },
+   "statu": {
+    "single": 6.0
+   },
+   "leave": {
+    "list": 1.0
+   },
+   "network": {
+    "list": 2.0
+   },
+   "pilot": {
+    "list": 1.0
+   },
+   "constraint": {
+    "list": 1.0
+   },
+   "bifurcation": {
+    "list": 1.0
+   },
+   "cannot": {
+    "list": 1.0
+   },
+   "region": {
+    "list": 1.0
+   },
+   "benchmark": {
+    "list": 1.0
+   },
+   "data": {
+    "list": 3.0
+   },
+   "regulatory": {
+    "list": 1.0
+   },
+   "egres": {
+    "list": 1.0
+   },
+   "confirm": {
+    "list": 2.0
+   },
+   "residency": {
+    "list": 2.0
+   },
+   "policy": {
+    "list": 1.0
+   },
+   "scop": {
+    "list": 3.0
+   },
+   "class": {
+    "list": 1.0
+   },
+   "nair": {
+    "count": 1.0,
+    "earliest": 1.0
+   },
+   "priya": {
+    "count": 1.0,
+    "earliest": 1.0
+   },
+   "count": {
+    "count": 3.0
+   },
+   "anoth": {
+    "list": 4.0,
+    "single": 6.0
+   },
+   "sup": {
+    "list": 1.0,
+    "single": 2.0
+   },
+   "upload": {
+    "list": 1.0
+   },
+   "eval": {
+    "list": 2.0
+   },
+   "client": {
+    "list": 2.0
+   },
+   "trac": {
+    "list": 1.0
+   },
+   "script": {
+    "list": 2.0
+   },
+   "handshake": {
+    "list": 2.0
+   },
+   "stream": {
+    "list": 2.0
+   },
+   "canonical": {
+    "list": 1.0
+   },
+   "soon": {
+    "earliest": 2.0
+   },
+   "marcu": {
+    "count": 2.0,
+    "earliest": 2.0,
+    "list": 1.0,
+    "single": 1.0
+   },
+   "nguyen": {
+    "count": 1.0,
+    "earliest": 1.0,
+    "list": 1.0,
+    "single": 1.0
+   },
+   "many": {
+    "count": 2.0
+   },
+   "them": {
+    "list": 1.0,
+    "single": 1.0
+   },
+   "ips": {
+    "list": 1.0
+   },
+   "dedicat": {
+    "list": 1.0
+   },
+   "test": {
+    "list": 1.0
+   },
+   "allowlist": {
+    "list": 1.0
+   },
+   "acces": {
+    "list": 1.0
+   },
+   "daniel": {
+    "count": 1.0
+   },
+   "kim": {
+    "count": 1.0
+   },
+   "lee": {
+    "earliest": 1.0,
+    "count": 1.0
+   },
+   "regulator": {
+    "list": 1.0
+   },
+   "logg": {
+    "list": 1.0
+   },
+   "constellation": {
+    "list": 1.0
+   },
+   "sovereignty": {
+    "list": 1.0
+   },
+   "spec": {
+    "list": 1.0
+   },
+   "bank": {
+    "list": 1.0
+   },
+   "notify": {
+    "list": 1.0
+   },
+   "discovery": {
+    "list": 1.0
+   },
+   "pm": {
+    "earliest": 1.0
+   },
+   "torr": {
+    "earliest": 1.0,
+    "count": 1.0
+   },
+   "miguel": {
+    "earliest": 2.0,
+    "count": 2.0
+   },
+   "state": {
+    "single": 2.0
+   },
+   "deployment": {
+    "list": 1.0
+   },
+   "approval": {
+    "list": 1.0
+   },
+   "window": {
+    "list": 1.0
+   },
+   "sterile": {
+    "list": 1.0
+   },
+   "flow": {
+    "list": 1.0
+   },
+   "token": {
+    "list": 1.0
+   },
+   "someone": {
+    "list": 2.0
+   },
+   "choreography": {
+    "list": 1.0
+   },
+   "runbook": {
+    "list": 2.0
+   },
+   "fallback": {
+    "list": 1.0
+   },
+   "edit": {
+    "list": 1.0
+   },
+   "ortega": {
+    "earliest": 1.0,
+    "count": 1.0
+   },
+   "review": {
+    "list": 1.0
+   },
+   "draft": {
+    "list": 1.0
+   },
+   "manufactur": {
+    "list": 1.0
+   },
+   "wrap": {
+    "list": 1.0
+   },
+   "rotation": {
+    "list": 1.0
+   },
+   "orchid": {
+    "list": 1.0
+   },
+   "byo": {
+    "list": 1.0
+   },
+   "guardrail": {
+    "list": 1.0
+   },
+   "import": {
+    "list": 1.0
+   },
+   "emergency": {
+    "list": 1.0
+   },
+   "step": {
+    "list": 1.0
+   },
+   "hsm": {
+    "list": 1.0
+   },
+   "int": {
+    "list": 1.0,
+    "single": 1.0
+   }
+  },
+  "word": {
+   "issu": 18.0,
+   "pool": 1.0,
+   "took": 4.0,
+   "logs": 1.0,
+   "assign": 27.0,
+   "linear": 33.0,
+   "queue": 1.0,
+   "hot": 1.0,
+   "provide": 2.0,
+   "scal": 1.0,
+   "orion": 1.0,
+   "model": 1.0,
+   "dive": 1.0,
+   "anonymiz": 1.0,
+   "item": 8.0,
+   "research": 1.0,
+   "keys": 8.0,
+   "prefix": 1.0,
+   "theory": 1.0,
+   "meet": 4.0,
+   "deep": 1.0,
+   "person": 6.0,
+   "action": 8.0,
+   "one": 1.0,
+   "eng": 17.0,
+   "zzwhen": 15.0,
+   "zznum": 13.0,
+   "des": 2.0,
+   "first": 6.0,
+   "due": 15.0,
+   "issue": 9.0,
+   "zzwho": 1.0,
+   "pull": 4.0,
+   "author": 1.0,
+   "request": 4.0,
+   "link": 13.0,
+   "reye": 2.0,
+   "ticket": 17.0,
+   "marco": 2.0,
+   "numb": 3.0,
+   "has": 11.0,
+   "key": 8.0,
+   "owns": 4.0,
+   "console": 1.0,
+   "economic": 1.0,
+   "spreadsheet": 1.0,
+   "tour": 1.0,
+   "projection": 1.0,
+   "sample": 2.0,
+   "cascadeedge": 1.0,
+   "route": 1.0,
+   "whoev": 4.0,
+   "cost": 1.0,
+   "traffic": 2.0,
+   "run": 1.0,
+   "share": 1.0,
+   "initial": 1.0,
+   "between": 5.0,
+   "date": 7.0,
+   "earli": 5.0,
+   "referenc": 4.0,
+   "pr": 2.0,
+   "open": 1.0,
+   "kapoor": 2.0,
+   "ravi": 2.0,
+   "among": 2.0,
+   "earliest": 2.0,
+   "statu": 6.0,
+   "leave": 1.0,
+   "network": 2.0,
+   "pilot": 1.0,
+   "constraint": 1.0,
+   "bifurcation": 1.0,
+   "cannot": 1.0,
+   "region": 1.0,
+   "benchmark": 1.0,
+   "data": 3.0,
+   "regulatory": 1.0,
+   "egres": 1.0,
+   "confirm": 2.0,
+   "residency": 2.0,
+   "policy": 1.0,
+   "scop": 3.0,
+   "class": 1.0,
+   "nair": 2.0,
+   "priya": 2.0,
+   "count": 3.0,
+   "anoth": 6.0,
+   "sup": 2.0,
+   "upload": 1.0,
+   "eval": 2.0,
+   "client": 2.0,
+   "trac": 1.0,
+   "script": 2.0,
+   "handshake": 2.0,
+   "stream": 2.0,
+   "canonical": 1.0,
+   "soon": 2.0,
+   "marcu": 4.0,
+   "nguyen": 2.0,
+   "many": 2.0,
+   "them": 1.0,
+   "ips": 1.0,
+   "dedicat": 1.0,
+   "test": 1.0,
+   "allowlist": 1.0,
+   "acces": 1.0,
+   "daniel": 1.0,
+   "kim": 1.0,
+   "lee": 2.0,
+   "regulator": 1.0,
+   "logg": 1.0,
+   "constellation": 1.0,
+   "sovereignty": 1.0,
+   "spec": 1.0,
+   "bank": 1.0,
+   "notify": 1.0,
+   "discovery": 1.0,
+   "pm": 1.0,
+   "torr": 2.0,
+   "miguel": 4.0,
+   "state": 2.0,
+   "deployment": 1.0,
+   "approval": 1.0,
+   "window": 1.0,
+   "sterile": 1.0,
+   "flow": 1.0,
+   "token": 1.0,
+   "someone": 2.0,
+   "choreography": 1.0,
+   "runbook": 2.0,
+   "fallback": 1.0,
+   "edit": 1.0,
+   "ortega": 2.0,
+   "review": 1.0,
+   "draft": 1.0,
+   "manufactur": 1.0,
+   "wrap": 1.0,
+   "rotation": 1.0,
+   "orchid": 1.0,
+   "byo": 1.0,
+   "guardrail": 1.0,
+   "import": 1.0,
+   "emergency": 1.0,
+   "step": 1.0,
+   "hsm": 1.0,
+   "int": 1.0
+  }
+ },
+ "trained_on": {
+  "questions": 48,
+  "plans": 10560,
+  "right_plans": 245,
+  "questions_with_a_right_plan": 48
+ },
+ "features": [
+  "bias",
+  "start_named",
+  "start_rank",
+  "two_starts",
+  "path_len",
+  "path_overlap",
+  "path_assoc",
+  "field_overlap",
+  "field_assoc",
+  "kind_assoc",
+  "combine_assoc",
+  "label_field",
+  "answer_named_choice",
+  "answer_named_clue",
+  "system_fits",
+  "fanout"
+ ],
+ "kind_assoc": {
+  "n": 48.0,
+  "target": {
+   "key": 32.0,
+   "person": 9.0,
+   "count": 8.0,
+   "other": 10.0
+  },
+  "word": {
+   "issu": 18.0,
+   "in": 6.0,
+   "give": 18.0,
+   "item": 8.0,
+   "the": 37.0,
+   "took": 4.0,
+   "keys": 8.0,
+   "to": 22.0,
+   "assign": 27.0,
+   "which": 16.0,
+   "linear": 33.0,
+   "are": 4.0,
+   "meet": 4.0,
+   "person": 6.0,
+   "action": 8.0,
+   "who": 9.0,
+   "one": 1.0,
+   "eng": 17.0,
+   "zzwhen": 15.0,
+   "zznum": 13.0,
+   "des": 2.0,
+   "first": 6.0,
+   "due": 15.0,
+   "is": 22.0,
+   "or": 3.0,
+   "pull": 4.0,
+   "author": 1.0,
+   "request": 4.0,
+   "issue": 9.0,
+   "zzwho": 1.0,
+   "link": 13.0,
+   "reye": 2.0,
+   "as": 3.0,
+   "of": 15.0,
+   "ticket": 17.0,
+   "marco": 2.0,
+   "what": 11.0,
+   "with": 3.0,
+   "numb": 3.0,
+   "has": 11.0,
+   "key": 7.0,
+   "that": 10.0,
+   "owns": 4.0,
+   "whoev": 4.0,
+   "from": 7.0,
+   "and": 5.0,
+   "between": 5.0,
+   "date": 7.0,
+   "earli": 5.0,
+   "referenc": 4.0,
+   "pr": 2.0,
+   "open": 1.0,
+   "kapoor": 2.0,
+   "ravi": 2.0,
+   "earliest": 2.0,
+   "among": 2.0,
+   "statu": 6.0,
+   "nair": 2.0,
+   "priya": 2.0,
+   "count": 3.0,
+   "its": 4.0,
+   "anoth": 6.0,
+   "sup": 2.0,
+   "soon": 2.0,
+   "how": 2.0,
+   "marcu": 4.0,
+   "nguyen": 2.0,
+   "many": 2.0,
+   "them": 1.0,
+   "by": 1.0,
+   "daniel": 1.0,
+   "kim": 1.0,
+   "lee": 2.0,
+   "pm": 1.0,
+   "torr": 2.0,
+   "miguel": 4.0,
+   "state": 2.0,
+   "list": 2.0,
+   "someone": 2.0,
+   "ortega": 2.0,
+   "int": 1.0
+  },
+  "pair": {
+   "issu": {
+    "key": 13.0,
+    "other": 2.0,
+    "count": 5.0
+   },
+   "in": {
+    "key": 4.0,
+    "other": 2.0
+   },
+   "give": {
+    "key": 15.0,
+    "other": 4.0
+   },
+   "item": {
+    "key": 8.0
+   },
+   "the": {
+    "key": 25.0,
+    "person": 5.0,
+    "count": 6.0,
+    "other": 8.0
+   },
+   "took": {
+    "key": 4.0
+   },
+   "keys": {
+    "key": 8.0
+   },
+   "to": {
+    "key": 16.0,
+    "person": 4.0,
+    "count": 5.0,
+    "other": 2.0
+   },
+   "assign": {
+    "key": 19.0,
+    "count": 8.0,
+    "person": 7.0,
+    "other": 1.0
+   },
+   "which": {
+    "key": 16.0,
+    "person": 2.0,
+    "other": 2.0
+   },
+   "linear": {
+    "key": 23.0,
+    "person": 3.0,
+    "count": 8.0,
+    "other": 4.0
+   },
+   "are": {
+    "key": 2.0,
+    "count": 2.0
+   },
+   "meet": {
+    "key": 4.0
+   },
+   "person": {
+    "key": 6.0,
+    "person": 2.0
+   },
+   "action": {
+    "key": 8.0
+   },
+   "who": {
+    "key": 9.0,
+    "person": 7.0
+   },
+   "one": {
+    "key": 1.0
+   },
+   "eng": {
+    "key": 12.0,
+    "person": 5.0,
+    "other": 6.0
+   },
+   "zzwhen": {
+    "key": 15.0,
+    "other": 2.0
+   },
+   "zznum": {
+    "key": 13.0,
+    "other": 2.0
+   },
+   "des": {
+    "key": 2.0
+   },
+   "first": {
+    "key": 6.0,
+    "other": 1.0
+   },
+   "due": {
+    "key": 15.0,
+    "other": 2.0
+   },
+   "is": {
+    "key": 14.0,
+    "count": 3.0,
+    "person": 6.0,
+    "other": 6.0
+   },
+   "or": {
+    "key": 3.0
+   },
+   "pull": {
+    "key": 2.0,
+    "person": 2.0,
+    "other": 2.0
+   },
+   "author": {
+    "key": 1.0,
+    "person": 1.0
+   },
+   "request": {
+    "key": 2.0,
+    "person": 2.0,
+    "other": 2.0
+   },
+   "issue": {
+    "key": 6.0,
+    "person": 3.0,
+    "other": 3.0
+   },
+   "zzwho": {
+    "key": 1.0,
+    "person": 1.0
+   },
+   "link": {
+    "key": 7.0,
+    "person": 7.0,
+    "other": 6.0
+   },
+   "reye": {
+    "count": 1.0,
+    "key": 1.0
+   },
+   "as": {
+    "count": 3.0
+   },
+   "of": {
+    "count": 3.0,
+    "key": 6.0,
+    "other": 7.0
+   },
+   "ticket": {
+    "count": 3.0,
+    "key": 9.0,
+    "person": 5.0,
+    "other": 5.0
+   },
+   "marco": {
+    "count": 1.0,
+    "key": 1.0
+   },
+   "what": {
+    "count": 3.0,
+    "key": 3.0,
+    "other": 5.0
+   },
+   "with": {
+    "count": 3.0
+   },
+   "numb": {
+    "count": 3.0
+   },
+   "has": {
+    "key": 11.0,
+    "other": 1.0,
+    "person": 1.0
+   },
+   "key": {
+    "key": 7.0,
+    "other": 1.0
+   },
+   "that": {
+    "key": 5.0,
+    "person": 3.0,
+    "other": 5.0
+   },
+   "owns": {
+    "key": 4.0
+   },
+   "whoev": {
+    "key": 4.0
+   },
+   "from": {
+    "key": 4.0,
+    "other": 3.0
+   },
+   "and": {
+    "key": 5.0,
+    "other": 1.0
+   },
+   "between": {
+    "key": 5.0,
+    "other": 1.0
+   },
+   "date": {
+    "key": 7.0,
+    "other": 1.0
+   },
+   "earli": {
+    "key": 5.0,
+    "other": 1.0
+   },
+   "referenc": {
+    "key": 2.0,
+    "person": 2.0,
+    "other": 2.0
+   },
+   "pr": {
+    "key": 2.0,
+    "person": 2.0
+   },
+   "open": {
+    "key": 1.0,
+    "person": 1.0
+   },
+   "kapoor": {
+    "count": 1.0,
+    "key": 1.0
+   },
+   "ravi": {
+    "count": 1.0,
+    "key": 1.0
+   },
+   "earliest": {
+    "key": 2.0
+   },
+   "among": {
+    "key": 2.0
+   },
+   "statu": {
+    "other": 6.0
+   },
+   "nair": {
+    "count": 1.0,
+    "key": 1.0
+   },
+   "priya": {
+    "count": 1.0,
+    "key": 1.0
+   },
+   "count": {
+    "count": 3.0
+   },
+   "its": {
+    "key": 4.0,
+    "person": 4.0
+   },
+   "anoth": {
+    "key": 4.0,
+    "person": 4.0,
+    "other": 2.0
+   },
+   "sup": {
+    "key": 1.0,
+    "person": 1.0,
+    "other": 1.0
+   },
+   "soon": {
+    "key": 2.0
+   },
+   "how": {
+    "count": 2.0
+   },
+   "marcu": {
+    "count": 2.0,
+    "other": 1.0,
+    "key": 2.0
+   },
+   "nguyen": {
+    "count": 1.0,
+    "other": 1.0,
+    "key": 1.0
+   },
+   "many": {
+    "count": 2.0
+   },
+   "them": {
+    "key": 1.0,
+    "person": 1.0
+   },
+   "by": {
+    "key": 1.0,
+    "person": 1.0
+   },
+   "daniel": {
+    "count": 1.0
+   },
+   "kim": {
+    "count": 1.0
+   },
+   "lee": {
+    "key": 1.0,
+    "count": 1.0
+   },
+   "pm": {
+    "key": 1.0
+   },
+   "torr": {
+    "key": 1.0,
+    "count": 1.0
+   },
+   "miguel": {
+    "key": 2.0,
+    "count": 2.0
+   },
+   "state": {
+    "other": 2.0
+   },
+   "list": {
+    "key": 2.0
+   },
+   "someone": {
+    "key": 2.0
+   },
+   "ortega": {
+    "key": 1.0,
+    "count": 1.0
+   },
+   "int": {
+    "key": 1.0,
+    "person": 1.0
+   }
+  }
+ },
+ "rules": "v4",
+ "lexicon": "/tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/lexicon200k_w2.npz",
+ "known_words": [
+  "action",
+  "among",
+  "anoth",
+  "assign",
+  "author",
+  "between",
+  "count",
+  "date",
+  "due",
+  "earli",
+  "earliest",
+  "first",
+  "has",
+  "issu",
+  "issue",
+  "item",
+  "key",
+  "keys",
+  "linear",
+  "link",
+  "many",
+  "meet",
+  "numb",
+  "one",
+  "open",
+  "owns",
+  "person",
+  "pr",
+  "pull",
+  "referenc",
+  "request",
+  "someone",
+  "soon",
+  "state",
+  "statu",
+  "them",
+  "ticket",
+  "took",
+  "whoev"
+ ]
+}

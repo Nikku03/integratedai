@@ -1,0 +1,36 @@
+{
+ "documents": 200000,
+ "seed": 23,
+ "window": 2,
+ "sentences": 11547042,
+ "excluded_documents": 5189,
+ "words": 40000,
+ "people": 60210,
+ "statuses": [
+  "backlog",
+  "blocked",
+  "closed",
+  "done",
+  "in progress",
+  "in review",
+  "merged",
+  "open",
+  "planned",
+  "plned",
+  "resolved",
+  "triage",
+  "waiting on approval",
+  "waiting on approver",
+  "waiting on customer",
+  "waiting on security"
+ ],
+ "typed": {
+  "num": 8428536,
+  "who": 3880169,
+  "when": 1877650,
+  "state": 77697
+ },
+ "seconds": 703.2,
+ "sha256": "f0d531476f707d7f6b8a1ad70a7cb359a01c8aa2803d1919d5a656d278d02413",
+ "file": "lexicon200k_w2.npz (12.6 MB, not committed; rebuild with python -m cie.factbank.lexicon build --docs 200000 --window 2)"
+}

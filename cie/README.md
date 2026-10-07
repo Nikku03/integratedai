@@ -62,6 +62,12 @@ weights pick one ([`docs/FACTBANK_MULTI_RESULTS.md`](docs/FACTBANK_MULTI_RESULTS
   the first version. Changed names and dates made no difference.
 - **Not met:** it scored 0.93 on its training questions. New words still trip it ("own", "nearest deadline").
 
+**New words without a language model** ([`docs/FACTBANK_WORDS_RESULTS.md`](docs/FACTBANK_WORDS_RESULTS.md)): word
+meanings were learned by counting over 200,000 of the company's documents, and a new word borrowed the meaning of the
+nearest known one. It did not help: 0.58 against 0.61 without it, on 50 questions where half the words were new. This
+technical text places words by topic ("created" next to "ticket") rather than by meaning. Most of the plain English
+words in managers' questions ("responsible", "urgent", "tally") found no close known word.
+
 ## Brain-wired reasoning neurons (research)
 
 `cie.neuro` wires the reasoning engine's spiking neurons like a piece of Blue Brain's cortex model (directed cliques of

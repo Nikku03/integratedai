@@ -524,10 +524,30 @@ def retest(fresh_dir: Path, changed: Path, training: Path) -> dict[str, Any]:
     return rep
 
 
-def to_markdown(rep: dict[str, Any], title: str = "Questions that need several documents") -> str:
+def words_test(words_dir: Path, changed: Path, training: Path, retest_dir: Path) -> dict[str, Any]:
+    """The new-words test's rules (docs/FACTBANK_WORDS_PREREGISTRATION.md): v5 against v4 on new wordings."""
+    m = {"training": measure(training), "held_out": measure(words_dir), "changed": measure(changed), "retest": measure(retest_dir)}
+    d = lambda a, b: round(a - b, 3) if a is not None and b is not None else None  # noqa: E731
+    h, t, r = m["held_out"]["direct"], m["training"]["direct"], m["retest"]["direct"]
+    rules = {
+        "1 new words are understood (v5 - v4 >= +0.10, new-words set)": at_least(d(h["v5"]["mean"], h["v4"]["mean"]), 0.10),
+        "2 principles, not memorisation (v5 new-words set >= v5 training - 0.15)": at_least(d(h["v5"]["mean"], t["v5"]["mean"]), -0.15),
+        "3 holds when the information changes (v5 changed >= v5 new-words set - 0.05)":
+            at_least(d(m["changed"]["direct"]["v5"]["mean"], h["v5"]["mean"]), -0.05),
+        "4 no harm where v4 already worked (v5 >= v4 - 0.03 on the retest set and on the training questions)":
+            at_least(d(r["v5"]["mean"], r["v4"]["mean"]), -0.03) and at_least(d(t["v5"]["mean"], t["v4"]["mean"]), -0.03),
+    }
+    rep = {**m, "rules": rules}
+    (words_dir / "words_report.json").write_text(json.dumps(rep, indent=1, default=str))
+    (words_dir / "words_report.md").write_text(to_markdown(rep, "Understanding new words: the new-words set", ("training", "held_out", "changed", "retest")))
+    return rep
+
+
+def to_markdown(rep: dict[str, Any], title: str = "Questions that need several documents",
+                parts: tuple[str, ...] = ("training", "held_out", "changed")) -> str:
     g = ("link", "combine", "compare", "mean")
     lines = [f"### {title}", ""]
-    for name in ("training", "held_out", "changed"):
+    for name in parts:
         m = rep[name]
         lines += [f"**{name.replace('_', '-')}** ({m['questions']} questions: {', '.join(f'{k} {v}' for k, v in m['by_group'].items())})", "",
                   "| | " + " | ".join(g) + " |", "|---|" + "---|" * len(g)]
@@ -544,7 +564,7 @@ def to_markdown(rep: dict[str, Any], title: str = "Questions that need several d
 
 def main(argv: list[str] | None = None) -> Any:
     ap = argparse.ArgumentParser(prog="python -m cie.eval.factbank_multi")
-    ap.add_argument("cmd", choices=["build", "train", "ask", "compare", "fresh", "retest"])
+    ap.add_argument("cmd", choices=["build", "train", "ask", "compare", "fresh", "retest", "words"])
     ap.add_argument("--docs", help="the haystack's documents as JSON: dsid, source, title, raw")
     ap.add_argument("--index")
     ap.add_argument("--root")
@@ -561,6 +581,7 @@ def main(argv: list[str] | None = None) -> Any:
     ap.add_argument("--name", default="factbank_v3", help="ask: the answers' file name (factbank_v3 or factbank_v4)")
     ap.add_argument("--exclude", nargs="*", default=[], help="fresh: work folders whose documents the new set must not use")
     ap.add_argument("--out")
+    ap.add_argument("--retest", help="words: the retest's work folder")
     a = ap.parse_args(argv)
     if a.cmd == "build":
         out = build(Path(a.docs), Path(a.index), a.root, Path(a.train), Path(a.test))
@@ -570,6 +591,10 @@ def main(argv: list[str] | None = None) -> Any:
         out = train(Path(a.work), Path(a.single), Path(a.plans), a.rules, Path(a.lexicon) if a.lexicon else None)
     elif a.cmd == "ask":
         out = ask_plans(Path(a.work), Path(a.single), Path(a.plans), name=a.name)
+    elif a.cmd == "words":
+        out = words_test(Path(a.work), Path(a.changed), Path(a.train), Path(a.retest))
+        print(to_markdown(out, "Understanding new words: the new-words set", ("training", "held_out", "changed", "retest")))
+        return out
     elif a.cmd == "retest":
         out = retest(Path(a.work), Path(a.changed), Path(a.train))
         print(to_markdown(out, "Questions that need several documents: the retest on new documents"))
