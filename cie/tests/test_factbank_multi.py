@@ -1,0 +1,160 @@
+"""Questions that need several documents: plans over the fact bank, the revised (v4) rules, learning, and the test sets."""
+
+from __future__ import annotations
+
+import json
+from datetime import UTC, datetime
+
+from cie.eval import factbank_multi as M
+from cie.eval.memory_test import _jsonl, _write_jsonl
+from cie.factbank import bank as B
+from cie.factbank import plans as P
+from cie.factbank.trained import TrainedBank
+from cie.ingest.sources import SourceDoc
+
+WHEN = datetime(2026, 3, 1, tzinfo=UTC)
+
+
+def _doc(dsid, source, title, meta, keys=()):
+    return SourceDoc(dsid=dsid, source=source, rel=f"{source}/{dsid}.json", title=title, fields=[("body", "")], meta=meta, updated=WHEN,
+                     keys=list(keys))
+
+
+DOCS = [
+    (_doc("d1", "linear", "Fix keycard reader timeouts",
+          {"key": "ENG-11", "status": "In Progress", "assignee": "Omar Singh", "due_date": "2026-03-20"}, ["ENG-11"]), {}),
+    (_doc("d2", "linear", "Rotate office wifi keys",
+          {"key": "ENG-12", "status": "Done", "assignee": "Omar Singh", "due_date": "2026-04-02"}, ["ENG-12"]), {}),
+    (_doc("d3", "linear", "Replace the badge printer",
+          {"key": "ENG-13", "status": "Todo", "assignee": "Liam Chen", "due_date": "2026-05-01", "dependencies": ["ENG-12"]}, ["ENG-13"]), {}),
+    (_doc("d4", "github", "Add retry to badge sync", {"pr_number": "4821", "author": "Maya Chen", "linked_linear": ["ENG-11"]}), {}),
+]
+OMAR = "person:omar singh"
+
+
+def _bank(tmp_path):
+    p = tmp_path / "fb.sqlite"
+    B.build(p, DOCS, text_facts=True)
+    return TrainedBank(p)
+
+
+def test_plans_follow_links_and_combine(tmp_path):
+    tb = _bank(tmp_path)
+    pl = P.Planner(tb, "v4")
+    assert tb.named("What about pull request #4821?") == ["doc:d4"], "a pull request is named by its number"
+    assert pl.execute(P.Plan(("doc:d4",), ("linked_linear",), "assignee", "single")) == "Omar Singh"
+    assert pl.execute(P.Plan((OMAR,), ("assignee_of",), "label", "count")) == "2"
+    assert pl.execute(P.Plan((OMAR,), ("assignee_of",), "due_date", "earliest")) == "ENG-11"
+    assert pl.execute(P.Plan(("doc:d1", "doc:d3"), (), "due_date", "latest")) == "ENG-13"
+    journal: list = []
+    assert pl.execute(P.Plan(("doc:d3",), ("dependencies",), "assignee", "single"), journal) == "Omar Singh"
+    assert journal == [{"op": "hop", "hop": 1, "relation": "dependencies", "reached": ["doc:d2"]}], "each hop writes down what it reached"
+    # one value means one value: two issues, two statuses
+    assert pl.execute(P.Plan((OMAR,), ("assignee_of",), "status", "single")) is None
+    assert P.Planner(tb, "v3").execute(P.Plan((OMAR,), ("assignee_of",), "status", "single")) in ("In Progress", "Done")
+
+
+def test_v4_does_not_walk_back_or_echo(tmp_path):
+    tb = _bank(tmp_path)
+    q = "Who is assigned to the ticket that ENG-13 is linked to?"
+    v3, v4 = P.Planner(tb, "v3").candidates(q), P.Planner(tb, "v4").candidates(q)
+    walks_back = lambda c: [p for p, _ in c if len(p.path) == 2 and P.inverse(*p.path)]  # noqa: E731
+    echoes = lambda c: [p for p, m in c if p.starts == ("doc:d3",) and m["answer"] == "ENG-13"]  # noqa: E731 - answers with its own start
+    assert walks_back(v3) and echoes(v3), "the first version allowed both"
+    assert not walks_back(v4) and not echoes(v4)
+    assert any(p.path == ("dependencies",) and p.field == "assignee" and m["answer"] == "Omar Singh" for p, m in v4)
+
+
+def test_plan_lessons_are_learned_saved_and_used(tmp_path):
+    tb = _bank(tmp_path)
+    qs = [{"question": "Who is assigned to the Linear issue that pull request #4821 is linked to?", "expected": {"value": "Omar Singh"}},
+          {"question": "How many Linear issues are assigned to Omar Singh?", "expected": {"value": "2"}},
+          {"question": "How many Linear issues are assigned to Liam Chen?", "expected": {"value": "1"}},
+          {"question": "Which of the Linear issues assigned to Omar Singh is due first? Give the key.",
+           "expected": {"ids": ["ENG-11"], "id_kind": "key"}},
+          {"question": "Which is due sooner, ENG-11 or ENG-13?", "expected": {"ids": ["ENG-11"], "id_kind": "key"}},
+          {"question": "Who is assigned to the ticket that ENG-13 is linked to?", "expected": {"value": "Omar Singh"}}]
+    les = P.learn_plans(tb, qs, log=lambda *_: None)
+    les.save(tmp_path / "plans.json")
+    again = P.PlanLessons.load(tmp_path / "plans.json")
+    assert again.rules == "v4" and again.features == P.FEATURES_V4 and again.trained_on["questions_with_a_right_plan"] == 6
+    assert any(line.startswith("words → kind of answer") for line in again.describe())
+    ans, best, journal, top = P.answer(tb, again, qs[0]["question"])
+    assert best is not None and journal[0]["op"] == "plan" and ans == P.Planner(tb, "v4").execute(best) and top[0][1] == best
+    for q in qs:  # six questions are too few to expect the weights to be right; every answer is a plan's own answer
+        ans, best, _, _ = P.answer(tb, again, q["question"])
+        assert best is not None and ans == P.Planner(tb, "v4").execute(best)
+    # lessons saved before v4 have no features or rules: they load as the first version
+    old = {k: v for k, v in json.loads((tmp_path / "plans.json").read_text()).items() if k not in ("features", "kind_assoc", "rules")}
+    old["weights"] = old["weights"][:len(P.FEATURES)]
+    (tmp_path / "old.json").write_text(json.dumps(old))
+    v3 = P.PlanLessons.load(tmp_path / "old.json")
+    assert v3.rules == "v3" and v3.features == P.FEATURES and v3.assocs()[2] is None
+
+
+def test_lift_scores_what_a_word_adds():
+    lift = P.Lift()
+    lift.add({"how", "many", "ticket"}, {"count"})
+    lift.add({"who", "ticket"}, {"person"})
+    lift.add({"who", "ticket"}, {"person"})
+    assert lift.score({"many"}, {"count"}) > 0.2, "'many' came only with counts"
+    assert abs(lift.score({"ticket"}, {"count"})) < 1e-9, "'ticket' comes with everything: it adds nothing"
+    assert lift.score({"who"}, {"count"}) < 0 < lift.score({"who"}, {"person"})
+    assert P.Lift(lift.to_json()).score({"many"}, {"count"}) == lift.score({"many"}, {"count"})
+    assert "who" in P.question_words('Who took "the item"?') and "item" not in P.question_words('Who took "the item"?')
+
+
+def _raw_docs():
+    lin = lambda k, a, due, **x: {"dsid": f"l{k}", "source": "linear", "title": f"issue {k}",  # noqa: E731
+                                  "raw": {"key": f"ENG-{k}", "assignee": a, "due_date": due, "status": "Todo", **x}}
+    return [lin(11, "Omar Singh", "2026-03-20"), lin(12, "Omar Singh", "2026-04-02"), lin(13, "Liam Chen", "2026-05-01", dependencies=["ENG-12"]),
+            lin(14, "Liam Chen", "2026-06-01"),
+            {"dsid": "g1", "source": "github", "title": "Add retry", "raw": {"pr_number": "4821", "author": "Maya Chen", "linked_linear": ["ENG-11"]}}]
+
+
+def test_multi_document_question_sets():
+    docs = _raw_docs()
+    assert {u["kind"] for u in M.units(docs)} == {"person", "pr", "ticket"}
+    qs = M.questions(docs, {d["dsid"] for d in docs}, held_out=False, seed=1)
+    by = {q["kind"]: q for q in qs}
+    assert {"pr_issue", "issue_pr_author", "ticket_link", "person_count", "person_first", "compare_two"} <= set(by)
+    assert by["issue_pr_author"]["expected"] == {"value": "Maya Chen"} and by["issue_pr_author"]["group"] == "link"
+    counts = {q["question"]: q["expected"]["value"] for q in qs if q["kind"] == "person_count"}
+    assert sorted(counts.values()) == ["2", "2"]
+    first = next(q for q in qs if q["kind"] == "person_first" and "Omar Singh" in q["question"])
+    assert first["expected"]["ids"] == ["ENG-11"] and first["pieces"][:2] == ["2026-03-20", "ENG-11"]
+    # expected answers are computed within the set: without ENG-12, Omar has one issue and no count question
+    small = M.questions(docs, {"l11", "l13", "l14", "g1"}, held_out=False, seed=1)
+    assert not any(q["kind"] == "person_count" and "Omar" in q["question"] for q in small)
+    retest = M.questions(docs, {d["dsid"] for d in docs}, held_out=True, seed=1, retest=True)
+    wordings = {w.split("{")[0] for ws in M.RETEST.values() for w in ws}
+    assert all(any(q["question"].startswith(w) or w == "" for w in wordings) for q in retest)
+    assert not {q["question"] for q in retest} & {q["question"] for q in qs}
+    ids = M.fresh(docs, exclude={"l11"})
+    assert "l11" not in ids and ids, "a new set shares no document with what it excludes"
+
+
+def test_pieces_and_rule_checks():
+    q = {"pieces": ["ENG-11", "2026-03-20", "Omar Singh"]}
+    assert M.pieces_in(q, "ENG-11 is due March 20, 2026; assignee: omar singh") == 1.0
+    assert abs(M.pieces_in(q, "ENG-11 only") - 1 / 3) < 1e-9
+    assert M.at_least(0.0, -0.05), "a difference of exactly 0 meets a rule that allows a drop"
+    assert not M.at_least(None, -0.05) and not M.at_least(-0.06, -0.05) and M.at_least(0.2, 0.20)
+
+
+def test_changed_information_also_changes_the_pieces(tmp_path):
+    from cie.eval import factbank_split as SP
+
+    src = tmp_path / "bench" / "generated_data" / "sources" / "linear"
+    src.mkdir(parents=True)
+    (src / "l11.json").write_text(json.dumps({"key": "ENG-11", "assignee": "Omar Singh", "due_date": "2026-03-20"}))
+    work = tmp_path / "w"
+    work.mkdir()
+    (work / "haystack.json").write_text(json.dumps({"root": str(tmp_path / "bench"), "dsids": ["l11"]}))
+    (work / "index.json").write_text(json.dumps({"index": {"l11": "linear/l11.json"}}))
+    _write_jsonl(work / "questions.jsonl", [{"id": "a", "question": "Who has ENG-11?", "expected": {"value": "Omar Singh"},
+                                             "pieces": ["ENG-11", "Omar Singh", "2026-03-20"]}])
+    SP.changed(work, tmp_path / "c")
+    q = _jsonl(tmp_path / "c" / "questions.jsonl")[0]
+    assert q["pieces"][0] == "ENG-11" and q["pieces"][2] == "2026-04-12"
+    assert q["pieces"][1] == q["expected"]["value"] != "Omar Singh", "a renamed person is renamed in the pieces too"

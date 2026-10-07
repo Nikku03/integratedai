@@ -1,0 +1,7704 @@
+{
+ "training": {
+  "questions": 48,
+  "by_group": {
+   "link": 17,
+   "combine": 23,
+   "compare": 8
+  },
+  "direct": {
+   "v1": {
+    "link": 0.0,
+    "combine": 0.0,
+    "compare": 0.0,
+    "mean": 0.0
+   },
+   "v2": {
+    "link": 0.118,
+    "combine": 0.0,
+    "compare": 0.0,
+    "mean": 0.039
+   },
+   "v3": {
+    "link": 0.176,
+    "combine": 0.0,
+    "compare": 0.75,
+    "mean": 0.309
+   },
+   "v4": {
+    "link": 0.824,
+    "combine": 0.957,
+    "compare": 1.0,
+    "mean": 0.927
+   }
+  },
+  "pieces": {
+   "bank": {
+    "2000": {
+     "link": 0.176,
+     "combine": 0.123,
+     "compare": 0.0,
+     "mean": 0.1
+    },
+    "24000": {
+     "link": 0.5,
+     "combine": 0.293,
+     "compare": 0.188,
+     "mean": 0.327
+    }
+   },
+   "plain": {
+    "2000": {
+     "link": 0.235,
+     "combine": 0.199,
+     "compare": 0.25,
+     "mean": 0.228
+    },
+    "24000": {
+     "link": 0.735,
+     "combine": 0.681,
+     "compare": 1.0,
+     "mean": 0.805
+    }
+   },
+   "plain-words": {
+    "2000": {
+     "link": 0.5,
+     "combine": 0.246,
+     "compare": 0.938,
+     "mean": 0.561
+    },
+    "24000": {
+     "link": 0.853,
+     "combine": 0.75,
+     "compare": 1.0,
+     "mean": 0.868
+    }
+   },
+   "v1": {
+    "2000": {
+     "link": 0.824,
+     "combine": 0.496,
+     "compare": 0.875,
+     "mean": 0.732
+    },
+    "24000": {
+     "link": 1.0,
+     "combine": 1.0,
+     "compare": 1.0,
+     "mean": 1.0
+    }
+   },
+   "v2": {
+    "2000": {
+     "link": 0.324,
+     "combine": 0.388,
+     "compare": 0.625,
+     "mean": 0.446
+    },
+    "24000": {
+     "link": 1.0,
+     "combine": 0.967,
+     "compare": 0.938,
+     "mean": 0.968
+    }
+   },
+   "v3": {
+    "2000": {
+     "link": 0.676,
+     "combine": 0.808,
+     "compare": 0.812,
+     "mean": 0.765
+    },
+    "24000": {
+     "link": 1.0,
+     "combine": 1.0,
+     "compare": 0.938,
+     "mean": 0.979
+    }
+   },
+   "v4": {
+    "2000": {
+     "link": 0.941,
+     "combine": 1.0,
+     "compare": 0.875,
+     "mean": 0.939
+    },
+    "24000": {
+     "link": 1.0,
+     "combine": 1.0,
+     "compare": 1.0,
+     "mean": 1.0
+    }
+   }
+  },
+  "by_kind": {
+   "action_owner_issues": {
+    "v1": 0.0,
+    "v2": 0.0,
+    "v3": 0.0,
+    "v4": 0.875,
+    "n": 8
+   },
+   "compare_two": {
+    "v1": 0.0,
+    "v2": 0.0,
+    "v3": 0.75,
+    "v4": 1.0,
+    "n": 8
+   },
+   "issue_pr_author": {
+    "v1": 0.0,
+    "v2": 0.0,
+    "v3": 0.0,
+    "v4": 0.5,
+    "n": 2
+   },
+   "person_count": {
+    "v1": 0.0,
+    "v2": 0.0,
+    "v3": 0.0,
+    "v4": 1.0,
+    "n": 8
+   },
+   "person_first": {
+    "v1": 0.0,
+    "v2": 0.0,
+    "v3": 0.0,
+    "v4": 1.0,
+    "n": 7
+   },
+   "pr_issue": {
+    "v1": 0.0,
+    "v2": 0.0,
+    "v3": 0.75,
+    "v4": 1.0,
+    "n": 4
+   },
+   "ticket_link": {
+    "v1": 0.0,
+    "v2": 0.182,
+    "v3": 0.0,
+    "v4": 0.818,
+    "n": 11
+   }
+  },
+  "rows": [
+   {
+    "id": "action_owner_issues-017",
+    "group": "combine",
+    "kind": "action_owner_issues",
+    "question": "Which Linear issues are assigned to the person who took the action item \"provide anonymized logs and hot prefixes\" in the meeting \"Scaling model pools & queueing theory deep dive with Orion Research\"? Give the keys.",
+    "expected": {
+     "ids": [
+      "DES-9512",
+      "ENG-11097",
+      "ENG-88763"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0,
+     "v4": 1.0
+    },
+    "answers": {
+     "v1": "not found",
+     "v2": "not found",
+     "v3": "Scaling model pools & queueing theory deep dive with Orion Research",
+     "v4": "DES-9512, ENG-11097, ENG-88763"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.25,
+      "24000": 0.25
+     },
+     "plain": {
+      "2000": 0.25,
+      "24000": 0.25
+     },
+     "bank": {
+      "2000": 0.25,
+      "24000": 0.25
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.25,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "compare_two-041",
+    "group": "compare",
+    "kind": "compare_two",
+    "question": "DES-98123 or ENG-33817: which one is due first?",
+    "expected": {
+     "ids": [
+      "DES-98123"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0,
+     "v4": 1.0
+    },
+    "answers": {
+     "v1": "2025-03-15",
+     "v2": "2025-02-18",
+     "v3": "ENG-33817",
+     "v4": "DES-98123"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 0.5,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "issue_pr_author-author-027",
+    "group": "link",
+    "kind": "issue_pr_author",
+    "question": "Who authored the pull request linked to Linear issue ENG-4902?",
+    "expected": {
+     "value": "Peter Holtz"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0,
+     "v4": 1.0
+    },
+    "answers": {
+     "v1": "Sean Gallagher",
+     "v2": "Christine Wong",
+     "v3": "ENG-4902",
+     "v4": "Peter Holtz"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "person_count-001",
+    "group": "combine",
+    "kind": "person_count",
+    "question": "What is the number of Linear tickets with Marco Reyes as assignee?",
+    "expected": {
+     "value": "3"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0,
+     "v4": 1.0
+    },
+    "answers": {
+     "v1": "Marco Reyes",
+     "v2": "PM-7224",
+     "v3": "Marco Reyes",
+     "v4": "3"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.3333333333333333,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.3333333333333333,
+      "24000": 0.6666666666666666
+     },
+     "v1": {
+      "2000": 0.3333333333333333,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.3333333333333333,
+      "24000": 0.6666666666666666
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "person_first-002",
+    "group": "combine",
+    "kind": "person_first",
+    "question": "What is the first Linear issue Marco Reyes has due? Give the key.",
+    "expected": {
+     "ids": [
+      "PM-38672"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0,
+     "v4": 1.0
+    },
+    "answers": {
+     "v1": "2025-05-09",
+     "v2": "2025-06-22",
+     "v3": "Marco Reyes",
+     "v4": "PM-38672"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.3333333333333333,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.16666666666666666,
+      "24000": 0.3333333333333333
+     },
+     "v1": {
+      "2000": 0.3333333333333333,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.3333333333333333,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.3333333333333333,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "pr_issue-assignee-026",
+    "group": "link",
+    "kind": "pr_issue",
+    "question": "Who is assigned to the Linear issue that pull request #23988 is linked to?",
+    "expected": {
+     "value": "Peter Holtz"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 1.0,
+     "v4": 1.0
+    },
+    "answers": {
+     "v1": "Marco Reyes",
+     "v2": "Marco Reyes",
+     "v3": "Peter Holtz",
+     "v4": "Peter Holtz"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "ticket_link-assignee-016",
+    "group": "link",
+    "kind": "ticket_link",
+    "question": "Who is assigned to the ticket that ENG-80233 is linked to?",
+    "expected": {
+     "value": "Ravi Kapoor"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0,
+     "v4": 1.0
+    },
+    "answers": {
+     "v1": "Marco Alvarez",
+     "v2": "Liam Chen",
+     "v3": "ENG-80233",
+     "v4": "Ravi Kapoor"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "action_owner_issues-020",
+    "group": "combine",
+    "kind": "action_owner_issues",
+    "question": "Give the keys of the Linear issues assigned to whoever owns the action item \"Run initial cost projection from sample traffic and share spreadsheet\" from \"CascadeEdge \u2014 Route Economics Console Tour\".",
+    "expected": {
+     "ids": [
+      "ENG-13750",
+      "ENG-33817",
+      "PM-78390"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0,
+     "v4": 1.0
+    },
+    "answers": {
+     "v1": "Marcus Nguyen",
+     "v2": "not found",
+     "v3": "Run initial cost projection from sample traffic and share spreadsheet",
+     "v4": "ENG-13750, ENG-33817, PM-78390"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.25,
+      "24000": 0.25
+     },
+     "plain": {
+      "2000": 0.25,
+      "24000": 0.25
+     },
+     "bank": {
+      "2000": 0.25,
+      "24000": 0.25
+     },
+     "v1": {
+      "2000": 0.75,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.25,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.25,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "compare_two-042",
+    "group": "compare",
+    "kind": "compare_two",
+    "question": "Between Linear issues ENG-64829 and ENG-64297, which has the earlier due date?",
+    "expected": {
+     "ids": [
+      "ENG-64297"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 1.0,
+     "v4": 1.0
+    },
+    "answers": {
+     "v1": "2025-05-09",
+     "v2": "2025-05-09",
+     "v3": "ENG-64297",
+     "v4": "ENG-64297"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "issue_pr_author-author-033",
+    "group": "link",
+    "kind": "issue_pr_author",
+    "question": "Which person opened the PR that references ENG-18424?",
+    "expected": {
+     "value": "Omar El-Sayed"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0,
+     "v4": 0.0
+    },
+    "answers": {
+     "v1": "Sofia Ivanova",
+     "v2": "Burst pools: implement global fleet safety cap + emergency circuit breaker",
+     "v3": "ENG-18424",
+     "v4": "#28458"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "person_count-003",
+    "group": "combine",
+    "kind": "person_count",
+    "question": "What is the number of Linear tickets with Ravi Kapoor as assignee?",
+    "expected": {
+     "value": "2"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0,
+     "v4": 1.0
+    },
+    "answers": {
+     "v1": "Ravi Kapoor",
+     "v2": "ENG-4823",
+     "v3": "Ravi Kapoor",
+     "v4": "2"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "person_first-004",
+    "group": "combine",
+    "kind": "person_first",
+    "question": "Among the Linear tickets assigned to Ravi Kapoor, which has the earliest due date? Give the key.",
+    "expected": {
+     "ids": [
+      "ENG-54122"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0,
+     "v4": 1.0
+    },
+    "answers": {
+     "v1": "Ravi Kapoor",
+     "v2": "2025-03-15",
+     "v3": "Ravi Kapoor",
+     "v4": "ENG-54122"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "pr_issue-status-031",
+    "group": "link",
+    "kind": "pr_issue",
+    "question": "What is the status of the Linear ticket that pull request #63918 references?",
+    "expected": {
+     "value": "Done"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0,
+     "v4": 1.0
+    },
+    "answers": {
+     "v1": "In Progress",
+     "v2": "Customer governance request signal-hub, priority pipeline, and action matrix",
+     "v3": "#63918",
+     "v4": "Done"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "ticket_link-status-018",
+    "group": "link",
+    "kind": "ticket_link",
+    "question": "Give the status of the issue linked from ENG-602901.",
+    "expected": {
+     "value": "In Progress"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 1.0,
+     "v3": 0.0,
+     "v4": 1.0
+    },
+    "answers": {
+     "v1": "https://confluence.redwood.ai/display/METER/soft-quota-grace-RFC, https://github.com/redwood/infra/pull/6243, https://grafana.redwood.ai/d/streaming-metering/soft-quota-playback-dashboard",
+     "v2": "In Progress",
+     "v3": "ENG-602901",
+     "v4": "In Progress"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 0.5,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "action_owner_issues-021",
+    "group": "combine",
+    "kind": "action_owner_issues",
+    "question": "Give the keys of the Linear issues assigned to whoever owns the action item \"Confirm regulatory data classes and residency constraints; list data that cannot leave region X\" from \"Network bifurcation pilot: egress policy, regions, and benchmark scoping\".",
+    "expected": {
+     "ids": [
+      "DES-9512",
+      "ENG-11097",
+      "ENG-88763"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0,
+     "v4": 1.0
+    },
+    "answers": {
+     "v1": "Priya Nair",
+     "v2": "not found",
+     "v3": "Network bifurcation pilot: egress policy, regions, and benchmark scoping",
+     "v4": "DES-9512, ENG-11097, ENG-88763"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.25,
+      "24000": 0.25
+     },
+     "plain": {
+      "2000": 0.25,
+      "24000": 0.25
+     },
+     "bank": {
+      "2000": 0.25,
+      "24000": 0.25
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "compare_two-043",
+    "group": "compare",
+    "kind": "compare_two",
+    "question": "Between Linear issues ENG-13750 and ENG-4823, which has the earlier due date?",
+    "expected": {
+     "ids": [
+      "ENG-4823"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0,
+     "v4": 1.0
+    },
+    "answers": {
+     "v1": "2026-03-20",
+     "v2": "2025-03-20",
+     "v3": "ENG-13750",
+     "v4": "ENG-4823"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.5,
+      "24000": 0.5
+     },
+     "v3": {
+      "2000": 0.5,
+      "24000": 0.5
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "person_count-005",
+    "group": "combine",
+    "kind": "person_count",
+    "question": "Count the Linear issues assigned to Priya Nair.",
+    "expected": {
+     "value": "3"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0,
+     "v4": 1.0
+    },
+    "answers": {
+     "v1": "Priya Nair",
+     "v2": "2027-01-19",
+     "v3": "Priya Nair",
+     "v4": "3"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 0.6666666666666666
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.3333333333333333,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "person_first-006",
+    "group": "combine",
+    "kind": "person_first",
+    "question": "What is the first Linear issue Priya Nair has due? Give the key.",
+    "expected": {
+     "ids": [
+      "ENG-88763"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0,
+     "v4": 1.0
+    },
+    "answers": {
+     "v1": "2026-12-16",
+     "v2": "2026-12-16",
+     "v3": "share perf modeling spreadsheet and autoscale test plan",
+     "v4": "ENG-88763"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.25,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "pr_issue-status-032",
+    "group": "link",
+    "kind": "pr_issue",
+    "question": "What is the status of the Linear ticket that pull request #28458 references?",
+    "expected": {
+     "value": "Done"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 1.0,
+     "v4": 1.0
+    },
+    "answers": {
+     "v1": "In Progress",
+     "v2": "Customer governance request signal-hub, priority pipeline, and action matrix",
+     "v3": "Done",
+     "v4": "Done"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "ticket_link-assignee-019",
+    "group": "link",
+    "kind": "ticket_link",
+    "question": "SUP-4884 links another ticket. Who is its assignee?",
+    "expected": {
+     "value": "Elliot Price"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0,
+     "v4": 1.0
+    },
+    "answers": {
+     "v1": "Dev Patel",
+     "v2": "Dev Patel",
+     "v3": "SUP-4884",
+     "v4": "Elliot Price"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "action_owner_issues-023",
+    "group": "combine",
+    "kind": "action_owner_issues",
+    "question": "Which Linear issues are assigned to the person who took the action item \"upload canonical scripts + sample traffic traces\" in the meeting \"Client script handshake and streaming eval scoping\"? Give the keys.",
+    "expected": {
+     "ids": [
+      "DES-9512",
+      "ENG-11097",
+      "ENG-88763"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0,
+     "v4": 1.0
+    },
+    "answers": {
+     "v1": "not found",
+     "v2": "not found",
+     "v3": "Client script handshake and streaming eval scoping",
+     "v4": "DES-9512, ENG-11097, ENG-88763"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.25,
+      "24000": 0.25
+     },
+     "plain": {
+      "2000": 0.25,
+      "24000": 0.25
+     },
+     "bank": {
+      "2000": 0.25,
+      "24000": 0.25
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "compare_two-044",
+    "group": "compare",
+    "kind": "compare_two",
+    "question": "Which is due sooner, ENG-88763 or ENG-99211?",
+    "expected": {
+     "ids": [
+      "ENG-88763"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 1.0,
+     "v4": 1.0
+    },
+    "answers": {
+     "v1": "2025-03-20",
+     "v2": "2025-03-21",
+     "v3": "ENG-88763",
+     "v4": "ENG-88763"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "person_count-007",
+    "group": "combine",
+    "kind": "person_count",
+    "question": "How many Linear issues are assigned to Marcus Nguyen?",
+    "expected": {
+     "value": "3"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0,
+     "v4": 1.0
+    },
+    "answers": {
+     "v1": "Marcus Nguyen",
+     "v2": "Marcus Lee",
+     "v3": "Marcus Nguyen",
+     "v4": "3"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.3333333333333333,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.3333333333333333
+     },
+     "v1": {
+      "2000": 0.6666666666666666,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "person_first-008",
+    "group": "combine",
+    "kind": "person_first",
+    "question": "Which of the Linear issues assigned to Marcus Nguyen is due first? Give the key.",
+    "expected": {
+     "ids": [
+      "ENG-33817"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0,
+     "v4": 1.0
+    },
+    "answers": {
+     "v1": "Marcus Nguyen",
+     "v2": "2025-06-05",
+     "v3": "Marcus Nguyen",
+     "v4": "ENG-33817"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.6666666666666666,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "pr_issue-assignee-036",
+    "group": "link",
+    "kind": "pr_issue",
+    "question": "Which person has the Linear issue referenced by PR #18472 assigned to them?",
+    "expected": {
+     "value": "Sabrina James"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 1.0,
+     "v4": 1.0
+    },
+    "answers": {
+     "v1": "Alex Chen",
+     "v2": "Badge access kiosk intermittently blocks employees at courtyard entrance",
+     "v3": "Sabrina James",
+     "v4": "Sabrina James"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.5,
+      "24000": 0.5
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "ticket_link-status-022",
+    "group": "link",
+    "kind": "ticket_link",
+    "question": "Give the status of the issue linked from ENG-37712.",
+    "expected": {
+     "value": "In Progress"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 1.0,
+     "v3": 0.0,
+     "v4": 1.0
+    },
+    "answers": {
+     "v1": "https://console.redwood.internal/dashboards/breaker-lattice-staging (staging dashboard), https://docs.google.com/document/d/1a2b3c-breaker-lattice-runbook (runbook), https://github.com/redwood-inference/runtime/pull/5421 (WIP PR), https://redwood.atlassian.net/confluence/display/RUNTIME/Breaker+Lattice+Design (design doc)",
+     "v2": "In Progress",
+     "v3": "ENG-37712",
+     "v4": "In Progress"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.5,
+      "24000": 0.5
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "action_owner_issues-024",
+    "group": "combine",
+    "kind": "action_owner_issues",
+    "question": "Give the keys of the Linear issues assigned to whoever owns the action item \"confirm network access and allowlist IPs for dedicated test\" from \"Client script handshake and streaming eval scoping\".",
+    "expected": {
+     "ids": [
+      "DES-97431",
+      "ENG-531842",
+      "ENG-988777"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0,
+     "v4": 0.0
+    },
+    "answers": {
+     "v1": "Marcus Lee",
+     "v2": "not found",
+     "v3": "confirm network access and allowlist IPs for dedicated test",
+     "v4": "DES-9512, ENG-11097, ENG-88763"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.25,
+      "24000": 0.25
+     },
+     "plain": {
+      "2000": 0.25,
+      "24000": 0.5
+     },
+     "bank": {
+      "2000": 0.25,
+      "24000": 0.25
+     },
+     "v1": {
+      "2000": 0.75,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.75,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.75,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "compare_two-045",
+    "group": "compare",
+    "kind": "compare_two",
+    "question": "Between Linear issues ENG-4902 and ENG-11097, which has the earlier due date?",
+    "expected": {
+     "ids": [
+      "ENG-4902"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 1.0,
+     "v4": 1.0
+    },
+    "answers": {
+     "v1": "2026-03-13",
+     "v2": "2025-03-20",
+     "v3": "ENG-4902",
+     "v4": "ENG-4902"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "person_count-009",
+    "group": "combine",
+    "kind": "person_count",
+    "question": "Count the Linear issues assigned to Daniel Kim.",
+    "expected": {
+     "value": "2"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0,
+     "v4": 1.0
+    },
+    "answers": {
+     "v1": "Daniel Kim",
+     "v2": "Aisha Bello",
+     "v3": "Daniel Kim",
+     "v4": "2"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "person_first-011",
+    "group": "combine",
+    "kind": "person_first",
+    "question": "What is the first Linear issue Marcus Lee has due? Give the key.",
+    "expected": {
+     "ids": [
+      "DES-97431"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0,
+     "v4": 1.0
+    },
+    "answers": {
+     "v1": "2026-12-06",
+     "v2": "2026-12-06",
+     "v3": "Marcus Lee",
+     "v4": "DES-97431"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.25
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.25,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "ticket_link-status-025",
+    "group": "link",
+    "kind": "ticket_link",
+    "question": "What is the status of the ticket that ENG-891012 is linked to?",
+    "expected": {
+     "value": "In Progress"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0,
+     "v4": 1.0
+    },
+    "answers": {
+     "v1": "Artifact Staging: s3://redwood-artifacts/bridgehead/staging/2025-02/, CI Job: https://ci.redwood.com/job/bridgehead-convert/, Confluence: https://redwood.atlassian.net/wiki/spaces/ML/pages/Bridgehead+Intake+Design, GitHub PR: https://github.com/redwood-inference/weights-bridge/pull/1287, Profile Publisher ticket: ENG-904412",
+     "v2": "ENG-2289",
+     "v3": "ENG-891012",
+     "v4": "In Progress"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.5,
+      "24000": 0.5
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "action_owner_issues-028",
+    "group": "combine",
+    "kind": "action_owner_issues",
+    "question": "Give the keys of the Linear issues assigned to whoever owns the action item \"Provide Constellation's data residency spec and list of regulators to notify\" from \"Data sovereignty & logging discovery - Constellation Bank\".",
+    "expected": {
+     "ids": [
+      "ENG-602901",
+      "ENG-64297",
+      "PM-38672"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0,
+     "v4": 1.0
+    },
+    "answers": {
+     "v1": "Marco Reyes",
+     "v2": "not found",
+     "v3": "Provide Constellation's data residency spec and list of regulators to notify",
+     "v4": "ENG-602901, ENG-64297, PM-38672"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.25,
+      "24000": 0.5
+     },
+     "plain": {
+      "2000": 0.25,
+      "24000": 0.5
+     },
+     "bank": {
+      "2000": 0.25,
+      "24000": 0.25
+     },
+     "v1": {
+      "2000": 0.75,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "compare_two-046",
+    "group": "compare",
+    "kind": "compare_two",
+    "question": "Between Linear issues DES-97431 and PM-78390, which has the earlier due date?",
+    "expected": {
+     "ids": [
+      "DES-97431"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 1.0,
+     "v4": 1.0
+    },
+    "answers": {
+     "v1": "2025-02-14",
+     "v2": "2025-02-14",
+     "v3": "DES-97431",
+     "v4": "DES-97431"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 0.5,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "person_count-010",
+    "group": "combine",
+    "kind": "person_count",
+    "question": "What is the number of Linear tickets with Marcus Lee as assignee?",
+    "expected": {
+     "value": "3"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0,
+     "v4": 1.0
+    },
+    "answers": {
+     "v1": "Marcus Lee",
+     "v2": "ENG-2289",
+     "v3": "Marcus Lee",
+     "v4": "3"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.6666666666666666,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.3333333333333333,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.3333333333333333
+     },
+     "v1": {
+      "2000": 0.6666666666666666,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.3333333333333333,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "person_first-013",
+    "group": "combine",
+    "kind": "person_first",
+    "question": "Which of the Linear issues assigned to Miguel Torres is due first? Give the key.",
+    "expected": {
+     "ids": [
+      "ENG-24716"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0,
+     "v4": 1.0
+    },
+    "answers": {
+     "v1": "Miguel Torres",
+     "v2": "ENG-712222",
+     "v3": "Miguel Torres",
+     "v4": "ENG-24716"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.25,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.25,
+      "24000": 0.75
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "ticket_link-status-029",
+    "group": "link",
+    "kind": "ticket_link",
+    "question": "ENG-50021 links another ticket. What state is that ticket in?",
+    "expected": {
+     "value": "In Progress"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0,
+     "v4": 0.0
+    },
+    "answers": {
+     "v1": "In Review",
+     "v2": "ENG-2289",
+     "v3": "ENG-50021",
+     "v4": "Mateo Alvarez"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.5,
+      "24000": 0.5
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "action_owner_issues-034",
+    "group": "combine",
+    "kind": "action_owner_issues",
+    "question": "In the meeting \"Deployment sterile window and fallback choreography\", someone took the action item \"Runbook edits + approval token flow ->\". List the Linear tickets assigned to that person. Give the keys.",
+    "expected": {
+     "ids": [
+      "DES-9512",
+      "ENG-11097",
+      "ENG-88763"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0,
+     "v4": 1.0
+    },
+    "answers": {
+     "v1": "Priya Nair",
+     "v2": "not found",
+     "v3": "Priya Nair",
+     "v4": "DES-9512, ENG-11097, ENG-88763"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.25,
+      "24000": 0.25
+     },
+     "plain": {
+      "2000": 0.25,
+      "24000": 0.25
+     },
+     "bank": {
+      "2000": 0.25,
+      "24000": 0.25
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "compare_two-047",
+    "group": "compare",
+    "kind": "compare_two",
+    "question": "Which is due sooner, ENG-712222 or ENG-37712?",
+    "expected": {
+     "ids": [
+      "ENG-712222"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 1.0,
+     "v4": 1.0
+    },
+    "answers": {
+     "v1": "2026-03-31",
+     "v2": "2025-03-21",
+     "v3": "ENG-712222",
+     "v4": "ENG-712222"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "person_count-012",
+    "group": "combine",
+    "kind": "person_count",
+    "question": "Count the Linear issues assigned to Miguel Torres.",
+    "expected": {
+     "value": "4"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0,
+     "v4": 1.0
+    },
+    "answers": {
+     "v1": "Miguel Torres",
+     "v2": "ENG-712223",
+     "v3": "Miguel Torres",
+     "v4": "4"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.25,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.25,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "person_first-015",
+    "group": "combine",
+    "kind": "person_first",
+    "question": "Among the Linear tickets assigned to Miguel Ortega, which has the earliest due date? Give the key.",
+    "expected": {
+     "ids": [
+      "ENG-99601"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0,
+     "v4": 1.0
+    },
+    "answers": {
+     "v1": "Daniel Kim",
+     "v2": "2026-12-16",
+     "v3": "Miguel Ortega",
+     "v4": "ENG-99601"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.3333333333333333,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.3333333333333333,
+      "24000": 0.8333333333333334
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "ticket_link-assignee-030",
+    "group": "link",
+    "kind": "ticket_link",
+    "question": "ENG-554433 links another ticket. Who is its assignee?",
+    "expected": {
+     "value": "Mateo Alvarez"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0,
+     "v4": 1.0
+    },
+    "answers": {
+     "v1": "Priya Patel",
+     "v2": "Omar Singh",
+     "v3": "ENG-554433",
+     "v4": "Mateo Alvarez"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.5,
+      "24000": 0.5
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "action_owner_issues-035",
+    "group": "combine",
+    "kind": "action_owner_issues",
+    "question": "In the meeting \"Data guardrails & BYO-HSM review \u2014 Orchid Manufacturing\", someone took the action item \"Draft step-by-step runbook for key import, key wrap and emergency key rotation\". List the Linear tickets assigned to that person. Give the keys.",
+    "expected": {
+     "ids": [
+      "DES-9512",
+      "ENG-11097",
+      "ENG-88763"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0,
+     "v4": 1.0
+    },
+    "answers": {
+     "v1": "Priya Nair",
+     "v2": "not found",
+     "v3": "Priya Nair",
+     "v4": "DES-9512, ENG-11097, ENG-88763"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.25,
+      "24000": 0.25
+     },
+     "plain": {
+      "2000": 0.25,
+      "24000": 0.25
+     },
+     "bank": {
+      "2000": 0.25,
+      "24000": 0.25
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "compare_two-048",
+    "group": "compare",
+    "kind": "compare_two",
+    "question": "Between Linear issues ENG-18424 and ENG-99601, which has the earlier due date?",
+    "expected": {
+     "ids": [
+      "ENG-99601"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 1.0,
+     "v4": 1.0
+    },
+    "answers": {
+     "v1": "2026-03-15",
+     "v2": "2025-04-04",
+     "v3": "ENG-99601",
+     "v4": "ENG-99601"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "person_count-014",
+    "group": "combine",
+    "kind": "person_count",
+    "question": "How many Linear issues are assigned to Miguel Ortega?",
+    "expected": {
+     "value": "3"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0,
+     "v4": 1.0
+    },
+    "answers": {
+     "v1": "Miguel Ortega",
+     "v2": "Miguel Torres",
+     "v3": "Miguel Ortega",
+     "v4": "3"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.6666666666666666,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.3333333333333333,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.3333333333333333,
+      "24000": 0.3333333333333333
+     },
+     "v1": {
+      "2000": 0.3333333333333333,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.3333333333333333,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "ticket_link-status-037",
+    "group": "link",
+    "kind": "ticket_link",
+    "question": "SUP-18510 links another ticket. What state is that ticket in?",
+    "expected": {
+     "value": "Resolved"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0,
+     "v4": 0.0
+    },
+    "answers": {
+     "v1": "Closed",
+     "v2": "SUP-18422",
+     "v3": "SUP-18510",
+     "v4": "Sean Gallagher"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "ticket_link-assignee-038",
+    "group": "link",
+    "kind": "ticket_link",
+    "question": "ENG-427350 links another ticket. Who is its assignee?",
+    "expected": {
+     "value": "Mateo Alvarez"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0,
+     "v4": 1.0
+    },
+    "answers": {
+     "v1": "Ravi Patel",
+     "v2": "Omar Singh",
+     "v3": "ENG-427350",
+     "v4": "Mateo Alvarez"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.5,
+      "24000": 0.5
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "ticket_link-status-039",
+    "group": "link",
+    "kind": "ticket_link",
+    "question": "Give the status of the issue linked from ENG-64829.",
+    "expected": {
+     "value": "Planned"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0,
+     "v4": 1.0
+    },
+    "answers": {
+     "v1": "In Progress",
+     "v2": "In Progress",
+     "v3": "ENG-64829",
+     "v4": "Planned"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 0.5,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "ticket_link-assignee-040",
+    "group": "link",
+    "kind": "ticket_link",
+    "question": "INT-4829 links another ticket. Who is its assignee?",
+    "expected": {
+     "value": "Alex Chen"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0,
+     "v4": 1.0
+    },
+    "answers": {
+     "v1": "Liam Chen",
+     "v2": "Liam Chen",
+     "v3": "INT-4829",
+     "v4": "Alex Chen"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   }
+  ]
+ },
+ "held_out": {
+  "questions": 50,
+  "by_group": {
+   "link": 17,
+   "combine": 25,
+   "compare": 8
+  },
+  "direct": {
+   "v1": {
+    "link": 0.0,
+    "combine": 0.04,
+    "compare": 0.0,
+    "mean": 0.013
+   },
+   "v2": {
+    "link": 0.176,
+    "combine": 0.08,
+    "compare": 0.0,
+    "mean": 0.085
+   },
+   "v3": {
+    "link": 0.0,
+    "combine": 0.0,
+    "compare": 0.25,
+    "mean": 0.083
+   }
+  },
+  "pieces": {
+   "bank": {
+    "2000": {
+     "link": 0.088,
+     "combine": 0.145,
+     "compare": 0.0,
+     "mean": 0.078
+    },
+    "24000": {
+     "link": 0.5,
+     "combine": 0.32,
+     "compare": 0.125,
+     "mean": 0.315
+    }
+   },
+   "plain": {
+    "2000": {
+     "link": 0.265,
+     "combine": 0.235,
+     "compare": 0.25,
+     "mean": 0.25
+    },
+    "24000": {
+     "link": 0.765,
+     "combine": 0.73,
+     "compare": 0.938,
+     "mean": 0.811
+    }
+   },
+   "plain-words": {
+    "2000": {
+     "link": 0.529,
+     "combine": 0.472,
+     "compare": 0.75,
+     "mean": 0.584
+    },
+    "24000": {
+     "link": 0.765,
+     "combine": 0.773,
+     "compare": 1.0,
+     "mean": 0.846
+    }
+   },
+   "v1": {
+    "2000": {
+     "link": 0.559,
+     "combine": 0.573,
+     "compare": 0.688,
+     "mean": 0.607
+    },
+    "24000": {
+     "link": 1.0,
+     "combine": 0.987,
+     "compare": 1.0,
+     "mean": 0.996
+    }
+   },
+   "v2": {
+    "2000": {
+     "link": 0.588,
+     "combine": 0.438,
+     "compare": 0.125,
+     "mean": 0.384
+    },
+    "24000": {
+     "link": 0.971,
+     "combine": 1.0,
+     "compare": 0.938,
+     "mean": 0.97
+    }
+   },
+   "v3": {
+    "2000": {
+     "link": 0.529,
+     "combine": 0.773,
+     "compare": 0.562,
+     "mean": 0.621
+    },
+    "24000": {
+     "link": 0.971,
+     "combine": 1.0,
+     "compare": 1.0,
+     "mean": 0.99
+    }
+   }
+  },
+  "by_kind": {
+   "action_owner_issues": {
+    "v1": 0.0,
+    "v2": 0.0,
+    "v3": 0.0,
+    "n": 9
+   },
+   "compare_two": {
+    "v1": 0.0,
+    "v2": 0.0,
+    "v3": 0.25,
+    "n": 8
+   },
+   "person_count": {
+    "v1": 0.0,
+    "v2": 0.0,
+    "v3": 0.0,
+    "n": 8
+   },
+   "person_first": {
+    "v1": 0.125,
+    "v2": 0.25,
+    "v3": 0.0,
+    "n": 8
+   },
+   "pr_issue": {
+    "v1": 0.0,
+    "v2": 0.375,
+    "v3": 0.0,
+    "n": 8
+   },
+   "ticket_link": {
+    "v1": 0.0,
+    "v2": 0.0,
+    "v3": 0.0,
+    "n": 9
+   }
+  },
+  "rows": [
+   {
+    "id": "action_owner_issues-018",
+    "group": "combine",
+    "kind": "action_owner_issues",
+    "question": "Whoever picked up \"send SOC2 report + security deck\" in \"Elysium Retail - Security Playbook Review\": which Linear tickets are on their plate? Keys only.",
+    "expected": {
+     "ids": [
+      "DES-12901",
+      "ENG-4827"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "not found",
+     "v2": "not found",
+     "v3": "Elysium Retail - Security Playbook Review"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.3333333333333333,
+      "24000": 0.3333333333333333
+     },
+     "plain": {
+      "2000": 0.3333333333333333,
+      "24000": 0.3333333333333333
+     },
+     "bank": {
+      "2000": 0.3333333333333333,
+      "24000": 0.3333333333333333
+     },
+     "v1": {
+      "2000": 0.6666666666666666,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.3333333333333333,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.3333333333333333,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "compare_two-044",
+    "group": "compare",
+    "kind": "compare_two",
+    "question": "Which needs finishing earlier: DES-274302 or ENG-4833?",
+    "expected": {
+     "ids": [
+      "ENG-4833"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "not found",
+     "v2": "2026-03-12",
+     "v3": "DES-274302"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.5,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "person_count-001",
+    "group": "combine",
+    "kind": "person_count",
+    "question": "Jonah Kim: how many Linear issues are assigned to them?",
+    "expected": {
+     "value": "4"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "Jonah Kim",
+     "v2": "ENG-142538",
+     "v3": "Jonah Kim"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.25,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.25,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "person_first-002",
+    "group": "combine",
+    "kind": "person_first",
+    "question": "Which Linear issue on Jonah Kim's plate must be finished first? Give the key.",
+    "expected": {
+     "ids": [
+      "PM-9814"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "ENG-142537",
+     "v2": "ENG-142537",
+     "v3": "Jonah Kim"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.375,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.125,
+      "24000": 0.75
+     },
+     "bank": {
+      "2000": 0.125,
+      "24000": 0.5
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.625,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "pr_issue-due_date-017",
+    "group": "link",
+    "kind": "pr_issue",
+    "question": "By when does the Linear work behind PR #221089 need to be done?",
+    "expected": {
+     "date": "2025-04-15"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "ENG-4821, ENG-4899",
+     "v2": "2025-09-20",
+     "v3": "#221089"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "ticket_link-assignee-021",
+    "group": "link",
+    "kind": "ticket_link",
+    "question": "ENG-4829 points at another ticket. Who's on it?",
+    "expected": {
+     "value": "Maya Chen"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "not found",
+     "v2": "Tomas Rivera",
+     "v3": "ENG-4829"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.5,
+      "24000": 0.5
+     },
+     "plain": {
+      "2000": 0.5,
+      "24000": 0.5
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "action_owner_issues-024",
+    "group": "combine",
+    "kind": "action_owner_issues",
+    "question": "The action item \"Send updated prompts + scoring CSV\" from \"POC weekly fidelity check & rollback prep - Citrine AI\" went to someone. What Linear issues are assigned to them? Keys please.",
+    "expected": {
+     "ids": [
+      "DES-12901",
+      "ENG-4827"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "Maya Chen",
+     "v2": "not found",
+     "v3": "POC weekly fidelity check & rollback prep - Citrine AI"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.3333333333333333,
+      "24000": 0.3333333333333333
+     },
+     "plain": {
+      "2000": 0.3333333333333333,
+      "24000": 0.3333333333333333
+     },
+     "bank": {
+      "2000": 0.3333333333333333,
+      "24000": 0.3333333333333333
+     },
+     "v1": {
+      "2000": 0.6666666666666666,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.6666666666666666,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.3333333333333333,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "compare_two-045",
+    "group": "compare",
+    "kind": "compare_two",
+    "question": "Which needs finishing earlier: PM-189762 or PM-9814?",
+    "expected": {
+     "ids": [
+      "PM-9814"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "not found",
+     "v2": "2026-03-13",
+     "v3": "PM-189762"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "v1": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.5,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "person_count-003",
+    "group": "combine",
+    "kind": "person_count",
+    "question": "Maya Chen: how many Linear issues are assigned to them?",
+    "expected": {
+     "value": "2"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "Luca Moreno",
+     "v2": "Luca Moreno",
+     "v3": "Maya Chen"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "person_first-004",
+    "group": "combine",
+    "kind": "person_first",
+    "question": "Of the Linear work assigned to Maya Chen, which ticket's deadline comes soonest? Key please.",
+    "expected": {
+     "ids": [
+      "DES-12901"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "Ben Cho",
+     "v2": "PM-25671",
+     "v3": "Maya Chen"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "pr_issue-status-019",
+    "group": "link",
+    "kind": "pr_issue",
+    "question": "Where does the Linear issue behind PR #28522 stand right now? Give its status.",
+    "expected": {
+     "value": "Done"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 1.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "pass",
+     "v2": "Done",
+     "v3": "#28522"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "ticket_link-status-022",
+    "group": "link",
+    "kind": "ticket_link",
+    "question": "ENG-998123 is tied to another ticket. Where does that one stand?",
+    "expected": {
+     "value": "In Progress"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "not found",
+     "v2": "ENG-7140",
+     "v3": "ENG-998123"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.5,
+      "24000": 0.5
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.5,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "action_owner_issues-026",
+    "group": "combine",
+    "kind": "action_owner_issues",
+    "question": "The action item \"Share SOC2 report and bridge letter\" from \"NovaHealth \u2014 Security Posture & Deployment Options\" went to someone. What Linear issues are assigned to them? Keys please.",
+    "expected": {
+     "ids": [
+      "ENG-314271",
+      "ENG-82746"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "Marcus Chen",
+     "v2": "not found",
+     "v3": "NovaHealth \u2014 Security Posture & Deployment Options"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.3333333333333333,
+      "24000": 0.3333333333333333
+     },
+     "plain": {
+      "2000": 0.3333333333333333,
+      "24000": 0.3333333333333333
+     },
+     "bank": {
+      "2000": 0.3333333333333333,
+      "24000": 0.3333333333333333
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.3333333333333333,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.3333333333333333,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "compare_two-046",
+    "group": "compare",
+    "kind": "compare_two",
+    "question": "Which needs finishing earlier: ENG-842006 or ENG-58204?",
+    "expected": {
+     "ids": [
+      "ENG-842006"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "not found",
+     "v2": "2026-03-02",
+     "v3": "ENG-58204"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "person_count-005",
+    "group": "combine",
+    "kind": "person_count",
+    "question": "Luca Moreno: how many Linear issues are assigned to them?",
+    "expected": {
+     "value": "2"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "Luca Moreno",
+     "v2": "Ben Cho",
+     "v3": "Luca Moreno"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "person_first-006",
+    "group": "combine",
+    "kind": "person_first",
+    "question": "Of the Linear work assigned to Luca Moreno, which ticket's deadline comes soonest? Key please.",
+    "expected": {
+     "ids": [
+      "PM-56217"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "Luca Moreno",
+     "v2": "2025-11-30",
+     "v3": "Luca Moreno"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.25
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "pr_issue-assignee-020",
+    "group": "link",
+    "kind": "pr_issue",
+    "question": "Find the Linear ticket tied to pull request #913: who is it assigned to?",
+    "expected": {
+     "value": "Keiko Yamamoto"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "Ben Cho",
+     "v2": "Ben Cho",
+     "v3": "Jonah Kim"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.5,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "ticket_link-status-023",
+    "group": "link",
+    "kind": "ticket_link",
+    "question": "ENG-4833 is tied to another ticket. Where does that one stand?",
+    "expected": {
+     "value": "In Progress"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "not found",
+     "v2": "ENG-7140",
+     "v3": "ENG-4833"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "action_owner_issues-027",
+    "group": "combine",
+    "kind": "action_owner_issues",
+    "question": "Whoever picked up \"Send RBAC sample matrix and KMS/HSM integration steps\" in \"NovaHealth \u2014 Security Posture & Deployment Options\": which Linear tickets are on their plate? Keys only.",
+    "expected": {
+     "ids": [
+      "ENG-314271",
+      "ENG-82746"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "not found",
+     "v2": "not found",
+     "v3": "NovaHealth \u2014 Security Posture & Deployment Options"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.3333333333333333,
+      "24000": 0.3333333333333333
+     },
+     "plain": {
+      "2000": 0.3333333333333333,
+      "24000": 0.3333333333333333
+     },
+     "bank": {
+      "2000": 0.3333333333333333,
+      "24000": 0.6666666666666666
+     },
+     "v1": {
+      "2000": 0.3333333333333333,
+      "24000": 0.6666666666666666
+     },
+     "v2": {
+      "2000": 0.6666666666666666,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.3333333333333333,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "compare_two-047",
+    "group": "compare",
+    "kind": "compare_two",
+    "question": "Which needs finishing earlier: ENG-4881 or ENG-47321?",
+    "expected": {
+     "ids": [
+      "ENG-4881"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 1.0
+    },
+    "answers": {
+     "v1": "not found",
+     "v2": "2026-03-02",
+     "v3": "ENG-4881"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.5,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "person_count-007",
+    "group": "combine",
+    "kind": "person_count",
+    "question": "Rohit Patel: how many Linear issues are assigned to them?",
+    "expected": {
+     "value": "3"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "Ben Cho",
+     "v2": "Ben Cho",
+     "v3": "Rohit Patel"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.3333333333333333,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "person_first-008",
+    "group": "combine",
+    "kind": "person_first",
+    "question": "Which Linear issue on Rohit Patel's plate must be finished first? Give the key.",
+    "expected": {
+     "ids": [
+      "ENG-842006"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "ENG-47321",
+     "v2": "ENG-47321",
+     "v3": "Rohit Patel"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.3333333333333333,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.16666666666666666
+     },
+     "v1": {
+      "2000": 0.6666666666666666,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.6666666666666666,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "pr_issue-status-030",
+    "group": "link",
+    "kind": "pr_issue",
+    "question": "Where does the Linear issue behind PR #149331 stand right now? Give its status.",
+    "expected": {
+     "value": "Done"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 1.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "pass",
+     "v2": "Done",
+     "v3": "#149331"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "ticket_link-assignee-025",
+    "group": "link",
+    "kind": "ticket_link",
+    "question": "PM-25671 points at another ticket. Who's on it?",
+    "expected": {
+     "value": "Liam Chen"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "not found",
+     "v2": "Aisha Patel",
+     "v3": "PM-25671"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "action_owner_issues-028",
+    "group": "combine",
+    "kind": "action_owner_issues",
+    "question": "The action item \"Propose SE deep-dive slots and pre-call checklist\" from \"NovaHealth \u2014 Security Posture & Deployment Options\" went to someone. What Linear issues are assigned to them? Keys please.",
+    "expected": {
+     "ids": [
+      "ENG-314271",
+      "ENG-82746"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "Maya Singh",
+     "v2": "not found",
+     "v3": "NovaHealth \u2014 Security Posture & Deployment Options"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.3333333333333333,
+      "24000": 0.3333333333333333
+     },
+     "plain": {
+      "2000": 0.3333333333333333,
+      "24000": 0.3333333333333333
+     },
+     "bank": {
+      "2000": 0.3333333333333333,
+      "24000": 0.3333333333333333
+     },
+     "v1": {
+      "2000": 0.3333333333333333,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.6666666666666666,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.3333333333333333,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "compare_two-048",
+    "group": "compare",
+    "kind": "compare_two",
+    "question": "Which needs finishing earlier: PM-50724 or ENG-998123?",
+    "expected": {
+     "ids": [
+      "PM-50724"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "not found",
+     "v2": "2025-11-09",
+     "v3": "ENG-998123"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.5,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "person_count-009",
+    "group": "combine",
+    "kind": "person_count",
+    "question": "Marco Silva: how many Linear issues are assigned to them?",
+    "expected": {
+     "value": "2"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "Marco Ruiz",
+     "v2": "Marco Ruiz",
+     "v3": "Marco Silva"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "person_first-010",
+    "group": "combine",
+    "kind": "person_first",
+    "question": "Which Linear issue on Marco Silva's plate must be finished first? Give the key.",
+    "expected": {
+     "ids": [
+      "ENG-99210"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "ENG-4829",
+     "v2": "ENG-4829",
+     "v3": "Marco Silva"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.75,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "pr_issue-status-031",
+    "group": "link",
+    "kind": "pr_issue",
+    "question": "Where does the Linear issue behind PR #82145 stand right now? Give its status.",
+    "expected": {
+     "value": "Done"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 1.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "pass",
+     "v2": "Done",
+     "v3": "#82145"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "ticket_link-status-029",
+    "group": "link",
+    "kind": "ticket_link",
+    "question": "ENG-4881 is tied to another ticket. Where does that one stand?",
+    "expected": {
+     "value": "Done"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "not found",
+     "v2": "ENG-4833",
+     "v3": "ENG-4881"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "action_owner_issues-034",
+    "group": "combine",
+    "kind": "action_owner_issues",
+    "question": "The action item \"send pricing and Dedicated/PV options and quote\" from \"Sandstone Corp \u2014 Search prototype: embeddings + rerank walkthrough\" went to someone. What Linear issues are assigned to them? Keys please.",
+    "expected": {
+     "ids": [
+      "DES-12901",
+      "ENG-4827"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "Maya Chen",
+     "v2": "not found",
+     "v3": "Sandstone Corp \u2014 Search prototype: embeddings + rerank walkthrough"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.3333333333333333,
+      "24000": 0.3333333333333333
+     },
+     "plain": {
+      "2000": 0.3333333333333333,
+      "24000": 0.3333333333333333
+     },
+     "bank": {
+      "2000": 0.3333333333333333,
+      "24000": 0.3333333333333333
+     },
+     "v1": {
+      "2000": 0.6666666666666666,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.3333333333333333,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "compare_two-049",
+    "group": "compare",
+    "kind": "compare_two",
+    "question": "Of ENG-4827 and DES-350721, which deadline comes first?",
+    "expected": {
+     "ids": [
+      "DES-350721"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 1.0
+    },
+    "answers": {
+     "v1": "2025-03-01",
+     "v2": "2025-02-25",
+     "v3": "DES-350721"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "v3": {
+      "2000": 0.5,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "person_count-011",
+    "group": "combine",
+    "kind": "person_count",
+    "question": "How many Linear tickets does Miguel Rivera have on their plate?",
+    "expected": {
+     "value": "2"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "ENG-4821, ENG-4890",
+     "v2": "2026-02-25",
+     "v3": "Miguel Rivera"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "person_first-012",
+    "group": "combine",
+    "kind": "person_first",
+    "question": "Of the Linear work assigned to Miguel Rivera, which ticket's deadline comes soonest? Key please.",
+    "expected": {
+     "ids": [
+      "DES-350721"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "Miguel Rivera",
+     "v2": "ENG-213999",
+     "v3": "Miguel Rivera"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "pr_issue-due_date-032",
+    "group": "link",
+    "kind": "pr_issue",
+    "question": "PR #18458 links a Linear ticket; when is that ticket due?",
+    "expected": {
+     "date": "2025-04-15"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "2026-04-01",
+     "v2": "2025-09-09",
+     "v3": "#18458"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.5,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "ticket_link-assignee-033",
+    "group": "link",
+    "kind": "ticket_link",
+    "question": "Find the ticket linked from ENG-83957: who is it assigned to?",
+    "expected": {
+     "value": "Marco Ruiz"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "Ben Cho",
+     "v2": "Ben Cho",
+     "v3": "ENG-83957"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.5,
+      "24000": 0.5
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "action_owner_issues-037",
+    "group": "combine",
+    "kind": "action_owner_issues",
+    "question": "The action item \"send sandbox credentials and benchmark template\" from \"POC: Benchmark workload matrix & streaming vs non-streaming decision\" went to someone. What Linear issues are assigned to them? Keys please.",
+    "expected": {
+     "ids": [
+      "DES-12901",
+      "ENG-4827"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "Maya Chen",
+     "v2": "not found",
+     "v3": "send sandbox credentials and benchmark template"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.3333333333333333,
+      "24000": 0.6666666666666666
+     },
+     "plain": {
+      "2000": 0.3333333333333333,
+      "24000": 0.3333333333333333
+     },
+     "bank": {
+      "2000": 0.3333333333333333,
+      "24000": 0.3333333333333333
+     },
+     "v1": {
+      "2000": 0.6666666666666666,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.3333333333333333,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.3333333333333333,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "compare_two-050",
+    "group": "compare",
+    "kind": "compare_two",
+    "question": "Of ENG-4829 and PM-903456, which deadline comes first?",
+    "expected": {
+     "ids": [
+      "PM-903456"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "2026-03-08",
+     "v2": "2025-11-30",
+     "v3": "ENG-4829"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.5,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "person_count-013",
+    "group": "combine",
+    "kind": "person_count",
+    "question": "How many Linear tickets does Marcus Chen have on their plate?",
+    "expected": {
+     "value": "2"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "ENG-4821, ENG-4867",
+     "v2": "NovaHealth \u2014 Security Posture & Deployment Options",
+     "v3": "Marcus Chen"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "person_first-014",
+    "group": "combine",
+    "kind": "person_first",
+    "question": "Which Linear issue on Marcus Chen's plate must be finished first? Give the key.",
+    "expected": {
+     "ids": [
+      "ENG-82746"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "ENG-82746",
+     "v2": "ENG-82746",
+     "v3": "Marcus Chen"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.75,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "pr_issue-assignee-042",
+    "group": "link",
+    "kind": "pr_issue",
+    "question": "Find the Linear ticket tied to pull request #18478: who is it assigned to?",
+    "expected": {
+     "value": "Keiko Yamamoto"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "Ben Cho",
+     "v2": "Ben Cho",
+     "v3": "Jonah Kim"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "ticket_link-status-035",
+    "group": "link",
+    "kind": "ticket_link",
+    "question": "PM-189762 is tied to another ticket. Where does that one stand?",
+    "expected": {
+     "value": "In Review"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "not found",
+     "v2": "PM-4312",
+     "v3": "PM-189762"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.5,
+      "24000": 0.5
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "action_owner_issues-038",
+    "group": "combine",
+    "kind": "action_owner_issues",
+    "question": "The action item \"Send SOC2 + KMS integration notes and SOC report link\" from \"HorizonCare - embeddings throughput + hybrid relevance discovery\" went to someone. What Linear issues are assigned to them? Keys please.",
+    "expected": {
+     "ids": [
+      "DES-12901",
+      "ENG-4827"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "Maya Chen",
+     "v2": "not found",
+     "v3": "Maya Chen"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.3333333333333333,
+      "24000": 0.3333333333333333
+     },
+     "plain": {
+      "2000": 0.3333333333333333,
+      "24000": 0.3333333333333333
+     },
+     "bank": {
+      "2000": 0.3333333333333333,
+      "24000": 0.3333333333333333
+     },
+     "v1": {
+      "2000": 0.6666666666666666,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.6666666666666666,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "compare_two-051",
+    "group": "compare",
+    "kind": "compare_two",
+    "question": "Which needs finishing earlier: ENG-41302 or DES-12901?",
+    "expected": {
+     "ids": [
+      "DES-12901"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "not found",
+     "v2": "2026-02-28",
+     "v3": "ENG-41302"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.5,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "person_count-015",
+    "group": "combine",
+    "kind": "person_count",
+    "question": "Rafael Ortega: how many Linear issues are assigned to them?",
+    "expected": {
+     "value": "2"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "Rafael Ortega",
+     "v2": "Ben Cho",
+     "v3": "Rafael Ortega"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "person_first-016",
+    "group": "combine",
+    "kind": "person_first",
+    "question": "Of the Linear work assigned to Rafael Ortega, which ticket's deadline comes soonest? Key please.",
+    "expected": {
+     "ids": [
+      "PM-50724"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 1.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "Rafael Ortega",
+     "v2": "PM-50724",
+     "v3": "Rafael Ortega"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.25
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "pr_issue-due_date-043",
+    "group": "link",
+    "kind": "pr_issue",
+    "question": "PR #35489 links a Linear ticket; when is that ticket due?",
+    "expected": {
+     "date": "2025-04-15"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "2026-04-01",
+     "v2": "2025-09-09",
+     "v3": "#35489"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.5,
+      "24000": 0.5
+     },
+     "v3": {
+      "2000": 0.0,
+      "24000": 0.5
+     }
+    }
+   },
+   {
+    "id": "ticket_link-status-036",
+    "group": "link",
+    "kind": "ticket_link",
+    "question": "Check the ticket linked from ENG-4844: what's its status?",
+    "expected": {
+     "value": "Done"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "In Progress",
+     "v2": "ENG-7140",
+     "v3": "In Progress"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.5,
+      "24000": 0.5
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.5,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "action_owner_issues-039",
+    "group": "combine",
+    "kind": "action_owner_issues",
+    "question": "The action item \"send benchmark template and sample harness adapter\" from \"Traffic fidelity triage & streaming fallback playbook - kickoff\" went to someone. What Linear issues are assigned to them? Keys please.",
+    "expected": {
+     "ids": [
+      "DES-12901",
+      "ENG-4827"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "Maya Chen",
+     "v2": "not found",
+     "v3": "Traffic fidelity triage & streaming fallback playbook - kickoff"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.3333333333333333,
+      "24000": 0.3333333333333333
+     },
+     "plain": {
+      "2000": 0.3333333333333333,
+      "24000": 0.3333333333333333
+     },
+     "bank": {
+      "2000": 0.3333333333333333,
+      "24000": 0.3333333333333333
+     },
+     "v1": {
+      "2000": 0.6666666666666666,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.6666666666666666,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.3333333333333333,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "ticket_link-assignee-040",
+    "group": "link",
+    "kind": "ticket_link",
+    "question": "ENG-90234 points at another ticket. Who's on it?",
+    "expected": {
+     "value": "Marco Ruiz"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "not found",
+     "v2": "Tomas Rivera",
+     "v3": "ENG-90234"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.5,
+      "24000": 0.5
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.0,
+      "24000": 1.0
+     }
+    }
+   }
+  ]
+ },
+ "changed": {
+  "questions": 50,
+  "by_group": {
+   "link": 17,
+   "combine": 25,
+   "compare": 8
+  },
+  "direct": {
+   "v1": {
+    "link": 0.0,
+    "combine": 0.04,
+    "compare": 0.0,
+    "mean": 0.013
+   },
+   "v2": {
+    "link": 0.176,
+    "combine": 0.04,
+    "compare": 0.0,
+    "mean": 0.072
+   },
+   "v3": {
+    "link": 0.0,
+    "combine": 0.0,
+    "compare": 0.25,
+    "mean": 0.083
+   }
+  },
+  "pieces": {
+   "bank": {
+    "2000": {
+     "link": 0.088,
+     "combine": 0.162,
+     "compare": 0.0,
+     "mean": 0.083
+    },
+    "24000": {
+     "link": 0.529,
+     "combine": 0.285,
+     "compare": 0.125,
+     "mean": 0.313
+    }
+   },
+   "plain": {
+    "2000": {
+     "link": 0.382,
+     "combine": 0.32,
+     "compare": 0.25,
+     "mean": 0.317
+    },
+    "24000": {
+     "link": 0.794,
+     "combine": 0.73,
+     "compare": 0.938,
+     "mean": 0.821
+    }
+   },
+   "plain-words": {
+    "2000": {
+     "link": 0.618,
+     "combine": 0.472,
+     "compare": 0.75,
+     "mean": 0.613
+    },
+    "24000": {
+     "link": 0.765,
+     "combine": 0.773,
+     "compare": 1.0,
+     "mean": 0.846
+    }
+   },
+   "v1": {
+    "2000": {
+     "link": 0.559,
+     "combine": 0.56,
+     "compare": 0.625,
+     "mean": 0.581
+    },
+    "24000": {
+     "link": 1.0,
+     "combine": 0.967,
+     "compare": 1.0,
+     "mean": 0.989
+    }
+   },
+   "v2": {
+    "2000": {
+     "link": 0.588,
+     "combine": 0.397,
+     "compare": 0.125,
+     "mean": 0.37
+    },
+    "24000": {
+     "link": 0.971,
+     "combine": 0.95,
+     "compare": 0.938,
+     "mean": 0.953
+    }
+   },
+   "v3": {
+    "2000": {
+     "link": 0.529,
+     "combine": 0.773,
+     "compare": 0.562,
+     "mean": 0.621
+    },
+    "24000": {
+     "link": 0.971,
+     "combine": 1.0,
+     "compare": 1.0,
+     "mean": 0.99
+    }
+   }
+  },
+  "by_kind": {
+   "action_owner_issues": {
+    "v1": 0.0,
+    "v2": 0.0,
+    "v3": 0.0,
+    "n": 9
+   },
+   "compare_two": {
+    "v1": 0.0,
+    "v2": 0.0,
+    "v3": 0.25,
+    "n": 8
+   },
+   "person_count": {
+    "v1": 0.0,
+    "v2": 0.0,
+    "v3": 0.0,
+    "n": 8
+   },
+   "person_first": {
+    "v1": 0.125,
+    "v2": 0.125,
+    "v3": 0.0,
+    "n": 8
+   },
+   "pr_issue": {
+    "v1": 0.0,
+    "v2": 0.375,
+    "v3": 0.0,
+    "n": 8
+   },
+   "ticket_link": {
+    "v1": 0.0,
+    "v2": 0.0,
+    "v3": 0.0,
+    "n": 9
+   }
+  },
+  "rows": [
+   {
+    "id": "action_owner_issues-018",
+    "group": "combine",
+    "kind": "action_owner_issues",
+    "question": "Whoever picked up \"send SOC2 report + security deck\" in \"Elysium Retail - Security Playbook Review\": which Linear tickets are on their plate? Keys only.",
+    "expected": {
+     "ids": [
+      "DES-12901",
+      "ENG-4827"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "not found",
+     "v2": "not found",
+     "v3": "Elysium Retail - Security Playbook Review"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.3333333333333333,
+      "24000": 0.3333333333333333
+     },
+     "plain": {
+      "2000": 0.3333333333333333,
+      "24000": 0.3333333333333333
+     },
+     "bank": {
+      "2000": 0.3333333333333333,
+      "24000": 0.3333333333333333
+     },
+     "v1": {
+      "2000": 0.6666666666666666,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.3333333333333333,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.3333333333333333,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "compare_two-044",
+    "group": "compare",
+    "kind": "compare_two",
+    "question": "Which needs finishing earlier: DES-274302 or ENG-4833?",
+    "expected": {
+     "ids": [
+      "ENG-4833"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "not found",
+     "v2": "2026-04-04",
+     "v3": "DES-274302"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.5,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "person_count-001",
+    "group": "combine",
+    "kind": "person_count",
+    "question": "Saoirse Varga: how many Linear issues are assigned to them?",
+    "expected": {
+     "value": "4"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "Saoirse Varga",
+     "v2": "ENG-142538",
+     "v3": "Saoirse Varga"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.25,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.25,
+      "24000": 0.75
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "person_first-002",
+    "group": "combine",
+    "kind": "person_first",
+    "question": "Which Linear issue on Saoirse Varga's plate must be finished first? Give the key.",
+    "expected": {
+     "ids": [
+      "PM-9814"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "ENG-142537",
+     "v2": "ENG-142537",
+     "v3": "Saoirse Varga"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.375,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 0.75
+     },
+     "bank": {
+      "2000": 0.125,
+      "24000": 0.125
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "pr_issue-due_date-017",
+    "group": "link",
+    "kind": "pr_issue",
+    "question": "By when does the Linear work behind PR #221089 need to be done?",
+    "expected": {
+     "date": "2025-05-08"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "ENG-4821, ENG-4899",
+     "v2": "2025-10-13",
+     "v3": "#221089"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "ticket_link-assignee-021",
+    "group": "link",
+    "kind": "ticket_link",
+    "question": "ENG-4829 points at another ticket. Who's on it?",
+    "expected": {
+     "value": "Dashiell Abernathy"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "not found",
+     "v2": "Katrien Haldane",
+     "v3": "ENG-4829"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.5,
+      "24000": 0.5
+     },
+     "plain": {
+      "2000": 0.5,
+      "24000": 0.5
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "action_owner_issues-024",
+    "group": "combine",
+    "kind": "action_owner_issues",
+    "question": "The action item \"Send updated prompts + scoring CSV\" from \"POC weekly fidelity check & rollback prep - Citrine AI\" went to someone. What Linear issues are assigned to them? Keys please.",
+    "expected": {
+     "ids": [
+      "DES-12901",
+      "ENG-4827"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "Dashiell Abernathy",
+     "v2": "not found",
+     "v3": "POC weekly fidelity check & rollback prep - Citrine AI"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.3333333333333333,
+      "24000": 0.3333333333333333
+     },
+     "plain": {
+      "2000": 0.3333333333333333,
+      "24000": 0.3333333333333333
+     },
+     "bank": {
+      "2000": 0.3333333333333333,
+      "24000": 0.3333333333333333
+     },
+     "v1": {
+      "2000": 0.6666666666666666,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.6666666666666666,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.3333333333333333,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "compare_two-045",
+    "group": "compare",
+    "kind": "compare_two",
+    "question": "Which needs finishing earlier: PM-189762 or PM-9814?",
+    "expected": {
+     "ids": [
+      "PM-9814"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "not found",
+     "v2": "2026-04-05",
+     "v3": "PM-189762"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "v1": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.5,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "person_count-003",
+    "group": "combine",
+    "kind": "person_count",
+    "question": "Dashiell Abernathy: how many Linear issues are assigned to them?",
+    "expected": {
+     "value": "2"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "Xanthe Castellanos",
+     "v2": "Xanthe Castellanos",
+     "v3": "Dashiell Abernathy"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "person_first-004",
+    "group": "combine",
+    "kind": "person_first",
+    "question": "Of the Linear work assigned to Dashiell Abernathy, which ticket's deadline comes soonest? Key please.",
+    "expected": {
+     "ids": [
+      "DES-12901"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "Odalys Iqbal",
+     "v2": "PM-25671",
+     "v3": "Dashiell Abernathy"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 0.5
+     },
+     "v2": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "pr_issue-status-019",
+    "group": "link",
+    "kind": "pr_issue",
+    "question": "Where does the Linear issue behind PR #28522 stand right now? Give its status.",
+    "expected": {
+     "value": "Done"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 1.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "pass",
+     "v2": "Done",
+     "v3": "#28522"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "ticket_link-status-022",
+    "group": "link",
+    "kind": "ticket_link",
+    "question": "ENG-998123 is tied to another ticket. Where does that one stand?",
+    "expected": {
+     "value": "Ilse Fairweather"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "not found",
+     "v2": "ENG-7140",
+     "v3": "ENG-998123"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.5,
+      "24000": 0.5
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.5,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "action_owner_issues-026",
+    "group": "combine",
+    "kind": "action_owner_issues",
+    "question": "The action item \"Share SOC2 report and bridge letter\" from \"NovaHealth \u2014 Security Posture & Deployment Options\" went to someone. What Linear issues are assigned to them? Keys please.",
+    "expected": {
+     "ids": [
+      "ENG-314271",
+      "ENG-82746"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "Nils Quennell",
+     "v2": "not found",
+     "v3": "NovaHealth \u2014 Security Posture & Deployment Options"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.3333333333333333,
+      "24000": 0.3333333333333333
+     },
+     "plain": {
+      "2000": 0.3333333333333333,
+      "24000": 0.3333333333333333
+     },
+     "bank": {
+      "2000": 0.3333333333333333,
+      "24000": 0.3333333333333333
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.3333333333333333,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.3333333333333333,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "compare_two-046",
+    "group": "compare",
+    "kind": "compare_two",
+    "question": "Which needs finishing earlier: ENG-842006 or ENG-58204?",
+    "expected": {
+     "ids": [
+      "ENG-842006"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "not found",
+     "v2": "2026-03-25",
+     "v3": "ENG-58204"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "person_count-005",
+    "group": "combine",
+    "kind": "person_count",
+    "question": "Xanthe Castellanos: how many Linear issues are assigned to them?",
+    "expected": {
+     "value": "2"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "Xanthe Castellanos",
+     "v2": "Odalys Iqbal",
+     "v3": "Xanthe Castellanos"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "person_first-006",
+    "group": "combine",
+    "kind": "person_first",
+    "question": "Of the Linear work assigned to Xanthe Castellanos, which ticket's deadline comes soonest? Key please.",
+    "expected": {
+     "ids": [
+      "PM-56217"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "Xanthe Castellanos",
+     "v2": "2025-12-23",
+     "v3": "Xanthe Castellanos"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.5,
+      "24000": 0.75
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "pr_issue-assignee-020",
+    "group": "link",
+    "kind": "pr_issue",
+    "question": "Find the Linear ticket tied to pull request #913: who is it assigned to?",
+    "expected": {
+     "value": "Thaddeus Dunmore"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "Odalys Iqbal",
+     "v2": "Odalys Iqbal",
+     "v3": "Saoirse Varga"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.5,
+      "24000": 0.5
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.5,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "ticket_link-status-023",
+    "group": "link",
+    "kind": "ticket_link",
+    "question": "ENG-4833 is tied to another ticket. Where does that one stand?",
+    "expected": {
+     "value": "Ilse Fairweather"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "not found",
+     "v2": "ENG-7140",
+     "v3": "ENG-4833"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "action_owner_issues-027",
+    "group": "combine",
+    "kind": "action_owner_issues",
+    "question": "Whoever picked up \"Send RBAC sample matrix and KMS/HSM integration steps\" in \"NovaHealth \u2014 Security Posture & Deployment Options\": which Linear tickets are on their plate? Keys only.",
+    "expected": {
+     "ids": [
+      "ENG-314271",
+      "ENG-82746"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "not found",
+     "v2": "not found",
+     "v3": "NovaHealth \u2014 Security Posture & Deployment Options"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.3333333333333333,
+      "24000": 0.3333333333333333
+     },
+     "plain": {
+      "2000": 0.3333333333333333,
+      "24000": 0.3333333333333333
+     },
+     "bank": {
+      "2000": 0.3333333333333333,
+      "24000": 0.6666666666666666
+     },
+     "v1": {
+      "2000": 0.3333333333333333,
+      "24000": 0.6666666666666666
+     },
+     "v2": {
+      "2000": 0.6666666666666666,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.3333333333333333,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "compare_two-047",
+    "group": "compare",
+    "kind": "compare_two",
+    "question": "Which needs finishing earlier: ENG-4881 or ENG-47321?",
+    "expected": {
+     "ids": [
+      "ENG-4881"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 1.0
+    },
+    "answers": {
+     "v1": "not found",
+     "v2": "2026-03-25",
+     "v3": "ENG-4881"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.5,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "person_count-007",
+    "group": "combine",
+    "kind": "person_count",
+    "question": "Ottoline Moreau: how many Linear issues are assigned to them?",
+    "expected": {
+     "value": "3"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "Ottoline Moreau",
+     "v2": "Odalys Iqbal",
+     "v3": "Ottoline Moreau"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.3333333333333333,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.6666666666666666,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "person_first-008",
+    "group": "combine",
+    "kind": "person_first",
+    "question": "Which Linear issue on Ottoline Moreau's plate must be finished first? Give the key.",
+    "expected": {
+     "ids": [
+      "ENG-842006"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "ENG-47321",
+     "v2": "ENG-47321",
+     "v3": "Ottoline Moreau"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.3333333333333333,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.16666666666666666,
+      "24000": 0.16666666666666666
+     },
+     "v1": {
+      "2000": 0.6666666666666666,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "pr_issue-status-030",
+    "group": "link",
+    "kind": "pr_issue",
+    "question": "Where does the Linear issue behind PR #149331 stand right now? Give its status.",
+    "expected": {
+     "value": "Done"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 1.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "pass",
+     "v2": "Done",
+     "v3": "#149331"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "ticket_link-assignee-025",
+    "group": "link",
+    "kind": "ticket_link",
+    "question": "PM-25671 points at another ticket. Who's on it?",
+    "expected": {
+     "value": "Lisandro Dunmore"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "not found",
+     "v2": "Rasmus Haldane",
+     "v3": "PM-25671"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.5,
+      "24000": 0.5
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "action_owner_issues-028",
+    "group": "combine",
+    "kind": "action_owner_issues",
+    "question": "The action item \"Propose SE deep-dive slots and pre-call checklist\" from \"NovaHealth \u2014 Security Posture & Deployment Options\" went to someone. What Linear issues are assigned to them? Keys please.",
+    "expected": {
+     "ids": [
+      "ENG-314271",
+      "ENG-82746"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "Quilla Eriksen",
+     "v2": "not found",
+     "v3": "NovaHealth \u2014 Security Posture & Deployment Options"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.3333333333333333,
+      "24000": 0.3333333333333333
+     },
+     "plain": {
+      "2000": 0.3333333333333333,
+      "24000": 0.3333333333333333
+     },
+     "bank": {
+      "2000": 0.3333333333333333,
+      "24000": 0.3333333333333333
+     },
+     "v1": {
+      "2000": 0.3333333333333333,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.6666666666666666,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.3333333333333333,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "compare_two-048",
+    "group": "compare",
+    "kind": "compare_two",
+    "question": "Which needs finishing earlier: PM-50724 or ENG-998123?",
+    "expected": {
+     "ids": [
+      "PM-50724"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "not found",
+     "v2": "2025-12-02",
+     "v3": "ENG-998123"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.5,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "person_count-009",
+    "group": "combine",
+    "kind": "person_count",
+    "question": "Cosima Abernathy: how many Linear issues are assigned to them?",
+    "expected": {
+     "value": "2"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "Odalys Iqbal",
+     "v2": "Odalys Iqbal",
+     "v3": "Cosima Abernathy"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "person_first-010",
+    "group": "combine",
+    "kind": "person_first",
+    "question": "Which Linear issue on Cosima Abernathy's plate must be finished first? Give the key.",
+    "expected": {
+     "ids": [
+      "ENG-99210"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "PM-903456",
+     "v2": "PM-903456",
+     "v3": "Cosima Abernathy"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.25
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.5,
+      "24000": 0.75
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "pr_issue-status-031",
+    "group": "link",
+    "kind": "pr_issue",
+    "question": "Where does the Linear issue behind PR #82145 stand right now? Give its status.",
+    "expected": {
+     "value": "Done"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 1.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "pass",
+     "v2": "Done",
+     "v3": "#82145"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "ticket_link-status-029",
+    "group": "link",
+    "kind": "ticket_link",
+    "question": "ENG-4881 is tied to another ticket. Where does that one stand?",
+    "expected": {
+     "value": "Done"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "not found",
+     "v2": "ENG-4833",
+     "v3": "ENG-4881"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "action_owner_issues-034",
+    "group": "combine",
+    "kind": "action_owner_issues",
+    "question": "The action item \"send pricing and Dedicated/PV options and quote\" from \"Sandstone Corp \u2014 Search prototype: embeddings + rerank walkthrough\" went to someone. What Linear issues are assigned to them? Keys please.",
+    "expected": {
+     "ids": [
+      "DES-12901",
+      "ENG-4827"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "Dashiell Abernathy",
+     "v2": "not found",
+     "v3": "Sandstone Corp \u2014 Search prototype: embeddings + rerank walkthrough"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.3333333333333333,
+      "24000": 0.3333333333333333
+     },
+     "plain": {
+      "2000": 0.3333333333333333,
+      "24000": 0.3333333333333333
+     },
+     "bank": {
+      "2000": 0.3333333333333333,
+      "24000": 0.3333333333333333
+     },
+     "v1": {
+      "2000": 0.6666666666666666,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.3333333333333333,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "compare_two-049",
+    "group": "compare",
+    "kind": "compare_two",
+    "question": "Of ENG-4827 and DES-350721, which deadline comes first?",
+    "expected": {
+     "ids": [
+      "DES-350721"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 1.0
+    },
+    "answers": {
+     "v1": "2025-03-24",
+     "v2": "2025-03-20",
+     "v3": "DES-350721"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.5,
+      "24000": 0.5
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "v3": {
+      "2000": 0.5,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "person_count-011",
+    "group": "combine",
+    "kind": "person_count",
+    "question": "How many Linear tickets does Wilhelmina Brennan have on their plate?",
+    "expected": {
+     "value": "2"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "ENG-4821, ENG-4825, ENG-4826",
+     "v2": "ENG-4826",
+     "v3": "Wilhelmina Brennan"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "person_first-012",
+    "group": "combine",
+    "kind": "person_first",
+    "question": "Of the Linear work assigned to Wilhelmina Brennan, which ticket's deadline comes soonest? Key please.",
+    "expected": {
+     "ids": [
+      "DES-350721"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "Wilhelmina Brennan",
+     "v2": "ENG-213999",
+     "v3": "Wilhelmina Brennan"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.25
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "pr_issue-due_date-032",
+    "group": "link",
+    "kind": "pr_issue",
+    "question": "PR #18458 links a Linear ticket; when is that ticket due?",
+    "expected": {
+     "date": "2025-05-08"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "2026-04-24",
+     "v2": "2025-10-02",
+     "v3": "#18458"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.5,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "ticket_link-assignee-033",
+    "group": "link",
+    "kind": "ticket_link",
+    "question": "Find the ticket linked from ENG-83957: who is it assigned to?",
+    "expected": {
+     "value": "Caspian Fairweather"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "Odalys Iqbal",
+     "v2": "Odalys Iqbal",
+     "v3": "ENG-83957"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.5,
+      "24000": 0.5
+     },
+     "plain": {
+      "2000": 0.5,
+      "24000": 0.5
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "action_owner_issues-037",
+    "group": "combine",
+    "kind": "action_owner_issues",
+    "question": "The action item \"send sandbox credentials and benchmark template\" from \"POC: Benchmark workload matrix & streaming vs non-streaming decision\" went to someone. What Linear issues are assigned to them? Keys please.",
+    "expected": {
+     "ids": [
+      "DES-12901",
+      "ENG-4827"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "Dashiell Abernathy",
+     "v2": "not found",
+     "v3": "send sandbox credentials and benchmark template"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.3333333333333333,
+      "24000": 0.6666666666666666
+     },
+     "plain": {
+      "2000": 0.3333333333333333,
+      "24000": 0.3333333333333333
+     },
+     "bank": {
+      "2000": 0.3333333333333333,
+      "24000": 0.3333333333333333
+     },
+     "v1": {
+      "2000": 0.6666666666666666,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.3333333333333333,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.3333333333333333,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "compare_two-050",
+    "group": "compare",
+    "kind": "compare_two",
+    "question": "Of ENG-4829 and PM-903456, which deadline comes first?",
+    "expected": {
+     "ids": [
+      "PM-903456"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "2026-03-31",
+     "v2": "2025-12-23",
+     "v3": "ENG-4829"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.5,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "person_count-013",
+    "group": "combine",
+    "kind": "person_count",
+    "question": "How many Linear tickets does Nils Quennell have on their plate?",
+    "expected": {
+     "value": "2"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "not found",
+     "v2": "2025-05-31",
+     "v3": "Nils Quennell"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "person_first-014",
+    "group": "combine",
+    "kind": "person_first",
+    "question": "Which Linear issue on Nils Quennell's plate must be finished first? Give the key.",
+    "expected": {
+     "ids": [
+      "ENG-82746"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "ENG-82746",
+     "v2": "ENG-82746",
+     "v3": "Nils Quennell"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.25,
+      "24000": 0.25
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.75,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "pr_issue-assignee-042",
+    "group": "link",
+    "kind": "pr_issue",
+    "question": "Find the Linear ticket tied to pull request #18478: who is it assigned to?",
+    "expected": {
+     "value": "Thaddeus Dunmore"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "Odalys Iqbal",
+     "v2": "Odalys Iqbal",
+     "v3": "Saoirse Varga"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.5,
+      "24000": 0.5
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "ticket_link-status-035",
+    "group": "link",
+    "kind": "ticket_link",
+    "question": "PM-189762 is tied to another ticket. Where does that one stand?",
+    "expected": {
+     "value": "Nils Varga"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "not found",
+     "v2": "PM-4312",
+     "v3": "PM-189762"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.5,
+      "24000": 0.5
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "action_owner_issues-038",
+    "group": "combine",
+    "kind": "action_owner_issues",
+    "question": "The action item \"Send SOC2 + KMS integration notes and SOC report link\" from \"HorizonCare - embeddings throughput + hybrid relevance discovery\" went to someone. What Linear issues are assigned to them? Keys please.",
+    "expected": {
+     "ids": [
+      "DES-12901",
+      "ENG-4827"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "Dashiell Abernathy",
+     "v2": "not found",
+     "v3": "Dashiell Abernathy"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.3333333333333333,
+      "24000": 0.3333333333333333
+     },
+     "plain": {
+      "2000": 0.3333333333333333,
+      "24000": 0.3333333333333333
+     },
+     "bank": {
+      "2000": 0.3333333333333333,
+      "24000": 0.3333333333333333
+     },
+     "v1": {
+      "2000": 0.6666666666666666,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.6666666666666666,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "compare_two-051",
+    "group": "compare",
+    "kind": "compare_two",
+    "question": "Which needs finishing earlier: ENG-41302 or DES-12901?",
+    "expected": {
+     "ids": [
+      "DES-12901"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "not found",
+     "v2": "2026-03-23",
+     "v3": "ENG-41302"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.5,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "person_count-015",
+    "group": "combine",
+    "kind": "person_count",
+    "question": "Odalys Ashdown: how many Linear issues are assigned to them?",
+    "expected": {
+     "value": "2"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "Odalys Iqbal",
+     "v2": "Odalys Iqbal",
+     "v3": "Odalys Ashdown"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "person_first-016",
+    "group": "combine",
+    "kind": "person_first",
+    "question": "Of the Linear work assigned to Odalys Ashdown, which ticket's deadline comes soonest? Key please.",
+    "expected": {
+     "ids": [
+      "PM-50724"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "Odalys Iqbal",
+     "v2": "PM-25671",
+     "v3": "Odalys Ashdown"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.25
+     },
+     "v1": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.25,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "pr_issue-due_date-043",
+    "group": "link",
+    "kind": "pr_issue",
+    "question": "PR #35489 links a Linear ticket; when is that ticket due?",
+    "expected": {
+     "date": "2025-05-08"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "2026-04-24",
+     "v2": "2025-10-02",
+     "v3": "#35489"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.5,
+      "24000": 0.5
+     },
+     "v3": {
+      "2000": 0.0,
+      "24000": 0.5
+     }
+    }
+   },
+   {
+    "id": "ticket_link-status-036",
+    "group": "link",
+    "kind": "ticket_link",
+    "question": "Check the ticket linked from ENG-4844: what's its status?",
+    "expected": {
+     "value": "Done"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "Ilse Fairweather",
+     "v2": "ENG-7140",
+     "v3": "Ilse Fairweather"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.5,
+      "24000": 0.5
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.5,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "action_owner_issues-039",
+    "group": "combine",
+    "kind": "action_owner_issues",
+    "question": "The action item \"send benchmark template and sample harness adapter\" from \"Traffic fidelity triage & streaming fallback playbook - kickoff\" went to someone. What Linear issues are assigned to them? Keys please.",
+    "expected": {
+     "ids": [
+      "DES-12901",
+      "ENG-4827"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "Dashiell Abernathy",
+     "v2": "not found",
+     "v3": "Traffic fidelity triage & streaming fallback playbook - kickoff"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.3333333333333333,
+      "24000": 0.3333333333333333
+     },
+     "plain": {
+      "2000": 0.3333333333333333,
+      "24000": 0.3333333333333333
+     },
+     "bank": {
+      "2000": 0.3333333333333333,
+      "24000": 0.3333333333333333
+     },
+     "v1": {
+      "2000": 0.6666666666666666,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.6666666666666666,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.3333333333333333,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "ticket_link-assignee-040",
+    "group": "link",
+    "kind": "ticket_link",
+    "question": "ENG-90234 points at another ticket. Who's on it?",
+    "expected": {
+     "value": "Caspian Fairweather"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0,
+     "v3": 0.0
+    },
+    "answers": {
+     "v1": "not found",
+     "v2": "Katrien Haldane",
+     "v3": "ENG-90234"
+    },
+    "pieces": {
+     "plain-words": {
+      "2000": 0.5,
+      "24000": 0.5
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v3": {
+      "2000": 0.0,
+      "24000": 1.0
+     }
+    }
+   }
+  ]
+ },
+ "rules": {
+  "1 learned plans answer multi-document questions (v3 - v1 >= +0.20, held-out)": false,
+  "2 principles, not memorisation (v3 held-out >= v3 training - 0.15)": false,
+  "3 holds when the information changes (v3 changed >= v3 held-out - 0.05)": true,
+  "4 brings the fragments together (v3 - memory bank >= +0.10, all pieces within 24,000 chars, held-out)": true
+ }
+}

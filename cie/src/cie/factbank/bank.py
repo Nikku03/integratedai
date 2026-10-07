@@ -123,6 +123,9 @@ def add_document(b: Built, sd, raw: dict[str, Any], text_facts: bool = False) ->
     b.entities[doc] = (doc, "document", sd.title, dsid)
     for k in sd.keys:
         b.aliases.add((k.lower(), doc))
+    pr = str(sd.meta.get("pr_number") or "")
+    if system == "github" and pr.isdigit():
+        b.aliases.add((f"#{pr}", doc))  # how people cite a pull request
     ctx = {"system": system, **({"project": sd.project} if sd.project else {})}
     meta_text: list[str] = []
     n = 0

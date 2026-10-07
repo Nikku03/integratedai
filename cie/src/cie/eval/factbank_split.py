@@ -194,6 +194,8 @@ def changed(work: Path, out: Path, seed: int = SEED) -> dict[str, Any]:
         q["question"] = fn(q["question"])
         q["original"] = fn(q.get("original", q["question"]))
         q["expected"] = _walk(q["expected"], fn)
+        if q.get("pieces"):
+            q["pieces"] = _walk(q["pieces"], fn)
     _write_jsonl(out / "questions.jsonl", qs)
     (out / "renamed.json").write_text(json.dumps(names, indent=1))
     return {"documents": len(raws), "people_renamed": len(names), "date_shift_days": SHIFT_DAYS}

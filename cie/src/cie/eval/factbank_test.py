@@ -279,7 +279,7 @@ def compare(test: Path, changed: Path, training: Path, out: Path) -> dict[str, A
     rules = {
         "1 learning helps (v2 - v1 >= +0.10 on the mean, own answers, held-out)": (d(t["direct"]["v2"]["mean"], t["direct"]["v1"]["mean"]) or 0) >= 0.10,
         "2 holds when information changes (v2 changed >= v2 held-out - 0.05)":
-            (d(m_changed["direct"]["v2"]["mean"], t["direct"]["v2"]["mean"]) or -1) >= -0.05,
+            (lambda x: x is not None and x >= -0.05)(d(m_changed["direct"]["v2"]["mean"], t["direct"]["v2"]["mean"])),
         "3 better near the top (v2 - v1 >= +0.05 on the mean, first 2,000 chars, held-out)":
             (d(t["reach"]["v2"]["2000"]["mean"], t["reach"]["v1"]["2000"]["mean"]) or 0) >= 0.05,
         "4 not worse than the memory bank (v2 - bank >= -0.03 every group, 24,000 chars, held-out)":
