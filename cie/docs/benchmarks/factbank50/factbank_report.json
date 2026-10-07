@@ -1,0 +1,2069 @@
+{
+ "questions": 50,
+ "by_group": {
+  "owners": 26,
+  "deadlines": 18,
+  "lists": 6
+ },
+ "reachable": {
+  "plain-words": {
+   "2000": {
+    "owners": 0.885,
+    "deadlines": 1.0,
+    "lists": 0.583,
+    "mean": 0.823
+   },
+   "6000": {
+    "owners": 1.0,
+    "deadlines": 1.0,
+    "lists": 0.917,
+    "mean": 0.972
+   },
+   "24000": {
+    "owners": 1.0,
+    "deadlines": 1.0,
+    "lists": 1.0,
+    "mean": 1.0
+   }
+  },
+  "plain": {
+   "2000": {
+    "owners": 0.885,
+    "deadlines": 1.0,
+    "lists": 0.167,
+    "mean": 0.684
+   },
+   "6000": {
+    "owners": 0.962,
+    "deadlines": 1.0,
+    "lists": 0.333,
+    "mean": 0.765
+   },
+   "24000": {
+    "owners": 1.0,
+    "deadlines": 1.0,
+    "lists": 1.0,
+    "mean": 1.0
+   }
+  },
+  "bank": {
+   "2000": {
+    "owners": 0.654,
+    "deadlines": 0.389,
+    "lists": 0.083,
+    "mean": 0.375
+   },
+   "6000": {
+    "owners": 0.769,
+    "deadlines": 0.389,
+    "lists": 0.083,
+    "mean": 0.414
+   },
+   "24000": {
+    "owners": 0.808,
+    "deadlines": 0.5,
+    "lists": 0.583,
+    "mean": 0.63
+   }
+  },
+  "factbank": {
+   "2000": {
+    "owners": 0.885,
+    "deadlines": 1.0,
+    "lists": 0.417,
+    "mean": 0.767
+   },
+   "6000": {
+    "owners": 0.885,
+    "deadlines": 1.0,
+    "lists": 1.0,
+    "mean": 0.962
+   },
+   "24000": {
+    "owners": 0.962,
+    "deadlines": 1.0,
+    "lists": 1.0,
+    "mean": 0.987
+   }
+  }
+ },
+ "direct": {
+  "owners": 0.654,
+  "deadlines": 1.0,
+  "lists": 1.0,
+  "mean": 0.885
+ },
+ "search_ms_p50": {
+  "plain-words": 0.6,
+  "plain": 10.6,
+  "bank": 149.89999999999998,
+  "factbank": 5.38
+ },
+ "storage": {
+  "bank_bytes": 3038881,
+  "plain_bytes": 1068217,
+  "factbank_bytes": 1814528
+ },
+ "build": {
+  "sources": 50,
+  "entities": 380,
+  "facts": 1969,
+  "bytes": 1814528,
+  "check": {
+   "ok": true,
+   "errors": [],
+   "facts": 1969,
+   "stale": 1956,
+   "contradictions": 0,
+   "contradiction_examples": []
+  },
+  "seconds": 0.48
+ },
+ "differences": {
+  "24000": {
+   "owners": 0.154,
+   "deadlines": 0.5,
+   "lists": 0.417,
+   "mean": 0.357
+  },
+  "2000": {
+   "owners": 0.231,
+   "deadlines": 0.611,
+   "lists": 0.334,
+   "mean": 0.392
+  }
+ },
+ "rules": {
+  "1 not worse at the evidence budget (factbank - bank >= -0.03 in every group, 24,000 chars)": true,
+  "2 better near the top (factbank - bank >= +0.10 on the mean, first 2,000 chars)": true,
+  "3 answers without a model (direct >= 0.70 on the mean)": true,
+  "4 smaller (factbank <= 1/3 of the bank's storage)": false
+ },
+ "replace": false,
+ "per_question": [
+  {
+   "id": "github_author-001",
+   "group": "lists",
+   "kind": "github_author",
+   "reach": {
+    "plain-words": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "plain": {
+     "2000": 0.0,
+     "6000": 0.0,
+     "24000": 1.0
+    },
+    "bank": {
+     "2000": 0.0,
+     "6000": 0.0,
+     "24000": 0.0
+    },
+    "factbank": {
+     "2000": 0.5,
+     "6000": 1.0,
+     "24000": 1.0
+    }
+   },
+   "ms": {
+    "plain-words": 2.8,
+    "plain": 11.4,
+    "bank": 169.9,
+    "factbank": 13.46
+   },
+   "direct": 1.0,
+   "answer": "#18544, #4827",
+   "expected": {
+    "ids": [
+     "18544",
+     "4827"
+    ],
+    "id_kind": "pr"
+   }
+  },
+  {
+   "id": "github_author-002",
+   "group": "lists",
+   "kind": "github_author",
+   "reach": {
+    "plain-words": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "plain": {
+     "2000": 0.0,
+     "6000": 0.0,
+     "24000": 1.0
+    },
+    "bank": {
+     "2000": 0.0,
+     "6000": 0.0,
+     "24000": 0.5
+    },
+    "factbank": {
+     "2000": 0.0,
+     "6000": 1.0,
+     "24000": 1.0
+    }
+   },
+   "ms": {
+    "plain-words": 0.5,
+    "plain": 8.2,
+    "bank": 180.4,
+    "factbank": 4.95
+   },
+   "direct": 1.0,
+   "answer": "#111213, #20311",
+   "expected": {
+    "ids": [
+     "111213",
+     "20311"
+    ],
+    "id_kind": "pr"
+   }
+  },
+  {
+   "id": "github_author-004",
+   "group": "lists",
+   "kind": "github_author",
+   "reach": {
+    "plain-words": {
+     "2000": 0.0,
+     "6000": 0.5,
+     "24000": 1.0
+    },
+    "plain": {
+     "2000": 0.0,
+     "6000": 0.5,
+     "24000": 1.0
+    },
+    "bank": {
+     "2000": 0.0,
+     "6000": 0.0,
+     "24000": 1.0
+    },
+    "factbank": {
+     "2000": 0.5,
+     "6000": 1.0,
+     "24000": 1.0
+    }
+   },
+   "ms": {
+    "plain-words": 0.4,
+    "plain": 7.5,
+    "bank": 122.3,
+    "factbank": 4.57
+   },
+   "direct": 1.0,
+   "answer": "#31415, #75983",
+   "expected": {
+    "ids": [
+     "31415",
+     "75983"
+    ],
+    "id_kind": "pr"
+   }
+  },
+  {
+   "id": "github_author-005",
+   "group": "lists",
+   "kind": "github_author",
+   "reach": {
+    "plain-words": {
+     "2000": 0.5,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "plain": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "bank": {
+     "2000": 0.0,
+     "6000": 0.0,
+     "24000": 0.5
+    },
+    "factbank": {
+     "2000": 0.5,
+     "6000": 1.0,
+     "24000": 1.0
+    }
+   },
+   "ms": {
+    "plain-words": 0.4,
+    "plain": 6.6,
+    "bank": 118.6,
+    "factbank": 5.33
+   },
+   "direct": 1.0,
+   "answer": "#24612, #182345",
+   "expected": {
+    "ids": [
+     "182345",
+     "24612"
+    ],
+    "id_kind": "pr"
+   }
+  },
+  {
+   "id": "github_author-006",
+   "group": "lists",
+   "kind": "github_author",
+   "reach": {
+    "plain-words": {
+     "2000": 0.5,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "plain": {
+     "2000": 0.0,
+     "6000": 0.5,
+     "24000": 1.0
+    },
+    "bank": {
+     "2000": 0.0,
+     "6000": 0.0,
+     "24000": 0.5
+    },
+    "factbank": {
+     "2000": 0.5,
+     "6000": 1.0,
+     "24000": 1.0
+    }
+   },
+   "ms": {
+    "plain-words": 0.4,
+    "plain": 7.1,
+    "bank": 128.1,
+    "factbank": 5.13
+   },
+   "direct": 1.0,
+   "answer": "#23988, #23919",
+   "expected": {
+    "ids": [
+     "23919",
+     "23988"
+    ],
+    "id_kind": "pr"
+   }
+  },
+  {
+   "id": "jira_assignee-003",
+   "group": "lists",
+   "kind": "jira_assignee",
+   "reach": {
+    "plain-words": {
+     "2000": 0.5,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "plain": {
+     "2000": 0.0,
+     "6000": 0.0,
+     "24000": 1.0
+    },
+    "bank": {
+     "2000": 0.5,
+     "6000": 0.5,
+     "24000": 1.0
+    },
+    "factbank": {
+     "2000": 0.5,
+     "6000": 1.0,
+     "24000": 1.0
+    }
+   },
+   "ms": {
+    "plain-words": 0.4,
+    "plain": 6.4,
+    "bank": 122.8,
+    "factbank": 5.84
+   },
+   "direct": 1.0,
+   "answer": "SUP-126007, SUP-94217",
+   "expected": {
+    "ids": [
+     "SUP-126007",
+     "SUP-94217"
+    ],
+    "id_kind": "key"
+   }
+  },
+  {
+   "id": "metadata-qst_0095",
+   "group": "owners",
+   "kind": "metadata",
+   "reach": {
+    "plain-words": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "plain": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "bank": {
+     "2000": 0.0,
+     "6000": 0.0,
+     "24000": 1.0
+    },
+    "factbank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    }
+   },
+   "ms": {
+    "plain-words": 0.5,
+    "plain": 10.6,
+    "bank": 124.8,
+    "factbank": 4.95
+   },
+   "direct": 1.0,
+   "answer": "2026-03-13",
+   "expected": {
+    "value": "2026-03-13"
+   }
+  },
+  {
+   "id": "metadata-qst_0025",
+   "group": "owners",
+   "kind": "metadata",
+   "reach": {
+    "plain-words": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "plain": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "bank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "factbank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    }
+   },
+   "ms": {
+    "plain-words": 0.5,
+    "plain": 7.7,
+    "bank": 110.1,
+    "factbank": 3.99
+   },
+   "direct": 1.0,
+   "answer": "prod-us-east",
+   "expected": {
+    "value": "prod-us-east"
+   }
+  },
+  {
+   "id": "metadata-qst_0030",
+   "group": "owners",
+   "kind": "metadata",
+   "reach": {
+    "plain-words": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "plain": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "bank": {
+     "2000": 0.0,
+     "6000": 0.0,
+     "24000": 0.0
+    },
+    "factbank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    }
+   },
+   "ms": {
+    "plain-words": 0.6,
+    "plain": 9.2,
+    "bank": 122.5,
+    "factbank": 5.44
+   },
+   "direct": 0.0,
+   "answer": "Sofia Alvarez",
+   "expected": {
+    "value": "2029-09-15"
+   }
+  },
+  {
+   "id": "metadata-qst_0035",
+   "group": "owners",
+   "kind": "metadata",
+   "reach": {
+    "plain-words": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "plain": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "bank": {
+     "2000": 0.0,
+     "6000": 0.0,
+     "24000": 0.0
+    },
+    "factbank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    }
+   },
+   "ms": {
+    "plain-words": 0.5,
+    "plain": 7.0,
+    "bank": 153.0,
+    "factbank": 8.27
+   },
+   "direct": 1.0,
+   "answer": "2026-03-31",
+   "expected": {
+    "value": "2026-03-31"
+   }
+  },
+  {
+   "id": "action_due-022",
+   "group": "deadlines",
+   "kind": "action_due",
+   "reach": {
+    "plain-words": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "plain": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "bank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "factbank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    }
+   },
+   "ms": {
+    "plain-words": 0.5,
+    "plain": 10.5,
+    "bank": 151.2,
+    "factbank": 5.99
+   },
+   "direct": 1.0,
+   "answer": "2026-12-13",
+   "expected": {
+    "date": "2026-12-13"
+   }
+  },
+  {
+   "id": "metadata-qst_0050",
+   "group": "owners",
+   "kind": "metadata",
+   "reach": {
+    "plain-words": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "plain": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "bank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "factbank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    }
+   },
+   "ms": {
+    "plain-words": 0.5,
+    "plain": 9.3,
+    "bank": 135.2,
+    "factbank": 7.79
+   },
+   "direct": 1.0,
+   "answer": "Maya Chen",
+   "expected": {
+    "value": "Maya Chen"
+   }
+  },
+  {
+   "id": "action_due-029",
+   "group": "deadlines",
+   "kind": "action_due",
+   "reach": {
+    "plain-words": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "plain": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "bank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "factbank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    }
+   },
+   "ms": {
+    "plain-words": 0.7,
+    "plain": 12.0,
+    "bank": 167.0,
+    "factbank": 6.65
+   },
+   "direct": 1.0,
+   "answer": "2025-12-06",
+   "expected": {
+    "date": "2025-12-06"
+   }
+  },
+  {
+   "id": "action_due-024",
+   "group": "deadlines",
+   "kind": "action_due",
+   "reach": {
+    "plain-words": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "plain": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "bank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "factbank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    }
+   },
+   "ms": {
+    "plain-words": 0.5,
+    "plain": 20.9,
+    "bank": 135.7,
+    "factbank": 6.32
+   },
+   "direct": 1.0,
+   "answer": "2026-09-10",
+   "expected": {
+    "date": "2026-09-10"
+   }
+  },
+  {
+   "id": "linear_due-026",
+   "group": "deadlines",
+   "kind": "linear_due",
+   "reach": {
+    "plain-words": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "plain": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "bank": {
+     "2000": 0.0,
+     "6000": 0.0,
+     "24000": 0.0
+    },
+    "factbank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    }
+   },
+   "ms": {
+    "plain-words": 0.5,
+    "plain": 13.9,
+    "bank": 137.0,
+    "factbank": 5.93
+   },
+   "direct": 1.0,
+   "answer": "2025-03-10",
+   "expected": {
+    "date": "2025-03-10"
+   }
+  },
+  {
+   "id": "metadata-qst_0015",
+   "group": "owners",
+   "kind": "metadata",
+   "reach": {
+    "plain-words": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "plain": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "bank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "factbank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    }
+   },
+   "ms": {
+    "plain-words": 0.5,
+    "plain": 9.0,
+    "bank": 134.2,
+    "factbank": 4.7
+   },
+   "direct": 1.0,
+   "answer": "ACME_vendor_form.pdf, demo_agenda_v1.pdf, network_checklist.xlsx",
+   "expected": {
+    "value": "ACME_vendor_form.pdf"
+   }
+  },
+  {
+   "id": "metadata-qst_0083",
+   "group": "owners",
+   "kind": "metadata",
+   "reach": {
+    "plain-words": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "plain": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "bank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "factbank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    }
+   },
+   "ms": {
+    "plain-words": 0.5,
+    "plain": 8.9,
+    "bank": 175.5,
+    "factbank": 5.17
+   },
+   "direct": 1.0,
+   "answer": "pass",
+   "expected": {
+    "value": "pass"
+   }
+  },
+  {
+   "id": "metadata-qst_0085",
+   "group": "owners",
+   "kind": "metadata",
+   "reach": {
+    "plain-words": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "plain": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "bank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "factbank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    }
+   },
+   "ms": {
+    "plain-words": 0.6,
+    "plain": 9.4,
+    "bank": 136.7,
+    "factbank": 5.18
+   },
+   "direct": 0.0,
+   "answer": "Priya Menon",
+   "expected": {
+    "value": "Soft-cancel signal and timed reconnect window for OpenAI-compat streaming"
+   }
+  },
+  {
+   "id": "action_due-018",
+   "group": "deadlines",
+   "kind": "action_due",
+   "reach": {
+    "plain-words": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "plain": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "bank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "factbank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    }
+   },
+   "ms": {
+    "plain-words": 0.6,
+    "plain": 10.6,
+    "bank": 151.6,
+    "factbank": 2.59
+   },
+   "direct": 1.0,
+   "answer": "2025-11-07",
+   "expected": {
+    "date": "2025-11-07"
+   }
+  },
+  {
+   "id": "metadata-qst_0070",
+   "group": "owners",
+   "kind": "metadata",
+   "reach": {
+    "plain-words": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "plain": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "bank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "factbank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    }
+   },
+   "ms": {
+    "plain-words": 0.6,
+    "plain": 10.6,
+    "bank": 143.0,
+    "factbank": 6.1
+   },
+   "direct": 1.0,
+   "answer": "Diego Ramos",
+   "expected": {
+    "value": "Diego Ramos"
+   }
+  },
+  {
+   "id": "linear_due-028",
+   "group": "deadlines",
+   "kind": "linear_due",
+   "reach": {
+    "plain-words": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "plain": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "bank": {
+     "2000": 0.0,
+     "6000": 0.0,
+     "24000": 0.0
+    },
+    "factbank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    }
+   },
+   "ms": {
+    "plain-words": 0.5,
+    "plain": 19.9,
+    "bank": 135.7,
+    "factbank": 5.23
+   },
+   "direct": 1.0,
+   "answer": "2025-11-20",
+   "expected": {
+    "date": "2025-11-20"
+   }
+  },
+  {
+   "id": "metadata-qst_0005",
+   "group": "owners",
+   "kind": "metadata",
+   "reach": {
+    "plain-words": {
+     "2000": 0.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "plain": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "bank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "factbank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    }
+   },
+   "ms": {
+    "plain-words": 0.6,
+    "plain": 13.6,
+    "bank": 125.1,
+    "factbank": 6.14
+   },
+   "direct": 1.0,
+   "answer": "Ethan Park, Luca Bianchi, Sofia Ramos",
+   "expected": {
+    "value": "Luca Bianchi"
+   }
+  },
+  {
+   "id": "metadata-qst_0079",
+   "group": "owners",
+   "kind": "metadata",
+   "reach": {
+    "plain-words": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "plain": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "bank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "factbank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    }
+   },
+   "ms": {
+    "plain-words": 0.4,
+    "plain": 7.1,
+    "bank": 113.6,
+    "factbank": 5.22
+   },
+   "direct": 1.0,
+   "answer": "Lucien Park",
+   "expected": {
+    "value": "Lucien Park"
+   }
+  },
+  {
+   "id": "metadata-qst_0002",
+   "group": "owners",
+   "kind": "metadata",
+   "reach": {
+    "plain-words": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "plain": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "bank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "factbank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    }
+   },
+   "ms": {
+    "plain-words": 0.5,
+    "plain": 10.7,
+    "bank": 105.4,
+    "factbank": 2.85
+   },
+   "direct": 1.0,
+   "answer": "Markus Klein",
+   "expected": {
+    "value": "Markus Klein"
+   }
+  },
+  {
+   "id": "metadata-qst_0069",
+   "group": "owners",
+   "kind": "metadata",
+   "reach": {
+    "plain-words": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "plain": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "bank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "factbank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    }
+   },
+   "ms": {
+    "plain-words": 0.6,
+    "plain": 9.4,
+    "bank": 187.4,
+    "factbank": 6.42
+   },
+   "direct": 1.0,
+   "answer": "Ravi Patel",
+   "expected": {
+    "value": "Ravi Patel"
+   }
+  },
+  {
+   "id": "metadata-qst_0071",
+   "group": "owners",
+   "kind": "metadata",
+   "reach": {
+    "plain-words": {
+     "2000": 0.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "plain": {
+     "2000": 0.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "bank": {
+     "2000": 0.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "factbank": {
+     "2000": 0.0,
+     "6000": 0.0,
+     "24000": 1.0
+    }
+   },
+   "ms": {
+    "plain-words": 0.6,
+    "plain": 8.0,
+    "bank": 110.7,
+    "factbank": 5.35
+   },
+   "direct": 0.0,
+   "answer": "2026-03-31",
+   "expected": {
+    "value": "2026-03-15"
+   }
+  },
+  {
+   "id": "metadata-qst_0075",
+   "group": "owners",
+   "kind": "metadata",
+   "reach": {
+    "plain-words": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "plain": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "bank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "factbank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    }
+   },
+   "ms": {
+    "plain-words": 0.6,
+    "plain": 9.4,
+    "bank": 154.3,
+    "factbank": 6.6
+   },
+   "direct": 1.0,
+   "answer": "Julian Park",
+   "expected": {
+    "value": "Julian Park"
+   }
+  },
+  {
+   "id": "metadata-qst_0006",
+   "group": "owners",
+   "kind": "metadata",
+   "reach": {
+    "plain-words": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "plain": {
+     "2000": 0.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "bank": {
+     "2000": 0.0,
+     "6000": 0.0,
+     "24000": 0.0
+    },
+    "factbank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    }
+   },
+   "ms": {
+    "plain-words": 0.5,
+    "plain": 8.7,
+    "bank": 114.0,
+    "factbank": 5.23
+   },
+   "direct": 0.0,
+   "answer": "on_prem, vpc",
+   "expected": {
+    "value": "2026-04"
+   }
+  },
+  {
+   "id": "action_due-015",
+   "group": "deadlines",
+   "kind": "action_due",
+   "reach": {
+    "plain-words": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "plain": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "bank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "factbank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    }
+   },
+   "ms": {
+    "plain-words": 0.7,
+    "plain": 12.6,
+    "bank": 184.0,
+    "factbank": 3.52
+   },
+   "direct": 1.0,
+   "answer": "2025-02-20",
+   "expected": {
+    "date": "2025-02-20"
+   }
+  },
+  {
+   "id": "metadata-qst_0042",
+   "group": "owners",
+   "kind": "metadata",
+   "reach": {
+    "plain-words": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "plain": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "bank": {
+     "2000": 0.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "factbank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    }
+   },
+   "ms": {
+    "plain-words": 0.5,
+    "plain": 15.3,
+    "bank": 187.2,
+    "factbank": 4.5
+   },
+   "direct": 0.0,
+   "answer": "eng-release-engineering",
+   "expected": {
+    "value": "REL-452"
+   }
+  },
+  {
+   "id": "linear_due-002",
+   "group": "deadlines",
+   "kind": "linear_due",
+   "reach": {
+    "plain-words": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "plain": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "bank": {
+     "2000": 0.0,
+     "6000": 0.0,
+     "24000": 0.0
+    },
+    "factbank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    }
+   },
+   "ms": {
+    "plain-words": 0.7,
+    "plain": 18.5,
+    "bank": 146.6,
+    "factbank": 5.41
+   },
+   "direct": 1.0,
+   "answer": "2026-03-31",
+   "expected": {
+    "date": "2026-03-31"
+   }
+  },
+  {
+   "id": "linear_due-005",
+   "group": "deadlines",
+   "kind": "linear_due",
+   "reach": {
+    "plain-words": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "plain": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "bank": {
+     "2000": 0.0,
+     "6000": 0.0,
+     "24000": 0.0
+    },
+    "factbank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    }
+   },
+   "ms": {
+    "plain-words": 0.6,
+    "plain": 14.9,
+    "bank": 216.2,
+    "factbank": 5.81
+   },
+   "direct": 1.0,
+   "answer": "2026-04-30",
+   "expected": {
+    "date": "2026-04-30"
+   }
+  },
+  {
+   "id": "metadata-qst_0007",
+   "group": "owners",
+   "kind": "metadata",
+   "reach": {
+    "plain-words": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "plain": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "bank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "factbank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    }
+   },
+   "ms": {
+    "plain-words": 0.7,
+    "plain": 10.3,
+    "bank": 140.7,
+    "factbank": 6.82
+   },
+   "direct": 1.0,
+   "answer": "Maya Chen",
+   "expected": {
+    "value": "Maya Chen"
+   }
+  },
+  {
+   "id": "linear_due-001",
+   "group": "deadlines",
+   "kind": "linear_due",
+   "reach": {
+    "plain-words": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "plain": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "bank": {
+     "2000": 0.0,
+     "6000": 0.0,
+     "24000": 1.0
+    },
+    "factbank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    }
+   },
+   "ms": {
+    "plain-words": 0.6,
+    "plain": 11.1,
+    "bank": 161.7,
+    "factbank": 3.88
+   },
+   "direct": 1.0,
+   "answer": "2026-03-18",
+   "expected": {
+    "date": "2026-03-18"
+   }
+  },
+  {
+   "id": "linear_due-037",
+   "group": "deadlines",
+   "kind": "linear_due",
+   "reach": {
+    "plain-words": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "plain": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "bank": {
+     "2000": 0.0,
+     "6000": 0.0,
+     "24000": 0.0
+    },
+    "factbank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    }
+   },
+   "ms": {
+    "plain-words": 0.6,
+    "plain": 7.5,
+    "bank": 152.9,
+    "factbank": 4.37
+   },
+   "direct": 1.0,
+   "answer": "2026-04-10",
+   "expected": {
+    "date": "2026-04-10"
+   }
+  },
+  {
+   "id": "metadata-qst_0027",
+   "group": "owners",
+   "kind": "metadata",
+   "reach": {
+    "plain-words": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "plain": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "bank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "factbank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    }
+   },
+   "ms": {
+    "plain-words": 0.6,
+    "plain": 13.7,
+    "bank": 166.9,
+    "factbank": 5.08
+   },
+   "direct": 1.0,
+   "answer": "Kai Patel",
+   "expected": {
+    "value": "Kai Patel"
+   }
+  },
+  {
+   "id": "linear_due-010",
+   "group": "deadlines",
+   "kind": "linear_due",
+   "reach": {
+    "plain-words": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "plain": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "bank": {
+     "2000": 0.0,
+     "6000": 0.0,
+     "24000": 0.0
+    },
+    "factbank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    }
+   },
+   "ms": {
+    "plain-words": 0.5,
+    "plain": 8.1,
+    "bank": 151.1,
+    "factbank": 3.85
+   },
+   "direct": 1.0,
+   "answer": "2026-03-29",
+   "expected": {
+    "date": "2026-03-29"
+   }
+  },
+  {
+   "id": "metadata-qst_0087",
+   "group": "owners",
+   "kind": "metadata",
+   "reach": {
+    "plain-words": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "plain": {
+     "2000": 0.0,
+     "6000": 0.0,
+     "24000": 1.0
+    },
+    "bank": {
+     "2000": 0.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "factbank": {
+     "2000": 0.0,
+     "6000": 0.0,
+     "24000": 1.0
+    }
+   },
+   "ms": {
+    "plain-words": 0.7,
+    "plain": 10.8,
+    "bank": 137.9,
+    "factbank": 6.38
+   },
+   "direct": 0.0,
+   "answer": "enterprise",
+   "expected": {
+    "value": "Northstar Customer Support AI"
+   }
+  },
+  {
+   "id": "metadata-qst_0004",
+   "group": "owners",
+   "kind": "metadata",
+   "reach": {
+    "plain-words": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "plain": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "bank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "factbank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    }
+   },
+   "ms": {
+    "plain-words": 0.6,
+    "plain": 14.0,
+    "bank": 145.4,
+    "factbank": 7.34
+   },
+   "direct": 0.0,
+   "answer": "customer-success-and-support",
+   "expected": {
+    "value": "Customer Comms Templates (Support + CS)"
+   }
+  },
+  {
+   "id": "metadata-qst_0043",
+   "group": "owners",
+   "kind": "metadata",
+   "reach": {
+    "plain-words": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "plain": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "bank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "factbank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    }
+   },
+   "ms": {
+    "plain-words": 0.6,
+    "plain": 10.5,
+    "bank": 170.3,
+    "factbank": 7.42
+   },
+   "direct": 1.0,
+   "answer": "Liam Chen",
+   "expected": {
+    "value": "Liam Chen"
+   }
+  },
+  {
+   "id": "metadata-qst_0088",
+   "group": "owners",
+   "kind": "metadata",
+   "reach": {
+    "plain-words": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "plain": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "bank": {
+     "2000": 0.0,
+     "6000": 0.0,
+     "24000": 0.0
+    },
+    "factbank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    }
+   },
+   "ms": {
+    "plain-words": 0.5,
+    "plain": 10.9,
+    "bank": 139.4,
+    "factbank": 8.25
+   },
+   "direct": 0.0,
+   "answer": "Evelyn Brooks, Mariana Ortiz, Noah Kim",
+   "expected": {
+    "value": "console-2026.04"
+   }
+  },
+  {
+   "id": "metadata-qst_0034",
+   "group": "owners",
+   "kind": "metadata",
+   "reach": {
+    "plain-words": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "plain": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "bank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "factbank": {
+     "2000": 0.0,
+     "6000": 0.0,
+     "24000": 0.0
+    }
+   },
+   "ms": {
+    "plain-words": 0.7,
+    "plain": 11.5,
+    "bank": 156.5,
+    "factbank": 5.7
+   },
+   "direct": 0.0,
+   "answer": "Elliot Price",
+   "expected": {
+    "value": "INC-2034"
+   }
+  },
+  {
+   "id": "linear_due-003",
+   "group": "deadlines",
+   "kind": "linear_due",
+   "reach": {
+    "plain-words": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "plain": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "bank": {
+     "2000": 0.0,
+     "6000": 0.0,
+     "24000": 0.0
+    },
+    "factbank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    }
+   },
+   "ms": {
+    "plain-words": 0.5,
+    "plain": 10.5,
+    "bank": 164.0,
+    "factbank": 5.43
+   },
+   "direct": 1.0,
+   "answer": "2026-02-15",
+   "expected": {
+    "date": "2026-02-15"
+   }
+  },
+  {
+   "id": "action_due-010",
+   "group": "deadlines",
+   "kind": "action_due",
+   "reach": {
+    "plain-words": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "plain": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "bank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "factbank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    }
+   },
+   "ms": {
+    "plain-words": 0.5,
+    "plain": 12.8,
+    "bank": 167.0,
+    "factbank": 8.1
+   },
+   "direct": 1.0,
+   "answer": "2026-10-23",
+   "expected": {
+    "date": "2026-10-23"
+   }
+  },
+  {
+   "id": "action_due-021",
+   "group": "deadlines",
+   "kind": "action_due",
+   "reach": {
+    "plain-words": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "plain": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "bank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "factbank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    }
+   },
+   "ms": {
+    "plain-words": 0.6,
+    "plain": 11.0,
+    "bank": 161.8,
+    "factbank": 3.18
+   },
+   "direct": 1.0,
+   "answer": "2026-12-09",
+   "expected": {
+    "date": "2026-12-09"
+   }
+  },
+  {
+   "id": "linear_due-022",
+   "group": "deadlines",
+   "kind": "linear_due",
+   "reach": {
+    "plain-words": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "plain": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "bank": {
+     "2000": 0.0,
+     "6000": 0.0,
+     "24000": 0.0
+    },
+    "factbank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    }
+   },
+   "ms": {
+    "plain-words": 0.6,
+    "plain": 8.5,
+    "bank": 161.6,
+    "factbank": 5.01
+   },
+   "direct": 1.0,
+   "answer": "2026-03-26",
+   "expected": {
+    "date": "2026-03-26"
+   }
+  },
+  {
+   "id": "linear_due-020",
+   "group": "deadlines",
+   "kind": "linear_due",
+   "reach": {
+    "plain-words": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "plain": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "bank": {
+     "2000": 0.0,
+     "6000": 0.0,
+     "24000": 0.0
+    },
+    "factbank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    }
+   },
+   "ms": {
+    "plain-words": 0.6,
+    "plain": 20.2,
+    "bank": 222.9,
+    "factbank": 5.46
+   },
+   "direct": 1.0,
+   "answer": "2025-03-21",
+   "expected": {
+    "date": "2025-03-21"
+   }
+  },
+  {
+   "id": "action_due-027",
+   "group": "deadlines",
+   "kind": "action_due",
+   "reach": {
+    "plain-words": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "plain": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "bank": {
+     "2000": 0.0,
+     "6000": 0.0,
+     "24000": 1.0
+    },
+    "factbank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    }
+   },
+   "ms": {
+    "plain-words": 0.7,
+    "plain": 14.6,
+    "bank": 263.3,
+    "factbank": 4.29
+   },
+   "direct": 1.0,
+   "answer": "2025-02-20",
+   "expected": {
+    "date": "2025-02-20"
+   }
+  },
+  {
+   "id": "metadata-qst_0093",
+   "group": "owners",
+   "kind": "metadata",
+   "reach": {
+    "plain-words": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "plain": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "bank": {
+     "2000": 0.0,
+     "6000": 0.0,
+     "24000": 0.0
+    },
+    "factbank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    }
+   },
+   "ms": {
+    "plain-words": 0.6,
+    "plain": 15.4,
+    "bank": 152.1,
+    "factbank": 6.95
+   },
+   "direct": 1.0,
+   "answer": "2026-04-30",
+   "expected": {
+    "value": "2026-04-30"
+   }
+  },
+  {
+   "id": "metadata-qst_0010",
+   "group": "owners",
+   "kind": "metadata",
+   "reach": {
+    "plain-words": {
+     "2000": 0.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "plain": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "bank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    },
+    "factbank": {
+     "2000": 1.0,
+     "6000": 1.0,
+     "24000": 1.0
+    }
+   },
+   "ms": {
+    "plain-words": 0.6,
+    "plain": 11.2,
+    "bank": 148.7,
+    "factbank": 4.34
+   },
+   "direct": 1.0,
+   "answer": "2025-12-04",
+   "expected": {
+    "value": "2025-12-04"
+   }
+  }
+ ]
+}

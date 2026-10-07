@@ -1,0 +1,15 @@
+{
+ "sources": 50,
+ "entities": 380,
+ "facts": 1969,
+ "bytes": 1814528,
+ "check": {
+  "ok": true,
+  "errors": [],
+  "facts": 1969,
+  "stale": 1956,
+  "contradictions": 0,
+  "contradiction_examples": []
+ },
+ "seconds": 0.48
+}

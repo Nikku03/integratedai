@@ -32,6 +32,18 @@ with the memory bank, by the same model. The rules that decide are in
 [`docs/MEMORY_TEST_PREREGISTRATION.md`](docs/MEMORY_TEST_PREREGISTRATION.md); the results go in
 [`docs/MEMORY_TEST.md`](docs/MEMORY_TEST.md).
 
+## Fact bank (the cell memory bank's design)
+
+`cie.factbank` rebuilds the memory bank of the Nikku03/cell repository for company documents:
+- one sourced fact per field, with a checker;
+- SQLite lookup by subject;
+- one hop at a time, with each result written down and votes when sources disagree;
+- a journal that replays.
+
+On 50 documents and 50 questions, its evidence held the answer far more often than the present memory bank's (0.987
+against 0.630), and it answered 88% of the questions with no model. It is 30 times faster. Its storage missed the
+pre-registered bar, so it does not replace the bank yet. See [`docs/FACTBANK_RESULTS.md`](docs/FACTBANK_RESULTS.md).
+
 ## Brain-wired reasoning neurons (research)
 
 `cie.neuro` wires the reasoning engine's spiking neurons like a piece of Blue Brain's cortex model (directed cliques of
