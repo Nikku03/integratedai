@@ -33,11 +33,13 @@ from typing import Any
 
 import numpy as np
 
-from cie.factbank.engine import SYSTEM_WORDS, stem, words
+from cie.factbank.engine import STOP, SYSTEM_WORDS, stem, words
 from cie.factbank.learn import Assoc, dot, fit, norm, question_kind, sigmoid, tokens_of
 
 AGGS = ("single", "list", "count", "earliest", "latest")
+TYPE_TOKENS = ("who", "when", "state", "num")  # cie.factbank.lexicon.TYPES
 HOW_MANY = re.compile(r"\bhow many\b", re.I)
+KEY_OR_NUMBER = re.compile(r"\b[A-Z][A-Z0-9]{1,9}-\d{2,7}\b|#?\b\d+\b")
 ISO = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 NOT_LINKS = {"from_document"}
 FEATURES = ["bias", "start_named", "start_rank", "two_starts", "path_len", "path_overlap", "path_assoc", "field_overlap", "field_assoc",
@@ -45,8 +47,13 @@ FEATURES = ["bias", "start_named", "start_rank", "two_starts", "path_len", "path
 # v4 (after the first test, docs/FACTBANK_MULTI_RESULTS.md): the clue rule split by whether the question offers a choice, the
 # kind of answer learned from the question's words instead of fixed patterns, and whether the answer comes from the system the
 # question names
+# v5 (docs/FACTBANK_WORDS_PREREGISTRATION.md): v4 plus word meanings learned from the company's documents
+# (cie.factbank.lexicon). A question word lends its meaning to the known words nearest it, and field and relation names are
+# matched by meaning as well as by spelling.
+MEANING = ["path_sim", "field_sim", "path_anchor", "field_anchor", "type_fits"]
 FEATURES_V4 = ["bias", "start_named", "start_rank", "two_starts", "path_len", "path_overlap", "path_assoc", "field_overlap", "field_assoc",
                "kind_assoc", "combine_assoc", "label_field", "answer_named_choice", "answer_named_clue", "system_fits", "fanout"]
+FEATURES_V5 = FEATURES_V4 + MEANING
 
 
 @dataclass(frozen=True)
@@ -70,10 +77,51 @@ class Planner:
     came or answers with only what it started from or passed through, and "one value" needs every entity reached to agree on it.
     ``"v3"`` is the planner as first tested."""
 
-    def __init__(self, bank, rules: str = "v3"):
+    def __init__(self, bank, rules: str = "v3", lexicon=None, known: list[str] | None = None):
         self.b = bank
         self.rules = rules
+        self.lex = lexicon  # v5: learned word meanings (cie.factbank.lexicon.Lexicon)
+        self.known = sorted(known or [])  # the words the training questions used
         self._facts: dict[str, list] = {}
+        self._expanded: dict[frozenset, dict[str, float]] = {}
+
+    def expand(self, ws: set[str], plain: set[str], k: int = 3, floor: float = 0.45) -> dict[str, float]:
+        """The question's words, each with weight 1, plus the known words nearest each of its plain words (``plain_words``),
+        weighted by how near."""
+        key = frozenset(ws)
+        if key not in self._expanded:
+            out = dict.fromkeys(ws, 1.0)
+            if self.lex is not None:
+                for w in ws & plain:
+                    for n, sim in self.lex.space.neighbours(w, self.known, k, floor):
+                        out[n] = max(out.get(n, 0.0), sim)
+            self._expanded[key] = out
+        return self._expanded[key]
+
+    def enrich(self, ws: set[str], plain: set[str], floor: float = 0.5, type_floor: float = 0.1) -> dict[str, float]:
+        """v5: the question's words (weight 1), plus for each plain word the kinds of value it goes with ("zzwhen" for a
+        word about dates), and, for a word no training question used, the known words nearest it in meaning."""
+        key = frozenset(ws) | {"\0enrich"}
+        if key not in self._expanded:
+            out = dict.fromkeys(ws, 1.0)
+            known = set(self.known)
+            for w in ws & plain:
+                for t in TYPE_TOKENS:
+                    sc = self.lex.types.score(w, t, k=20.0, min_count=20)
+                    if sc >= type_floor:
+                        out["zz" + t] = max(out.get("zz" + t, 0.0), sc)
+                if w not in known:
+                    for n, sim in self.lex.space.neighbours(w, self.known, 3, floor):
+                        out[n] = max(out.get(n, 0.0), sim)
+            self._expanded[key] = out
+        return self._expanded[key]
+
+    def plain_words(self, question: str) -> set[str]:
+        """The words that may lend their meaning: outside quoted titles, keys and numbers, not a named person's name, and not
+        a word too common to mean anything on its own (the engine's stop words)."""
+        text = KEY_OR_NUMBER.sub(" ", re.sub(r'"[^"]*"', " ", question))
+        names = {t for e in self.b.named(question) if e.startswith("person:") for t in words(self.b.names.get(e, ""))}
+        return {w for w in words(text) if w not in names and w not in STOP}
 
     def facts(self, e: str) -> list:
         if e not in self._facts:
@@ -223,14 +271,31 @@ class Planner:
         ans = norm(meta["answer"])
         in_q = bool(len(ans) >= 3 and re.search(r"(?<!\w)" + re.escape(ans) + r"(?!\w)", norm(question)))
         choice = self.offers_choice(question) if in_q else False
+        if self.lex is not None:  # v5: associations through the words' kinds of value and, for new words, the nearest known words
+            plain = self.plain_words(question)
+            qx, kx = self.enrich(qw, plain), self.enrich(question_words(question), plain)
+            rel = lambda t: weighted(rel_assoc, qx, t)  # noqa: E731
+            overlap = lambda t: sum(qx.get(x, 0.0) for x in t) / max(1, len(t))  # noqa: E731 - a borrowed word overlaps as much as it is near
+            agg = weighted(agg_assoc, qx, {plan.aggregate})
+            kind = weighted_lift(kind_assoc, kx, {okind}) if kind_assoc is not None else 0.0
+            meaning = {"path_sim": float(np.mean([self.lex.field_sim(plain, t) for t in rel_toks])) if rel_toks else 0.0,
+                       "field_sim": self.lex.field_sim(plain, f_toks) if f_toks else 0.0,
+                       "path_anchor": float(np.mean([self.lex.field_anchor(plain, r) for r in plan.path])) if plan.path else 0.0,
+                       "field_anchor": self.lex.field_anchor(plain, plan.field) if plan.field != "label" else 0.0,
+                       "type_fits": self.lex.type_score(plain, value_kinds(plan, okind))}
+        else:
+            rel = lambda t: rel_assoc.score(qw, t)  # noqa: E731
+            overlap = lambda t: len(t & qw) / max(1, len(t))  # noqa: E731
+            agg = agg_assoc.score(qw, {plan.aggregate})
+            kind = kind_assoc.score(question_words(question), {okind}) if kind_assoc is not None else 0.0
+            meaning = dict.fromkeys(MEANING, 0.0)
         return {"bias": 1.0, "start_named": meta["named"], "start_rank": meta["rank"], "two_starts": float(len(plan.starts) == 2),
                 "path_len": float(len(plan.path)),
-                "path_overlap": float(np.mean([len(t & qw) / max(1, len(t)) for t in rel_toks])) if rel_toks else 0.0,
-                "path_assoc": float(np.mean([rel_assoc.score(qw, t) for t in rel_toks])) if rel_toks else 0.0,
-                "field_overlap": len(f_toks & qw) / max(1, len(f_toks)), "field_assoc": rel_assoc.score(qw, f_toks) if f_toks else 0.0,
-                "kind_fits": float(fits), "kind_conflicts": float(conflicts),
-                "kind_assoc": kind_assoc.score(question_words(question), {okind}) if kind_assoc is not None else 0.0,
-                "combine_assoc": agg_assoc.score(qw, {plan.aggregate}), "label_field": float(plan.field == "label"),
+                "path_overlap": float(np.mean([overlap(t) for t in rel_toks])) if rel_toks else 0.0,
+                "path_assoc": float(np.mean([rel(t) for t in rel_toks])) if rel_toks else 0.0,
+                "field_overlap": overlap(f_toks), "field_assoc": rel(f_toks) if f_toks else 0.0,
+                "kind_fits": float(fits), "kind_conflicts": float(conflicts), "kind_assoc": kind,
+                "combine_assoc": agg, "label_field": float(plan.field == "label"), **meaning,
                 "answer_in_question": float(in_q), "answer_named_choice": float(in_q and choice), "answer_named_clue": float(in_q and not choice),
                 "system_fits": float(bool(plan.system)),
                 "fanout": math.log1p(meta["fanout"])}
@@ -239,6 +304,38 @@ class Planner:
           names: list[str] = FEATURES) -> list[float]:
         f = self.features(question, plan, meta, rel_assoc, agg_assoc, kind_assoc)
         return [f[n] for n in names]
+
+
+def value_kinds(plan: Plan, okind: str) -> set[str]:
+    """The kinds of value a plan's answer is, or is chosen by, in the lexicon's terms (``cie.factbank.lexicon.TYPES``)."""
+    out = {"person": {"who"}, "date": {"when"}, "count": {"num"}}.get(okind, set())
+    if okind == "other" and plan.field in ("status", "state"):
+        out = {"state"}
+    if plan.aggregate in ("earliest", "latest"):
+        out = out | {"when"}
+    return out
+
+
+def weighted(assoc: Assoc, qx: dict[str, float], ptoks: set[str]) -> float:
+    """``Assoc.score`` with weighted question words: a near word counts as much as it is near."""
+    if not ptoks:
+        return 0.0
+    tot = 0.0
+    for t in ptoks:
+        tot += max((wt * assoc.pair.get(w, {}).get(t, 0.0) / (assoc.word.get(w, 0.0) + 2.0) for w, wt in qx.items()), default=0.0)
+    return tot / len(ptoks)
+
+
+def weighted_lift(lift: Lift, qx: dict[str, float], targets: set[str]) -> float:
+    """``Lift.score`` with weighted question words."""
+    if not targets or lift.n <= 0:
+        return 0.0
+    tot = 0.0
+    for t in targets:
+        prior = lift.target.get(t, 0.0) / lift.n
+        tot += max((wt * ((lift.pair.get(w, {}).get(t, 0.0) + 2 * prior) / (lift.word.get(w, 0.0) + 2) - prior) for w, wt in qx.items()),
+                   default=0.0)
+    return tot / len(targets)
 
 
 def inverse(a: str, b: str) -> bool:
@@ -295,6 +392,18 @@ class PlanLessons:
     features: list[str] = dc_field(default_factory=lambda: list(FEATURES))  # lessons saved before v4 have none: the v3 features
     kind_assoc: dict[str, Any] = dc_field(default_factory=dict)
     rules: str = "v3"
+    lexicon: str = ""  # v5: the learned word meanings (a cie.factbank.lexicon file); empty before v5
+    known_words: list[str] = dc_field(default_factory=list)  # v5: the training questions' plain words, which lend their meaning
+
+    def known(self) -> list[str]:
+        return list(self.known_words)
+
+    def planner(self, bank, lexicon=None) -> Planner:
+        if self.lexicon and lexicon is None:
+            from cie.factbank.lexicon import Lexicon
+
+            lexicon = Lexicon.load(self.lexicon)
+        return Planner(bank, self.rules, lexicon if self.lexicon else None, self.known())
 
     def assocs(self) -> tuple[Assoc, Assoc, Lift | None]:
         return (Assoc.from_json(self.rel_assoc), Assoc.from_json(self.agg_assoc),
@@ -330,15 +439,21 @@ def matches(expected: dict[str, Any], answer: str) -> bool:
     return any(norm(v) == norm(answer) for v in vals)
 
 
-def learn_plans(bank, questions: list[dict[str, Any]], log=print, features: list[str] = FEATURES_V4, rules: str = "v4") -> PlanLessons:
-    """Fit the plan weights on questions with answers. Associations leave each question's own share out."""
-    pl = Planner(bank, rules)
+def learn_plans(bank, questions: list[dict[str, Any]], log=print, features: list[str] = FEATURES_V4, rules: str = "v4",
+                lexicon=None, lexicon_path: str = "") -> PlanLessons:
+    """Fit the plan weights on questions with answers. Associations leave each question's own share out. With a lexicon (v5),
+    question words also reach the known words nearest them."""
+    pl = Planner(bank, rules, lexicon)
+    pl.known = sorted({w for q in questions for w in pl.plain_words(q["question"])})
     per_q = []
     rel_total, agg_total, kind_total = Assoc(), Assoc(), Lift()
     for q in questions:
         cands = pl.candidates(q["question"])
         good = [(p, m) for p, m in cands if matches(q["expected"], m["answer"])]
         qw, kw = set(words(q["question"])), question_words(q["question"])
+        if lexicon is not None:  # v5: the words' kinds of value join them (all training words are known: nothing is borrowed)
+            plain = pl.plain_words(q["question"])
+            qw, kw = qw | set(pl.enrich(qw, plain)), kw | set(pl.enrich(kw, plain))
         rt = set().union(*[set().union(*[tokens_of(r) for r in p.path], tokens_of(p.field) if p.field != "label" else set())
                            for p, _ in good]) if good else set()
         at = {p.aggregate for p, _ in good}
@@ -364,14 +479,16 @@ def learn_plans(bank, questions: list[dict[str, Any]], log=print, features: list
                       {"questions": len(questions), "plans": len(ys), "right_plans": int(sum(ys)),
                        "questions_with_a_right_plan": sum(1 for qq, cands, *_rest in per_q
                                                           if any(matches(qq["expected"], m["answer"]) for _p, m in cands))},
-                      list(features), kind_total.to_json() if use_kind else {}, rules)
+                      list(features), kind_total.to_json() if use_kind else {}, rules, lexicon_path if lexicon is not None else "",
+                      pl.known if lexicon is not None else [])
     log("\n".join(les.describe()))
     return les
 
 
-def answer(bank, lessons: PlanLessons, question: str) -> tuple[str, Plan | None, list[dict[str, Any]], list[tuple[float, Plan, str]]]:
-    """The best plan's answer, its journal, and the top plans."""
-    pl = Planner(bank, lessons.rules)
+def answer(bank, lessons: PlanLessons, question: str, planner: Planner | None = None
+           ) -> tuple[str, Plan | None, list[dict[str, Any]], list[tuple[float, Plan, str]]]:
+    """The best plan's answer, its journal, and the top plans. Pass ``planner`` (``lessons.planner(bank)``) to reuse one."""
+    pl = planner or lessons.planner(bank)
     ra, aa, ka = lessons.assocs()
     scored = sorted(((sigmoid(dot(lessons.weights, pl.x(question, p, m, ra, aa, ka, lessons.features))), p, m["answer"])
                      for p, m in pl.candidates(question)), key=lambda x: -x[0])

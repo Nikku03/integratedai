@@ -158,3 +158,33 @@ def test_changed_information_also_changes_the_pieces(tmp_path):
     q = _jsonl(tmp_path / "c" / "questions.jsonl")[0]
     assert q["pieces"][0] == "ENG-11" and q["pieces"][2] == "2026-04-12"
     assert q["pieces"][1] == q["expected"]["value"] != "Omar Singh", "a renamed person is renamed in the pieces too"
+
+
+def test_v5_new_words_borrow_meaning_from_the_documents(tmp_path):
+    import random
+
+    from cie.factbank import lexicon as L
+
+    rng = random.Random(5)
+    sents = []
+    for _ in range(300):
+        who = rng.choice(["Omar Singh", "Liam Chen", "Maya Chen"])
+        sents += [f"{who} will own the ticket and drive it", f"{who} is assigned the ticket and will drive it",
+                  f"the deadline is {rng.choice(['2026-03-05', '2026-04-01'])} for the launch", "the launch looks fine and the pool is warm"]
+    space = L.build_space((L.tokens(s) for s in sents), min_count=5, window=4, dim=6, log=lambda *_: None)
+    lex = L.Lexicon(space, L.Anchors(), {}, L.typing(sents, {"omar singh", "liam chen", "maya chen"}, set()))
+    tb = _bank(tmp_path)
+    pl = P.Planner(tb, "v4", lex, known=["assign", "many", "linear", "issu", "date"])
+    plain = pl.plain_words('How many Linear issues does Omar Singh own? See "Fix keycard reader" and ENG-11.')
+    assert "own" in plain and "many" in plain, plain
+    assert not plain & {"omar", "singh", "fix", "keycard", "eng", "does", "how"}, "names, titles, keys and stop words lend nothing"
+    got = pl.enrich({"own", "many", "deadline"}, {"own", "many", "deadline"}, floor=0.3, type_floor=0.05)
+    assert got["many"] == 1.0 and got["own"] == 1.0, "the question's own words keep their full weight"
+    assert 0 < got.get("assign", 0) < 1, "a new word borrows the known word nearest it in meaning"
+    assert got.get("zzwhen", 0) > 0, "a word found next to dates is a word about dates"
+    # with no lexicon the planner is v4: nothing borrowed
+    assert P.Planner(tb, "v4").features("How many Linear issues does Omar Singh own?", P.Plan((OMAR,), ("assignee_of",), "label", "count"),
+                                        {"named": 1.0, "rank": 1.0, "answer": "2", "fanout": 2}, P.Assoc(), P.Assoc(), P.Lift())["path_overlap"] == 0.0
+    f = pl.features("How many Linear issues does Omar Singh own?", P.Plan((OMAR,), ("assignee_of",), "label", "count"),
+                    {"named": 1.0, "rank": 1.0, "answer": "2", "fanout": 2}, P.Assoc(), P.Assoc(), P.Lift())
+    assert 0 < f["path_overlap"] < 1, "a borrowed word overlaps a relation's name as much as it is near"
