@@ -118,6 +118,31 @@ RETEST = {
                                   'Find who owns the action item "{t}" from the meeting "{m}", then list the keys of the Linear tickets '
                                   'assigned to them.'],
 }
+# The new-words test (docs/FACTBANK_WORDS_PREREGISTRATION.md): a fourth pair of wordings per kind, written before any of the
+# word learning was built, in the way a manager might ask in chat. They use words no earlier question used.
+NEW_WORDS = {
+    ("pr_issue", "assignee"): ["Who is responsible for the Linear ticket behind PR #{n}?",
+                               "PR #{n} ties back to a Linear issue. Who is handling that issue?"],
+    ("pr_issue", "due_date"): ["What's the target date on the Linear ticket behind PR #{n}?",
+                               "PR #{n} ties back to a Linear issue. When is that issue expected to land?"],
+    ("pr_issue", "status"): ["How far along is the Linear ticket behind PR #{n}?",
+                             "PR #{n} ties back to a Linear issue. Which stage is that issue at?"],
+    ("issue_pr_author", "author"): ["Which engineer submitted the PR for {k}?",
+                                    "{k} was worked on in a pull request. Who created that PR?"],
+    ("ticket_link", "status"): ["{k} references another ticket. How far along is that one?",
+                                "Which stage is the ticket referenced from {k} at?"],
+    ("ticket_link", "assignee"): ["{k} references another ticket. Who is responsible for it?",
+                                  "Who's handling the ticket referenced from {k}?"],
+    ("person_count", ""): ["How big is {p}'s Linear queue, in issues?",
+                           "Tally the Linear tickets {p} is responsible for."],
+    ("person_first", ""): ["Which of {p}'s Linear tickets is most urgent by date? Key only.",
+                           "Out of everything in {p}'s Linear queue, what lands soonest? Give the key."],
+    ("compare_two", ""): ["{a} vs {b}: which one has to ship first?",
+                          "Which lands earlier on the calendar, {a} or {b}?"],
+    ("action_owner_issues", ""): ['The follow-up "{t}" from "{m}": whoever is responsible for it, which Linear tickets do they hold? Keys.',
+                                  'After "{m}", someone was tasked with "{t}". List that person\'s Linear issue keys.'],
+}
+WORDINGS = {"retest": RETEST, "words": NEW_WORDS}
 FRESH_SEED = 13
 POOL_DOCS = 20_000
 LINKED_SOURCES = ("linear", "github", "jira", "fireflies")
@@ -185,8 +210,12 @@ def split(docs: list[dict[str, Any]], seed: int = SEED) -> tuple[set[str], set[s
     return sets[0], sets[1]
 
 
-def questions(docs: list[dict[str, Any]], dsids: set[str], held_out: bool, seed: int, retest: bool = False) -> list[dict[str, Any]]:
-    """The questions answerable within ``dsids``, with expected answers computed there, worded for training, held-out or the retest."""
+def questions(docs: list[dict[str, Any]], dsids: set[str], held_out: bool, seed: int, retest: bool = False,
+              wordings: dict | None = None) -> list[dict[str, Any]]:
+    """The questions answerable within ``dsids``, with expected answers computed there, worded for training, held-out, the retest
+    (``retest``) or another set of wordings (``wordings``)."""
+    if retest:
+        wordings = RETEST
     rng = random.Random(seed)
     inside = [d for d in docs if d["dsid"] in dsids]
     by_id = {d["dsid"]: d for d in inside}
@@ -199,9 +228,9 @@ def questions(docs: list[dict[str, Any]], dsids: set[str], held_out: bool, seed:
     out: list[dict[str, Any]] = []
 
     def add(kind: str, field: str, fmt: dict[str, str], expected: dict[str, Any], gold: list[str], pieces: list[str]) -> None:
-        wordings = RETEST[(kind, field)] if retest else T[(kind, field)][1 if held_out else 0]
+        options = wordings[(kind, field)] if wordings else T[(kind, field)][1 if held_out else 0]
         out.append({"id": f"{kind}{'-' + field if field else ''}-{len(out) + 1:03d}", "group": GROUP[kind], "kind": kind, "field": field,
-                    "question": rng.choice(wordings).format(**fmt), "expected": expected, "gold_docs": sorted(set(gold)), "pieces": pieces})
+                    "question": rng.choice(options).format(**fmt), "expected": expected, "gold_docs": sorted(set(gold)), "pieces": pieces})
 
     for u in units(inside):
         if not set(u["docs"]) <= dsids:
@@ -290,17 +319,18 @@ def pool(index: dict[str, str], exclude: set[str], n: int = POOL_DOCS, seed: int
     return sorted(picked)
 
 
-def build_fresh(index_path: Path, root: str, exclude_dirs: list[Path], out: Path) -> dict[str, Any]:
-    """The retest's set: new documents drawn from the whole benchmark (none from ``exclude_dirs``), the retest wordings."""
+def build_fresh(index_path: Path, root: str, exclude_dirs: list[Path], out: Path, seed: int = FRESH_SEED, wordings: str = "retest") -> dict[str, Any]:
+    """A new set: new documents drawn from the whole benchmark (none from ``exclude_dirs``), new wordings. Seed 13 with the retest
+    wordings made the retest's set; seed 17 with the new-words wordings made the new-words test's set."""
     from cie.eval.memory_test import haystack_docs
 
     index = json.loads(index_path.read_text())["index"]
     exclude = set().union(*(set(json.loads((d / "haystack.json").read_text())["dsids"]) for d in exclude_dirs))
-    docs = haystack_docs(Path(root) / "generated_data" / "sources", index, pool(index, exclude))
-    ids = fresh(docs, exclude)
-    qs = questions(docs, ids, True, FRESH_SEED + 1, retest=True)
+    docs = haystack_docs(Path(root) / "generated_data" / "sources", index, pool(index, exclude, seed=seed))
+    ids = fresh(docs, exclude, seed)
+    qs = questions(docs, ids, True, seed + 1, wordings=WORDINGS[wordings])
     out.mkdir(parents=True, exist_ok=True)
-    (out / "haystack.json").write_text(json.dumps({"root": root, "n_docs": N_DOCS, "seed": FRESH_SEED, "base_questions": 0,
+    (out / "haystack.json").write_text(json.dumps({"root": root, "n_docs": N_DOCS, "seed": seed, "base_questions": 0,
                                                    "documents": len(ids), "dsids": sorted(ids)}))
     if not (out / "index.json").exists():
         (out / "index.json").symlink_to(index_path.resolve())
@@ -518,6 +548,8 @@ def main(argv: list[str] | None = None) -> Any:
     ap.add_argument("--single", help="the single-document lessons (lessons.json)")
     ap.add_argument("--plans", help="the plan lessons (plan_lessons.json)")
     ap.add_argument("--rules", default="v4", choices=["v3", "v4"], help="train: the planner as first tested (v3) or as revised (v4)")
+    ap.add_argument("--seed", type=int, default=FRESH_SEED, help="fresh: 13 made the retest's set, 17 the new-words test's set")
+    ap.add_argument("--wordings", default="retest", choices=sorted(WORDINGS), help="fresh: which wordings")
     ap.add_argument("--name", default="factbank_v3", help="ask: the answers' file name (factbank_v3 or factbank_v4)")
     ap.add_argument("--exclude", nargs="*", default=[], help="fresh: work folders whose documents the new set must not use")
     ap.add_argument("--out")
@@ -525,7 +557,7 @@ def main(argv: list[str] | None = None) -> Any:
     if a.cmd == "build":
         out = build(Path(a.docs), Path(a.index), a.root, Path(a.train), Path(a.test))
     elif a.cmd == "fresh":
-        out = build_fresh(Path(a.index), a.root, [Path(x) for x in a.exclude], Path(a.out))
+        out = build_fresh(Path(a.index), a.root, [Path(x) for x in a.exclude], Path(a.out), a.seed, a.wordings)
     elif a.cmd == "train":
         out = train(Path(a.work), Path(a.single), Path(a.plans), a.rules)
     elif a.cmd == "ask":
