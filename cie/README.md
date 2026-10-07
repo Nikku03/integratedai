@@ -44,6 +44,13 @@ On 50 documents and 50 questions, its evidence held the answer far more often th
 against 0.630), and it answered 88% of the questions with no model. It is 30 times faster. Its storage missed the
 pre-registered bar, so it does not replace the bank yet. See [`docs/FACTBANK_RESULTS.md`](docs/FACTBANK_RESULTS.md).
 
+Taught on those 50 documents, then retested on 50 others with reworded questions and changed names and dates
+([`docs/FACTBANK_LEARNING_RESULTS.md`](docs/FACTBANK_LEARNING_RESULTS.md)):
+- **What carried over:** its evidence put the answer in the first 2,000 characters 89% of the time, against 72%
+  untrained. Lists were all right in new wording.
+- **What did not:** choosing a single answer. It learned the word "due", not the idea of a deadline.
+- **Changed information:** renaming everyone and moving every date changed nothing.
+
 ## Brain-wired reasoning neurons (research)
 
 `cie.neuro` wires the reasoning engine's spiking neurons like a piece of Blue Brain's cortex model (directed cliques of

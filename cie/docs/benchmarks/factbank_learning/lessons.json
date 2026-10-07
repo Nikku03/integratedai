@@ -1,0 +1,2550 @@
+{
+ "entity_w": [
+  -4.2710436945911185,
+  4.848376249787636,
+  0.0,
+  2.3225897669246645,
+  2.862254150850577,
+  4.351450423804811
+ ],
+ "answer_w": [
+  -5.512781583999455,
+  2.840620604322305,
+  -0.7348888490884531,
+  6.825000465081434,
+  -2.3942088108788777,
+  8.59407716150123,
+  4.835703582386166,
+  -0.545044972846215,
+  -4.082654030529015,
+  0.47518039290498876,
+  1.3018403950109272,
+  0.030990942965294112,
+  0.19347927835430806
+ ],
+ "list_w": [
+  -1.879152939876208,
+  1.2481161509182284,
+  1.6423206663700383,
+  1.6423206663700383,
+  -0.19096840258296005
+ ],
+ "relation_w": [
+  -0.9182548317452328,
+  0.7941411717796152,
+  0.5746345377269414,
+  0.7941411717796152,
+  0.7941411717796151
+ ],
+ "assoc": {
+  "pair": {
+   "custom": {
+    "date": 1.0,
+    "text": 1.0,
+    "due": 1.0,
+    "updat": 1.0,
+    "sla": 1.0,
+    "environment": 1.0,
+    "assign": 3.0,
+    "redwood": 1.0,
+    "attend": 1.0,
+    "owner": 1.0,
+    "title": 1.0
+   },
+   "sev1": {
+    "date": 1.0,
+    "text": 1.0,
+    "due": 1.0,
+    "updat": 1.0,
+    "sla": 1.0,
+    "assign": 2.0
+   },
+   "p1": {
+    "date": 1.0,
+    "text": 1.0,
+    "due": 1.0,
+    "updat": 1.0,
+    "sla": 1.0,
+    "assign": 2.0,
+    "release": 1.0
+   },
+   "job": {
+    "date": 2.0,
+    "text": 2.0,
+    "due": 2.0,
+    "updat": 1.0,
+    "sla": 1.0
+   },
+   "rate": {
+    "date": 1.0,
+    "text": 1.0,
+    "due": 1.0,
+    "updat": 1.0,
+    "sla": 1.0
+   },
+   "prod": {
+    "date": 1.0,
+    "text": 1.0,
+    "due": 1.0,
+    "updat": 1.0,
+    "sla": 1.0,
+    "assign": 1.0
+   },
+   "embedd": {
+    "date": 3.0,
+    "text": 2.0,
+    "due": 2.0,
+    "updat": 1.0,
+    "sla": 1.0
+   },
+   "limit": {
+    "date": 1.0,
+    "text": 1.0,
+    "due": 1.0,
+    "updat": 1.0,
+    "sla": 1.0
+   },
+   "error": {
+    "date": 1.0,
+    "text": 1.0,
+    "due": 1.0,
+    "updat": 1.0,
+    "sla": 1.0
+   },
+   "date": {
+    "date": 5.0,
+    "text": 3.0,
+    "due": 4.0,
+    "updat": 1.0,
+    "sla": 1.0
+   },
+   "sla": {
+    "date": 1.0,
+    "text": 1.0,
+    "due": 1.0,
+    "updat": 1.0,
+    "sla": 1.0
+   },
+   "east": {
+    "date": 1.0,
+    "text": 1.0,
+    "due": 1.0,
+    "updat": 1.0,
+    "sla": 1.0,
+    "assign": 1.0
+   },
+   "due": {
+    "date": 22.0,
+    "text": 6.0,
+    "due": 22.0,
+    "updat": 1.0,
+    "sla": 1.0,
+    "creat": 1.0
+   },
+   "incident": {
+    "date": 1.0,
+    "text": 1.0,
+    "due": 1.0,
+    "updat": 1.0,
+    "sla": 1.0,
+    "environment": 1.0,
+    "assign": 2.0,
+    "title": 1.0
+   },
+   "bulk": {
+    "date": 1.0,
+    "text": 1.0,
+    "due": 1.0,
+    "updat": 1.0,
+    "sla": 1.0
+   },
+   "us": {
+    "date": 1.0,
+    "text": 1.0,
+    "due": 1.0,
+    "updat": 1.0,
+    "sla": 1.0,
+    "custom": 1.0,
+    "attend": 1.0,
+    "owner": 1.0,
+    "assign": 1.0,
+    "title": 1.0
+   },
+   "support": {
+    "date": 1.0,
+    "text": 1.0,
+    "due": 1.0,
+    "updat": 1.0,
+    "sla": 1.0,
+    "environment": 1.0,
+    "assign": 3.0,
+    "title": 1.0
+   },
+   "gett": {
+    "date": 1.0,
+    "text": 1.0,
+    "due": 1.0,
+    "updat": 1.0,
+    "sla": 1.0,
+    "assign": 1.0
+   },
+   "retry": {
+    "environment": 1.0,
+    "due": 1.0,
+    "date": 1.0
+   },
+   "environment": {
+    "environment": 1.0
+   },
+   "stream": {
+    "environment": 1.0,
+    "date": 3.0,
+    "text": 1.0,
+    "due": 3.0,
+    "title": 1.0
+   },
+   "synchroniz": {
+    "environment": 1.0
+   },
+   "reconnect": {
+    "environment": 1.0,
+    "title": 1.0
+   },
+   "caus": {
+    "environment": 1.0,
+    "assign": 2.0,
+    "text": 1.0,
+    "due": 1.0,
+    "date": 1.0
+   },
+   "backoff": {
+    "environment": 1.0
+   },
+   "storm": {
+    "environment": 1.0
+   },
+   "bug": {
+    "environment": 1.0
+   },
+   "production": {
+    "environment": 1.0,
+    "assign": 1.0
+   },
+   "alvarez": {
+    "last": 1.0,
+    "modifi": 1.0
+   },
+   "drive": {
+    "last": 1.0,
+    "modifi": 1.0
+   },
+   "modifi": {
+    "last": 1.0,
+    "modifi": 1.0
+   },
+   "reliability": {
+    "last": 1.0,
+    "modifi": 1.0
+   },
+   "intermittent": {
+    "last": 1.0,
+    "modifi": 1.0
+   },
+   "node": {
+    "last": 1.0,
+    "modifi": 1.0,
+    "se": 1.0,
+    "assign": 1.0
+   },
+   "mid": {
+    "last": 1.0,
+    "modifi": 1.0,
+    "custom": 1.0,
+    "attend": 1.0,
+    "owner": 1.0,
+    "se": 1.0,
+    "assign": 1.0
+   },
+   "triage": {
+    "last": 1.0,
+    "modifi": 1.0,
+    "due": 1.0,
+    "date": 1.0
+   },
+   "last": {
+    "last": 1.0,
+    "modifi": 1.0
+   },
+   "lockup": {
+    "last": 1.0,
+    "modifi": 1.0
+   },
+   "draft": {
+    "last": 1.0,
+    "modifi": 1.0,
+    "owner": 1.0,
+    "text": 1.0,
+    "key": 1.0
+   },
+   "shar": {
+    "last": 1.0,
+    "modifi": 1.0
+   },
+   "owned": {
+    "last": 1.0,
+    "modifi": 1.0,
+    "text": 1.0,
+    "key": 1.0
+   },
+   "sofia": {
+    "last": 1.0,
+    "modifi": 1.0,
+    "date": 1.0,
+    "text": 1.0,
+    "due": 1.0
+   },
+   "septemb": {
+    "last": 1.0,
+    "modifi": 1.0
+   },
+   "gpu": {
+    "last": 1.0,
+    "modifi": 1.0,
+    "due": 2.0,
+    "date": 2.0,
+    "assign": 1.0,
+    "text": 1.0
+   },
+   "engineer": {
+    "last": 1.0,
+    "modifi": 1.0,
+    "text": 2.0,
+    "date": 1.0,
+    "key": 1.0
+   },
+   "call": {
+    "last": 1.0,
+    "modifi": 1.0,
+    "redwood": 1.0,
+    "attend": 1.0,
+    "owner": 1.0,
+    "assign": 1.0
+   },
+   "document": {
+    "last": 1.0,
+    "modifi": 1.0,
+    "owner": 1.0
+   },
+   "launch": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "work": {
+    "due": 1.0,
+    "date": 1.0,
+    "assign": 1.0
+   },
+   "dedicat": {
+    "due": 4.0,
+    "date": 4.0,
+    "text": 2.0,
+    "se": 1.0,
+    "assign": 2.0
+   },
+   "capacity": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "region": {
+    "due": 1.0,
+    "date": 1.0,
+    "attachment": 1.0
+   },
+   "management": {
+    "due": 2.0,
+    "date": 2.0
+   },
+   "product": {
+    "due": 2.0,
+    "date": 2.0,
+    "se": 1.0,
+    "assign": 1.0
+   },
+   "item": {
+    "due": 10.0,
+    "date": 10.0,
+    "text": 4.0,
+    "release": 1.0
+   },
+   "plann": {
+    "due": 2.0,
+    "date": 3.0,
+    "text": 1.0,
+    "release": 1.0
+   },
+   "uae": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "token": {
+    "text": 1.0,
+    "due": 1.0,
+    "date": 1.0,
+    "statu": 1.0,
+    "ci": 1.0,
+    "release": 1.0
+   },
+   "host": {
+    "text": 1.0,
+    "due": 1.0,
+    "date": 1.0,
+    "se": 1.0,
+    "assign": 1.0
+   },
+   "cost": {
+    "text": 1.0,
+    "due": 1.0,
+    "date": 1.0,
+    "statu": 1.0,
+    "ci": 1.0
+   },
+   "deliv": {
+    "text": 1.0,
+    "due": 1.0,
+    "date": 1.0
+   },
+   "took": {
+    "text": 3.0,
+    "due": 8.0,
+    "date": 8.0
+   },
+   "scenario": {
+    "text": 2.0,
+    "due": 2.0,
+    "date": 2.0
+   },
+   "action": {
+    "text": 4.0,
+    "due": 9.0,
+    "date": 9.0
+   },
+   "spreadsheet": {
+    "text": 1.0,
+    "due": 1.0,
+    "date": 1.0
+   },
+   "fallback": {
+    "text": 1.0,
+    "due": 2.0,
+    "date": 2.0
+   },
+   "tidebank": {
+    "text": 1.0,
+    "due": 1.0,
+    "date": 1.0
+   },
+   "vs": {
+    "text": 2.0,
+    "due": 3.0,
+    "date": 3.0
+   },
+   "strategy": {
+    "text": 1.0,
+    "due": 1.0,
+    "date": 1.0
+   },
+   "threshold": {
+    "text": 1.0,
+    "due": 1.0,
+    "date": 1.0
+   },
+   "meet": {
+    "text": 3.0,
+    "due": 8.0,
+    "date": 8.0
+   },
+   "discovery": {
+    "text": 1.0,
+    "due": 2.0,
+    "date": 2.0
+   },
+   "maya": {
+    "text": 1.0,
+    "due": 1.0,
+    "date": 1.0
+   },
+   "procurement": {
+    "custom": 1.0,
+    "attend": 1.0,
+    "owner": 1.0
+   },
+   "opportunity": {
+    "custom": 1.0,
+    "attend": 1.0,
+    "owner": 1.0
+   },
+   "market": {
+    "custom": 1.0,
+    "attend": 1.0,
+    "owner": 1.0,
+    "se": 1.0,
+    "assign": 1.0
+   },
+   "account": {
+    "custom": 1.0,
+    "attend": 1.0,
+    "owner": 1.0,
+    "se": 1.0,
+    "assign": 2.0,
+    "month": 1.0,
+    "close": 1.0,
+    "forecast": 1.0,
+    "title": 1.0
+   },
+   "requir": {
+    "custom": 1.0,
+    "attend": 1.0,
+    "owner": 1.0,
+    "title": 1.0
+   },
+   "deployment": {
+    "custom": 1.0,
+    "attend": 1.0,
+    "owner": 1.0,
+    "assign": 2.0,
+    "month": 1.0,
+    "close": 1.0,
+    "forecast": 1.0,
+    "title": 1.0
+   },
+   "vpc": {
+    "custom": 1.0,
+    "attend": 1.0,
+    "owner": 1.0,
+    "month": 1.0,
+    "close": 1.0,
+    "forecast": 1.0,
+    "title": 1.0
+   },
+   "both": {
+    "custom": 1.0,
+    "attend": 1.0,
+    "owner": 1.0
+   },
+   "data": {
+    "custom": 1.0,
+    "attend": 1.0,
+    "owner": 1.0,
+    "title": 1.0
+   },
+   "residency": {
+    "custom": 1.0,
+    "attend": 1.0,
+    "owner": 1.0,
+    "title": 1.0
+   },
+   "eu": {
+    "custom": 1.0,
+    "attend": 1.0,
+    "owner": 1.0
+   },
+   "saas": {
+    "custom": 1.0,
+    "attend": 1.0,
+    "owner": 1.0,
+    "se": 1.0,
+    "assign": 1.0
+   },
+   "owner": {
+    "custom": 1.0,
+    "attend": 1.0,
+    "owner": 2.0
+   },
+   "profil": {
+    "date": 1.0,
+    "text": 1.0,
+    "due": 1.0
+   },
+   "delta": {
+    "date": 1.0,
+    "text": 1.0,
+    "due": 1.0
+   },
+   "p95": {
+    "date": 3.0,
+    "text": 2.0,
+    "due": 3.0
+   },
+   "balanc": {
+    "date": 1.0,
+    "text": 1.0,
+    "due": 1.0
+   },
+   "h100": {
+    "date": 1.0,
+    "text": 1.0,
+    "due": 1.0
+   },
+   "after": {
+    "date": 1.0,
+    "text": 1.0,
+    "due": 1.0,
+    "assign": 1.0
+   },
+   "weekly": {
+    "date": 2.0,
+    "text": 2.0,
+    "due": 2.0
+   },
+   "ivanova": {
+    "date": 1.0,
+    "text": 1.0,
+    "due": 1.0
+   },
+   "pack": {
+    "date": 2.0,
+    "text": 2.0,
+    "due": 2.0
+   },
+   "re": {
+    "date": 1.0,
+    "text": 1.0,
+    "due": 1.0
+   },
+   "hardware": {
+    "date": 2.0,
+    "text": 2.0,
+    "due": 2.0
+   },
+   "sync": {
+    "date": 2.0,
+    "text": 2.0,
+    "due": 2.0
+   },
+   "heavy": {
+    "date": 1.0,
+    "text": 1.0,
+    "due": 1.0
+   },
+   "tuning": {
+    "date": 2.0,
+    "text": 2.0,
+    "due": 2.0
+   },
+   "throughput": {
+    "date": 2.0,
+    "text": 1.0,
+    "due": 2.0
+   },
+   "fix": {
+    "date": 1.0,
+    "text": 1.0,
+    "due": 1.0
+   },
+   "fairnes": {
+    "date": 1.0,
+    "text": 1.0,
+    "due": 1.0
+   },
+   "report": {
+    "date": 1.0,
+    "text": 1.0,
+    "due": 1.0
+   },
+   "first": {
+    "date": 1.0,
+    "text": 1.0,
+    "due": 1.0
+   },
+   "run": {
+    "date": 1.0,
+    "text": 1.0,
+    "due": 1.0
+   },
+   "singh": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "check": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "priya": {
+    "due": 2.0,
+    "date": 2.0,
+    "title": 1.0,
+    "author": 1.0
+   },
+   "expansion": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "approv": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "confirm": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "renewal": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "regional": {
+    "due": 1.0,
+    "date": 1.0,
+    "author": 1.0
+   },
+   "po": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "timeline": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "opalwave": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "performance": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "benchmark": {
+    "due": 2.0,
+    "date": 2.0
+   },
+   "driven": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "regression": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "ci": {
+    "due": 1.0,
+    "date": 1.0,
+    "statu": 1.0,
+    "ci": 1.0
+   },
+   "detection": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "linear": {
+    "due": 10.0,
+    "date": 10.0,
+    "text": 1.0,
+    "creat": 1.0
+   },
+   "harnes": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "issue": {
+    "due": 10.0,
+    "date": 10.0,
+    "text": 1.0,
+    "creat": 1.0
+   },
+   "echo": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "filename": {
+    "attachment": 1.0
+   },
+   "attachment": {
+    "attachment": 1.0
+   },
+   "thread": {
+    "attachment": 1.0
+   },
+   "form": {
+    "attachment": 1.0
+   },
+   "sale": {
+    "attachment": 1.0
+   },
+   "acme": {
+    "attachment": 1.0
+   },
+   "time": {
+    "attachment": 1.0,
+    "statu": 1.0,
+    "ci": 1.0
+   },
+   "vendor": {
+    "attachment": 1.0
+   },
+   "gmail": {
+    "attachment": 1.0
+   },
+   "onboard": {
+    "attachment": 1.0
+   },
+   "jordan": {
+    "attachment": 1.0,
+    "author": 1.0
+   },
+   "cros": {
+    "attachment": 1.0,
+    "due": 1.0,
+    "date": 1.0
+   },
+   "demo": {
+    "attachment": 1.0
+   },
+   "blak": {
+    "attachment": 1.0
+   },
+   "rotat": {
+    "attachment": 1.0
+   },
+   "ribbon": {
+    "statu": 1.0,
+    "ci": 1.0,
+    "release": 1.0
+   },
+   "statu": {
+    "statu": 1.0,
+    "ci": 1.0
+   },
+   "cadence": {
+    "statu": 1.0,
+    "ci": 1.0
+   },
+   "invocation": {
+    "statu": 1.0,
+    "ci": 1.0
+   },
+   "redwood": {
+    "statu": 1.0,
+    "ci": 1.0,
+    "title": 1.0,
+    "review": 1.0,
+    "author": 1.0
+   },
+   "added": {
+    "statu": 1.0,
+    "ci": 1.0,
+    "review": 1.0
+   },
+   "new": {
+    "statu": 1.0,
+    "ci": 1.0
+   },
+   "measure": {
+    "statu": 1.0,
+    "ci": 1.0
+   },
+   "pr": {
+    "statu": 1.0,
+    "ci": 1.0,
+    "author": 1.0
+   },
+   "repo": {
+    "statu": 1.0,
+    "ci": 1.0,
+    "title": 1.0,
+    "author": 1.0
+   },
+   "dashboard": {
+    "statu": 1.0,
+    "ci": 1.0
+   },
+   "probe": {
+    "statu": 1.0,
+    "ci": 1.0
+   },
+   "introduc": {
+    "statu": 1.0,
+    "ci": 1.0,
+    "title": 1.0
+   },
+   "merge": {
+    "statu": 1.0,
+    "ci": 1.0
+   },
+   "squash": {
+    "title": 1.0
+   },
+   "openai": {
+    "title": 1.0
+   },
+   "main": {
+    "title": 1.0,
+    "author": 1.0
+   },
+   "signal": {
+    "title": 1.0
+   },
+   "menon": {
+    "title": 1.0
+   },
+   "pull": {
+    "title": 1.0,
+    "review": 1.0,
+    "author": 5.0
+   },
+   "resume": {
+    "title": 1.0
+   },
+   "request": {
+    "title": 1.0,
+    "review": 1.0,
+    "author": 5.0
+   },
+   "compatible": {
+    "title": 1.0,
+    "due": 1.0,
+    "date": 1.0
+   },
+   "window": {
+    "title": 1.0,
+    "due": 3.0,
+    "date": 3.0
+   },
+   "via": {
+    "title": 1.0
+   },
+   "soft": {
+    "title": 1.0
+   },
+   "cancel": {
+    "title": 1.0
+   },
+   "merg": {
+    "title": 1.0,
+    "review": 1.0,
+    "author": 1.0
+   },
+   "poc": {
+    "due": 1.0,
+    "date": 1.0,
+    "se": 1.0,
+    "assign": 1.0
+   },
+   "attestation": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "soc": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "health": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "zenith": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "alex": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "week": {
+    "due": 1.0,
+    "date": 1.0,
+    "se": 1.0,
+    "assign": 1.0
+   },
+   "compliance": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "test": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "checkpoint": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "security": {
+    "due": 3.0,
+    "date": 3.0,
+    "redwood": 1.0,
+    "attend": 1.0,
+    "owner": 1.0
+   },
+   "send": {
+    "due": 2.0,
+    "date": 2.0
+   },
+   "pen": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "fetch": {
+    "assign": 1.0
+   },
+   "storage": {
+    "assign": 1.0,
+    "due": 2.0,
+    "date": 2.0
+   },
+   "corporate": {
+    "assign": 1.0
+   },
+   "return": {
+    "assign": 1.0
+   },
+   "cloud": {
+    "assign": 1.0
+   },
+   "inspection": {
+    "assign": 1.0
+   },
+   "artifact": {
+    "assign": 1.0
+   },
+   "model": {
+    "assign": 1.0,
+    "due": 1.0,
+    "date": 1.0
+   },
+   "private": {
+    "assign": 2.0,
+    "due": 1.0,
+    "date": 1.0
+   },
+   "html": {
+    "assign": 1.0
+   },
+   "firewall": {
+    "assign": 1.0
+   },
+   "tls": {
+    "assign": 2.0
+   },
+   "login": {
+    "assign": 1.0
+   },
+   "page": {
+    "assign": 1.0,
+    "title": 1.0
+   },
+   "project": {
+    "assign": 2.0
+   },
+   "assign": {
+    "assign": 6.0,
+    "review": 1.0,
+    "se": 1.0,
+    "text": 1.0,
+    "due": 1.0,
+    "date": 1.0
+   },
+   "path": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "console": {
+    "due": 1.0,
+    "date": 1.0,
+    "release": 1.0
+   },
+   "network": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "rehearsal": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "storyboard": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "prototype": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "upgrade": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "repository": {
+    "review": 1.0
+   },
+   "opt": {
+    "review": 1.0,
+    "author": 1.0
+   },
+   "review": {
+    "review": 1.0,
+    "redwood": 1.0,
+    "attend": 1.0,
+    "owner": 1.0,
+    "due": 2.0,
+    "date": 2.0,
+    "release": 1.0
+   },
+   "sett": {
+    "review": 1.0
+   },
+   "kv": {
+    "review": 1.0,
+    "due": 2.0,
+    "date": 2.0,
+    "text": 1.0
+   },
+   "coalesc": {
+    "review": 1.0
+   },
+   "write": {
+    "review": 1.0
+   },
+   "continuou": {
+    "review": 1.0
+   },
+   "horizon": {
+    "review": 1.0
+   },
+   "fused": {
+    "review": 1.0
+   },
+   "kernel": {
+    "review": 1.0
+   },
+   "async": {
+    "review": 1.0
+   },
+   "attention": {
+    "review": 1.0
+   },
+   "batch": {
+    "review": 1.0,
+    "due": 1.0,
+    "date": 1.0
+   },
+   "trust": {
+    "owner": 1.0
+   },
+   "soc2": {
+    "owner": 1.0
+   },
+   "prep": {
+    "owner": 1.0
+   },
+   "scratch": {
+    "owner": 1.0
+   },
+   "team": {
+    "owner": 1.0,
+    "text": 1.0,
+    "key": 1.0,
+    "release": 1.0
+   },
+   "note": {
+    "owner": 1.0
+   },
+   "ops": {
+    "owner": 1.0
+   },
+   "internal": {
+    "redwood": 1.0,
+    "attend": 1.0,
+    "owner": 1.0,
+    "title": 1.0,
+    "assign": 1.0,
+    "text": 1.0,
+    "due": 1.0,
+    "date": 1.0
+   },
+   "february": {
+    "redwood": 1.0,
+    "attend": 1.0,
+    "owner": 1.0
+   },
+   "prem": {
+    "redwood": 1.0,
+    "attend": 1.0,
+    "owner": 1.0,
+    "month": 1.0,
+    "close": 1.0,
+    "forecast": 1.0,
+    "due": 2.0,
+    "date": 2.0
+   },
+   "retention": {
+    "redwood": 1.0,
+    "attend": 1.0,
+    "owner": 1.0,
+    "due": 2.0,
+    "date": 2.0
+   },
+   "log": {
+    "redwood": 1.0,
+    "attend": 1.0,
+    "owner": 1.0,
+    "due": 2.0,
+    "date": 2.0
+   },
+   "healthcare": {
+    "redwood": 1.0,
+    "attend": 1.0,
+    "owner": 1.0
+   },
+   "organiz": {
+    "redwood": 1.0,
+    "attend": 1.0,
+    "owner": 1.0
+   },
+   "backup": {
+    "redwood": 1.0,
+    "attend": 1.0,
+    "owner": 1.0,
+    "due": 2.0,
+    "date": 2.0
+   },
+   "discussion": {
+    "redwood": 1.0,
+    "attend": 1.0,
+    "owner": 1.0
+   },
+   "audit": {
+    "redwood": 1.0,
+    "attend": 1.0,
+    "owner": 1.0,
+    "due": 2.0,
+    "date": 2.0
+   },
+   "solution": {
+    "se": 1.0,
+    "assign": 1.0
+   },
+   "before": {
+    "se": 1.0,
+    "assign": 1.0
+   },
+   "engine": {
+    "se": 1.0,
+    "assign": 1.0
+   },
+   "analytic": {
+    "se": 1.0,
+    "assign": 1.0
+   },
+   "moving": {
+    "se": 1.0,
+    "assign": 1.0
+   },
+   "two": {
+    "se": 1.0,
+    "assign": 1.0
+   },
+   "api": {
+    "se": 1.0,
+    "assign": 1.0
+   },
+   "llm": {
+    "se": 1.0,
+    "assign": 1.0
+   },
+   "parity": {
+    "se": 1.0,
+    "assign": 1.0
+   },
+   "runn": {
+    "se": 1.0,
+    "assign": 1.0
+   },
+   "scor": {
+    "text": 1.0,
+    "date": 1.0
+   },
+   "acros": {
+    "text": 1.0,
+    "date": 1.0
+   },
+   "keep": {
+    "text": 1.0,
+    "date": 1.0
+   },
+   "client": {
+    "text": 1.0,
+    "date": 2.0,
+    "due": 1.0
+   },
+   "similarity": {
+    "text": 1.0,
+    "date": 1.0
+   },
+   "version": {
+    "text": 1.0,
+    "date": 1.0,
+    "release": 1.0
+   },
+   "start": {
+    "text": 1.0,
+    "date": 1.0
+   },
+   "canary": {
+    "text": 3.0,
+    "date": 2.0,
+    "key": 1.0,
+    "due": 1.0
+   },
+   "ticket": {
+    "text": 2.0,
+    "date": 1.0,
+    "assign": 2.0,
+    "key": 1.0
+   },
+   "consistent": {
+    "text": 1.0,
+    "date": 1.0
+   },
+   "rollout": {
+    "text": 2.0,
+    "date": 1.0,
+    "key": 1.0
+   },
+   "urgency": {
+    "assign": 1.0
+   },
+   "migration": {
+    "assign": 1.0
+   },
+   "v2": {
+    "assign": 1.0
+   },
+   "high": {
+    "assign": 2.0
+   },
+   "schedul": {
+    "assign": 1.0
+   },
+   "cron": {
+    "assign": 1.0
+   },
+   "provision": {
+    "assign": 1.0
+   },
+   "month": {
+    "month": 1.0,
+    "close": 1.0,
+    "forecast": 1.0,
+    "title": 1.0
+   },
+   "close": {
+    "month": 1.0,
+    "close": 1.0,
+    "forecast": 1.0,
+    "title": 1.0
+   },
+   "requirement": {
+    "month": 1.0,
+    "close": 1.0,
+    "forecast": 1.0
+   },
+   "enterprise": {
+    "month": 1.0,
+    "close": 1.0,
+    "forecast": 1.0,
+    "title": 1.0
+   },
+   "evaluation": {
+    "month": 1.0,
+    "close": 1.0,
+    "forecast": 1.0,
+    "title": 1.0
+   },
+   "cent": {
+    "month": 1.0,
+    "close": 1.0,
+    "forecast": 1.0
+   },
+   "forecast": {
+    "month": 1.0,
+    "close": 1.0,
+    "forecast": 1.0,
+    "title": 1.0
+   },
+   "software": {
+    "month": 1.0,
+    "close": 1.0,
+    "forecast": 1.0
+   },
+   "contact": {
+    "month": 1.0,
+    "close": 1.0,
+    "forecast": 1.0
+   },
+   "policy": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "immutable": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "trail": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "wheth": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "validate": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "phi": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "meddata": {
+    "due": 2.0,
+    "date": 2.0
+   },
+   "relat": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "shah": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "mandat": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "system": {
+    "due": 2.0,
+    "date": 2.0
+   },
+   "restore": {
+    "due": 2.0,
+    "date": 2.0
+   },
+   "release": {
+    "text": 1.0,
+    "key": 1.0,
+    "release": 1.0
+   },
+   "thompson": {
+    "text": 1.0,
+    "key": 1.0
+   },
+   "scratchpad": {
+    "text": 1.0,
+    "key": 1.0
+   },
+   "doc": {
+    "text": 1.0,
+    "key": 1.0
+   },
+   "riley": {
+    "text": 1.0,
+    "key": 1.0
+   },
+   "metadata": {
+    "text": 1.0,
+    "key": 1.0
+   },
+   "eng": {
+    "text": 1.0,
+    "key": 1.0
+   },
+   "link": {
+    "text": 1.0,
+    "key": 1.0
+   },
+   "jira": {
+    "text": 1.0,
+    "key": 1.0,
+    "assign": 1.0
+   },
+   "graceful": {
+    "due": 2.0,
+    "date": 2.0
+   },
+   "oom": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "adaptive": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "backpressure": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "cache": {
+    "due": 2.0,
+    "date": 2.0,
+    "text": 1.0
+   },
+   "bound": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "flexibility": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "throttl": {
+    "due": 2.0,
+    "date": 2.0,
+    "author": 1.0
+   },
+   "reservation": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "prd": {
+    "due": 2.0,
+    "date": 2.0
+   },
+   "tenant": {
+    "due": 3.0,
+    "date": 3.0,
+    "author": 1.0,
+    "text": 1.0
+   },
+   "author": {
+    "author": 6.0
+   },
+   "controll": {
+    "author": 1.0
+   },
+   "slo": {
+    "author": 1.0,
+    "creat": 1.0,
+    "due": 1.0,
+    "date": 1.0
+   },
+   "per": {
+    "author": 1.0
+   },
+   "bucket": {
+    "author": 1.0
+   },
+   "safety": {
+    "author": 1.0,
+    "due": 1.0,
+    "date": 1.0
+   },
+   "degradation": {
+    "author": 1.0
+   },
+   "priority": {
+    "author": 1.0
+   },
+   "branch": {
+    "author": 1.0
+   },
+   "ephemeral": {
+    "text": 1.0,
+    "due": 1.0,
+    "date": 1.0
+   },
+   "rebind": {
+    "text": 1.0,
+    "due": 1.0,
+    "date": 1.0
+   },
+   "hostname": {
+    "text": 1.0,
+    "due": 1.0,
+    "date": 1.0
+   },
+   "between": {
+    "text": 1.0,
+    "due": 1.0,
+    "date": 1.0
+   },
+   "asymmetric": {
+    "text": 1.0,
+    "due": 1.0,
+    "date": 1.0
+   },
+   "mitigate": {
+    "text": 1.0,
+    "due": 1.0,
+    "date": 1.0
+   },
+   "nat": {
+    "text": 1.0,
+    "due": 1.0,
+    "date": 1.0
+   },
+   "drift": {
+    "text": 1.0,
+    "due": 1.0,
+    "date": 1.0
+   },
+   "compatibility": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "net": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "endpoint": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "rotation": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "coordinat": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "contract": {
+    "due": 2.0,
+    "date": 2.0
+   },
+   "egres": {
+    "assign": 1.0
+   },
+   "retri": {
+    "assign": 1.0
+   },
+   "apac": {
+    "assign": 1.0
+   },
+   "multipath": {
+    "assign": 1.0
+   },
+   "latency": {
+    "assign": 1.0,
+    "release": 1.0
+   },
+   "handshake": {
+    "assign": 1.0
+   },
+   "issu": {
+    "assign": 1.0
+   },
+   "p99": {
+    "assign": 1.0,
+    "text": 1.0,
+    "due": 1.0,
+    "date": 1.0
+   },
+   "resolv": {
+    "assign": 1.0
+   },
+   "summari": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "context": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "justification": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "dedup": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "rout": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "set": {
+    "title": 1.0
+   },
+   "april": {
+    "title": 1.0
+   },
+   "has": {
+    "title": 1.0
+   },
+   "only": {
+    "title": 1.0
+   },
+   "tier": {
+    "title": 1.0
+   },
+   "paste": {
+    "title": 1.0
+   },
+   "knowledge": {
+    "title": 1.0
+   },
+   "copy": {
+    "title": 1.0
+   },
+   "templat": {
+    "title": 1.0
+   },
+   "updat": {
+    "title": 1.0
+   },
+   "succes": {
+    "title": 1.0
+   },
+   "publish": {
+    "title": 1.0
+   },
+   "price": {
+    "title": 1.0
+   },
+   "contain": {
+    "title": 1.0
+   },
+   "escalation": {
+    "title": 1.0
+   },
+   "space": {
+    "title": 1.0
+   },
+   "safe": {
+    "title": 1.0
+   },
+   "elliot": {
+    "title": 1.0
+   },
+   "checklist": {
+    "assign": 1.0
+   },
+   "loan": {
+    "assign": 1.0
+   },
+   "temporary": {
+    "assign": 1.0
+   },
+   "progres": {
+    "assign": 1.0
+   },
+   "user": {
+    "assign": 1.0
+   },
+   "handback": {
+    "assign": 1.0
+   },
+   "task": {
+    "assign": 1.0
+   },
+   "shadow": {
+    "assign": 1.0
+   },
+   "currently": {
+    "release": 1.0
+   },
+   "compact": {
+    "release": 1.0,
+    "due": 1.0,
+    "date": 1.0
+   },
+   "revamp": {
+    "release": 1.0
+   },
+   "flow": {
+    "release": 1.0
+   },
+   "panel": {
+    "release": 1.0
+   },
+   "quantil": {
+    "release": 1.0
+   },
+   "scrollable": {
+    "release": 1.0
+   },
+   "design": {
+    "release": 1.0
+   },
+   "join": {
+    "creat": 1.0,
+    "due": 1.0,
+    "date": 1.0
+   },
+   "warmup": {
+    "creat": 1.0,
+    "due": 1.0,
+    "date": 1.0
+   },
+   "preserv": {
+    "creat": 1.0,
+    "due": 1.0,
+    "date": 1.0
+   },
+   "replica": {
+    "creat": 1.0,
+    "due": 1.0,
+    "date": 1.0
+   },
+   "handoff": {
+    "creat": 1.0,
+    "due": 1.0,
+    "date": 1.0
+   },
+   "synthetic": {
+    "creat": 1.0,
+    "due": 1.0,
+    "date": 1.0
+   },
+   "prob": {
+    "creat": 1.0,
+    "due": 1.0,
+    "date": 1.0
+   },
+   "autoscale": {
+    "creat": 1.0,
+    "due": 1.0,
+    "date": 1.0
+   },
+   "derat": {
+    "creat": 1.0,
+    "due": 1.0,
+    "date": 1.0
+   },
+   "pric": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "escape": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "samira": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "labs": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "prism": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "template": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "velocity": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "criteria": {
+    "text": 1.0,
+    "due": 1.0,
+    "date": 1.0
+   },
+   "harden": {
+    "text": 1.0,
+    "due": 1.0,
+    "date": 1.0
+   },
+   "lina": {
+    "text": 1.0,
+    "due": 1.0,
+    "date": 1.0
+   },
+   "execute": {
+    "text": 1.0,
+    "due": 1.0,
+    "date": 1.0
+   },
+   "dependency": {
+    "text": 1.0,
+    "due": 1.0,
+    "date": 1.0
+   },
+   "capture": {
+    "text": 1.0,
+    "due": 1.0,
+    "date": 1.0
+   },
+   "tabletop": {
+    "text": 1.0,
+    "due": 1.0,
+    "date": 1.0
+   },
+   "chao": {
+    "text": 1.0,
+    "due": 1.0,
+    "date": 1.0
+   },
+   "impact": {
+    "text": 1.0,
+    "due": 1.0,
+    "date": 1.0
+   },
+   "chen": {
+    "text": 1.0,
+    "due": 1.0,
+    "date": 1.0
+   },
+   "playbook": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "canva": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "comparison": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "result": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "store": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "adapt": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "rerank": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "runtime": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "pagination": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "brook": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "snapshot": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "s3": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "detail": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "target": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "eli": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "appliance": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "capabiliti": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "share": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "gateway": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "nfs": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "gracefully": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "during": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "burst": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "short": {
+    "due": 1.0,
+    "date": 1.0
+   },
+   "includ": {
+    "text": 1.0,
+    "due": 1.0,
+    "date": 1.0
+   },
+   "string": {
+    "text": 1.0,
+    "due": 1.0,
+    "date": 1.0
+   },
+   "profile": {
+    "text": 1.0,
+    "due": 1.0,
+    "date": 1.0
+   },
+   "mig": {
+    "text": 1.0,
+    "due": 1.0,
+    "date": 1.0
+   },
+   "variant": {
+    "text": 1.0,
+    "due": 1.0,
+    "date": 1.0
+   },
+   "sku": {
+    "text": 1.0,
+    "due": 1.0,
+    "date": 1.0
+   },
+   "suffix": {
+    "text": 1.0,
+    "due": 1.0,
+    "date": 1.0
+   },
+   "compil": {
+    "text": 1.0,
+    "due": 1.0,
+    "date": 1.0
+   },
+   "irene": {
+    "text": 1.0,
+    "due": 1.0,
+    "date": 1.0
+   },
+   "choi": {
+    "text": 1.0,
+    "due": 1.0,
+    "date": 1.0
+   },
+   "sahana": {
+    "author": 1.0
+   },
+   "numb": {
+    "author": 5.0
+   },
+   "github": {
+    "author": 5.0
+   },
+   "iyer": {
+    "author": 1.0
+   },
+   "kumar": {
+    "author": 1.0
+   },
+   "aisha": {
+    "author": 1.0
+   },
+   "park": {
+    "author": 1.0
+   },
+   "kapoor": {
+    "author": 1.0
+   },
+   "holtz": {
+    "author": 1.0
+   },
+   "peter": {
+    "author": 1.0
+   },
+   "marcu": {
+    "assign": 1.0
+   },
+   "keys": {
+    "assign": 1.0
+   },
+   "liu": {
+    "assign": 1.0
+   }
+  },
+  "word": {
+   "custom": 8.0,
+   "sev1": 3.0,
+   "p1": 4.0,
+   "job": 2.0,
+   "rate": 1.0,
+   "prod": 2.0,
+   "embedd": 3.0,
+   "limit": 1.0,
+   "error": 1.0,
+   "date": 5.0,
+   "sla": 1.0,
+   "east": 2.0,
+   "due": 22.0,
+   "incident": 6.0,
+   "bulk": 1.0,
+   "us": 4.0,
+   "support": 6.0,
+   "gett": 2.0,
+   "retry": 2.0,
+   "environment": 1.0,
+   "stream": 5.0,
+   "synchroniz": 1.0,
+   "reconnect": 2.0,
+   "caus": 4.0,
+   "backoff": 1.0,
+   "storm": 1.0,
+   "bug": 1.0,
+   "production": 2.0,
+   "alvarez": 1.0,
+   "drive": 1.0,
+   "modifi": 1.0,
+   "reliability": 1.0,
+   "intermittent": 1.0,
+   "node": 2.0,
+   "mid": 3.0,
+   "triage": 2.0,
+   "last": 1.0,
+   "lockup": 1.0,
+   "draft": 3.0,
+   "shar": 1.0,
+   "owned": 2.0,
+   "sofia": 2.0,
+   "septemb": 1.0,
+   "gpu": 4.0,
+   "engineer": 3.0,
+   "call": 3.0,
+   "document": 2.0,
+   "launch": 1.0,
+   "work": 2.0,
+   "dedicat": 6.0,
+   "capacity": 1.0,
+   "region": 2.0,
+   "management": 2.0,
+   "product": 3.0,
+   "item": 11.0,
+   "plann": 4.0,
+   "uae": 1.0,
+   "token": 3.0,
+   "host": 2.0,
+   "cost": 2.0,
+   "deliv": 1.0,
+   "took": 8.0,
+   "scenario": 2.0,
+   "action": 9.0,
+   "spreadsheet": 1.0,
+   "fallback": 2.0,
+   "tidebank": 1.0,
+   "vs": 3.0,
+   "strategy": 1.0,
+   "threshold": 1.0,
+   "meet": 8.0,
+   "discovery": 2.0,
+   "maya": 1.0,
+   "procurement": 1.0,
+   "opportunity": 1.0,
+   "market": 2.0,
+   "account": 5.0,
+   "requir": 2.0,
+   "deployment": 5.0,
+   "vpc": 3.0,
+   "both": 1.0,
+   "data": 2.0,
+   "residency": 2.0,
+   "eu": 1.0,
+   "saas": 2.0,
+   "owner": 2.0,
+   "profil": 1.0,
+   "delta": 1.0,
+   "p95": 3.0,
+   "balanc": 1.0,
+   "h100": 1.0,
+   "after": 3.0,
+   "weekly": 2.0,
+   "ivanova": 1.0,
+   "pack": 2.0,
+   "re": 1.0,
+   "hardware": 2.0,
+   "sync": 2.0,
+   "heavy": 1.0,
+   "tuning": 2.0,
+   "throughput": 2.0,
+   "fix": 1.0,
+   "fairnes": 1.0,
+   "report": 1.0,
+   "first": 1.0,
+   "run": 1.0,
+   "singh": 1.0,
+   "check": 1.0,
+   "priya": 4.0,
+   "expansion": 1.0,
+   "approv": 1.0,
+   "confirm": 1.0,
+   "renewal": 1.0,
+   "regional": 2.0,
+   "po": 1.0,
+   "timeline": 1.0,
+   "opalwave": 1.0,
+   "performance": 1.0,
+   "benchmark": 2.0,
+   "driven": 1.0,
+   "regression": 1.0,
+   "ci": 2.0,
+   "detection": 1.0,
+   "linear": 10.0,
+   "harnes": 1.0,
+   "issue": 10.0,
+   "echo": 1.0,
+   "filename": 1.0,
+   "attachment": 1.0,
+   "thread": 2.0,
+   "form": 1.0,
+   "sale": 1.0,
+   "acme": 1.0,
+   "time": 2.0,
+   "vendor": 1.0,
+   "gmail": 1.0,
+   "onboard": 2.0,
+   "jordan": 2.0,
+   "cros": 2.0,
+   "demo": 1.0,
+   "blak": 1.0,
+   "rotat": 1.0,
+   "ribbon": 2.0,
+   "statu": 1.0,
+   "cadence": 1.0,
+   "invocation": 1.0,
+   "redwood": 4.0,
+   "added": 2.0,
+   "new": 1.0,
+   "measure": 1.0,
+   "pr": 2.0,
+   "repo": 3.0,
+   "dashboard": 1.0,
+   "probe": 1.0,
+   "introduc": 2.0,
+   "merge": 1.0,
+   "squash": 1.0,
+   "openai": 1.0,
+   "main": 2.0,
+   "signal": 1.0,
+   "menon": 1.0,
+   "pull": 7.0,
+   "resume": 1.0,
+   "request": 7.0,
+   "compatible": 2.0,
+   "window": 4.0,
+   "via": 1.0,
+   "soft": 1.0,
+   "cancel": 1.0,
+   "merg": 3.0,
+   "poc": 2.0,
+   "attestation": 1.0,
+   "soc": 1.0,
+   "health": 1.0,
+   "zenith": 1.0,
+   "alex": 1.0,
+   "week": 2.0,
+   "compliance": 1.0,
+   "test": 1.0,
+   "checkpoint": 1.0,
+   "security": 4.0,
+   "send": 2.0,
+   "pen": 1.0,
+   "fetch": 1.0,
+   "storage": 3.0,
+   "corporate": 1.0,
+   "return": 1.0,
+   "cloud": 1.0,
+   "inspection": 1.0,
+   "artifact": 1.0,
+   "model": 2.0,
+   "private": 3.0,
+   "html": 1.0,
+   "firewall": 1.0,
+   "tls": 2.0,
+   "login": 1.0,
+   "page": 2.0,
+   "project": 2.0,
+   "assign": 8.0,
+   "path": 1.0,
+   "console": 2.0,
+   "network": 1.0,
+   "rehearsal": 1.0,
+   "storyboard": 1.0,
+   "prototype": 1.0,
+   "upgrade": 1.0,
+   "repository": 1.0,
+   "opt": 2.0,
+   "review": 5.0,
+   "sett": 1.0,
+   "kv": 3.0,
+   "coalesc": 1.0,
+   "write": 1.0,
+   "continuou": 1.0,
+   "horizon": 1.0,
+   "fused": 1.0,
+   "kernel": 1.0,
+   "async": 1.0,
+   "attention": 1.0,
+   "batch": 2.0,
+   "trust": 1.0,
+   "soc2": 1.0,
+   "prep": 1.0,
+   "scratch": 1.0,
+   "team": 3.0,
+   "note": 1.0,
+   "ops": 1.0,
+   "internal": 4.0,
+   "february": 1.0,
+   "prem": 4.0,
+   "retention": 3.0,
+   "log": 3.0,
+   "healthcare": 1.0,
+   "organiz": 1.0,
+   "backup": 3.0,
+   "discussion": 1.0,
+   "audit": 3.0,
+   "solution": 1.0,
+   "before": 1.0,
+   "engine": 1.0,
+   "analytic": 1.0,
+   "moving": 1.0,
+   "two": 1.0,
+   "api": 1.0,
+   "llm": 1.0,
+   "parity": 1.0,
+   "runn": 1.0,
+   "scor": 1.0,
+   "acros": 1.0,
+   "keep": 1.0,
+   "client": 2.0,
+   "similarity": 1.0,
+   "version": 2.0,
+   "start": 1.0,
+   "canary": 3.0,
+   "ticket": 4.0,
+   "consistent": 1.0,
+   "rollout": 2.0,
+   "urgency": 1.0,
+   "migration": 1.0,
+   "v2": 1.0,
+   "high": 2.0,
+   "schedul": 1.0,
+   "cron": 1.0,
+   "provision": 1.0,
+   "month": 2.0,
+   "close": 2.0,
+   "requirement": 1.0,
+   "enterprise": 2.0,
+   "evaluation": 2.0,
+   "cent": 1.0,
+   "forecast": 2.0,
+   "software": 1.0,
+   "contact": 1.0,
+   "policy": 1.0,
+   "immutable": 1.0,
+   "trail": 1.0,
+   "wheth": 1.0,
+   "validate": 1.0,
+   "phi": 1.0,
+   "meddata": 2.0,
+   "relat": 1.0,
+   "shah": 1.0,
+   "mandat": 1.0,
+   "system": 2.0,
+   "restore": 2.0,
+   "release": 2.0,
+   "thompson": 1.0,
+   "scratchpad": 1.0,
+   "doc": 1.0,
+   "riley": 1.0,
+   "metadata": 1.0,
+   "eng": 1.0,
+   "link": 1.0,
+   "jira": 2.0,
+   "graceful": 2.0,
+   "oom": 1.0,
+   "adaptive": 1.0,
+   "backpressure": 1.0,
+   "cache": 2.0,
+   "bound": 1.0,
+   "flexibility": 1.0,
+   "throttl": 3.0,
+   "reservation": 1.0,
+   "prd": 2.0,
+   "tenant": 4.0,
+   "author": 6.0,
+   "controll": 1.0,
+   "slo": 2.0,
+   "per": 1.0,
+   "bucket": 1.0,
+   "safety": 2.0,
+   "degradation": 1.0,
+   "priority": 1.0,
+   "branch": 1.0,
+   "ephemeral": 1.0,
+   "rebind": 1.0,
+   "hostname": 1.0,
+   "between": 1.0,
+   "asymmetric": 1.0,
+   "mitigate": 1.0,
+   "nat": 1.0,
+   "drift": 1.0,
+   "compatibility": 1.0,
+   "net": 1.0,
+   "endpoint": 1.0,
+   "rotation": 2.0,
+   "coordinat": 1.0,
+   "contract": 2.0,
+   "egres": 1.0,
+   "retri": 1.0,
+   "apac": 1.0,
+   "multipath": 1.0,
+   "latency": 2.0,
+   "handshake": 1.0,
+   "issu": 1.0,
+   "p99": 2.0,
+   "resolv": 1.0,
+   "summari": 1.0,
+   "context": 1.0,
+   "justification": 1.0,
+   "dedup": 1.0,
+   "rout": 1.0,
+   "set": 1.0,
+   "april": 1.0,
+   "has": 1.0,
+   "only": 1.0,
+   "tier": 1.0,
+   "paste": 1.0,
+   "knowledge": 1.0,
+   "copy": 1.0,
+   "templat": 1.0,
+   "updat": 1.0,
+   "succes": 2.0,
+   "publish": 1.0,
+   "price": 1.0,
+   "contain": 1.0,
+   "escalation": 1.0,
+   "space": 1.0,
+   "safe": 1.0,
+   "elliot": 1.0,
+   "checklist": 1.0,
+   "loan": 1.0,
+   "temporary": 1.0,
+   "progres": 1.0,
+   "user": 1.0,
+   "handback": 1.0,
+   "task": 1.0,
+   "shadow": 1.0,
+   "currently": 1.0,
+   "compact": 2.0,
+   "revamp": 1.0,
+   "flow": 1.0,
+   "panel": 1.0,
+   "quantil": 1.0,
+   "scrollable": 1.0,
+   "design": 1.0,
+   "identifi": 1.0,
+   "bot": 1.0,
+   "key": 1.0,
+   "auth": 1.0,
+   "create": 1.0,
+   "fail": 1.0,
+   "channel": 1.0,
+   "join": 1.0,
+   "warmup": 1.0,
+   "preserv": 1.0,
+   "replica": 1.0,
+   "handoff": 1.0,
+   "synthetic": 1.0,
+   "prob": 1.0,
+   "autoscale": 1.0,
+   "derat": 1.0,
+   "pric": 1.0,
+   "escape": 1.0,
+   "samira": 1.0,
+   "labs": 1.0,
+   "prism": 1.0,
+   "template": 1.0,
+   "velocity": 1.0,
+   "criteria": 1.0,
+   "harden": 1.0,
+   "lina": 1.0,
+   "execute": 1.0,
+   "dependency": 1.0,
+   "capture": 1.0,
+   "tabletop": 1.0,
+   "chao": 1.0,
+   "impact": 1.0,
+   "chen": 1.0,
+   "playbook": 1.0,
+   "canva": 1.0,
+   "comparison": 1.0,
+   "result": 1.0,
+   "store": 1.0,
+   "adapt": 1.0,
+   "rerank": 1.0,
+   "runtime": 1.0,
+   "pagination": 1.0,
+   "brook": 1.0,
+   "snapshot": 1.0,
+   "s3": 1.0,
+   "detail": 1.0,
+   "target": 1.0,
+   "eli": 1.0,
+   "appliance": 1.0,
+   "capabiliti": 1.0,
+   "share": 1.0,
+   "gateway": 1.0,
+   "nfs": 1.0,
+   "gracefully": 1.0,
+   "during": 1.0,
+   "burst": 1.0,
+   "short": 1.0,
+   "includ": 1.0,
+   "string": 1.0,
+   "profile": 1.0,
+   "mig": 1.0,
+   "variant": 1.0,
+   "sku": 1.0,
+   "suffix": 1.0,
+   "compil": 1.0,
+   "irene": 1.0,
+   "choi": 1.0,
+   "sahana": 1.0,
+   "numb": 5.0,
+   "github": 5.0,
+   "iyer": 1.0,
+   "kumar": 1.0,
+   "aisha": 1.0,
+   "park": 1.0,
+   "kapoor": 1.0,
+   "holtz": 1.0,
+   "peter": 1.0,
+   "marcu": 1.0,
+   "keys": 1.0,
+   "liu": 1.0
+  }
+ },
+ "system_prior": {
+  "github": {
+   "author_of": 1.0
+  },
+  "jira": {
+   "assignee_of": 1.0
+  }
+ },
+ "trained_on": {
+  "questions": 50,
+  "entity_rows": 836,
+  "answer_rows": 10424,
+  "answer_positives": 68,
+  "relation_rows": 12
+ }
+}

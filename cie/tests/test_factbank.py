@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 import sqlite3
 from datetime import UTC, datetime
 
@@ -107,3 +108,52 @@ def test_scoring_helpers():
     assert T.reachable(q, "due March 20, 2026") == 1.0 and T.direct(q, "2026-03-21") == 0.0
     q = {"expected": {"value": "Maya Chen"}}
     assert T.reachable(q, "owner: maya chen") == 1.0
+
+
+def test_rewording_and_changed_information():
+    import random
+
+    from cie.eval import factbank_split as SP
+
+    rng = random.Random(1)
+    q = {"kind": "linear_due", "question": 'When is the Linear issue "Fix readers" due?'}
+    assert "Fix readers" in SP.reword(q, rng) and SP.reword(q, rng) != q["question"]
+    q = {"kind": "github_author", "question": "List every GitHub pull request authored by Maya Chen. Give the pull request numbers."}
+    assert "Maya Chen" in SP.reword(q, rng) and "authored" not in SP.reword(q, rng)
+    assert SP.shift_dates("due 2026-03-20, see ENG-11") == "due 2026-04-12, see ENG-11"
+    assert SP.rename("Maya Chen and maya_chen", {"Maya Chen": "Nils Varga"}) == "Nils Varga and nils_varga"
+
+
+def test_lessons_are_learned_saved_and_used(tmp_path):
+    from cie.factbank.learn import Lessons, train
+    from cie.factbank.trained import TrainedBank
+
+    p = tmp_path / "fb2.sqlite"
+    B.build(p, DOCS, text_facts=True)
+    con = sqlite3.connect(p)
+    assert con.execute("SELECT count(*) FROM facts WHERE parameter LIKE 'text_%'").fetchone()[0] == 0, "no dates or keys in these sentences"
+    qs = [{"id": "a", "group": "deadlines", "kind": "linear_due", "question": "When is the Linear issue \"Fix keycard reader timeouts\" due?",
+           "expected": {"date": "2026-03-20"}, "gold_docs": ["d1"]},
+          {"id": "b", "group": "deadlines", "kind": "linear_due", "question": "When is the Linear issue \"Rotate office wifi keys\" due?",
+           "expected": {"date": "2026-04-02"}, "gold_docs": ["d2"]},
+          {"id": "c", "group": "owners", "kind": "metadata", "question": "Who is assigned to the ticket about keycard reader timeouts?",
+           "expected": {"value": "Omar Singh"}, "gold_docs": ["d1"]},
+          {"id": "e", "group": "owners", "kind": "metadata", "question": "Who is assigned to the ticket about rotating office wifi keys?",
+           "expected": {"value": "Omar Singh"}, "gold_docs": ["d2"]},
+          {"id": "f", "group": "owners", "kind": "metadata", "question": "Who authored the pull request adding retry to badge sync?",
+           "expected": {"value": "Maya Chen"}, "gold_docs": ["d3"]},
+          {"id": "g", "group": "owners", "kind": "metadata", "question": "Who organised the facilities sync meeting?",
+           "expected": {"value": "Maya Chen"}, "gold_docs": ["d4"]},
+          {"id": "d", "group": "lists", "kind": "github_author",
+           "question": "List every GitHub pull request authored by Maya Chen. Give the pull request numbers.",
+           "expected": {"ids": ["4821"], "id_kind": "pr"}, "gold_docs": ["d3"]}]
+    lessons = train(TrainedBank(p), qs, log=lambda *_: None)
+    lessons.save(tmp_path / "l.json")
+    again = Lessons.load(tmp_path / "l.json")
+    assert again.system_prior == {"github": {"author_of": 1.0}} and len(again.answer_w) == 13
+    assert any("choosing the answer" in line for line in again.describe())
+    tb = TrainedBank(p, again)
+    q = "When is the Linear issue \"Rotate office wifi keys\" due?"
+    assert tb.entity_candidates(q)[0]["entity"] == "doc:d2", "the learned entity finder ranks the named ticket first"
+    assert re.fullmatch(r"\d{4}-\d{2}-\d{2}", tb.ask(q).answer), "a when-question gets a date"
+    assert tb.ask("What PRs has Maya Chen opened on GitHub? Just the numbers.").answer == "#4821", "a new wording, the learned relation"

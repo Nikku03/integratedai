@@ -135,12 +135,17 @@ class FactBank:
         return [r["id"] for r in rows]
 
     # ------------------------------------------------------------------ reasoning
-    def run(self, question: str, k: int = 5, hops: int = HOPS) -> tuple[dict[tuple[str, str], Written], list[dict[str, Any]], list[tuple[str, float]]]:
-        seeds: dict[str, float] = {}
-        for e in self.named(question):
-            seeds[e] = 1.0
-        for i, e in enumerate(self.by_content(question, k)):
-            seeds.setdefault(e, 1.0 / (1 + i))
+    def run(self, question: str, k: int = 5, hops: int = HOPS, seeds: dict[str, float] | None = None
+            ) -> tuple[dict[tuple[str, str], Written], list[dict[str, Any]], list[tuple[str, float]]]:
+        """Seeds (``seeds``, or found from the question), then hops with a snap. Returns what was written, the journal
+        and the seeds."""
+        if seeds is None:
+            seeds = {}
+            for e in self.named(question):
+                seeds[e] = 1.0
+            for i, e in enumerate(self.by_content(question, k)):
+                seeds.setdefault(e, 1.0 / (1 + i))
+        seeds = dict(seeds)
         written: dict[tuple[str, str], Written] = {}
         journal: list[dict[str, Any]] = [{"op": "seed", "entity": e, "relevance": round(r, 4)} for e, r in seeds.items()]
         relevance = dict(seeds)

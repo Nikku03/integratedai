@@ -11,6 +11,13 @@ lists. Conflicts are left out because only the judge model can score them. The p
     python -m cie.eval.factbank_test build --work $W
     python -m cie.eval.factbank_test ask --work $W
     python -m cie.eval.factbank_test score --work $W
+
+Teaching it, then the fair retest (docs/FACTBANK_LEARNING_PREREGISTRATION.md):
+
+    python -m cie.eval.factbank_test train --work $W --lessons $W/lessons.json
+    python -m cie.eval.factbank_test build --work $T --name factbank_v2 --text-facts       # and --name factbank for v1
+    python -m cie.eval.factbank_test ask --work $T --name factbank_v2 --lessons $W/lessons.json
+    python -m cie.eval.factbank_test compare --work $T --changed $C --training $W
 """
 
 from __future__ import annotations
@@ -89,20 +96,26 @@ def _docs(work: Path):
         yield sd, _raw(sources, rel)
 
 
-def build(work: Path) -> dict[str, Any]:
+def build(work: Path, name: str = "factbank", text_facts: bool = False) -> dict[str, Any]:
     from cie.factbank import bank
 
     t = time.perf_counter()
-    rep = bank.build(work / "factbank.sqlite", list(_docs(work)))
+    rep = bank.build(work / f"{name}.sqlite", list(_docs(work)), text_facts=text_facts)
     rep["seconds"] = round(time.perf_counter() - t, 2)
-    (work / "factbank_build.json").write_text(json.dumps(rep, indent=1))
+    (work / f"{name}_build.json").write_text(json.dumps(rep, indent=1))
     return rep
 
 
-def ask(work: Path) -> dict[str, Any]:
+def ask(work: Path, name: str = "factbank", lessons: Path | None = None) -> dict[str, Any]:
     from cie.factbank.engine import FactBank, replay, state_of
 
-    fb = FactBank(work / "factbank.sqlite")
+    if lessons:
+        from cie.factbank.learn import Lessons
+        from cie.factbank.trained import TrainedBank
+
+        fb = TrainedBank(work / f"{name}.sqlite", Lessons.load(lessons))
+    else:
+        fb = FactBank(work / f"{name}.sqlite")
     rows = []
     replays_ok = 0
     for q in _jsonl(work / "questions.jsonl"):
@@ -112,8 +125,20 @@ def ask(work: Path) -> dict[str, Any]:
         rows.append({"id": q["id"], "answer": r.answer, "reason": r.reason, "evidence": r.evidence, "ms": round(r.ms, 2),
                      "journal": len(r.journal), "contradictions": sum(1 for j in r.journal if j["op"] == "contradiction"),
                      "replay_ok": ok, "seeds": [e for e, _ in r.seeds[:5]]})
-    _write_jsonl(work / "factbank.jsonl", rows)
+    _write_jsonl(work / f"{name}.jsonl", rows)
     return {"questions": len(rows), "replay_ok": replays_ok}
+
+
+def train(work: Path, out: Path) -> dict[str, Any]:
+    """Learn the lessons from a work folder's questions and answers (its documents built with sentence facts)."""
+    from cie.factbank.learn import train as fit
+    from cie.factbank.trained import TrainedBank
+
+    if not (work / "factbank_v2.sqlite").exists():
+        build(work, "factbank_v2", text_facts=True)
+    lessons = fit(TrainedBank(work / "factbank_v2.sqlite"), _jsonl(work / "questions.jsonl"))
+    lessons.save(out)
+    return {"lessons": str(out), "describe": lessons.describe(), "trained_on": lessons.trained_on}
 
 
 def reachable(q: dict[str, Any], text: str) -> float:
@@ -209,19 +234,106 @@ def to_markdown(rep: dict[str, Any]) -> str:
     return "\n".join(out) + "\n"
 
 
+def _arm_texts(work: Path, qid: str, ev: dict, fbs: dict[str, dict]) -> dict[str, str]:
+    out = {a: ev.get(qid, {}).get(a) for a in ("plain-words", "plain", "bank")}
+    for name, rows in fbs.items():
+        out[name] = rows.get(qid, {}).get("evidence")
+    return {k: v for k, v in out.items() if v is not None}
+
+
+def measure(work: Path, versions: dict[str, str]) -> dict[str, Any]:
+    """Direct answers of the fact bank versions, and the answer within each arm's evidence, by group."""
+    qs = _jsonl(work / "questions.jsonl")
+    ev = {r["id"]: r for r in _jsonl(work / "evidence.jsonl")} if (work / "evidence.jsonl").exists() else {}
+    fbs = {label: {r["id"]: r for r in _jsonl(work / f"{name}.jsonl")} for label, name in versions.items() if (work / f"{name}.jsonl").exists()}
+    rows = []
+    for q in qs:
+        r: dict[str, Any] = {"id": q["id"], "group": q["group"], "kind": q["kind"], "question": q["question"], "expected": q["expected"],
+                             "direct": {}, "answers": {}, "reach": {}}
+        for label, d in fbs.items():
+            if q["id"] in d:
+                r["direct"][label] = direct(q, d[q["id"]]["answer"])
+                r["answers"][label] = d[q["id"]]["answer"]
+        for a, t in _arm_texts(work, q["id"], ev, fbs).items():
+            r["reach"][a] = {str(b): reachable(q, t[:b]) for b in (2_000, 24_000)}
+        rows.append(r)
+
+    def gm(fn) -> dict[str, float | None]:
+        out = {g: _mean([v for v in (fn(r) for r in rows if r["group"] == g) if v is not None]) for g in GROUPS}
+        vals = [v for v in out.values() if v is not None]
+        out["mean"] = round(sum(vals) / len(vals), 3) if vals else None
+        return out
+
+    arms = sorted({a for r in rows for a in r["reach"]})
+    return {"questions": len(rows), "by_group": {g: sum(1 for r in rows if r["group"] == g) for g in GROUPS},
+            "direct": {label: gm(lambda r, label=label: r["direct"].get(label)) for label in fbs},
+            "reach": {a: {b: gm(lambda r, a=a, b=b: (r["reach"].get(a) or {}).get(b)) for b in ("2000", "24000")} for a in arms},
+            "rows": rows}
+
+
+def compare(test: Path, changed: Path, training: Path, out: Path) -> dict[str, Any]:
+    versions = {"v1": "factbank", "v2": "factbank_v2"}
+    m_test, m_changed, m_train = measure(test, versions), measure(changed, versions), measure(training, versions)
+    d = lambda a, b: round(a - b, 3) if a is not None and b is not None else None  # noqa: E731
+    t = m_test
+    rules = {
+        "1 learning helps (v2 - v1 >= +0.10 on the mean, own answers, held-out)": (d(t["direct"]["v2"]["mean"], t["direct"]["v1"]["mean"]) or 0) >= 0.10,
+        "2 holds when information changes (v2 changed >= v2 held-out - 0.05)":
+            (d(m_changed["direct"]["v2"]["mean"], t["direct"]["v2"]["mean"]) or -1) >= -0.05,
+        "3 better near the top (v2 - v1 >= +0.05 on the mean, first 2,000 chars, held-out)":
+            (d(t["reach"]["v2"]["2000"]["mean"], t["reach"]["v1"]["2000"]["mean"]) or 0) >= 0.05,
+        "4 not worse than the memory bank (v2 - bank >= -0.03 every group, 24,000 chars, held-out)":
+            all((d(t["reach"]["v2"]["24000"][g], t["reach"]["bank"]["24000"][g]) or 0) >= -0.03 for g in GROUPS
+                if t["reach"]["v2"]["24000"].get(g) is not None and "bank" in t["reach"]),
+    }
+    rep = {"held_out": m_test, "changed": m_changed, "training": m_train, "rules": rules}
+    out.mkdir(parents=True, exist_ok=True)
+    (out / "learning_report.json").write_text(json.dumps(rep, indent=1, default=str))
+    (out / "learning_report.md").write_text(learning_md(rep))
+    return rep
+
+
+def learning_md(rep: dict[str, Any]) -> str:
+    g = ("owners", "deadlines", "lists", "mean")
+    lines = ["### Fact bank: trained (v2) against untrained (v1), on held-out documents", ""]
+    for name in ("training", "held_out", "changed"):
+        m = rep[name]
+        lines += [f"**{name.replace('_', '-')}** ({m['questions']} questions: {', '.join(f'{k} {v}' for k, v in m['by_group'].items())})", "",
+                  "| | " + " | ".join(g) + " |", "|---|" + "---|" * len(g)]
+        for label, r in m["direct"].items():
+            lines.append(f"| own answers, {label} | " + " | ".join("–" if r.get(x) is None else f"{r[x]:.3f}" for x in g) + " |")
+        for a, rr in m["reach"].items():
+            for b, r in rr.items():
+                lines.append(f"| within {int(b):,} chars, {a} | " + " | ".join("–" if r.get(x) is None else f"{r[x]:.3f}" for x in g) + " |")
+        lines.append("")
+    lines += ["Rules:"] + [f"- {k}: **{'met' if v else 'not met'}**" for k, v in rep["rules"].items()]
+    return "\n".join(lines) + "\n"
+
+
 def main(argv: list[str] | None = None) -> Any:
     ap = argparse.ArgumentParser(prog="python -m cie.eval.factbank_test")
-    ap.add_argument("cmd", choices=["select", "build", "ask", "score"])
+    ap.add_argument("cmd", choices=["select", "build", "ask", "score", "train", "compare"])
     ap.add_argument("--work", required=True)
     ap.add_argument("--from", dest="src")
+    ap.add_argument("--name", default="factbank")
+    ap.add_argument("--text-facts", action="store_true")
+    ap.add_argument("--lessons")
+    ap.add_argument("--changed")
+    ap.add_argument("--training")
     a = ap.parse_args(argv)
     work = Path(a.work)
     if a.cmd == "select":
         out = select(Path(a.src), work)
     elif a.cmd == "build":
-        out = build(work)
+        out = build(work, a.name, a.text_facts)
     elif a.cmd == "ask":
-        out = ask(work)
+        out = ask(work, a.name, Path(a.lessons) if a.lessons else None)
+    elif a.cmd == "train":
+        out = train(work, Path(a.lessons))
+    elif a.cmd == "compare":
+        out = compare(work, Path(a.changed), Path(a.training), work)
+        print(learning_md(out))
+        return out
     else:
         out = score(work)
         print(to_markdown(out))

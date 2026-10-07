@@ -1,0 +1,5908 @@
+{
+ "held_out": {
+  "questions": 46,
+  "by_group": {
+   "owners": 22,
+   "deadlines": 20,
+   "lists": 4
+  },
+  "direct": {
+   "v1": {
+    "owners": 0.591,
+    "deadlines": 0.85,
+    "lists": 0.292,
+    "mean": 0.578
+   },
+   "v2": {
+    "owners": 0.5,
+    "deadlines": 0.2,
+    "lists": 1.0,
+    "mean": 0.567
+   }
+  },
+  "reach": {
+   "bank": {
+    "2000": {
+     "owners": 0.591,
+     "deadlines": 0.5,
+     "lists": 0.125,
+     "mean": 0.405
+    },
+    "24000": {
+     "owners": 0.909,
+     "deadlines": 0.55,
+     "lists": 0.25,
+     "mean": 0.57
+    }
+   },
+   "plain": {
+    "2000": {
+     "owners": 0.909,
+     "deadlines": 1.0,
+     "lists": 0.125,
+     "mean": 0.678
+    },
+    "24000": {
+     "owners": 1.0,
+     "deadlines": 1.0,
+     "lists": 0.833,
+     "mean": 0.944
+    }
+   },
+   "plain-words": {
+    "2000": {
+     "owners": 0.955,
+     "deadlines": 1.0,
+     "lists": 0.625,
+     "mean": 0.86
+    },
+    "24000": {
+     "owners": 1.0,
+     "deadlines": 1.0,
+     "lists": 1.0,
+     "mean": 1.0
+    }
+   },
+   "v1": {
+    "2000": {
+     "owners": 0.909,
+     "deadlines": 0.8,
+     "lists": 0.458,
+     "mean": 0.722
+    },
+    "24000": {
+     "owners": 0.955,
+     "deadlines": 1.0,
+     "lists": 1.0,
+     "mean": 0.985
+    }
+   },
+   "v2": {
+    "2000": {
+     "owners": 0.909,
+     "deadlines": 0.75,
+     "lists": 1.0,
+     "mean": 0.886
+    },
+    "24000": {
+     "owners": 1.0,
+     "deadlines": 1.0,
+     "lists": 1.0,
+     "mean": 1.0
+    }
+   }
+  },
+  "rows": [
+   {
+    "id": "github_author-003",
+    "group": "lists",
+    "kind": "github_author",
+    "question": "What PRs has Priya Natarajan opened on GitHub? Just the numbers.",
+    "expected": {
+     "ids": [
+      "18592",
+      "27416",
+      "33457"
+     ],
+     "id_kind": "pr"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "Priya Natarajan",
+     "v2": "#18592, #27416, #33457"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.6666666666666666,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "github_author-007",
+    "group": "lists",
+    "kind": "github_author",
+    "question": "Which pull requests did Nadia Rahman write? PR numbers please.",
+    "expected": {
+     "ids": [
+      "24108",
+      "28521",
+      "29161"
+     ],
+     "id_kind": "pr"
+    },
+    "direct": {
+     "v1": 0.5,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "24108",
+     "v2": "#28521, #24108, #29161"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 0.3333333333333333
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.3333333333333333,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "github_author-008",
+    "group": "lists",
+    "kind": "github_author",
+    "question": "What PRs has Benji Okafor opened on GitHub? Just the numbers.",
+    "expected": {
+     "ids": [
+      "18478",
+      "18547",
+      "489"
+     ],
+     "id_kind": "pr"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "Benji Okafor",
+     "v2": "#489, #18478, #18547"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.3333333333333333,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "jira_assignee-005",
+    "group": "lists",
+    "kind": "jira_assignee",
+    "question": "Cole Summers has which Jira tickets assigned? I need the keys.",
+    "expected": {
+     "ids": [
+      "SUP-28463",
+      "SUP-28488"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.667,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "SUP-28463",
+     "v2": "SUP-28463, SUP-28488"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "linear_due-019",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "question": "quick one: \"API Behavioral Probe Matrix and Prospectivity Playbook\" in Linear, when's that due?",
+    "expected": {
+     "date": "2025-04-15"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "2025-04-15",
+     "v2": "2025-04-15"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0019",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "Quick question: which published playbook by Elena Kim describes a sensitivity-tiered audit ledger and preserving evidence for model rollbacks, in the security-and-compliance space?",
+    "expected": {
+     "value": "Sensitivity-tiered Audit Ledger and Rollback Evidence Playbook"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "security-and-compliance",
+     "v2": "Sensitivity-tiered Audit Ledger and Rollback Evidence Playbook"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "linear_due-014",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "question": "By what date does \"Slot-aware phased switchover with traffic-shaping and automated rollback policy\" (Linear) need to be done?",
+    "expected": {
+     "date": "2026-03-12"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "2026-03-12",
+     "v2": "2026-02-10"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "linear_due-027",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "question": "What's the deadline for the Linear ticket \"Routing policy mismatch causing customer requests to be served by wrong model/region/tier\"?",
+    "expected": {
+     "date": "2026-03-18"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "2026-03-18",
+     "v2": "2026-03-14"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0065",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "Hey, can you check: in the platform engineering shared drives, who owns the draft document about multi region control plane saga routing fallbacks and idempotency retries?",
+    "expected": {
+     "value": "Priya Natarajan"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "Priya Natarajan",
+     "v2": "Samir Gupta"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "linear_due-025",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "question": "What's the deadline for the Linear ticket \"batcher-recommendation-pipeline-safe-apply\"?",
+    "expected": {
+     "date": "2025-02-28"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "2025-02-28",
+     "v2": "2025-02-04"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0003",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "Hey, can you check: what is the due date, in the engineering ops cleanup ticket about reconciling office equipment and deactivating old access cards?",
+    "expected": {
+     "value": "2025-11-20"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "2025-11-20",
+     "v2": "2025-11-20"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0099",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "I need to find out: on what date was the pull request about adding a reconnect token and buffered retry window for streaming tool calls merged into the main branch?",
+    "expected": {
+     "value": "2026-03-03"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "2026-03-03",
+     "v2": "2026-03-03"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0072",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "I need to find out: who authored the merged redwood pull request that added token group indexing and downsampled rollups for observability metrics?",
+    "expected": {
+     "value": "Priya Nair"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "Priya Nair",
+     "v2": "Priya Nair"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0054",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "Do you know who is listed as the owner of the draft internal notes document about an onramp for a claims connector involving a private deployment in an AWS VPC?",
+    "expected": {
+     "value": "Priya Soni"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "Priya Soni",
+     "v2": "Jordan Reyes"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "linear_due-024",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "question": "quick one: \"Internal readiness scripts, SDK warnings, and customer upgrade sprints\" in Linear, when's that due?",
+    "expected": {
+     "date": "2026-04-30"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "2026-04-30",
+     "v2": "2026-04-30"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0057",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "Quick question: who is listed as the author, in the internal applied ML evals playbook about tiered evaluation and shadow traffic validation?",
+    "expected": {
+     "value": "Aisha Patel"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "Aisha Patel",
+     "v2": "Aisha Patel"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "linear_due-006",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "question": "What's the deadline for the Linear ticket \"Dedicated Capacity: Roadmap for Latency-Sensitive Verticals and Predictive Prewarm Strategy\"?",
+    "expected": {
+     "date": "2026-04-01"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "2026-04-01",
+     "v2": "2026-03-12"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "linear_due-012",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "question": "What's the deadline for the Linear ticket \"Config Optimizer: Suggest & Safe-Apply for Batching/Caching with Multi-probe Quality Sentinels\"?",
+    "expected": {
+     "date": "2025-03-20"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "2025-03-20",
+     "v2": "2025-02-11"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0081",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "What date was it last updated, in the internal published model serving playbook about normalization and tokenizer drift?",
+    "expected": {
+     "value": "2026-02-08"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "2026-02-08",
+     "v2": "2026-02-08"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0096",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "In the customer-support incident about tenant pinning breaking during deferred prewarm and causing mixed model replies in a dedicated prod us-east environment, what is the SLA due date?",
+    "expected": {
+     "value": "2026-03-11"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "2026-04-01",
+     "v2": "2026-03-11"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0037",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "What is the last updated date, in the company handbook draft about beanbag seating and ambient noise pilots for shared office areas?",
+    "expected": {
+     "value": "2025-01-15"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "2025-01-15",
+     "v2": "Cafeteria Beanbag and Ambient Noise Guidelines"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "linear_due-023",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "question": "What's the deadline for the Linear ticket \"Enable Shadow Traffic for internal dogfood tenants + create initial experiments + track findings\"?",
+    "expected": {
+     "date": "2026-02-07"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "Ethan Park",
+     "v2": "2026-01-13"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0044",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "Quick question: who is the sales owner for the mid-market product analytics SaaS account that is evaluating Dedicated after a hosted trial and has a next step scheduled for early March 2025?",
+    "expected": {
+     "value": "Maya Patel"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "Maya Patel",
+     "v2": "Maya Patel"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0014",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "Which merged pull request added an opt-in defaults suggestion system for batching and cache TTLs and used squash merge into main, in the redwood repo?",
+    "expected": {
+     "value": "33219"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "redwood",
+     "v2": "2026-02-16"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0078",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "Who is the assignee, in the P1 Sev1 customer-support incident for the dedicated ClearBank reservation with p99 timeouts tied to cache evictions and slow autoscaling in prod us-east?",
+    "expected": {
+     "value": "Ravi Patel"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "Ravi Patel",
+     "v2": "Ravi Patel"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0039",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "Do you know which published spec owned by engineering and authored by Aisha Kapoor defines a per request envelope for energy and cost attribution metadata, in the architecture and standards space?",
+    "expected": {
+     "value": "Service energy and cost accounting metadata standard"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "Aisha Kapoor",
+     "v2": "architecture-and-standards"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "action_due-008",
+    "group": "deadlines",
+    "kind": "action_due",
+    "question": "Aisha Khan picked up \"provide SLO doc and sample traffic CSV\" in the \"Tenant slicing and graceful backpressure demo - IvyGrid Solutions\" meeting. What's the deadline on that?",
+    "expected": {
+     "date": "2026-02-25"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "2026-02-25",
+     "v2": "2026-02-20"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "action_due-026",
+    "group": "deadlines",
+    "kind": "action_due",
+    "question": "Diego Alvarez picked up \"prepare streaming telemetry deep-dive deck and example trace collection\" in the \"POC: Benchmark workload matrix & streaming vs non-streaming decision\" meeting. What's the deadline on that?",
+    "expected": {
+     "date": "2025-10-27"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "2025-10-27",
+     "v2": "2025-10-22"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0098",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "Who is listed as the owner, in the developer-experience teams draft doc about chaining multiple prompts?",
+    "expected": {
+     "value": "Asha Patel"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "Asha Patel",
+     "v2": "Asha Patel"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0056",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "Which draft engineering SRE doc owned by Aisha Patel was last modified in early March 2026 about replaying a multi-region fallback incident, in the users drive area?",
+    "expected": {
+     "value": "2026-02-11"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "Aisha Patel",
+     "v2": "Fallback replay \u2014 command log and breadcrumbs"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v2": {
+      "2000": 0.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0012",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "In the procurement email thread for the US account involving Epoch Systems, how many files are listed as attachments?",
+    "expected": {
+     "value": "redlines_epoch_orderform_20290715.docx"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "Epoch_MSAAttachment_v3.pdf, redlines_epoch_orderform_20290715.docx",
+     "v2": "Epoch_MSAAttachment_v3.pdf"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "action_due-005",
+    "group": "deadlines",
+    "kind": "action_due",
+    "question": "Devon Park picked up \"share VPC/network constraints and allowed egress IPs\" in the \"POC integration & benchmark sprint planning - AtlasEdge Robotics\" meeting. What's the deadline on that?",
+    "expected": {
+     "date": "2026-07-13"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "2026-07-13",
+     "v2": "2026-07-09"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0084",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "Do you know for the SMB legaltech prospect owned by Alex Martinez that needs SAML SSO and US-only data residency, what month is the close forecasted for?",
+    "expected": {
+     "value": "June 2026",
+     "alts": [
+      "2026-06"
+     ]
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "Alex Martinez",
+     "v2": "2026-06"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "linear_due-017",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "question": "quick one: \"Region capacity shortage: behavior when customer min bound cannot be met\" in Linear, when's that due?",
+    "expected": {
+     "date": "2025-08-02"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "2025-08-02",
+     "v2": "2025-07-15"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "action_due-002",
+    "group": "deadlines",
+    "kind": "action_due",
+    "question": "Lena Ortiz picked up \"Share peering template + example CIDRs\" in the \"Mariner Networks - Private Gateway Onramp Discovery\" meeting. What's the deadline on that?",
+    "expected": {
+     "date": "2025-08-13"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "2025-08-13",
+     "v2": "2025-05-08"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "action_due-016",
+    "group": "deadlines",
+    "kind": "action_due",
+    "question": "From \"NovaHealth \u2014 Security Posture & Deployment Options\": by when does Marcus Chen have to finish \"Send RBAC sample matrix and KMS/HSM integration steps\"?",
+    "expected": {
+     "date": "2025-05-15"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "Lena to send draft POC scope + pricing and SLA options by 2026-12-02, Priya to provide 3 representative script bundles and two traffic days by 2026-12-01, Samir to prototype harness adapter for customer scripts and share test log by 2026-12-04",
+     "v2": "2025-05-08"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0026",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "I need to find out: which escalation thread about a healthcare customer outage had attached log and trace files, in Seans mailbox?",
+    "expected": {
+     "value": "error_snapshot-20261012.log"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "Ethan Park",
+     "v2": "[P0] Acme Health \u2014 elevated 5xx/429 / retry storm (GPU saturation)"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0041",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "Do you know what month is the deal forecast to close, for the North America based SMB prospect evaluating a hosted API for a support chatbot and summarization?",
+    "expected": {
+     "value": "April 2026",
+     "alts": [
+      "2026-04"
+     ]
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "2026-06",
+     "v2": "2026-06"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "action_due-006",
+    "group": "deadlines",
+    "kind": "action_due",
+    "question": "From \"Traffic fidelity triage & streaming fallback playbook - kickoff\": by when does Alicia Ramos have to finish \"provide representative 1k-request traffic file + token length distribution\"?",
+    "expected": {
+     "date": "2026-10-22"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "Maya Chen",
+     "v2": "2026-10-22"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "action_due-028",
+    "group": "deadlines",
+    "kind": "action_due",
+    "question": "Lena Ortiz picked up \"share POC scope doc and cost estimate\" in the \"Client script handshake and streaming eval scoping\" meeting. What's the deadline on that?",
+    "expected": {
+     "date": "2026-12-02"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "2026-12-02",
+     "v2": "2026-12-01"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0066",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "Which planned P1 item in the Security RBAC v2 project is assigned to Marco Li and due in mid March 2025, in the engineering tracker?",
+    "expected": {
+     "value": "Robot identity bootstrap workflow: gated creation, attestation, and audit hooks"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "Marco Li",
+     "v2": "2025-03-15"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "linear_due-039",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "question": "What's the deadline for the Linear ticket \"Concise Launchpad: single-row model scroller + request quick-capture\"?",
+    "expected": {
+     "date": "2026-03-22"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "2026-03-22",
+     "v2": "2026-03-12"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0001",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "Quick question: who owns the draft modeling spreadsheet about continuous headcount ramping and small price changes to assess runway sensitivity, in the finance operations shared drive?",
+    "expected": {
+     "value": "Maya Chen"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "Maya Chen",
+     "v2": "Liam O'Connor"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "action_due-009",
+    "group": "deadlines",
+    "kind": "action_due",
+    "question": "Ethan Park picked up \"run 1k reqs spike test + share results\" in the \"Tenant slicing and graceful backpressure demo - IvyGrid Solutions\" meeting. What's the deadline on that?",
+    "expected": {
+     "date": "2026-02-27"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "2026-02-27",
+     "v2": "2026-02-20"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "action_due-003",
+    "group": "deadlines",
+    "kind": "action_due",
+    "question": "Priya Shah picked up \"draft benchmark scripts (python + curl) and perf matrix\" in the \"POC integration & benchmark sprint planning - AtlasEdge Robotics\" meeting. What's the deadline on that?",
+    "expected": {
+     "date": "2026-07-16"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "2026-07-16",
+     "v2": "2026-07-09"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "action_due-023",
+    "group": "deadlines",
+    "kind": "action_due",
+    "question": "Priya Nair picked up \"upload canonical scripts + sample traffic traces\" in the \"Client script handshake and streaming eval scoping\" meeting. What's the deadline on that?",
+    "expected": {
+     "date": "2026-12-01"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "2026-12-01",
+     "v2": "2026-12-01"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   }
+  ]
+ },
+ "changed": {
+  "questions": 46,
+  "by_group": {
+   "owners": 22,
+   "deadlines": 20,
+   "lists": 4
+  },
+  "direct": {
+   "v1": {
+    "owners": 0.591,
+    "deadlines": 0.85,
+    "lists": 0.292,
+    "mean": 0.578
+   },
+   "v2": {
+    "owners": 0.5,
+    "deadlines": 0.15,
+    "lists": 1.0,
+    "mean": 0.55
+   }
+  },
+  "reach": {
+   "bank": {
+    "2000": {
+     "owners": 0.636,
+     "deadlines": 0.5,
+     "lists": 0.125,
+     "mean": 0.42
+    },
+    "24000": {
+     "owners": 0.909,
+     "deadlines": 0.55,
+     "lists": 0.25,
+     "mean": 0.57
+    }
+   },
+   "plain": {
+    "2000": {
+     "owners": 0.909,
+     "deadlines": 1.0,
+     "lists": 0.208,
+     "mean": 0.706
+    },
+    "24000": {
+     "owners": 1.0,
+     "deadlines": 1.0,
+     "lists": 0.833,
+     "mean": 0.944
+    }
+   },
+   "plain-words": {
+    "2000": {
+     "owners": 0.955,
+     "deadlines": 1.0,
+     "lists": 0.625,
+     "mean": 0.86
+    },
+    "24000": {
+     "owners": 1.0,
+     "deadlines": 1.0,
+     "lists": 1.0,
+     "mean": 1.0
+    }
+   },
+   "v1": {
+    "2000": {
+     "owners": 0.909,
+     "deadlines": 0.8,
+     "lists": 0.292,
+     "mean": 0.667
+    },
+    "24000": {
+     "owners": 0.955,
+     "deadlines": 1.0,
+     "lists": 1.0,
+     "mean": 0.985
+    }
+   },
+   "v2": {
+    "2000": {
+     "owners": 0.909,
+     "deadlines": 0.75,
+     "lists": 1.0,
+     "mean": 0.886
+    },
+    "24000": {
+     "owners": 1.0,
+     "deadlines": 1.0,
+     "lists": 1.0,
+     "mean": 1.0
+    }
+   }
+  },
+  "rows": [
+   {
+    "id": "github_author-003",
+    "group": "lists",
+    "kind": "github_author",
+    "question": "What PRs has Thaddeus Dunmore opened on GitHub? Just the numbers.",
+    "expected": {
+     "ids": [
+      "18592",
+      "27416",
+      "33457"
+     ],
+     "id_kind": "pr"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "Thaddeus Dunmore",
+     "v2": "#18592, #27416, #33457"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.3333333333333333,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "github_author-007",
+    "group": "lists",
+    "kind": "github_author",
+    "question": "Which pull requests did Nils Quennell write? PR numbers please.",
+    "expected": {
+     "ids": [
+      "24108",
+      "28521",
+      "29161"
+     ],
+     "id_kind": "pr"
+    },
+    "direct": {
+     "v1": 0.5,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "24108",
+     "v2": "#28521, #24108, #29161"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 0.3333333333333333
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.3333333333333333,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "github_author-008",
+    "group": "lists",
+    "kind": "github_author",
+    "question": "What PRs has Marisol Iqbal opened on GitHub? Just the numbers.",
+    "expected": {
+     "ids": [
+      "18478",
+      "18547",
+      "489"
+     ],
+     "id_kind": "pr"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "Yorick Iqbal",
+     "v2": "#489, #18478, #18547"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.3333333333333333,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "jira_assignee-005",
+    "group": "lists",
+    "kind": "jira_assignee",
+    "question": "Quilla Ashdown has which Jira tickets assigned? I need the keys.",
+    "expected": {
+     "ids": [
+      "SUP-28463",
+      "SUP-28488"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.667,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "SUP-28463",
+     "v2": "SUP-28463, SUP-28488"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "linear_due-019",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "question": "quick one: \"API Behavioral Probe Matrix and Prospectivity Playbook\" in Linear, when's that due?",
+    "expected": {
+     "date": "2025-05-08"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "2025-05-08",
+     "v2": "2025-05-08"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0019",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "Quick question: which published playbook by Valdis Kowalczyk describes a sensitivity-tiered audit ledger and preserving evidence for model rollbacks, in the security-and-compliance space?",
+    "expected": {
+     "value": "Sensitivity-tiered Audit Ledger and Rollback Evidence Playbook"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "security-and-compliance",
+     "v2": "Sensitivity-tiered Audit Ledger and Rollback Evidence Playbook"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "linear_due-014",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "question": "By what date does \"Slot-aware phased switchover with traffic-shaping and automated rollback policy\" (Linear) need to be done?",
+    "expected": {
+     "date": "2026-04-04"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "2026-04-04",
+     "v2": "2026-03-05"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "linear_due-027",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "question": "What's the deadline for the Linear ticket \"Routing policy mismatch causing customer requests to be served by wrong model/region/tier\"?",
+    "expected": {
+     "date": "2026-04-10"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "2026-04-10",
+     "v2": "2026-04-06"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0065",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "Hey, can you check: in the platform engineering shared drives, who owns the draft document about multi region control plane saga routing fallbacks and idempotency retries?",
+    "expected": {
+     "value": "Thaddeus Dunmore"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "Thaddeus Dunmore",
+     "v2": "Zenaida Lindqvist"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "linear_due-025",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "question": "What's the deadline for the Linear ticket \"batcher-recommendation-pipeline-safe-apply\"?",
+    "expected": {
+     "date": "2025-03-23"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "2025-03-23",
+     "v2": "2025-02-27"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0003",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "Hey, can you check: what is the due date, in the engineering ops cleanup ticket about reconciling office equipment and deactivating old access cards?",
+    "expected": {
+     "value": "2025-12-13"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "2025-12-13",
+     "v2": "2025-12-13"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0099",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "I need to find out: on what date was the pull request about adding a reconnect token and buffered retry window for streaming tool calls merged into the main branch?",
+    "expected": {
+     "value": "2026-03-26"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "2026-03-26",
+     "v2": "2026-03-26"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0072",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "I need to find out: who authored the merged redwood pull request that added token group indexing and downsampled rollups for observability metrics?",
+    "expected": {
+     "value": "Marisol Galloway"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "Marisol Galloway",
+     "v2": "Marisol Galloway"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0054",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "Do you know who is listed as the owner of the draft internal notes document about an onramp for a claims connector involving a private deployment in an AWS VPC?",
+    "expected": {
+     "value": "Mireille Lindqvist"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "Mireille Lindqvist",
+     "v2": "Ilse Fairweather"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "linear_due-024",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "question": "quick one: \"Internal readiness scripts, SDK warnings, and customer upgrade sprints\" in Linear, when's that due?",
+    "expected": {
+     "date": "2026-05-23"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "2026-05-23",
+     "v2": "2026-05-23"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0057",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "Quick question: who is listed as the author, in the internal applied ML evals playbook about tiered evaluation and shadow traffic validation?",
+    "expected": {
+     "value": "Ottoline Moreau"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "Ottoline Moreau",
+     "v2": "Ottoline Moreau"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "linear_due-006",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "question": "What's the deadline for the Linear ticket \"Dedicated Capacity: Roadmap for Latency-Sensitive Verticals and Predictive Prewarm Strategy\"?",
+    "expected": {
+     "date": "2026-04-24"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "2026-04-24",
+     "v2": "2026-04-04"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "linear_due-012",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "question": "What's the deadline for the Linear ticket \"Config Optimizer: Suggest & Safe-Apply for Batching/Caching with Multi-probe Quality Sentinels\"?",
+    "expected": {
+     "date": "2025-04-12"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "2025-04-12",
+     "v2": "2025-03-06"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0081",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "What date was it last updated, in the internal published model serving playbook about normalization and tokenizer drift?",
+    "expected": {
+     "value": "2026-03-03"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "2026-03-03",
+     "v2": "2026-03-03"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0096",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "In the customer-support incident about tenant pinning breaking during deferred prewarm and causing mixed model replies in a dedicated prod us-east environment, what is the SLA due date?",
+    "expected": {
+     "value": "2026-04-03"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "2026-04-24",
+     "v2": "2026-04-03"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0037",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "What is the last updated date, in the company handbook draft about beanbag seating and ambient noise pilots for shared office areas?",
+    "expected": {
+     "value": "2025-02-07"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "2025-02-07",
+     "v2": "Cafeteria Beanbag and Ambient Noise Guidelines"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "linear_due-023",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "question": "What's the deadline for the Linear ticket \"Enable Shadow Traffic for internal dogfood tenants + create initial experiments + track findings\"?",
+    "expected": {
+     "date": "2026-03-02"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "Yorick Iqbal",
+     "v2": "2026-02-05"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0044",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "Quick question: who is the sales owner for the mid-market product analytics SaaS account that is evaluating Dedicated after a hosted trial and has a next step scheduled for early March 2025?",
+    "expected": {
+     "value": "Pascoe Haldane"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "Pascoe Haldane",
+     "v2": "Pascoe Haldane"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0014",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "Which merged pull request added an opt-in defaults suggestion system for batching and cache TTLs and used squash merge into main, in the redwood repo?",
+    "expected": {
+     "value": "33219"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "redwood",
+     "v2": "2026-03-11"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0078",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "Who is the assignee, in the P1 Sev1 customer-support incident for the dedicated ClearBank reservation with p99 timeouts tied to cache evictions and slow autoscaling in prod us-east?",
+    "expected": {
+     "value": "Nils Kowalczyk"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "Nils Kowalczyk",
+     "v2": "Nils Kowalczyk"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0039",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "Do you know which published spec owned by engineering and authored by Valdis Bellweather defines a per request envelope for energy and cost attribution metadata, in the architecture and standards space?",
+    "expected": {
+     "value": "Service energy and cost accounting metadata standard"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "Valdis Bellweather",
+     "v2": "architecture-and-standards"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "action_due-008",
+    "group": "deadlines",
+    "kind": "action_due",
+    "question": "Quilla Eriksen picked up \"provide SLO doc and sample traffic CSV\" in the \"Tenant slicing and graceful backpressure demo - IvyGrid Solutions\" meeting. What's the deadline on that?",
+    "expected": {
+     "date": "2026-03-20"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "2026-03-20",
+     "v2": "2026-02-20"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "action_due-026",
+    "group": "deadlines",
+    "kind": "action_due",
+    "question": "Pascoe Varga picked up \"prepare streaming telemetry deep-dive deck and example trace collection\" in the \"POC: Benchmark workload matrix & streaming vs non-streaming decision\" meeting. What's the deadline on that?",
+    "expected": {
+     "date": "2025-11-19"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "2025-11-19",
+     "v2": "2025-10-22"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0098",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "Who is listed as the owner, in the developer-experience teams draft doc about chaining multiple prompts?",
+    "expected": {
+     "value": "Pascoe Galloway"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "Pascoe Galloway",
+     "v2": "Pascoe Galloway"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0056",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "Which draft engineering SRE doc owned by Ottoline Moreau was last modified in early March 2026 about replaying a multi-region fallback incident, in the users drive area?",
+    "expected": {
+     "value": "2026-03-06"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "Ottoline Moreau",
+     "v2": "Fallback replay \u2014 command log and breadcrumbs"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v2": {
+      "2000": 0.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0012",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "In the procurement email thread for the US account involving Epoch Systems, how many files are listed as attachments?",
+    "expected": {
+     "value": "redlines_epoch_orderform_20290715.docx"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "Epoch_MSAAttachment_v3.pdf, redlines_epoch_orderform_20290715.docx",
+     "v2": "Epoch_MSAAttachment_v3.pdf"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "action_due-005",
+    "group": "deadlines",
+    "kind": "action_due",
+    "question": "Ulrika Abernathy picked up \"share VPC/network constraints and allowed egress IPs\" in the \"POC integration & benchmark sprint planning - AtlasEdge Robotics\" meeting. What's the deadline on that?",
+    "expected": {
+     "date": "2026-08-05"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "2026-08-05",
+     "v2": "2026-07-09"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0084",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "Do you know for the SMB legaltech prospect owned by Lisandro Fairweather that needs SAML SSO and US-only data residency, what month is the close forecasted for?",
+    "expected": {
+     "value": "June 2026",
+     "alts": [
+      "2026-06"
+     ]
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "Lisandro Fairweather",
+     "v2": "2026-06"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "linear_due-017",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "question": "quick one: \"Region capacity shortage: behavior when customer min bound cannot be met\" in Linear, when's that due?",
+    "expected": {
+     "date": "2025-08-25"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "2025-08-25",
+     "v2": "2025-08-07"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "action_due-002",
+    "group": "deadlines",
+    "kind": "action_due",
+    "question": "Saoirse Varga picked up \"Share peering template + example CIDRs\" in the \"Mariner Networks - Private Gateway Onramp Discovery\" meeting. What's the deadline on that?",
+    "expected": {
+     "date": "2025-09-05"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "2025-09-05",
+     "v2": "2025-05-31"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "action_due-016",
+    "group": "deadlines",
+    "kind": "action_due",
+    "question": "From \"NovaHealth \u2014 Security Posture & Deployment Options\": by when does Rasmus Abernathy have to finish \"Send RBAC sample matrix and KMS/HSM integration steps\"?",
+    "expected": {
+     "date": "2025-06-07"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "Lena to send draft POC scope + pricing and SLA options by 2026-12-25, Priya to provide 3 representative script bundles and two traffic days by 2026-12-24, Samir to prototype harness adapter for customer scripts and share test log by 2026-12-27",
+     "v2": "2025-05-31"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0026",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "I need to find out: which escalation thread about a healthcare customer outage had attached log and trace files, in Seans mailbox?",
+    "expected": {
+     "value": "error_snapshot-20261012.log"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "Ottoline Moreau",
+     "v2": "[P0] Acme Health \u2014 elevated 5xx/429 / retry storm (GPU saturation)"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0041",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "Do you know what month is the deal forecast to close, for the North America based SMB prospect evaluating a hosted API for a support chatbot and summarization?",
+    "expected": {
+     "value": "April 2026",
+     "alts": [
+      "2026-04"
+     ]
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "2026-06",
+     "v2": "2026-06"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "action_due-006",
+    "group": "deadlines",
+    "kind": "action_due",
+    "question": "From \"Traffic fidelity triage & streaming fallback playbook - kickoff\": by when does Marisol Varga have to finish \"provide representative 1k-request traffic file + token length distribution\"?",
+    "expected": {
+     "date": "2026-11-14"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "Tiberius Fairweather",
+     "v2": "2026-11-14"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "action_due-028",
+    "group": "deadlines",
+    "kind": "action_due",
+    "question": "Saoirse Varga picked up \"share POC scope doc and cost estimate\" in the \"Client script handshake and streaming eval scoping\" meeting. What's the deadline on that?",
+    "expected": {
+     "date": "2026-12-25"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "2026-12-25",
+     "v2": "2026-12-24"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0066",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "Which planned P1 item in the Security RBAC v2 project is assigned to Odalys Varga and due in mid March 2025, in the engineering tracker?",
+    "expected": {
+     "value": "Robot identity bootstrap workflow: gated creation, attestation, and audit hooks"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "Odalys Varga",
+     "v2": "2025-04-07"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "linear_due-039",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "question": "What's the deadline for the Linear ticket \"Concise Launchpad: single-row model scroller + request quick-capture\"?",
+    "expected": {
+     "date": "2026-04-14"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "2026-04-14",
+     "v2": "2026-04-04"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0001",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "Quick question: who owns the draft modeling spreadsheet about continuous headcount ramping and small price changes to assess runway sensitivity, in the finance operations shared drive?",
+    "expected": {
+     "value": "Tiberius Fairweather"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "Tiberius Fairweather",
+     "v2": "Marisol Eriksen"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "action_due-009",
+    "group": "deadlines",
+    "kind": "action_due",
+    "question": "Yorick Iqbal picked up \"run 1k reqs spike test + share results\" in the \"Tenant slicing and graceful backpressure demo - IvyGrid Solutions\" meeting. What's the deadline on that?",
+    "expected": {
+     "date": "2026-03-22"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "2026-03-22",
+     "v2": "2026-02-20"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "action_due-003",
+    "group": "deadlines",
+    "kind": "action_due",
+    "question": "Dashiell Kowalczyk picked up \"draft benchmark scripts (python + curl) and perf matrix\" in the \"POC integration & benchmark sprint planning - AtlasEdge Robotics\" meeting. What's the deadline on that?",
+    "expected": {
+     "date": "2026-08-08"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "2026-08-08",
+     "v2": "2026-07-09"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "action_due-023",
+    "group": "deadlines",
+    "kind": "action_due",
+    "question": "Marisol Galloway picked up \"upload canonical scripts + sample traffic traces\" in the \"Client script handshake and streaming eval scoping\" meeting. What's the deadline on that?",
+    "expected": {
+     "date": "2026-12-24"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "2026-12-24",
+     "v2": "2026-11-30"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   }
+  ]
+ },
+ "training": {
+  "questions": 50,
+  "by_group": {
+   "owners": 26,
+   "deadlines": 18,
+   "lists": 6
+  },
+  "direct": {
+   "v1": {
+    "owners": 0.654,
+    "deadlines": 1.0,
+    "lists": 1.0,
+    "mean": 0.885
+   },
+   "v2": {
+    "owners": 0.5,
+    "deadlines": 0.889,
+    "lists": 1.0,
+    "mean": 0.796
+   }
+  },
+  "reach": {
+   "bank": {
+    "2000": {
+     "owners": 0.654,
+     "deadlines": 0.389,
+     "lists": 0.083,
+     "mean": 0.375
+    },
+    "24000": {
+     "owners": 0.808,
+     "deadlines": 0.5,
+     "lists": 0.583,
+     "mean": 0.63
+    }
+   },
+   "plain": {
+    "2000": {
+     "owners": 0.885,
+     "deadlines": 1.0,
+     "lists": 0.167,
+     "mean": 0.684
+    },
+    "24000": {
+     "owners": 1.0,
+     "deadlines": 1.0,
+     "lists": 1.0,
+     "mean": 1.0
+    }
+   },
+   "plain-words": {
+    "2000": {
+     "owners": 0.885,
+     "deadlines": 1.0,
+     "lists": 0.583,
+     "mean": 0.823
+    },
+    "24000": {
+     "owners": 1.0,
+     "deadlines": 1.0,
+     "lists": 1.0,
+     "mean": 1.0
+    }
+   },
+   "v1": {
+    "2000": {
+     "owners": 0.885,
+     "deadlines": 1.0,
+     "lists": 0.417,
+     "mean": 0.767
+    },
+    "24000": {
+     "owners": 0.962,
+     "deadlines": 1.0,
+     "lists": 1.0,
+     "mean": 0.987
+    }
+   },
+   "v2": {
+    "2000": {
+     "owners": 1.0,
+     "deadlines": 1.0,
+     "lists": 1.0,
+     "mean": 1.0
+    },
+    "24000": {
+     "owners": 1.0,
+     "deadlines": 1.0,
+     "lists": 1.0,
+     "mean": 1.0
+    }
+   }
+  },
+  "rows": [
+   {
+    "id": "github_author-001",
+    "group": "lists",
+    "kind": "github_author",
+    "question": "List every GitHub pull request authored by Sahana Iyer. Give the pull request numbers.",
+    "expected": {
+     "ids": [
+      "18544",
+      "4827"
+     ],
+     "id_kind": "pr"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "#18544, #4827",
+     "v2": "#18544, #4827"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "github_author-002",
+    "group": "lists",
+    "kind": "github_author",
+    "question": "List every GitHub pull request authored by Aisha Kumar. Give the pull request numbers.",
+    "expected": {
+     "ids": [
+      "111213",
+      "20311"
+     ],
+     "id_kind": "pr"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "#111213, #20311",
+     "v2": "#20311, #111213"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "v1": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "github_author-004",
+    "group": "lists",
+    "kind": "github_author",
+    "question": "List every GitHub pull request authored by Jordan Park. Give the pull request numbers.",
+    "expected": {
+     "ids": [
+      "31415",
+      "75983"
+     ],
+     "id_kind": "pr"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "#31415, #75983",
+     "v2": "#75983, #31415"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "github_author-005",
+    "group": "lists",
+    "kind": "github_author",
+    "question": "List every GitHub pull request authored by Priya Kapoor. Give the pull request numbers.",
+    "expected": {
+     "ids": [
+      "182345",
+      "24612"
+     ],
+     "id_kind": "pr"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "#24612, #182345",
+     "v2": "#182345, #24612"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "github_author-006",
+    "group": "lists",
+    "kind": "github_author",
+    "question": "List every GitHub pull request authored by Peter Holtz. Give the pull request numbers.",
+    "expected": {
+     "ids": [
+      "23919",
+      "23988"
+     ],
+     "id_kind": "pr"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "#23988, #23919",
+     "v2": "#23988, #23919"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "jira_assignee-003",
+    "group": "lists",
+    "kind": "jira_assignee",
+    "question": "List every Jira ticket assigned to Marcus Liu. Give the ticket keys.",
+    "expected": {
+     "ids": [
+      "SUP-126007",
+      "SUP-94217"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "SUP-126007, SUP-94217",
+     "v2": "SUP-126007, SUP-94217"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0095",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "In the P1 Sev1 customer-support incident about a bulk embeddings job getting 429 rate-limit errors in prod us-east, what is the SLA due date?",
+    "expected": {
+     "value": "2026-03-13"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "2026-03-13",
+     "v2": "2026-03-13"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0025",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "In the customer-support bug about synchronized retry backoff causing streaming reconnect storms, what production environment is listed for the incident?",
+    "expected": {
+     "value": "prod-us-east"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "prod-us-east",
+     "v2": "prod-us-east"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0030",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "In the shared engineering reliability drive, which draft document owned by Sofia Alvarez was last modified in mid September 2029 about on call triage for intermittent GPU node lockups?",
+    "expected": {
+     "value": "2029-09-15"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "Sofia Alvarez",
+     "v2": "GPU Interlock Handoff Canvas \u2014 SRE Rapid Triage & Runbook Draft"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0035",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "For the product management work item about launching dedicated capacity in the UAE region, what is the planned due date?",
+    "expected": {
+     "value": "2026-03-31"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "2026-03-31",
+     "v2": "2026-03-31"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "action_due-022",
+    "group": "deadlines",
+    "kind": "action_due",
+    "question": "In the meeting \"Token thresholds & fallback strategy - TideBank discovery\", Maya took this action item: \"deliver cost spreadsheet with hosted vs dedicated scenarios\". When is it due?",
+    "expected": {
+     "date": "2026-12-13"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "2026-12-13",
+     "v2": "2026-12-13"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0050",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "For the mid-market SaaS account in procurement that requires VPC deployment and both US and EU data residency, who is the opportunity owner?",
+    "expected": {
+     "value": "Maya Chen"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "Maya Chen",
+     "v2": "Maya Chen"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "action_due-029",
+    "group": "deadlines",
+    "kind": "action_due",
+    "question": "In the meeting \"Hardware tuning profiles pack - weekly sync\", Sofia Ivanova took this action item: \"Re-run streaming-heavy scenarios after fairness fix and report p95 deltas (H100 balanced vs throughput-first)\". When is it due?",
+    "expected": {
+     "date": "2025-12-06"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "2025-12-06",
+     "v2": "2025-12-06"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "action_due-024",
+    "group": "deadlines",
+    "kind": "action_due",
+    "question": "In the meeting \"OpalWave Renewal & Regional Expansion Check-in\", Priya Singh took this action item: \"confirm PO approver and timeline\". When is it due?",
+    "expected": {
+     "date": "2026-09-10"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "2026-09-10",
+     "v2": "2026-09-10"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "linear_due-026",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "question": "When is the Linear issue \"Echo Benchmarking Harness for CI-driven Performance Regression Detection\" due?",
+    "expected": {
+     "date": "2025-03-10"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "2025-03-10",
+     "v2": "2025-03-10"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0015",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "In Jordan Blakes Gmail sales thread about rotating cross region demo times with Acme, what is the filename of the attachment that is the vendor onboarding form?",
+    "expected": {
+     "value": "ACME_vendor_form.pdf"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "ACME_vendor_form.pdf, demo_agenda_v1.pdf, network_checklist.xlsx",
+     "v2": "us|eu|apac"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0083",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "In the redwood repo PR that added a new probe to measure invocation cadence and introduced token-cost ribbon dashboards, what was the CI status at merge time?",
+    "expected": {
+     "value": "pass"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "pass",
+     "v2": "pass"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0085",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "In the redwood repo, which pull request by Priya Menon that introduced a soft cancel signal and a reconnect resume window for OpenAI compatible streaming was merged via squash into main?",
+    "expected": {
+     "value": "Soft-cancel signal and timed reconnect window for OpenAI-compat streaming"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "Priya Menon",
+     "v2": "2026-02-15"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "action_due-018",
+    "group": "deadlines",
+    "kind": "action_due",
+    "question": "In the meeting \"Zenith Health POC - Security & Compliance Checkpoint (Week 3)\", Alex took this action item: \"Send SOC 2 attestation and pen-test\". When is it due?",
+    "expected": {
+     "date": "2025-11-07"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "2025-11-07",
+     "v2": "2025-11-07"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0070",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "In the customer-support project, who is assigned the P1 Sev1 incident about corporate firewall TLS inspection causing HTML login pages to be returned when fetching model artifacts from cloud storage in a private deployment?",
+    "expected": {
+     "value": "Diego Ramos"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "Diego Ramos",
+     "v2": "2026-03-10"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "linear_due-028",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "question": "When is the Linear issue \"Private Console: Network Path Storyboard & Upgrade Rehearsal (prototype)\" due?",
+    "expected": {
+     "date": "2025-11-20"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "2025-11-20",
+     "v2": "2025-11-20"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0005",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "In the redwood repository, which reviewers were assigned to the merged pull request that added an opt-in fused attention kernel with an async KV write coalescer and a continuous batching horizon setting?",
+    "expected": {
+     "value": "Luca Bianchi"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "Ethan Park, Luca Bianchi, Sofia Ramos",
+     "v2": "2025-12-02"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0079",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "In the trust-ops teams draft scratch notes about SOC2 prep, who is listed as the owner of the document?",
+    "expected": {
+     "value": "Lucien Park"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "Lucien Park",
+     "v2": "Lucien Park"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0002",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "Who was the internal organizer listed for the security review call about an on-prem backup and audit log retention discussion with a healthcare customer in February 2025?",
+    "expected": {
+     "value": "Markus Klein"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "Markus Klein",
+     "v2": "Dana Wright"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0069",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "Who is the solutions engineer assigned to the mid-market product analytics SaaS account running a two-week parity POC before moving from a hosted LLM API to dedicated nodes?",
+    "expected": {
+     "value": "Ravi Patel"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "Ravi Patel",
+     "v2": "Arjun Rao"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0071",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "In the engineering ticket about keeping embedding similarity scores consistent across client versions, what is the planned canary rollout start date?",
+    "expected": {
+     "value": "2026-03-15"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "2026-03-31",
+     "v2": "ENG-24612"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0075",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "In the high urgency customer support ticket about scheduled cron workers getting 403s after a provisioner v2 migration in a private prod us-east deployment, who is the assignee?",
+    "expected": {
+     "value": "Julian Park"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "Julian Park",
+     "v2": "Julian Park"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0006",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "For the enterprise contact center software account in evaluation with VPC and on-prem deployment requirements, what is the forecast close month?",
+    "expected": {
+     "value": "2026-04"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "on_prem, vpc",
+     "v2": "on_prem"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "action_due-015",
+    "group": "deadlines",
+    "kind": "action_due",
+    "question": "In the meeting \"MedData Systems - on-prem backup/restore + audit log retention security review\", Priya Shah took this action item: \"Validate audit log retention policy (7y vs 10y) and whether immutable storage is mandated for PHI-related audit trails\". When is it due?",
+    "expected": {
+     "date": "2025-02-20"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "2025-02-20",
+     "v2": "2025-02-20"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0042",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "In the draft doc owned by Riley Thompson in the eng release engineering team about a canary rollout scratchpad, what JIRA ticket is linked in the metadata?",
+    "expected": {
+     "value": "REL-452"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "eng-release-engineering",
+     "v2": "SUP-1123"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "linear_due-002",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "question": "When is the Linear issue \"Bounded-window KV cache with adaptive backpressure and graceful GPU-OOM fallback\" due?",
+    "expected": {
+     "date": "2026-03-31"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "2026-03-31",
+     "v2": "2026-03-31"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "linear_due-005",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "question": "When is the Linear issue \"Graceful tenant throttling and reservation flexibility PRD\" due?",
+    "expected": {
+     "date": "2026-04-30"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "2026-04-30",
+     "v2": "2026-04-30"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0007",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "In the redwood repo, who authored the merged main-branch PR about an opt-in SLO throttler with per-tenant priority buckets and a regional safety degradation controller?",
+    "expected": {
+     "value": "Maya Chen"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "Maya Chen",
+     "v2": "Maya Chen"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "linear_due-001",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "question": "When is the Linear issue \"Mitigate asymmetric NAT rebinding causing ephemeral hostname drift between dedicated tenants\" due?",
+    "expected": {
+     "date": "2026-03-18"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "2026-03-18",
+     "v2": "2026-03-18"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "linear_due-037",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "question": "When is the Linear issue \"Rotation Window Safety Net: coordinated endpoint rotation and client compatibility contract\" due?",
+    "expected": {
+     "date": "2026-04-10"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "2026-04-10",
+     "v2": "2026-04-10"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0027",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "In the resolved Sev1 P1 incident for a dedicated customer in production APAC where egress multipath issues caused TLS handshake retries and higher p99 latency, who was the assignee?",
+    "expected": {
+     "value": "Kai Patel"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "Kai Patel",
+     "v2": "Kai Patel"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "linear_due-010",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "question": "When is the Linear issue \"Routing justification stream with deduped context summaries\" due?",
+    "expected": {
+     "date": "2026-03-29"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "2026-03-29",
+     "v2": "2026-03-02"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0087",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "Which enterprise-tier account in evaluation that requires a VPC deployment and US-only data residency has its forecast close month set to April 2026?",
+    "expected": {
+     "value": "Northstar Customer Support AI"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "enterprise",
+     "v2": "2026-04"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0004",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "In the internal customer success and support knowledge space, which published page by Elliot Price contains copy-paste templates for customer-safe escalation and incident updates?",
+    "expected": {
+     "value": "Customer Comms Templates (Support + CS)"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "customer-success-and-support",
+     "v2": "customer-success-and-support"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0043",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "In the internal-support project, who is the assignee of the in-progress task about temporary on-call shadow user accounts and a GPU loaner handback checklist?",
+    "expected": {
+     "value": "Liam Chen"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "Liam Chen",
+     "v2": "Liam Chen"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0088",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "In the design teams P1 item currently in review about a compact scrollable panel with token flow ribbons and latency quantiles for the console revamp, what is the planned release version?",
+    "expected": {
+     "value": "console-2026.04"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "Evelyn Brooks, Mariana Ortiz, Noah Kim",
+     "v2": "Mariana Ortiz"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0034",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "In the customer-success channel thread about onboarding failing after an auth key rotation, what incident identifier did the bot create?",
+    "expected": {
+     "value": "INC-2034"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "Elliot Price",
+     "v2": "INC-2034-110"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "linear_due-003",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "question": "When is the Linear issue \"Synthetic warmup prober and derated autoscale handoff for SLO-preserving replica join\" due?",
+    "expected": {
+     "date": "2026-02-15"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "2026-02-15",
+     "v2": "2026-02-15"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "action_due-010",
+    "group": "deadlines",
+    "kind": "action_due",
+    "question": "In the meeting \"Prism Labs \u2014 p95 Escape Velocity Discovery\", Samira took this action item: \"send pricing + contract template\". When is it due?",
+    "expected": {
+     "date": "2026-10-23"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "2026-10-23",
+     "v2": "2026-10-23"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "action_due-021",
+    "group": "deadlines",
+    "kind": "action_due",
+    "question": "In the meeting \"Dependency Hardening & Canary Criteria Tabletop\", Lina Chen took this action item: \"Execute KV cache chaos job and capture p95/p99 impact\". When is it due?",
+    "expected": {
+     "date": "2026-12-09"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "2026-12-09",
+     "v2": "2026-12-09"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "linear_due-022",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "question": "When is the Linear issue \"Compact benchmark result store + comparison canvas and triage playbook\" due?",
+    "expected": {
+     "date": "2026-03-26"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "2026-03-26",
+     "v2": "2026-03-26"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "linear_due-020",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "question": "When is the Linear issue \"Cross-runtime pagination, windowed batching, and stream-retry adapters for embeddings + reranking\" due?",
+    "expected": {
+     "date": "2025-03-21"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "answers": {
+     "v1": "2025-03-21",
+     "v2": "2025-02-22"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "action_due-027",
+    "group": "deadlines",
+    "kind": "action_due",
+    "question": "In the meeting \"MedData Systems - on-prem backup/restore + audit log retention security review\", Eli Brooks took this action item: \"Share target on-prem storage details (NFS appliance model, throughput, snapshot capabilities, any S3-compatible gateway)\". When is it due?",
+    "expected": {
+     "date": "2025-02-20"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "2025-02-20",
+     "v2": "2025-02-20"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0093",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "In the product management PRD about gracefully throttling dedicated tenants during short bursts, what is the planned due date?",
+    "expected": {
+     "value": "2026-04-30"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "2026-04-30",
+     "v2": "2026-04-30"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   },
+   {
+    "id": "metadata-qst_0010",
+    "group": "owners",
+    "kind": "metadata",
+    "question": "In the weekly internal sync about a hardware tuning profile pack, what was the due date for the action item assigned to Irene Choi about compiling GPU SKU string variants including MIG suffixes?",
+    "expected": {
+     "value": "2025-12-04"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "answers": {
+     "v1": "2025-12-04",
+     "v2": "2025-12-04"
+    },
+    "reach": {
+     "plain-words": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    }
+   }
+  ]
+ },
+ "rules": {
+  "1 learning helps (v2 - v1 >= +0.10 on the mean, own answers, held-out)": false,
+  "2 holds when information changes (v2 changed >= v2 held-out - 0.05)": true,
+  "3 better near the top (v2 - v1 >= +0.05 on the mean, first 2,000 chars, held-out)": true,
+  "4 not worse than the memory bank (v2 - bank >= -0.03 every group, 24,000 chars, held-out)": true
+ }
+}

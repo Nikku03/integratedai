@@ -103,7 +103,7 @@ def _is_date_field(k: str) -> bool:
     return k.endswith(("_at", "_date", "_ts")) or k in ("created", "updated", "date", "due", "deadline", "forecast_close_month")
 
 
-def add_document(b: Built, sd, raw: dict[str, Any]) -> None:
+def add_document(b: Built, sd, raw: dict[str, Any], text_facts: bool = False) -> None:
     """The source, entities, aliases and facts of one document (a ``cie.ingest.sources.SourceDoc`` and its raw record)."""
     from cie.ingest.sources import (
         ARTEFACT_FIELDS,
@@ -183,6 +183,36 @@ def add_document(b: Built, sd, raw: dict[str, Any]) -> None:
         add(doc, "action_item", task[:300], f"{sd.title} — action item for {owner}, due {due}: {task[:200]}", detail, "inferred", act)
     body = "\n".join(t for _, t in sd.fields)
     b.texts[doc] = (sd.title, "\n".join([sd.title, f"source: {system}", *meta_text, body]))
+    if text_facts:
+        for kind, value, sentence in sentence_values(body):
+            add(doc, f"text_{kind}", value, sentence, "text sentence", "inferred")
+
+
+SENTENCE = re.compile(r"(?<=[.!?])\s+(?=[A-Z0-9\[])|\n+")
+KEY_RE = re.compile(r"\b[A-Z][A-Z0-9]{1,9}(?:-\d{1,7})+\b")
+MAX_TEXT_FACTS = 300
+
+
+def sentence_values(body: str) -> list[tuple[str, str, str]]:
+    """Dates and identifiers in a document's sentences: (kind, value, the sentence). Dates are written as ISO dates."""
+    from cie.eval.memory_test import dates_in
+
+    out: list[tuple[str, str, str]] = []
+    seen: set[tuple[str, str, str]] = set()
+    for sent in SENTENCE.split(body):
+        sent = sent.strip()
+        if len(sent) < 12:
+            continue
+        sent = sent[:400]
+        for kind, vals in (("date", sorted(dates_in(sent))), ("key", sorted(set(KEY_RE.findall(sent))))):
+            for v in vals:
+                k = (kind, v, sent)
+                if k not in seen:
+                    seen.add(k)
+                    out.append(k)
+        if len(out) >= MAX_TEXT_FACTS:
+            break
+    return out[:MAX_TEXT_FACTS]
 
 
 def resolve(b: Built) -> None:
@@ -197,14 +227,15 @@ def resolve(b: Built) -> None:
         del b.entities[e]
 
 
-def build(path: str | Path, docs: Iterable[tuple[Any, dict[str, Any]]]) -> dict[str, Any]:
-    """Write a bank from (SourceDoc, raw record) pairs. Returns counts and the checker's report."""
+def build(path: str | Path, docs: Iterable[tuple[Any, dict[str, Any]]], text_facts: bool = False) -> dict[str, Any]:
+    """Write a bank from (SourceDoc, raw record) pairs. Returns counts and the checker's report. ``text_facts`` also
+    turns the dates and identifiers in the documents' sentences into facts (confidence "inferred")."""
     path = Path(path)
     if path.exists():
         path.unlink()
     b = Built()
     for sd, raw in docs:
-        add_document(b, sd, raw)
+        add_document(b, sd, raw, text_facts)
     resolve(b)
     for e, (_, _kind, name, _src) in b.entities.items():
         if e not in b.texts:
