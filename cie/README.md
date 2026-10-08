@@ -68,6 +68,14 @@ nearest known one. It did not help: 0.58 against 0.61 without it, on 50 question
 technical text places words by topic ("created" next to "ticket") rather than by meaning. Most of the plain English
 words in managers' questions ("responsible", "urgent", "tally") found no close known word.
 
+**Adding general English** ([`docs/FACTBANK_GENERAL_RESULTS.md`](docs/FACTBANK_GENERAL_RESULTS.md)): the same counts
+were made over 321 million words of Wikipedia and web text.
+- **The test:** 50 blind questions, written by three independent agent sessions that never saw the method.
+- **The result:** 0.769, the same as the company's words alone, against 0.727 with no word meanings. The new words were
+  mostly politeness, and general English mostly let pronouns borrow meaning.
+- **The review:** a review of the evaluation code found and fixed five problems. One was a changed-information copy that
+  renamed "In Progress" as if it were a person. None changes a decision.
+
 ## Brain-wired reasoning neurons (research)
 
 `cie.neuro` wires the reasoning engine's spiking neurons like a piece of Blue Brain's cortex model (directed cliques of

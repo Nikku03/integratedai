@@ -1,0 +1,92 @@
+[
+ {
+  "combine": "company",
+  "floor": 0.5,
+  "training": 0.927,
+  "wording_held_out": 0.752,
+  "retest": 0.631,
+  "new_words": 0.576,
+  "dev_mean": 0.653
+ },
+ {
+  "combine": "general",
+  "floor": 0.4,
+  "training": 0.927,
+  "wording_held_out": 0.752,
+  "retest": 0.59,
+  "new_words": 0.613,
+  "dev_mean": 0.652
+ },
+ {
+  "combine": "general",
+  "floor": 0.5,
+  "training": 0.927,
+  "wording_held_out": 0.752,
+  "retest": 0.59,
+  "new_words": 0.611,
+  "dev_mean": 0.651
+ },
+ {
+  "combine": "general",
+  "floor": 0.6,
+  "training": 0.927,
+  "wording_held_out": 0.752,
+  "retest": 0.59,
+  "new_words": 0.611,
+  "dev_mean": 0.651
+ },
+ {
+  "combine": "max",
+  "floor": 0.4,
+  "training": 0.927,
+  "wording_held_out": 0.752,
+  "retest": 0.622,
+  "new_words": 0.62,
+  "dev_mean": 0.665
+ },
+ {
+  "combine": "max",
+  "floor": 0.5,
+  "training": 0.927,
+  "wording_held_out": 0.752,
+  "retest": 0.622,
+  "new_words": 0.576,
+  "dev_mean": 0.65
+ },
+ {
+  "combine": "max",
+  "floor": 0.6,
+  "training": 0.927,
+  "wording_held_out": 0.752,
+  "retest": 0.606,
+  "new_words": 0.576,
+  "dev_mean": 0.645
+ },
+ {
+  "combine": "mean",
+  "floor": 0.4,
+  "training": 0.927,
+  "wording_held_out": 0.752,
+  "retest": 0.657,
+  "new_words": 0.611,
+  "dev_mean": 0.673
+ },
+ {
+  "combine": "mean",
+  "floor": 0.5,
+  "training": 0.927,
+  "wording_held_out": 0.752,
+  "retest": 0.622,
+  "new_words": 0.611,
+  "dev_mean": 0.662
+ },
+ {
+  "combine": "mean",
+  "floor": 0.6,
+  "training": 0.927,
+  "wording_held_out": 0.752,
+  "retest": 0.622,
+  "new_words": 0.611,
+  "dev_mean": 0.662
+ }
+]

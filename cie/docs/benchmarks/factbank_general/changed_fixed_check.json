@@ -1,0 +1,94 @@
+[
+ {
+  "test": "first test",
+  "arm": "v3",
+  "held_out": 0.083,
+  "changed_as_published": 0.083,
+  "changed_fixed": 0.083,
+  "rule_as_published": true,
+  "rule_fixed": true,
+  "all_fixed": {
+   "v1": 0.013,
+   "v2": 0.072,
+   "v3": 0.083,
+   "v4": 0.675,
+   "v5": 0.693,
+   "v6": 0.693
+  },
+  "all_held": {
+   "v1": 0.013,
+   "v2": 0.085,
+   "v3": 0.083
+  }
+ },
+ {
+  "test": "retest",
+  "arm": "v4",
+  "held_out": 0.596,
+  "changed_as_published": 0.596,
+  "changed_fixed": 0.596,
+  "rule_as_published": true,
+  "rule_fixed": true,
+  "all_fixed": {
+   "v1": 0.111,
+   "v2": 0.0,
+   "v3": 0.25,
+   "v4": 0.596,
+   "v5": 0.631,
+   "v6": 0.657
+  },
+  "all_held": {
+   "v1": 0.111,
+   "v2": 0.0,
+   "v3": 0.25,
+   "v4": 0.596,
+   "v5": 0.631,
+   "v6": 0.657
+  }
+ },
+ {
+  "test": "new-words test",
+  "arm": "v5",
+  "held_out": 0.576,
+  "changed_as_published": 0.576,
+  "changed_fixed": 0.576,
+  "rule_as_published": true,
+  "rule_fixed": true,
+  "all_fixed": {
+   "v1": 0.061,
+   "v2": 0.058,
+   "v3": 0.25,
+   "v4": 0.611,
+   "v5": 0.576,
+   "v6": 0.611
+  },
+  "all_held": {
+   "v1": 0.047,
+   "v4": 0.611,
+   "v5": 0.576
+  }
+ },
+ {
+  "test": "general-English test",
+  "arm": "v6",
+  "held_out": 0.769,
+  "changed_as_published": 0.806,
+  "changed_fixed": 0.769,
+  "rule_as_published": true,
+  "rule_fixed": true,
+  "all_fixed": {
+   "v1": 0.093,
+   "v2": 0.0,
+   "v3": 0.343,
+   "v4": 0.727,
+   "v5": 0.769,
+   "v6": 0.769
+  },
+  "all_held": {
+   "v1": 0.093,
+   "v4": 0.727,
+   "v5": 0.769,
+   "v6": 0.769
+  }
+ }
+]

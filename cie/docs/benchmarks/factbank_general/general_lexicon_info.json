@@ -1,0 +1,15 @@
+{
+ "corpus": "WikiText-103 train + C4 en train 00000-00001",
+ "sources": [
+  "https://huggingface.co/datasets/Salesforce/wikitext/resolve/main/wikitext-103-raw-v1/train-00000-of-00002.parquet",
+  "https://huggingface.co/datasets/Salesforce/wikitext/resolve/main/wikitext-103-raw-v1/train-00001-of-00002.parquet",
+  "https://huggingface.co/datasets/allenai/c4/resolve/main/en/c4-train.00000-of-01024.json.gz",
+  "https://huggingface.co/datasets/allenai/c4/resolve/main/en/c4-train.00001-of-01024.json.gz"
+ ],
+ "window": 2,
+ "dim": 200,
+ "words": 80000,
+ "seconds": 673.1,
+ "sha256": "79f89eb788e3b631e0590e5b10a23c7994a807fc657b95c301b50c632bd3db4f",
+ "file": "general_w2.npz (30 MB, not committed; rebuild with python -I -m cie.factbank.lexicon general --window 2)"
+}

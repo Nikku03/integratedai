@@ -1,0 +1,84 @@
+{
+ "mdtrain": {
+  "conflated": [
+   "action_owner_issues-017",
+   "action_owner_issues-021",
+   "action_owner_issues-023",
+   "action_owner_issues-024",
+   "action_owner_issues-028"
+  ],
+  "v4": [
+   0.927,
+   0.941
+  ],
+  "v5": [
+   0.927,
+   0.941
+  ],
+  "v6": [
+   0.927,
+   0.941
+  ]
+ },
+ "mdfresh": {
+  "conflated": [
+   "action_owner_issues-021",
+   "action_owner_issues-023",
+   "action_owner_issues-037"
+  ],
+  "v4": [
+   0.596,
+   0.588
+  ],
+  "v5": [
+   0.631,
+   0.628
+  ],
+  "v6": [
+   0.657,
+   0.651
+  ]
+ },
+ "mdwords": {
+  "conflated": [
+   "action_owner_issues-034",
+   "action_owner_issues-035",
+   "action_owner_issues-036"
+  ],
+  "v4": [
+   0.611,
+   0.629
+  ],
+  "v5": [
+   0.576,
+   0.594
+  ]
+ },
+ "mdblind": {
+  "conflated": [
+   "action_owner_issues-024",
+   "action_owner_issues-028",
+   "action_owner_issues-031",
+   "action_owner_issues-042"
+  ],
+  "v4": [
+   0.727,
+   0.735
+  ],
+  "v5": [
+   0.769,
+   0.777
+  ],
+  "v6": [
+   0.769,
+   0.777
+  ]
+ },
+ "mdtest": {
+  "conflated": [],
+  "v3": [
+   0.083,
+   0.083
+  ]
+ }
+}
