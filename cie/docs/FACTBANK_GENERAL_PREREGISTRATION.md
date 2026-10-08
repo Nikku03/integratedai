@@ -107,3 +107,40 @@ The only choices left to development, made from this list and recorded before th
   out at a time, the retest set, and the new-words set.
 - Ties go to the higher closeness, then to "general English only" before "the higher" before "the mean".
 - A choice that lowers the training score by more than 0.03 is not allowed.
+
+## Frozen before the run (added after development, before the test set was asked)
+
+**The general-English word space.**
+- WikiText-103 train (3.9 million sentences) and C4 files 00000–00001 (14.4 million sentences): 18.4 million sentences,
+  321 million words.
+- 80,000 words kept, window 2, 200 dimensions.
+- `general_w2.npz`, sha256 `79f89eb788e3b631…`, built in 673 s.
+
+**Development results** for every allowed choice. The training score is 0.927 for all of them.
+
+| how the spaces combine | closeness | one training wording held out | retest set | new-words set | mean |
+|---|---|---|---|---|---|
+| company only (v5) | 0.5 | 0.752 | 0.631 | 0.576 | 0.653 |
+| general only | 0.4 | 0.752 | 0.590 | 0.613 | 0.652 |
+| general only | 0.5 | 0.752 | 0.590 | 0.611 | 0.651 |
+| general only | 0.6 | 0.752 | 0.590 | 0.611 | 0.651 |
+| the higher | 0.4 | 0.752 | 0.622 | 0.620 | 0.665 |
+| the higher | 0.5 | 0.752 | 0.622 | 0.576 | 0.650 |
+| the higher | 0.6 | 0.752 | 0.606 | 0.576 | 0.645 |
+| **the mean** | **0.4** | 0.752 | **0.657** | 0.611 | **0.673** |
+| the mean | 0.5 | 0.752 | 0.622 | 0.611 | 0.662 |
+| the mean | 0.6 | 0.752 | 0.622 | 0.611 | 0.662 |
+
+For comparison, v4 scores 0.752, 0.596 and 0.611.
+
+**The choice, by the rule above:** the mean of the two spaces, with closeness 0.4.
+- The plan weights are the same as v5's: every training word is known, so nothing is borrowed while learning.
+- `plan_lessons_v6.json`, sha256 `20916dba7f1e4268…`.
+
+**Expectation, written before the run.**
+- The gains over v4 in development are small: +0.06 on the retest set, none on the new-words set, none on the held-out
+  training wordings.
+- So rule 1 (+0.10) and rule 2 (+0.05 over v5) may well not be met.
+
+(The development run was cut by a container restart after the first four rows. The other six were rerun with the same
+code; the four finished rows were kept.)
