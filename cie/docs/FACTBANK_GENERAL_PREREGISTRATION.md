@@ -101,3 +101,9 @@ The mean is the mean of the three groups.
 The only choices left to development, made from this list and recorded before the run:
 - **How the two word spaces combine:** general English only, the higher of the two similarities, or their mean.
 - **How close a known word must be to lend its meaning:** 0.4, 0.5 or 0.6.
+
+**How the choice is made** (added before any development result was seen):
+- Among the 9 allowed choices, take the one with the highest mean of three development scores: one training wording held
+  out at a time, the retest set, and the new-words set.
+- Ties go to the higher closeness, then to "general English only" before "the higher" before "the mean".
+- A choice that lowers the training score by more than 0.03 is not allowed.

@@ -76,15 +76,19 @@ class Planner:
     came or answers with only what it started from or passed through, and "one value" needs every entity reached to agree on it.
     ``"v3"`` is the planner as first tested."""
 
-    def __init__(self, bank, rules: str = "v3", lexicon=None, known: list[str] | None = None):
+    def __init__(self, bank, rules: str = "v3", lexicon=None, known: list[str] | None = None, general=None, combine: str = "company",
+                 floor: float = 0.5):
         self.b = bank
         self.rules = rules
         self.lex = lexicon  # v5: learned word meanings (cie.factbank.lexicon.Lexicon)
         self.known = sorted(known or [])  # the words the training questions used
+        self.general = general  # v6: word meanings counted over general English (a Lexicon with no value kinds)
+        self.combine = combine  # v6: how a lender's closeness is read: "company", "general", "max" or "mean" of the two spaces
+        self.floor = floor  # how close a known word must be to lend its meaning
         self._facts: dict[str, list] = {}
         self._expanded: dict[frozenset, dict[str, float]] = {}
 
-    def enrich(self, ws: set[str], plain: set[str], floor: float = 0.5, type_floor: float = 0.1) -> dict[str, float]:
+    def enrich(self, ws: set[str], plain: set[str], floor: float | None = None, type_floor: float = 0.1) -> dict[str, float]:
         """v5: the question's words (weight 1), plus for each plain word the kinds of value it goes with ("zzwhen" for a
         word about dates), and, for a word no training question used, the known words and field-name words nearest it in
         meaning."""
@@ -99,10 +103,28 @@ class Planner:
                     if sc >= type_floor:
                         out["zz" + t] = max(out.get("zz" + t, 0.0), sc)
                 if w not in known:
-                    for n, sim in self.lex.space.neighbours(w, lenders, 3, floor):
+                    for n, sim in self.lenders(w, lenders, 3, self.floor if floor is None else floor):
                         out[n] = max(out.get(n, 0.0), sim)
             self._expanded[key] = out
         return self._expanded[key]
+
+    def lenders(self, w: str, among: list[str], k: int, floor: float) -> list[tuple[str, float]]:
+        """The known words nearest ``w``, by the company's word space, general English's (v6), or both."""
+        if self.general is None or self.combine == "company":
+            return self.lex.space.neighbours(w, among, k, floor)
+        if self.combine == "general":
+            return self.general.space.neighbours(w, among, k, floor)
+        sc = []
+        for n in among:
+            if n == w:
+                continue
+            a = self.lex.space.sim(w, n) if w in self.lex.space.ix and n in self.lex.space.ix else None
+            b = self.general.space.sim(w, n) if w in self.general.space.ix and n in self.general.space.ix else None
+            have = [x for x in (a, b) if x is not None]
+            if have:
+                sc.append((n, max(have) if self.combine == "max" else sum(have) / len(have)))
+        sc.sort(key=lambda x: -x[1])
+        return [(n, v) for n, v in sc[:k] if v >= floor]
 
     def field_words(self) -> set[str]:
         """The words of the bank's own field and relation names (``due_date`` gives "due" and "date"): a new word may borrow
@@ -374,16 +396,22 @@ class PlanLessons:
     rules: str = "v3"
     lexicon: str = ""  # v5: the learned word meanings (a cie.factbank.lexicon file); empty before v5
     known_words: list[str] = dc_field(default_factory=list)  # v5: the training questions' plain words, which lend their meaning
+    general_lexicon: str = ""  # v6: word meanings counted over general English; empty before v6
+    combine: str = "company"  # v6: how the two word spaces combine
+    floor: float = 0.5  # how close a known word must be to lend its meaning
 
     def known(self) -> list[str]:
         return list(self.known_words)
 
-    def planner(self, bank, lexicon=None) -> Planner:
-        if self.lexicon and lexicon is None:
-            from cie.factbank.lexicon import Lexicon
+    def planner(self, bank, lexicon=None, general=None) -> Planner:
+        from cie.factbank.lexicon import Lexicon
 
+        if self.lexicon and lexicon is None:
             lexicon = Lexicon.load(self.lexicon)
-        return Planner(bank, self.rules, lexicon if self.lexicon else None, self.known())
+        if self.general_lexicon and general is None:
+            general = Lexicon.load(self.general_lexicon)
+        return Planner(bank, self.rules, lexicon if self.lexicon else None, self.known(), general if self.general_lexicon else None,
+                       self.combine, self.floor)
 
     def assocs(self) -> tuple[Assoc, Assoc, Lift | None]:
         return (Assoc.from_json(self.rel_assoc), Assoc.from_json(self.agg_assoc),
@@ -420,10 +448,12 @@ def matches(expected: dict[str, Any], answer: str) -> bool:
 
 
 def learn_plans(bank, questions: list[dict[str, Any]], log=print, features: list[str] = FEATURES_V4, rules: str = "v4",
-                lexicon=None, lexicon_path: str = "") -> PlanLessons:
+                lexicon=None, lexicon_path: str = "", general=None, general_path: str = "", combine: str = "company",
+                floor: float = 0.5) -> PlanLessons:
     """Fit the plan weights on questions with answers. Associations leave each question's own share out. With a lexicon (v5),
-    question words also reach the known words nearest them."""
-    pl = Planner(bank, rules, lexicon)
+    question words also reach the known words nearest them; with a general-English lexicon too (v6), nearness can be read
+    from general English."""
+    pl = Planner(bank, rules, lexicon, None, general, combine, floor)
     pl.known = sorted({w for q in questions for w in pl.plain_words(q["question"])})
     per_q = []
     rel_total, agg_total, kind_total = Assoc(), Assoc(), Lift()
@@ -460,7 +490,8 @@ def learn_plans(bank, questions: list[dict[str, Any]], log=print, features: list
                        "questions_with_a_right_plan": sum(1 for qq, cands, *_rest in per_q
                                                           if any(matches(qq["expected"], m["answer"]) for _p, m in cands))},
                       list(features), kind_total.to_json() if use_kind else {}, rules, lexicon_path if lexicon is not None else "",
-                      pl.known if lexicon is not None else [])
+                      pl.known if lexicon is not None else [], general_path if general is not None else "",
+                      combine if general is not None else "company", floor)
     log("\n".join(les.describe()))
     return les
 

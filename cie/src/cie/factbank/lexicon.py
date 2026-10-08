@@ -27,6 +27,7 @@ import json
 import random
 import re
 import time
+from array import array
 from collections import Counter, defaultdict
 from collections.abc import Iterable
 from functools import lru_cache
@@ -133,13 +134,16 @@ def build_space(sentences: Iterable[list[str]], min_count: int = 10, max_vocab: 
 
     # one pass: every word gets a provisional id; then the vocabulary keeps the frequent ones
     first: dict[str, int] = {}
-    ids: list[int] = []
+    ids = array("i")  # 4 bytes a word: hundreds of millions fit
+    gap = array("i", [-1] * window)  # sentences do not touch
     n_sent = 0
     for s in sentences:
         n_sent += 1
-        ids.extend(first.setdefault(t, len(first)) for t in s)
-        ids.extend([-1] * window)  # sentences do not touch
-    raw = np.array(ids, dtype=np.int32)
+        ids.extend([first.setdefault(t, len(first)) for t in s])
+        ids.extend(gap)
+        if log is not None and n_sent % 5_000_000 == 0:
+            log(f"    {n_sent:,} sentences, {len(ids):,} words so far")
+    raw = np.frombuffer(ids, dtype=np.int32).copy()
     del ids
     counts = np.bincount(raw[raw >= 0], minlength=len(first))
     words_by_id = list(first)
@@ -152,14 +156,13 @@ def build_space(sentences: Iterable[list[str]], min_count: int = 10, max_vocab: 
     V = len(vocab)
     log(f"  word space: {n_sent:,} sentences, {int((arr >= 0).sum()):,} tokens, {V:,} words")
     C = sparse.csr_matrix((V, V), dtype=np.float32)
+    step = 50_000_000
     for d in range(1, window + 1):
-        a, b = arr[:-d], arr[d:]
-        m = (a >= 0) & (b >= 0)
         w = np.float32((window - d + 1) / window)
-        a, b = a[m], b[m]
-        for lo in range(0, len(a), 20_000_000):
-            C = C + sparse.coo_matrix((np.full(min(len(a) - lo, 20_000_000), w, np.float32), (a[lo:lo + 20_000_000], b[lo:lo + 20_000_000])),
-                                      shape=(V, V)).tocsr()
+        for lo in range(0, len(arr) - d, step):
+            a, b = arr[lo:min(lo + step, len(arr) - d)], arr[lo + d:min(lo + step, len(arr) - d) + d]
+            m = (a >= 0) & (b >= 0)
+            C = C + sparse.coo_matrix((np.full(int(m.sum()), w, np.float32), (a[m], b[m])), shape=(V, V)).tocsr()
     C = (C + C.T).tocsr()
     total = float(C.sum())
     row = np.asarray(C.sum(axis=1)).ravel()
@@ -294,6 +297,61 @@ def typing(sentences: list[str], people: set[str], statuses: set[str], window: i
     return ty
 
 
+# ---------------------------------------------------------------------------------------------------------- general English
+# docs/FACTBANK_GENERAL_PREREGISTRATION.md: two public bodies of ordinary English, counted the same way as the company's text
+WIKITEXT = [f"https://huggingface.co/datasets/Salesforce/wikitext/resolve/main/wikitext-103-raw-v1/train-0000{i}-of-00002.parquet"
+            for i in (0, 1)]
+C4 = [f"https://huggingface.co/datasets/allenai/c4/resolve/main/en/c4-train.0000{i}-of-01024.json.gz" for i in (0, 1)]
+HEADING = re.compile(r"^\s*=+ .* =+\s*$")
+
+
+def general_sentences(tmp: Path, log=print, wikitext: list[str] = WIKITEXT, c4: list[str] = C4):
+    """Sentences of WikiText-103 (downloaded one file at a time, read, deleted) and of C4 (streamed, never stored)."""
+    import gzip
+    import urllib.request
+
+    import pyarrow.parquet as pq
+
+    tmp.mkdir(parents=True, exist_ok=True)
+    for url in wikitext:
+        path = tmp / "wikitext.parquet"
+        with urllib.request.urlopen(url, timeout=120) as r, open(path, "wb") as f:
+            while chunk := r.read(1 << 22):
+                f.write(chunk)
+        n = 0
+        for batch in pq.ParquetFile(path).iter_batches(columns=["text"], batch_size=50_000):
+            for line in batch.column(0).to_pylist():
+                if line and not HEADING.match(line):
+                    for s in SPLIT.split(line.replace(" @-@ ", "-").replace(" @,@ ", ",").replace(" @.@ ", ".")):
+                        if s.count(" ") >= 2:
+                            n += 1
+                            yield s
+        path.unlink()
+        log(f"  {url.rsplit('/', 1)[-1]}: {n:,} sentences")
+    for url in c4:
+        n = 0
+        with urllib.request.urlopen(url, timeout=120) as r, gzip.GzipFile(fileobj=r) as g:
+            for line in g:
+                text = json.loads(line).get("text") or ""
+                for s in SPLIT.split(text):
+                    if s.count(" ") >= 2:
+                        n += 1
+                        yield s
+        log(f"  {url.rsplit('/', 1)[-1]}: {n:,} sentences")
+
+
+def build_general(out: Path, tmp: Path, window: int = 2, dim: int = 200, max_vocab: int = 80_000, min_count: int = 10, log=print,
+                  wikitext: list[str] = WIKITEXT, c4: list[str] = C4) -> dict[str, Any]:
+    """The general-English word space, saved as a lexicon with no value kinds."""
+    t0 = time.perf_counter()
+    space = build_space((tokens(s) for s in general_sentences(tmp, log, wikitext, c4)), min_count=min_count, max_vocab=max_vocab,
+                        window=window, dim=dim, log=log)
+    info = {"corpus": "WikiText-103 train + C4 en train 00000-00001", "sources": wikitext + c4, "window": window, "dim": dim,
+            "words": len(space.vocab), "seconds": round(time.perf_counter() - t0, 1)}
+    Lexicon(space, None, info).save(out)
+    return info
+
+
 # ---------------------------------------------------------------------------------------------------------------- the lexicon
 class Lexicon:
     def __init__(self, space: WordSpace, types: Anchors | None = None, info: dict[str, Any] | None = None):
@@ -358,7 +416,7 @@ def build(index_path: Path, root: Path, exclude_dirs: list[Path], out: Path, n_d
 
 def main(argv: list[str] | None = None) -> Any:
     ap = argparse.ArgumentParser(prog="python -m cie.factbank.lexicon")
-    ap.add_argument("cmd", choices=["build", "near"])
+    ap.add_argument("cmd", choices=["build", "general", "near"])
     ap.add_argument("--index")
     ap.add_argument("--root")
     ap.add_argument("--exclude", nargs="*", default=[])
@@ -367,6 +425,10 @@ def main(argv: list[str] | None = None) -> Any:
     ap.add_argument("--window", type=int, default=4)
     ap.add_argument("--words", nargs="*", default=[])
     a = ap.parse_args(argv)
+    if a.cmd == "general":
+        out = build_general(Path(a.out), Path(a.out).parent / "general_tmp", window=a.window)
+        print(json.dumps(out, indent=1))
+        return out
     if a.cmd == "build":
         out = build(Path(a.index), Path(a.root), [Path(x) for x in a.exclude], Path(a.out), a.docs, window=a.window)
         print(json.dumps(out, indent=1))

@@ -389,7 +389,8 @@ def build(docs_path: Path, index: Path, root: str, train_dir: Path, test_dir: Pa
 
 
 # ---------------------------------------------------------------------------------------------- training and asking
-def train(work: Path, single: Path, out: Path, rules: str = "v4", lexicon: Path | None = None) -> dict[str, Any]:
+def train(work: Path, single: Path, out: Path, rules: str = "v4", lexicon: Path | None = None, general: Path | None = None,
+          combine: str = "company", floor: float = 0.5) -> dict[str, Any]:
     """``rules="v3"`` reproduces the plan lessons of the first test; ``"v4"`` is the planner revised after it. With a lexicon
     (``cie.factbank.lexicon``), v4 plus learned word meanings: v5."""
     from cie.eval.factbank_test import build as build_bank
@@ -399,14 +400,14 @@ def train(work: Path, single: Path, out: Path, rules: str = "v4", lexicon: Path 
 
     if not (work / "factbank_v2.sqlite").exists():
         build_bank(work, "factbank_v2", text_facts=True)
-    lex = None
-    if lexicon is not None:
-        from cie.factbank.lexicon import Lexicon
+    from cie.factbank.lexicon import Lexicon
 
-        lex = Lexicon.load(lexicon)
+    lex = Lexicon.load(lexicon) if lexicon is not None else None
+    gen = Lexicon.load(general) if general is not None else None
     les = learn_plans(TrainedBank(work / "factbank_v2.sqlite", Lessons.load(single)), _jsonl(work / "questions.jsonl"),
                       features=(FEATURES_V5 if lex is not None else FEATURES_V4) if rules == "v4" else FEATURES, rules=rules,
-                      lexicon=lex, lexicon_path=str(lexicon.resolve()) if lexicon is not None else "")
+                      lexicon=lex, lexicon_path=str(lexicon.resolve()) if lexicon is not None else "", general=gen,
+                      general_path=str(general.resolve()) if general is not None else "", combine=combine, floor=floor)
     les.save(out)
     return {"plan_lessons": str(out), "describe": les.describe(), "trained_on": les.trained_on}
 
@@ -465,7 +466,8 @@ def measure(work: Path) -> dict[str, Any]:
     qs = _jsonl(work / "questions.jsonl")
     ev = {r["id"]: r for r in _jsonl(work / "evidence.jsonl")} if (work / "evidence.jsonl").exists() else {}
     fbs = {label: {r["id"]: r for r in _jsonl(work / f"{name}.jsonl")}
-           for label, name in (("v1", "factbank"), ("v2", "factbank_v2"), ("v3", "factbank_v3"), ("v4", "factbank_v4"), ("v5", "factbank_v5"))
+           for label, name in (("v1", "factbank"), ("v2", "factbank_v2"), ("v3", "factbank_v3"), ("v4", "factbank_v4"), ("v5", "factbank_v5"),
+                               ("v6", "factbank_v6"))
            if (work / f"{name}.jsonl").exists()}
     rows = []
     for q in qs:
@@ -605,6 +607,9 @@ def main(argv: list[str] | None = None) -> Any:
                     help="fresh: 13 made the retest's set, 17 the new-words test's set, 29 the general-English test's set")
     ap.add_argument("--wordings", default="retest", choices=sorted(WORDINGS), help="fresh: which wordings")
     ap.add_argument("--lexicon", help="train: learned word meanings (cie.factbank.lexicon); makes v5")
+    ap.add_argument("--general", help="train: word meanings counted over general English; with --lexicon, makes v6")
+    ap.add_argument("--combine", default="company", choices=["company", "general", "max", "mean"], help="train: how the two spaces combine")
+    ap.add_argument("--floor", type=float, default=0.5, help="train: how close a known word must be to lend its meaning")
     ap.add_argument("--name", default="factbank_v3", help="ask: the answers' file name (factbank_v3 or factbank_v4)")
     ap.add_argument("--exclude", nargs="*", default=[], help="fresh: work folders whose documents the new set must not use")
     ap.add_argument("--out")
@@ -615,7 +620,8 @@ def main(argv: list[str] | None = None) -> Any:
     elif a.cmd == "fresh":
         out = build_fresh(Path(a.index), a.root, [Path(x) for x in a.exclude], Path(a.out), a.seed, a.wordings)
     elif a.cmd == "train":
-        out = train(Path(a.work), Path(a.single), Path(a.plans), a.rules, Path(a.lexicon) if a.lexicon else None)
+        out = train(Path(a.work), Path(a.single), Path(a.plans), a.rules, Path(a.lexicon) if a.lexicon else None,
+                    Path(a.general) if a.general else None, a.combine, a.floor)
     elif a.cmd == "ask":
         out = ask_plans(Path(a.work), Path(a.single), Path(a.plans), name=a.name)
     elif a.cmd == "words":
