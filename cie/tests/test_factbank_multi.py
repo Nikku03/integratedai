@@ -208,3 +208,30 @@ def test_v6_reads_nearness_from_general_english_too(tmp_path):
     assert dict(by["mean"])["ticket"] == dict(by["company"])["ticket"], "a word one space lacks is read from the other alone"
     les = P.PlanLessons([0.0] * len(P.FEATURES_V4), {}, {}, {}, list(P.FEATURES_V4))
     assert (les.general_lexicon, les.combine, les.floor) == ("", "company", 0.5), "lessons saved before v6 read as v5"
+
+
+def test_changed_information_renames_people_only(tmp_path):
+    """Found after the tests had run: a status such as "In Progress" was renamed like a person, and "PM: Jordan Lee" apart
+    from "Jordan Lee"."""
+    from cie.eval import factbank_split as SP
+
+    src = tmp_path / "bench" / "generated_data" / "sources" / "linear"
+    src.mkdir(parents=True)
+    (src / "l11.json").write_text(json.dumps({"key": "ENG-11", "assignee": "Jordan Lee", "status": "In Progress", "due_date": "2026-03-20"}))
+    (src / "l12.json").write_text(json.dumps({"key": "ENG-12", "assignee": "Omar Singh", "reviewers": ["PM: Jordan Lee"], "status": "Done"}))
+    work = tmp_path / "w"
+    work.mkdir()
+    (work / "haystack.json").write_text(json.dumps({"root": str(tmp_path / "bench"), "dsids": ["l11", "l12"]}))
+    (work / "index.json").write_text(json.dumps({"index": {"l11": "linear/l11.json", "l12": "linear/l12.json"}}))
+    _write_jsonl(work / "questions.jsonl", [{"id": "a", "question": "What state is ENG-11 in?", "expected": {"value": "In Progress"}},
+                                            {"id": "b", "question": "Who has ENG-11?", "expected": {"value": "Jordan Lee"}}])
+    SP.changed(work, tmp_path / "c")
+    qs = {q["id"]: q for q in _jsonl(tmp_path / "c" / "questions.jsonl")}
+    names = json.loads((tmp_path / "c" / "renamed.json").read_text())
+    assert qs["a"]["expected"] == {"value": "In Progress"} and "In Progress" not in names, "a status is not a person"
+    assert set(names) == {"Jordan Lee", "Omar Singh"}
+    doc = json.loads((tmp_path / "c" / "erb_changed" / "generated_data" / "sources" / "linear" / "l12.json").read_text())
+    assert doc["reviewers"] == [f"PM: {names['Jordan Lee']}"], "one person keeps one new name, label and all"
+    assert qs["b"]["expected"] == {"value": names["Jordan Lee"]}
+    SP.changed(work, tmp_path / "old", legacy=True)
+    assert "In Progress" in json.loads((tmp_path / "old" / "renamed.json").read_text()), "the first version, kept for reproducing"

@@ -151,7 +151,16 @@ def _walk(v: Any, fn) -> Any:
     return v
 
 
-def changed(work: Path, out: Path, seed: int = SEED) -> dict[str, Any]:
+NON_PERSON_FIELDS = ("status", "state", "stage", "priority", "severity", "issue_type", "type", "customer_impact")
+
+
+def changed(work: Path, out: Path, seed: int = SEED, legacy: bool = False) -> dict[str, Any]:
+    """The same set with every person renamed and every ISO date moved 23 days later.
+
+    Found after the tests had run (docs/FACTBANK_GENERAL_RESULTS.md): the first version took any two-word value that looks
+    like a name for a person, so a status such as "In Progress" was renamed like one, and a labelled name such as
+    "PM: Jordan Lee" was renamed as a whole, apart from "Jordan Lee". Now a value of a status-like field is never a person,
+    and a label before a name is dropped. ``legacy=True`` rebuilds the first version's copies."""
     from cie.ingest.sources import PEOPLE_FIELDS, as_list, person_name
 
     hay = json.loads((work / "haystack.json").read_text())
@@ -164,13 +173,18 @@ def changed(work: Path, out: Path, seed: int = SEED) -> dict[str, Any]:
         for f in PEOPLE_FIELDS:
             for item in as_list(raw.get(f)):
                 n = person_name(item)
+                if n and not legacy:
+                    n = person_name(n.rsplit(":", 1)[-1].strip())
                 if n:
                     people.add(n)
+    not_people = set() if legacy else {str(raw.get(f)).strip() for raw in raws.values() for f in NON_PERSON_FIELDS
+                                       if isinstance(raw.get(f), str)}
     qs = _jsonl(work / "questions.jsonl")
     for q in qs:
         v = (q.get("expected") or {}).get("value")
-        if v and person_name(v):
+        if v and person_name(v) and v not in not_people:
             people.add(person_name(v))
+    people -= not_people
     rng = random.Random(seed)
     fresh = [f"{a} {b}" for a in FIRST for b in LAST]
     rng.shuffle(fresh)
@@ -198,7 +212,7 @@ def changed(work: Path, out: Path, seed: int = SEED) -> dict[str, Any]:
             q["pieces"] = _walk(q["pieces"], fn)
     _write_jsonl(out / "questions.jsonl", qs)
     (out / "renamed.json").write_text(json.dumps(names, indent=1))
-    return {"documents": len(raws), "people_renamed": len(names), "date_shift_days": SHIFT_DAYS}
+    return {"documents": len(raws), "people_renamed": len(names), "date_shift_days": SHIFT_DAYS, "legacy": legacy}
 
 
 def main(argv: list[str] | None = None) -> Any:
@@ -208,8 +222,9 @@ def main(argv: list[str] | None = None) -> Any:
     ap.add_argument("--from", dest="src")
     ap.add_argument("--train")
     ap.add_argument("--out")
+    ap.add_argument("--legacy", action="store_true", help="changed: the first version, which also renamed statuses like 'In Progress'")
     a = ap.parse_args(argv)
-    out = testset(Path(a.src), Path(a.train), Path(a.work)) if a.cmd == "testset" else changed(Path(a.work), Path(a.out))
+    out = testset(Path(a.src), Path(a.train), Path(a.work)) if a.cmd == "testset" else changed(Path(a.work), Path(a.out), legacy=a.legacy)
     print(json.dumps(out, indent=1))
     return out
 
