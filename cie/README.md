@@ -76,6 +76,15 @@ were made over 321 million words of Wikipedia and web text.
 - **The review:** a review of the evaluation code found and fixed five problems. One was a changed-information copy that
   renamed "In Progress" as if it were a person. None changes a decision.
 
+**A language model for the English, the fact bank for the facts** ([`docs/FACTBANK_LLM_RESULTS.md`](docs/FACTBANK_LLM_RESULTS.md)).
+Two ways were tested on 50 new blind questions:
+- **A local 3B model rewrites each question** (Llama 3.2 3B): 0.573. Its rewrites were exactly right only a quarter of
+  the time.
+- **A glossary of everyday phrases, written once by a large model,** with no model when questions are asked: 0.601.
+
+The fact bank alone scores 0.586, so neither passed. The glossary helped clearly on earlier sets (0.90 against 0.73).
+The bottleneck is now the plan learner: it learned from 48 questions and misses kinds of question it was never taught.
+
 ## Brain-wired reasoning neurons (research)
 
 `cie.neuro` wires the reasoning engine's spiking neurons like a piece of Blue Brain's cortex model (directed cliques of
