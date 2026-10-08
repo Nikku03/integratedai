@@ -168,7 +168,32 @@ BLIND = {
     ("action_owner_issues", ""): ["whoever got \"{t}\" in the \"{m}\" meeting, what linear tickets do they have assigned? send me the keys",
         "In the \"{m}\" meeting, someone picked up the action item \"{t}\". Could you send me the keys of the Linear tickets assigned to that person? Thanks!"],
 }
-WORDINGS = {"retest": RETEST, "words": NEW_WORDS, "blind": BLIND}
+# The language-model test (docs/FACTBANK_LLM_PREREGISTRATION.md): a sixth pair of wordings, written by three new independent
+# writers in new roles, blind to the method and the training questions (docs/benchmarks/factbank_llm/writers.json); same
+# selection rule as BLIND.
+BLIND2 = {
+    ("pr_issue", "assignee"): ["Hey, PR #{n} is tied to a Linear ticket, right? Who's got that ticket on their plate?",
+        "Sorry, still learning my way around. PR #{n} is tied to a Linear ticket, I think? Do you know who that ticket is assigned to?"],
+    ("pr_issue", "due_date"): ["Quick one before my call: the Linear ticket behind PR #{n}, when's that supposed to be done by?",
+        "Hi, quick question. Pull request #{n} has a Linear ticket connected to it, right? When is that ticket supposed to be done by?"],
+    ("pr_issue", "status"): ["Where are we on the Linear ticket connected to pull request #{n}? What state is it sitting in right now?",
+        "Sorry if this is obvious, but where does the Linear ticket behind PR #{n} stand right now? Like, what state is it in?"],
+    ("issue_pr_author", "author"): ["There's a PR that references {k} in Linear. Who put that PR up?",
+        "Hi! There's a pull request that mentions the Linear ticket {k}. Could you tell me who put up that PR?"],
+    ("ticket_link", "status"): ["{k} is linked to another ticket. Can you check where that other one stands right now, status-wise?",
+        "I noticed ticket {k} points to another ticket. Do you know what state that other one is currently in?"],
+    ("ticket_link", "assignee"): ["The ticket that {k} is linked to, who owns that one?",
+        "Sorry, I'm new here. Ticket {k} seems connected to a different ticket. Who's that other one assigned to?"],
+    ("person_count", ""): ["How many Linear tickets does {p} have assigned right now? Just need a number.",
+        "Hi, just trying to get a sense of workloads. Roughly how many Linear tickets does {p} have on their plate right now?"],
+    ("person_first", ""): ["Of everything assigned to {p} in Linear, which ticket is due first? Send me the ticket key.",
+        "Out of all the Linear tickets assigned to {p}, which one is due soonest? Could you give me the ticket key for it?"],
+    ("compare_two", ""): ["Between {a} and {b}, which one has the earlier deadline?",
+        "Sorry, quick one. Between tickets {a} and {b}, which one has the earlier deadline?"],
+    ("action_owner_issues", ""): ["Whoever picked up \"{t}\" in the \"{m}\" meeting, can you pull the keys for the Linear tickets assigned to them?",
+        "In the \"{m}\" meeting, someone got the action item \"{t}\". Could you tell me which Linear tickets that person has, by their keys?"],
+}
+WORDINGS = {"retest": RETEST, "words": NEW_WORDS, "blind": BLIND, "blind2": BLIND2}
 FRESH_SEED = 13
 POOL_DOCS = 20_000
 LINKED_SOURCES = ("linear", "github", "jira", "fireflies")
@@ -390,7 +415,7 @@ def build(docs_path: Path, index: Path, root: str, train_dir: Path, test_dir: Pa
 
 # ---------------------------------------------------------------------------------------------- training and asking
 def train(work: Path, single: Path, out: Path, rules: str = "v4", lexicon: Path | None = None, general: Path | None = None,
-          combine: str = "company", floor: float = 0.5) -> dict[str, Any]:
+          combine: str = "company", floor: float = 0.5, glossary: Path | None = None) -> dict[str, Any]:
     """``rules="v3"`` reproduces the plan lessons of the first test; ``"v4"`` is the planner revised after it. With a lexicon
     (``cie.factbank.lexicon``), v4 plus learned word meanings: v5."""
     from cie.eval.factbank_test import build as build_bank
@@ -407,13 +432,17 @@ def train(work: Path, single: Path, out: Path, rules: str = "v4", lexicon: Path 
     les = learn_plans(TrainedBank(work / "factbank_v2.sqlite", Lessons.load(single)), _jsonl(work / "questions.jsonl"),
                       features=(FEATURES_V5 if lex is not None else FEATURES_V4) if rules == "v4" else FEATURES, rules=rules,
                       lexicon=lex, lexicon_path=str(lexicon.resolve()) if lexicon is not None else "", general=gen,
-                      general_path=str(general.resolve()) if general is not None else "", combine=combine, floor=floor)
+                      general_path=str(general.resolve()) if general is not None else "", combine=combine, floor=floor,
+                      glossary_path=str(glossary.resolve()) if glossary is not None else "")
     les.save(out)
     return {"plan_lessons": str(out), "describe": les.describe(), "trained_on": les.trained_on}
 
 
-def ask_plans(work: Path, single: Path, plan_lessons: Path, budget: int = 24_000, name: str = "factbank_v3") -> dict[str, Any]:
-    """v3 (or v4): the best plan's answer; its evidence starts with every entity each hop reached and their main fields."""
+def ask_plans(work: Path, single: Path, plan_lessons: Path, budget: int = 24_000, name: str = "factbank_v3",
+              reader_cache: Path | None = None) -> dict[str, Any]:
+    """v3 to v8: the best plan's answer; its evidence starts with every entity each hop reached and their main fields. With
+    ``reader_cache`` (v7), a small language model first rewrites the question as the closest standard question
+    (cie.factbank.reader); the bank answers the rewrite."""
     import time
 
     from cie.factbank import plans
@@ -423,10 +452,16 @@ def ask_plans(work: Path, single: Path, plan_lessons: Path, budget: int = 24_000
     tb = TrainedBank(work / "factbank_v2.sqlite", Lessons.load(single))
     pl = plans.PlanLessons.load(plan_lessons)
     planner = pl.planner(tb)
+    reader = None
+    if reader_cache is not None:
+        from cie.factbank.reader import Reader, people_named
+
+        reader = Reader(reader_cache)
     rows = []
     for q in _jsonl(work / "questions.jsonl"):
         t = time.perf_counter()
-        ans, best, journal, top = plans.answer(tb, pl, q["question"], planner)
+        read = reader.read(q["question"], people_named(tb, q["question"])) if reader is not None else None
+        ans, best, journal, top = plans.answer(tb, pl, read["asked"] if read else q["question"], planner)
         lines = []
         if best is not None:
             lines.append("Plan: " + best.describe(tb.names))
@@ -439,7 +474,7 @@ def ask_plans(work: Path, single: Path, plan_lessons: Path, budget: int = 24_000
         head = "\n".join(lines)
         rest = tb.ask(q["question"], budget=max(0, budget - len(head) - 2)).evidence
         rows.append({"id": q["id"], "answer": ans, "reason": best.describe(tb.names) if best else "", "evidence": (head + "\n\n" + rest)[:budget],
-                     "ms": round((time.perf_counter() - t) * 1000, 2), "journal": journal})
+                     "ms": round((time.perf_counter() - t) * 1000, 2), "journal": journal, **({"read": read} if read else {})})
     _write_jsonl(work / f"{name}.jsonl", rows)
     return {"questions": len(rows), "written": f"{name}.jsonl"}
 
@@ -482,7 +517,7 @@ def measure(work: Path) -> dict[str, Any]:
     ev = {r["id"]: r for r in _jsonl(work / "evidence.jsonl")} if (work / "evidence.jsonl").exists() else {}
     fbs = {label: {r["id"]: r for r in _jsonl(work / f"{name}.jsonl")}
            for label, name in (("v1", "factbank"), ("v2", "factbank_v2"), ("v3", "factbank_v3"), ("v4", "factbank_v4"), ("v5", "factbank_v5"),
-                               ("v6", "factbank_v6"))
+                               ("v6", "factbank_v6"), ("v7", "factbank_v7"), ("v8", "factbank_v8"))
            if (work / f"{name}.jsonl").exists()}
     rows = []
     for q in qs:
@@ -640,12 +675,14 @@ def main(argv: list[str] | None = None) -> Any:
     ap.add_argument("--plans", help="the plan lessons (plan_lessons.json)")
     ap.add_argument("--rules", default="v4", choices=["v3", "v4"], help="train: the planner as first tested (v3) or as revised (v4)")
     ap.add_argument("--seed", type=int, default=FRESH_SEED,
-                    help="fresh: 13 made the retest's set, 17 the new-words test's set, 29 the general-English test's set")
+                    help="fresh: 13 made the retest's set, 17 the new-words test's, 29 the general-English test's, 31 the language-model test's")
     ap.add_argument("--wordings", default="retest", choices=sorted(WORDINGS), help="fresh: which wordings")
     ap.add_argument("--lexicon", help="train: learned word meanings (cie.factbank.lexicon); makes v5")
     ap.add_argument("--general", help="train: word meanings counted over general English; with --lexicon, makes v6")
     ap.add_argument("--combine", default="company", choices=["company", "general", "max", "mean"], help="train: how the two spaces combine")
     ap.add_argument("--floor", type=float, default=0.5, help="train: how close a known word must be to lend its meaning")
+    ap.add_argument("--glossary", help="train: everyday phrases written once by a large language model; makes v8")
+    ap.add_argument("--reader", help="ask: the cache file of a small language model's rewrites; makes v7 (needs Ollama for new ones)")
     ap.add_argument("--name", default="factbank_v3", help="ask: the answers' file name (factbank_v3 or factbank_v4)")
     ap.add_argument("--exclude", nargs="*", default=[], help="fresh: work folders whose documents the new set must not use")
     ap.add_argument("--out")
@@ -657,9 +694,9 @@ def main(argv: list[str] | None = None) -> Any:
         out = build_fresh(Path(a.index), a.root, [Path(x) for x in a.exclude], Path(a.out), a.seed, a.wordings)
     elif a.cmd == "train":
         out = train(Path(a.work), Path(a.single), Path(a.plans), a.rules, Path(a.lexicon) if a.lexicon else None,
-                    Path(a.general) if a.general else None, a.combine, a.floor)
+                    Path(a.general) if a.general else None, a.combine, a.floor, Path(a.glossary) if a.glossary else None)
     elif a.cmd == "ask":
-        out = ask_plans(Path(a.work), Path(a.single), Path(a.plans), name=a.name)
+        out = ask_plans(Path(a.work), Path(a.single), Path(a.plans), name=a.name, reader_cache=Path(a.reader) if a.reader else None)
     elif a.cmd == "general":
         out = general_test(Path(a.work), Path(a.changed), Path(a.train), Path(a.retest))
         print(to_markdown(out, "New words from general English: the blind test set", ("training", "held_out", "changed", "retest")))

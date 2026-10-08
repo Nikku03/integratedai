@@ -85,6 +85,7 @@ class Planner:
         self.general = general  # v6: word meanings counted over general English (a Lexicon with no value kinds)
         self.combine = combine  # v6: how a lender's closeness is read: "company", "general", "max" or "mean" of the two spaces
         self.floor = floor  # how close a known word must be to lend its meaning
+        self.glossary = None  # v8: cie.factbank.reader.Glossary, everyday phrases written once by a large language model
         self._facts: dict[str, list] = {}
         self._expanded: dict[frozenset, dict[str, float]] = {}
 
@@ -126,6 +127,13 @@ class Planner:
                 sc.append((n, max(have) if self.combine == "max" else sum(have) / len(have)))
         sc.sort(key=lambda x: -x[1])
         return [(n, v) for n, v in sc[:k] if v >= floor]
+
+    def glossary_words(self, question: str) -> tuple[set[str], set[str]]:
+        if not hasattr(self, "_glossary_cache"):
+            self._glossary_cache: dict[str, tuple[set[str], set[str]]] = {}
+        if question not in self._glossary_cache:
+            self._glossary_cache[question] = self.glossary.words(question)
+        return self._glossary_cache[question]
 
     def field_words(self) -> set[str]:
         """The words of the bank's own field and relation names (``due_date`` gives "due" and "date"): a new word may borrow
@@ -290,9 +298,19 @@ class Planner:
         ans = norm(meta["answer"])
         in_q = bool(len(ans) >= 3 and re.search(r"(?<!\w)" + re.escape(ans) + r"(?!\w)", norm(question)))
         choice = self.offers_choice(question) if in_q else False
-        if self.lex is not None:  # v5: associations through the words' kinds of value and, for new words, the nearest known words
-            plain = self.plain_words(question)
-            qx, kx = self.enrich(qw, plain), self.enrich(question_words(question), plain)
+        if self.lex is not None or self.glossary is not None:
+            # v5/v6: associations through the words' kinds of value and, for new words, the nearest known words;
+            # v8: plus the standard words of the glossary phrases the question contains
+            kw = question_words(question)
+            if self.lex is not None:
+                plain = self.plain_words(question)
+                qx, kx = dict(self.enrich(qw, plain)), dict(self.enrich(kw, plain))
+            else:
+                qx, kx = dict.fromkeys(qw, 1.0), dict.fromkeys(kw, 1.0)
+            if self.glossary is not None:
+                gq, gk = self.glossary_words(question)
+                qx.update(dict.fromkeys(gq, 1.0))
+                kx.update(dict.fromkeys(gk, 1.0))
             rel = lambda t: weighted(rel_assoc, qx, t)  # noqa: E731
             overlap = lambda t: sum(qx.get(x, 0.0) for x in t) / max(1, len(t))  # noqa: E731 - a borrowed word overlaps as much as it is near
             agg = weighted(agg_assoc, qx, {plan.aggregate})
@@ -400,6 +418,7 @@ class PlanLessons:
     general_lexicon: str = ""  # v6: word meanings counted over general English; empty before v6
     combine: str = "company"  # v6: how the two word spaces combine
     floor: float = 0.5  # how close a known word must be to lend its meaning
+    glossary: str = ""  # v8: everyday phrases written once by a large language model (a JSON list); empty before v8
 
     def known(self) -> list[str]:
         return list(self.known_words)
@@ -411,8 +430,13 @@ class PlanLessons:
             lexicon = Lexicon.load(self.lexicon)
         if self.general_lexicon and general is None:
             general = Lexicon.load(self.general_lexicon)
-        return Planner(bank, self.rules, lexicon if self.lexicon else None, self.known(), general if self.general_lexicon else None,
-                       self.combine, self.floor)
+        pl = Planner(bank, self.rules, lexicon if self.lexicon else None, self.known(), general if self.general_lexicon else None,
+                     self.combine, self.floor)
+        if self.glossary:
+            from cie.factbank.reader import Glossary
+
+            pl.glossary = Glossary.load(self.glossary)
+        return pl
 
     def assocs(self) -> tuple[Assoc, Assoc, Lift | None]:
         return (Assoc.from_json(self.rel_assoc), Assoc.from_json(self.agg_assoc),
@@ -450,11 +474,15 @@ def matches(expected: dict[str, Any], answer: str) -> bool:
 
 def learn_plans(bank, questions: list[dict[str, Any]], log=print, features: list[str] = FEATURES_V4, rules: str = "v4",
                 lexicon=None, lexicon_path: str = "", general=None, general_path: str = "", combine: str = "company",
-                floor: float = 0.5) -> PlanLessons:
+                floor: float = 0.5, glossary_path: str = "") -> PlanLessons:
     """Fit the plan weights on questions with answers. Associations leave each question's own share out. With a lexicon (v5),
     question words also reach the known words nearest them; with a general-English lexicon too (v6), nearness can be read
     from general English."""
     pl = Planner(bank, rules, lexicon, None, general, combine, floor)
+    if glossary_path:
+        from cie.factbank.reader import Glossary
+
+        pl.glossary = Glossary.load(glossary_path)
     pl.known = sorted({w for q in questions for w in pl.plain_words(q["question"])})
     per_q = []
     rel_total, agg_total, kind_total = Assoc(), Assoc(), Lift()
@@ -465,6 +493,9 @@ def learn_plans(bank, questions: list[dict[str, Any]], log=print, features: list
         if lexicon is not None:  # v5: the words' kinds of value join them (all training words are known: nothing is borrowed)
             plain = pl.plain_words(q["question"])
             qw, kw = qw | set(pl.enrich(qw, plain)), kw | set(pl.enrich(kw, plain))
+        if pl.glossary is not None:  # v8: the glossary's standard words join them too
+            gq, gk = pl.glossary_words(q["question"])
+            qw, kw = qw | gq, kw | gk
         rt = set().union(*[set().union(*[tokens_of(r) for r in p.path], tokens_of(p.field) if p.field != "label" else set())
                            for p, _ in good]) if good else set()
         at = {p.aggregate for p, _ in good}
@@ -492,7 +523,7 @@ def learn_plans(bank, questions: list[dict[str, Any]], log=print, features: list
                                                           if any(matches(qq["expected"], m["answer"]) for _p, m in cands))},
                       list(features), kind_total.to_json() if use_kind else {}, rules, lexicon_path if lexicon is not None else "",
                       pl.known if lexicon is not None else [], general_path if general is not None else "",
-                      combine if general is not None else "company", floor)
+                      combine if general is not None else "company", floor, glossary_path)
     log("\n".join(les.describe()))
     return les
 

@@ -1,0 +1,1242 @@
+[
+ {
+  "phrase": "assigned to",
+  "kind": "field",
+  "target": "assignee"
+ },
+ {
+  "phrase": "assignee",
+  "kind": "field",
+  "target": "assignee"
+ },
+ {
+  "phrase": "assigned",
+  "kind": "field",
+  "target": "assignee"
+ },
+ {
+  "phrase": "who is working on",
+  "kind": "field",
+  "target": "assignee"
+ },
+ {
+  "phrase": "working on",
+  "kind": "field",
+  "target": "assignee"
+ },
+ {
+  "phrase": "on their plate",
+  "kind": "field",
+  "target": "assignee"
+ },
+ {
+  "phrase": "picked up",
+  "kind": "field",
+  "target": "assignee"
+ },
+ {
+  "phrase": "who picked up",
+  "kind": "field",
+  "target": "assignee"
+ },
+ {
+  "phrase": "who's handling",
+  "kind": "field",
+  "target": "assignee"
+ },
+ {
+  "phrase": "handling",
+  "kind": "field",
+  "target": "assignee"
+ },
+ {
+  "phrase": "in their queue",
+  "kind": "field",
+  "target": "assignee"
+ },
+ {
+  "phrase": "taken by",
+  "kind": "field",
+  "target": "assignee"
+ },
+ {
+  "phrase": "who's on it",
+  "kind": "field",
+  "target": "assignee"
+ },
+ {
+  "phrase": "tasked with",
+  "kind": "field",
+  "target": "assignee"
+ },
+ {
+  "phrase": "owns the ticket",
+  "kind": "field",
+  "target": "assignee"
+ },
+ {
+  "phrase": "grabbed",
+  "kind": "field",
+  "target": "assignee"
+ },
+ {
+  "phrase": "due",
+  "kind": "field",
+  "target": "due_date"
+ },
+ {
+  "phrase": "due date",
+  "kind": "field",
+  "target": "due_date"
+ },
+ {
+  "phrase": "deadline",
+  "kind": "field",
+  "target": "due_date"
+ },
+ {
+  "phrase": "due by",
+  "kind": "field",
+  "target": "due_date"
+ },
+ {
+  "phrase": "due on",
+  "kind": "field",
+  "target": "due_date"
+ },
+ {
+  "phrase": "when is it due",
+  "kind": "field",
+  "target": "due_date"
+ },
+ {
+  "phrase": "target date",
+  "kind": "field",
+  "target": "due_date"
+ },
+ {
+  "phrase": "eta",
+  "kind": "field",
+  "target": "due_date"
+ },
+ {
+  "phrase": "needs to be done",
+  "kind": "field",
+  "target": "due_date"
+ },
+ {
+  "phrase": "overdue",
+  "kind": "field",
+  "target": "due_date"
+ },
+ {
+  "phrase": "cutoff",
+  "kind": "field",
+  "target": "due_date"
+ },
+ {
+  "phrase": "expected by",
+  "kind": "field",
+  "target": "due_date"
+ },
+ {
+  "phrase": "finish by",
+  "kind": "field",
+  "target": "due_date"
+ },
+ {
+  "phrase": "deliver by",
+  "kind": "field",
+  "target": "due_date"
+ },
+ {
+  "phrase": "drop dead date",
+  "kind": "field",
+  "target": "due_date"
+ },
+ {
+  "phrase": "ship date",
+  "kind": "field",
+  "target": "due_date"
+ },
+ {
+  "phrase": "status",
+  "kind": "field",
+  "target": "status"
+ },
+ {
+  "phrase": "state",
+  "kind": "field",
+  "target": "status"
+ },
+ {
+  "phrase": "where is it at",
+  "kind": "field",
+  "target": "status"
+ },
+ {
+  "phrase": "where things stand",
+  "kind": "field",
+  "target": "status"
+ },
+ {
+  "phrase": "in progress",
+  "kind": "field",
+  "target": "status"
+ },
+ {
+  "phrase": "done",
+  "kind": "field",
+  "target": "status"
+ },
+ {
+  "phrase": "blocked",
+  "kind": "field",
+  "target": "status"
+ },
+ {
+  "phrase": "to do",
+  "kind": "field",
+  "target": "status"
+ },
+ {
+  "phrase": "in review",
+  "kind": "field",
+  "target": "status"
+ },
+ {
+  "phrase": "stage",
+  "kind": "field",
+  "target": "status"
+ },
+ {
+  "phrase": "what state",
+  "kind": "field",
+  "target": "status"
+ },
+ {
+  "phrase": "completed",
+  "kind": "field",
+  "target": "status"
+ },
+ {
+  "phrase": "wip",
+  "kind": "field",
+  "target": "status"
+ },
+ {
+  "phrase": "stuck",
+  "kind": "field",
+  "target": "status"
+ },
+ {
+  "phrase": "finished",
+  "kind": "field",
+  "target": "status"
+ },
+ {
+  "phrase": "still open",
+  "kind": "field",
+  "target": "status"
+ },
+ {
+  "phrase": "backlog",
+  "kind": "field",
+  "target": "status"
+ },
+ {
+  "phrase": "author",
+  "kind": "field",
+  "target": "author"
+ },
+ {
+  "phrase": "authored",
+  "kind": "field",
+  "target": "author"
+ },
+ {
+  "phrase": "pr author",
+  "kind": "field",
+  "target": "author"
+ },
+ {
+  "phrase": "opened the pr",
+  "kind": "field",
+  "target": "author"
+ },
+ {
+  "phrase": "who opened",
+  "kind": "field",
+  "target": "author"
+ },
+ {
+  "phrase": "opened by",
+  "kind": "field",
+  "target": "author"
+ },
+ {
+  "phrase": "wrote the pr",
+  "kind": "field",
+  "target": "author"
+ },
+ {
+  "phrase": "who wrote",
+  "kind": "field",
+  "target": "author"
+ },
+ {
+  "phrase": "raised the pr",
+  "kind": "field",
+  "target": "author"
+ },
+ {
+  "phrase": "put up the pr",
+  "kind": "field",
+  "target": "author"
+ },
+ {
+  "phrase": "who put up",
+  "kind": "field",
+  "target": "author"
+ },
+ {
+  "phrase": "submitted by",
+  "kind": "field",
+  "target": "author"
+ },
+ {
+  "phrase": "made the pr",
+  "kind": "field",
+  "target": "author"
+ },
+ {
+  "phrase": "sent the pr",
+  "kind": "field",
+  "target": "author"
+ },
+ {
+  "phrase": "whose pr",
+  "kind": "field",
+  "target": "author"
+ },
+ {
+  "phrase": "wrote the code",
+  "kind": "field",
+  "target": "author"
+ },
+ {
+  "phrase": "creator",
+  "kind": "field",
+  "target": "creator"
+ },
+ {
+  "phrase": "created by",
+  "kind": "field",
+  "target": "creator"
+ },
+ {
+  "phrase": "who created",
+  "kind": "field",
+  "target": "creator"
+ },
+ {
+  "phrase": "filed by",
+  "kind": "field",
+  "target": "creator"
+ },
+ {
+  "phrase": "who filed",
+  "kind": "field",
+  "target": "creator"
+ },
+ {
+  "phrase": "reported by",
+  "kind": "field",
+  "target": "creator"
+ },
+ {
+  "phrase": "reporter",
+  "kind": "field",
+  "target": "creator"
+ },
+ {
+  "phrase": "who reported",
+  "kind": "field",
+  "target": "creator"
+ },
+ {
+  "phrase": "opened the ticket",
+  "kind": "field",
+  "target": "creator"
+ },
+ {
+  "phrase": "logged by",
+  "kind": "field",
+  "target": "creator"
+ },
+ {
+  "phrase": "who logged",
+  "kind": "field",
+  "target": "creator"
+ },
+ {
+  "phrase": "raised by",
+  "kind": "field",
+  "target": "creator"
+ },
+ {
+  "phrase": "who raised",
+  "kind": "field",
+  "target": "creator"
+ },
+ {
+  "phrase": "made the ticket",
+  "kind": "field",
+  "target": "creator"
+ },
+ {
+  "phrase": "wrote the ticket",
+  "kind": "field",
+  "target": "creator"
+ },
+ {
+  "phrase": "cut the ticket",
+  "kind": "field",
+  "target": "creator"
+ },
+ {
+  "phrase": "reviewers",
+  "kind": "field",
+  "target": "reviewers"
+ },
+ {
+  "phrase": "reviewer",
+  "kind": "field",
+  "target": "reviewers"
+ },
+ {
+  "phrase": "reviewed by",
+  "kind": "field",
+  "target": "reviewers"
+ },
+ {
+  "phrase": "who reviewed",
+  "kind": "field",
+  "target": "reviewers"
+ },
+ {
+  "phrase": "who's reviewing",
+  "kind": "field",
+  "target": "reviewers"
+ },
+ {
+  "phrase": "reviewing",
+  "kind": "field",
+  "target": "reviewers"
+ },
+ {
+  "phrase": "review requested",
+  "kind": "field",
+  "target": "reviewers"
+ },
+ {
+  "phrase": "requested reviewers",
+  "kind": "field",
+  "target": "reviewers"
+ },
+ {
+  "phrase": "approved by",
+  "kind": "field",
+  "target": "reviewers"
+ },
+ {
+  "phrase": "who approved",
+  "kind": "field",
+  "target": "reviewers"
+ },
+ {
+  "phrase": "signed off",
+  "kind": "field",
+  "target": "reviewers"
+ },
+ {
+  "phrase": "lgtm",
+  "kind": "field",
+  "target": "reviewers"
+ },
+ {
+  "phrase": "eyes on the pr",
+  "kind": "field",
+  "target": "reviewers"
+ },
+ {
+  "phrase": "stamped",
+  "kind": "field",
+  "target": "reviewers"
+ },
+ {
+  "phrase": "code review",
+  "kind": "field",
+  "target": "reviewers"
+ },
+ {
+  "phrase": "looking at the pr",
+  "kind": "field",
+  "target": "reviewers"
+ },
+ {
+  "phrase": "owner",
+  "kind": "field",
+  "target": "owner"
+ },
+ {
+  "phrase": "owns",
+  "kind": "field",
+  "target": "owner"
+ },
+ {
+  "phrase": "who owns",
+  "kind": "field",
+  "target": "owner"
+ },
+ {
+  "phrase": "action item owner",
+  "kind": "field",
+  "target": "owner"
+ },
+ {
+  "phrase": "action item for",
+  "kind": "field",
+  "target": "owner"
+ },
+ {
+  "phrase": "following up",
+  "kind": "field",
+  "target": "owner"
+ },
+ {
+  "phrase": "who's following up",
+  "kind": "field",
+  "target": "owner"
+ },
+ {
+  "phrase": "took the action",
+  "kind": "field",
+  "target": "owner"
+ },
+ {
+  "phrase": "took it on",
+  "kind": "field",
+  "target": "owner"
+ },
+ {
+  "phrase": "point person",
+  "kind": "field",
+  "target": "owner"
+ },
+ {
+  "phrase": "on point",
+  "kind": "field",
+  "target": "owner"
+ },
+ {
+  "phrase": "volunteered",
+  "kind": "field",
+  "target": "owner"
+ },
+ {
+  "phrase": "dri",
+  "kind": "field",
+  "target": "owner"
+ },
+ {
+  "phrase": "ball in their court",
+  "kind": "field",
+  "target": "owner"
+ },
+ {
+  "phrase": "on the hook",
+  "kind": "field",
+  "target": "owner"
+ },
+ {
+  "phrase": "next steps for",
+  "kind": "field",
+  "target": "owner"
+ },
+ {
+  "phrase": "linked",
+  "kind": "relation",
+  "target": "linked"
+ },
+ {
+  "phrase": "linked to",
+  "kind": "relation",
+  "target": "linked"
+ },
+ {
+  "phrase": "linked pr",
+  "kind": "relation",
+  "target": "linked"
+ },
+ {
+  "phrase": "linked ticket",
+  "kind": "relation",
+  "target": "linked"
+ },
+ {
+  "phrase": "connected to",
+  "kind": "relation",
+  "target": "linked"
+ },
+ {
+  "phrase": "related to",
+  "kind": "relation",
+  "target": "linked"
+ },
+ {
+  "phrase": "related ticket",
+  "kind": "relation",
+  "target": "linked"
+ },
+ {
+  "phrase": "relates to",
+  "kind": "relation",
+  "target": "linked"
+ },
+ {
+  "phrase": "tied to",
+  "kind": "relation",
+  "target": "linked"
+ },
+ {
+  "phrase": "associated with",
+  "kind": "relation",
+  "target": "linked"
+ },
+ {
+  "phrase": "attached to",
+  "kind": "relation",
+  "target": "linked"
+ },
+ {
+  "phrase": "depends on",
+  "kind": "relation",
+  "target": "linked"
+ },
+ {
+  "phrase": "dependency",
+  "kind": "relation",
+  "target": "linked"
+ },
+ {
+  "phrase": "blocked by",
+  "kind": "relation",
+  "target": "linked"
+ },
+ {
+  "phrase": "duplicate of",
+  "kind": "relation",
+  "target": "linked"
+ },
+ {
+  "phrase": "goes with",
+  "kind": "relation",
+  "target": "linked"
+ },
+ {
+  "phrase": "references",
+  "kind": "relation",
+  "target": "references"
+ },
+ {
+  "phrase": "referenced",
+  "kind": "relation",
+  "target": "references"
+ },
+ {
+  "phrase": "referencing",
+  "kind": "relation",
+  "target": "references"
+ },
+ {
+  "phrase": "mentions",
+  "kind": "relation",
+  "target": "references"
+ },
+ {
+  "phrase": "mentioned in",
+  "kind": "relation",
+  "target": "references"
+ },
+ {
+  "phrase": "refers to",
+  "kind": "relation",
+  "target": "references"
+ },
+ {
+  "phrase": "points to",
+  "kind": "relation",
+  "target": "references"
+ },
+ {
+  "phrase": "cites",
+  "kind": "relation",
+  "target": "references"
+ },
+ {
+  "phrase": "fixes",
+  "kind": "relation",
+  "target": "references"
+ },
+ {
+  "phrase": "closes",
+  "kind": "relation",
+  "target": "references"
+ },
+ {
+  "phrase": "addresses",
+  "kind": "relation",
+  "target": "references"
+ },
+ {
+  "phrase": "calls out",
+  "kind": "relation",
+  "target": "references"
+ },
+ {
+  "phrase": "tagged with",
+  "kind": "relation",
+  "target": "references"
+ },
+ {
+  "phrase": "has the ticket number",
+  "kind": "relation",
+  "target": "references"
+ },
+ {
+  "phrase": "in the pr description",
+  "kind": "relation",
+  "target": "references"
+ },
+ {
+  "phrase": "how many",
+  "kind": "combine",
+  "target": "count"
+ },
+ {
+  "phrase": "count",
+  "kind": "combine",
+  "target": "count"
+ },
+ {
+  "phrase": "number of",
+  "kind": "combine",
+  "target": "count"
+ },
+ {
+  "phrase": "total",
+  "kind": "combine",
+  "target": "count"
+ },
+ {
+  "phrase": "in total",
+  "kind": "combine",
+  "target": "count"
+ },
+ {
+  "phrase": "tally",
+  "kind": "combine",
+  "target": "count"
+ },
+ {
+  "phrase": "altogether",
+  "kind": "combine",
+  "target": "count"
+ },
+ {
+  "phrase": "add up",
+  "kind": "combine",
+  "target": "count"
+ },
+ {
+  "phrase": "how much",
+  "kind": "combine",
+  "target": "count"
+ },
+ {
+  "phrase": "amount of",
+  "kind": "combine",
+  "target": "count"
+ },
+ {
+  "phrase": "quantity",
+  "kind": "combine",
+  "target": "count"
+ },
+ {
+  "phrase": "headcount",
+  "kind": "combine",
+  "target": "count"
+ },
+ {
+  "phrase": "how many total",
+  "kind": "combine",
+  "target": "count"
+ },
+ {
+  "phrase": "earliest",
+  "kind": "combine",
+  "target": "earliest"
+ },
+ {
+  "phrase": "first",
+  "kind": "combine",
+  "target": "earliest"
+ },
+ {
+  "phrase": "soonest",
+  "kind": "combine",
+  "target": "earliest"
+ },
+ {
+  "phrase": "soonest due",
+  "kind": "combine",
+  "target": "earliest"
+ },
+ {
+  "phrase": "due first",
+  "kind": "combine",
+  "target": "earliest"
+ },
+ {
+  "phrase": "next due",
+  "kind": "combine",
+  "target": "earliest"
+ },
+ {
+  "phrase": "next up",
+  "kind": "combine",
+  "target": "earliest"
+ },
+ {
+  "phrase": "first up",
+  "kind": "combine",
+  "target": "earliest"
+ },
+ {
+  "phrase": "nearest deadline",
+  "kind": "combine",
+  "target": "earliest"
+ },
+ {
+  "phrase": "earliest deadline",
+  "kind": "combine",
+  "target": "earliest"
+ },
+ {
+  "phrase": "most urgent",
+  "kind": "combine",
+  "target": "earliest"
+ },
+ {
+  "phrase": "coming up first",
+  "kind": "combine",
+  "target": "earliest"
+ },
+ {
+  "phrase": "closest deadline",
+  "kind": "combine",
+  "target": "earliest"
+ },
+ {
+  "phrase": "first one",
+  "kind": "combine",
+  "target": "earliest"
+ },
+ {
+  "phrase": "latest",
+  "kind": "combine",
+  "target": "latest"
+ },
+ {
+  "phrase": "last",
+  "kind": "combine",
+  "target": "latest"
+ },
+ {
+  "phrase": "last one",
+  "kind": "combine",
+  "target": "latest"
+ },
+ {
+  "phrase": "due last",
+  "kind": "combine",
+  "target": "latest"
+ },
+ {
+  "phrase": "furthest out",
+  "kind": "combine",
+  "target": "latest"
+ },
+ {
+  "phrase": "farthest out",
+  "kind": "combine",
+  "target": "latest"
+ },
+ {
+  "phrase": "latest deadline",
+  "kind": "combine",
+  "target": "latest"
+ },
+ {
+  "phrase": "furthest deadline",
+  "kind": "combine",
+  "target": "latest"
+ },
+ {
+  "phrase": "final",
+  "kind": "combine",
+  "target": "latest"
+ },
+ {
+  "phrase": "final one",
+  "kind": "combine",
+  "target": "latest"
+ },
+ {
+  "phrase": "last to land",
+  "kind": "combine",
+  "target": "latest"
+ },
+ {
+  "phrase": "least urgent",
+  "kind": "combine",
+  "target": "latest"
+ },
+ {
+  "phrase": "at the end",
+  "kind": "combine",
+  "target": "latest"
+ },
+ {
+  "phrase": "list",
+  "kind": "combine",
+  "target": "list"
+ },
+ {
+  "phrase": "list out",
+  "kind": "combine",
+  "target": "list"
+ },
+ {
+  "phrase": "all",
+  "kind": "combine",
+  "target": "list"
+ },
+ {
+  "phrase": "all of them",
+  "kind": "combine",
+  "target": "list"
+ },
+ {
+  "phrase": "show me all",
+  "kind": "combine",
+  "target": "list"
+ },
+ {
+  "phrase": "show all",
+  "kind": "combine",
+  "target": "list"
+ },
+ {
+  "phrase": "give me all",
+  "kind": "combine",
+  "target": "list"
+ },
+ {
+  "phrase": "every",
+  "kind": "combine",
+  "target": "list"
+ },
+ {
+  "phrase": "everything",
+  "kind": "combine",
+  "target": "list"
+ },
+ {
+  "phrase": "full list",
+  "kind": "combine",
+  "target": "list"
+ },
+ {
+  "phrase": "rundown",
+  "kind": "combine",
+  "target": "list"
+ },
+ {
+  "phrase": "enumerate",
+  "kind": "combine",
+  "target": "list"
+ },
+ {
+  "phrase": "what are the",
+  "kind": "combine",
+  "target": "list"
+ },
+ {
+  "phrase": "the whole lot",
+  "kind": "combine",
+  "target": "list"
+ },
+ {
+  "phrase": "pull up all",
+  "kind": "combine",
+  "target": "list"
+ },
+ {
+  "phrase": "who",
+  "kind": "answer",
+  "target": "person"
+ },
+ {
+  "phrase": "whom",
+  "kind": "answer",
+  "target": "person"
+ },
+ {
+  "phrase": "whose",
+  "kind": "answer",
+  "target": "person"
+ },
+ {
+  "phrase": "who's",
+  "kind": "answer",
+  "target": "person"
+ },
+ {
+  "phrase": "who is",
+  "kind": "answer",
+  "target": "person"
+ },
+ {
+  "phrase": "by whom",
+  "kind": "answer",
+  "target": "person"
+ },
+ {
+  "phrase": "which person",
+  "kind": "answer",
+  "target": "person"
+ },
+ {
+  "phrase": "what person",
+  "kind": "answer",
+  "target": "person"
+ },
+ {
+  "phrase": "which engineer",
+  "kind": "answer",
+  "target": "person"
+ },
+ {
+  "phrase": "which dev",
+  "kind": "answer",
+  "target": "person"
+ },
+ {
+  "phrase": "which teammate",
+  "kind": "answer",
+  "target": "person"
+ },
+ {
+  "phrase": "name of",
+  "kind": "answer",
+  "target": "person"
+ },
+ {
+  "phrase": "which reviewer",
+  "kind": "answer",
+  "target": "person"
+ },
+ {
+  "phrase": "when",
+  "kind": "answer",
+  "target": "date"
+ },
+ {
+  "phrase": "when's",
+  "kind": "answer",
+  "target": "date"
+ },
+ {
+  "phrase": "what date",
+  "kind": "answer",
+  "target": "date"
+ },
+ {
+  "phrase": "what day",
+  "kind": "answer",
+  "target": "date"
+ },
+ {
+  "phrase": "which day",
+  "kind": "answer",
+  "target": "date"
+ },
+ {
+  "phrase": "by when",
+  "kind": "answer",
+  "target": "date"
+ },
+ {
+  "phrase": "how soon",
+  "kind": "answer",
+  "target": "date"
+ },
+ {
+  "phrase": "what week",
+  "kind": "answer",
+  "target": "date"
+ },
+ {
+  "phrase": "how long until",
+  "kind": "answer",
+  "target": "date"
+ },
+ {
+  "phrase": "due when",
+  "kind": "answer",
+  "target": "date"
+ },
+ {
+  "phrase": "eta",
+  "kind": "answer",
+  "target": "date"
+ },
+ {
+  "phrase": "what deadline",
+  "kind": "answer",
+  "target": "date"
+ },
+ {
+  "phrase": "how many",
+  "kind": "answer",
+  "target": "number"
+ },
+ {
+  "phrase": "how much",
+  "kind": "answer",
+  "target": "number"
+ },
+ {
+  "phrase": "number of",
+  "kind": "answer",
+  "target": "number"
+ },
+ {
+  "phrase": "count",
+  "kind": "answer",
+  "target": "number"
+ },
+ {
+  "phrase": "total",
+  "kind": "answer",
+  "target": "number"
+ },
+ {
+  "phrase": "what number",
+  "kind": "answer",
+  "target": "number"
+ },
+ {
+  "phrase": "tally",
+  "kind": "answer",
+  "target": "number"
+ },
+ {
+  "phrase": "how often",
+  "kind": "answer",
+  "target": "number"
+ },
+ {
+  "phrase": "amount of",
+  "kind": "answer",
+  "target": "number"
+ },
+ {
+  "phrase": "which ticket",
+  "kind": "answer",
+  "target": "ticket key"
+ },
+ {
+  "phrase": "what ticket",
+  "kind": "answer",
+  "target": "ticket key"
+ },
+ {
+  "phrase": "ticket number",
+  "kind": "answer",
+  "target": "ticket key"
+ },
+ {
+  "phrase": "ticket id",
+  "kind": "answer",
+  "target": "ticket key"
+ },
+ {
+  "phrase": "ticket key",
+  "kind": "answer",
+  "target": "ticket key"
+ },
+ {
+  "phrase": "issue key",
+  "kind": "answer",
+  "target": "ticket key"
+ },
+ {
+  "phrase": "issue number",
+  "kind": "answer",
+  "target": "ticket key"
+ },
+ {
+  "phrase": "issue id",
+  "kind": "answer",
+  "target": "ticket key"
+ },
+ {
+  "phrase": "which issue",
+  "kind": "answer",
+  "target": "ticket key"
+ },
+ {
+  "phrase": "jira key",
+  "kind": "answer",
+  "target": "ticket key"
+ },
+ {
+  "phrase": "which jira",
+  "kind": "answer",
+  "target": "ticket key"
+ },
+ {
+  "phrase": "linear id",
+  "kind": "answer",
+  "target": "ticket key"
+ },
+ {
+  "phrase": "which card",
+  "kind": "answer",
+  "target": "ticket key"
+ },
+ {
+  "phrase": "which bug",
+  "kind": "answer",
+  "target": "ticket key"
+ },
+ {
+  "phrase": "which story",
+  "kind": "answer",
+  "target": "ticket key"
+ }
+]
