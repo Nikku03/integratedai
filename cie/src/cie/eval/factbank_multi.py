@@ -642,6 +642,28 @@ def general_test(test_dir: Path, changed: Path, training: Path, retest_dir: Path
     return rep
 
 
+def llm_test(test_dir: Path, changed: Path, training: Path) -> dict[str, Any]:
+    """The language-model test's rules (docs/FACTBANK_LLM_PREREGISTRATION.md): v7 (a small model reads the question) and v8
+    (a glossary written once) against v4."""
+    m = {"training": measure(training), "held_out": measure(test_dir), "changed": measure(changed)}
+    d = lambda a, b: round(a - b, 3) if a is not None and b is not None else None  # noqa: E731
+    h, t, c = m["held_out"]["direct"], m["training"]["direct"], m["changed"]["direct"]
+    rules = {
+        "1 a small model reading the question helps (v7 - v4 >= +0.10, test set)": at_least(d(h["v7"]["mean"], h["v4"]["mean"]), 0.10),
+        "2 a glossary written once helps (v8 - v4 >= +0.10, test set)": at_least(d(h["v8"]["mean"], h["v4"]["mean"]), 0.10),
+        "3 principles, not memorisation (v7 and v8 test set >= training - 0.15)":
+            at_least(d(h["v7"]["mean"], t["v7"]["mean"]), -0.15) and at_least(d(h["v8"]["mean"], t["v8"]["mean"]), -0.15),
+        "4 holds when the information changes (v7 and v8 changed >= test set - 0.05)":
+            at_least(d(c["v7"]["mean"], h["v7"]["mean"]), -0.05) and at_least(d(c["v8"]["mean"], h["v8"]["mean"]), -0.05),
+        "5 no harm on what was learned (v7 and v8 >= v4 - 0.03, training)":
+            at_least(d(t["v7"]["mean"], t["v4"]["mean"]), -0.03) and at_least(d(t["v8"]["mean"], t["v4"]["mean"]), -0.03),
+    }
+    rep = {**m, "rules": rules}
+    (test_dir / "llm_report.json").write_text(json.dumps(rep, indent=1, default=str))
+    (test_dir / "llm_report.md").write_text(to_markdown(rep, "A language model for the English: the test set"))
+    return rep
+
+
 def to_markdown(rep: dict[str, Any], title: str = "Questions that need several documents",
                 parts: tuple[str, ...] = ("training", "held_out", "changed")) -> str:
     g = ("link", "combine", "compare", "mean")
@@ -663,7 +685,7 @@ def to_markdown(rep: dict[str, Any], title: str = "Questions that need several d
 
 def main(argv: list[str] | None = None) -> Any:
     ap = argparse.ArgumentParser(prog="python -m cie.eval.factbank_multi")
-    ap.add_argument("cmd", choices=["build", "train", "ask", "compare", "fresh", "retest", "words", "general"])
+    ap.add_argument("cmd", choices=["build", "train", "ask", "compare", "fresh", "retest", "words", "general", "llm"])
     ap.add_argument("--docs", help="the haystack's documents as JSON: dsid, source, title, raw")
     ap.add_argument("--index")
     ap.add_argument("--root")
@@ -697,6 +719,10 @@ def main(argv: list[str] | None = None) -> Any:
                     Path(a.general) if a.general else None, a.combine, a.floor, Path(a.glossary) if a.glossary else None)
     elif a.cmd == "ask":
         out = ask_plans(Path(a.work), Path(a.single), Path(a.plans), name=a.name, reader_cache=Path(a.reader) if a.reader else None)
+    elif a.cmd == "llm":
+        out = llm_test(Path(a.work), Path(a.changed), Path(a.train))
+        print(to_markdown(out, "A language model for the English: the test set"))
+        return out
     elif a.cmd == "general":
         out = general_test(Path(a.work), Path(a.changed), Path(a.train), Path(a.retest))
         print(to_markdown(out, "New words from general English: the blind test set", ("training", "held_out", "changed", "retest")))
