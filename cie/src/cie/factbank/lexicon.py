@@ -374,16 +374,21 @@ class Lexicon:
 
 
 def build(index_path: Path, root: Path, exclude_dirs: list[Path], out: Path, n_docs: int = 60_000, seed: int = 23, window: int = 4,
-          log=print) -> dict[str, Any]:
+          log=print, drop_dirs: list[Path] | None = None) -> dict[str, Any]:
+    """``drop_dirs``: work folders whose documents are removed after sampling, so the rest of the sample stays the same (used to
+    check that a test set drawn later did not gain from being in the sample)."""
     t0 = time.perf_counter()
     index = json.loads(index_path.read_text())["index"]
     exclude = set().union(*(set(json.loads((d / "haystack.json").read_text())["dsids"]) for d in exclude_dirs))
+    drop = set().union(*(set(json.loads((d / "haystack.json").read_text())["dsids"]) for d in drop_dirs or []))
     src = root / "generated_data" / "sources"
     from cie.ingest.sources import PEOPLE_FIELDS
 
     sents: list[str] = []
     people: set[str] = set()
     for d in sample(index, exclude, n_docs, seed):
+        if d in drop:
+            continue
         raw = _read(src, index[d])
         if raw is not None:
             sents += texts_of(raw)
@@ -394,7 +399,7 @@ def build(index_path: Path, root: Path, exclude_dirs: list[Path], out: Path, n_d
     statuses: set[str] = set()
     for d, rel in index.items():
         s = rel.split("/")[0]
-        if d in exclude or s not in FIELDS:
+        if d in exclude or d in drop or s not in FIELDS:
             continue
         raw = _read(src, rel)
         got = item_facts(raw, s) if isinstance(raw, dict) else None
@@ -406,7 +411,7 @@ def build(index_path: Path, root: Path, exclude_dirs: list[Path], out: Path, n_d
     ty = typing(sents, people, statuses)
     log(f"  typing: {len(people):,} people, {len(statuses)} statuses, words near a marker: {dict(ty.field)}")
     space = build_space((tokens(s) for s in sents), window=window, log=log)
-    info = {"documents": n_docs, "seed": seed, "window": window, "sentences": len(sents), "excluded_documents": len(exclude), "words": len(space.vocab),
+    info = {"documents": n_docs, "seed": seed, "window": window, "dropped_documents": len(drop), "sentences": len(sents), "excluded_documents": len(exclude), "words": len(space.vocab),
             "people": len(people), "statuses": sorted(statuses),
             "typed": dict(ty.field), "seconds": round(time.perf_counter() - t0, 1)}
     lex = Lexicon(space, ty, info)
@@ -423,6 +428,7 @@ def main(argv: list[str] | None = None) -> Any:
     ap.add_argument("--out")
     ap.add_argument("--docs", type=int, default=60_000)
     ap.add_argument("--window", type=int, default=4)
+    ap.add_argument("--drop", nargs="*", default=[], help="build: work folders whose documents are removed after sampling")
     ap.add_argument("--words", nargs="*", default=[])
     a = ap.parse_args(argv)
     if a.cmd == "general":
@@ -430,7 +436,8 @@ def main(argv: list[str] | None = None) -> Any:
         print(json.dumps(out, indent=1))
         return out
     if a.cmd == "build":
-        out = build(Path(a.index), Path(a.root), [Path(x) for x in a.exclude], Path(a.out), a.docs, window=a.window)
+        out = build(Path(a.index), Path(a.root), [Path(x) for x in a.exclude], Path(a.out), a.docs, window=a.window,
+                    drop_dirs=[Path(x) for x in a.drop])
         print(json.dumps(out, indent=1))
         return out
     lex = Lexicon.load(a.out)

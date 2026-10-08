@@ -54,8 +54,8 @@ Taught on those 50 documents, then retested on 50 others with reworded questions
 **Questions that need several documents**, such as "who has the Linear issue that PR #123 links to?" or "how many issues
 does P have?". The fact bank enumerates plans: a start, hops between documents, a field and a way to combine. Learned
 weights pick one ([`docs/FACTBANK_MULTI_RESULTS.md`](docs/FACTBANK_MULTI_RESULTS.md)):
-- **Reaching the pieces:** the right plan was always among those enumerated. The evidence held every piece of 0.99 of
-  the questions, against 0.32 for the present memory bank.
+- **Reaching the pieces:** the right plan was always among those enumerated. The evidence held 0.99 of a question's
+  pieces on average, against 0.32 for the present memory bank.
 - **Choosing the plan:** the first version failed (0.08 on held-out questions). It had learned to copy from the
   question.
 - **The revised version:** on 50 new documents with new wordings, 0.60 of its own answers were right, against 0.25 for

@@ -98,6 +98,14 @@ pre-registration noted before the run that rule 1 might not be met.
 
 ## Corrections and limits
 
+**Found by a review after the general-English test** (`docs/FACTBANK_GENERAL_RESULTS.md`). No decision here changes:
+- **The changed copy renamed statuses.** "In Progress" and "In Review" were renamed as if they were people. With a
+  fixed copy, v5 on the changed set is still 0.576 (rule 3 met).
+- **A customer attendee is matched to the same-named engineer's tickets.** In 3 of the 8 action-item questions, the
+  owner is a customer attendee who inherits the issues of a Redwood engineer with the same name. Without them:
+  - v4 scores 0.629 (was 0.611) and v5 0.594 (was 0.576);
+  - rule 1 is still not met (−0.035).
+
 - **Two names for one check.** The pre-registration gives "0.688" for v4's held-out-wording check. That is the share of
   questions. The tables here give the mean of the three groups (0.752). The two are the same run.
 - **The lexicon file** (12.6 MB) is not committed. Its fingerprint and settings are in `lexicon_info.json`. It also

@@ -10,9 +10,11 @@ Raw results and the learned plan weights are in `docs/benchmarks/factbank_multi/
 ## In short
 
 - **The pieces are always reachable.** For every question in every set, one of the plans the fact bank enumerates gives
-  the right answer: 48 of 48 training questions, 50 of 50 in the first held-out set and 50 of 50 in the retest. The
-  fact bank's evidence holds all the pieces within 24,000 characters for 0.99 of the questions. The present memory
-  bank's evidence holds them for 0.32.
+  the right answer: 48 of 48 training questions, 50 of 50 in the first held-out set and 50 of 50 in the retest.
+- **The pieces reach the evidence.** Within 24,000 characters, the fact bank's evidence holds 0.99 of a question's
+  pieces on average, and every piece for 0.98 of the questions. The present memory bank's evidence holds 0.32 of the
+  pieces, and every piece for 0.13 of the questions. (Corrected after review: this first read "every piece for 0.99 of
+  the questions". The figures are the average share.)
 - **The first version could not choose the plan:** 0.083 of its own answers were right on held-out questions. It had
   learned to copy something already written in the question.
 - **The revised version (v4), on 50 new documents with new wordings, gets 0.596 right.** The first version gets 0.250
@@ -44,7 +46,8 @@ Own answers, no model (the mean is the mean of the three groups):
 | training questions, v3 | 0.176 | 0.000 | 0.750 | 0.309 |
 | changed information, v3 | 0.000 | 0.000 | 0.250 | 0.083 |
 
-All of a question's pieces in the evidence (held-out set):
+Share of a question's pieces in the evidence, averaged over questions (held-out set). The pre-registered rule 4 uses
+this measure. In the first version of this document the heading said "all of a question's pieces", which was wrong:
 
 | | within 2,000 characters | within 24,000 characters |
 |---|---|---|
@@ -94,7 +97,8 @@ The changes, each written as a rule that holds for any question:
 The first version is kept (`rules="v3"`). It reproduces the first test's weights and all 148 of its answers exactly (training, held-out and changed).
 
 **Checks on the training set only, before the retest:**
-- 0.917 of training questions right, against 0.309 for v3.
+- 0.917 of training questions right, against 0.309 for v3. The two are different measures: 0.917 is the share of
+  questions, 0.309 the mean of the three groups. As group means, the figures are 0.927 against 0.309.
 - 0.688 when each training wording is held out in turn.
 
 ## The retest: new documents, new wordings
@@ -138,8 +142,12 @@ By kind, v4 on the new set:
 | a person's first issue due | 6 | 0.500 |
 | which of two is due first | 8 | 0.750 |
 
-**The evidence.** v4's evidence starts with the plan and every entity each hop reached. It holds all of a question's
-pieces within its first 2,000 characters for 0.899 of the questions. The figure is 0.699 for v3 and 0.775 for v1.
+**The evidence.** v4's evidence starts with the plan and every entity each hop reached.
+- Within its first 2,000 characters it holds 0.899 of a question's pieces on average, against 0.699 for v3 and 0.775
+  for v1.
+- It holds every piece for 0.863 of the questions, against 0.552 for v3 and 0.603 for v1.
+
+(Corrected after review: this first said "all of a question's pieces … for 0.899 of the questions".)
 
 ### What still goes wrong
 
@@ -158,6 +166,20 @@ These are the limits the pre-registration expected from a method without a langu
 understood only through field names or words it learned in training.
 
 ## Corrections and limits
+
+**Found by a review after the general-English test** (`docs/FACTBANK_GENERAL_RESULTS.md` has the full list). None of
+them changes a decision here:
+- **The changed copies renamed statuses.** Two-word statuses such as "In Progress" were renamed as if they were
+  people.
+  - With fixed copies, v3 on the changed set is still 0.083 (rule 3 met) and v4 on the retest's changed set is still
+    0.596.
+- **A customer attendee is matched to the same-named engineer's tickets.** Action items are joined to Linear
+  assignees by name alone. In 5 of the 8 training questions and 3 of the 9 retest questions of that kind, the owner is a
+  customer attendee and inherits the issues of a Redwood engineer with the same name.
+  - Without those questions, v4 scores 0.941 on training (was 0.927) and 0.588 on the retest (was 0.596).
+- **One document carries many questions.** Reused ticket keys put several questions on one document. All 8
+  pull-request questions of the first held-out set reach the same ENG-4821 document. So the sets hold fewer
+  independent questions than they count.
 
 - **A scoring bug, found after both runs.**
   - The rule checks were written as `(difference or -1) >= threshold`, which reads a difference of exactly 0 as missing.

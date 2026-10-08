@@ -92,7 +92,8 @@ class Planner:
         """v5: the question's words (weight 1), plus for each plain word the kinds of value it goes with ("zzwhen" for a
         word about dates), and, for a word no training question used, the known words and field-name words nearest it in
         meaning."""
-        key = frozenset(ws) | {"\0enrich"}
+        floor = self.floor if floor is None else floor
+        key = frozenset(ws) | {f"\0enrich {floor} {type_floor} {self.combine}"}  # the settings are part of the key
         if key not in self._expanded:
             out = dict.fromkeys(ws, 1.0)
             known = set(self.known)
@@ -103,7 +104,7 @@ class Planner:
                     if sc >= type_floor:
                         out["zz" + t] = max(out.get("zz" + t, 0.0), sc)
                 if w not in known:
-                    for n, sim in self.lenders(w, lenders, 3, self.floor if floor is None else floor):
+                    for n, sim in self.lenders(w, lenders, 3, floor):
                         out[n] = max(out.get(n, 0.0), sim)
             self._expanded[key] = out
         return self._expanded[key]

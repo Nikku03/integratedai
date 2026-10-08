@@ -460,9 +460,24 @@ def pieces_in(q: dict[str, Any], text: str) -> float:
     return hits / max(1, len(q.get("pieces") or []))
 
 
-def measure(work: Path) -> dict[str, Any]:
-    from cie.eval.factbank_test import direct
+SINGLE_KEY = {"compare_two", "person_first"}
 
+
+def own_score(q: dict[str, Any], answer: str) -> float:
+    """The pre-registered measure: values, dates and single keys must match exactly; lists score F1.
+
+    Found in review after the general-English test: the shared check gave F1 to the one-key kinds too, so answering
+    "A, B" to "which is due first, A or B?" scored 0.667. No published answer had more than one key on these kinds, so no
+    published number changes."""
+    from cie.eval.factbank_test import direct
+    from cie.eval.memory_test import ids_in
+
+    if q["kind"] in SINGLE_KEY and "ids" in q["expected"]:
+        return float(ids_in(answer, q["expected"]["id_kind"]) == set(q["expected"]["ids"]))
+    return direct(q, answer)
+
+
+def measure(work: Path) -> dict[str, Any]:
     qs = _jsonl(work / "questions.jsonl")
     ev = {r["id"]: r for r in _jsonl(work / "evidence.jsonl")} if (work / "evidence.jsonl").exists() else {}
     fbs = {label: {r["id"]: r for r in _jsonl(work / f"{name}.jsonl")}
@@ -475,7 +490,7 @@ def measure(work: Path) -> dict[str, Any]:
                              "direct": {}, "answers": {}, "pieces": {}}
         for label, d in fbs.items():
             if q["id"] in d:
-                r["direct"][label] = direct(q, d[q["id"]]["answer"])
+                r["direct"][label] = own_score(q, d[q["id"]]["answer"])
                 r["answers"][label] = d[q["id"]]["answer"]
         texts = {a: ev.get(q["id"], {}).get(a) for a in ("plain-words", "plain", "bank")}
         texts.update({label: d.get(q["id"], {}).get("evidence") for label, d in fbs.items()})

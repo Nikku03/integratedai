@@ -235,3 +235,11 @@ def test_changed_information_renames_people_only(tmp_path):
     assert qs["b"]["expected"] == {"value": names["Jordan Lee"]}
     SP.changed(work, tmp_path / "old", legacy=True)
     assert "In Progress" in json.loads((tmp_path / "old" / "renamed.json").read_text()), "the first version, kept for reproducing"
+
+
+def test_single_key_kinds_need_the_exact_key():
+    """Found in review: one-key questions were scored with F1, so "A, B" to "which is due first, A or B?" scored 0.667."""
+    q = {"kind": "compare_two", "expected": {"ids": ["ENG-11"], "id_kind": "key"}, "group": "compare"}
+    assert M.own_score(q, "ENG-11") == 1.0 and M.own_score(q, "ENG-11, ENG-13") == 0.0
+    lst = {"kind": "action_owner_issues", "expected": {"ids": ["ENG-11", "ENG-12"], "id_kind": "key"}, "group": "combine"}
+    assert M.own_score(lst, "ENG-11") == 0.667, "a list still scores F1 (rounded to three places)"
