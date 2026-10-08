@@ -142,7 +142,33 @@ NEW_WORDS = {
     ("action_owner_issues", ""): ['The follow-up "{t}" from "{m}": whoever is responsible for it, which Linear tickets do they hold? Keys.',
                                   'After "{m}", someone was tasked with "{t}". List that person\'s Linear issue keys.'],
 }
-WORDINGS = {"retest": RETEST, "words": NEW_WORDS}
+# The general-English test (docs/FACTBANK_GENERAL_PREREGISTRATION.md): a fifth pair of wordings per kind, written by three
+# independent writers who saw only what each question must ask, never the method or the training questions
+# (docs/benchmarks/factbank_general/writers.json). Writers 1 and 2 give the pair; writer 3 stands in for a wording that does
+# not use each placeholder exactly once or runs over 200 characters.
+BLIND = {
+    ("pr_issue", "assignee"): ["who's got the linear ticket that PR #{n} is tied to?",
+        "Hi, could you tell me who the Linear ticket tied to PR #{n} is assigned to? Thanks!"],
+    ("pr_issue", "due_date"): ["when's the linear ticket for #{n} due? need the date",
+        "Quick question: when is the Linear ticket connected to pull request #{n} due? Thanks in advance."],
+    ("pr_issue", "status"): ["what state is the linear ticket behind pull request #{n} in rn? in progress, done, something else?",
+        "Could you let me know where the Linear ticket linked to PR #{n} currently stands, status-wise? Thanks!"],
+    ("issue_pr_author", "author"): ["who put up the PR for {k}?",
+        "Hi, who opened the GitHub pull request that references Linear issue {k}? Appreciate it."],
+    ("ticket_link", "status"): ["{k} is linked to another ticket, what status is that other one sitting in?",
+        "Ticket {k} is linked to one other ticket. Could you tell me what status that other ticket is in right now? Thanks."],
+    ("ticket_link", "assignee"): ["whoever's on the ticket linked to {k}? need a name",
+        "Could you let me know who owns the other ticket that's linked to {k}? Thanks so much."],
+    ("person_count", ""): ["how many linear tickets are on {p}'s plate?",
+        "Hi, how many Linear tickets does {p} currently have assigned to them? Thanks!"],
+    ("person_first", ""): ["of the linear tickets {p} has, which one's due soonest? just send me the ticket key",
+        "Of the Linear tickets assigned to {p}, which one is due soonest? Please send me the ticket key. Thanks!"],
+    ("compare_two", ""): ["quick one, {a} vs {b}, which is due first?",
+        "Between {a} and {b}, which ticket has the earlier deadline? Thanks for checking."],
+    ("action_owner_issues", ""): ["whoever got \"{t}\" in the \"{m}\" meeting, what linear tickets do they have assigned? send me the keys",
+        "In the \"{m}\" meeting, someone picked up the action item \"{t}\". Could you send me the keys of the Linear tickets assigned to that person? Thanks!"],
+}
+WORDINGS = {"retest": RETEST, "words": NEW_WORDS, "blind": BLIND}
 FRESH_SEED = 13
 POOL_DOCS = 20_000
 LINKED_SOURCES = ("linear", "github", "jira", "fireflies")
@@ -575,7 +601,8 @@ def main(argv: list[str] | None = None) -> Any:
     ap.add_argument("--single", help="the single-document lessons (lessons.json)")
     ap.add_argument("--plans", help="the plan lessons (plan_lessons.json)")
     ap.add_argument("--rules", default="v4", choices=["v3", "v4"], help="train: the planner as first tested (v3) or as revised (v4)")
-    ap.add_argument("--seed", type=int, default=FRESH_SEED, help="fresh: 13 made the retest's set, 17 the new-words test's set")
+    ap.add_argument("--seed", type=int, default=FRESH_SEED,
+                    help="fresh: 13 made the retest's set, 17 the new-words test's set, 29 the general-English test's set")
     ap.add_argument("--wordings", default="retest", choices=sorted(WORDINGS), help="fresh: which wordings")
     ap.add_argument("--lexicon", help="train: learned word meanings (cie.factbank.lexicon); makes v5")
     ap.add_argument("--name", default="factbank_v3", help="ask: the answers' file name (factbank_v3 or factbank_v4)")
