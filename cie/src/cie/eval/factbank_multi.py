@@ -571,6 +571,27 @@ def words_test(words_dir: Path, changed: Path, training: Path, retest_dir: Path)
     return rep
 
 
+def general_test(test_dir: Path, changed: Path, training: Path, retest_dir: Path) -> dict[str, Any]:
+    """The general-English test's rules (docs/FACTBANK_GENERAL_PREREGISTRATION.md): v6 against v4 and v5 on blind wordings."""
+    m = {"training": measure(training), "held_out": measure(test_dir), "changed": measure(changed), "retest": measure(retest_dir)}
+    d = lambda a, b: round(a - b, 3) if a is not None and b is not None else None  # noqa: E731
+    h, t, r = m["held_out"]["direct"], m["training"]["direct"], m["retest"]["direct"]
+    rules = {
+        "1 new words are understood (v6 - v4 >= +0.10, test set)": at_least(d(h["v6"]["mean"], h["v4"]["mean"]), 0.10),
+        "2 general English adds to the company's words (v6 - v5 >= +0.05, test set)": at_least(d(h["v6"]["mean"], h["v5"]["mean"]), 0.05),
+        "3 principles, not memorisation (v6 test set >= v6 training - 0.15)": at_least(d(h["v6"]["mean"], t["v6"]["mean"]), -0.15),
+        "4 holds when the information changes (v6 changed >= v6 test set - 0.05)":
+            at_least(d(m["changed"]["direct"]["v6"]["mean"], h["v6"]["mean"]), -0.05),
+        "5 no harm where v4 already worked (v6 >= v4 - 0.03 on the retest set and on the training questions)":
+            at_least(d(r["v6"]["mean"], r["v4"]["mean"]), -0.03) and at_least(d(t["v6"]["mean"], t["v4"]["mean"]), -0.03),
+    }
+    rep = {**m, "rules": rules}
+    (test_dir / "general_report.json").write_text(json.dumps(rep, indent=1, default=str))
+    (test_dir / "general_report.md").write_text(to_markdown(rep, "New words from general English: the blind test set",
+                                                            ("training", "held_out", "changed", "retest")))
+    return rep
+
+
 def to_markdown(rep: dict[str, Any], title: str = "Questions that need several documents",
                 parts: tuple[str, ...] = ("training", "held_out", "changed")) -> str:
     g = ("link", "combine", "compare", "mean")
@@ -592,7 +613,7 @@ def to_markdown(rep: dict[str, Any], title: str = "Questions that need several d
 
 def main(argv: list[str] | None = None) -> Any:
     ap = argparse.ArgumentParser(prog="python -m cie.eval.factbank_multi")
-    ap.add_argument("cmd", choices=["build", "train", "ask", "compare", "fresh", "retest", "words"])
+    ap.add_argument("cmd", choices=["build", "train", "ask", "compare", "fresh", "retest", "words", "general"])
     ap.add_argument("--docs", help="the haystack's documents as JSON: dsid, source, title, raw")
     ap.add_argument("--index")
     ap.add_argument("--root")
@@ -624,6 +645,10 @@ def main(argv: list[str] | None = None) -> Any:
                     Path(a.general) if a.general else None, a.combine, a.floor)
     elif a.cmd == "ask":
         out = ask_plans(Path(a.work), Path(a.single), Path(a.plans), name=a.name)
+    elif a.cmd == "general":
+        out = general_test(Path(a.work), Path(a.changed), Path(a.train), Path(a.retest))
+        print(to_markdown(out, "New words from general English: the blind test set", ("training", "held_out", "changed", "retest")))
+        return out
     elif a.cmd == "words":
         out = words_test(Path(a.work), Path(a.changed), Path(a.train), Path(a.retest))
         print(to_markdown(out, "Understanding new words: the new-words set", ("training", "held_out", "changed", "retest")))
