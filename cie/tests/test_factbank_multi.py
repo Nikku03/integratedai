@@ -188,3 +188,23 @@ def test_v5_new_words_borrow_meaning_from_the_documents(tmp_path):
     f = pl.features("How many Linear issues does Omar Singh own?", P.Plan((OMAR,), ("assignee_of",), "label", "count"),
                     {"named": 1.0, "rank": 1.0, "answer": "2", "fanout": 2}, P.Assoc(), P.Assoc(), P.Lift())
     assert 0 < f["path_overlap"] < 1, "a borrowed word overlaps a relation's name as much as it is near"
+
+
+def test_v6_reads_nearness_from_general_english_too(tmp_path):
+    from cie.factbank import lexicon as L
+
+    company = L.build_space(([w for w in s.split()] for s in ["the ticket was created in jira today"] * 50 + ["owner took the ticket"] * 50),
+                            min_count=5, dim=4, log=lambda *_: None)
+    general = L.build_space(([w for w in s.split()] for s in ["she wrote the book and created the story"] * 50
+                             + ["he wrote the letter and authored the story"] * 50), min_count=5, dim=4, log=lambda *_: None)
+    tb = _bank(tmp_path)
+    lex, gen = L.Lexicon(company), L.Lexicon(general)
+    among = ["ticket", "authored", "owner"]
+    by = {c: P.Planner(tb, "v4", lex, ["ticket", "authored", "owner"], gen, c).lenders("created", among, 3, -1.0)
+          for c in ("company", "general", "max", "mean")}
+    assert "authored" not in dict(by["company"]), "'authored' is not in the company's words: only the company's lenders count"
+    assert by["general"][0][0] == "authored", "in general English, 'created' is used like 'authored'"
+    assert dict(by["max"])["authored"] == dict(by["general"])["authored"]
+    assert dict(by["mean"])["ticket"] == dict(by["company"])["ticket"], "a word one space lacks is read from the other alone"
+    les = P.PlanLessons([0.0] * len(P.FEATURES_V4), {}, {}, {}, list(P.FEATURES_V4))
+    assert (les.general_lexicon, les.combine, les.floor) == ("", "company", 0.5), "lessons saved before v6 read as v5"
