@@ -246,11 +246,19 @@ def test_single_key_kinds_need_the_exact_key():
 
 
 def test_v9_training_asks_every_field_in_every_wording():
+    import hashlib
+
     docs = _raw_docs()
     ids = {d["dsid"] for d in docs}
-    assert M.questions(docs, ids, held_out=False, seed=1) == M.questions(docs, ids, False, 1, every_field=False, all_wordings=False), \
-        "with the defaults the questions are exactly those of the earlier sets"
+    # the questions the code gave before v9, for these documents (recorded from that code): the defaults must not change
+    before = [(1, False, {}, "47a24339f2be1794"), (2, True, {}, "38db03f85e823f2a"), (3, True, {"retest": True}, "75c02a7b02053703"),
+              (4, True, {"wordings": M.BLIND2}, "75d02dc034bbeb6e")]
+    for seed, held, kw, digest in before:
+        qs = M.questions(docs, ids, held, seed, **kw)
+        assert hashlib.sha256(json.dumps(qs, sort_keys=True).encode()).hexdigest()[:16] == digest
+    base = M.questions(docs, ids, held_out=False, seed=1)
     full = M.questions(docs, ids, held_out=False, seed=1, every_field=True, all_wordings=True, max_q=None)
+    assert {q["question"] for q in base} <= {q["question"] for q in full}, "the full set holds the default questions, pairs included"
     pr = [q for q in full if q["kind"] == "pr_issue"]
     assert sorted({q["field"] for q in pr}) == ["assignee", "due_date", "status"] and len(pr) == 9, "three fields in three wordings"
     due = next(q for q in pr if q["field"] == "due_date")
@@ -261,12 +269,19 @@ def test_v9_training_asks_every_field_in_every_wording():
 def test_v9_reads_what_a_plan_rests_on(tmp_path):
     pl = P.Planner(_bank(tmp_path), "v9")
     read = pl.reads(P.Plan(("doc:d4",), ("linked_linear",), "assignee", "single"))
-    assert "eng-11" in read and "omar singh" in read and "4821" in read
+    assert read == {"ends": ["eng-11"], "values": ["omar singh"], "people": []}
     assert P.rests_on(["ENG-11", "Omar Singh"], read) and not P.rests_on(["ENG-12", "Omar Singh"], read)
     by_due = pl.reads(P.Plan(("doc:d1", "doc:d3"), (), "due_date", "earliest"))
     assert P.rests_on(["2026-03-20", "2026-05-01"], by_due)
     assert not P.rests_on(["2026-03-20", "2026-05-01"], pl.reads(P.Plan(("doc:d1", "doc:d3"), (), "status", "single"))), \
         "the right key by another field is right by coincidence"
+    # a key passed through on the way is not what the plan answers about: ENG-12 is reached, then left for its assignee
+    via = pl.reads(P.Plan(("doc:d3",), ("dependencies", "assignee"), "label", "single"))
+    assert "eng-12" not in via["ends"] and not P.rests_on(["ENG-12", "Omar Singh"], via)
+    assert P.rests_on(["ENG-12", "Omar Singh"], pl.reads(P.Plan(("doc:d3",), ("dependencies",), "assignee", "single")))
+    owner = pl.reads(P.Plan((OMAR,), ("assignee_of",), "label", "list"))
+    assert P.rests_on(["Omar Singh", "ENG-11", "ENG-12"], owner), "a person the plan starts from or passes through counts"
+    assert P.rests_on(["ENG-11"], ["eng-11"]), "a flat list (recorded before roles) counts for every role"
 
 
 def test_v9_planner_rules_and_checks(tmp_path):
@@ -280,6 +295,13 @@ def test_v9_planner_rules_and_checks(tmp_path):
     q = "Which is due sooner, ENG-11 or ENG-13?"
     kept = pl.check(q, pl.candidates(q), "key")
     assert kept and all(set(p.starts) == {"doc:d1", "doc:d3"} and not p.path for p, _ in kept), "a choice compares exactly what it names"
+    assert all(set(p.starts) == {"doc:d1", "doc:d3"} for p, _ in pl.check(q, pl.candidates(q))), "whatever kind of answer the plan gives"
+    q2 = "Who opened the GitHub pull request that references Linear issue ENG-11?"
+    kept2 = pl.check(q2, pl.candidates(q2), "person")
+    assert kept2 and all(p.system == "github" for p, _ in kept2), "it starts in Linear and asks about GitHub"
+    assert {m["answer"] for _, m in kept2} == {"Maya Chen"}
+    assert pl.kind9(P.Plan(("doc:d3",), ("assignee",), "label", "single"), "Liam Chen") == "person"
+    assert pl.out_kind(P.Plan(("doc:d3",), ("assignee",), "label", "single"), "Liam Chen") == "key", "the v4 features keep the old kind"
     assert {m["answer"] for p, m in kept if p.field == "due_date" and p.aggregate == "earliest"} == {"ENG-11"}
     q = "Who is assigned to the ticket that ENG-13 is linked to?"
     cands = pl.candidates(q)
@@ -296,6 +318,8 @@ def test_v9_lessons_learn_the_kind_of_answer_and_answer_through_the_checks(tmp_p
           {"question": "How many Linear issues are assigned to Liam Chen?", "expected": {"value": "1"}, "pieces": ["ENG-13"]},
           {"question": "Which is due sooner, ENG-11 or ENG-13?", "expected": {"ids": ["ENG-11"], "id_kind": "key"},
            "pieces": ["2026-03-20", "2026-05-01"]},
+          {"question": "Which is due sooner, ENG-13 or ENG-12?", "expected": {"ids": ["ENG-12"], "id_kind": "key"},
+           "pieces": ["2026-05-01", "2026-04-02"]},
           {"question": "Who is assigned to the ticket that ENG-13 is linked to?", "expected": {"value": "Omar Singh"},
            "pieces": ["ENG-12", "Omar Singh"]}]
     les = P.learn_plans(tb, qs, log=lambda *_: None, rules="v9", proper=True)
@@ -305,7 +329,7 @@ def test_v9_lessons_learn_the_kind_of_answer_and_answer_through_the_checks(tmp_p
     ak = P.AskedKind(again.asked_kind)
     assert ak.asked("How many Linear issues are assigned to Maya Chen?", 0.5) == "count"
     assert P.AskedKind(ak.to_json()).posterior({"how", "many"}) == ak.posterior({"how", "many"})
-    ans, best, _, _ = P.answer(tb, again, "Which is due sooner, ENG-13 or ENG-11?")
+    ans, best, _, _ = P.answer(tb, again, "Which is due sooner, ENG-12 or ENG-11?")
     assert ans == "ENG-11" and best.field == "due_date" and not best.path
     form = {"kind": "person", "fields": ("assignee",)}
     ans, best, _, _ = P.answer(tb, again, "Who is assigned to the ticket that ENG-13 is linked to?", form=form)
@@ -317,8 +341,17 @@ def test_the_measure_counts_an_answer_right_for_the_right_reason_only_if_its_pla
     q = {"id": "c1", "group": "compare", "kind": "compare_two", "field": "", "question": "Which is due sooner, ENG-11 or ENG-13?",
          "expected": {"ids": ["ENG-11"], "id_kind": "key"}, "pieces": ["2026-03-20", "2026-05-01"]}
     _write_jsonl(tmp_path / "questions.jsonl", [q])
-    _write_jsonl(tmp_path / "factbank_v9.jsonl", [{"id": "c1", "answer": "ENG-11", "evidence": "", "reads": ["eng-11", "2026-03-20", "2026-05-01"]}])
-    _write_jsonl(tmp_path / "factbank_v4.jsonl", [{"id": "c1", "answer": "ENG-11", "evidence": "", "reads": ["eng-11", "2026-01-02"]}])
+    both = {"ends": ["eng-11", "eng-13"], "values": ["2026-03-20", "2026-05-01"], "people": []}
+    created = {"ends": ["eng-11", "eng-13"], "values": ["2026-01-02", "2026-01-05"], "people": []}
+    _write_jsonl(tmp_path / "factbank_v9.jsonl", [{"id": "c1", "answer": "ENG-11", "evidence": "", "reads": both}])
+    _write_jsonl(tmp_path / "factbank_v4.jsonl", [{"id": "c1", "answer": "ENG-11", "evidence": "", "reads": created}])
     m = M.measure(tmp_path)
     assert m["direct"]["v9"]["mean"] == m["direct"]["v4"]["mean"] == 1.0
     assert m["reason"]["v9"]["mean"] == 1.0 and m["reason"]["v4"]["mean"] == 0.0
+    q2 = {**q, "id": "a1", "group": "combine", "kind": "action_owner_issues", "question": "Which keys?",
+          "expected": {"ids": ["ENG-11", "ENG-12"], "id_kind": "key"}, "pieces": ["ENG-11", "ENG-12"]}
+    _write_jsonl(tmp_path / "questions.jsonl", [q, q2])
+    _write_jsonl(tmp_path / "factbank_v9.jsonl", [{"id": "c1", "answer": "ENG-11", "evidence": "", "reads": both},
+                                                 {"id": "a1", "answer": "ENG-11", "evidence": "", "reads": {"ends": ["eng-11", "eng-12"]}}])
+    rows = {r["id"]: r for r in M.measure(tmp_path)["rows"]}
+    assert 0 < rows["a1"]["direct"]["v9"] < 1 and rows["a1"]["reason"]["v9"] == 0.0, "a partly right list is not right for the right reason"

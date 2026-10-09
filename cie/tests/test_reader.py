@@ -51,6 +51,7 @@ def test_the_form_is_cached_by_question_and_prompt(tmp_path):
     f._ask = lambda question: calls.append(question) or {"answer": "number", "field": "none"}  # noqa: ARG005
     got = f.form(q)
     assert got["kind"] == "person" and got["fields"] == ("author",) and not calls, "a cached form calls no model"
+    assert got["model_ms"] is None, "the model's time comes from the cache line (none recorded here)"
     assert f.form("how many?")["kind"] == "count" and calls == ["how many?"], "a form made with another prompt is not reused"
     assert R.Former(cache).form("how many?")["kind"] == "count", "the new form was kept"
     assert R.FORM_FIELD["status"] == ("status", "state") and set(R.FORM_KIND.values()) == {"person", "date", "count", "key", "other"}

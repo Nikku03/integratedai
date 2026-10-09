@@ -270,10 +270,13 @@ def questions(docs: list[dict[str, Any]], dsids: set[str], held_out: bool, seed:
     v9 (docs/FACTBANK_PLAN_PREREGISTRATION.md) trains on every kind of question the documents allow: ``every_field`` asks
     about every field a linked issue or ticket has instead of one drawn at random, ``all_wordings`` asks each question in
     every wording instead of one drawn at random, and ``max_q=None`` keeps them all. With the defaults the questions are
-    exactly those of the earlier sets."""
+    exactly those of the earlier sets. With the flags, the random draws of the defaults are still made in the same order (the
+    other fields' wordings come from a second generator), so the default questions are among them, the same pairs to compare
+    included."""
     if retest:
         wordings = RETEST
     rng = random.Random(seed)
+    extra = random.Random(seed * 7919 + 1)  # draws the defaults do not make (fields not drawn), so ``rng`` stays in step
     inside = [d for d in docs if d["dsid"] in dsids]
     by_id = {d["dsid"]: d for d in inside}
     lin = {str(d["raw"]["key"]).upper(): d for d in inside if d["source"] == "linear" and d["raw"].get("key")}
@@ -284,16 +287,20 @@ def questions(docs: list[dict[str, Any]], dsids: set[str], held_out: bool, seed:
             by_person[p].append(d)
     out: list[dict[str, Any]] = []
 
-    def add(kind: str, field: str, fmt: dict[str, str], expected: dict[str, Any], gold: list[str], pieces: list[str]) -> None:
+    def add(kind: str, field: str, fmt: dict[str, str], expected: dict[str, Any], gold: list[str], pieces: list[str],
+            drawn: bool = True) -> None:
         options = wordings[(kind, field)] if wordings else T[(kind, field)][1 if held_out else 0]
-        for w in (options if all_wordings else [rng.choice(options)]):
+        picked = (rng if drawn else extra).choice(options)
+        for w in (options if all_wordings else [picked]):
             out.append({"id": f"{kind}{'-' + field if field else ''}-{len(out) + 1:03d}", "group": GROUP[kind], "kind": kind,
                         "field": field, "question": w.format(**fmt), "expected": expected, "gold_docs": sorted(set(gold)),
                         "pieces": pieces})
 
-    def fields_of(raw: dict[str, Any], allowed: tuple[str, ...], fallback: str) -> list[str]:
+    def fields_of(raw: dict[str, Any], allowed: tuple[str, ...], fallback: str) -> list[tuple[str, bool]]:
+        """The fields to ask about, each with whether it is the one the defaults draw."""
         have = [f for f in allowed if raw.get(f)] or [fallback]
-        return have if every_field else [rng.choice(have)]
+        pick = rng.choice(have)
+        return [(f, f == pick) for f in have] if every_field else [(pick, True)]
 
     for u in units(inside):
         if not set(u["docs"]) <= dsids:
@@ -301,22 +308,23 @@ def questions(docs: list[dict[str, Any]], dsids: set[str], held_out: bool, seed:
         if u["kind"] == "pr":
             pr, iss = by_id[u["pr"]], by_id[u["issue"]]
             n, key = str(pr["raw"]["pr_number"]), str(iss["raw"]["key"]).upper()
-            for field in fields_of(iss["raw"], ("assignee", "due_date", "status"), "status"):
+            for field, drawn in fields_of(iss["raw"], ("assignee", "due_date", "status"), "status"):
                 val = _person(iss["raw"].get("assignee")) if field == "assignee" else (
                     _iso(iss["raw"].get("due_date")) if field == "due_date" else str(iss["raw"].get("status") or ""))
                 if val:
-                    add("pr_issue", field, {"n": n}, {"date": val} if field == "due_date" else {"value": val}, u["docs"], [key, val])
+                    add("pr_issue", field, {"n": n}, {"date": val} if field == "due_date" else {"value": val}, u["docs"], [key, val],
+                        drawn)
             author = _person(pr["raw"].get("author"))
             refs = [d for d in inside if d["source"] == "github" and key in _keys(d["raw"].get("linked_linear"))]
             if author and len(refs) == 1:
                 add("issue_pr_author", "author", {"k": key}, {"value": author}, u["docs"], [n, author])
         elif u["kind"] == "ticket":
             a, b = by_id[u["from"]], by_id[u["to"]]
-            for field in fields_of(b["raw"], ("status", "assignee"), "status"):
+            for field, drawn in fields_of(b["raw"], ("status", "assignee"), "status"):
                 val = str(b["raw"].get("status") or "") if field == "status" else _person(b["raw"].get("assignee"))
                 if val:
                     add("ticket_link", field, {"k": str(a["raw"]["key"]).upper()}, {"value": val}, u["docs"],
-                        [str(b["raw"]["key"]).upper(), val])
+                        [str(b["raw"]["key"]).upper(), val], drawn)
         elif u["kind"] == "person":
             ds = by_person.get(u["person"], [])
             keys = sorted(str(d["raw"]["key"]).upper() for d in ds)
@@ -511,6 +519,8 @@ def ask_plans(work: Path, single: Path, plan_lessons: Path, budget: int = 24_000
         t = time.perf_counter()
         read = reader.read(q["question"], people_named(tb, q["question"])) if reader is not None else None
         form = former.form(q["question"]) if former is not None else None
+        if form is not None:  # what the bank's own lessons say, to report how often the form differs
+            form = {**form, "learned_kind": plans.AskedKind(pl.asked_kind).asked(q["question"], pl.kind_floor) if pl.asked_kind else None}
         ans, best, journal, top = plans.answer(tb, pl, read["asked"] if read else q["question"], planner, form)
         lines = []
         if best is not None:
@@ -581,8 +591,8 @@ def measure(work: Path) -> dict[str, Any]:
             if q["id"] in d:
                 r["direct"][label] = own_score(q, d[q["id"]]["answer"])
                 r["answers"][label] = d[q["id"]]["answer"]
-                if "reads" in d[q["id"]]:  # v9: right for the right reason, only if the plan read every fact the answer rests on
-                    r["reason"][label] = r["direct"][label] if rests_on(q.get("pieces") or [], d[q["id"]]["reads"]) else 0.0
+                if "reads" in d[q["id"]]:  # v9: right for the right reason: wholly right, and the plan read every fact it rests on
+                    r["reason"][label] = float(r["direct"][label] >= 0.999 and rests_on(q.get("pieces") or [], d[q["id"]]["reads"]))
         texts = {a: ev.get(q["id"], {}).get(a) for a in ("plain-words", "plain", "bank")}
         texts.update({label: d.get(q["id"], {}).get("evidence") for label, d in fbs.items()})
         for a, t in texts.items():
@@ -731,8 +741,9 @@ def plan_test(test_dir: Path, changed: Path, training: Path, training_all: Path)
     rules = {
         "1 the fixed planner helps (v9 - v4 >= +0.10, test set)": at_least(d(h["v9"]["mean"], h["v4"]["mean"]), 0.10),
         "2 it helps beyond the glossary (v9 - v8 >= +0.05, test set)": at_least(d(h["v9"]["mean"], h["v8"]["mean"]), 0.05),
-        "3 right for the right reason (v9 - v4 >= +0.10, test set, counting only answers whose plan read every fact they rest on)":
-            at_least(d(hr["v9"]["mean"], hr["v4"]["mean"]), 0.10),
+        "3 right for the right reason (test set, counting only answers whose plan read every fact they rest on: v9 - v4 >= +0.10, "
+        "and v9 >= v9's own right answers - 0.05)":
+            at_least(d(hr["v9"]["mean"], hr["v4"]["mean"]), 0.10) and at_least(d(hr["v9"]["mean"], h["v9"]["mean"]), -0.05),
         "4 a small model's form adds (v10 - v9 >= +0.05, test set)": at_least(d(h["v10"]["mean"], h["v9"]["mean"]), 0.05),
         "5 principles, not memorisation (v9 and v10 test set >= their training questions - 0.15)":
             at_least(d(h["v9"]["mean"], ta["v9"]["mean"]), -0.15) and at_least(d(h["v10"]["mean"], ta["v10"]["mean"]), -0.15),

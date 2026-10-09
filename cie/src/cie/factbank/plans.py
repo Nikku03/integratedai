@@ -216,14 +216,23 @@ class Planner:
             ents = [e for e in ents if {v.lower() for v in self.field_values(e, "status") + self.field_values(e, "state")} & want]
         return ents
 
-    def reads(self, plan: Plan) -> list[str]:
-        """v9: what carrying out a plan reads: the label and name of every entity it starts from or passes through, and the
-        values of its field on the entities it ends at (normalised)."""
-        passed = list(plan.starts) + [e for i in range(1, len(plan.path) + 1) for e in self.follow(plan.starts, plan.path[:i])]
-        out = [self.b.label_of(e) for e in dict.fromkeys(passed)] + [self.b.names.get(e, "") for e in dict.fromkeys(passed)]
-        if plan.field != "label":
-            out += [v for e in self.ends(plan) for v in self.field_values(e, plan.field)]
-        return list(dict.fromkeys(norm(x) for x in out if x))
+    def reads(self, plan: Plan) -> dict[str, list[str]]:
+        """v9: what carrying out a plan reads, by role (normalised): the labels of the entities it ends at (what it answers
+        about, counts or lists), the values of its field on them, and the names of the people it starts from or passes
+        through (an action item's owner)."""
+        passed = list(dict.fromkeys(list(plan.starts) + [e for i in range(1, len(plan.path)) for e in self.follow(plan.starts, plan.path[:i])]))
+        ends = self.ends(plan)
+        values = [v for e in ends for v in self.field_values(e, plan.field)] if plan.field != "label" else []
+        out = {"ends": [self.b.label_of(e) for e in ends], "values": values,
+               "people": [self.b.names.get(e, "") for e in passed + ends if e.startswith("person:")]}
+        return {k: list(dict.fromkeys(norm(x) for x in v if x)) for k, v in out.items()}
+
+    def kind9(self, plan: Plan, answer: str) -> str:
+        """v9: the kind of answer, where a person's label (``assignee → label``) is a person, not an item's key. ``out_kind``
+        is kept as it was for the v4 to v8 features."""
+        if plan.field == "label" and plan.aggregate in ("single", "list") and all(v.lower() in self.b.people for v in answer.split(", ")):
+            return "person"
+        return self.out_kind(plan, answer)
 
     def candidates(self, question: str, max_len: int = 2) -> list[tuple[Plan, dict[str, Any]]]:
         """Every plan the bank allows for the question, with what carrying it out gives."""
@@ -323,14 +332,24 @@ class Planner:
 
         1. **What the question is about:** a question that names something (a key, a pull request number, a person, a quoted
            title) is about it: the plan must start from something it names.
-        2. **A choice:** a question that names two or more things to choose between is answered by comparing exactly those
-           things: a plan answering with an item must start from all of them and follow no link.
-        3. **The kind of answer:** when the question's kind of answer is known (``asked``: a count, an item's key, a person, a
+        2. **The system asked about:** a question that starts in one system and asks about another ("who opened the GitHub
+           pull request that references Linear issue ENG-1?") is answered from the other: the plan must end there.
+        3. **A choice:** a question that names two or more things to choose between is answered by comparing exactly those
+           things: the plan must start from all of them and follow no link.
+        4. **The kind of answer:** when the question's kind of answer is known (``asked``: a count, an item's key, a person, a
            date or another value), the plan must give that kind.
-        4. **The field** (v10, from the small model's form): a plan answering with one value must read one of ``fields``; a
+        5. **The field** (v10, from the small model's form): a plan answering with one value must read one of ``fields``; a
            plan choosing an item by date must order by one of them."""
         named = {e for e in self.b.named(question) if e in self.b.kinds and not e.startswith("person:")}
         about = {e for e in self.b.named(question) if e in self.b.kinds} | set(self.titled(question))
+        ql = question.lower() + " "
+        systems = list(dict.fromkeys(s for w, s in SYSTEM_WORDS.items() if w in ql))
+
+        def other_system(p: Plan) -> bool:
+            """The question asks about a system other than the one it starts in, and the plan's answer comes from it."""
+            target = self.target_system(systems, p.starts)
+            own = {self.b.system_of_entity(e) for e in p.starts}
+            return not target or target in own or p.system == target
 
         def field_fits(p: Plan, k: str) -> bool:
             if k in ("person", "date", "other"):
@@ -340,12 +359,13 @@ class Planner:
             return True
 
         rules = [lambda p, k: not about or bool(set(p.starts) & about),
-                 lambda p, k: not (len(named) >= 2 and k == "key" and (p.path or set(p.starts) != named)),
+                 lambda p, k: other_system(p),
+                 lambda p, k: not (len(named) >= 2 and (p.path or set(p.starts) != named)),
                  lambda p, k: not asked or k == asked,
                  lambda p, k: not fields or field_fits(p, k)]
         keep = cands
         for rule in rules:
-            nxt = [(p, m) for p, m in keep if rule(p, self.out_kind(p, m["answer"]))]
+            nxt = [(p, m) for p, m in keep if rule(p, self.kind9(p, m["answer"]))]
             if nxt:
                 keep = nxt
         return keep
@@ -588,11 +608,32 @@ class PlanLessons:
             (["words → kind of answer: " + ", ".join(f"'{w}'→{t}" for w, t, _ in kind)] if kind else [])
 
 
-def rests_on(pieces: list[str], read: list[str]) -> bool:
-    """v9: the plan read every fact the answer rests on (the question's pieces: the keys, values and dates it was built from).
-    A plan whose answer is right by coincidence, such as comparing two issues by when they were created when the question asks
-    which is due first, does not."""
-    return all(any(re.search(r"(?<!\w)" + re.escape(norm(p)) + r"(?!\w)", r) for r in read) for p in pieces if norm(p))
+PIECE_KEY = re.compile(r"^(?:[a-z][a-z0-9]{1,9}-\d{2,7}|#?\d{2,7})$")
+
+
+def rests_on(pieces: list[str], read: dict[str, list[str]] | list[str]) -> bool:
+    """v9: the plan read every fact the answer rests on (the question's pieces: the keys, values and dates it was built from),
+    each in its role. A key or pull request number must be one of the things the plan ends at; any other piece (a date, a
+    status, a name) must be a value of the plan's field on them, or a person the plan went through. A plan whose answer is right
+    by coincidence, such as comparing two issues by when they were created when the question asks which is due first, or
+    reading another ticket's assignee who happens to be the author, does not. (A flat list, as recorded before roles, counts
+    for every role.)"""
+    if isinstance(read, list):
+        read = {"ends": read, "values": read, "people": read}
+
+    def found(p: str, where: list[str]) -> bool:
+        return any(re.search(r"(?<!\w)" + re.escape(p) + r"(?!\w)", r) for r in where)
+
+    for piece in pieces:
+        p = norm(piece)
+        if not p:
+            continue
+        if PIECE_KEY.match(p):
+            if not found(p, read.get("ends", [])):
+                return False
+        elif not (found(p, read.get("values", [])) or found(p, read.get("people", [])) or p in read.get("ends", [])):
+            return False
+    return True
 
 
 def matches(expected: dict[str, Any], answer: str) -> bool:
@@ -637,10 +678,11 @@ def learn_plans(bank, questions: list[dict[str, Any]], log=print, features: list
                            for p, _ in good]) if good else set()
         at = {p.aggregate for p, _ in good}
         kt = {pl.out_kind(p, m["answer"]) for p, m in good}
+        kt9 = {pl.kind9(p, m["answer"]) for p, m in good}  # v9: what kind of answer the question asks for
         rel_total.add(qw, rt)
         agg_total.add(qw, at)
         kind_total.add(kw, kt)
-        asked.add(question_words(q["question"]), kt)
+        asked.add(question_words(q["question"]), kt9)
         per_q.append((q, cands, right, qw, kw, rt, at, kt))
     use_kind = "kind_assoc" in features
     xs, ys = [], []
@@ -672,16 +714,20 @@ def proper_right(pl: Planner, q: dict[str, Any], plan: Plan, meta: dict[str, Any
 
 def answer(bank, lessons: PlanLessons, question: str, planner: Planner | None = None, form: dict[str, Any] | None = None
            ) -> tuple[str, Plan | None, list[dict[str, Any]], list[tuple[float, Plan, str]]]:
-    """The best plan's answer, its journal, and the top plans. Pass ``planner`` (``lessons.planner(bank)``) to reuse one. With
-    ``form`` (v10: cie.factbank.reader.Former), the small model's form says the kind of answer and the field."""
+    """The best plan's answer, its journal, and the top plans. Pass ``planner`` (``lessons.planner(bank)``) to reuse one.
+
+    With ``form`` (v10: cie.factbank.reader.Former), the small model's form helps where the bank's own lessons are not sure: its
+    kind of answer is used only when the lessons are not sure of one, and its field only when its kind is the one used."""
     pl = planner or lessons.planner(bank)
     ra, aa, ka = lessons.assocs()
     cands = pl.candidates(question)
     if lessons.rules == "v9":  # v9: only plans that pass the checks
         asked = AskedKind(lessons.asked_kind).asked(question, lessons.kind_floor) if lessons.asked_kind else None
+        fields: tuple[str, ...] = ()
         if form is not None and form.get("kind"):
-            asked = form["kind"]
-        cands = pl.check(question, cands, asked, tuple(form.get("fields") or ()) if form is not None else ())
+            asked = asked or form["kind"]
+            fields = tuple(form.get("fields") or ()) if form["kind"] == asked else ()
+        cands = pl.check(question, cands, asked, fields)
     scored = sorted(((sigmoid(dot(lessons.weights, pl.x(question, p, m, ra, aa, ka, lessons.features))), p, m["answer"])
                      for p, m in cands), key=lambda x: -x[0])
     if not scored:

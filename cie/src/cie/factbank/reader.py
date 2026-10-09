@@ -204,4 +204,5 @@ class Former:
             with self.cache_path.open("a") as f:
                 f.write(json.dumps(self.cache[key]) + "\n")
         raw = self.cache[key]["form"]
-        return {"kind": FORM_KIND.get(raw.get("answer", "")), "fields": FORM_FIELD.get(raw.get("field", ""), ()), "raw": raw}
+        return {"kind": FORM_KIND.get(raw.get("answer", "")), "fields": FORM_FIELD.get(raw.get("field", ""), ()), "raw": raw,
+                "model_ms": self.cache[key].get("ms")}
