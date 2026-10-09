@@ -97,6 +97,13 @@ answers read the facts they rest on: 0.968 against 0.385. Six of seven pre-regis
 The 0.975 partly reflects the wording drawn. The same questions in other blind wordings give 0.87–0.98. A local 3B
 model, asked only where the bank is unsure, raises the less familiar wordings by about 0.05.
 
+**Repeated on another 50 documents** ([`docs/FACTBANK_PLAN_REPLICATION.md`](docs/FACTBANK_PLAN_REPLICATION.md)), with
+nothing else changed, it replicated:
+- v9 scored 0.979, v10 1.000, the glossary 0.722 and the old planner 0.580;
+- the same rules were met.
+
+Compared like for like over wording draws, v9 holds at about 0.95–0.98 on new documents.
+
 ## Brain-wired reasoning neurons (research)
 
 `cie.neuro` wires the reasoning engine's spiking neurons like a piece of Blue Brain's cortex model (directed cliques of
