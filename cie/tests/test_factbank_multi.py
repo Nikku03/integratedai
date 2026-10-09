@@ -355,3 +355,29 @@ def test_the_measure_counts_an_answer_right_for_the_right_reason_only_if_its_pla
                                                  {"id": "a1", "answer": "ENG-11", "evidence": "", "reads": {"ends": ["eng-11", "eng-12"]}}])
     rows = {r["id"]: r for r in M.measure(tmp_path)["rows"]}
     assert 0 < rows["a1"]["direct"]["v9"] < 1 and rows["a1"]["reason"]["v9"] == 0.0, "a partly right list is not right for the right reason"
+
+
+def test_v11_a_ticket_means_a_linear_or_jira_item(tmp_path):
+    tb = _bank(tmp_path)
+    v9, v11 = P.Planner(tb, "v9"), P.Planner(tb, "v9")
+    v11.tickets = True
+    q = "Which tickets are assigned to Omar Singh?"
+    assert v9.systems_named(q) == [] and v11.systems_named(q) == ["ticket"], "off by default: v9 is unchanged"
+    assert v11.systems_named("What is the status of the Linear ticket ENG-11?") == ["linear", "ticket"], "a named tracker comes first"
+    assert v11.in_system("doc:d1", "ticket") and not v11.in_system("doc:d4", "ticket") and v11.in_system("doc:d4", "github")
+    assert v11.own_systems(("doc:d1",)) == {"linear", "ticket"} and v9.own_systems(("doc:d1",)) == {"linear"}
+    assert v11.target_system(v11.systems_named("Who opened the PR for ticket ENG-11?"), ("doc:d1",)) == "github"
+    assert v11.target_system(v11.systems_named("The ticket that PR #4821 is linked to: who has it?"), ("doc:d4",)) == "ticket"
+    q2 = "The ticket that PR #4821 is linked to: who has it?"
+    kept = v11.check(q2, v11.candidates(q2), "person")
+    assert kept and all(p.system == "ticket" for p, _ in kept) and {m["answer"] for _, m in kept} == {"Omar Singh"}
+    assert v11.execute(P.Plan((OMAR,), ("assignee_of",), "label", "count", "ticket")) == "2"
+    qs = [{"question": "How many tickets are assigned to Omar Singh?", "expected": {"value": "2"}, "pieces": ["ENG-11", "ENG-12"]},
+          {"question": "How many tickets are assigned to Liam Chen?", "expected": {"value": "1"}, "pieces": ["ENG-13"]}]
+    les = P.learn_plans(tb, qs, log=lambda *_: None, rules="v9", proper=True, tickets=True)
+    les.save(tmp_path / "v11.json")
+    again = P.PlanLessons.load(tmp_path / "v11.json")
+    assert again.tickets and again.planner(tb).tickets
+    old = {k: v for k, v in json.loads((tmp_path / "v11.json").read_text()).items() if k != "tickets"}
+    (tmp_path / "v9.json").write_text(json.dumps(old))
+    assert not P.PlanLessons.load(tmp_path / "v9.json").tickets, "lessons saved before v11 have no ticket rule"

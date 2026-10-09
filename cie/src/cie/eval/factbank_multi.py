@@ -464,7 +464,8 @@ def build_training_all(work: Path, out: Path) -> dict[str, Any]:
 
 # ---------------------------------------------------------------------------------------------- training and asking
 def train(work: Path, single: Path, out: Path, rules: str = "v4", lexicon: Path | None = None, general: Path | None = None,
-          combine: str = "company", floor: float = 0.5, glossary: Path | None = None, proper: bool = False) -> dict[str, Any]:
+          combine: str = "company", floor: float = 0.5, glossary: Path | None = None, proper: bool = False,
+          tickets: bool = False) -> dict[str, Any]:
     """``rules="v3"`` reproduces the plan lessons of the first test; ``"v4"`` is the planner revised after it. With a lexicon
     (``cie.factbank.lexicon``), v4 plus learned word meanings: v5. ``"v9"`` with ``proper`` is the planner fixed after the
     language-model test (docs/FACTBANK_PLAN_PREREGISTRATION.md)."""
@@ -483,7 +484,7 @@ def train(work: Path, single: Path, out: Path, rules: str = "v4", lexicon: Path 
                       features=(FEATURES_V5 if lex is not None else FEATURES_V4) if rules in ("v4", "v9") else FEATURES, rules=rules,
                       lexicon=lex, lexicon_path=str(lexicon.resolve()) if lexicon is not None else "", general=gen,
                       general_path=str(general.resolve()) if general is not None else "", combine=combine, floor=floor,
-                      glossary_path=str(glossary.resolve()) if glossary is not None else "", proper=proper)
+                      glossary_path=str(glossary.resolve()) if glossary is not None else "", proper=proper, tickets=tickets)
     les.save(out)
     return {"plan_lessons": str(out), "describe": les.describe(), "trained_on": les.trained_on}
 
@@ -579,7 +580,7 @@ def measure(work: Path) -> dict[str, Any]:
     fbs = {label: {r["id"]: r for r in _jsonl(work / f"{name}.jsonl")}
            for label, name in (("v1", "factbank"), ("v2", "factbank_v2"), ("v3", "factbank_v3"), ("v4", "factbank_v4"), ("v5", "factbank_v5"),
                                ("v6", "factbank_v6"), ("v7", "factbank_v7"), ("v8", "factbank_v8"), ("v9", "factbank_v9"),
-                               ("v9n", "factbank_v9n"), ("v10", "factbank_v10"))
+                               ("v9n", "factbank_v9n"), ("v10", "factbank_v10"), ("v11", "factbank_v11"), ("v12", "factbank_v12"))
            if (work / f"{name}.jsonl").exists()}
     from cie.factbank.plans import rests_on
 
@@ -758,6 +759,49 @@ def plan_test(test_dir: Path, changed: Path, training: Path, training_all: Path)
     return rep
 
 
+def ticket_test(test_dir: Path, changed: Path, training: Path, training_all: Path, earlier: list[Path]) -> dict[str, Any]:
+    """The ticket test's rules (docs/FACTBANK_TICKET_PREREGISTRATION.md): v11 (v9, with "ticket" or "issue" meaning a Linear or
+    Jira item) and v12 (v10 with the same) against v9 and v10, on wordings written without naming the tracker."""
+    m = {"training": measure(training), "training_all": measure(training_all), "held_out": measure(test_dir), "changed": measure(changed)}
+    d = lambda a, b: round(a - b, 3) if a is not None and b is not None else None  # noqa: E731
+    h, t, ta, c = m["held_out"]["direct"], m["training"]["direct"], m["training_all"]["direct"], m["changed"]["direct"]
+    rows = m["held_out"]["rows"]
+
+    def share(label: str, kinds: set[str], inside: bool) -> float | None:
+        vals = [r["direct"].get(label) for r in rows if (r["kind"] in kinds) == inside and label in r["direct"]]
+        return round(sum(vals) / len(vals), 3) if vals else None
+
+    action = {"action_owner_issues"}
+    m["action_items"] = {a: share(a, action, True) for a in ("v4", "v8", "v9", "v10", "v11", "v12")}
+    m["other_questions"] = {a: share(a, action, False) for a in ("v4", "v8", "v9", "v10", "v11", "v12")}
+    m["earlier"] = {str(e.name): {a: measure(e)["direct"].get(a, {}).get("mean") for a in ("v9", "v11", "v10", "v12")} for e in earlier}
+    early = [v for v in m["earlier"].values()]
+    mean = lambda a: round(sum(v[a] for v in early) / len(early), 3) if early and all(v.get(a) is not None for v in early) else None  # noqa: E731
+    rules = {
+        "1 the ticket rule answers action items when no tracker is named (v11 - v9 >= +0.25, test set's action-item questions)":
+            at_least(d(m["action_items"]["v11"], m["action_items"]["v9"]), 0.25),
+        "2 no harm on the other questions (v11 >= v9 - 0.03, test set's other questions, per question)":
+            at_least(d(m["other_questions"]["v11"], m["other_questions"]["v9"]), -0.03),
+        "3 the same with the small model's form (v12 - v10 >= +0.25, test set's action-item questions)":
+            at_least(d(m["action_items"]["v12"], m["action_items"]["v10"]), 0.25),
+        "4 no harm on the earlier sets (v11 >= v9 - 0.01 and v12 >= v10 - 0.01, mean of the earlier held-out sets as drawn)":
+            at_least(d(mean("v11"), mean("v9")), -0.01) and at_least(d(mean("v12"), mean("v10")), -0.01),
+        "5 principles, not memorisation (v11 and v12 test set >= their training questions - 0.15)":
+            at_least(d(h["v11"]["mean"], ta["v11"]["mean"]), -0.15) and at_least(d(h["v12"]["mean"], ta["v12"]["mean"]), -0.15),
+        "6 holds when the information changes (v11 and v12 changed >= test set - 0.05)":
+            at_least(d(c["v11"]["mean"], h["v11"]["mean"]), -0.05) and at_least(d(c["v12"]["mean"], h["v12"]["mean"]), -0.05),
+        "7 no harm on what was learned (v11 and v12 >= v4 - 0.03, the 48 first training questions)":
+            at_least(d(t["v11"]["mean"], t["v4"]["mean"]), -0.03) and at_least(d(t["v12"]["mean"], t["v4"]["mean"]), -0.03),
+    }
+    rep = {**m, "rules": rules}
+    (test_dir / "ticket_report.json").write_text(json.dumps(rep, indent=1, default=str))
+    (test_dir / "ticket_report.md").write_text(to_markdown(rep, "A ticket means Linear or Jira: the test set", ("training", "training_all", "held_out", "changed"))
+                                               + "\nAction items (share right): " + json.dumps(m["action_items"])
+                                               + "\nOther questions (share right): " + json.dumps(m["other_questions"])
+                                               + "\nEarlier sets (three-group mean): " + json.dumps(m["earlier"]) + "\n")
+    return rep
+
+
 def to_markdown(rep: dict[str, Any], title: str = "Questions that need several documents",
                 parts: tuple[str, ...] = ("training", "held_out", "changed")) -> str:
     g = ("link", "combine", "compare", "mean")
@@ -781,7 +825,8 @@ def to_markdown(rep: dict[str, Any], title: str = "Questions that need several d
 
 def main(argv: list[str] | None = None) -> Any:
     ap = argparse.ArgumentParser(prog="python -m cie.eval.factbank_multi")
-    ap.add_argument("cmd", choices=["build", "train", "ask", "compare", "fresh", "retest", "words", "general", "llm", "trainall", "plan"])
+    ap.add_argument("cmd", choices=["build", "train", "ask", "compare", "fresh", "retest", "words", "general", "llm", "trainall", "plan",
+                                    "ticket"])
     ap.add_argument("--docs", help="the haystack's documents as JSON: dsid, source, title, raw")
     ap.add_argument("--index")
     ap.add_argument("--root")
@@ -794,8 +839,10 @@ def main(argv: list[str] | None = None) -> Any:
     ap.add_argument("--rules", default="v4", choices=["v3", "v4", "v9"],
                     help="train: the planner as first tested (v3), as revised (v4) or as fixed after the language-model test (v9)")
     ap.add_argument("--proper", action="store_true", help="train: a plan counts as right only if it read every fact the answer rests on (v9)")
+    ap.add_argument("--tickets", action="store_true", help="train: \"ticket\" or \"issue\" means a Linear or Jira item (v11)")
     ap.add_argument("--form", help="ask: the cache file of a small language model's forms; makes v10 (needs Ollama for new ones)")
-    ap.add_argument("--train-all", help="plan: v9's full training set's work folder (trainall)")
+    ap.add_argument("--train-all", help="plan, ticket: v9's full training set's work folder (trainall)")
+    ap.add_argument("--earlier", nargs="*", default=[], help="ticket: the earlier held-out sets' work folders")
     ap.add_argument("--seed", type=int, default=FRESH_SEED,
                     help="fresh: 13 made the retest's set, 17 the new-words test's, 29 the general-English test's, 31 the language-model test's")
     ap.add_argument("--wordings", default="retest", help=f"fresh: which wordings ({', '.join(sorted(WORDINGS))}, or a JSON file)")
@@ -816,12 +863,17 @@ def main(argv: list[str] | None = None) -> Any:
         out = build_fresh(Path(a.index), a.root, [Path(x) for x in a.exclude], Path(a.out), a.seed, a.wordings)
     elif a.cmd == "train":
         out = train(Path(a.work), Path(a.single), Path(a.plans), a.rules, Path(a.lexicon) if a.lexicon else None,
-                    Path(a.general) if a.general else None, a.combine, a.floor, Path(a.glossary) if a.glossary else None, a.proper)
+                    Path(a.general) if a.general else None, a.combine, a.floor, Path(a.glossary) if a.glossary else None, a.proper,
+                    a.tickets)
     elif a.cmd == "trainall":
         out = build_training_all(Path(a.work), Path(a.out))
     elif a.cmd == "ask":
         out = ask_plans(Path(a.work), Path(a.single), Path(a.plans), name=a.name, reader_cache=Path(a.reader) if a.reader else None,
                         form_cache=Path(a.form) if a.form else None)
+    elif a.cmd == "ticket":
+        out = ticket_test(Path(a.work), Path(a.changed), Path(a.train), Path(a.train_all), [Path(x) for x in a.earlier])
+        print((Path(a.work) / "ticket_report.md").read_text())
+        return out
     elif a.cmd == "plan":
         out = plan_test(Path(a.work), Path(a.changed), Path(a.train), Path(a.train_all))
         print(to_markdown(out, "The planning step fixed: the test set", ("training", "training_all", "held_out", "changed")))

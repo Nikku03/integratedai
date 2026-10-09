@@ -41,6 +41,10 @@ TYPE_TOKENS = ("who", "when", "state", "num")  # cie.factbank.lexicon.TYPES
 HOW_MANY = re.compile(r"\bhow many\b", re.I)
 KEY_OR_NUMBER = re.compile(r"\b[A-Z][A-Z0-9]{1,9}-\d{2,7}\b|#?\b\d+\b")
 ISO = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+# v11 (docs/FACTBANK_TICKET_PREREGISTRATION.md): "ticket" or "issue" means an item in a ticket tracker, Linear or Jira, when
+# the question names no tracker. "ticket" is then a system of its own that Linear and Jira items belong to.
+TICKET_WORD = re.compile(r"\b(?:tickets?|issues?)\b", re.I)
+TICKET_SYSTEMS = frozenset({"linear", "jira"})
 NOT_LINKS = {"from_document"}
 FEATURES = ["bias", "start_named", "start_rank", "two_starts", "path_len", "path_overlap", "path_assoc", "field_overlap", "field_assoc",
             "kind_fits", "kind_conflicts", "combine_assoc", "label_field", "answer_in_question", "fanout"]
@@ -86,6 +90,7 @@ class Planner:
         self.combine = combine  # v6: how a lender's closeness is read: "company", "general", "max" or "mean" of the two spaces
         self.floor = floor  # how close a known word must be to lend its meaning
         self.glossary = None  # v8: cie.factbank.reader.Glossary, everyday phrases written once by a large language model
+        self.tickets = False  # v11: "ticket" or "issue" means a Linear or Jira item (TICKET_WORD)
         self._facts: dict[str, list] = {}
         self._expanded: dict[frozenset, dict[str, float]] = {}
 
@@ -181,7 +186,7 @@ class Planner:
     def execute(self, plan: Plan, journal: list | None = None) -> str | None:
         ents = self.follow(plan.starts, plan.path, journal)
         if plan.system:
-            ents = [e for e in ents if self.b.system_of_entity(e) == plan.system]
+            ents = [e for e in ents if self.in_system(e, plan.system)]
         if plan.status:
             want = {s.lower() for s in plan.status}
             ents = [e for e in ents if {v.lower() for v in self.field_values(e, "status") + self.field_values(e, "state")} & want]
@@ -210,7 +215,7 @@ class Planner:
         """The entities a plan ends at, after its system and status filters (as ``execute`` reads them)."""
         ents = self.follow(plan.starts, plan.path)
         if plan.system:
-            ents = [e for e in ents if self.b.system_of_entity(e) == plan.system]
+            ents = [e for e in ents if self.in_system(e, plan.system)]
         if plan.status:
             want = {s.lower() for s in plan.status}
             ents = [e for e in ents if {v.lower() for v in self.field_values(e, "status") + self.field_values(e, "state")} & want]
@@ -249,7 +254,7 @@ class Planner:
                 starts.append(((e,), {"named": 0.0, "rank": 1.0 / (1 + i)}))
         ql = question.lower() + " "
         system = next((s for w, s in SYSTEM_WORDS.items() if w in ql), "")
-        systems = list(dict.fromkeys(s for w, s in SYSTEM_WORDS.items() if w in ql))
+        systems = self.systems_named(question)
         quoted = re.findall(r"\"([^\"]+)\"", question)
         out = []
         for st, meta in starts:
@@ -277,7 +282,7 @@ class Planner:
                 echo = {self.b.label_of(e) for e in came_from}
                 if self.rules in ("v4", "v9") and path and set(ents) <= came_from:
                     continue  # the last hop reached nothing new
-                sys_f = system if system and any(self.b.system_of_entity(e) == system for e in ents) else ""
+                sys_f = system if system and any(self.in_system(e, system) for e in ents) else ""
                 statuses = {v for e in ents[:30] for v in self.field_values(e, "status")}
                 stat_f = tuple(q for q in quoted if q in statuses)
                 fields = {"label"} | {f["parameter"] for e in ents[:5] for f in self.facts(e)
@@ -319,8 +324,27 @@ class Planner:
         """v9: the system the question asks about. A question that names two systems starts in one and asks about the other
         ("who opened the GitHub pull request that references Linear issue ENG-1?" asks about GitHub); one that names only the
         start's own system asks about that one."""
-        own = {self.b.system_of_entity(e) for e in starts}
+        own = self.own_systems(starts)
         return next((s for s in systems if s not in own), systems[0] if systems else "")
+
+    def systems_named(self, question: str) -> list[str]:
+        """The systems a question names, in the order of ``SYSTEM_WORDS``. With ``tickets`` (v11), "ticket" or "issue" also
+        names the ticket trackers, after any system named by name, so "the Linear ticket" still asks about Linear."""
+        ql = question.lower() + " "
+        systems = list(dict.fromkeys(s for w, s in SYSTEM_WORDS.items() if w in ql))
+        if self.tickets and TICKET_WORD.search(question) and "ticket" not in systems:
+            systems.append("ticket")
+        return systems
+
+    def in_system(self, e: str, system: str) -> bool:
+        """Whether an entity belongs to a system; a Linear or Jira item belongs to "ticket" too (v11)."""
+        s = self.b.system_of_entity(e)
+        return s in TICKET_SYSTEMS if system == "ticket" else s == system
+
+    def own_systems(self, starts: tuple[str, ...]) -> set[str]:
+        """The systems the starts belong to; a Linear or Jira start is in "ticket" too (v11)."""
+        own = {self.b.system_of_entity(e) for e in starts}
+        return own | {"ticket"} if self.tickets and own & TICKET_SYSTEMS else own
 
     def one_by_construction(self, starts: tuple[str, ...], path: tuple[str, ...]) -> bool:
         """v9: a plan that can only ever reach one thing: no hop, or one start and only single-valued hops (``assignee``)."""
@@ -342,14 +366,12 @@ class Planner:
            plan choosing an item by date must order by one of them."""
         named = {e for e in self.b.named(question) if e in self.b.kinds and not e.startswith("person:")}
         about = {e for e in self.b.named(question) if e in self.b.kinds} | set(self.titled(question))
-        ql = question.lower() + " "
-        systems = list(dict.fromkeys(s for w, s in SYSTEM_WORDS.items() if w in ql))
+        systems = self.systems_named(question)
 
         def other_system(p: Plan) -> bool:
             """The question asks about a system other than the one it starts in, and the plan's answer comes from it."""
             target = self.target_system(systems, p.starts)
-            own = {self.b.system_of_entity(e) for e in p.starts}
-            return not target or target in own or p.system == target
+            return not target or target in self.own_systems(p.starts) or p.system == target
 
         def field_fits(p: Plan, k: str) -> bool:
             if k in ("person", "date", "other"):
@@ -566,6 +588,7 @@ class PlanLessons:
     glossary: str = ""  # v8: everyday phrases written once by a large language model (a JSON list); empty before v8
     asked_kind: dict[str, Any] = dc_field(default_factory=dict)  # v9: what kind of answer a question asks for (AskedKind)
     kind_floor: float = 0.9  # v9: how sure the lessons must be of the kind of answer before the check uses it
+    tickets: bool = False  # v11: "ticket" or "issue" means a Linear or Jira item; False for every earlier version
 
     def known(self) -> list[str]:
         return list(self.known_words)
@@ -583,6 +606,7 @@ class PlanLessons:
             from cie.factbank.reader import Glossary
 
             pl.glossary = Glossary.load(self.glossary)
+        pl.tickets = self.tickets
         return pl
 
     def assocs(self) -> tuple[Assoc, Assoc, Lift | None]:
@@ -649,12 +673,13 @@ def matches(expected: dict[str, Any], answer: str) -> bool:
 
 def learn_plans(bank, questions: list[dict[str, Any]], log=print, features: list[str] = FEATURES_V4, rules: str = "v4",
                 lexicon=None, lexicon_path: str = "", general=None, general_path: str = "", combine: str = "company",
-                floor: float = 0.5, glossary_path: str = "", proper: bool = False) -> PlanLessons:
+                floor: float = 0.5, glossary_path: str = "", proper: bool = False, tickets: bool = False) -> PlanLessons:
     """Fit the plan weights on questions with answers. Associations leave each question's own share out. With a lexicon (v5),
     question words also reach the known words nearest them; with a general-English lexicon too (v6), nearness can be read
     from general English. With ``proper`` (v9), a plan counts as right only if its answer is right and it read every fact the
     answer rests on (``rests_on``), so that plans right by coincidence teach nothing."""
     pl = Planner(bank, rules, lexicon, None, general, combine, floor)
+    pl.tickets = tickets
     if glossary_path:
         from cie.factbank.reader import Glossary
 
@@ -703,7 +728,7 @@ def learn_plans(bank, questions: list[dict[str, Any]], log=print, features: list
                       list(features), kind_total.to_json() if use_kind else {}, rules, lexicon_path if lexicon is not None else "",
                       pl.known if lexicon is not None else [], general_path if general is not None else "",
                       combine if general is not None else "company", floor, glossary_path,
-                      asked.to_json() if rules == "v9" else {})
+                      asked.to_json() if rules == "v9" else {}, 0.9, tickets)
     log("\n".join(les.describe()))
     return les
 
