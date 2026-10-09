@@ -1,0 +1,143 @@
+{
+ "writers": [
+  {
+   "writer": 1,
+   "persona": "a finance analyst checking delivery dates for a quarterly report, writing in full, formal sentences",
+   "wordings": [
+    {
+     "key": "pr_issue/assignee",
+     "wording": "Could you please tell me who is responsible for the Linear ticket that is linked to pull request #{n}?"
+    },
+    {
+     "key": "pr_issue/due_date",
+     "wording": "Could you please confirm the deadline for the Linear ticket that is linked to pull request #{n}?"
+    },
+    {
+     "key": "pr_issue/status",
+     "wording": "What stage is the Linear ticket connected to pull request #{n} currently at?"
+    },
+    {
+     "key": "issue_pr_author/author",
+     "wording": "Could you please tell me who opened the GitHub pull request that references Linear ticket {k}?"
+    },
+    {
+     "key": "ticket_link/status",
+     "wording": "Ticket {k} is linked to another ticket. Could you please tell me where that other ticket currently stands?"
+    },
+    {
+     "key": "ticket_link/assignee",
+     "wording": "Ticket {k} is linked to another ticket. Could you please tell me who is responsible for that other ticket?"
+    },
+    {
+     "key": "person_count/",
+     "wording": "Could you please tell me how many Linear tickets are currently assigned to {p}?"
+    },
+    {
+     "key": "person_first/",
+     "wording": "Of the Linear tickets assigned to {p}, which one has the earliest deadline? Please provide its ticket key."
+    },
+    {
+     "key": "compare_two/",
+     "wording": "Between Linear tickets {a} and {b}, which one is due first? Please respond with the ticket key."
+    },
+    {
+     "key": "action_owner_issues/",
+     "wording": "In the meeting titled \"{m}\", the action item \"{t}\" was assigned to someone. Could you please list the keys of the Linear tickets assigned to that person?"
+    }
+   ]
+  },
+  {
+   "writer": 2,
+   "persona": "a senior engineer in the middle of a code review, writing tersely with developer shorthand",
+   "wordings": [
+    {
+     "key": "pr_issue/assignee",
+     "wording": "PR #{n} -- who owns the linked Linear ticket?"
+    },
+    {
+     "key": "pr_issue/due_date",
+     "wording": "#{n} links a Linear ticket, when's that one due?"
+    },
+    {
+     "key": "pr_issue/status",
+     "wording": "what state's the Linear ticket tied to PR #{n} in rn?"
+    },
+    {
+     "key": "issue_pr_author/author",
+     "wording": "who opened the PR that refs {k}?"
+    },
+    {
+     "key": "ticket_link/status",
+     "wording": "{k} links out to another ticket -- what's the status on that other one?"
+    },
+    {
+     "key": "ticket_link/assignee",
+     "wording": "{k} has a linked ticket, who's that other one assigned to?"
+    },
+    {
+     "key": "person_count/",
+     "wording": "how many Linear tickets does {p} have on their plate? just need the count"
+    },
+    {
+     "key": "person_first/",
+     "wording": "of {p}'s Linear tickets, which one's due soonest? gimme the key"
+    },
+    {
+     "key": "compare_two/",
+     "wording": "{a} vs {b}, which one's due first?"
+    },
+    {
+     "key": "action_owner_issues/",
+     "wording": "whoever took the \"{t}\" action item from \"{m}\" -- which Linear issues are on them? need keys"
+    }
+   ]
+  },
+  {
+   "writer": 3,
+   "persona": "a marketing coordinator who rarely uses the engineering tools, asking in plain everyday words",
+   "wordings": [
+    {
+     "key": "pr_issue/assignee",
+     "wording": "Quick question: the ticket that goes with PR #{n}, who is that assigned to?"
+    },
+    {
+     "key": "pr_issue/due_date",
+     "wording": "When is the ticket connected to pull request #{n} supposed to be done by?"
+    },
+    {
+     "key": "pr_issue/status",
+     "wording": "What status is the ticket tied to PR #{n} showing right now?"
+    },
+    {
+     "key": "issue_pr_author/author",
+     "wording": "Somebody put up a pull request for ticket {k}. Who was it that opened it?"
+    },
+    {
+     "key": "ticket_link/status",
+     "wording": "Ticket {k} is hooked up to another ticket. What status is that other one in?"
+    },
+    {
+     "key": "ticket_link/assignee",
+     "wording": "There's a ticket linked to {k}. Who is that other ticket assigned to?"
+    },
+    {
+     "key": "person_count/",
+     "wording": "How many tickets are assigned to {p}? Just need the number."
+    },
+    {
+     "key": "person_first/",
+     "wording": "Of all the tickets assigned to {p}, which one has the earliest deadline? Can you give me its ticket ID?"
+    },
+    {
+     "key": "compare_two/",
+     "wording": "Between tickets {a} and {b}, which one is due first?"
+    },
+    {
+     "key": "action_owner_issues/",
+     "wording": "Whoever got the \"{t}\" to-do in the \"{m}\" meeting, can you list the ticket IDs that are assigned to them?"
+    }
+   ]
+  }
+ ],
+ "selection": "writers 1 and 2 give the pair; writer 3 stands in for an invalid wording (none was replaced)"
+}

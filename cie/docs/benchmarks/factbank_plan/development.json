@@ -1,0 +1,366 @@
+{
+ "v4": {
+  "mdtrain": {
+   "mean": 0.927,
+   "proper": 0.743
+  },
+  "mdtest": {
+   "mean": 0.653,
+   "proper": 0.37
+  },
+  "mdfresh": {
+   "mean": 0.596,
+   "proper": 0.468
+  },
+  "mdwords": {
+   "mean": 0.611,
+   "proper": 0.233
+  },
+  "mdblind": {
+   "mean": 0.727,
+   "proper": 0.505
+  },
+  "mdllm": {
+   "mean": 0.586,
+   "proper": 0.386
+  },
+  "dev_mean": 0.635,
+  "dev_proper": 0.392
+ },
+ "v8": {
+  "mdtrain": {
+   "mean": 0.986,
+   "proper": 0.802
+  },
+  "mdtest": {
+   "mean": 0.549,
+   "proper": 0.446
+  },
+  "mdfresh": {
+   "mean": 0.8,
+   "proper": 0.685
+  },
+  "mdwords": {
+   "mean": 0.669,
+   "proper": 0.288
+  },
+  "mdblind": {
+   "mean": 0.898,
+   "proper": 0.759
+  },
+  "mdllm": {
+   "mean": 0.601,
+   "proper": 0.484
+  },
+  "dev_mean": 0.703,
+  "dev_proper": 0.532
+ },
+ "+every kind in training": {
+  "mdtrain": {
+   "mean": 0.993,
+   "proper": 0.821
+  },
+  "mdtest": {
+   "mean": 0.612,
+   "proper": 0.331
+  },
+  "mdfresh": {
+   "mean": 0.784,
+   "proper": 0.617
+  },
+  "mdwords": {
+   "mean": 0.568,
+   "proper": 0.204
+  },
+  "mdblind": {
+   "mean": 0.745,
+   "proper": 0.634
+  },
+  "mdllm": {
+   "mean": 0.536,
+   "proper": 0.394
+  },
+  "dev_mean": 0.649,
+  "dev_proper": 0.436
+ },
+ "+right for the right reason (first check)": {
+  "mdtrain": {
+   "mean": 0.973,
+   "proper": 0.905
+  },
+  "mdtest": {
+   "mean": 0.746,
+   "proper": 0.644
+  },
+  "mdfresh": {
+   "mean": 0.679,
+   "proper": 0.595
+  },
+  "mdwords": {
+   "mean": 0.579,
+   "proper": 0.496
+  },
+  "mdblind": {
+   "mean": 0.727,
+   "proper": 0.676
+  },
+  "mdllm": {
+   "mean": 0.586,
+   "proper": 0.544
+  },
+  "dev_mean": 0.663,
+  "dev_proper": 0.591
+ },
+ "+glossary": {
+  "mdtrain": {
+   "mean": 0.964,
+   "proper": 0.895
+  },
+  "mdtest": {
+   "mean": 0.552,
+   "proper": 0.533
+  },
+  "mdfresh": {
+   "mean": 0.8,
+   "proper": 0.716
+  },
+  "mdwords": {
+   "mean": 0.701,
+   "proper": 0.6
+  },
+  "mdblind": {
+   "mean": 0.912,
+   "proper": 0.861
+  },
+  "mdllm": {
+   "mean": 0.737,
+   "proper": 0.695
+  },
+  "dev_mean": 0.74,
+  "dev_proper": 0.681
+ },
+ "+planner rules, choice and kind checks": {
+  "mdtrain": {
+   "mean": 0.978,
+   "proper": 0.971
+  },
+  "mdtest": {
+   "mean": 0.902,
+   "proper": 0.882
+  },
+  "mdfresh": {
+   "mean": 0.921,
+   "proper": 0.921
+  },
+  "mdwords": {
+   "mean": 0.703,
+   "proper": 0.685
+  },
+  "mdblind": {
+   "mean": 0.968,
+   "proper": 0.958
+  },
+  "mdllm": {
+   "mean": 0.903,
+   "proper": 0.903
+  },
+  "dev_mean": 0.879,
+  "dev_proper": 0.87
+ },
+ "+quoted-title starts (dropped)": {
+  "mdtrain": {
+   "mean": 0.971,
+   "proper": 0.971
+  },
+  "mdtest": {
+   "mean": 0.862,
+   "proper": 0.842
+  },
+  "mdfresh": {
+   "mean": 0.873,
+   "proper": 0.873
+  },
+  "mdwords": {
+   "mean": 0.706,
+   "proper": 0.688
+  },
+  "mdblind": {
+   "mean": 0.981,
+   "proper": 0.972
+  },
+  "mdllm": {
+   "mean": 0.903,
+   "proper": 0.903
+  },
+  "dev_mean": 0.865,
+  "dev_proper": 0.856
+ },
+ "+what the question is about": {
+  "mdtrain": {
+   "mean": 0.978,
+   "proper": 0.971
+  },
+  "mdtest": {
+   "mean": 0.902,
+   "proper": 0.882
+  },
+  "mdfresh": {
+   "mean": 0.937,
+   "proper": 0.937
+  },
+  "mdwords": {
+   "mean": 0.703,
+   "proper": 0.685
+  },
+  "mdblind": {
+   "mean": 0.995,
+   "proper": 0.986
+  },
+  "mdllm": {
+   "mean": 0.933,
+   "proper": 0.933
+  },
+  "dev_mean": 0.894,
+  "dev_proper": 0.885
+ },
+ "+form replacing the learned kind": {
+  "mdtrain": {
+   "mean": 0.978,
+   "proper": 0.971
+  },
+  "mdtest": {
+   "mean": 0.922,
+   "proper": 0.902
+  },
+  "mdfresh": {
+   "mean": 0.815,
+   "proper": 0.815
+  },
+  "mdwords": {
+   "mean": 0.83,
+   "proper": 0.813
+  },
+  "mdblind": {
+   "mean": 0.954,
+   "proper": 0.954
+  },
+  "mdllm": {
+   "mean": 0.967,
+   "proper": 0.967
+  },
+  "dev_mean": 0.898,
+  "dev_proper": 0.89
+ },
+ "+form only where unsure": {
+  "mdtrain": {
+   "mean": 0.978,
+   "proper": 0.971
+  },
+  "mdtest": {
+   "mean": 0.922,
+   "proper": 0.902
+  },
+  "mdfresh": {
+   "mean": 0.937,
+   "proper": 0.937
+  },
+  "mdwords": {
+   "mean": 0.843,
+   "proper": 0.825
+  },
+  "mdblind": {
+   "mean": 0.977,
+   "proper": 0.968
+  },
+  "mdllm": {
+   "mean": 0.95,
+   "proper": 0.95
+  },
+  "dev_mean": 0.926,
+  "dev_proper": 0.916
+ },
+ "v9 (after the review's fixes)": {
+  "mdtrain": {
+   "mean": 0.993,
+   "proper": 0.986
+  },
+  "mdtest": {
+   "mean": 0.98,
+   "proper": 0.941
+  },
+  "mdfresh": {
+   "mean": 0.984,
+   "proper": 0.984
+  },
+  "mdwords": {
+   "mean": 0.877,
+   "proper": 0.877
+  },
+  "mdblind": {
+   "mean": 0.958,
+   "proper": 0.931
+  },
+  "mdllm": {
+   "mean": 0.983,
+   "proper": 0.983
+  },
+  "dev_mean": 0.956,
+  "dev_proper": 0.943
+ },
+ "v10 (after the review's fixes)": {
+  "mdtrain": {
+   "mean": 0.993,
+   "proper": 0.986
+  },
+  "mdtest": {
+   "mean": 0.98,
+   "proper": 0.941
+  },
+  "mdfresh": {
+   "mean": 0.968,
+   "proper": 0.968
+  },
+  "mdwords": {
+   "mean": 0.947,
+   "proper": 0.93
+  },
+  "mdblind": {
+   "mean": 0.977,
+   "proper": 0.949
+  },
+  "mdllm": {
+   "mean": 0.983,
+   "proper": 0.983
+  },
+  "dev_mean": 0.971,
+  "dev_proper": 0.954
+ },
+ "v9n (after the review's fixes)": {
+  "mdtrain": {
+   "mean": 0.993,
+   "proper": 0.986
+  },
+  "mdtest": {
+   "mean": 0.882,
+   "proper": 0.863
+  },
+  "mdfresh": {
+   "mean": 0.968,
+   "proper": 0.968
+  },
+  "mdwords": {
+   "mean": 0.802,
+   "proper": 0.802
+  },
+  "mdblind": {
+   "mean": 0.977,
+   "proper": 0.949
+  },
+  "mdllm": {
+   "mean": 0.983,
+   "proper": 0.983
+  },
+  "dev_mean": 0.922,
+  "dev_proper": 0.913
+ }
+}

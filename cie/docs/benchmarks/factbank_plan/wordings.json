@@ -1,0 +1,42 @@
+{
+ "pr_issue/assignee": [
+  "Could you please tell me who is responsible for the Linear ticket that is linked to pull request #{n}?",
+  "PR #{n} -- who owns the linked Linear ticket?"
+ ],
+ "pr_issue/due_date": [
+  "Could you please confirm the deadline for the Linear ticket that is linked to pull request #{n}?",
+  "#{n} links a Linear ticket, when's that one due?"
+ ],
+ "pr_issue/status": [
+  "What stage is the Linear ticket connected to pull request #{n} currently at?",
+  "what state's the Linear ticket tied to PR #{n} in rn?"
+ ],
+ "issue_pr_author/author": [
+  "Could you please tell me who opened the GitHub pull request that references Linear ticket {k}?",
+  "who opened the PR that refs {k}?"
+ ],
+ "ticket_link/status": [
+  "Ticket {k} is linked to another ticket. Could you please tell me where that other ticket currently stands?",
+  "{k} links out to another ticket -- what's the status on that other one?"
+ ],
+ "ticket_link/assignee": [
+  "Ticket {k} is linked to another ticket. Could you please tell me who is responsible for that other ticket?",
+  "{k} has a linked ticket, who's that other one assigned to?"
+ ],
+ "person_count/": [
+  "Could you please tell me how many Linear tickets are currently assigned to {p}?",
+  "how many Linear tickets does {p} have on their plate? just need the count"
+ ],
+ "person_first/": [
+  "Of the Linear tickets assigned to {p}, which one has the earliest deadline? Please provide its ticket key.",
+  "of {p}'s Linear tickets, which one's due soonest? gimme the key"
+ ],
+ "compare_two/": [
+  "Between Linear tickets {a} and {b}, which one is due first? Please respond with the ticket key.",
+  "{a} vs {b}, which one's due first?"
+ ],
+ "action_owner_issues/": [
+  "In the meeting titled \"{m}\", the action item \"{t}\" was assigned to someone. Could you please list the keys of the Linear tickets assigned to that person?",
+  "whoever took the \"{t}\" action item from \"{m}\" -- which Linear issues are on them? need keys"
+ ]
+}
