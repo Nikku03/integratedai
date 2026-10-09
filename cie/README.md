@@ -104,6 +104,16 @@ nothing else changed, it replicated:
 
 Compared like for like over wording draws, v9 holds at about 0.95–0.98 on new documents.
 
+**Teaching it that "ticket" means Linear or Jira** ([`docs/FACTBANK_TICKET_RESULTS.md`](docs/FACTBANK_TICKET_RESULTS.md)).
+On 50 new documents with questions that never name the tracker, it scored 0.942 against v9's 0.912. It fixed every
+action item that had been answered from the meeting notes, and changed nothing else.
+
+It still missed its pre-registered bar on the action items (+0.207 against +0.25), for two reasons:
+- the draw left only 3 such questions;
+- an older mistake ("the first ticket due" instead of "all of them") took part of the gain.
+
+That mistake is the next thing to fix.
+
 ## Brain-wired reasoning neurons (research)
 
 `cie.neuro` wires the reasoning engine's spiking neurons like a piece of Blue Brain's cortex model (directed cliques of
