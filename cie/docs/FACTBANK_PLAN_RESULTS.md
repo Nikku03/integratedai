@@ -25,8 +25,8 @@ before the test set was drawn or its blind wordings were read.
 
 **Six of the seven pre-registered rules are met.**
 - The one not met is that the small model's form adds 0.05 (v10 = v9 = 0.975).
-- On this test the bank's own lessons were sure what kind of answer was asked for in 49 of 50 questions, so the model was
-  asked once.
+- On this test the bank's own lessons were sure what kind of answer was asked for in 49 of 50 questions. The model filled
+  in a form for all 50 (2.3 s each on average), but the bank used it on only one question.
 
 **But 0.975 is partly the luck of the wording draw.** The review found this, and I checked it after the run:
 - Each question was asked in one of two blind wordings, drawn at random. The draw happened to favour v9.
@@ -46,7 +46,7 @@ small model helps where the wording is unusual, so it is worth keeping for that,
 | 1. The fixed planner helps (v9 − v4 ≥ +0.10) | **Met:** 0.975 against 0.510 (+0.465) |
 | 2. It helps beyond the glossary (v9 − v8 ≥ +0.05) | **Met:** 0.975 against 0.722 (+0.253) |
 | 3. Right for the right reason (v9 − v4 ≥ +0.10, and v9 ≥ its own right answers − 0.05) | **Met:** 0.968 against 0.385; 0.968 against 0.975 |
-| 4. A small model's form adds (v10 − v9 ≥ +0.05) | **Not met:** 0.975 against 0.975 (0.000) |
+| 4. A small model's form adds (v10 − v9 ≥ +0.05) | **Not met:** 0.975 against 0.975 (0.000). With v9 at 0.975 the most v10 could add was 0.025, and with one unsure question about 0.018: the ceiling the pre-registration warned of |
 | 5. Principles, not memorisation (test ≥ training − 0.15) | **Met:** v9 0.975 and v10 0.975 against 0.993 each |
 | 6. It holds when the information changes (changed ≥ test − 0.05) | **Met:** v9 and v10 0.975 against 0.975 |
 | 7. No harm on what was learned (≥ v4 − 0.03 on the first 48 training questions) | **Met:** v9 0.993 and v10 0.993 against 0.927 |
@@ -79,20 +79,25 @@ Own answers, no model judging (the mean is the mean of the three groups):
 | an action item's owner → their issues | 8 | 0.38 | 0.63 | 0.94 | 0.94 |
 | which of two is due first | 8 | 0.88 | 0.88 | 1.00 | 1.00 |
 
-**The two misses:**
-- **An action item.** It asked for the list of the owner's tickets. v9 answered with only the first one due, which
-  scores 0.5 on the list.
-- **A linked ticket's status** ("Ticket ENG-4823 is linked to another ticket. Could you please tell me where that other
-  ticket currently stands?"). This was the one question where the bank's lessons were unsure of the kind of answer.
-  - v9 answered with a ticket key.
-  - v10 asked the model, which correctly said "status", but the bank then read the wrong ticket's status.
-  - ENG-4823 is in the same cluster of linked tickets as earlier misses.
+**The two misses** (both fail in every wording tried):
+- **An action item** (`action_owner_issues-021`). It asked for the list of the owner's tickets. The quoted action item
+  itself contains the word "date", and v9 orders the owner's issues by due date instead of listing them. It returns 1 of
+  the 3 keys, which scores 0.5 on the list.
+- **A linked ticket's status** (`ticket_link-status-039`: "Ticket ENG-4823 is linked to another ticket. Could you please
+  tell me where that other ticket currently stands?"). It fails for two separate reasons:
+  - **The wording.** This was the one question where the bank's lessons were unsure of the kind of answer (person 0.53,
+    other 0.47), and v9 answered with a ticket key. v10 asked the model, which correctly said "status".
+  - **The link.** The other ticket is reached through `parent_issue`, a relation v9 never chose on its training questions,
+    which used `dependencies` 48 times and `linked_issues` 18. So v10 read the status of the wrong ticket.
 
 **The changed copy:**
-- People are renamed and dates shifted, which changes 13 expected answers.
+- The fixed transform renames every person and moves every date 23 days later. Keys, statuses, links and counts stay the
+  same, and so does the order of any two dates.
+- So 15 questions change (a renamed person), and 13 expected answers change: 10 names and 3 due dates.
+- v9 and v10 give the new value on all 13.
 - Every arm scores exactly as on the original. That is expected: the plans read names and dates, they do not remember
   them.
-- It shows nothing about changed statuses, links or counts.
+- It shows nothing about new wordings, or about changed statuses, links or counts.
 
 ### v10: the model's form
 
@@ -101,7 +106,7 @@ Own answers, no model judging (the mean is the mean of the three groups):
 | questions where the bank's own lessons were unsure of the kind of answer, so the form was used | 1 of 50 |
 | questions where the form's kind differs from the lessons' (when they were sure) | 0 |
 | answers that differ from v9 | 1 (the linked-ticket status above; both wrong) |
-| the model's time per question | median 1.9 s, at most 21 s (4 CPU cores, no GPU) |
+| the model's time per question (it fills in a form for every question, before the bank checks how sure it is) | mean 2.3 s, median 1.9 s, at most 21 s (4 CPU cores, no GPU) |
 | the bank's time per question | median 0.18 s |
 
 ### The same questions in other blind wordings (after the run; information only)
@@ -115,6 +120,16 @@ asked in one writer's wording only.
 | writer 1 only (a finance analyst, formal) | 0.527 | 0.652 | 0.922 | 0.887 | **0.975** | 9 |
 | writer 2 only (a senior engineer, terse) | 0.481 | 0.742 | 0.975 | 0.975 | 0.975 | 0 |
 | writer 3 only (a marketing coordinator, plain words; the stand-in) | 0.547 | 0.638 | 0.872 | 0.843 | **0.924** | 3 |
+
+**Where the drop comes from:**
+- The test used 17 of the 20 pair wordings. The three it never used cost v9 nothing.
+- v9's drop with writer 1 alone (0.975 to 0.922) comes from one wording: writer 1's linked-ticket status ("where that
+  other ticket currently stands"). There the lessons are unsure of the kind of answer, and v9 answers with an assignee
+  on three more tickets.
+- Asked in the training wordings, v9 also scores 0.975, missing the same two questions. In the wordings of the earlier
+  sets it scores 0.922–0.940.
+- The 50 questions are fewer than 50 independent checks: ENG-4821 underlies 5 of them, and two pairs of action-item
+  questions share their expected keys.
 
 **What fails in plain words:**
 - **"When is the ticket supposed to be done by?"** v9's lessons do not know this asks for a date, and it reads the status.
@@ -161,19 +176,37 @@ A fourth reviewer tried to refute each finding (`review.json`).
    - So "not met" means "this test could not show it", not "the form does not help".
 4. **v9 = v9n = v10 is a product of the draw**, not of a fault. On the other wordings the glossary adds +0.035 and +0.029.
    So "no language model is needed" does not follow from this test.
-5. **The test's words were new to training but not to development.** Almost every word in the test wordings appears in
-   the earlier sets whose failures shaped v9. That is not a leak: v9 learns words only from training. But it makes this
-   test less of a stretch than the new-words set.
-6. **v4's low score (0.510) comes from these documents' mix of kinds,** not from hard wording. It should not be read as
-   a sign that the test was hard.
+5. **The test's words were not very new.**
+   - Per question, about a third of the content words (0.33) were absent from the training wordings. That is level with
+     the first held-out set and the retest (0.32), and below the new-words, blind and language-model sets (0.41–0.48).
+   - Of the 60 content-word types in the 20 test wordings, only 6 had not appeared in the training or any development
+     wording: confirm, gimme, provide, refs, respond, titled.
+   - That is not a leak: v9 learns words only from training, and v9n, with no glossary, scored the same. But it makes this
+     test a weaker test of unfamiliar wording than the new-words set.
+6. **v4's low score (0.510) means these 50 questions are hard for v4, not that the test is hard.**
+   - It does not come from the mix of kinds: v4's rates on the earlier sets predict 0.623 for this mix.
+   - It comes from these particular questions. v4 gets 0 of 5 pull-request authors and 0 of 3 linked-ticket assignees
+     in every wording.
+   - Asked in an earlier set's wording, v4 scores 0.10–0.20 lower on these questions than on that set, while v9 does not
+     drop the same way.
+   - So v4's low score should not be read as a sign that the test was hard.
 7. **The right answers read the right things.**
    - Every v9 answer counted right reads the right entity.
-   - The linked-ticket answers rely on the 50-document bank: the plan follows "dependencies" and does not single out
-     "the other ticket". In a larger bank the same plan could reach several tickets.
+   - The linked-ticket answers rely on the 50-document bank. All six right ones follow `dependencies` to 2–4 tickets, of
+     which only the gold one is a document in this bank; the others are bare keys with no fields, so "one value" returns
+     the gold value.
+   - In the full benchmark many of those keys have several documents (ENG-4821 has 52). There the same plan would
+     usually find different values and give no answer.
 8. **Smaller points:**
-   - The three-group mean makes v9 − v4 smaller than a per-question mean would (+0.465 against +0.55).
-   - The scratch files the run used are not all in the repository. The questions, forms, lessons, wordings and reports
-     are.
+   - The three-group mean gives the 8 compare questions a third of the weight, and compare is v4's best group. Per
+     question, v4 scores 0.42 (21 of 50 fully right), v8 0.70 (35) and v9 and v10 0.97 (48). So v9 − v4 is +0.55 per
+     question against +0.465. Every rule verdict is the same either way.
+   - The frozen `plan_lessons_v9.json` names its glossary by an absolute scratch path. That file is byte-identical
+     (sha256 `0dd7d0bc…`) to `docs/benchmarks/factbank_llm/glossary.json`. Loading the lessons from the repository alone
+     needs the path changed.
+   - The pre-registration's development table puts 0.929 against "v10's form used only where the lessons are unsure".
+     That step scored 0.926 (`development.json`, run G). The 0.929 is the same design after the training set was
+     rebuilt to contain the first 48 (run H).
 
 ## What this shows
 
