@@ -465,7 +465,7 @@ def build_training_all(work: Path, out: Path) -> dict[str, Any]:
 # ---------------------------------------------------------------------------------------------- training and asking
 def train(work: Path, single: Path, out: Path, rules: str = "v4", lexicon: Path | None = None, general: Path | None = None,
           combine: str = "company", floor: float = 0.5, glossary: Path | None = None, proper: bool = False,
-          tickets: bool = False) -> dict[str, Any]:
+          tickets: bool = False, orders: bool = False) -> dict[str, Any]:
     """``rules="v3"`` reproduces the plan lessons of the first test; ``"v4"`` is the planner revised after it. With a lexicon
     (``cie.factbank.lexicon``), v4 plus learned word meanings: v5. ``"v9"`` with ``proper`` is the planner fixed after the
     language-model test (docs/FACTBANK_PLAN_PREREGISTRATION.md)."""
@@ -484,7 +484,8 @@ def train(work: Path, single: Path, out: Path, rules: str = "v4", lexicon: Path 
                       features=(FEATURES_V5 if lex is not None else FEATURES_V4) if rules in ("v4", "v9") else FEATURES, rules=rules,
                       lexicon=lex, lexicon_path=str(lexicon.resolve()) if lexicon is not None else "", general=gen,
                       general_path=str(general.resolve()) if general is not None else "", combine=combine, floor=floor,
-                      glossary_path=str(glossary.resolve()) if glossary is not None else "", proper=proper, tickets=tickets)
+                      glossary_path=str(glossary.resolve()) if glossary is not None else "", proper=proper, tickets=tickets,
+                      orders=orders)
     les.save(out)
     return {"plan_lessons": str(out), "describe": les.describe(), "trained_on": les.trained_on}
 
@@ -580,7 +581,8 @@ def measure(work: Path) -> dict[str, Any]:
     fbs = {label: {r["id"]: r for r in _jsonl(work / f"{name}.jsonl")}
            for label, name in (("v1", "factbank"), ("v2", "factbank_v2"), ("v3", "factbank_v3"), ("v4", "factbank_v4"), ("v5", "factbank_v5"),
                                ("v6", "factbank_v6"), ("v7", "factbank_v7"), ("v8", "factbank_v8"), ("v9", "factbank_v9"),
-                               ("v9n", "factbank_v9n"), ("v10", "factbank_v10"), ("v11", "factbank_v11"), ("v12", "factbank_v12"))
+                               ("v9n", "factbank_v9n"), ("v10", "factbank_v10"), ("v11", "factbank_v11"), ("v12", "factbank_v12"),
+                               ("v13", "factbank_v13"), ("v14", "factbank_v14"))
            if (work / f"{name}.jsonl").exists()}
     from cie.factbank.plans import rests_on
 
@@ -826,6 +828,74 @@ def ticket_test(test_dir: Path, changed: Path, training: Path, training_all: Pat
     return rep
 
 
+ROOM = 0.9
+
+
+def order_test(test_dir: Path, changed: Path, training: Path, training_all: Path, earlier: list[Path],
+               writers: list[Path] | None = None) -> dict[str, Any]:
+    """The order test's rules (docs/FACTBANK_ORDER_PREREGISTRATION.md): v13 (v11, with the first or the last by a date only when
+    the question uses a word of order) and v14 (v12 with the same) against v11 and v12. Rules 1 and 3 are judged on the
+    action-item questions; when the version before already scores ``ROOM`` or more there, they are not measurable (``None``)."""
+    from cie.factbank.plans import Planner
+
+    m = {"training": measure(training), "training_all": measure(training_all), "held_out": measure(test_dir), "changed": measure(changed)}
+    d = lambda a, b: round(a - b, 3) if a is not None and b is not None else None  # noqa: E731
+    h, t, ta, c = m["held_out"]["direct"], m["training"]["direct"], m["training_all"]["direct"], m["changed"]["direct"]
+    arms = ("v4", "v8", "v9", "v11", "v12", "v13", "v14")
+
+    def share(rows: list[dict[str, Any]], label: str, keep) -> float | None:
+        vals = [r["direct"].get(label) for r in rows if keep(r) and label in r["direct"]]
+        return round(sum(vals) / len(vals), 3) if vals else None
+
+    rows = m["held_out"]["rows"]
+    is_action = lambda r: r["kind"] == "action_owner_issues"  # noqa: E731
+    ordering = lambda r: r["kind"] in ("compare_two", "person_first")  # noqa: E731
+    m["action_items"] = {"n": sum(map(is_action, rows)),
+                         "with_a_word_of_order": sum(1 for r in rows if is_action(r) and Planner.asks_order(r["question"]))} | {
+        a: share(rows, a, is_action) for a in arms}
+    m["other_questions"] = {"n": sum(1 for r in rows if not is_action(r))} | {a: share(rows, a, lambda r: not is_action(r)) for a in arms}
+    m["ordering_questions"] = {"n": sum(map(ordering, rows)),
+                               "without_a_word_of_order": sum(1 for r in rows if ordering(r) and not Planner.asks_order(r["question"]))} | {
+        a: share(rows, a, ordering) for a in arms}
+    m["earlier"] = {str(e.name): {a: measure(e)["direct"].get(a, {}).get("mean") for a in ("v11", "v13", "v12", "v14")} for e in earlier}
+    early = list(m["earlier"].values())
+    mean = lambda a: round(sum(v[a] for v in early) / len(early), 3) if early and all(v.get(a) is not None for v in early) else None  # noqa: E731
+    m["writers"] = {}
+    for w in writers or []:
+        mw = measure(w)
+        wr = mw["rows"]
+        m["writers"][w.name] = {a: mw["direct"][a]["mean"] for a in arms if a in mw["direct"]} | {
+            "action_items": {a: share(wr, a, is_action) for a in arms}, "ordering_questions": {a: share(wr, a, ordering) for a in arms}}
+    v14 = _jsonl(test_dir / "factbank_v14.jsonl") if (test_dir / "factbank_v14.jsonl").exists() else []
+    ms = sorted(r["form"]["model_ms"] for r in v14 if r.get("form", {}).get("model_ms"))
+    m["v14_form"] = {"used_for_kind": sum(1 for r in v14 if r.get("form") and not r["form"].get("learned_kind")), "questions": len(v14),
+                     "model_ms_median": ms[len(ms) // 2] if ms else None}
+    ai = m["action_items"]
+    rules = {
+        "1 the first one due only when an order is asked (v13 - v11 >= +0.15, the test set's action-item questions)":
+            at_least(d(ai["v13"], ai["v11"]), 0.15) if ai["v11"] is not None and ai["v11"] < ROOM else None,
+        "2 no harm on the other questions (v13 >= v11 - 0.03, test set's other questions, per question)":
+            at_least(d(m["other_questions"]["v13"], m["other_questions"]["v11"]), -0.03),
+        "3 the same with the small model's form (v14 - v12 >= +0.15, action-item questions)":
+            at_least(d(ai["v14"], ai["v12"]), 0.15) if ai["v12"] is not None and ai["v12"] < ROOM else None,
+        "4 no harm on the earlier sets (v13 >= v11 - 0.01 and v14 >= v12 - 0.01, mean of the earlier held-out sets as drawn)":
+            at_least(d(mean("v13"), mean("v11")), -0.01) and at_least(d(mean("v14"), mean("v12")), -0.01),
+        "5 principles, not memorisation (v13 and v14 test set >= their training questions - 0.15)":
+            at_least(d(h["v13"]["mean"], ta["v13"]["mean"]), -0.15) and at_least(d(h["v14"]["mean"], ta["v14"]["mean"]), -0.15),
+        "6 holds when the information changes (v13 and v14 changed >= test set - 0.05)":
+            at_least(d(c["v13"]["mean"], h["v13"]["mean"]), -0.05) and at_least(d(c["v14"]["mean"], h["v14"]["mean"]), -0.05),
+        "7 no harm on what was learned (v13 and v14 >= v4 - 0.03, the 48 first training questions)":
+            at_least(d(t["v13"]["mean"], t["v4"]["mean"]), -0.03) and at_least(d(t["v14"]["mean"], t["v4"]["mean"]), -0.03),
+    }
+    rep = {**m, "rules": rules}
+    (test_dir / "order_report.json").write_text(json.dumps(rep, indent=1, default=str))
+    extra = {k: m[k] for k in ("action_items", "other_questions", "ordering_questions", "earlier", "writers", "v14_form")}
+    (test_dir / "order_report.md").write_text(to_markdown(rep, "The first one due only when an order is asked: the test set",
+                                                          ("training", "training_all", "held_out", "changed"))
+                                              + "\n" + "\n".join(f"- {k}: {json.dumps(v)}" for k, v in extra.items()) + "\n")
+    return rep
+
+
 def jira_people(work: Path) -> dict[str, Any]:
     """Whether any person a count, first-due or action-item question asks about has a Jira ticket assigned in the set's bank (the
     expected answers count Linear issues only, while "tickets" may mean Jira too)."""
@@ -867,7 +937,7 @@ def to_markdown(rep: dict[str, Any], title: str = "Questions that need several d
 def main(argv: list[str] | None = None) -> Any:
     ap = argparse.ArgumentParser(prog="python -m cie.eval.factbank_multi")
     ap.add_argument("cmd", choices=["build", "train", "ask", "compare", "fresh", "retest", "words", "general", "llm", "trainall", "plan",
-                                    "ticket"])
+                                    "ticket", "order"])
     ap.add_argument("--docs", help="the haystack's documents as JSON: dsid, source, title, raw")
     ap.add_argument("--index")
     ap.add_argument("--root")
@@ -881,6 +951,7 @@ def main(argv: list[str] | None = None) -> Any:
                     help="train: the planner as first tested (v3), as revised (v4) or as fixed after the language-model test (v9)")
     ap.add_argument("--proper", action="store_true", help="train: a plan counts as right only if it read every fact the answer rests on (v9)")
     ap.add_argument("--tickets", action="store_true", help="train: \"ticket\" or \"issue\" means a Linear or Jira item (v11)")
+    ap.add_argument("--orders", action="store_true", help="train: the first or the last by a date only when the question asks for an order (v13)")
     ap.add_argument("--form", help="ask: the cache file of a small language model's forms; makes v10 (needs Ollama for new ones)")
     ap.add_argument("--train-all", help="plan, ticket: v9's full training set's work folder (trainall)")
     ap.add_argument("--earlier", nargs="*", default=[], help="ticket: the earlier held-out sets' work folders")
@@ -906,12 +977,17 @@ def main(argv: list[str] | None = None) -> Any:
     elif a.cmd == "train":
         out = train(Path(a.work), Path(a.single), Path(a.plans), a.rules, Path(a.lexicon) if a.lexicon else None,
                     Path(a.general) if a.general else None, a.combine, a.floor, Path(a.glossary) if a.glossary else None, a.proper,
-                    a.tickets)
+                    a.tickets, a.orders)
     elif a.cmd == "trainall":
         out = build_training_all(Path(a.work), Path(a.out))
     elif a.cmd == "ask":
         out = ask_plans(Path(a.work), Path(a.single), Path(a.plans), name=a.name, reader_cache=Path(a.reader) if a.reader else None,
                         form_cache=Path(a.form) if a.form else None)
+    elif a.cmd == "order":
+        out = order_test(Path(a.work), Path(a.changed), Path(a.train), Path(a.train_all), [Path(x) for x in a.earlier],
+                         [Path(x) for x in a.writers])
+        print((Path(a.work) / "order_report.md").read_text())
+        return out
     elif a.cmd == "ticket":
         out = ticket_test(Path(a.work), Path(a.changed), Path(a.train), Path(a.train_all), [Path(x) for x in a.earlier],
                           [Path(x) for x in a.writers])

@@ -46,6 +46,10 @@ ISO = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 TICKET_WORD = re.compile(r"\b(?:tickets?|issues?)\b", re.I)
 TICKET_SYSTEMS = frozenset({"linear", "jira"})
 TICKET_KEY = re.compile(r"^[A-Z][A-Z0-9]{1,9}-\d{1,7}$")
+# v13 (docs/FACTBANK_ORDER_PREREGISTRATION.md): a question asks for an order (the first or the last by a date) only if it uses
+# a word of order. Without one, "which tickets are assigned to them? keys please" asks for all of them, not the first due.
+ORDER_WORDS = frozenset(stem(w) for w in ("first", "earliest", "earlier", "soonest", "sooner", "next", "nearest", "closest", "urgent",
+                                          "last", "latest", "later", "final", "before", "after"))
 NOT_LINKS = {"from_document"}
 FEATURES = ["bias", "start_named", "start_rank", "two_starts", "path_len", "path_overlap", "path_assoc", "field_overlap", "field_assoc",
             "kind_fits", "kind_conflicts", "combine_assoc", "label_field", "answer_in_question", "fanout"]
@@ -92,6 +96,7 @@ class Planner:
         self.floor = floor  # how close a known word must be to lend its meaning
         self.glossary = None  # v8: cie.factbank.reader.Glossary, everyday phrases written once by a large language model
         self.tickets = False  # v11: "ticket" or "issue" means a Linear or Jira item (TICKET_WORD)
+        self.orders = False  # v13: the first or the last by a date only when the question uses a word of order (ORDER_WORDS)
         self._facts: dict[str, list] = {}
         self._expanded: dict[frozenset, dict[str, float]] = {}
 
@@ -330,6 +335,11 @@ class Planner:
         own = self.own_systems(starts)
         return next((s for s in systems if s not in own), systems[0] if systems else "")
 
+    @staticmethod
+    def asks_order(question: str) -> bool:
+        """v13: the question uses a word of order outside quoted titles ("which is due first?", "the soonest", "earlier")."""
+        return bool(question_words(question) & ORDER_WORDS)
+
     def systems_named(self, question: str) -> list[str]:
         """The systems a question names, in the order of ``SYSTEM_WORDS``. With ``tickets`` (v11), "ticket" or "issue" also
         names the ticket trackers, after any system named by name, so "the Linear ticket" still asks about Linear."""
@@ -369,7 +379,9 @@ class Planner:
            things: the plan must start from all of them and follow no link.
         4. **The kind of answer:** when the question's kind of answer is known (``asked``: a count, an item's key, a person, a
            date or another value), the plan must give that kind.
-        5. **The field** (v10, from the small model's form): a plan answering with one value must read one of ``fields``; a
+        5. **An order needs a word of order** (v13): a plan that picks the first or the last by a date is kept only if the
+           question asks for an order ("first", "soonest", "earlier", "last", ``ORDER_WORDS``).
+        6. **The field** (v10, from the small model's form): a plan answering with one value must read one of ``fields``; a
            plan choosing an item by date must order by one of them."""
         named = {e for e in self.b.named(question) if e in self.b.kinds and not e.startswith("person:")}
         about = {e for e in self.b.named(question) if e in self.b.kinds} | set(self.titled(question))
@@ -387,10 +399,12 @@ class Planner:
                 return p.field in fields or not any(f.endswith("date") for f in fields)
             return True
 
+        ordered = self.asks_order(question)
         rules = [lambda p, k: not about or bool(set(p.starts) & about),
                  lambda p, k: other_system(p),
                  lambda p, k: not (len(named) >= 2 and (p.path or set(p.starts) != named)),
                  lambda p, k: not asked or k == asked,
+                 lambda p, k: not self.orders or ordered or p.aggregate not in ("earliest", "latest"),
                  lambda p, k: not fields or field_fits(p, k)]
         keep = cands
         for rule in rules:
@@ -596,6 +610,7 @@ class PlanLessons:
     asked_kind: dict[str, Any] = dc_field(default_factory=dict)  # v9: what kind of answer a question asks for (AskedKind)
     kind_floor: float = 0.9  # v9: how sure the lessons must be of the kind of answer before the check uses it
     tickets: bool = False  # v11: "ticket" or "issue" means a Linear or Jira item; False for every earlier version
+    orders: bool = False  # v13: the first or the last by a date only when the question asks for an order; False before v13
 
     def known(self) -> list[str]:
         return list(self.known_words)
@@ -614,6 +629,7 @@ class PlanLessons:
 
             pl.glossary = Glossary.load(self.glossary)
         pl.tickets = self.tickets
+        pl.orders = self.orders
         return pl
 
     def assocs(self) -> tuple[Assoc, Assoc, Lift | None]:
@@ -680,7 +696,8 @@ def matches(expected: dict[str, Any], answer: str) -> bool:
 
 def learn_plans(bank, questions: list[dict[str, Any]], log=print, features: list[str] = FEATURES_V4, rules: str = "v4",
                 lexicon=None, lexicon_path: str = "", general=None, general_path: str = "", combine: str = "company",
-                floor: float = 0.5, glossary_path: str = "", proper: bool = False, tickets: bool = False) -> PlanLessons:
+                floor: float = 0.5, glossary_path: str = "", proper: bool = False, tickets: bool = False,
+                orders: bool = False) -> PlanLessons:
     """Fit the plan weights on questions with answers. Associations leave each question's own share out. With a lexicon (v5),
     question words also reach the known words nearest them; with a general-English lexicon too (v6), nearness can be read
     from general English. With ``proper`` (v9), a plan counts as right only if its answer is right and it read every fact the
@@ -735,7 +752,7 @@ def learn_plans(bank, questions: list[dict[str, Any]], log=print, features: list
                       list(features), kind_total.to_json() if use_kind else {}, rules, lexicon_path if lexicon is not None else "",
                       pl.known if lexicon is not None else [], general_path if general is not None else "",
                       combine if general is not None else "company", floor, glossary_path,
-                      asked.to_json() if rules == "v9" else {}, 0.9, tickets)
+                      asked.to_json() if rules == "v9" else {}, 0.9, tickets, orders)
     log("\n".join(les.describe()))
     return les
 

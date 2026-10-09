@@ -1,0 +1,314 @@
+{
+ "v11": {
+  "mdtrain": {
+   "mean": 0.993,
+   "reason": 0.986
+  },
+  "mdtrainv9": {
+   "mean": 0.993,
+   "reason": 0.986
+  },
+  "mdtest": {
+   "mean": 0.98,
+   "reason": 0.941
+  },
+  "mdfresh": {
+   "mean": 0.984,
+   "reason": 0.984
+  },
+  "mdwords": {
+   "mean": 0.877,
+   "reason": 0.877
+  },
+  "mdblind": {
+   "mean": 0.958,
+   "reason": 0.931
+  },
+  "mdllm": {
+   "mean": 0.983,
+   "reason": 0.983
+  },
+  "mdplan": {
+   "mean": 0.975,
+   "reason": 0.968
+  },
+  "mdplan_w1": {
+   "mean": 0.923,
+   "reason": 0.915
+  },
+  "mdplan_w2": {
+   "mean": 0.975,
+   "reason": 0.968
+  },
+  "mdplan_w3": {
+   "mean": 0.923,
+   "reason": 0.915
+  },
+  "mdrep": {
+   "mean": 0.979,
+   "reason": 0.979
+  },
+  "mdrep_w1": {
+   "mean": 0.958,
+   "reason": 0.958
+  },
+  "mdrep_w2": {
+   "mean": 1.0,
+   "reason": 1.0
+  },
+  "mdrep_w3": {
+   "mean": 0.917,
+   "reason": 0.917
+  },
+  "mdtick": {
+   "mean": 0.942,
+   "reason": 0.884
+  },
+  "mdtick_w1": {
+   "mean": 0.942,
+   "reason": 0.884
+  },
+  "mdtick_w2": {
+   "mean": 0.942,
+   "reason": 0.884
+  },
+  "mdtick_w3": {
+   "mean": 1.0,
+   "reason": 1.0
+  }
+ },
+ "v13": {
+  "mdtrain": {
+   "mean": 1.0,
+   "reason": 1.0
+  },
+  "mdtrainv9": {
+   "mean": 1.0,
+   "reason": 1.0
+  },
+  "mdtest": {
+   "mean": 0.98,
+   "reason": 0.941
+  },
+  "mdfresh": {
+   "mean": 0.984,
+   "reason": 0.984
+  },
+  "mdwords": {
+   "mean": 0.877,
+   "reason": 0.877
+  },
+  "mdblind": {
+   "mean": 0.963,
+   "reason": 0.944
+  },
+  "mdllm": {
+   "mean": 0.983,
+   "reason": 0.983
+  },
+  "mdplan": {
+   "mean": 0.982,
+   "reason": 0.982
+  },
+  "mdplan_w1": {
+   "mean": 0.93,
+   "reason": 0.93
+  },
+  "mdplan_w2": {
+   "mean": 0.982,
+   "reason": 0.982
+  },
+  "mdplan_w3": {
+   "mean": 0.93,
+   "reason": 0.93
+  },
+  "mdrep": {
+   "mean": 0.979,
+   "reason": 0.979
+  },
+  "mdrep_w1": {
+   "mean": 0.958,
+   "reason": 0.958
+  },
+  "mdrep_w2": {
+   "mean": 1.0,
+   "reason": 1.0
+  },
+  "mdrep_w3": {
+   "mean": 0.917,
+   "reason": 0.917
+  },
+  "mdtick": {
+   "mean": 1.0,
+   "reason": 1.0
+  },
+  "mdtick_w1": {
+   "mean": 1.0,
+   "reason": 1.0
+  },
+  "mdtick_w2": {
+   "mean": 1.0,
+   "reason": 1.0
+  },
+  "mdtick_w3": {
+   "mean": 1.0,
+   "reason": 1.0
+  }
+ },
+ "v12": {
+  "mdtrain": {
+   "mean": 0.993,
+   "reason": 0.986
+  },
+  "mdtrainv9": {
+   "mean": 0.993,
+   "reason": 0.986
+  },
+  "mdtest": {
+   "mean": 0.98,
+   "reason": 0.941
+  },
+  "mdfresh": {
+   "mean": 0.968,
+   "reason": 0.968
+  },
+  "mdwords": {
+   "mean": 0.965,
+   "reason": 0.93
+  },
+  "mdblind": {
+   "mean": 0.977,
+   "reason": 0.949
+  },
+  "mdllm": {
+   "mean": 0.983,
+   "reason": 0.983
+  },
+  "mdplan": {
+   "mean": 0.975,
+   "reason": 0.968
+  },
+  "mdplan_w1": {
+   "mean": 0.975,
+   "reason": 0.968
+  },
+  "mdplan_w2": {
+   "mean": 0.975,
+   "reason": 0.968
+  },
+  "mdplan_w3": {
+   "mean": 0.975,
+   "reason": 0.968
+  },
+  "mdrep": {
+   "mean": 1.0,
+   "reason": 1.0
+  },
+  "mdrep_w1": {
+   "mean": 1.0,
+   "reason": 1.0
+  },
+  "mdrep_w2": {
+   "mean": 1.0,
+   "reason": 1.0
+  },
+  "mdrep_w3": {
+   "mean": 1.0,
+   "reason": 1.0
+  },
+  "mdtick": {
+   "mean": 0.942,
+   "reason": 0.884
+  },
+  "mdtick_w1": {
+   "mean": 0.942,
+   "reason": 0.884
+  },
+  "mdtick_w2": {
+   "mean": 0.942,
+   "reason": 0.884
+  },
+  "mdtick_w3": {
+   "mean": 1.0,
+   "reason": 1.0
+  }
+ },
+ "v14": {
+  "mdtrain": {
+   "mean": 1.0,
+   "reason": 1.0
+  },
+  "mdtrainv9": {
+   "mean": 1.0,
+   "reason": 1.0
+  },
+  "mdtest": {
+   "mean": 0.98,
+   "reason": 0.941
+  },
+  "mdfresh": {
+   "mean": 0.968,
+   "reason": 0.968
+  },
+  "mdwords": {
+   "mean": 0.965,
+   "reason": 0.93
+  },
+  "mdblind": {
+   "mean": 0.981,
+   "reason": 0.963
+  },
+  "mdllm": {
+   "mean": 0.983,
+   "reason": 0.983
+  },
+  "mdplan": {
+   "mean": 0.982,
+   "reason": 0.982
+  },
+  "mdplan_w1": {
+   "mean": 0.982,
+   "reason": 0.982
+  },
+  "mdplan_w2": {
+   "mean": 0.982,
+   "reason": 0.982
+  },
+  "mdplan_w3": {
+   "mean": 0.982,
+   "reason": 0.982
+  },
+  "mdrep": {
+   "mean": 1.0,
+   "reason": 1.0
+  },
+  "mdrep_w1": {
+   "mean": 1.0,
+   "reason": 1.0
+  },
+  "mdrep_w2": {
+   "mean": 1.0,
+   "reason": 1.0
+  },
+  "mdrep_w3": {
+   "mean": 1.0,
+   "reason": 1.0
+  },
+  "mdtick": {
+   "mean": 1.0,
+   "reason": 1.0
+  },
+  "mdtick_w1": {
+   "mean": 1.0,
+   "reason": 1.0
+  },
+  "mdtick_w2": {
+   "mean": 1.0,
+   "reason": 1.0
+  },
+  "mdtick_w3": {
+   "mean": 1.0,
+   "reason": 1.0
+  }
+ }
+}

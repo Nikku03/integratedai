@@ -410,3 +410,28 @@ def test_the_ticket_test_judges_action_items_that_name_no_tracker():
     assert M.NAMES_TRACKER.search("Which Linear issues does she have?") and M.NAMES_TRACKER.search("any JIRA tickets?")
     assert not M.NAMES_TRACKER.search("Whoever got the to-do, list the ticket IDs") and not M.NAMES_TRACKER.search("nonlinear")
     assert M.MIN_UNNAMED == 4
+
+
+def test_v13_the_first_one_due_only_when_the_question_asks_for_an_order(tmp_path):
+    tb = _bank(tmp_path)
+    v11, v13 = P.Planner(tb, "v9"), P.Planner(tb, "v9")
+    v11.tickets = v13.tickets = v13.orders = True
+    assert P.Planner.asks_order("Which of Omar Singh's tickets is due soonest?") and P.Planner.asks_order("Which is due earlier, A or B?")
+    assert P.Planner.asks_order("What needs finishing before the others?")
+    assert not P.Planner.asks_order("Which tickets are assigned to Omar Singh? Ticket keys please.")
+    assert not P.Planner.asks_order('Who took "the first draft" in the meeting? List their tickets.'), "quoted titles are not read"
+    q = "Which tickets are assigned to Omar Singh? Keys please."
+    cands = v11.candidates(q)
+    assert any(p.aggregate == "earliest" for p, _ in v11.check(q, cands, "key")), "v11 keeps plans that pick the first one due"
+    kept = v13.check(q, cands, "key")
+    assert kept and not any(p.aggregate in ("earliest", "latest") for p, _ in kept)
+    assert ("ENG-11, ENG-12") in {m["answer"] for p, m in kept if p.aggregate == "list"}
+    q2 = "Of the tickets assigned to Omar Singh, which is due first? Give the key."
+    assert any(p.aggregate == "earliest" for p, _ in v13.check(q2, v13.candidates(q2), "key")), "with a word of order, it may"
+    qs = [{"question": "How many tickets are assigned to Omar Singh?", "expected": {"value": "2"}, "pieces": ["ENG-11", "ENG-12"]}]
+    les = P.learn_plans(tb, qs, log=lambda *_: None, rules="v9", proper=True, tickets=True, orders=True)
+    les.save(tmp_path / "v13.json")
+    assert P.PlanLessons.load(tmp_path / "v13.json").planner(tb).orders
+    old = {k: v for k, v in json.loads((tmp_path / "v13.json").read_text()).items() if k != "orders"}
+    (tmp_path / "v11.json").write_text(json.dumps(old))
+    assert not P.PlanLessons.load(tmp_path / "v11.json").orders, "lessons saved before v13 have no order check"
