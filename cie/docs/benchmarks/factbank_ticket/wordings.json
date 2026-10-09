@@ -1,0 +1,42 @@
+{
+ "pr_issue/assignee": [
+  "Quick one before I book interviews: PR #{n} is tied to a ticket. Who's that ticket assigned to?",
+  "Hey, who's on the hook for the ticket tied to PR #{n}? Customer's going to ask on the renewal call."
+ ],
+ "pr_issue/due_date": [
+  "The ticket linked to PR #{n}, when is that due? Trying to schedule the interview loop around deadlines.",
+  "Quick one: when is the ticket behind PR #{n} due? I need a date to give the customer."
+ ],
+ "pr_issue/status": [
+  "What's the current status on the ticket that PR #{n} is attached to?",
+  "Where does the ticket linked to pull request #{n} stand right now? What status is it showing?"
+ ],
+ "issue_pr_author/author": [
+  "There's a PR that references ticket {k}. Who opened that PR?",
+  "Who put up the PR that references {k}? Want to give them a shout-out on the renewal call."
+ ],
+ "ticket_link/status": [
+  "Ticket {k} is linked to another ticket. What status is that other one in right now?",
+  "{k} is linked to another ticket. What status is that other one sitting in?"
+ ],
+ "ticket_link/assignee": [
+  "Ticket {k} links out to a second ticket. Who's that second one assigned to?",
+  "Who owns the ticket that's linked to {k}? I mean the other one, not the one I just mentioned."
+ ],
+ "person_count/": [
+  "How many tickets are assigned to {p}? Just need the number so I can gauge their load before interviews.",
+  "How many tickets does {p} have on their plate right now?"
+ ],
+ "person_first/": [
+  "Of all the tickets assigned to {p}, which one is due soonest? Can you give me the ticket key?",
+  "Of everything assigned to {p}, which ticket is due soonest? Just send me the key."
+ ],
+ "compare_two/": [
+  "Between tickets {a} and {b}, which one has the earlier deadline?",
+  "Between {a} and {b}, which one is due first?"
+ ],
+ "action_owner_issues/": [
+  "Whoever picked up the action item \"{t}\" in the \"{m}\" meeting, which tickets are assigned to them? Ticket keys please.",
+  "Whoever picked up the \"{t}\" action item in \"{m}\", which tickets are assigned to them? Can you send me the keys?"
+ ]
+}
