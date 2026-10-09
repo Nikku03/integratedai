@@ -759,31 +759,55 @@ def plan_test(test_dir: Path, changed: Path, training: Path, training_all: Path)
     return rep
 
 
-def ticket_test(test_dir: Path, changed: Path, training: Path, training_all: Path, earlier: list[Path]) -> dict[str, Any]:
+NAMES_TRACKER = re.compile(r"\b(?:linear|jira)\b", re.I)
+MIN_UNNAMED = 4
+
+
+def ticket_test(test_dir: Path, changed: Path, training: Path, training_all: Path, earlier: list[Path],
+                writers: list[Path] | None = None) -> dict[str, Any]:
     """The ticket test's rules (docs/FACTBANK_TICKET_PREREGISTRATION.md): v11 (v9, with "ticket" or "issue" meaning a Linear or
-    Jira item) and v12 (v10 with the same) against v9 and v10, on wordings written without naming the tracker."""
+    Jira item) and v12 (v10 with the same) against v9 and v10. Rules 1 and 3 are judged on the action-item questions that name no
+    tracker (neither "Linear" nor "Jira"); with fewer than ``MIN_UNNAMED`` of them they are not measurable (``None``)."""
     m = {"training": measure(training), "training_all": measure(training_all), "held_out": measure(test_dir), "changed": measure(changed)}
     d = lambda a, b: round(a - b, 3) if a is not None and b is not None else None  # noqa: E731
     h, t, ta, c = m["held_out"]["direct"], m["training"]["direct"], m["training_all"]["direct"], m["changed"]["direct"]
-    rows = m["held_out"]["rows"]
+    arms = ("v4", "v8", "v9", "v10", "v11", "v12")
 
-    def share(label: str, kinds: set[str], inside: bool) -> float | None:
-        vals = [r["direct"].get(label) for r in rows if (r["kind"] in kinds) == inside and label in r["direct"]]
+    def share(rows: list[dict[str, Any]], label: str, keep) -> float | None:
+        vals = [r["direct"].get(label) for r in rows if keep(r) and label in r["direct"]]
         return round(sum(vals) / len(vals), 3) if vals else None
 
-    action = {"action_owner_issues"}
-    m["action_items"] = {a: share(a, action, True) for a in ("v4", "v8", "v9", "v10", "v11", "v12")}
-    m["other_questions"] = {a: share(a, action, False) for a in ("v4", "v8", "v9", "v10", "v11", "v12")}
+    rows = m["held_out"]["rows"]
+    is_action = lambda r: r["kind"] == "action_owner_issues"  # noqa: E731
+    unnamed = lambda r: is_action(r) and not NAMES_TRACKER.search(r["question"])  # noqa: E731
+    m["action_items"] = {"n": sum(map(is_action, rows))} | {a: share(rows, a, is_action) for a in arms}
+    m["action_items_no_tracker"] = {"n": sum(map(unnamed, rows))} | {a: share(rows, a, unnamed) for a in arms}
+    m["other_questions"] = {"n": sum(1 for r in rows if not is_action(r))} | {a: share(rows, a, lambda r: not is_action(r)) for a in arms}
+    m["questions_naming_no_tracker"] = sum(1 for r in rows if not NAMES_TRACKER.search(r["question"]))
     m["earlier"] = {str(e.name): {a: measure(e)["direct"].get(a, {}).get("mean") for a in ("v9", "v11", "v10", "v12")} for e in earlier}
-    early = [v for v in m["earlier"].values()]
+    early = list(m["earlier"].values())
     mean = lambda a: round(sum(v[a] for v in early) / len(early), 3) if early and all(v.get(a) is not None for v in early) else None  # noqa: E731
+    m["jira"] = jira_people(test_dir)
+    m["writers"] = {}
+    for w in writers or []:
+        mw = measure(w)
+        wr = mw["rows"]
+        m["writers"][w.name] = {a: mw["direct"][a]["mean"] for a in arms if a in mw["direct"]} | {
+            "action_items_no_tracker": {"n": sum(map(unnamed, wr))} | {a: share(wr, a, unnamed) for a in arms}}
+    v12 = [r for r in _jsonl(test_dir / "factbank_v12.jsonl")] if (test_dir / "factbank_v12.jsonl").exists() else []
+    ms = sorted(r["form"]["model_ms"] for r in v12 if r.get("form", {}).get("model_ms"))
+    m["v12_form"] = {"used_for_kind": sum(1 for r in v12 if r.get("form") and not r["form"].get("learned_kind")), "questions": len(v12),
+                     "model_ms_median": ms[len(ms) // 2] if ms else None}
+    n_unnamed = m["action_items_no_tracker"]["n"]
+    measurable = n_unnamed >= MIN_UNNAMED
+    an = m["action_items_no_tracker"]
     rules = {
-        "1 the ticket rule answers action items when no tracker is named (v11 - v9 >= +0.25, test set's action-item questions)":
-            at_least(d(m["action_items"]["v11"], m["action_items"]["v9"]), 0.25),
+        "1 the ticket rule answers action items that name no tracker (v11 - v9 >= +0.25, those questions on the test set)":
+            at_least(d(an["v11"], an["v9"]), 0.25) if measurable else None,
         "2 no harm on the other questions (v11 >= v9 - 0.03, test set's other questions, per question)":
             at_least(d(m["other_questions"]["v11"], m["other_questions"]["v9"]), -0.03),
-        "3 the same with the small model's form (v12 - v10 >= +0.25, test set's action-item questions)":
-            at_least(d(m["action_items"]["v12"], m["action_items"]["v10"]), 0.25),
+        "3 the same with the small model's form (v12 - v10 >= +0.25, action items that name no tracker)":
+            at_least(d(an["v12"], an["v10"]), 0.25) if measurable else None,
         "4 no harm on the earlier sets (v11 >= v9 - 0.01 and v12 >= v10 - 0.01, mean of the earlier held-out sets as drawn)":
             at_least(d(mean("v11"), mean("v9")), -0.01) and at_least(d(mean("v12"), mean("v10")), -0.01),
         "5 principles, not memorisation (v11 and v12 test set >= their training questions - 0.15)":
@@ -795,11 +819,28 @@ def ticket_test(test_dir: Path, changed: Path, training: Path, training_all: Pat
     }
     rep = {**m, "rules": rules}
     (test_dir / "ticket_report.json").write_text(json.dumps(rep, indent=1, default=str))
+    extra = {k: m[k] for k in ("action_items", "action_items_no_tracker", "other_questions", "questions_naming_no_tracker", "earlier",
+                               "jira", "writers", "v12_form")}
     (test_dir / "ticket_report.md").write_text(to_markdown(rep, "A ticket means Linear or Jira: the test set", ("training", "training_all", "held_out", "changed"))
-                                               + "\nAction items (share right): " + json.dumps(m["action_items"])
-                                               + "\nOther questions (share right): " + json.dumps(m["other_questions"])
-                                               + "\nEarlier sets (three-group mean): " + json.dumps(m["earlier"]) + "\n")
+                                               + "\n" + "\n".join(f"- {k}: {json.dumps(v)}" for k, v in extra.items()) + "\n")
     return rep
+
+
+def jira_people(work: Path) -> dict[str, Any]:
+    """Whether any person a count, first-due or action-item question asks about has a Jira ticket assigned in the set's bank (the
+    expected answers count Linear issues only, while "tickets" may mean Jira too)."""
+    from cie.factbank.trained import TrainedBank
+
+    tb = TrainedBank(work / "factbank_v2.sqlite")
+    people = set()
+    for q in _jsonl(work / "questions.jsonl"):
+        if q["kind"] in ("person_count", "person_first"):
+            people |= {e for e in tb.named(q["question"]) if e.startswith("person:")}
+        elif q["kind"] == "action_owner_issues" and q.get("pieces"):
+            people.add("person:" + str(q["pieces"][0]).lower())
+    with_jira = sorted(p for p in people if any(f["parameter"] == "assignee_of" and f["value_entity"]
+                                                 and tb.system_of_entity(f["value_entity"]) == "jira" for f in tb.facts_of(p)))
+    return {"people": len(people), "with_jira_tickets": with_jira}
 
 
 def to_markdown(rep: dict[str, Any], title: str = "Questions that need several documents",
@@ -819,7 +860,7 @@ def to_markdown(rep: dict[str, Any], title: str = "Questions that need several d
                 lines.append(f"| all pieces within {int(b):,} chars, {a} | " + " | ".join("–" if r.get(x) is None else f"{r[x]:.3f}" for x in g) + " |")
         lines += ["", "By kind (own answers): " + "; ".join(f"{k} ({v['n']}): " + ", ".join(f"{a} {s}" for a, s in v.items() if a != "n")
                                                          for k, v in m["by_kind"].items()), ""]
-    lines += ["Rules:"] + [f"- {k}: **{'met' if v else 'not met'}**" for k, v in rep["rules"].items()]
+    lines += ["Rules:"] + [f"- {k}: **{'not measurable' if v is None else 'met' if v else 'not met'}**" for k, v in rep["rules"].items()]
     return "\n".join(lines) + "\n"
 
 
@@ -843,6 +884,7 @@ def main(argv: list[str] | None = None) -> Any:
     ap.add_argument("--form", help="ask: the cache file of a small language model's forms; makes v10 (needs Ollama for new ones)")
     ap.add_argument("--train-all", help="plan, ticket: v9's full training set's work folder (trainall)")
     ap.add_argument("--earlier", nargs="*", default=[], help="ticket: the earlier held-out sets' work folders")
+    ap.add_argument("--writers", nargs="*", default=[], help="ticket: the same questions in each writer's wording (work folders)")
     ap.add_argument("--seed", type=int, default=FRESH_SEED,
                     help="fresh: 13 made the retest's set, 17 the new-words test's, 29 the general-English test's, 31 the language-model test's")
     ap.add_argument("--wordings", default="retest", help=f"fresh: which wordings ({', '.join(sorted(WORDINGS))}, or a JSON file)")
@@ -871,7 +913,8 @@ def main(argv: list[str] | None = None) -> Any:
         out = ask_plans(Path(a.work), Path(a.single), Path(a.plans), name=a.name, reader_cache=Path(a.reader) if a.reader else None,
                         form_cache=Path(a.form) if a.form else None)
     elif a.cmd == "ticket":
-        out = ticket_test(Path(a.work), Path(a.changed), Path(a.train), Path(a.train_all), [Path(x) for x in a.earlier])
+        out = ticket_test(Path(a.work), Path(a.changed), Path(a.train), Path(a.train_all), [Path(x) for x in a.earlier],
+                          [Path(x) for x in a.writers])
         print((Path(a.work) / "ticket_report.md").read_text())
         return out
     elif a.cmd == "plan":

@@ -63,28 +63,28 @@
  },
  "v11": {
   "mdtrain": {
-   "mean": 1.0,
-   "reason": 1.0
+   "mean": 0.993,
+   "reason": 0.986
   },
   "mdtrainv9": {
-   "mean": 1.0,
-   "reason": 1.0
+   "mean": 0.993,
+   "reason": 0.986
   },
   "mdtest": {
    "mean": 0.98,
    "reason": 0.941
   },
   "mdfresh": {
-   "mean": 0.968,
-   "reason": 0.968
+   "mean": 0.984,
+   "reason": 0.984
   },
   "mdwords": {
    "mean": 0.877,
    "reason": 0.877
   },
   "mdblind": {
-   "mean": 0.963,
-   "reason": 0.944
+   "mean": 0.958,
+   "reason": 0.931
   },
   "mdllm": {
    "mean": 0.983,
@@ -187,12 +187,12 @@
  },
  "v12": {
   "mdtrain": {
-   "mean": 1.0,
-   "reason": 1.0
+   "mean": 0.993,
+   "reason": 0.986
   },
   "mdtrainv9": {
-   "mean": 1.0,
-   "reason": 1.0
+   "mean": 0.993,
+   "reason": 0.986
   },
   "mdtest": {
    "mean": 0.98,
@@ -207,8 +207,8 @@
    "reason": 0.93
   },
   "mdblind": {
-   "mean": 0.981,
-   "reason": 0.963
+   "mean": 0.977,
+   "reason": 0.949
   },
   "mdllm": {
    "mean": 0.983,

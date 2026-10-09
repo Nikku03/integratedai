@@ -381,3 +381,32 @@ def test_v11_a_ticket_means_a_linear_or_jira_item(tmp_path):
     old = {k: v for k, v in json.loads((tmp_path / "v11.json").read_text()).items() if k != "tickets"}
     (tmp_path / "v9.json").write_text(json.dumps(old))
     assert not P.PlanLessons.load(tmp_path / "v9.json").tickets, "lessons saved before v11 have no ticket rule"
+
+
+def test_v11_keeps_linked_keys_without_a_document_and_v9_behaviour_from_a_ticket(tmp_path):
+    docs = DOCS + [(_doc("d5", "linear", "Audit the door logs",
+                         {"key": "ENG-15", "status": "Todo", "assignee": "Liam Chen", "due_date": "2026-06-01", "dependencies": ["ENG-12", "ENG-99"]},
+                         ["ENG-15"]), {})]
+    p = tmp_path / "fb5.sqlite"
+    B.build(p, docs, text_facts=True)
+    tb = TrainedBank(p)
+    v9, v11 = P.Planner(tb, "v9"), P.Planner(tb, "v9")
+    v11.tickets = True
+    key99 = next(e for e in tb.kinds if tb.label_of(e) == "ENG-99")
+    assert tb.kinds[key99] == "identifier" and tb.system_of_entity(key99) == ""
+    assert v11.in_system(key99, "ticket") and not v11.in_system(OMAR, "ticket"), "a ticket key with no document is still a ticket"
+    q = "ENG-15 is linked to another ticket. Who is that one assigned to?"
+    a, b = v9.candidates(q), v11.candidates(q)
+    assert {(p.path, p.field, p.aggregate, m["answer"]) for p, m in a} == {(p.path, p.field, p.aggregate, m["answer"]) for p, m in b}, \
+        "from a ticket, naming no other system, v11 plans exactly as v9"
+    assert not any(p.system for p, _ in b if p.starts == ("doc:d5",)), "no filter on plans from the ticket itself"
+    d5 = P.Plan(("doc:d5",), ("dependencies",), "label", "single", "ticket")
+    assert v11.execute(d5) is None, "with the filter too, the key without a document stays, so the two keys disagree"
+    assert not any(p.starts == ("doc:d5",) and p.path == ("dependencies",) and p.field == "label" and p.aggregate == "single" for p, _ in b), \
+        "two linked keys, one without a document: no single key is the answer"
+
+
+def test_the_ticket_test_judges_action_items_that_name_no_tracker():
+    assert M.NAMES_TRACKER.search("Which Linear issues does she have?") and M.NAMES_TRACKER.search("any JIRA tickets?")
+    assert not M.NAMES_TRACKER.search("Whoever got the to-do, list the ticket IDs") and not M.NAMES_TRACKER.search("nonlinear")
+    assert M.MIN_UNNAMED == 4

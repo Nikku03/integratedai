@@ -45,6 +45,7 @@ ISO = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 # the question names no tracker. "ticket" is then a system of its own that Linear and Jira items belong to.
 TICKET_WORD = re.compile(r"\b(?:tickets?|issues?)\b", re.I)
 TICKET_SYSTEMS = frozenset({"linear", "jira"})
+TICKET_KEY = re.compile(r"^[A-Z][A-Z0-9]{1,9}-\d{1,7}$")
 NOT_LINKS = {"from_document"}
 FEATURES = ["bias", "start_named", "start_rank", "two_starts", "path_len", "path_overlap", "path_assoc", "field_overlap", "field_assoc",
             "kind_fits", "kind_conflicts", "combine_assoc", "label_field", "answer_in_question", "fanout"]
@@ -260,6 +261,8 @@ class Planner:
         for st, meta in starts:
             if self.rules == "v9":
                 system = self.target_system(systems, st)
+                if system == "ticket" and "ticket" in self.own_systems(st):
+                    system = ""  # v11: a question that starts from a ticket and names no other system asks about no system, as in v9
             paths: list[tuple[str, ...]] = [()]
             frontier1 = {}
             for e in st:
@@ -337,9 +340,13 @@ class Planner:
         return systems
 
     def in_system(self, e: str, system: str) -> bool:
-        """Whether an entity belongs to a system; a Linear or Jira item belongs to "ticket" too (v11)."""
+        """Whether an entity belongs to a system. A Linear or Jira item belongs to "ticket" too (v11), and so does a ticket key
+        the bank has no document for (``ENG-123`` named in a link), so that the filter never narrows a set of linked tickets
+        to the ones that happen to have a document."""
         s = self.b.system_of_entity(e)
-        return s in TICKET_SYSTEMS if system == "ticket" else s == system
+        if system == "ticket":
+            return s in TICKET_SYSTEMS or (not s and self.b.kinds.get(e) == "identifier" and bool(TICKET_KEY.match(self.b.label_of(e))))
+        return s == system
 
     def own_systems(self, starts: tuple[str, ...]) -> set[str]:
         """The systems the starts belong to; a Linear or Jira start is in "ticket" too (v11)."""

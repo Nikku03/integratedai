@@ -27,4 +27,4 @@ for W in mdtrain mdtrainv9 mdtest mdfresh mdwords mdblind mdllm mdplan mdrep; do
   .venv/bin/python -m cie.eval.factbank_multi ask --work $S/$W $A --plans $P/plan_lessons_v11.json --name factbank_v12 --form $S/plan9/forms/form_$W.jsonl > /dev/null
   echo "done $W $(date +%T)"
 done
-.venv/bin/python -m cie.eval.factbank_multi ticket --work $S/mdtick --changed $S/mdtickchanged --train $S/mdtrain --train-all $S/mdtrainv9 --earlier $S/mdtest $S/mdfresh $S/mdwords $S/mdblind $S/mdllm $S/mdplan $S/mdrep | grep -v "^| all pieces"
+.venv/bin/python -m cie.eval.factbank_multi ticket --work $S/mdtick --changed $S/mdtickchanged --train $S/mdtrain --train-all $S/mdtrainv9 --earlier $S/mdtest $S/mdfresh $S/mdwords $S/mdblind $S/mdllm $S/mdplan $S/mdrep --writers $S/mdtick_w1 $S/mdtick_w2 $S/mdtick_w3 | grep -v "^| all pieces"
