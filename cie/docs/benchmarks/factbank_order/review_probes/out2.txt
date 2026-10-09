@@ -1,0 +1,48 @@
+[mdtick] Of all the tickets assigned to Daniel Cho, which one is due "first"? Key please.  several=False rank=False
+   v11 1.0 'ENG-42702'  :: Daniel Cho → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-42702'  :: Daniel Cho → assignee_of [ticket] → due_date → earliest
+[mdtick] Of all the tickets assigned to Daniel Cho, which one is due “first”? Key please.  several=False rank=False
+   v11 1.0 'ENG-42702'  :: Daniel Cho → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-42702'  :: Daniel Cho → assignee_of [ticket] → due_date → earliest
+[mdtick] Which of Daniel Cho's tickets is due 1st? Key please.  several=False rank=True
+   v11 1.0 'ENG-42702'  :: Daniel Cho → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-42702'  :: Daniel Cho → assignee_of [ticket] → due_date → earliest
+[mdtick] Which of Daniel Cho's tickets is due furthest out? Key please.  several=False rank=False
+   v11 0.0 'ENG-42702'  :: Daniel Cho → assignee_of [ticket] → due_date → earliest
+   v13 0.0 'ENG-42702'  :: Daniel Cho → assignee_of [ticket] → due_date → earliest
+[mdtick] Which of Daniel Cho's tickets is due last? Key please.  several=False rank=True
+   v11 0.0 'ENG-42702'  :: Daniel Cho → assignee_of [ticket] → due_date → earliest
+   v13 0.0 'ENG-42702'  :: Daniel Cho → assignee_of [ticket] → due_date → earliest
+[mdtick] Which of Daniel Cho's tickets has the latest due date? Key please.  several=False rank=True
+   v11 0.0 'ENG-42702'  :: Daniel Cho → assignee_of [ticket] → due_date → earliest
+   v13 0.0 'ENG-42702'  :: Daniel Cho → assignee_of [ticket] → due_date → earliest
+[mdtick] Which of Priya Desai's tickets is due furthest out? Key please.  several=False rank=False
+   v11 0.0 'ENG-469271'  :: Priya Desai → assignee_of [ticket] → due_date → earliest
+   v13 0.0 'ENG-469271'  :: Priya Desai → assignee_of [ticket] → due_date → earliest
+[mdtick] Which of Priya Desai's tickets has the latest due date? Key please.  several=False rank=True
+   v11 0.0 'ENG-469271'  :: Priya Desai → assignee_of [ticket] → due_date → earliest
+   v13 0.0 'ENG-469271'  :: Priya Desai → assignee_of [ticket] → due_date → earliest
+[mdtick] Which of Daniel Cho's tickets needs doing ASAP? Key please.  several=False rank=False
+   v11 1.0 'ENG-42702'  :: Daniel Cho → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-42702'  :: Daniel Cho → assignee_of [ticket] → due_date → earliest
+[mdtick] Which of Daniel Cho's tickets is due the earliest?  several=False rank=True
+   v11 1.0 'ENG-42702'  :: Daniel Cho → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-42702'  :: Daniel Cho → assignee_of [ticket] → due_date → earliest
+[mdtick] Which of Daniel Cho's tickets is due early? Key please.  several=False rank=False
+   v11 1.0 'ENG-42702'  :: Daniel Cho → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-42702'  :: Daniel Cho → assignee_of [ticket] → due_date → earliest
+[mdtick] Which of Daniel Cho's tickets has the closer deadline? Key please.  several=False rank=False
+   v11 1.0 'ENG-42702'  :: Daniel Cho → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-42702'  :: Daniel Cho → assignee_of [ticket] → due_date → earliest
+[mdtick] Which of Daniel Cho's tickets is upcoming? Key please.  several=False rank=False
+   v11 1.0 'ENG-42702'  :: Daniel Cho → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-42702'  :: Daniel Cho → assignee_of [ticket] → due_date → earliest
+[mdtick] Which of Daniel Cho's tickets is at the top of the queue by due date? Key please.  several=False rank=False
+   v11 1.0 'ENG-42702'  :: Daniel Cho → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-42702'  :: Daniel Cho → assignee_of [ticket] → due_date → earliest
+[mdtick] Which of Daniel Cho's tickets comes due before the rest?  several=False rank=False
+   v11 1.0 'ENG-42702'  :: Daniel Cho → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-42702'  :: Daniel Cho → assignee_of [ticket] → due_date → earliest
+[mdtick] Of Daniel Cho's tickets, which deadline hits first?  several=False rank=True
+   v11 1.0 'ENG-42702'  :: Daniel Cho → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-42702'  :: Daniel Cho → assignee_of [ticket] → due_date → earliest

@@ -1,0 +1,414 @@
+[mdtick] Between ENG-462519 and PM-91345, which has the closer deadline? Key only.  several=False rank=False
+   v11 1.0 'ENG-462519'  :: Composable Admin Utility SDK and Stepwise Remediation Sequencer + Provenance-enriched evals alert stream with adaptive rate-limiting and gro
+   v13 1.0 'ENG-462519'  :: Composable Admin Utility SDK and Stepwise Remediation Sequencer + Provenance-enriched evals alert stream with adaptive rate-limiting and gro
+[mdtick] Which of ENG-462519 and PM-91345 has the nearer due date?  several=False rank=False
+   v11 1.0 'ENG-462519'  :: Composable Admin Utility SDK and Stepwise Remediation Sequencer + Provenance-enriched evals alert stream with adaptive rate-limiting and gro
+   v13 1.0 'ENG-462519'  :: Composable Admin Utility SDK and Stepwise Remediation Sequencer + Provenance-enriched evals alert stream with adaptive rate-limiting and gro
+[mdtick] ENG-462519 vs PM-91345: whose deadline comes up quicker?  several=False rank=False
+   v11 1.0 'ENG-462519'  :: Composable Admin Utility SDK and Stepwise Remediation Sequencer + Provenance-enriched evals alert stream with adaptive rate-limiting and gro
+   v13 1.0 'ENG-462519'  :: Composable Admin Utility SDK and Stepwise Remediation Sequencer + Provenance-enriched evals alert stream with adaptive rate-limiting and gro
+[mdtick] Which of ENG-462519 and PM-91345 is due ahead of the other?  several=False rank=False
+   v11 1.0 'ENG-462519'  :: Composable Admin Utility SDK and Stepwise Remediation Sequencer + Provenance-enriched evals alert stream with adaptive rate-limiting and gro
+   v13 1.0 'ENG-462519'  :: Composable Admin Utility SDK and Stepwise Remediation Sequencer + Provenance-enriched evals alert stream with adaptive rate-limiting and gro
+[mdtick] Which of ENG-462519 and PM-91345 has to be done prior to the other one?  several=False rank=False
+   v11 1.0 'ENG-462519'  :: Composable Admin Utility SDK and Stepwise Remediation Sequencer + Provenance-enriched evals alert stream with adaptive rate-limiting and gro
+   v13 1.0 'ENG-462519'  :: Composable Admin Utility SDK and Stepwise Remediation Sequencer + Provenance-enriched evals alert stream with adaptive rate-limiting and gro
+[mdtick] Of ENG-462519 and PM-91345, which deadline is tighter?  several=False rank=False
+   v11 1.0 'ENG-462519'  :: Composable Admin Utility SDK and Stepwise Remediation Sequencer + Provenance-enriched evals alert stream with adaptive rate-limiting and gro
+   v13 1.0 'ENG-462519'  :: Composable Admin Utility SDK and Stepwise Remediation Sequencer + Provenance-enriched evals alert stream with adaptive rate-limiting and gro
+[mdtick] ENG-462519 or PM-91345, which one is more pressing by due date?  several=False rank=False
+   v11 1.0 'ENG-462519'  :: Composable Admin Utility SDK and Stepwise Remediation Sequencer + Provenance-enriched evals alert stream with adaptive rate-limiting and gro
+   v13 1.0 'ENG-462519'  :: Composable Admin Utility SDK and Stepwise Remediation Sequencer + Provenance-enriched evals alert stream with adaptive rate-limiting and gro
+[mdtick] Which of ENG-462519 and PM-91345 is due 1st?  several=False rank=True
+   v11 1.0 'ENG-462519'  :: Composable Admin Utility SDK and Stepwise Remediation Sequencer + Provenance-enriched evals alert stream with adaptive rate-limiting and gro
+   v13 1.0 'ENG-462519'  :: Composable Admin Utility SDK and Stepwise Remediation Sequencer + Provenance-enriched evals alert stream with adaptive rate-limiting and gro
+[mdtick] Which of ENG-462519 and PM-91345 is due earlier?  several=False rank=False
+   v11 1.0 'ENG-462519'  :: Composable Admin Utility SDK and Stepwise Remediation Sequencer + Provenance-enriched evals alert stream with adaptive rate-limiting and gro
+   v13 1.0 'ENG-462519'  :: Composable Admin Utility SDK and Stepwise Remediation Sequencer + Provenance-enriched evals alert stream with adaptive rate-limiting and gro
+[mdtick] Which of ENG-462519 and PM-91345 has the older due date?  several=False rank=False
+   v11 1.0 'ENG-462519'  :: Composable Admin Utility SDK and Stepwise Remediation Sequencer + Provenance-enriched evals alert stream with adaptive rate-limiting and gro
+   v13 1.0 'ENG-462519'  :: Composable Admin Utility SDK and Stepwise Remediation Sequencer + Provenance-enriched evals alert stream with adaptive rate-limiting and gro
+[mdtick] Which of ENG-462519 and PM-91345 is due early?  several=False rank=False
+   v11 1.0 'ENG-462519'  :: Composable Admin Utility SDK and Stepwise Remediation Sequencer + Provenance-enriched evals alert stream with adaptive rate-limiting and gro
+   v13 1.0 'ENG-462519'  :: Composable Admin Utility SDK and Stepwise Remediation Sequencer + Provenance-enriched evals alert stream with adaptive rate-limiting and gro
+[mdtick] Which of Daniel Cho's tickets has the tightest deadline? Key please.  several=False rank=False
+   v11 1.0 'ENG-42702'  :: Daniel Cho → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-42702'  :: Daniel Cho → assignee_of [ticket] → due_date → earliest
+[mdtick] What's the most time-sensitive ticket assigned to Daniel Cho? Key please.  several=False rank=False
+   v11 0.0 '4'  :: Daniel Cho → assignee_of [ticket] → label → count
+   v13 0.0 '4'  :: Daniel Cho → assignee_of [ticket] → label → count
+[mdtick] Which ticket assigned to Daniel Cho is most overdue? Key please.  several=False rank=False
+   v11 1.0 'ENG-42702'  :: Daniel Cho → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-42702'  :: Daniel Cho → assignee_of [ticket] → due_date → earliest
+[mdtick] Which ticket assigned to Daniel Cho has the oldest due date? Key please.  several=False rank=True
+   v11 1.0 'ENG-42702'  :: Daniel Cho → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-42702'  :: Daniel Cho → assignee_of [ticket] → due_date → earliest
+[mdtick] What should Daniel Cho work on 1st? Give the ticket key.  several=False rank=True
+   v11 1.0 'ENG-42702'  :: Daniel Cho → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-42702'  :: Daniel Cho → assignee_of [ticket] → due_date → earliest
+[mdtick] Which of Daniel Cho's tickets is coming due soon? Give the key.  several=False rank=False
+   v11 1.0 'ENG-42702'  :: Daniel Cho → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-42702'  :: Daniel Cho → assignee_of [ticket] → due_date → earliest
+[mdtick] Which of Daniel Cho's tickets is most pressing by due date? Key please.  several=False rank=False
+   v11 1.0 'ENG-42702'  :: Daniel Cho → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-42702'  :: Daniel Cho → assignee_of [ticket] → due_date → earliest
+[mdtick] Which of Daniel Cho's tickets is up next? Key please.  several=False rank=False
+   v11 1.0 'ENG-42702'  :: Daniel Cho → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-42702'  :: Daniel Cho → assignee_of [ticket] → due_date → earliest
+[mdtick] Which of Daniel Cho's tickets is due earliest? Key please.  several=False rank=True
+   v11 1.0 'ENG-42702'  :: Daniel Cho → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-42702'  :: Daniel Cho → assignee_of [ticket] → due_date → earliest
+[mdtick] Which of Daniel Cho's tickets is the most urgent deadline-wise? Key please.  several=False rank=False
+   v11 1.0 'ENG-42702'  :: Daniel Cho → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-42702'  :: Daniel Cho → assignee_of [ticket] → due_date → earliest
+[mdtick] Which of Daniel Cho's tickets has the minimum due date? Key please.  several=False rank=False
+   v11 1.0 'ENG-42702'  :: Daniel Cho → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-42702'  :: Daniel Cho → assignee_of [ticket] → due_date → earliest
+[mdtick] Which of Daniel Cho's tickets has the earliest-due deadline? Key please.  several=False rank=True
+   v11 1.0 'ENG-42702'  :: Daniel Cho → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-42702'  :: Daniel Cho → assignee_of [ticket] → due_date → earliest
+[mdtick] Between PM-85314 and ENG-9412, which has the closer deadline? Key only.  several=False rank=False
+   v11 1.0 'PM-85314'  :: Priority: Private security regression — inconsistent RBAC/KMS audit propagation for SAML SSO customers + Commitment Request Decision Hub and
+   v13 1.0 'PM-85314'  :: Priority: Private security regression — inconsistent RBAC/KMS audit propagation for SAML SSO customers + Commitment Request Decision Hub and
+[mdtick] Which of PM-85314 and ENG-9412 has the nearer due date?  several=False rank=False
+   v11 1.0 'PM-85314'  :: Priority: Private security regression — inconsistent RBAC/KMS audit propagation for SAML SSO customers + Commitment Request Decision Hub and
+   v13 1.0 'PM-85314'  :: Priority: Private security regression — inconsistent RBAC/KMS audit propagation for SAML SSO customers + Commitment Request Decision Hub and
+[mdtick] PM-85314 vs ENG-9412: whose deadline comes up quicker?  several=False rank=False
+   v11 1.0 'PM-85314'  :: Priority: Private security regression — inconsistent RBAC/KMS audit propagation for SAML SSO customers + Commitment Request Decision Hub and
+   v13 1.0 'PM-85314'  :: Priority: Private security regression — inconsistent RBAC/KMS audit propagation for SAML SSO customers + Commitment Request Decision Hub and
+[mdtick] Which of PM-85314 and ENG-9412 is due ahead of the other?  several=False rank=False
+   v11 1.0 'PM-85314'  :: Priority: Private security regression — inconsistent RBAC/KMS audit propagation for SAML SSO customers + Commitment Request Decision Hub and
+   v13 1.0 'PM-85314'  :: Priority: Private security regression — inconsistent RBAC/KMS audit propagation for SAML SSO customers + Commitment Request Decision Hub and
+[mdtick] Which of PM-85314 and ENG-9412 has to be done prior to the other one?  several=False rank=False
+   v11 1.0 'PM-85314'  :: Priority: Private security regression — inconsistent RBAC/KMS audit propagation for SAML SSO customers + Commitment Request Decision Hub and
+   v13 1.0 'PM-85314'  :: Priority: Private security regression — inconsistent RBAC/KMS audit propagation for SAML SSO customers + Commitment Request Decision Hub and
+[mdtick] Of PM-85314 and ENG-9412, which deadline is tighter?  several=False rank=False
+   v11 1.0 'PM-85314'  :: Priority: Private security regression — inconsistent RBAC/KMS audit propagation for SAML SSO customers + Commitment Request Decision Hub and
+   v13 1.0 'PM-85314'  :: Priority: Private security regression — inconsistent RBAC/KMS audit propagation for SAML SSO customers + Commitment Request Decision Hub and
+[mdtick] PM-85314 or ENG-9412, which one is more pressing by due date?  several=False rank=False
+   v11 1.0 'PM-85314'  :: Priority: Private security regression — inconsistent RBAC/KMS audit propagation for SAML SSO customers + Commitment Request Decision Hub and
+   v13 1.0 'PM-85314'  :: Priority: Private security regression — inconsistent RBAC/KMS audit propagation for SAML SSO customers + Commitment Request Decision Hub and
+[mdtick] Which of PM-85314 and ENG-9412 is due 1st?  several=False rank=True
+   v11 1.0 'PM-85314'  :: Priority: Private security regression — inconsistent RBAC/KMS audit propagation for SAML SSO customers + Commitment Request Decision Hub and
+   v13 1.0 'PM-85314'  :: Priority: Private security regression — inconsistent RBAC/KMS audit propagation for SAML SSO customers + Commitment Request Decision Hub and
+[mdtick] Which of PM-85314 and ENG-9412 is due earlier?  several=False rank=False
+   v11 1.0 'PM-85314'  :: Priority: Private security regression — inconsistent RBAC/KMS audit propagation for SAML SSO customers + Commitment Request Decision Hub and
+   v13 1.0 'PM-85314'  :: Priority: Private security regression — inconsistent RBAC/KMS audit propagation for SAML SSO customers + Commitment Request Decision Hub and
+[mdtick] Which of PM-85314 and ENG-9412 has the older due date?  several=False rank=False
+   v11 1.0 'PM-85314'  :: Priority: Private security regression — inconsistent RBAC/KMS audit propagation for SAML SSO customers + Commitment Request Decision Hub and
+   v13 1.0 'PM-85314'  :: Priority: Private security regression — inconsistent RBAC/KMS audit propagation for SAML SSO customers + Commitment Request Decision Hub and
+[mdtick] Which of PM-85314 and ENG-9412 is due early?  several=False rank=False
+   v11 1.0 'PM-85314'  :: Priority: Private security regression — inconsistent RBAC/KMS audit propagation for SAML SSO customers + Commitment Request Decision Hub and
+   v13 1.0 'PM-85314'  :: Priority: Private security regression — inconsistent RBAC/KMS audit propagation for SAML SSO customers + Commitment Request Decision Hub and
+[mdtick] Which of Priya Desai's tickets has the tightest deadline? Key please.  several=False rank=False
+   v11 1.0 'ENG-469271'  :: Priya Desai → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-469271'  :: Priya Desai → assignee_of [ticket] → due_date → earliest
+[mdtick] What's the most time-sensitive ticket assigned to Priya Desai? Key please.  several=False rank=False
+   v11 1.0 'ENG-469271'  :: Priya Desai → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-469271'  :: Priya Desai → assignee_of [ticket] → due_date → earliest
+[mdtick] Which ticket assigned to Priya Desai is most overdue? Key please.  several=False rank=False
+   v11 1.0 'ENG-469271'  :: Priya Desai → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-469271'  :: Priya Desai → assignee_of [ticket] → due_date → earliest
+[mdtick] Which ticket assigned to Priya Desai has the oldest due date? Key please.  several=False rank=True
+   v11 1.0 'ENG-469271'  :: Priya Desai → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-469271'  :: Priya Desai → assignee_of [ticket] → due_date → earliest
+[mdtick] What should Priya Desai work on 1st? Give the ticket key.  several=False rank=True
+   v11 1.0 'ENG-469271'  :: Priya Desai → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-469271'  :: Priya Desai → assignee_of [ticket] → due_date → earliest
+[mdtick] Which of Priya Desai's tickets is coming due soon? Give the key.  several=False rank=False
+   v11 1.0 'ENG-469271'  :: Priya Desai → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-469271'  :: Priya Desai → assignee_of [ticket] → due_date → earliest
+[mdtick] Which of Priya Desai's tickets is most pressing by due date? Key please.  several=False rank=False
+   v11 1.0 'ENG-469271'  :: Priya Desai → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-469271'  :: Priya Desai → assignee_of [ticket] → due_date → earliest
+[mdtick] Which of Priya Desai's tickets is up next? Key please.  several=False rank=False
+   v11 1.0 'ENG-469271'  :: Priya Desai → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-469271'  :: Priya Desai → assignee_of [ticket] → due_date → earliest
+[mdtick] Which of Priya Desai's tickets is due earliest? Key please.  several=False rank=True
+   v11 1.0 'ENG-469271'  :: Priya Desai → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-469271'  :: Priya Desai → assignee_of [ticket] → due_date → earliest
+[mdtick] Which of Priya Desai's tickets is the most urgent deadline-wise? Key please.  several=False rank=False
+   v11 1.0 'ENG-469271'  :: Priya Desai → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-469271'  :: Priya Desai → assignee_of [ticket] → due_date → earliest
+[mdtick] Which of Priya Desai's tickets has the minimum due date? Key please.  several=False rank=False
+   v11 1.0 'ENG-469271'  :: Priya Desai → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-469271'  :: Priya Desai → assignee_of [ticket] → due_date → earliest
+[mdtick] Which of Priya Desai's tickets has the earliest-due deadline? Key please.  several=False rank=True
+   v11 1.0 'ENG-469271'  :: Priya Desai → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-469271'  :: Priya Desai → assignee_of [ticket] → due_date → earliest
+[mdplan] Between DES-14201 and ENG-4823, which has the closer deadline? Key only.  several=False rank=False
+   v11 1.0 'ENG-4823'  :: Quicklaunch mockups for Hosted API: model cards, inline request builder & code presets + Representative chat streaming workload generator (v
+   v13 1.0 'ENG-4823'  :: Quicklaunch mockups for Hosted API: model cards, inline request builder & code presets + Representative chat streaming workload generator (v
+[mdplan] Which of DES-14201 and ENG-4823 has the nearer due date?  several=False rank=False
+   v11 1.0 'ENG-4823'  :: Quicklaunch mockups for Hosted API: model cards, inline request builder & code presets + Representative chat streaming workload generator (v
+   v13 1.0 'ENG-4823'  :: Quicklaunch mockups for Hosted API: model cards, inline request builder & code presets + Representative chat streaming workload generator (v
+[mdplan] DES-14201 vs ENG-4823: whose deadline comes up quicker?  several=False rank=False
+   v11 1.0 'ENG-4823'  :: Quicklaunch mockups for Hosted API: model cards, inline request builder & code presets + Representative chat streaming workload generator (v
+   v13 1.0 'ENG-4823'  :: Quicklaunch mockups for Hosted API: model cards, inline request builder & code presets + Representative chat streaming workload generator (v
+[mdplan] Which of DES-14201 and ENG-4823 is due ahead of the other?  several=False rank=False
+   v11 1.0 'ENG-4823'  :: Quicklaunch mockups for Hosted API: model cards, inline request builder & code presets + Representative chat streaming workload generator (v
+   v13 1.0 'ENG-4823'  :: Quicklaunch mockups for Hosted API: model cards, inline request builder & code presets + Representative chat streaming workload generator (v
+[mdplan] Which of DES-14201 and ENG-4823 has to be done prior to the other one?  several=False rank=False
+   v11 1.0 'ENG-4823'  :: Quicklaunch mockups for Hosted API: model cards, inline request builder & code presets + Representative chat streaming workload generator (v
+   v13 1.0 'ENG-4823'  :: Quicklaunch mockups for Hosted API: model cards, inline request builder & code presets + Representative chat streaming workload generator (v
+[mdplan] Of DES-14201 and ENG-4823, which deadline is tighter?  several=False rank=False
+   v11 1.0 'ENG-4823'  :: Quicklaunch mockups for Hosted API: model cards, inline request builder & code presets + Representative chat streaming workload generator (v
+   v13 1.0 'ENG-4823'  :: Quicklaunch mockups for Hosted API: model cards, inline request builder & code presets + Representative chat streaming workload generator (v
+[mdplan] DES-14201 or ENG-4823, which one is more pressing by due date?  several=False rank=False
+   v11 1.0 'ENG-4823'  :: Quicklaunch mockups for Hosted API: model cards, inline request builder & code presets + Representative chat streaming workload generator (v
+   v13 1.0 'ENG-4823'  :: Quicklaunch mockups for Hosted API: model cards, inline request builder & code presets + Representative chat streaming workload generator (v
+[mdplan] Which of DES-14201 and ENG-4823 is due 1st?  several=False rank=True
+   v11 1.0 'ENG-4823'  :: Quicklaunch mockups for Hosted API: model cards, inline request builder & code presets + Representative chat streaming workload generator (v
+   v13 1.0 'ENG-4823'  :: Quicklaunch mockups for Hosted API: model cards, inline request builder & code presets + Representative chat streaming workload generator (v
+[mdplan] Which of DES-14201 and ENG-4823 is due earlier?  several=False rank=False
+   v11 1.0 'ENG-4823'  :: Quicklaunch mockups for Hosted API: model cards, inline request builder & code presets + Representative chat streaming workload generator (v
+   v13 1.0 'ENG-4823'  :: Quicklaunch mockups for Hosted API: model cards, inline request builder & code presets + Representative chat streaming workload generator (v
+[mdplan] Which of DES-14201 and ENG-4823 has the older due date?  several=False rank=False
+   v11 1.0 'ENG-4823'  :: Quicklaunch mockups for Hosted API: model cards, inline request builder & code presets + Representative chat streaming workload generator (v
+   v13 1.0 'ENG-4823'  :: Quicklaunch mockups for Hosted API: model cards, inline request builder & code presets + Representative chat streaming workload generator (v
+[mdplan] Which of DES-14201 and ENG-4823 is due early?  several=False rank=False
+   v11 1.0 'ENG-4823'  :: Quicklaunch mockups for Hosted API: model cards, inline request builder & code presets + Representative chat streaming workload generator (v
+   v13 1.0 'ENG-4823'  :: Quicklaunch mockups for Hosted API: model cards, inline request builder & code presets + Representative chat streaming workload generator (v
+[mdplan] Which of Ravi Desai's tickets has the tightest deadline? Key please.  several=False rank=False
+   v11 1.0 'ENG-997888'  :: Ravi Desai → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-997888'  :: Ravi Desai → assignee_of [ticket] → due_date → earliest
+[mdplan] What's the most time-sensitive ticket assigned to Ravi Desai? Key please.  several=False rank=False
+   v11 1.0 'ENG-997888'  :: Ravi Desai → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-997888'  :: Ravi Desai → assignee_of [ticket] → due_date → earliest
+[mdplan] Which ticket assigned to Ravi Desai is most overdue? Key please.  several=False rank=False
+   v11 1.0 'ENG-997888'  :: Ravi Desai → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-997888'  :: Ravi Desai → assignee_of [ticket] → due_date → earliest
+[mdplan] Which ticket assigned to Ravi Desai has the oldest due date? Key please.  several=False rank=True
+   v11 1.0 'ENG-997888'  :: Ravi Desai → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-997888'  :: Ravi Desai → assignee_of [ticket] → due_date → earliest
+[mdplan] What should Ravi Desai work on 1st? Give the ticket key.  several=False rank=True
+   v11 1.0 'ENG-997888'  :: Ravi Desai → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-997888'  :: Ravi Desai → assignee_of [ticket] → due_date → earliest
+[mdplan] Which of Ravi Desai's tickets is coming due soon? Give the key.  several=False rank=False
+   v11 1.0 'ENG-997888'  :: Ravi Desai → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-997888'  :: Ravi Desai → assignee_of [ticket] → due_date → earliest
+[mdplan] Which of Ravi Desai's tickets is most pressing by due date? Key please.  several=False rank=False
+   v11 1.0 'ENG-997888'  :: Ravi Desai → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-997888'  :: Ravi Desai → assignee_of [ticket] → due_date → earliest
+[mdplan] Which of Ravi Desai's tickets is up next? Key please.  several=False rank=False
+   v11 1.0 'ENG-997888'  :: Ravi Desai → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-997888'  :: Ravi Desai → assignee_of [ticket] → due_date → earliest
+[mdplan] Which of Ravi Desai's tickets is due earliest? Key please.  several=False rank=True
+   v11 1.0 'ENG-997888'  :: Ravi Desai → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-997888'  :: Ravi Desai → assignee_of [ticket] → due_date → earliest
+[mdplan] Which of Ravi Desai's tickets is the most urgent deadline-wise? Key please.  several=False rank=False
+   v11 1.0 'ENG-997888'  :: Ravi Desai → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-997888'  :: Ravi Desai → assignee_of [ticket] → due_date → earliest
+[mdplan] Which of Ravi Desai's tickets has the minimum due date? Key please.  several=False rank=False
+   v11 1.0 'ENG-997888'  :: Ravi Desai → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-997888'  :: Ravi Desai → assignee_of [ticket] → due_date → earliest
+[mdplan] Which of Ravi Desai's tickets has the earliest-due deadline? Key please.  several=False rank=True
+   v11 1.0 'ENG-997888'  :: Ravi Desai → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-997888'  :: Ravi Desai → assignee_of [ticket] → due_date → earliest
+[mdplan] Between PM-314158 and PM-914007, which has the closer deadline? Key only.  several=False rank=False
+   v11 1.0 'PM-914007'  :: Granular runtime microprofiles and rollback-signal playbook + Contract Onboarding Fastpass and Exposure Scorecard Playbook → due_date → earl
+   v13 1.0 'PM-914007'  :: Granular runtime microprofiles and rollback-signal playbook + Contract Onboarding Fastpass and Exposure Scorecard Playbook → due_date → earl
+[mdplan] Which of PM-314158 and PM-914007 has the nearer due date?  several=False rank=False
+   v11 1.0 'PM-914007'  :: Granular runtime microprofiles and rollback-signal playbook + Contract Onboarding Fastpass and Exposure Scorecard Playbook → due_date → earl
+   v13 1.0 'PM-914007'  :: Granular runtime microprofiles and rollback-signal playbook + Contract Onboarding Fastpass and Exposure Scorecard Playbook → due_date → earl
+[mdplan] PM-314158 vs PM-914007: whose deadline comes up quicker?  several=False rank=False
+   v11 1.0 'PM-914007'  :: Granular runtime microprofiles and rollback-signal playbook + Contract Onboarding Fastpass and Exposure Scorecard Playbook → due_date → earl
+   v13 1.0 'PM-914007'  :: Granular runtime microprofiles and rollback-signal playbook + Contract Onboarding Fastpass and Exposure Scorecard Playbook → due_date → earl
+[mdplan] Which of PM-314158 and PM-914007 is due ahead of the other?  several=False rank=False
+   v11 1.0 'PM-914007'  :: Granular runtime microprofiles and rollback-signal playbook + Contract Onboarding Fastpass and Exposure Scorecard Playbook → due_date → earl
+   v13 1.0 'PM-914007'  :: Granular runtime microprofiles and rollback-signal playbook + Contract Onboarding Fastpass and Exposure Scorecard Playbook → due_date → earl
+[mdplan] Which of PM-314158 and PM-914007 has to be done prior to the other one?  several=False rank=False
+   v11 1.0 'PM-914007'  :: Granular runtime microprofiles and rollback-signal playbook + Contract Onboarding Fastpass and Exposure Scorecard Playbook → due_date → earl
+   v13 1.0 'PM-914007'  :: Granular runtime microprofiles and rollback-signal playbook + Contract Onboarding Fastpass and Exposure Scorecard Playbook → due_date → earl
+[mdplan] Of PM-314158 and PM-914007, which deadline is tighter?  several=False rank=False
+   v11 1.0 'PM-914007'  :: Granular runtime microprofiles and rollback-signal playbook + Contract Onboarding Fastpass and Exposure Scorecard Playbook → due_date → earl
+   v13 1.0 'PM-914007'  :: Granular runtime microprofiles and rollback-signal playbook + Contract Onboarding Fastpass and Exposure Scorecard Playbook → due_date → earl
+[mdplan] PM-314158 or PM-914007, which one is more pressing by due date?  several=False rank=False
+   v11 1.0 'PM-914007'  :: Granular runtime microprofiles and rollback-signal playbook + Contract Onboarding Fastpass and Exposure Scorecard Playbook → due_date → earl
+   v13 1.0 'PM-914007'  :: Granular runtime microprofiles and rollback-signal playbook + Contract Onboarding Fastpass and Exposure Scorecard Playbook → due_date → earl
+[mdplan] Which of PM-314158 and PM-914007 is due 1st?  several=False rank=True
+   v11 1.0 'PM-914007'  :: Granular runtime microprofiles and rollback-signal playbook + Contract Onboarding Fastpass and Exposure Scorecard Playbook → due_date → earl
+   v13 1.0 'PM-914007'  :: Granular runtime microprofiles and rollback-signal playbook + Contract Onboarding Fastpass and Exposure Scorecard Playbook → due_date → earl
+[mdplan] Which of PM-314158 and PM-914007 is due earlier?  several=False rank=False
+   v11 1.0 'PM-914007'  :: Granular runtime microprofiles and rollback-signal playbook + Contract Onboarding Fastpass and Exposure Scorecard Playbook → due_date → earl
+   v13 1.0 'PM-914007'  :: Granular runtime microprofiles and rollback-signal playbook + Contract Onboarding Fastpass and Exposure Scorecard Playbook → due_date → earl
+[mdplan] Which of PM-314158 and PM-914007 has the older due date?  several=False rank=False
+   v11 1.0 'PM-914007'  :: Granular runtime microprofiles and rollback-signal playbook + Contract Onboarding Fastpass and Exposure Scorecard Playbook → due_date → earl
+   v13 1.0 'PM-914007'  :: Granular runtime microprofiles and rollback-signal playbook + Contract Onboarding Fastpass and Exposure Scorecard Playbook → due_date → earl
+[mdplan] Which of PM-314158 and PM-914007 is due early?  several=False rank=False
+   v11 1.0 'PM-914007'  :: Granular runtime microprofiles and rollback-signal playbook + Contract Onboarding Fastpass and Exposure Scorecard Playbook → due_date → earl
+   v13 1.0 'PM-914007'  :: Granular runtime microprofiles and rollback-signal playbook + Contract Onboarding Fastpass and Exposure Scorecard Playbook → due_date → earl
+[mdplan] Which of Priya Shah's tickets has the tightest deadline? Key please.  several=False rank=False
+   v11 1.0 'ENG-73129'  :: Priya Shah → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-73129'  :: Priya Shah → assignee_of [ticket] → due_date → earliest
+[mdplan] What's the most time-sensitive ticket assigned to Priya Shah? Key please.  several=False rank=False
+   v11 1.0 'ENG-73129'  :: Priya Shah → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-73129'  :: Priya Shah → assignee_of [ticket] → due_date → earliest
+[mdplan] Which ticket assigned to Priya Shah is most overdue? Key please.  several=False rank=False
+   v11 1.0 'ENG-73129'  :: Priya Shah → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-73129'  :: Priya Shah → assignee_of [ticket] → due_date → earliest
+[mdplan] Which ticket assigned to Priya Shah has the oldest due date? Key please.  several=False rank=True
+   v11 1.0 'ENG-73129'  :: Priya Shah → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-73129'  :: Priya Shah → assignee_of [ticket] → due_date → earliest
+[mdplan] What should Priya Shah work on 1st? Give the ticket key.  several=False rank=True
+   v11 1.0 'ENG-73129'  :: Priya Shah → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-73129'  :: Priya Shah → assignee_of [ticket] → due_date → earliest
+[mdplan] Which of Priya Shah's tickets is coming due soon? Give the key.  several=False rank=False
+   v11 1.0 'ENG-73129'  :: Priya Shah → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-73129'  :: Priya Shah → assignee_of [ticket] → due_date → earliest
+[mdplan] Which of Priya Shah's tickets is most pressing by due date? Key please.  several=False rank=False
+   v11 1.0 'ENG-73129'  :: Priya Shah → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-73129'  :: Priya Shah → assignee_of [ticket] → due_date → earliest
+[mdplan] Which of Priya Shah's tickets is up next? Key please.  several=False rank=False
+   v11 1.0 'ENG-73129'  :: Priya Shah → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-73129'  :: Priya Shah → assignee_of [ticket] → due_date → earliest
+[mdplan] Which of Priya Shah's tickets is due earliest? Key please.  several=False rank=True
+   v11 1.0 'ENG-73129'  :: Priya Shah → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-73129'  :: Priya Shah → assignee_of [ticket] → due_date → earliest
+[mdplan] Which of Priya Shah's tickets is the most urgent deadline-wise? Key please.  several=False rank=False
+   v11 1.0 'ENG-73129'  :: Priya Shah → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-73129'  :: Priya Shah → assignee_of [ticket] → due_date → earliest
+[mdplan] Which of Priya Shah's tickets has the minimum due date? Key please.  several=False rank=False
+   v11 1.0 'ENG-73129'  :: Priya Shah → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-73129'  :: Priya Shah → assignee_of [ticket] → due_date → earliest
+[mdplan] Which of Priya Shah's tickets has the earliest-due deadline? Key please.  several=False rank=True
+   v11 1.0 'ENG-73129'  :: Priya Shah → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-73129'  :: Priya Shah → assignee_of [ticket] → due_date → earliest
+[mdrep] Between PM-99121 and ENG-8427, which has the closer deadline? Key only.  several=False rank=False
+   v11 1.0 'ENG-8427'  :: Console backend: unit economics query API endpoints (time series + breakdowns) + Define staged admission flow and sanity-suite for new open 
+   v13 1.0 'ENG-8427'  :: Console backend: unit economics query API endpoints (time series + breakdowns) + Define staged admission flow and sanity-suite for new open 
+[mdrep] Which of PM-99121 and ENG-8427 has the nearer due date?  several=False rank=False
+   v11 1.0 'ENG-8427'  :: Console backend: unit economics query API endpoints (time series + breakdowns) + Define staged admission flow and sanity-suite for new open 
+   v13 1.0 'ENG-8427'  :: Console backend: unit economics query API endpoints (time series + breakdowns) + Define staged admission flow and sanity-suite for new open 
+[mdrep] PM-99121 vs ENG-8427: whose deadline comes up quicker?  several=False rank=False
+   v11 1.0 'ENG-8427'  :: Console backend: unit economics query API endpoints (time series + breakdowns) + Define staged admission flow and sanity-suite for new open 
+   v13 1.0 'ENG-8427'  :: Console backend: unit economics query API endpoints (time series + breakdowns) + Define staged admission flow and sanity-suite for new open 
+[mdrep] Which of PM-99121 and ENG-8427 is due ahead of the other?  several=False rank=False
+   v11 1.0 'ENG-8427'  :: Console backend: unit economics query API endpoints (time series + breakdowns) + Define staged admission flow and sanity-suite for new open 
+   v13 1.0 'ENG-8427'  :: Console backend: unit economics query API endpoints (time series + breakdowns) + Define staged admission flow and sanity-suite for new open 
+[mdrep] Which of PM-99121 and ENG-8427 has to be done prior to the other one?  several=False rank=False
+   v11 1.0 'ENG-8427'  :: Console backend: unit economics query API endpoints (time series + breakdowns) + Define staged admission flow and sanity-suite for new open 
+   v13 1.0 'ENG-8427'  :: Console backend: unit economics query API endpoints (time series + breakdowns) + Define staged admission flow and sanity-suite for new open 
+[mdrep] Of PM-99121 and ENG-8427, which deadline is tighter?  several=False rank=False
+   v11 1.0 'ENG-8427'  :: Console backend: unit economics query API endpoints (time series + breakdowns) + Define staged admission flow and sanity-suite for new open 
+   v13 1.0 'ENG-8427'  :: Console backend: unit economics query API endpoints (time series + breakdowns) + Define staged admission flow and sanity-suite for new open 
+[mdrep] PM-99121 or ENG-8427, which one is more pressing by due date?  several=False rank=False
+   v11 1.0 'ENG-8427'  :: Console backend: unit economics query API endpoints (time series + breakdowns) + Define staged admission flow and sanity-suite for new open 
+   v13 1.0 'ENG-8427'  :: Console backend: unit economics query API endpoints (time series + breakdowns) + Define staged admission flow and sanity-suite for new open 
+[mdrep] Which of PM-99121 and ENG-8427 is due 1st?  several=False rank=True
+   v11 1.0 'ENG-8427'  :: Console backend: unit economics query API endpoints (time series + breakdowns) + Define staged admission flow and sanity-suite for new open 
+   v13 1.0 'ENG-8427'  :: Console backend: unit economics query API endpoints (time series + breakdowns) + Define staged admission flow and sanity-suite for new open 
+[mdrep] Which of PM-99121 and ENG-8427 is due earlier?  several=False rank=False
+   v11 1.0 'ENG-8427'  :: Console backend: unit economics query API endpoints (time series + breakdowns) + Define staged admission flow and sanity-suite for new open 
+   v13 1.0 'ENG-8427'  :: Console backend: unit economics query API endpoints (time series + breakdowns) + Define staged admission flow and sanity-suite for new open 
+[mdrep] Which of PM-99121 and ENG-8427 has the older due date?  several=False rank=False
+   v11 1.0 'ENG-8427'  :: Console backend: unit economics query API endpoints (time series + breakdowns) + Define staged admission flow and sanity-suite for new open 
+   v13 1.0 'ENG-8427'  :: Console backend: unit economics query API endpoints (time series + breakdowns) + Define staged admission flow and sanity-suite for new open 
+[mdrep] Which of PM-99121 and ENG-8427 is due early?  several=False rank=False
+   v11 1.0 'ENG-8427'  :: Console backend: unit economics query API endpoints (time series + breakdowns) + Define staged admission flow and sanity-suite for new open 
+   v13 1.0 'ENG-8427'  :: Console backend: unit economics query API endpoints (time series + breakdowns) + Define staged admission flow and sanity-suite for new open 
+[mdrep] Which of Ava Martinez's tickets has the tightest deadline? Key please.  several=False rank=False
+   v11 1.0 'ENG-47258'  :: Ava Martinez → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-47258'  :: Ava Martinez → assignee_of [ticket] → due_date → earliest
+[mdrep] What's the most time-sensitive ticket assigned to Ava Martinez? Key please.  several=False rank=False
+   v11 1.0 'ENG-47258'  :: Ava Martinez → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-47258'  :: Ava Martinez → assignee_of [ticket] → due_date → earliest
+[mdrep] Which ticket assigned to Ava Martinez is most overdue? Key please.  several=False rank=False
+   v11 1.0 'ENG-47258'  :: Ava Martinez → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-47258'  :: Ava Martinez → assignee_of [ticket] → due_date → earliest
+[mdrep] Which ticket assigned to Ava Martinez has the oldest due date? Key please.  several=False rank=True
+   v11 1.0 'ENG-47258'  :: Ava Martinez → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-47258'  :: Ava Martinez → assignee_of [ticket] → due_date → earliest
+[mdrep] What should Ava Martinez work on 1st? Give the ticket key.  several=False rank=True
+   v11 1.0 'ENG-47258'  :: Ava Martinez → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-47258'  :: Ava Martinez → assignee_of [ticket] → due_date → earliest
+[mdrep] Which of Ava Martinez's tickets is coming due soon? Give the key.  several=False rank=False
+   v11 1.0 'ENG-47258'  :: Ava Martinez → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-47258'  :: Ava Martinez → assignee_of [ticket] → due_date → earliest
+[mdrep] Which of Ava Martinez's tickets is most pressing by due date? Key please.  several=False rank=False
+   v11 1.0 'ENG-47258'  :: Ava Martinez → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-47258'  :: Ava Martinez → assignee_of [ticket] → due_date → earliest
+[mdrep] Which of Ava Martinez's tickets is up next? Key please.  several=False rank=False
+   v11 1.0 'ENG-47258'  :: Ava Martinez → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-47258'  :: Ava Martinez → assignee_of [ticket] → due_date → earliest
+[mdrep] Which of Ava Martinez's tickets is due earliest? Key please.  several=False rank=True
+   v11 1.0 'ENG-47258'  :: Ava Martinez → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-47258'  :: Ava Martinez → assignee_of [ticket] → due_date → earliest
+[mdrep] Which of Ava Martinez's tickets is the most urgent deadline-wise? Key please.  several=False rank=False
+   v11 1.0 'ENG-47258'  :: Ava Martinez → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-47258'  :: Ava Martinez → assignee_of [ticket] → due_date → earliest
+[mdrep] Which of Ava Martinez's tickets has the minimum due date? Key please.  several=False rank=False
+   v11 1.0 'ENG-47258'  :: Ava Martinez → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-47258'  :: Ava Martinez → assignee_of [ticket] → due_date → earliest
+[mdrep] Which of Ava Martinez's tickets has the earliest-due deadline? Key please.  several=False rank=True
+   v11 1.0 'ENG-47258'  :: Ava Martinez → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'ENG-47258'  :: Ava Martinez → assignee_of [ticket] → due_date → earliest
+[mdrep] Between DES-276489 and ENG-734198, which has the closer deadline? Key only.  several=False rank=False
+   v11 1.0 'DES-276489'  :: Compact journey map with rollout-stage lenses + Artifact entrant conversion harness and runtime compatibility sweep → due_date → earliest
+   v13 1.0 'DES-276489'  :: Compact journey map with rollout-stage lenses + Artifact entrant conversion harness and runtime compatibility sweep → due_date → earliest
+[mdrep] Which of DES-276489 and ENG-734198 has the nearer due date?  several=False rank=False
+   v11 1.0 'DES-276489'  :: Compact journey map with rollout-stage lenses + Artifact entrant conversion harness and runtime compatibility sweep → due_date → earliest
+   v13 1.0 'DES-276489'  :: Compact journey map with rollout-stage lenses + Artifact entrant conversion harness and runtime compatibility sweep → due_date → earliest
+[mdrep] DES-276489 vs ENG-734198: whose deadline comes up quicker?  several=False rank=False
+   v11 1.0 'DES-276489'  :: Compact journey map with rollout-stage lenses + Artifact entrant conversion harness and runtime compatibility sweep → due_date → earliest
+   v13 1.0 'DES-276489'  :: Compact journey map with rollout-stage lenses + Artifact entrant conversion harness and runtime compatibility sweep → due_date → earliest
+[mdrep] Which of DES-276489 and ENG-734198 is due ahead of the other?  several=False rank=False
+   v11 1.0 'DES-276489'  :: Compact journey map with rollout-stage lenses + Artifact entrant conversion harness and runtime compatibility sweep → due_date → earliest
+   v13 1.0 'DES-276489'  :: Compact journey map with rollout-stage lenses + Artifact entrant conversion harness and runtime compatibility sweep → due_date → earliest
+[mdrep] Which of DES-276489 and ENG-734198 has to be done prior to the other one?  several=False rank=False
+   v11 1.0 'DES-276489'  :: Compact journey map with rollout-stage lenses + Artifact entrant conversion harness and runtime compatibility sweep → due_date → earliest
+   v13 1.0 'DES-276489'  :: Compact journey map with rollout-stage lenses + Artifact entrant conversion harness and runtime compatibility sweep → due_date → earliest
+[mdrep] Of DES-276489 and ENG-734198, which deadline is tighter?  several=False rank=False
+   v11 1.0 'DES-276489'  :: Compact journey map with rollout-stage lenses + Artifact entrant conversion harness and runtime compatibility sweep → due_date → earliest
+   v13 1.0 'DES-276489'  :: Compact journey map with rollout-stage lenses + Artifact entrant conversion harness and runtime compatibility sweep → due_date → earliest
+[mdrep] DES-276489 or ENG-734198, which one is more pressing by due date?  several=False rank=False
+   v11 1.0 'DES-276489'  :: Compact journey map with rollout-stage lenses + Artifact entrant conversion harness and runtime compatibility sweep → due_date → earliest
+   v13 1.0 'DES-276489'  :: Compact journey map with rollout-stage lenses + Artifact entrant conversion harness and runtime compatibility sweep → due_date → earliest
+[mdrep] Which of DES-276489 and ENG-734198 is due 1st?  several=False rank=True
+   v11 1.0 'DES-276489'  :: Compact journey map with rollout-stage lenses + Artifact entrant conversion harness and runtime compatibility sweep → due_date → earliest
+   v13 1.0 'DES-276489'  :: Compact journey map with rollout-stage lenses + Artifact entrant conversion harness and runtime compatibility sweep → due_date → earliest
+[mdrep] Which of DES-276489 and ENG-734198 is due earlier?  several=False rank=False
+   v11 1.0 'DES-276489'  :: Compact journey map with rollout-stage lenses + Artifact entrant conversion harness and runtime compatibility sweep → due_date → earliest
+   v13 1.0 'DES-276489'  :: Compact journey map with rollout-stage lenses + Artifact entrant conversion harness and runtime compatibility sweep → due_date → earliest
+[mdrep] Which of DES-276489 and ENG-734198 has the older due date?  several=False rank=False
+   v11 1.0 'DES-276489'  :: Compact journey map with rollout-stage lenses + Artifact entrant conversion harness and runtime compatibility sweep → due_date → earliest
+   v13 1.0 'DES-276489'  :: Compact journey map with rollout-stage lenses + Artifact entrant conversion harness and runtime compatibility sweep → due_date → earliest
+[mdrep] Which of DES-276489 and ENG-734198 is due early?  several=False rank=False
+   v11 1.0 'DES-276489'  :: Compact journey map with rollout-stage lenses + Artifact entrant conversion harness and runtime compatibility sweep → due_date → earliest
+   v13 1.0 'DES-276489'  :: Compact journey map with rollout-stage lenses + Artifact entrant conversion harness and runtime compatibility sweep → due_date → earliest
+[mdrep] Which of Priya Patel's tickets has the tightest deadline? Key please.  several=False rank=False
+   v11 1.0 'PM-99121'  :: Priya Patel → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'PM-99121'  :: Priya Patel → assignee_of [ticket] → due_date → earliest
+[mdrep] What's the most time-sensitive ticket assigned to Priya Patel? Key please.  several=False rank=False
+   v11 1.0 'PM-99121'  :: Priya Patel → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'PM-99121'  :: Priya Patel → assignee_of [ticket] → due_date → earliest
+[mdrep] Which ticket assigned to Priya Patel is most overdue? Key please.  several=False rank=False
+   v11 1.0 'PM-99121'  :: Priya Patel → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'PM-99121'  :: Priya Patel → assignee_of [ticket] → due_date → earliest
+[mdrep] Which ticket assigned to Priya Patel has the oldest due date? Key please.  several=False rank=True
+   v11 1.0 'PM-99121'  :: Priya Patel → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'PM-99121'  :: Priya Patel → assignee_of [ticket] → due_date → earliest
+[mdrep] What should Priya Patel work on 1st? Give the ticket key.  several=False rank=True
+   v11 1.0 'PM-99121'  :: Priya Patel → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'PM-99121'  :: Priya Patel → assignee_of [ticket] → due_date → earliest
+[mdrep] Which of Priya Patel's tickets is coming due soon? Give the key.  several=False rank=False
+   v11 1.0 'PM-99121'  :: Priya Patel → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'PM-99121'  :: Priya Patel → assignee_of [ticket] → due_date → earliest
+[mdrep] Which of Priya Patel's tickets is most pressing by due date? Key please.  several=False rank=False
+   v11 1.0 'PM-99121'  :: Priya Patel → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'PM-99121'  :: Priya Patel → assignee_of [ticket] → due_date → earliest
+[mdrep] Which of Priya Patel's tickets is up next? Key please.  several=False rank=False
+   v11 1.0 'PM-99121'  :: Priya Patel → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'PM-99121'  :: Priya Patel → assignee_of [ticket] → due_date → earliest
+[mdrep] Which of Priya Patel's tickets is due earliest? Key please.  several=False rank=True
+   v11 1.0 'PM-99121'  :: Priya Patel → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'PM-99121'  :: Priya Patel → assignee_of [ticket] → due_date → earliest
+[mdrep] Which of Priya Patel's tickets is the most urgent deadline-wise? Key please.  several=False rank=False
+   v11 1.0 'PM-99121'  :: Priya Patel → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'PM-99121'  :: Priya Patel → assignee_of [ticket] → due_date → earliest
+[mdrep] Which of Priya Patel's tickets has the minimum due date? Key please.  several=False rank=False
+   v11 1.0 'PM-99121'  :: Priya Patel → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'PM-99121'  :: Priya Patel → assignee_of [ticket] → due_date → earliest
+[mdrep] Which of Priya Patel's tickets has the earliest-due deadline? Key please.  several=False rank=True
+   v11 1.0 'PM-99121'  :: Priya Patel → assignee_of [ticket] → due_date → earliest
+   v13 1.0 'PM-99121'  :: Priya Patel → assignee_of [ticket] → due_date → earliest

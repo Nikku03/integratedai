@@ -1,0 +1,18 @@
+[
+{"work":"mdtick","question":"Of all the tickets assigned to Daniel Cho, which one is due \"first\"? Key please.","expected":{"ids":["ENG-42702"],"id_kind":"key"},"kind":"person_first"},
+{"work":"mdtick","question":"Of all the tickets assigned to Daniel Cho, which one is due “first”? Key please.","expected":{"ids":["ENG-42702"],"id_kind":"key"},"kind":"person_first"},
+{"work":"mdtick","question":"Which of Daniel Cho's tickets is due 1st? Key please.","expected":{"ids":["ENG-42702"],"id_kind":"key"},"kind":"person_first"},
+{"work":"mdtick","question":"Which of Daniel Cho's tickets is due furthest out? Key please.","expected":{"ids":["ENG-991111"],"id_kind":"key"},"kind":"person_first"},
+{"work":"mdtick","question":"Which of Daniel Cho's tickets is due last? Key please.","expected":{"ids":["ENG-991111"],"id_kind":"key"},"kind":"person_first"},
+{"work":"mdtick","question":"Which of Daniel Cho's tickets has the latest due date? Key please.","expected":{"ids":["ENG-991111"],"id_kind":"key"},"kind":"person_first"},
+{"work":"mdtick","question":"Which of Priya Desai's tickets is due furthest out? Key please.","expected":{"ids":["PM-31416"],"id_kind":"key"},"kind":"person_first"},
+{"work":"mdtick","question":"Which of Priya Desai's tickets has the latest due date? Key please.","expected":{"ids":["PM-31416"],"id_kind":"key"},"kind":"person_first"},
+{"work":"mdtick","question":"Which of Daniel Cho's tickets needs doing ASAP? Key please.","expected":{"ids":["ENG-42702"],"id_kind":"key"},"kind":"person_first"},
+{"work":"mdtick","question":"Which of Daniel Cho's tickets is due the earliest?","expected":{"ids":["ENG-42702"],"id_kind":"key"},"kind":"person_first"},
+{"work":"mdtick","question":"Which of Daniel Cho's tickets is due early? Key please.","expected":{"ids":["ENG-42702"],"id_kind":"key"},"kind":"person_first"},
+{"work":"mdtick","question":"Which of Daniel Cho's tickets has the closer deadline? Key please.","expected":{"ids":["ENG-42702"],"id_kind":"key"},"kind":"person_first"},
+{"work":"mdtick","question":"Which of Daniel Cho's tickets is upcoming? Key please.","expected":{"ids":["ENG-42702"],"id_kind":"key"},"kind":"person_first"},
+{"work":"mdtick","question":"Which of Daniel Cho's tickets is at the top of the queue by due date? Key please.","expected":{"ids":["ENG-42702"],"id_kind":"key"},"kind":"person_first"},
+{"work":"mdtick","question":"Which of Daniel Cho's tickets comes due before the rest?","expected":{"ids":["ENG-42702"],"id_kind":"key"},"kind":"person_first"},
+{"work":"mdtick","question":"Of Daniel Cho's tickets, which deadline hits first?","expected":{"ids":["ENG-42702"],"id_kind":"key"},"kind":"person_first"}
+]

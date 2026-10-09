@@ -412,22 +412,26 @@ def test_the_ticket_test_judges_action_items_that_name_no_tracker():
     assert M.MIN_UNNAMED == 4
 
 
-def test_v13_the_first_one_due_only_when_the_question_asks_for_an_order(tmp_path):
+def test_v13_a_question_asking_for_several_things_gets_no_first_one_due(tmp_path):
     tb = _bank(tmp_path)
     v11, v13 = P.Planner(tb, "v9"), P.Planner(tb, "v9")
     v11.tickets = v13.tickets = v13.orders = True
-    assert P.Planner.asks_order("Which of Omar Singh's tickets is due soonest?") and P.Planner.asks_order("Which is due earlier, A or B?")
-    assert P.Planner.asks_order("What needs finishing before the others?")
-    assert not P.Planner.asks_order("Which tickets are assigned to Omar Singh? Ticket keys please.")
-    assert not P.Planner.asks_order('Who took "the first draft" in the meeting? List their tickets.'), "quoted titles are not read"
+    several, rank = P.Planner.asks_several, P.Planner.asks_rank
+    assert several("Which tickets are assigned to Omar Singh? Ticket keys please.") and several("Can you list the ticket IDs?")
+    assert several("Who took it? What are their tickets?") and several("What Linear issues does she have?")
+    assert not several("Which of Omar Singh's tickets has the tightest deadline? Key please."), "which of the tickets asks for one"
+    assert not several("Which ticket assigned to Omar Singh is most overdue?") and not several("Of A and B, which is due first?")
+    assert not several('Who took "List the keys" in the meeting?'), "quoted titles are not read"
+    assert rank("Which is due 1st?") and rank("the soonest") and not rank("Need them as soon as you can, before my call.")
     q = "Which tickets are assigned to Omar Singh? Keys please."
     cands = v11.candidates(q)
     assert any(p.aggregate == "earliest" for p, _ in v11.check(q, cands, "key")), "v11 keeps plans that pick the first one due"
     kept = v13.check(q, cands, "key")
     assert kept and not any(p.aggregate in ("earliest", "latest") for p, _ in kept)
     assert ("ENG-11, ENG-12") in {m["answer"] for p, m in kept if p.aggregate == "list"}
-    q2 = "Of the tickets assigned to Omar Singh, which is due first? Give the key."
-    assert any(p.aggregate == "earliest" for p, _ in v13.check(q2, v13.candidates(q2), "key")), "with a word of order, it may"
+    for q2 in ("Of the tickets assigned to Omar Singh, which has the tightest deadline? Give the key.",
+               "What tickets does Omar Singh have due soonest? Key please."):
+        assert any(p.aggregate == "earliest" for p, _ in v13.check(q2, v13.candidates(q2), "key")), "one thing, or a rank: it may"
     qs = [{"question": "How many tickets are assigned to Omar Singh?", "expected": {"value": "2"}, "pieces": ["ENG-11", "ENG-12"]}]
     les = P.learn_plans(tb, qs, log=lambda *_: None, rules="v9", proper=True, tickets=True, orders=True)
     les.save(tmp_path / "v13.json")

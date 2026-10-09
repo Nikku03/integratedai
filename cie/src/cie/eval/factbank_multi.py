@@ -828,14 +828,15 @@ def ticket_test(test_dir: Path, changed: Path, training: Path, training_all: Pat
     return rep
 
 
-ROOM = 0.9
+ROOM = 0.85  # the order test: above this, v11 leaves less than +0.15 for v13 to gain on the action items
 
 
 def order_test(test_dir: Path, changed: Path, training: Path, training_all: Path, earlier: list[Path],
                writers: list[Path] | None = None) -> dict[str, Any]:
-    """The order test's rules (docs/FACTBANK_ORDER_PREREGISTRATION.md): v13 (v11, with the first or the last by a date only when
-    the question uses a word of order) and v14 (v12 with the same) against v11 and v12. Rules 1 and 3 are judged on the
-    action-item questions; when the version before already scores ``ROOM`` or more there, they are not measurable (``None``)."""
+    """The order test's rules (docs/FACTBANK_ORDER_PREREGISTRATION.md): v13 (v11, where a question asking for several things gets
+    no first or last one by a date) and v14 (v12 with the same) against v11 and v12. Rules 1 and 3 are judged on the action-item
+    questions; when v11 already scores more than ``ROOM`` there, a gain of +0.15 is impossible and both are not measurable
+    (``None``)."""
     from cie.factbank.plans import Planner
 
     m = {"training": measure(training), "training_all": measure(training_all), "held_out": measure(test_dir), "changed": measure(changed)}
@@ -850,13 +851,20 @@ def order_test(test_dir: Path, changed: Path, training: Path, training_all: Path
     rows = m["held_out"]["rows"]
     is_action = lambda r: r["kind"] == "action_owner_issues"  # noqa: E731
     ordering = lambda r: r["kind"] in ("compare_two", "person_first")  # noqa: E731
-    m["action_items"] = {"n": sum(map(is_action, rows)),
-                         "with_a_word_of_order": sum(1 for r in rows if is_action(r) and Planner.asks_order(r["question"]))} | {
+    several = lambda r: Planner.asks_several(r["question"])  # noqa: E731
+    rank = lambda r: Planner.asks_rank(r["question"])  # noqa: E731
+    m["action_items"] = {"n": sum(map(is_action, rows)), "asking_for_several": sum(1 for r in rows if is_action(r) and several(r)),
+                         "asking_for_several_and_a_rank": sum(1 for r in rows if is_action(r) and several(r) and rank(r))} | {
         a: share(rows, a, is_action) for a in arms}
     m["other_questions"] = {"n": sum(1 for r in rows if not is_action(r))} | {a: share(rows, a, lambda r: not is_action(r)) for a in arms}
+    worse = lambda new, old: [r["id"] for r in rows if ordering(r) and new in r["direct"] and old in r["direct"]  # noqa: E731
+                              and r["direct"][new] < r["direct"][old]]
     m["ordering_questions"] = {"n": sum(map(ordering, rows)),
-                               "without_a_word_of_order": sum(1 for r in rows if ordering(r) and not Planner.asks_order(r["question"]))} | {
+                               "asking_for_several_without_a_rank": sum(1 for r in rows if ordering(r) and several(r) and not rank(r)),
+                               "worse_v13_than_v11": worse("v13", "v11"), "worse_v14_than_v12": worse("v14", "v12")} | {
         a: share(rows, a, ordering) for a in arms}
+    m["changed"] = [{"id": r["id"], **{a: r["direct"].get(a) for a in ("v11", "v13", "v12", "v14")}} for r in rows
+                    if r["direct"].get("v13") != r["direct"].get("v11") or r["direct"].get("v14") != r["direct"].get("v12")]
     m["earlier"] = {str(e.name): {a: measure(e)["direct"].get(a, {}).get("mean") for a in ("v11", "v13", "v12", "v14")} for e in earlier}
     early = list(m["earlier"].values())
     mean = lambda a: round(sum(v[a] for v in early) / len(early), 3) if early and all(v.get(a) is not None for v in early) else None  # noqa: E731
@@ -871,13 +879,16 @@ def order_test(test_dir: Path, changed: Path, training: Path, training_all: Path
     m["v14_form"] = {"used_for_kind": sum(1 for r in v14 if r.get("form") and not r["form"].get("learned_kind")), "questions": len(v14),
                      "model_ms_median": ms[len(ms) // 2] if ms else None}
     ai = m["action_items"]
+    measurable = ai["v11"] is not None and ai["v11"] <= ROOM
+    oq = m["ordering_questions"]
     rules = {
-        "1 the first one due only when an order is asked (v13 - v11 >= +0.15, the test set's action-item questions)":
-            at_least(d(ai["v13"], ai["v11"]), 0.15) if ai["v11"] is not None and ai["v11"] < ROOM else None,
-        "2 no harm on the other questions (v13 >= v11 - 0.03, test set's other questions, per question)":
-            at_least(d(m["other_questions"]["v13"], m["other_questions"]["v11"]), -0.03),
+        "1 all of them when several are asked for (v13 - v11 >= +0.15, the test set's action-item questions)":
+            at_least(d(ai["v13"], ai["v11"]), 0.15) if measurable else None,
+        "2 no harm on the other questions (v13 >= v11 - 0.03 per question, and no question asking for an order worse in v13 or v14)":
+            at_least(d(m["other_questions"]["v13"], m["other_questions"]["v11"]), -0.03) and not oq["worse_v13_than_v11"]
+            and not oq["worse_v14_than_v12"],
         "3 the same with the small model's form (v14 - v12 >= +0.15, action-item questions)":
-            at_least(d(ai["v14"], ai["v12"]), 0.15) if ai["v12"] is not None and ai["v12"] < ROOM else None,
+            at_least(d(ai["v14"], ai["v12"]), 0.15) if measurable else None,
         "4 no harm on the earlier sets (v13 >= v11 - 0.01 and v14 >= v12 - 0.01, mean of the earlier held-out sets as drawn)":
             at_least(d(mean("v13"), mean("v11")), -0.01) and at_least(d(mean("v14"), mean("v12")), -0.01),
         "5 principles, not memorisation (v13 and v14 test set >= their training questions - 0.15)":
@@ -889,8 +900,8 @@ def order_test(test_dir: Path, changed: Path, training: Path, training_all: Path
     }
     rep = {**m, "rules": rules}
     (test_dir / "order_report.json").write_text(json.dumps(rep, indent=1, default=str))
-    extra = {k: m[k] for k in ("action_items", "other_questions", "ordering_questions", "earlier", "writers", "v14_form")}
-    (test_dir / "order_report.md").write_text(to_markdown(rep, "The first one due only when an order is asked: the test set",
+    extra = {k: m[k] for k in ("action_items", "other_questions", "ordering_questions", "changed", "earlier", "writers", "v14_form")}
+    (test_dir / "order_report.md").write_text(to_markdown(rep, "All of them when several are asked for: the test set",
                                                           ("training", "training_all", "held_out", "changed"))
                                               + "\n" + "\n".join(f"- {k}: {json.dumps(v)}" for k, v in extra.items()) + "\n")
     return rep
@@ -951,7 +962,7 @@ def main(argv: list[str] | None = None) -> Any:
                     help="train: the planner as first tested (v3), as revised (v4) or as fixed after the language-model test (v9)")
     ap.add_argument("--proper", action="store_true", help="train: a plan counts as right only if it read every fact the answer rests on (v9)")
     ap.add_argument("--tickets", action="store_true", help="train: \"ticket\" or \"issue\" means a Linear or Jira item (v11)")
-    ap.add_argument("--orders", action="store_true", help="train: the first or the last by a date only when the question asks for an order (v13)")
+    ap.add_argument("--orders", action="store_true", help="train: a question asking for several things gets no first or last one by a date (v13)")
     ap.add_argument("--form", help="ask: the cache file of a small language model's forms; makes v10 (needs Ollama for new ones)")
     ap.add_argument("--train-all", help="plan, ticket: v9's full training set's work folder (trainall)")
     ap.add_argument("--earlier", nargs="*", default=[], help="ticket: the earlier held-out sets' work folders")

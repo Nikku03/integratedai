@@ -46,10 +46,12 @@ ISO = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 TICKET_WORD = re.compile(r"\b(?:tickets?|issues?)\b", re.I)
 TICKET_SYSTEMS = frozenset({"linear", "jira"})
 TICKET_KEY = re.compile(r"^[A-Z][A-Z0-9]{1,9}-\d{1,7}$")
-# v13 (docs/FACTBANK_ORDER_PREREGISTRATION.md): a question asks for an order (the first or the last by a date) only if it uses
-# a word of order. Without one, "which tickets are assigned to them? keys please" asks for all of them, not the first due.
-ORDER_WORDS = frozenset(stem(w) for w in ("first", "earliest", "earlier", "soonest", "sooner", "next", "nearest", "closest", "urgent",
-                                          "last", "latest", "later", "final", "before", "after"))
+# v13 (docs/FACTBANK_ORDER_PREREGISTRATION.md): a question that asks for several things ("which tickets are assigned to them?
+# ticket keys please", "list the IDs") is not answered with the first or the last one by a date, unless it also asks for a rank
+# ("the soonest", "the first"). The words are read as written, outside quoted titles; plurals are not stemmed away.
+MANY_WORDS = frozenset(("list", "lists", "listing", "enumerate", "itemize", "keys", "ids", "identifiers", "numbers"))
+MANY_ITEMS = frozenset(("tickets", "issues", "ones", "items", "tasks", "bugs", "cards"))
+RANK_WORDS = frozenset(("first", "1st", "earliest", "soonest", "nearest", "closest", "last", "latest", "final", "oldest", "newest"))
 NOT_LINKS = {"from_document"}
 FEATURES = ["bias", "start_named", "start_rank", "two_starts", "path_len", "path_overlap", "path_assoc", "field_overlap", "field_assoc",
             "kind_fits", "kind_conflicts", "combine_assoc", "label_field", "answer_in_question", "fanout"]
@@ -96,7 +98,7 @@ class Planner:
         self.floor = floor  # how close a known word must be to lend its meaning
         self.glossary = None  # v8: cie.factbank.reader.Glossary, everyday phrases written once by a large language model
         self.tickets = False  # v11: "ticket" or "issue" means a Linear or Jira item (TICKET_WORD)
-        self.orders = False  # v13: the first or the last by a date only when the question uses a word of order (ORDER_WORDS)
+        self.orders = False  # v13: a question asking for several things gets no first or last by a date (asks_several)
         self._facts: dict[str, list] = {}
         self._expanded: dict[frozenset, dict[str, float]] = {}
 
@@ -336,9 +338,25 @@ class Planner:
         return next((s for s in systems if s not in own), systems[0] if systems else "")
 
     @staticmethod
-    def asks_order(question: str) -> bool:
-        """v13: the question uses a word of order outside quoted titles ("which is due first?", "the soonest", "earlier")."""
-        return bool(question_words(question) & ORDER_WORDS)
+    def asks_several(question: str) -> bool:
+        """v13: the question asks for several things: it says "list", asks for "keys" or "IDs", or asks "which tickets", "what
+        Linear issues" or "what are" (not "which of the tickets", which asks for one of them)."""
+        w = raw_words(question)
+        if set(w) & MANY_WORDS:
+            return True
+        for i, x in enumerate(w):
+            if x in ("which", "what"):
+                n = w[i + 1:i + 3]
+                if n and (n[0] in ("are", "were") or n[0] in MANY_ITEMS):
+                    return True
+                if len(n) == 2 and n[0] not in ("of", "one") and n[1] in MANY_ITEMS:
+                    return True
+        return False
+
+    @staticmethod
+    def asks_rank(question: str) -> bool:
+        """v13: the question asks for a rank by time: "the first", "the soonest", "the latest" (``RANK_WORDS``)."""
+        return bool(set(raw_words(question)) & RANK_WORDS)
 
     def systems_named(self, question: str) -> list[str]:
         """The systems a question names, in the order of ``SYSTEM_WORDS``. With ``tickets`` (v11), "ticket" or "issue" also
@@ -379,8 +397,8 @@ class Planner:
            things: the plan must start from all of them and follow no link.
         4. **The kind of answer:** when the question's kind of answer is known (``asked``: a count, an item's key, a person, a
            date or another value), the plan must give that kind.
-        5. **An order needs a word of order** (v13): a plan that picks the first or the last by a date is kept only if the
-           question asks for an order ("first", "soonest", "earlier", "last", ``ORDER_WORDS``).
+        5. **Several, not the first** (v13): when the question asks for several things and asks for no rank by time, a plan
+           that picks the first or the last by a date is dropped (``asks_several``, ``asks_rank``).
         6. **The field** (v10, from the small model's form): a plan answering with one value must read one of ``fields``; a
            plan choosing an item by date must order by one of them."""
         named = {e for e in self.b.named(question) if e in self.b.kinds and not e.startswith("person:")}
@@ -399,12 +417,12 @@ class Planner:
                 return p.field in fields or not any(f.endswith("date") for f in fields)
             return True
 
-        ordered = self.asks_order(question)
+        several = self.orders and self.asks_several(question) and not self.asks_rank(question)
         rules = [lambda p, k: not about or bool(set(p.starts) & about),
                  lambda p, k: other_system(p),
                  lambda p, k: not (len(named) >= 2 and (p.path or set(p.starts) != named)),
                  lambda p, k: not asked or k == asked,
-                 lambda p, k: not self.orders or ordered or p.aggregate not in ("earliest", "latest"),
+                 lambda p, k: not several or p.aggregate not in ("earliest", "latest"),
                  lambda p, k: not fields or field_fits(p, k)]
         keep = cands
         for rule in rules:
@@ -587,6 +605,11 @@ class AskedKind:
         return {"n": self.n, "kind": dict(self.kind), "word": {k: dict(v) for k, v in self.word.items()}}
 
 
+def raw_words(question: str) -> list[str]:
+    """v13: the question's words as written, lower case, outside quoted titles (straight or curly double quotes)."""
+    return re.findall(r"[a-z0-9]+", re.sub(r'"[^"]*"|\u201c[^\u201d]*\u201d', " ", question).lower())
+
+
 def question_words(question: str) -> set[str]:
     """Every word of the question outside quoted titles, question words included (they say what kind of answer is wanted)."""
     return {stem(w) for w in re.findall(r"[a-z]+", re.sub(r'"[^"]*"', " ", question).lower())}
@@ -610,7 +633,7 @@ class PlanLessons:
     asked_kind: dict[str, Any] = dc_field(default_factory=dict)  # v9: what kind of answer a question asks for (AskedKind)
     kind_floor: float = 0.9  # v9: how sure the lessons must be of the kind of answer before the check uses it
     tickets: bool = False  # v11: "ticket" or "issue" means a Linear or Jira item; False for every earlier version
-    orders: bool = False  # v13: the first or the last by a date only when the question asks for an order; False before v13
+    orders: bool = False  # v13: a question asking for several things gets no first or last by a date; False before v13
 
     def known(self) -> list[str]:
         return list(self.known_words)
