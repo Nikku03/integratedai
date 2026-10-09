@@ -130,3 +130,78 @@ class Glossary:
                  if any(tuple(toks[i:i + len(phrase)]) == phrase for i in range(len(toks) - len(phrase) + 1))]
         text = " ".join(dict.fromkeys(found))
         return set(words(text)), question_words(text)
+
+
+# ------------------------------------------------------------------------------------------------------------------ the form
+# v10 (docs/FACTBANK_PLAN_PREREGISTRATION.md): the small model does not rewrite the question. It fills in a two-line form:
+# what kind of thing the answer is, and which property it is read from. The fact bank keeps only the plans that fit the form,
+# picks one with its learned weights, carries it out and checks it. The model never sees a document.
+FORM_SYSTEM = """You read a question about work tickets and pull requests and fill in a small form about it. Do not answer the question.
+- "answer": what kind of thing the answer is: "person" (a name), "date", "number" (a count), "ticket key" (one or more ticket identifiers such as ENG-123), or "status" (a state such as In Progress or Done).
+- "field": which property the answer is read from: "assignee" (who a ticket is assigned to), "due date", "status", "author" (who opened a pull request), "creator" (who created a ticket), "owner" (who owns a meeting action item), or "none".
+Reply with the JSON form only.
+
+Examples:
+"Who is assigned to the Linear issue that pull request #123 is linked to?" -> {"answer": "person", "field": "assignee"}
+"When is the Linear issue linked from PR #123 due?" -> {"answer": "date", "field": "due date"}
+"What is the status of the ticket that ENG-1 is linked to?" -> {"answer": "status", "field": "status"}
+"Who authored the pull request linked to Linear issue ENG-1?" -> {"answer": "person", "field": "author"}
+"How many Linear issues are assigned to Ann Lee?" -> {"answer": "number", "field": "none"}
+"Which of the Linear issues assigned to Ann Lee is due first? Give the key." -> {"answer": "ticket key", "field": "due date"}
+"Which is due sooner, ENG-1 or ENG-2?" -> {"answer": "ticket key", "field": "due date"}"""
+FORM_SCHEMA = {"type": "object", "properties": {
+    "answer": {"type": "string", "enum": ["person", "date", "number", "ticket key", "status"]},
+    "field": {"type": "string", "enum": ["assignee", "due date", "status", "author", "creator", "owner", "none"]}},
+    "required": ["answer", "field"]}
+# the form's words → the planner's kinds of answer and the bank's fields
+FORM_KIND = {"person": "person", "date": "date", "number": "count", "ticket key": "key", "status": "other"}
+FORM_FIELD = {"assignee": ("assignee",), "due date": ("due_date",), "status": ("status", "state"), "author": ("author",),
+              "creator": ("creator",), "owner": ("owner",), "none": ()}
+
+
+def form_fingerprint() -> str:
+    import hashlib
+
+    return hashlib.sha256((FORM_SYSTEM + json.dumps(FORM_SCHEMA, sort_keys=True)).encode()).hexdigest()[:16]
+
+
+class Former:
+    """The small model's form for each question, kept in a cache file (keyed by the question and the prompt's fingerprint, so
+    a changed prompt never reuses old forms)."""
+
+    def __init__(self, cache: str | Path, model: str = MODEL, host: str | None = None, timeout: float = 600.0):
+        self.cache_path = Path(cache)
+        self.model = model
+        self.host = host or os.environ.get("OLLAMA_HOST", "127.0.0.1:11434")
+        self.timeout = timeout
+        self.fp = form_fingerprint()
+        self.cache: dict[tuple[str, str], dict[str, Any]] = {}
+        if self.cache_path.exists():
+            for line in self.cache_path.read_text().splitlines():
+                if line.strip():
+                    r = json.loads(line)
+                    self.cache[(r["question"], r["prompt"])] = r
+
+    def _ask(self, question: str) -> dict[str, str]:
+        body = json.dumps({"model": self.model, "stream": False, "format": FORM_SCHEMA,
+                           "options": {"temperature": 0, "seed": 0, "num_predict": 60},
+                           "messages": [{"role": "system", "content": FORM_SYSTEM}, {"role": "user", "content": question}]}).encode()
+        url = self.host if self.host.startswith("http") else f"http://{self.host}"
+        req = urllib.request.Request(f"{url}/api/chat", data=body, headers={"Content-Type": "application/json"})
+        with urllib.request.urlopen(req, timeout=self.timeout) as r:
+            return json.loads(json.loads(r.read())["message"]["content"])
+
+    def form(self, question: str) -> dict[str, Any]:
+        """The filled form: ``kind`` (the planner's kind of answer) and ``fields`` (the bank fields it may be read from)."""
+        key = (question, self.fp)
+        if key not in self.cache:
+            import time
+
+            t = time.perf_counter()
+            raw = self._ask(question)
+            self.cache[key] = {"question": question, "prompt": self.fp, "model": self.model, "form": raw,
+                               "ms": round((time.perf_counter() - t) * 1000, 1)}
+            with self.cache_path.open("a") as f:
+                f.write(json.dumps(self.cache[key]) + "\n")
+        raw = self.cache[key]["form"]
+        return {"kind": FORM_KIND.get(raw.get("answer", "")), "fields": FORM_FIELD.get(raw.get("field", ""), ()), "raw": raw}

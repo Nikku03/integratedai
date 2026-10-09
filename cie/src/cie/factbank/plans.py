@@ -200,11 +200,30 @@ class Planner:
             if sum(1 for v, _ in dated if v == pick[0]) > 1:
                 return None  # a tie: no single answer
             return self.b.label_of(pick[1])
-        if self.rules == "v4":
+        if self.rules in ("v4", "v9"):
             vals = list(dict.fromkeys(v for e in ents for v in self.field_values(e, plan.field)))
             return vals[0] if len(vals) == 1 else None  # several different values: not one answer
         vals = self.field_values(ents[0], plan.field)
         return ", ".join(vals) if vals else None
+
+    def ends(self, plan: Plan) -> list[str]:
+        """The entities a plan ends at, after its system and status filters (as ``execute`` reads them)."""
+        ents = self.follow(plan.starts, plan.path)
+        if plan.system:
+            ents = [e for e in ents if self.b.system_of_entity(e) == plan.system]
+        if plan.status:
+            want = {s.lower() for s in plan.status}
+            ents = [e for e in ents if {v.lower() for v in self.field_values(e, "status") + self.field_values(e, "state")} & want]
+        return ents
+
+    def reads(self, plan: Plan) -> list[str]:
+        """v9: what carrying out a plan reads: the label and name of every entity it starts from or passes through, and the
+        values of its field on the entities it ends at (normalised)."""
+        passed = list(plan.starts) + [e for i in range(1, len(plan.path) + 1) for e in self.follow(plan.starts, plan.path[:i])]
+        out = [self.b.label_of(e) for e in dict.fromkeys(passed)] + [self.b.names.get(e, "") for e in dict.fromkeys(passed)]
+        if plan.field != "label":
+            out += [v for e in self.ends(plan) for v in self.field_values(e, plan.field)]
+        return list(dict.fromkeys(norm(x) for x in out if x))
 
     def candidates(self, question: str, max_len: int = 2) -> list[tuple[Plan, dict[str, Any]]]:
         """Every plan the bank allows for the question, with what carrying it out gives."""
@@ -221,9 +240,12 @@ class Planner:
                 starts.append(((e,), {"named": 0.0, "rank": 1.0 / (1 + i)}))
         ql = question.lower() + " "
         system = next((s for w, s in SYSTEM_WORDS.items() if w in ql), "")
+        systems = list(dict.fromkeys(s for w, s in SYSTEM_WORDS.items() if w in ql))
         quoted = re.findall(r"\"([^\"]+)\"", question)
         out = []
         for st, meta in starts:
+            if self.rules == "v9":
+                system = self.target_system(systems, st)
             paths: list[tuple[str, ...]] = [()]
             frontier1 = {}
             for e in st:
@@ -236,7 +258,7 @@ class Planner:
                     for t in dict.fromkeys(ts):
                         rels2 |= set(self.links(t))
                     paths += [(rel, r2) for r2 in sorted(rels2)]
-            if self.rules == "v4":
+            if self.rules in ("v4", "v9"):
                 paths = [p for p in paths if not (len(p) == 2 and inverse(p[0], p[1]))]
             for path in paths:
                 ents = self.follow(st, path)
@@ -244,7 +266,7 @@ class Planner:
                     continue
                 came_from = set(st) | {e for i in range(1, len(path)) for e in self.follow(st, path[:i])}
                 echo = {self.b.label_of(e) for e in came_from}
-                if self.rules == "v4" and path and set(ents) <= came_from:
+                if self.rules in ("v4", "v9") and path and set(ents) <= came_from:
                     continue  # the last hop reached nothing new
                 sys_f = system if system and any(self.b.system_of_entity(e) == system for e in ents) else ""
                 statuses = {v for e in ents[:30] for v in self.field_values(e, "status")}
@@ -252,7 +274,7 @@ class Planner:
                 fields = {"label"} | {f["parameter"] for e in ents[:5] for f in self.facts(e)
                                       if not f["parameter"].endswith("_of") and not f["parameter"].startswith("text_")
                                       and f["parameter"] not in ("referenced_by", "action_item")}
-                if self.rules == "v4" and path:
+                if self.rules in ("v4", "v9") and path:
                     back = {f["parameter"] for e in ents[:5] for f in self.facts(e) if f["value_entity"] in came_from}
                     fields = {f for f in fields if not inverse(path[-1], f) and f not in back}  # no reading back where it came from
                 for field in sorted(fields):
@@ -264,14 +286,69 @@ class Planner:
                             continue
                         if agg == "single" and len(st) > 1:
                             continue
+                        if self.rules == "v9" and agg in ("count", "list") and self.one_by_construction(st, path):
+                            continue  # counting or listing what can only be one thing
                         plan = Plan(st, path, field, agg, sys_f, stat_f)
                         ans = self.execute(plan)
                         if ans is None:
                             continue
-                        if self.rules == "v4" and agg in ("single", "list") and set(ans.split(", ")) <= echo:
+                        if self.rules in ("v4", "v9") and agg in ("single", "list") and set(ans.split(", ")) <= echo:
                             continue  # only names what it started from or passed through
                         out.append((plan, {**meta, "answer": ans, "fanout": len(ents)}))
         return out
+
+    def titled(self, question: str) -> list[str]:
+        """v9: the things a quoted title in the question names: the entities whose name is exactly that title."""
+        if not hasattr(self, "_titles"):
+            self._titles: dict[str, list[str]] = defaultdict(list)
+            for e, name in self.b.names.items():
+                if e in self.b.kinds and not e.startswith("person:") and name:
+                    self._titles[norm(name)].append(e)
+        return list(dict.fromkeys(e for qt in re.findall(r'"([^"]+)"', question) for e in self._titles.get(norm(qt), [])))
+
+    def target_system(self, systems: list[str], starts: tuple[str, ...]) -> str:
+        """v9: the system the question asks about. A question that names two systems starts in one and asks about the other
+        ("who opened the GitHub pull request that references Linear issue ENG-1?" asks about GitHub); one that names only the
+        start's own system asks about that one."""
+        own = {self.b.system_of_entity(e) for e in starts}
+        return next((s for s in systems if s not in own), systems[0] if systems else "")
+
+    def one_by_construction(self, starts: tuple[str, ...], path: tuple[str, ...]) -> bool:
+        """v9: a plan that can only ever reach one thing: no hop, or one start and only single-valued hops (``assignee``)."""
+        return not path or (len(starts) == 1 and all(r in self.b.single for r in path))
+
+    def check(self, question: str, cands: list[tuple[Plan, dict[str, Any]]], asked: str | None = None,
+              fields: tuple[str, ...] = ()) -> list[tuple[Plan, dict[str, Any]]]:
+        """v9: the plans that pass the checks. The checks apply in turn; a check that no remaining plan passes is skipped.
+
+        1. **What the question is about:** a question that names something (a key, a pull request number, a person, a quoted
+           title) is about it: the plan must start from something it names.
+        2. **A choice:** a question that names two or more things to choose between is answered by comparing exactly those
+           things: a plan answering with an item must start from all of them and follow no link.
+        3. **The kind of answer:** when the question's kind of answer is known (``asked``: a count, an item's key, a person, a
+           date or another value), the plan must give that kind.
+        4. **The field** (v10, from the small model's form): a plan answering with one value must read one of ``fields``; a
+           plan choosing an item by date must order by one of them."""
+        named = {e for e in self.b.named(question) if e in self.b.kinds and not e.startswith("person:")}
+        about = {e for e in self.b.named(question) if e in self.b.kinds} | set(self.titled(question))
+
+        def field_fits(p: Plan, k: str) -> bool:
+            if k in ("person", "date", "other"):
+                return p.field in fields
+            if k == "key" and p.aggregate in ("earliest", "latest"):
+                return p.field in fields or not any(f.endswith("date") for f in fields)
+            return True
+
+        rules = [lambda p, k: not about or bool(set(p.starts) & about),
+                 lambda p, k: not (len(named) >= 2 and k == "key" and (p.path or set(p.starts) != named)),
+                 lambda p, k: not asked or k == asked,
+                 lambda p, k: not fields or field_fits(p, k)]
+        keep = cands
+        for rule in rules:
+            nxt = [(p, m) for p, m in keep if rule(p, self.out_kind(p, m["answer"]))]
+            if nxt:
+                keep = nxt
+        return keep
 
     def out_kind(self, plan: Plan, answer: str) -> str:
         """The kind of answer a plan gives: a count, an item (key, number or title), a date, a person or another value."""
@@ -399,6 +476,54 @@ class Lift:
                 "pair": {w: dict(v) for w, v in self.pair.items() if any(v.values())}}
 
 
+class AskedKind:
+    """v9: what kind of answer a question asks for: a count, an item's key, a person, a date or another value. Learned from the
+    training questions (the kind of answer their right plans give) as a Bernoulli naive Bayes over the question's words."""
+
+    KINDS = ("count", "key", "person", "date", "other")
+
+    def __init__(self, d: dict[str, Any] | None = None):
+        d = d or {}
+        self.n = float(d.get("n", 0.0))
+        self.kind: dict[str, float] = defaultdict(float, d.get("kind", {}))
+        self.word: dict[str, dict[str, float]] = defaultdict(lambda: defaultdict(float))
+        for k, v in d.get("word", {}).items():
+            self.word[k].update(v)
+
+    def add(self, qwords: set[str], kinds: set[str]) -> None:
+        for k in kinds:
+            self.n += 1
+            self.kind[k] += 1
+            for w in qwords:
+                self.word[k][w] += 1
+
+    def posterior(self, qwords: set[str]) -> dict[str, float]:
+        kinds = [k for k in self.KINDS if self.kind.get(k, 0) > 0]
+        if not kinds:
+            return {}
+        vocab = {w for k in kinds for w in self.word[k]}
+        lp = {}
+        for k in kinds:
+            nk = self.kind[k]
+            lp[k] = math.log(nk / self.n) + sum(
+                math.log((self.word[k].get(w, 0.0) + 0.5) / (nk + 1)) if w in qwords else math.log(1 - (self.word[k].get(w, 0.0) + 0.5) / (nk + 1))
+                for w in vocab)
+        top = max(lp.values())
+        z = sum(math.exp(v - top) for v in lp.values())
+        return {k: math.exp(v - top) / z for k, v in lp.items()}
+
+    def asked(self, question: str, floor: float = 0.9) -> str | None:
+        """The kind of answer the question asks for, if the lessons are sure of it (posterior at least ``floor``)."""
+        post = self.posterior(question_words(question))
+        if not post:
+            return None
+        k = max(post, key=post.get)
+        return k if post[k] >= floor else None
+
+    def to_json(self) -> dict[str, Any]:
+        return {"n": self.n, "kind": dict(self.kind), "word": {k: dict(v) for k, v in self.word.items()}}
+
+
 def question_words(question: str) -> set[str]:
     """Every word of the question outside quoted titles, question words included (they say what kind of answer is wanted)."""
     return {stem(w) for w in re.findall(r"[a-z]+", re.sub(r'"[^"]*"', " ", question).lower())}
@@ -419,6 +544,8 @@ class PlanLessons:
     combine: str = "company"  # v6: how the two word spaces combine
     floor: float = 0.5  # how close a known word must be to lend its meaning
     glossary: str = ""  # v8: everyday phrases written once by a large language model (a JSON list); empty before v8
+    asked_kind: dict[str, Any] = dc_field(default_factory=dict)  # v9: what kind of answer a question asks for (AskedKind)
+    kind_floor: float = 0.9  # v9: how sure the lessons must be of the kind of answer before the check uses it
 
     def known(self) -> list[str]:
         return list(self.known_words)
@@ -461,6 +588,13 @@ class PlanLessons:
             (["words → kind of answer: " + ", ".join(f"'{w}'→{t}" for w, t, _ in kind)] if kind else [])
 
 
+def rests_on(pieces: list[str], read: list[str]) -> bool:
+    """v9: the plan read every fact the answer rests on (the question's pieces: the keys, values and dates it was built from).
+    A plan whose answer is right by coincidence, such as comparing two issues by when they were created when the question asks
+    which is due first, does not."""
+    return all(any(re.search(r"(?<!\w)" + re.escape(norm(p)) + r"(?!\w)", r) for r in read) for p in pieces if norm(p))
+
+
 def matches(expected: dict[str, Any], answer: str) -> bool:
     from cie.eval.memory_test import ids_in
 
@@ -474,10 +608,11 @@ def matches(expected: dict[str, Any], answer: str) -> bool:
 
 def learn_plans(bank, questions: list[dict[str, Any]], log=print, features: list[str] = FEATURES_V4, rules: str = "v4",
                 lexicon=None, lexicon_path: str = "", general=None, general_path: str = "", combine: str = "company",
-                floor: float = 0.5, glossary_path: str = "") -> PlanLessons:
+                floor: float = 0.5, glossary_path: str = "", proper: bool = False) -> PlanLessons:
     """Fit the plan weights on questions with answers. Associations leave each question's own share out. With a lexicon (v5),
     question words also reach the known words nearest them; with a general-English lexicon too (v6), nearness can be read
-    from general English."""
+    from general English. With ``proper`` (v9), a plan counts as right only if its answer is right and it read every fact the
+    answer rests on (``rests_on``), so that plans right by coincidence teach nothing."""
     pl = Planner(bank, rules, lexicon, None, general, combine, floor)
     if glossary_path:
         from cie.factbank.reader import Glossary
@@ -486,9 +621,11 @@ def learn_plans(bank, questions: list[dict[str, Any]], log=print, features: list
     pl.known = sorted({w for q in questions for w in pl.plain_words(q["question"])})
     per_q = []
     rel_total, agg_total, kind_total = Assoc(), Assoc(), Lift()
+    asked = AskedKind()
     for q in questions:
         cands = pl.candidates(q["question"])
-        good = [(p, m) for p, m in cands if matches(q["expected"], m["answer"])]
+        right = [proper_right(pl, q, p, m) if proper else matches(q["expected"], m["answer"]) for p, m in cands]
+        good = [(p, m) for (p, m), ok in zip(cands, right, strict=True) if ok]
         qw, kw = set(words(q["question"])), question_words(q["question"])
         if lexicon is not None:  # v5: the words' kinds of value join them (all training words are known: nothing is borrowed)
             plain = pl.plain_words(q["question"])
@@ -503,38 +640,50 @@ def learn_plans(bank, questions: list[dict[str, Any]], log=print, features: list
         rel_total.add(qw, rt)
         agg_total.add(qw, at)
         kind_total.add(kw, kt)
-        per_q.append((q, cands, qw, kw, rt, at, kt))
+        asked.add(question_words(q["question"]), kt)
+        per_q.append((q, cands, right, qw, kw, rt, at, kt))
     use_kind = "kind_assoc" in features
     xs, ys = [], []
-    for q, cands, qw, kw, rt, at, kt in per_q:
+    for q, cands, right, qw, kw, rt, at, kt in per_q:
         rel_total.add(qw, rt, -1.0)
         agg_total.add(qw, at, -1.0)
         kind_total.add(kw, kt, -1.0)
-        for p, m in cands:
+        for (p, m), ok in zip(cands, right, strict=True):
             xs.append(pl.x(q["question"], p, m, rel_total, agg_total, kind_total if use_kind else None, features))
-            ys.append(int(matches(q["expected"], m["answer"])))
+            ys.append(int(ok))
         rel_total.add(qw, rt)
         agg_total.add(qw, at)
         kind_total.add(kw, kt)
     w = fit(np.array(xs, float), np.array(ys))
     les = PlanLessons(w, rel_total.to_json(), agg_total.to_json(),
                       {"questions": len(questions), "plans": len(ys), "right_plans": int(sum(ys)),
-                       "questions_with_a_right_plan": sum(1 for qq, cands, *_rest in per_q
-                                                          if any(matches(qq["expected"], m["answer"]) for _p, m in cands))},
+                       "questions_with_a_right_plan": sum(1 for _qq, _cands, right, *_rest in per_q if any(right)), "proper": proper},
                       list(features), kind_total.to_json() if use_kind else {}, rules, lexicon_path if lexicon is not None else "",
                       pl.known if lexicon is not None else [], general_path if general is not None else "",
-                      combine if general is not None else "company", floor, glossary_path)
+                      combine if general is not None else "company", floor, glossary_path,
+                      asked.to_json() if rules == "v9" else {})
     log("\n".join(les.describe()))
     return les
 
 
-def answer(bank, lessons: PlanLessons, question: str, planner: Planner | None = None
+def proper_right(pl: Planner, q: dict[str, Any], plan: Plan, meta: dict[str, Any]) -> bool:
+    return matches(q["expected"], meta["answer"]) and rests_on(q.get("pieces") or [], pl.reads(plan))
+
+
+def answer(bank, lessons: PlanLessons, question: str, planner: Planner | None = None, form: dict[str, Any] | None = None
            ) -> tuple[str, Plan | None, list[dict[str, Any]], list[tuple[float, Plan, str]]]:
-    """The best plan's answer, its journal, and the top plans. Pass ``planner`` (``lessons.planner(bank)``) to reuse one."""
+    """The best plan's answer, its journal, and the top plans. Pass ``planner`` (``lessons.planner(bank)``) to reuse one. With
+    ``form`` (v10: cie.factbank.reader.Former), the small model's form says the kind of answer and the field."""
     pl = planner or lessons.planner(bank)
     ra, aa, ka = lessons.assocs()
+    cands = pl.candidates(question)
+    if lessons.rules == "v9":  # v9: only plans that pass the checks
+        asked = AskedKind(lessons.asked_kind).asked(question, lessons.kind_floor) if lessons.asked_kind else None
+        if form is not None and form.get("kind"):
+            asked = form["kind"]
+        cands = pl.check(question, cands, asked, tuple(form.get("fields") or ()) if form is not None else ())
     scored = sorted(((sigmoid(dot(lessons.weights, pl.x(question, p, m, ra, aa, ka, lessons.features))), p, m["answer"])
-                     for p, m in pl.candidates(question)), key=lambda x: -x[0])
+                     for p, m in cands), key=lambda x: -x[0])
     if not scored:
         return "not found", None, [], []
     best = scored[0][1]

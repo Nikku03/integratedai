@@ -262,9 +262,15 @@ def split(docs: list[dict[str, Any]], seed: int = SEED) -> tuple[set[str], set[s
 
 
 def questions(docs: list[dict[str, Any]], dsids: set[str], held_out: bool, seed: int, retest: bool = False,
-              wordings: dict | None = None) -> list[dict[str, Any]]:
+              wordings: dict | None = None, every_field: bool = False, all_wordings: bool = False,
+              max_q: int | None = MAX_Q) -> list[dict[str, Any]]:
     """The questions answerable within ``dsids``, with expected answers computed there, worded for training, held-out, the retest
-    (``retest``) or another set of wordings (``wordings``)."""
+    (``retest``) or another set of wordings (``wordings``).
+
+    v9 (docs/FACTBANK_PLAN_PREREGISTRATION.md) trains on every kind of question the documents allow: ``every_field`` asks
+    about every field a linked issue or ticket has instead of one drawn at random, ``all_wordings`` asks each question in
+    every wording instead of one drawn at random, and ``max_q=None`` keeps them all. With the defaults the questions are
+    exactly those of the earlier sets."""
     if retest:
         wordings = RETEST
     rng = random.Random(seed)
@@ -280,8 +286,14 @@ def questions(docs: list[dict[str, Any]], dsids: set[str], held_out: bool, seed:
 
     def add(kind: str, field: str, fmt: dict[str, str], expected: dict[str, Any], gold: list[str], pieces: list[str]) -> None:
         options = wordings[(kind, field)] if wordings else T[(kind, field)][1 if held_out else 0]
-        out.append({"id": f"{kind}{'-' + field if field else ''}-{len(out) + 1:03d}", "group": GROUP[kind], "kind": kind, "field": field,
-                    "question": rng.choice(options).format(**fmt), "expected": expected, "gold_docs": sorted(set(gold)), "pieces": pieces})
+        for w in (options if all_wordings else [rng.choice(options)]):
+            out.append({"id": f"{kind}{'-' + field if field else ''}-{len(out) + 1:03d}", "group": GROUP[kind], "kind": kind,
+                        "field": field, "question": w.format(**fmt), "expected": expected, "gold_docs": sorted(set(gold)),
+                        "pieces": pieces})
+
+    def fields_of(raw: dict[str, Any], allowed: tuple[str, ...], fallback: str) -> list[str]:
+        have = [f for f in allowed if raw.get(f)] or [fallback]
+        return have if every_field else [rng.choice(have)]
 
     for u in units(inside):
         if not set(u["docs"]) <= dsids:
@@ -289,22 +301,22 @@ def questions(docs: list[dict[str, Any]], dsids: set[str], held_out: bool, seed:
         if u["kind"] == "pr":
             pr, iss = by_id[u["pr"]], by_id[u["issue"]]
             n, key = str(pr["raw"]["pr_number"]), str(iss["raw"]["key"]).upper()
-            field = rng.choice([f for f in ("assignee", "due_date", "status") if iss["raw"].get(f)] or ["status"])
-            val = _person(iss["raw"].get("assignee")) if field == "assignee" else (_iso(iss["raw"].get("due_date")) if field == "due_date"
-                                                                                 else str(iss["raw"].get("status") or ""))
-            if val:
-                add("pr_issue", field, {"n": n}, {"date": val} if field == "due_date" else {"value": val}, u["docs"], [key, val])
+            for field in fields_of(iss["raw"], ("assignee", "due_date", "status"), "status"):
+                val = _person(iss["raw"].get("assignee")) if field == "assignee" else (
+                    _iso(iss["raw"].get("due_date")) if field == "due_date" else str(iss["raw"].get("status") or ""))
+                if val:
+                    add("pr_issue", field, {"n": n}, {"date": val} if field == "due_date" else {"value": val}, u["docs"], [key, val])
             author = _person(pr["raw"].get("author"))
             refs = [d for d in inside if d["source"] == "github" and key in _keys(d["raw"].get("linked_linear"))]
             if author and len(refs) == 1:
                 add("issue_pr_author", "author", {"k": key}, {"value": author}, u["docs"], [n, author])
         elif u["kind"] == "ticket":
             a, b = by_id[u["from"]], by_id[u["to"]]
-            field = rng.choice([f for f in ("status", "assignee") if b["raw"].get(f)] or ["status"])
-            val = str(b["raw"].get("status") or "") if field == "status" else _person(b["raw"].get("assignee"))
-            if val:
-                add("ticket_link", field, {"k": str(a["raw"]["key"]).upper()}, {"value": val}, u["docs"],
-                    [str(b["raw"]["key"]).upper(), val])
+            for field in fields_of(b["raw"], ("status", "assignee"), "status"):
+                val = str(b["raw"].get("status") or "") if field == "status" else _person(b["raw"].get("assignee"))
+                if val:
+                    add("ticket_link", field, {"k": str(a["raw"]["key"]).upper()}, {"value": val}, u["docs"],
+                        [str(b["raw"]["key"]).upper(), val])
         elif u["kind"] == "person":
             ds = by_person.get(u["person"], [])
             keys = sorted(str(d["raw"]["key"]).upper() for d in ds)
@@ -331,10 +343,11 @@ def questions(docs: list[dict[str, Any]], dsids: set[str], held_out: bool, seed:
     by_kind: dict[str, list[dict]] = defaultdict(list)
     for q in out:
         by_kind[q["kind"]].append(q)
+    cap = max_q if max_q is not None else len(out)
     chosen: list[dict[str, Any]] = []
-    while len(chosen) < MAX_Q and any(by_kind.values()):
+    while len(chosen) < cap and any(by_kind.values()):
         for k in sorted(by_kind):
-            if by_kind[k] and len(chosen) < MAX_Q:
+            if by_kind[k] and len(chosen) < cap:
                 chosen.append(by_kind[k].pop(0))
     return chosen
 
@@ -370,16 +383,24 @@ def pool(index: dict[str, str], exclude: set[str], n: int = POOL_DOCS, seed: int
     return sorted(picked)
 
 
-def build_fresh(index_path: Path, root: str, exclude_dirs: list[Path], out: Path, seed: int = FRESH_SEED, wordings: str = "retest") -> dict[str, Any]:
-    """A new set: new documents drawn from the whole benchmark (none from ``exclude_dirs``), new wordings. Seed 13 with the retest
-    wordings made the retest's set; seed 17 with the new-words wordings made the new-words test's set."""
+def load_wordings(path: Path) -> dict[tuple[str, str], list[str]]:
+    """Wordings kept in a JSON file as {"kind/field": [wording, ...]} (the planner test's, which their author did not read
+    before the design was frozen)."""
+    return {tuple(k.split("/")): v for k, v in json.loads(Path(path).read_text()).items()}
+
+
+def build_fresh(index_path: Path, root: str, exclude_dirs: list[Path], out: Path, seed: int = FRESH_SEED, wordings: str | Path = "retest"
+                ) -> dict[str, Any]:
+    """A new set: new documents drawn from the whole benchmark (none from ``exclude_dirs``), new wordings (a name from
+    ``WORDINGS`` or a JSON file, ``load_wordings``). Seed 13 with the retest wordings made the retest's set; seed 17 with the
+    new-words wordings made the new-words test's set."""
     from cie.eval.memory_test import haystack_docs
 
     index = json.loads(index_path.read_text())["index"]
     exclude = set().union(*(set(json.loads((d / "haystack.json").read_text())["dsids"]) for d in exclude_dirs))
     docs = haystack_docs(Path(root) / "generated_data" / "sources", index, pool(index, exclude, seed=seed))
     ids = fresh(docs, exclude, seed)
-    qs = questions(docs, ids, True, seed + 1, wordings=WORDINGS[wordings])
+    qs = questions(docs, ids, True, seed + 1, wordings=WORDINGS[wordings] if str(wordings) in WORDINGS else load_wordings(Path(wordings)))
     out.mkdir(parents=True, exist_ok=True)
     (out / "haystack.json").write_text(json.dumps({"root": root, "n_docs": N_DOCS, "seed": seed, "base_questions": 0,
                                                    "documents": len(ids), "dsids": sorted(ids)}))
@@ -413,11 +434,32 @@ def build(docs_path: Path, index: Path, root: str, train_dir: Path, test_dir: Pa
     return rep
 
 
+def build_training_all(work: Path, out: Path) -> dict[str, Any]:
+    """v9's training questions: the training set's own documents, every kind and field they allow, in every training wording
+    (``questions(..., every_field=True, all_wordings=True, max_q=None)``). The bank is the training set's (linked, not rebuilt)."""
+    from cie.eval.memory_test import haystack_docs
+
+    hay = json.loads((work / "haystack.json").read_text())
+    index = json.loads((work / "index.json").read_text())["index"]
+    docs = haystack_docs(Path(hay["root"]) / "generated_data" / "sources", index, hay["dsids"])
+    qs = questions(docs, set(hay["dsids"]), False, SEED, every_field=True, all_wordings=True, max_q=None)
+    out.mkdir(parents=True, exist_ok=True)
+    for f in ("haystack.json", "index.json", "factbank_v2.sqlite"):
+        if not (out / f).exists():
+            (out / f).symlink_to((work / f).resolve())
+    _write_jsonl(out / "questions.jsonl", qs)
+    kinds: dict[str, int] = defaultdict(int)
+    for q in qs:
+        kinds[f"{q['kind']}/{q['field']}"] += 1
+    return {"questions": len(qs), "kinds": dict(kinds)}
+
+
 # ---------------------------------------------------------------------------------------------- training and asking
 def train(work: Path, single: Path, out: Path, rules: str = "v4", lexicon: Path | None = None, general: Path | None = None,
-          combine: str = "company", floor: float = 0.5, glossary: Path | None = None) -> dict[str, Any]:
+          combine: str = "company", floor: float = 0.5, glossary: Path | None = None, proper: bool = False) -> dict[str, Any]:
     """``rules="v3"`` reproduces the plan lessons of the first test; ``"v4"`` is the planner revised after it. With a lexicon
-    (``cie.factbank.lexicon``), v4 plus learned word meanings: v5."""
+    (``cie.factbank.lexicon``), v4 plus learned word meanings: v5. ``"v9"`` with ``proper`` is the planner fixed after the
+    language-model test (docs/FACTBANK_PLAN_PREREGISTRATION.md)."""
     from cie.eval.factbank_test import build as build_bank
     from cie.factbank.learn import Lessons
     from cie.factbank.plans import FEATURES, FEATURES_V4, FEATURES_V5, learn_plans
@@ -430,19 +472,21 @@ def train(work: Path, single: Path, out: Path, rules: str = "v4", lexicon: Path 
     lex = Lexicon.load(lexicon) if lexicon is not None else None
     gen = Lexicon.load(general) if general is not None else None
     les = learn_plans(TrainedBank(work / "factbank_v2.sqlite", Lessons.load(single)), _jsonl(work / "questions.jsonl"),
-                      features=(FEATURES_V5 if lex is not None else FEATURES_V4) if rules == "v4" else FEATURES, rules=rules,
+                      features=(FEATURES_V5 if lex is not None else FEATURES_V4) if rules in ("v4", "v9") else FEATURES, rules=rules,
                       lexicon=lex, lexicon_path=str(lexicon.resolve()) if lexicon is not None else "", general=gen,
                       general_path=str(general.resolve()) if general is not None else "", combine=combine, floor=floor,
-                      glossary_path=str(glossary.resolve()) if glossary is not None else "")
+                      glossary_path=str(glossary.resolve()) if glossary is not None else "", proper=proper)
     les.save(out)
     return {"plan_lessons": str(out), "describe": les.describe(), "trained_on": les.trained_on}
 
 
 def ask_plans(work: Path, single: Path, plan_lessons: Path, budget: int = 24_000, name: str = "factbank_v3",
-              reader_cache: Path | None = None) -> dict[str, Any]:
-    """v3 to v8: the best plan's answer; its evidence starts with every entity each hop reached and their main fields. With
+              reader_cache: Path | None = None, form_cache: Path | None = None) -> dict[str, Any]:
+    """v3 to v10: the best plan's answer; its evidence starts with every entity each hop reached and their main fields. With
     ``reader_cache`` (v7), a small language model first rewrites the question as the closest standard question
-    (cie.factbank.reader); the bank answers the rewrite."""
+    (cie.factbank.reader); the bank answers the rewrite. With ``form_cache`` (v10), the small model fills in a form (the kind
+    of answer and the field) and the bank keeps only the plans that fit it. Each row also records what the plan read
+    (``Planner.reads``), so that the measure can tell an answer right for the right reason."""
     import time
 
     from cie.factbank import plans
@@ -457,11 +501,17 @@ def ask_plans(work: Path, single: Path, plan_lessons: Path, budget: int = 24_000
         from cie.factbank.reader import Reader, people_named
 
         reader = Reader(reader_cache)
+    former = None
+    if form_cache is not None:
+        from cie.factbank.reader import Former
+
+        former = Former(form_cache)
     rows = []
     for q in _jsonl(work / "questions.jsonl"):
         t = time.perf_counter()
         read = reader.read(q["question"], people_named(tb, q["question"])) if reader is not None else None
-        ans, best, journal, top = plans.answer(tb, pl, read["asked"] if read else q["question"], planner)
+        form = former.form(q["question"]) if former is not None else None
+        ans, best, journal, top = plans.answer(tb, pl, read["asked"] if read else q["question"], planner, form)
         lines = []
         if best is not None:
             lines.append("Plan: " + best.describe(tb.names))
@@ -474,7 +524,8 @@ def ask_plans(work: Path, single: Path, plan_lessons: Path, budget: int = 24_000
         head = "\n".join(lines)
         rest = tb.ask(q["question"], budget=max(0, budget - len(head) - 2)).evidence
         rows.append({"id": q["id"], "answer": ans, "reason": best.describe(tb.names) if best else "", "evidence": (head + "\n\n" + rest)[:budget],
-                     "ms": round((time.perf_counter() - t) * 1000, 2), "journal": journal, **({"read": read} if read else {})})
+                     "ms": round((time.perf_counter() - t) * 1000, 2), "journal": journal, **({"read": read} if read else {}),
+                     **({"form": form} if form else {}), "reads": planner.reads(best) if best is not None else []})
     _write_jsonl(work / f"{name}.jsonl", rows)
     return {"questions": len(rows), "written": f"{name}.jsonl"}
 
@@ -517,16 +568,21 @@ def measure(work: Path) -> dict[str, Any]:
     ev = {r["id"]: r for r in _jsonl(work / "evidence.jsonl")} if (work / "evidence.jsonl").exists() else {}
     fbs = {label: {r["id"]: r for r in _jsonl(work / f"{name}.jsonl")}
            for label, name in (("v1", "factbank"), ("v2", "factbank_v2"), ("v3", "factbank_v3"), ("v4", "factbank_v4"), ("v5", "factbank_v5"),
-                               ("v6", "factbank_v6"), ("v7", "factbank_v7"), ("v8", "factbank_v8"))
+                               ("v6", "factbank_v6"), ("v7", "factbank_v7"), ("v8", "factbank_v8"), ("v9", "factbank_v9"),
+                               ("v9n", "factbank_v9n"), ("v10", "factbank_v10"))
            if (work / f"{name}.jsonl").exists()}
+    from cie.factbank.plans import rests_on
+
     rows = []
     for q in qs:
         r: dict[str, Any] = {"id": q["id"], "group": q["group"], "kind": q["kind"], "question": q["question"], "expected": q["expected"],
-                             "direct": {}, "answers": {}, "pieces": {}}
+                             "direct": {}, "answers": {}, "pieces": {}, "reason": {}}
         for label, d in fbs.items():
             if q["id"] in d:
                 r["direct"][label] = own_score(q, d[q["id"]]["answer"])
                 r["answers"][label] = d[q["id"]]["answer"]
+                if "reads" in d[q["id"]]:  # v9: right for the right reason, only if the plan read every fact the answer rests on
+                    r["reason"][label] = r["direct"][label] if rests_on(q.get("pieces") or [], d[q["id"]]["reads"]) else 0.0
         texts = {a: ev.get(q["id"], {}).get(a) for a in ("plain-words", "plain", "bank")}
         texts.update({label: d.get(q["id"], {}).get("evidence") for label, d in fbs.items()})
         for a, t in texts.items():
@@ -551,6 +607,7 @@ def measure(work: Path) -> dict[str, Any]:
         by_kind[k] = {label: round(sum(r["direct"].get(label, 0) for r in rk) / len(rk), 3) for label in fbs} | {"n": len(rk)}
     return {"questions": len(rows), "by_group": {g: sum(1 for r in rows if r["group"] == g) for g in groups},
             "direct": {label: gm(lambda r, label=label: r["direct"].get(label)) for label in fbs},
+            "reason": {label: gm(lambda r, label=label: r["reason"].get(label)) for label in fbs if any(label in r["reason"] for r in rows)},
             "pieces": {a: {b: gm(lambda r, a=a, b=b: (r["pieces"].get(a) or {}).get(b)) for b in ("2000", "24000")} for a in arms},
             "by_kind": by_kind, "rows": rows}
 
@@ -664,6 +721,32 @@ def llm_test(test_dir: Path, changed: Path, training: Path) -> dict[str, Any]:
     return rep
 
 
+def plan_test(test_dir: Path, changed: Path, training: Path, training_all: Path) -> dict[str, Any]:
+    """The planner test's rules (docs/FACTBANK_PLAN_PREREGISTRATION.md): v9 (the planner fixed, no model at question time) and
+    v10 (v9 with a small model's form) against v4 and v8."""
+    m = {"training": measure(training), "training_all": measure(training_all), "held_out": measure(test_dir), "changed": measure(changed)}
+    d = lambda a, b: round(a - b, 3) if a is not None and b is not None else None  # noqa: E731
+    h, t, ta, c = m["held_out"]["direct"], m["training"]["direct"], m["training_all"]["direct"], m["changed"]["direct"]
+    hr = m["held_out"]["reason"]
+    rules = {
+        "1 the fixed planner helps (v9 - v4 >= +0.10, test set)": at_least(d(h["v9"]["mean"], h["v4"]["mean"]), 0.10),
+        "2 it helps beyond the glossary (v9 - v8 >= +0.05, test set)": at_least(d(h["v9"]["mean"], h["v8"]["mean"]), 0.05),
+        "3 right for the right reason (v9 - v4 >= +0.10, test set, counting only answers whose plan read every fact they rest on)":
+            at_least(d(hr["v9"]["mean"], hr["v4"]["mean"]), 0.10),
+        "4 a small model's form adds (v10 - v9 >= +0.05, test set)": at_least(d(h["v10"]["mean"], h["v9"]["mean"]), 0.05),
+        "5 principles, not memorisation (v9 and v10 test set >= their training questions - 0.15)":
+            at_least(d(h["v9"]["mean"], ta["v9"]["mean"]), -0.15) and at_least(d(h["v10"]["mean"], ta["v10"]["mean"]), -0.15),
+        "6 holds when the information changes (v9 and v10 changed >= test set - 0.05)":
+            at_least(d(c["v9"]["mean"], h["v9"]["mean"]), -0.05) and at_least(d(c["v10"]["mean"], h["v10"]["mean"]), -0.05),
+        "7 no harm on what was learned (v9 and v10 >= v4 - 0.03, the 48 first training questions)":
+            at_least(d(t["v9"]["mean"], t["v4"]["mean"]), -0.03) and at_least(d(t["v10"]["mean"], t["v4"]["mean"]), -0.03),
+    }
+    rep = {**m, "rules": rules}
+    (test_dir / "plan_report.json").write_text(json.dumps(rep, indent=1, default=str))
+    (test_dir / "plan_report.md").write_text(to_markdown(rep, "The planning step fixed: the test set", ("training", "training_all", "held_out", "changed")))
+    return rep
+
+
 def to_markdown(rep: dict[str, Any], title: str = "Questions that need several documents",
                 parts: tuple[str, ...] = ("training", "held_out", "changed")) -> str:
     g = ("link", "combine", "compare", "mean")
@@ -674,6 +757,8 @@ def to_markdown(rep: dict[str, Any], title: str = "Questions that need several d
                   "| | " + " | ".join(g) + " |", "|---|" + "---|" * len(g)]
         for label, r in m["direct"].items():
             lines.append(f"| own answers, {label} | " + " | ".join("–" if r.get(x) is None else f"{r[x]:.3f}" for x in g) + " |")
+        for label, r in m.get("reason", {}).items():
+            lines.append(f"| right for the right reason, {label} | " + " | ".join("–" if r.get(x) is None else f"{r[x]:.3f}" for x in g) + " |")
         for a, rr in m["pieces"].items():
             for b, r in rr.items():
                 lines.append(f"| all pieces within {int(b):,} chars, {a} | " + " | ".join("–" if r.get(x) is None else f"{r[x]:.3f}" for x in g) + " |")
@@ -685,7 +770,7 @@ def to_markdown(rep: dict[str, Any], title: str = "Questions that need several d
 
 def main(argv: list[str] | None = None) -> Any:
     ap = argparse.ArgumentParser(prog="python -m cie.eval.factbank_multi")
-    ap.add_argument("cmd", choices=["build", "train", "ask", "compare", "fresh", "retest", "words", "general", "llm"])
+    ap.add_argument("cmd", choices=["build", "train", "ask", "compare", "fresh", "retest", "words", "general", "llm", "trainall", "plan"])
     ap.add_argument("--docs", help="the haystack's documents as JSON: dsid, source, title, raw")
     ap.add_argument("--index")
     ap.add_argument("--root")
@@ -695,10 +780,14 @@ def main(argv: list[str] | None = None) -> Any:
     ap.add_argument("--changed")
     ap.add_argument("--single", help="the single-document lessons (lessons.json)")
     ap.add_argument("--plans", help="the plan lessons (plan_lessons.json)")
-    ap.add_argument("--rules", default="v4", choices=["v3", "v4"], help="train: the planner as first tested (v3) or as revised (v4)")
+    ap.add_argument("--rules", default="v4", choices=["v3", "v4", "v9"],
+                    help="train: the planner as first tested (v3), as revised (v4) or as fixed after the language-model test (v9)")
+    ap.add_argument("--proper", action="store_true", help="train: a plan counts as right only if it read every fact the answer rests on (v9)")
+    ap.add_argument("--form", help="ask: the cache file of a small language model's forms; makes v10 (needs Ollama for new ones)")
+    ap.add_argument("--train-all", help="plan: v9's full training set's work folder (trainall)")
     ap.add_argument("--seed", type=int, default=FRESH_SEED,
                     help="fresh: 13 made the retest's set, 17 the new-words test's, 29 the general-English test's, 31 the language-model test's")
-    ap.add_argument("--wordings", default="retest", choices=sorted(WORDINGS), help="fresh: which wordings")
+    ap.add_argument("--wordings", default="retest", help=f"fresh: which wordings ({', '.join(sorted(WORDINGS))}, or a JSON file)")
     ap.add_argument("--lexicon", help="train: learned word meanings (cie.factbank.lexicon); makes v5")
     ap.add_argument("--general", help="train: word meanings counted over general English; with --lexicon, makes v6")
     ap.add_argument("--combine", default="company", choices=["company", "general", "max", "mean"], help="train: how the two spaces combine")
@@ -716,9 +805,16 @@ def main(argv: list[str] | None = None) -> Any:
         out = build_fresh(Path(a.index), a.root, [Path(x) for x in a.exclude], Path(a.out), a.seed, a.wordings)
     elif a.cmd == "train":
         out = train(Path(a.work), Path(a.single), Path(a.plans), a.rules, Path(a.lexicon) if a.lexicon else None,
-                    Path(a.general) if a.general else None, a.combine, a.floor, Path(a.glossary) if a.glossary else None)
+                    Path(a.general) if a.general else None, a.combine, a.floor, Path(a.glossary) if a.glossary else None, a.proper)
+    elif a.cmd == "trainall":
+        out = build_training_all(Path(a.work), Path(a.out))
     elif a.cmd == "ask":
-        out = ask_plans(Path(a.work), Path(a.single), Path(a.plans), name=a.name, reader_cache=Path(a.reader) if a.reader else None)
+        out = ask_plans(Path(a.work), Path(a.single), Path(a.plans), name=a.name, reader_cache=Path(a.reader) if a.reader else None,
+                        form_cache=Path(a.form) if a.form else None)
+    elif a.cmd == "plan":
+        out = plan_test(Path(a.work), Path(a.changed), Path(a.train), Path(a.train_all))
+        print(to_markdown(out, "The planning step fixed: the test set", ("training", "training_all", "held_out", "changed")))
+        return out
     elif a.cmd == "llm":
         out = llm_test(Path(a.work), Path(a.changed), Path(a.train))
         print(to_markdown(out, "A language model for the English: the test set"))

@@ -243,3 +243,82 @@ def test_single_key_kinds_need_the_exact_key():
     assert M.own_score(q, "ENG-11") == 1.0 and M.own_score(q, "ENG-11, ENG-13") == 0.0
     lst = {"kind": "action_owner_issues", "expected": {"ids": ["ENG-11", "ENG-12"], "id_kind": "key"}, "group": "combine"}
     assert M.own_score(lst, "ENG-11") == 0.667, "a list still scores F1 (rounded to three places)"
+
+
+def test_v9_training_asks_every_field_in_every_wording():
+    docs = _raw_docs()
+    ids = {d["dsid"] for d in docs}
+    assert M.questions(docs, ids, held_out=False, seed=1) == M.questions(docs, ids, False, 1, every_field=False, all_wordings=False), \
+        "with the defaults the questions are exactly those of the earlier sets"
+    full = M.questions(docs, ids, held_out=False, seed=1, every_field=True, all_wordings=True, max_q=None)
+    pr = [q for q in full if q["kind"] == "pr_issue"]
+    assert sorted({q["field"] for q in pr}) == ["assignee", "due_date", "status"] and len(pr) == 9, "three fields in three wordings"
+    due = next(q for q in pr if q["field"] == "due_date")
+    assert due["expected"] == {"date": "2026-03-20"} and due["pieces"] == ["ENG-11", "2026-03-20"]
+    assert {q["question"] for q in pr if q["field"] == "assignee"} == {w.format(n="4821") for w in M.T[("pr_issue", "assignee")][0]}
+
+
+def test_v9_reads_what_a_plan_rests_on(tmp_path):
+    pl = P.Planner(_bank(tmp_path), "v9")
+    read = pl.reads(P.Plan(("doc:d4",), ("linked_linear",), "assignee", "single"))
+    assert "eng-11" in read and "omar singh" in read and "4821" in read
+    assert P.rests_on(["ENG-11", "Omar Singh"], read) and not P.rests_on(["ENG-12", "Omar Singh"], read)
+    by_due = pl.reads(P.Plan(("doc:d1", "doc:d3"), (), "due_date", "earliest"))
+    assert P.rests_on(["2026-03-20", "2026-05-01"], by_due)
+    assert not P.rests_on(["2026-03-20", "2026-05-01"], pl.reads(P.Plan(("doc:d1", "doc:d3"), (), "status", "single"))), \
+        "the right key by another field is right by coincidence"
+
+
+def test_v9_planner_rules_and_checks(tmp_path):
+    tb = _bank(tmp_path)
+    pl = P.Planner(tb, "v9")
+    assert pl.target_system(["github", "linear"], ("doc:d1",)) == "github", "it starts in Linear and asks about the pull request"
+    assert pl.target_system(["linear"], ("doc:d1",)) == "linear" and pl.target_system([], ("doc:d1",)) == ""
+    assert pl.one_by_construction(("doc:d3",), ()) and pl.one_by_construction(("doc:d3",), ("assignee",))
+    assert not pl.one_by_construction((OMAR,), ("assignee_of",))
+    assert not any(p.aggregate == "count" and not p.path for p, _ in pl.candidates("How many issues does Omar Singh have?"))
+    q = "Which is due sooner, ENG-11 or ENG-13?"
+    kept = pl.check(q, pl.candidates(q), "key")
+    assert kept and all(set(p.starts) == {"doc:d1", "doc:d3"} and not p.path for p, _ in kept), "a choice compares exactly what it names"
+    assert {m["answer"] for p, m in kept if p.field == "due_date" and p.aggregate == "earliest"} == {"ENG-11"}
+    q = "Who is assigned to the ticket that ENG-13 is linked to?"
+    cands = pl.candidates(q)
+    kept = pl.check(q, cands, "person", ("assignee",))
+    assert kept and all(p.starts == ("doc:d3",) and p.field == "assignee" and pl.out_kind(p, m["answer"]) == "person" for p, m in kept)
+    assert pl.check(q, cands, "count"), "a check no plan passes is skipped"
+
+
+def test_v9_lessons_learn_the_kind_of_answer_and_answer_through_the_checks(tmp_path):
+    tb = _bank(tmp_path)
+    qs = [{"question": "Who is assigned to the Linear issue that pull request #4821 is linked to?", "expected": {"value": "Omar Singh"},
+           "pieces": ["ENG-11", "Omar Singh"]},
+          {"question": "How many Linear issues are assigned to Omar Singh?", "expected": {"value": "2"}, "pieces": ["ENG-11", "ENG-12"]},
+          {"question": "How many Linear issues are assigned to Liam Chen?", "expected": {"value": "1"}, "pieces": ["ENG-13"]},
+          {"question": "Which is due sooner, ENG-11 or ENG-13?", "expected": {"ids": ["ENG-11"], "id_kind": "key"},
+           "pieces": ["2026-03-20", "2026-05-01"]},
+          {"question": "Who is assigned to the ticket that ENG-13 is linked to?", "expected": {"value": "Omar Singh"},
+           "pieces": ["ENG-12", "Omar Singh"]}]
+    les = P.learn_plans(tb, qs, log=lambda *_: None, rules="v9", proper=True)
+    les.save(tmp_path / "v9.json")
+    again = P.PlanLessons.load(tmp_path / "v9.json")
+    assert again.rules == "v9" and again.trained_on["proper"] and again.asked_kind["kind"]["count"] == 2
+    ak = P.AskedKind(again.asked_kind)
+    assert ak.asked("How many Linear issues are assigned to Maya Chen?", 0.5) == "count"
+    assert P.AskedKind(ak.to_json()).posterior({"how", "many"}) == ak.posterior({"how", "many"})
+    ans, best, _, _ = P.answer(tb, again, "Which is due sooner, ENG-13 or ENG-11?")
+    assert ans == "ENG-11" and best.field == "due_date" and not best.path
+    form = {"kind": "person", "fields": ("assignee",)}
+    ans, best, _, _ = P.answer(tb, again, "Who is assigned to the ticket that ENG-13 is linked to?", form=form)
+    assert best.field == "assignee" and best.starts == ("doc:d3",) and ans in ("Omar Singh", "Liam Chen"), \
+        "the form keeps the plans reading the assignee; five questions are too few for the weights to pick the link"
+
+
+def test_the_measure_counts_an_answer_right_for_the_right_reason_only_if_its_plan_read_the_facts(tmp_path):
+    q = {"id": "c1", "group": "compare", "kind": "compare_two", "field": "", "question": "Which is due sooner, ENG-11 or ENG-13?",
+         "expected": {"ids": ["ENG-11"], "id_kind": "key"}, "pieces": ["2026-03-20", "2026-05-01"]}
+    _write_jsonl(tmp_path / "questions.jsonl", [q])
+    _write_jsonl(tmp_path / "factbank_v9.jsonl", [{"id": "c1", "answer": "ENG-11", "evidence": "", "reads": ["eng-11", "2026-03-20", "2026-05-01"]}])
+    _write_jsonl(tmp_path / "factbank_v4.jsonl", [{"id": "c1", "answer": "ENG-11", "evidence": "", "reads": ["eng-11", "2026-01-02"]}])
+    m = M.measure(tmp_path)
+    assert m["direct"]["v9"]["mean"] == m["direct"]["v4"]["mean"] == 1.0
+    assert m["reason"]["v9"]["mean"] == 1.0 and m["reason"]["v4"]["mean"] == 0.0

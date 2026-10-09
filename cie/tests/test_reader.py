@@ -38,3 +38,19 @@ def test_the_glossary_adds_the_standard_words_of_phrases_it_finds():
     assert {"assign", "first", "earliest", "soon"} <= q, "\"sooner\" is stemmed to \"soon\""
     assert g.words('Who put up the PR for ENG-12? See "on their plate"')[0] >= {"author", "wrote", "open"}
     assert g.words('See "on their plate" only') == (set(), set()), "phrases inside quoted titles are not read"
+
+
+def test_the_form_is_cached_by_question_and_prompt(tmp_path):
+    cache = tmp_path / "forms.jsonl"
+    q = "who put up the PR for ENG-12?"
+    cache.write_text("\n".join(json.dumps(r) for r in [
+        {"question": q, "prompt": R.form_fingerprint(), "model": "x", "form": {"answer": "person", "field": "author"}},
+        {"question": "how many?", "prompt": "an-older-prompt", "model": "x", "form": {"answer": "date", "field": "none"}}]) + "\n")
+    f = R.Former(cache)
+    calls = []
+    f._ask = lambda question: calls.append(question) or {"answer": "number", "field": "none"}  # noqa: ARG005
+    got = f.form(q)
+    assert got["kind"] == "person" and got["fields"] == ("author",) and not calls, "a cached form calls no model"
+    assert f.form("how many?")["kind"] == "count" and calls == ["how many?"], "a form made with another prompt is not reused"
+    assert R.Former(cache).form("how many?")["kind"] == "count", "the new form was kept"
+    assert R.FORM_FIELD["status"] == ("status", "state") and set(R.FORM_KIND.values()) == {"person", "date", "count", "key", "other"}
