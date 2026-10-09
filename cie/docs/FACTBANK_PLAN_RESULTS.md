@@ -91,19 +91,24 @@ Own answers, no model judging (the mean is the mean of the three groups):
     which used `dependencies` 48 times and `linked_issues` 18. So v10 read the status of the wrong ticket.
 
 **The changed copy:**
-- The fixed transform renames every person and moves every date 23 days later. Keys, statuses, links and counts stay the
-  same, and so does the order of any two dates.
+- The fixed transform renames every person's full name (93 people) and moves every plain date 23 days later. Keys,
+  statuses, links and counts stay the same, and so does the order of any two dates.
+- It has two gaps, neither read by any test question:
+  - timestamps written with a time, such as a meeting's `recorded_at`, are not moved;
+  - bare first names are kept.
 - So 15 questions change (a renamed person), and 13 expected answers change: 10 names and 3 due dates.
 - v9 and v10 give the new value on all 13.
-- Every arm scores exactly as on the original. That is expected: the plans read names and dates, they do not remember
-  them.
+- Every arm scores exactly as on the original, with the same right-for-the-right-reason flags. That is expected: the plans
+  read names and dates, they do not remember them.
+- v8, v9, v9n and v10 pick the same plan on all 50 questions. v4 picks a different one on one question, wrong both times.
 - It shows nothing about new wordings, or about changed statuses, links or counts.
 
 ### v10: the model's form
 
 | | test set |
 |---|---|
-| questions where the bank's own lessons were unsure of the kind of answer, so the form was used | 1 of 50 |
+| questions the model filled in a form for | all 50 |
+| questions where the bank's own lessons were unsure of the kind of answer, so the form's kind was used | 1 of 50 |
 | questions where the form's kind differs from the lessons' (when they were sure) | 0 |
 | answers that differ from v9 | 1 (the linked-ticket status above; both wrong) |
 | the model's time per question (it fills in a form for every question, before the bank checks how sure it is) | mean 2.3 s, median 1.9 s, at most 21 s (4 CPU cores, no GPU) |
@@ -181,8 +186,11 @@ A fourth reviewer tried to refute each finding (`review.json`).
      the first held-out set and the retest (0.32), and below the new-words, blind and language-model sets (0.41–0.48).
    - Of the 60 content-word types in the 20 test wordings, only 6 had not appeared in the training or any development
      wording: confirm, gimme, provide, refs, respond, titled.
+   - One reason: the new writers had the same brief as the writers of two development sets, the blind and language-model
+     sets, and partly copied its sentences. For example, "Ticket {k} is linked to another ticket."
    - That is not a leak: v9 learns words only from training, and v9n, with no glossary, scored the same. But it makes this
-     test a weaker test of unfamiliar wording than the new-words set.
+     test a test of new documents with familiar phrasing. It is a weaker test of unfamiliar wording than the new-words
+     set.
 6. **v4's low score (0.510) means these 50 questions are hard for v4, not that the test is hard.**
    - It does not come from the mix of kinds: v4's rates on the earlier sets predict 0.623 for this mix.
    - It comes from these particular questions. v4 gets 0 of 5 pull-request authors and 0 of 3 linked-ticket assignees
@@ -215,8 +223,10 @@ A fourth reviewer tried to refute each finding (`review.json`).
   - teaching every kind;
   - learning only from plans right for the right reason;
   - checking each plan against what the question names and asks for.
-- **No language model is needed for this when the wording is ordinary.** v9n, with no model anywhere, matches v9 on the
-  test.
+- **With ordinary wording, no language model is needed.**
+  - In the terse writer's wordings, v9n, with no model anywhere, scores 0.975, the same as v9.
+  - On the formal and plain-words wordings, the glossary adds about 0.03 (+0.035 and +0.029).
+  - On the test itself, v9 and v9n chose the same plan for every question, so the glossary was never exercised.
 - **A small model helps where the wording is unusual.** "Supposed to be done by" and "what lands soonest" are examples.
   Used only where the bank is unsure:
   - it never scored below v9 on the test or its other wordings;
