@@ -85,6 +85,18 @@ Two ways were tested on 50 new blind questions:
 The fact bank alone scores 0.586, so neither passed. The glossary helped clearly on earlier sets (0.90 against 0.73).
 The bottleneck is now the plan learner: it learned from 48 questions and misses kinds of question it was never taught.
 
+**Fixing the planning step** ([`docs/FACTBANK_PLAN_RESULTS.md`](docs/FACTBANK_PLAN_RESULTS.md)). The fixed planner, v9,
+needs no model when a question is asked. It:
+- learns every kind of question;
+- learns only from plans right for the right reason;
+- checks each plan against what the question names and asks for.
+
+On 50 new blind questions it scored 0.975, against 0.510 for the old planner and 0.722 for the glossary. Its right
+answers read the facts they rest on: 0.968 against 0.385. Six of seven pre-registered rules were met.
+
+The 0.975 partly reflects the wording drawn. The same questions in other blind wordings give 0.87–0.98. A local 3B
+model, asked only where the bank is unsure, raises the less familiar wordings by about 0.05.
+
 ## Brain-wired reasoning neurons (research)
 
 `cie.neuro` wires the reasoning engine's spiking neurons like a piece of Blue Brain's cortex model (directed cliques of
