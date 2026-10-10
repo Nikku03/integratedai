@@ -1,0 +1,8453 @@
+{
+ "big": {
+  "questions": 50,
+  "by_group": {
+   "link": 21,
+   "combine": 22,
+   "compare": 7
+  },
+  "direct": {
+   "v1": {
+    "link": 0.381,
+    "combine": 0.0,
+    "compare": 0.0,
+    "mean": 0.127
+   },
+   "v4": {
+    "link": 0.429,
+    "combine": 0.455,
+    "compare": 0.857,
+    "mean": 0.58
+   },
+   "v8": {
+    "link": 0.667,
+    "combine": 0.636,
+    "compare": 0.857,
+    "mean": 0.72
+   },
+   "v9": {
+    "link": 0.905,
+    "combine": 0.756,
+    "compare": 1.0,
+    "mean": 0.887
+   },
+   "v11": {
+    "link": 0.905,
+    "combine": 0.815,
+    "compare": 1.0,
+    "mean": 0.907
+   },
+   "v12": {
+    "link": 0.905,
+    "combine": 0.815,
+    "compare": 1.0,
+    "mean": 0.907
+   },
+   "v13": {
+    "link": 0.905,
+    "combine": 1.0,
+    "compare": 1.0,
+    "mean": 0.968
+   },
+   "v14": {
+    "link": 0.905,
+    "combine": 1.0,
+    "compare": 1.0,
+    "mean": 0.968
+   }
+  },
+  "reason": {
+   "v4": {
+    "link": 0.429,
+    "combine": 0.455,
+    "compare": 0.286,
+    "mean": 0.39
+   },
+   "v8": {
+    "link": 0.667,
+    "combine": 0.636,
+    "compare": 0.286,
+    "mean": 0.53
+   },
+   "v9": {
+    "link": 0.905,
+    "combine": 0.636,
+    "compare": 1.0,
+    "mean": 0.847
+   },
+   "v11": {
+    "link": 0.905,
+    "combine": 0.636,
+    "compare": 1.0,
+    "mean": 0.847
+   },
+   "v12": {
+    "link": 0.905,
+    "combine": 0.636,
+    "compare": 1.0,
+    "mean": 0.847
+   },
+   "v13": {
+    "link": 0.905,
+    "combine": 1.0,
+    "compare": 1.0,
+    "mean": 0.968
+   },
+   "v14": {
+    "link": 0.905,
+    "combine": 1.0,
+    "compare": 1.0,
+    "mean": 0.968
+   }
+  },
+  "by_kind": {
+   "action_owner_issues": {
+    "v1": 0.0,
+    "v4": 0.0,
+    "v8": 0.0,
+    "v9": 0.329,
+    "v11": 0.492,
+    "v12": 0.492,
+    "v13": 1.0,
+    "v14": 1.0,
+    "n": 8
+   },
+   "compare_two": {
+    "v1": 0.0,
+    "v4": 0.857,
+    "v8": 0.857,
+    "v9": 1.0,
+    "v11": 1.0,
+    "v12": 1.0,
+    "v13": 1.0,
+    "v14": 1.0,
+    "n": 7
+   },
+   "issue_pr_author": {
+    "v1": 0.714,
+    "v4": 0.286,
+    "v8": 1.0,
+    "v9": 1.0,
+    "v11": 1.0,
+    "v12": 1.0,
+    "v13": 1.0,
+    "v14": 1.0,
+    "n": 7
+   },
+   "person_count": {
+    "v1": 0.0,
+    "v4": 1.0,
+    "v8": 1.0,
+    "v9": 1.0,
+    "v11": 1.0,
+    "v12": 1.0,
+    "v13": 1.0,
+    "v14": 1.0,
+    "n": 7
+   },
+   "person_first": {
+    "v1": 0.0,
+    "v4": 0.429,
+    "v8": 1.0,
+    "v9": 1.0,
+    "v11": 1.0,
+    "v12": 1.0,
+    "v13": 1.0,
+    "v14": 1.0,
+    "n": 7
+   },
+   "pr_issue": {
+    "v1": 0.429,
+    "v4": 0.429,
+    "v8": 0.286,
+    "v9": 0.857,
+    "v11": 0.857,
+    "v12": 0.857,
+    "v13": 0.857,
+    "v14": 0.857,
+    "n": 7
+   },
+   "ticket_link": {
+    "v1": 0.0,
+    "v4": 0.571,
+    "v8": 0.714,
+    "v9": 0.857,
+    "v11": 0.857,
+    "v12": 0.857,
+    "v13": 0.857,
+    "v14": 0.857,
+    "n": 7
+   }
+  },
+  "rows": [
+   {
+    "id": "action_owner_issues-158",
+    "group": "combine",
+    "kind": "action_owner_issues",
+    "question": "whoever got \"prepare stress test harness + short runbook\" in the \"Surge readiness, roadmap alignment, and pilot commitments\" meeting - what ticket keys are assigned to them?",
+    "expected": {
+     "ids": [
+      "DES-172334",
+      "ENG-64200",
+      "PM-9576"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 0.0,
+     "v8": 0.0,
+     "v9": 0.5,
+     "v11": 0.5,
+     "v12": 0.5,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Ethan Cole",
+     "v4": "Quant profile comparison \u2014 Console + Optimize walkthrough, Surge readiness, roadmap alignment, and pilot commitments",
+     "v8": "POC velocity gate: Cernova bench delta review",
+     "v9": "ENG-64200",
+     "v11": "ENG-64200",
+     "v12": "ENG-64200",
+     "v13": "DES-172334, ENG-64200, PM-9576",
+     "v14": "DES-172334, ENG-64200, PM-9576"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 0.75,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 0.25,
+      "24000": 0.25
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 0.0,
+     "v8": 0.0,
+     "v9": 0.0,
+     "v11": 0.0,
+     "v12": 0.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "compare_two-159",
+    "group": "compare",
+    "kind": "compare_two",
+    "question": "ENG-100112 vs PM-6289 - which one's due first?",
+    "expected": {
+     "ids": [
+      "ENG-100112"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 0.0,
+     "v8": 0.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "2026-03-31",
+     "v4": "PM-6289",
+     "v8": "PM-6289",
+     "v9": "ENG-100112",
+     "v11": "ENG-100112",
+     "v12": "ENG-100112",
+     "v13": "ENG-100112",
+     "v14": "ENG-100112"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 0.0,
+     "v8": 0.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "issue_pr_author-author-126",
+    "group": "link",
+    "kind": "issue_pr_author",
+    "question": "who opened the PR that references ENG-8913?",
+    "expected": {
+     "value": "Aisha Patel"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v4": 0.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Aisha Patel",
+     "v4": "#274801",
+     "v8": "Aisha Patel",
+     "v9": "Aisha Patel",
+     "v11": "Aisha Patel",
+     "v12": "Aisha Patel",
+     "v13": "Aisha Patel",
+     "v14": "Aisha Patel"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 0.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "person_count-038",
+    "group": "combine",
+    "kind": "person_count",
+    "question": "How many tickets are currently assigned to Daniel Kim?",
+    "expected": {
+     "value": "3"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Daniel Kim",
+     "v4": "3",
+     "v8": "3",
+     "v9": "3",
+     "v11": "3",
+     "v12": "3",
+     "v13": "3",
+     "v14": "3"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "person_first-037",
+    "group": "combine",
+    "kind": "person_first",
+    "question": "Of all the tickets assigned to Asha Patel, which one is due first? Please give me its ticket key.",
+    "expected": {
+     "ids": [
+      "ENG-220501"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 0.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Liam Chen",
+     "v4": "Diego Moreno",
+     "v8": "ENG-220501",
+     "v9": "ENG-220501",
+     "v11": "ENG-220501",
+     "v12": "ENG-220501",
+     "v13": "ENG-220501",
+     "v14": "ENG-220501"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v4": {
+      "2000": 0.25,
+      "24000": 0.75
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 0.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "pr_issue-due_date-127",
+    "group": "link",
+    "kind": "pr_issue",
+    "question": "When is the ticket linked to pull request #193 due? I need the deadline date for the status email.",
+    "expected": {
+     "date": "2025-11-12"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v4": 0.0,
+     "v8": 0.0,
+     "v9": 0.0,
+     "v11": 0.0,
+     "v12": 0.0,
+     "v13": 0.0,
+     "v14": 0.0
+    },
+    "answers": {
+     "v1": "2025-11-12",
+     "v4": "Done",
+     "v8": "ENG-4182",
+     "v9": "Scheduling: SOC 2 / DPA walkthrough for FinovateX",
+     "v11": "Scheduling: SOC 2 / DPA walkthrough for FinovateX",
+     "v12": "AWS Marketplace private purchase \u2014 term options & approval path (ACME Systems), Close timeline: stagger + stitch plan and escalation, Confirming non-learning commitment, retention exceptions, and deletion workflow, Consolidated run-of-show & slot scrub for Renewal QBR (procurement checkpoint), Dedicated capacity foresight: GPU mix, latency SLOs, and reservation questionnaire, Design review: sealed-key routing and on-prem BYOK handoff, Dry-run: Q3 commit certification for EMEA / APAC \u2014 action + deliverables, E2E delay acceptance checklist \u2014 hosted migration plan, Embeddings & Rerank: Transition checkpoints and customer cutover plan, GilaTech discovery recap \u2014 throughput & SLOs, model footprint, deployment options, Hearthstone Bank RFP: evidence delivery & timeline for abuse-monitoring controls, Initial phone screen \u2014 Samir Desai (coordination & time zones), Interim coverage/bridge letter request for SOC 2 period gap - OrionIT, Kickoff: vendor questionnaire start \u2014 SOC 2 / HIPAA scope + clarifying asks, Networking preflight \u2014 private deploy session, POC mid-trial: scope sift, MOP evaluation plan and ownership, Post-call architectural worksheet + SDK sandbox next steps, Post-discovery: model fit recommendations & perf pack, Private deployment MAP & GPU sizing \u2014 HelmTech capacity handshake, Private endpoint egress certification and safelist verification for Orchid Health, Prod Deployment: VPC connectivity clarifications & agreed next steps, QuickSpin: 20-min Hosted API sandbox walkthrough, Re: Annual prepay \u2014 proposal for surge handling and onboarding accelerator, Re: BrightFlow OEM embedding \u2014 scope, pricing, and timeline, Recap: Renewal + New Inference Workloads \u2014 Next steps, Request: BlueWave pilot bridge + combined credit/discount concession, Request: VP + CIO panel block \u2014 condensed 45m demo & briefing, Residency & deletion timeline questions \u2014 Shoreline Health, Sandbox runway request \u2014 self-serve credit approval, Scheduling: SOC 2 / DPA walkthrough for FinovateX, Security intake \u2014 SOC 2 + DPA review + pen-test: staggered windows proposal, Sovereign data routing: follow-up questions & agreed actions, Spike in tail latency and 500s \u2014 BrightWave checkout, Staged downsell playbook: approval request for early-unwind protections, Streaming chat p99 spike during night peak - production impact, Structuring sponsor credits for Inkwell Labs \u2014 usage caps & milestone top-ups, SummitOne activation \u2014 decision criteria & timeline for routing guarantee, Vendor onboarding kickoff / vendor master corrections \u2014 Acme Supplies, Vendor onboarding: invoice lane & dynamic net-cycle proposal, Vendor payment setup \u2014 bank routing & invoice submission (Pioneer Logistics)",
+     "v13": "Scheduling: SOC 2 / DPA walkthrough for FinovateX",
+     "v14": "AWS Marketplace private purchase \u2014 term options & approval path (ACME Systems), Close timeline: stagger + stitch plan and escalation, Confirming non-learning commitment, retention exceptions, and deletion workflow, Consolidated run-of-show & slot scrub for Renewal QBR (procurement checkpoint), Dedicated capacity foresight: GPU mix, latency SLOs, and reservation questionnaire, Design review: sealed-key routing and on-prem BYOK handoff, Dry-run: Q3 commit certification for EMEA / APAC \u2014 action + deliverables, E2E delay acceptance checklist \u2014 hosted migration plan, Embeddings & Rerank: Transition checkpoints and customer cutover plan, GilaTech discovery recap \u2014 throughput & SLOs, model footprint, deployment options, Hearthstone Bank RFP: evidence delivery & timeline for abuse-monitoring controls, Initial phone screen \u2014 Samir Desai (coordination & time zones), Interim coverage/bridge letter request for SOC 2 period gap - OrionIT, Kickoff: vendor questionnaire start \u2014 SOC 2 / HIPAA scope + clarifying asks, Networking preflight \u2014 private deploy session, POC mid-trial: scope sift, MOP evaluation plan and ownership, Post-call architectural worksheet + SDK sandbox next steps, Post-discovery: model fit recommendations & perf pack, Private deployment MAP & GPU sizing \u2014 HelmTech capacity handshake, Private endpoint egress certification and safelist verification for Orchid Health, Prod Deployment: VPC connectivity clarifications & agreed next steps, QuickSpin: 20-min Hosted API sandbox walkthrough, Re: Annual prepay \u2014 proposal for surge handling and onboarding accelerator, Re: BrightFlow OEM embedding \u2014 scope, pricing, and timeline, Recap: Renewal + New Inference Workloads \u2014 Next steps, Request: BlueWave pilot bridge + combined credit/discount concession, Request: VP + CIO panel block \u2014 condensed 45m demo & briefing, Residency & deletion timeline questions \u2014 Shoreline Health, Sandbox runway request \u2014 self-serve credit approval, Scheduling: SOC 2 / DPA walkthrough for FinovateX, Security intake \u2014 SOC 2 + DPA review + pen-test: staggered windows proposal, Sovereign data routing: follow-up questions & agreed actions, Spike in tail latency and 500s \u2014 BrightWave checkout, Staged downsell playbook: approval request for early-unwind protections, Streaming chat p99 spike during night peak - production impact, Structuring sponsor credits for Inkwell Labs \u2014 usage caps & milestone top-ups, SummitOne activation \u2014 decision criteria & timeline for routing guarantee, Vendor onboarding kickoff / vendor master corrections \u2014 Acme Supplies, Vendor onboarding: invoice lane & dynamic net-cycle proposal, Vendor payment setup \u2014 bank routing & invoice submission (Pioneer Logistics)"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 0.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 0.0,
+     "v8": 0.0,
+     "v9": 0.0,
+     "v11": 0.0,
+     "v12": 0.0,
+     "v13": 0.0,
+     "v14": 0.0
+    }
+   },
+   {
+    "id": "ticket_link-assignee-080",
+    "group": "link",
+    "kind": "ticket_link",
+    "question": "Ticket PM-602471 has a linked ticket, and I need to know who owns it. Who is that other ticket assigned to?",
+    "expected": {
+     "value": "Mateo Alvarez"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 0.0,
+     "v8": 0.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Tom\u00e1s Rivera",
+     "v4": "Liam O'Connor",
+     "v8": "Marcus Nguyen",
+     "v9": "Mateo Alvarez",
+     "v11": "Mateo Alvarez",
+     "v12": "Mateo Alvarez",
+     "v13": "Mateo Alvarez",
+     "v14": "Mateo Alvarez"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 0.0,
+     "v8": 0.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "action_owner_issues-110",
+    "group": "combine",
+    "kind": "action_owner_issues",
+    "question": "whoever got \"Prepare renewal pricing with dedicated burst plan and per-region SLAs\" in the \"Avalon Retail - Renewal & EU Edge Expansion Playbook Discussion\" meeting - what ticket keys are assigned to them?",
+    "expected": {
+     "ids": [
+      "ENG-11024",
+      "ENG-250321",
+      "ENG-811090",
+      "ENG-99101"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 0.0,
+     "v8": 0.0,
+     "v9": 0.0,
+     "v11": 0.4,
+     "v12": 0.4,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Luis Ortega",
+     "v4": "2025-07-09 Prefetch Hitrate Retrospective \u2014 POC Weekly Sync, Apollo Health - Adoption, Cost & Reliability Triage (Q4 2027), Asterion Health - Implementation Ignition & Ops Intake, Async CUDA stream hang diagnostics - Amphora Systems deep dive, AtlasText API Onramp: Credits, Hosting Paths & TTFT Clarify, Aurora Stack - StreamBurst Capacity Discovery, Avalon Retail - Renewal & EU Edge Expansion Playbook Discussion, Borealis Biotech - Network Fence & Throughput POC Scoping, BrynnCore renewal + EU private top-up check-in, Crimson Health vendor risk questionnaire triage & evidence roadmap, Developer Onboarding: Toolchain & LLM Integration Lab, Elysian Health - Tenant Fence & Egress Runway POC scoping, Frostline Systems - GPU cloud onramp exploratory, Go-live orchestration preflight & fallbacks sync, Integra Systems - model stack & infra discovery, Kestrel Systems - Platform Integration Onramp (Redwood discovery), MoE cost analysis & rope scaling on private infra \u2014 performance workshop, Model selection & deployment playbook \u2014 Sapphire Concourse, Northwood Guardian - private onramp & egress scenario discussion, POC Weekly \u2014 Latency Horizon Tune-up, POC sync: routing heuristics, kernel upgrade and telemetry deep-dive, Ramp dress rehearsal and rollout checklist review, Reliability & Incident Tolerance Discovery - Polaris HealthTech, Residency evaluation and ops constraints intake with Harvest Capital, Saga Analytics \u2014 reserved nodes, isolation needs & burst strategy intake, Security & Hosting intake - QuarryLane Finance, Tenant governance, Console + API rate controls walkthrough - Nebula Insights, Vela Systems \u2014 model catalog scouting workflow & compatibility decisioning",
+     "v8": "Avalon Retail - Renewal & EU Edge Expansion Playbook Discussion, MoE cost analysis & rope scaling on private infra \u2014 performance workshop",
+     "v9": "Send pricing, model matrix, and benchmark spreadsheet",
+     "v11": "ENG-99101",
+     "v12": "ENG-99101",
+     "v13": "ENG-11024, ENG-250321, ENG-811090, ENG-99101",
+     "v14": "ENG-11024, ENG-250321, ENG-811090, ENG-99101"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.2,
+      "24000": 0.2
+     },
+     "v4": {
+      "2000": 0.2,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 0.0,
+      "24000": 0.2
+     },
+     "v9": {
+      "2000": 0.2,
+      "24000": 0.4
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 0.0,
+     "v8": 0.0,
+     "v9": 0.0,
+     "v11": 0.0,
+     "v12": 0.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "compare_two-162",
+    "group": "compare",
+    "kind": "compare_two",
+    "question": "Between tickets PM-96321 and PM-91234, which one has the earlier due date?",
+    "expected": {
+     "ids": [
+      "PM-96321"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "2026-03-20",
+     "v4": "PM-96321",
+     "v8": "PM-96321",
+     "v9": "PM-96321",
+     "v11": "PM-96321",
+     "v12": "PM-96321",
+     "v13": "PM-96321",
+     "v14": "PM-96321"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 0.0,
+     "v8": 0.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "issue_pr_author-author-071",
+    "group": "link",
+    "kind": "issue_pr_author",
+    "question": "Who opened the pull request that references ticket ENG-6310?",
+    "expected": {
+     "value": "Ava Martinez"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Anita Patel",
+     "v4": "Ava Martinez",
+     "v8": "Ava Martinez",
+     "v9": "Ava Martinez",
+     "v11": "Ava Martinez",
+     "v12": "Ava Martinez",
+     "v13": "Ava Martinez",
+     "v14": "Ava Martinez"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "person_count-045",
+    "group": "combine",
+    "kind": "person_count",
+    "question": "How many tickets are currently assigned to Diego Ruiz?",
+    "expected": {
+     "value": "2"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Diego Ruiz",
+     "v4": "2",
+     "v8": "2",
+     "v9": "2",
+     "v11": "2",
+     "v12": "2",
+     "v13": "2",
+     "v14": "2"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "person_first-006",
+    "group": "combine",
+    "kind": "person_first",
+    "question": "out of Liam Patel's tickets which one is due soonest? gimme the key",
+    "expected": {
+     "ids": [
+      "ENG-7610"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 0.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "2026-03-24",
+     "v4": "Share onboarding runbook + security pack link",
+     "v8": "ENG-7610",
+     "v9": "ENG-7610",
+     "v11": "ENG-7610",
+     "v12": "ENG-7610",
+     "v13": "ENG-7610",
+     "v14": "ENG-7610"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 0.125,
+      "24000": 0.375
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 0.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "pr_issue-due_date-085",
+    "group": "link",
+    "kind": "pr_issue",
+    "question": "ticket linked to #998823 - when's it due? need the deadline date",
+    "expected": {
+     "date": "2026-03-21"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v4": 0.0,
+     "v8": 0.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "2026-03-21",
+     "v4": "ENG-63842",
+     "v8": "ENG-99101",
+     "v9": "2026-03-21",
+     "v11": "2026-03-21",
+     "v12": "2026-03-21",
+     "v13": "2026-03-21",
+     "v14": "2026-03-21"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 0.0,
+     "v8": 0.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "ticket_link-assignee-090",
+    "group": "link",
+    "kind": "ticket_link",
+    "question": "Ticket ENG-22334 has a linked ticket, and I need to know who owns it. Who is that other ticket assigned to?",
+    "expected": {
+     "value": "Diego Patel"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Diego Martinez",
+     "v4": "Diego Patel",
+     "v8": "Diego Patel",
+     "v9": "Diego Patel",
+     "v11": "Diego Patel",
+     "v12": "Diego Patel",
+     "v13": "Diego Patel",
+     "v14": "Diego Patel"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "action_owner_issues-120",
+    "group": "combine",
+    "kind": "action_owner_issues",
+    "question": "In the \"Aurelia Logistics - implementation ignition & runbook workshop\" meeting, someone picked up the action item \"Provide SAML metadata and KMS requirements\". Which ticket keys are assigned to that person?",
+    "expected": {
+     "ids": [
+      "ENG-121038",
+      "ENG-204999"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 0.0,
+     "v8": 0.0,
+     "v9": 0.667,
+     "v11": 0.667,
+     "v12": 0.667,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Evan Brooks",
+     "v4": "Export recent traffic histogram and latency P95 targets, Finalize pilot success criteria and representative prompt list, Provide SAML metadata and KMS requirements, Provision test endpoint and sample benchmark scripts; send access info, Share onboarding runbook draft and high-level SLA slide",
+     "v8": "Aurelia Logistics - implementation ignition & runbook workshop, POC Weekly \u2014 Dedicated sizing, tuning & fallback review",
+     "v9": "ENG-204999",
+     "v11": "ENG-204999",
+     "v12": "ENG-204999",
+     "v13": "ENG-121038, ENG-204999",
+     "v14": "ENG-121038, ENG-204999"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.3333333333333333,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 0.3333333333333333,
+      "24000": 0.3333333333333333
+     },
+     "v8": {
+      "2000": 0.0,
+      "24000": 0.3333333333333333
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 0.0,
+     "v8": 0.0,
+     "v9": 0.0,
+     "v11": 0.0,
+     "v12": 0.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "compare_two-166",
+    "group": "compare",
+    "kind": "compare_two",
+    "question": "ENG-21845 vs ENG-681290 - which one's due first?",
+    "expected": {
+     "ids": [
+      "ENG-681290"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "2026-03-18",
+     "v4": "ENG-681290",
+     "v8": "ENG-681290",
+     "v9": "ENG-681290",
+     "v11": "ENG-681290",
+     "v12": "ENG-681290",
+     "v13": "ENG-681290",
+     "v14": "ENG-681290"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 0.0,
+     "v8": 0.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "issue_pr_author-author-100",
+    "group": "link",
+    "kind": "issue_pr_author",
+    "question": "who opened the PR that references ENG-7263?",
+    "expected": {
+     "value": "Riley Chen"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 0.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Ava Martinez",
+     "v4": "#224681",
+     "v8": "Riley Chen",
+     "v9": "Riley Chen",
+     "v11": "Riley Chen",
+     "v12": "Riley Chen",
+     "v13": "Riley Chen",
+     "v14": "Riley Chen"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 0.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "person_count-055",
+    "group": "combine",
+    "kind": "person_count",
+    "question": "How many tickets are currently assigned to Marcus Liu?",
+    "expected": {
+     "value": "3"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Marco Chen",
+     "v4": "3",
+     "v8": "3",
+     "v9": "3",
+     "v11": "3",
+     "v12": "3",
+     "v13": "3",
+     "v14": "3"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "person_first-042",
+    "group": "combine",
+    "kind": "person_first",
+    "question": "Of all the tickets assigned to Diego Ramirez, which one is due first? Please give me its ticket key.",
+    "expected": {
+     "ids": [
+      "ENG-30345"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Diego Ramirez",
+     "v4": "ENG-30345",
+     "v8": "ENG-30345",
+     "v9": "ENG-30345",
+     "v11": "ENG-30345",
+     "v12": "ENG-30345",
+     "v13": "ENG-30345",
+     "v14": "ENG-30345"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "pr_issue-assignee-113",
+    "group": "link",
+    "kind": "pr_issue",
+    "question": "who owns the ticket tied to PR #60921? need a name asap",
+    "expected": {
+     "value": "Rafael Ortega"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 0.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Aisha Patel",
+     "v4": "Marco Liu",
+     "v8": "Rafael Ortega",
+     "v9": "Rafael Ortega",
+     "v11": "Rafael Ortega",
+     "v12": "Rafael Ortega",
+     "v13": "Rafael Ortega",
+     "v14": "Rafael Ortega"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 0.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "ticket_link-assignee-130",
+    "group": "link",
+    "kind": "ticket_link",
+    "question": "Who's on the other ticket that ENG-87321 is linked to?",
+    "expected": {
+     "value": "Marco Rodriguez"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 0.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "https://confluence.redwood.com/display/DS/Usage+Journeys+Draft, https://figma.redwood.com/file/DesignSystem/Docs-usage-journeys, https://github.com/redwood-inference/design-system/pull/482, https://storybook.redwood.com/?path=/story/components-button--playground",
+     "v4": "Javier Morales",
+     "v8": "Marco Rodriguez",
+     "v9": "Marco Rodriguez",
+     "v11": "Marco Rodriguez",
+     "v12": "Marco Rodriguez",
+     "v13": "Marco Rodriguez",
+     "v14": "Marco Rodriguez"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 0.5,
+      "24000": 0.5
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 0.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "action_owner_issues-122",
+    "group": "combine",
+    "kind": "action_owner_issues",
+    "question": "whoever got \"add distributed trace tags for KV miss path and push new logs\" in the \"Verdant Systems POC - weekly performance sync\" meeting - what ticket keys are assigned to them?",
+    "expected": {
+     "ids": [
+      "DES-33177",
+      "ENG-72111",
+      "ENG-75911",
+      "PM-9842"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 0.0,
+     "v8": 0.0,
+     "v9": 0.4,
+     "v11": 0.4,
+     "v12": 0.4,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Luca Moretti",
+     "v4": "Activity telemetry export and data residency check-in with Hydra Consulting, Apollo Health - Adoption, Cost & Reliability Triage (Q4 2027), BlueHarbor Post-Incident Hardening & Handoff, Pilot pinboard and hot-swap playbook sync, Privileged Activity Audit & Export Playbook - Meridian Partners",
+     "v8": "send updated benchmark sheet with per-route p50/p95 and unit-cost calc",
+     "v9": "ENG-72111",
+     "v11": "ENG-72111",
+     "v12": "ENG-72111",
+     "v13": "DES-33177, ENG-72111, ENG-75911, PM-9842",
+     "v14": "DES-33177, ENG-72111, ENG-75911, PM-9842"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.2,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 0.8,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 0.2,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 0.0,
+     "v8": 0.0,
+     "v9": 0.0,
+     "v11": 0.0,
+     "v12": 0.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "compare_two-164",
+    "group": "compare",
+    "kind": "compare_two",
+    "question": "Between tickets ENG-135790 and PM-273412, which one has the earlier due date?",
+    "expected": {
+     "ids": [
+      "ENG-135790"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "2026-04-15",
+     "v4": "ENG-135790",
+     "v8": "ENG-135790",
+     "v9": "ENG-135790",
+     "v11": "ENG-135790",
+     "v12": "ENG-135790",
+     "v13": "ENG-135790",
+     "v14": "ENG-135790"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 0.0,
+     "v8": 0.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "issue_pr_author-author-146",
+    "group": "link",
+    "kind": "issue_pr_author",
+    "question": "Who opened the pull request that references ticket ENG-7392?",
+    "expected": {
+     "value": "Priya Kannan"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Priya Kannan",
+     "v4": "Priya Kannan",
+     "v8": "Priya Kannan",
+     "v9": "Priya Kannan",
+     "v11": "Priya Kannan",
+     "v12": "Priya Kannan",
+     "v13": "Priya Kannan",
+     "v14": "Priya Kannan"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "person_count-034",
+    "group": "combine",
+    "kind": "person_count",
+    "question": "How many tickets are currently assigned to Diego Moreno?",
+    "expected": {
+     "value": "2"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Diego Moreno",
+     "v4": "2",
+     "v8": "2",
+     "v9": "2",
+     "v11": "2",
+     "v12": "2",
+     "v13": "2",
+     "v14": "2"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "person_first-008",
+    "group": "combine",
+    "kind": "person_first",
+    "question": "out of Sofia Patel's tickets which one is due soonest? gimme the key",
+    "expected": {
+     "ids": [
+      "PM-24111"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 0.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "2026-04-10",
+     "v4": "DES-35711",
+     "v8": "PM-24111",
+     "v9": "PM-24111",
+     "v11": "PM-24111",
+     "v12": "PM-24111",
+     "v13": "PM-24111",
+     "v14": "PM-24111"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.0,
+      "24000": 0.75
+     },
+     "v4": {
+      "2000": 0.5,
+      "24000": 0.5
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 0.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "pr_issue-status-072",
+    "group": "link",
+    "kind": "pr_issue",
+    "question": "whats the current status on the ticket that PR #90501 is linked to?",
+    "expected": {
+     "value": "In Progress"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 1.0,
+     "v8": 0.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "SUP-28436, SUP-28502",
+     "v4": "In Progress",
+     "v8": "Planned",
+     "v9": "In Progress",
+     "v11": "In Progress",
+     "v12": "In Progress",
+     "v13": "In Progress",
+     "v14": "In Progress"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 1.0,
+     "v8": 0.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "ticket_link-assignee-068",
+    "group": "link",
+    "kind": "ticket_link",
+    "question": "Who's on the other ticket that PM-221334 is linked to?",
+    "expected": {
+     "value": "Liam O'Connor"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "RDW-3471",
+     "v4": "Liam O'Connor",
+     "v8": "Liam O'Connor",
+     "v9": "Liam O'Connor",
+     "v11": "Liam O'Connor",
+     "v12": "Liam O'Connor",
+     "v13": "Liam O'Connor",
+     "v14": "Liam O'Connor"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "action_owner_issues-092",
+    "group": "combine",
+    "kind": "action_owner_issues",
+    "question": "In the \"Asterion Health - Implementation Ignition & Ops Intake\" meeting, someone picked up the action item \"Run initial latency/cost benchmark with Asterion sample prompts\". Which ticket keys are assigned to that person?",
+    "expected": {
+     "ids": [
+      "DES-761849",
+      "ENG-524789",
+      "ENG-7610",
+      "PM-790321"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 0.0,
+     "v8": 0.0,
+     "v9": 0.4,
+     "v11": 0.4,
+     "v12": 0.4,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Liam Patel",
+     "v4": "Confirm SOC2 scope questions and list of required artifacts, Provide VPC details and IP allowlist, Run initial latency/cost benchmark with Asterion sample prompts, Share onboarding runbook + security pack link",
+     "v8": "Int8/AWQ/FP8 regression hypothesis & playbook \u2014 KV cache + batching on-prem",
+     "v9": "ENG-7610",
+     "v11": "ENG-7610",
+     "v12": "ENG-7610",
+     "v13": "DES-761849, ENG-524789, ENG-7610, PM-790321",
+     "v14": "DES-761849, ENG-524789, ENG-7610, PM-790321"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.2,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 0.2,
+      "24000": 0.4
+     },
+     "v8": {
+      "2000": 0.0,
+      "24000": 0.4
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 0.0,
+     "v8": 0.0,
+     "v9": 0.0,
+     "v11": 0.0,
+     "v12": 0.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "compare_two-165",
+    "group": "compare",
+    "kind": "compare_two",
+    "question": "Between tickets PM-709314 and PM-143212, which one has the earlier due date?",
+    "expected": {
+     "ids": [
+      "PM-143212"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "2026-04-15",
+     "v4": "PM-143212",
+     "v8": "PM-143212",
+     "v9": "PM-143212",
+     "v11": "PM-143212",
+     "v12": "PM-143212",
+     "v13": "PM-143212",
+     "v14": "PM-143212"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 0.0,
+     "v8": 0.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "issue_pr_author-author-106",
+    "group": "link",
+    "kind": "issue_pr_author",
+    "question": "who opened the PR that references ENG-14209?",
+    "expected": {
+     "value": "Avery Collins"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v4": 0.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Avery Collins",
+     "v4": "#988221",
+     "v8": "Avery Collins",
+     "v9": "Avery Collins",
+     "v11": "Avery Collins",
+     "v12": "Avery Collins",
+     "v13": "Avery Collins",
+     "v14": "Avery Collins"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 0.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "person_count-043",
+    "group": "combine",
+    "kind": "person_count",
+    "question": "how many tickets r assigned to Marcus Nguyen? just need the number",
+    "expected": {
+     "value": "3"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Marcus Nguyen",
+     "v4": "3",
+     "v8": "3",
+     "v9": "3",
+     "v11": "3",
+     "v12": "3",
+     "v13": "3",
+     "v14": "3"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "person_first-048",
+    "group": "combine",
+    "kind": "person_first",
+    "question": "Of all the tickets assigned to Marco Rivera, which one is due first? Please give me its ticket key.",
+    "expected": {
+     "ids": [
+      "ENG-991234"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Marco Rivera",
+     "v4": "ENG-991234",
+     "v8": "ENG-991234",
+     "v9": "ENG-991234",
+     "v11": "ENG-991234",
+     "v12": "ENG-991234",
+     "v13": "ENG-991234",
+     "v14": "ENG-991234"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "pr_issue-assignee-138",
+    "group": "link",
+    "kind": "pr_issue",
+    "question": "who owns the ticket tied to PR #119842? need a name asap",
+    "expected": {
+     "value": "Liam Ortega"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Aisha Patel",
+     "v4": "Liam Ortega",
+     "v8": "Liam Ortega",
+     "v9": "Liam Ortega",
+     "v11": "Liam Ortega",
+     "v12": "Liam Ortega",
+     "v13": "Liam Ortega",
+     "v14": "Liam Ortega"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "ticket_link-assignee-082",
+    "group": "link",
+    "kind": "ticket_link",
+    "question": "Who's on the other ticket that ENG-52345 is linked to?",
+    "expected": {
+     "value": "Liam O'Connor"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 1.0,
+     "v8": 0.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "https://confluence.redwood.ai/display/SEC/SSO+token+spec, https://github.com/redwood-inference/sdk/pull/1421",
+     "v4": "Liam O'Connor",
+     "v8": "pr:sdk#1421",
+     "v9": "Liam O'Connor",
+     "v11": "Liam O'Connor",
+     "v12": "Liam O'Connor",
+     "v13": "Liam O'Connor",
+     "v14": "Liam O'Connor"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 1.0,
+     "v8": 0.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "action_owner_issues-152",
+    "group": "combine",
+    "kind": "action_owner_issues",
+    "question": "In the \"Q3 Inference Health & Roadmap Readout - Marigold Commerce\" meeting, someone picked up the action item \"Schedule 2-hour latency benchmark with Marigold test set; provide runner script and expected metrics\". Which ticket keys are assigned to that person?",
+    "expected": {
+     "ids": [
+      "ENG-273560",
+      "ENG-67203"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 0.0,
+     "v8": 0.0,
+     "v9": 0.667,
+     "v11": 0.667,
+     "v12": 0.667,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Diego Ruiz",
+     "v4": "Provide network topology and egress constraints for VPC pilot, Schedule 2-hour latency benchmark with Marigold test set; provide runner script and expected metrics, Send July-to-Sept usage CSV and cost breakdown, Share 1-2 representative prompt sets for hallucination/regression checks, Share SOC 2 report excerpt and KMS integration note; redacted PII ok",
+     "v8": "Provide network topology and egress constraints for VPC pilot, run benchmark on n1-large equivalent + provide token-level latency csv",
+     "v9": "ENG-273560",
+     "v11": "ENG-273560",
+     "v12": "ENG-273560",
+     "v13": "ENG-273560, ENG-67203",
+     "v14": "ENG-273560, ENG-67203"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.3333333333333333,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 0.3333333333333333,
+      "24000": 0.3333333333333333
+     },
+     "v8": {
+      "2000": 0.0,
+      "24000": 0.3333333333333333
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 0.0,
+     "v8": 0.0,
+     "v9": 0.0,
+     "v11": 0.0,
+     "v12": 0.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "compare_two-161",
+    "group": "compare",
+    "kind": "compare_two",
+    "question": "Between tickets DES-87321 and DES-218530, which one has the earlier due date?",
+    "expected": {
+     "ids": [
+      "DES-218530"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "2026-03-28",
+     "v4": "DES-218530",
+     "v8": "DES-218530",
+     "v9": "DES-218530",
+     "v11": "DES-218530",
+     "v12": "DES-218530",
+     "v13": "DES-218530",
+     "v14": "DES-218530"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "issue_pr_author-author-097",
+    "group": "link",
+    "kind": "issue_pr_author",
+    "question": "who opened the PR that references ENG-7610?",
+    "expected": {
+     "value": "Maya Chen"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v4": 0.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Maya Chen",
+     "v4": "#421309",
+     "v8": "Maya Chen",
+     "v9": "Maya Chen",
+     "v11": "Maya Chen",
+     "v12": "Maya Chen",
+     "v13": "Maya Chen",
+     "v14": "Maya Chen"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 0.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "person_count-023",
+    "group": "combine",
+    "kind": "person_count",
+    "question": "how many tickets r assigned to Oliver Chen? just need the number",
+    "expected": {
+     "value": "2"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Oliver Chen",
+     "v4": "2",
+     "v8": "2",
+     "v9": "2",
+     "v11": "2",
+     "v12": "2",
+     "v13": "2",
+     "v14": "2"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "person_first-060",
+    "group": "combine",
+    "kind": "person_first",
+    "question": "out of Jordan Lee's tickets which one is due soonest? gimme the key",
+    "expected": {
+     "ids": [
+      "DES-218476"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 0.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "2026-03-28",
+     "v4": "Upload compatibility matrix CSV and quantization notes",
+     "v8": "DES-218476",
+     "v9": "DES-218476",
+     "v11": "DES-218476",
+     "v12": "DES-218476",
+     "v13": "DES-218476",
+     "v14": "DES-218476"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.0,
+      "24000": 0.0
+     },
+     "v4": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 0.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "pr_issue-status-125",
+    "group": "link",
+    "kind": "pr_issue",
+    "question": "What is the current status of the ticket that PR #274801 is linked to?",
+    "expected": {
+     "value": "In Progress"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 1.0,
+     "v8": 0.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "SEC-88, SUP-7123",
+     "v4": "In Progress",
+     "v8": "Planned",
+     "v9": "In Progress",
+     "v11": "In Progress",
+     "v12": "In Progress",
+     "v13": "In Progress",
+     "v14": "In Progress"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 0.5,
+      "24000": 0.5
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 1.0,
+     "v8": 0.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "ticket_link-assignee-067",
+    "group": "link",
+    "kind": "ticket_link",
+    "question": "Ticket ENG-96111 has a linked ticket, and I need to know who owns it. Who is that other ticket assigned to?",
+    "expected": {
+     "value": "Miguel Rivera"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 0.0,
+     "v8": 1.0,
+     "v9": 0.0,
+     "v11": 0.0,
+     "v12": 0.0,
+     "v13": 0.0,
+     "v14": 0.0
+    },
+    "answers": {
+     "v1": "Riley Kapoor",
+     "v4": "Riley Kapoor",
+     "v8": "Miguel Rivera",
+     "v9": "Riley Kapoor",
+     "v11": "Riley Kapoor",
+     "v12": "Riley Kapoor",
+     "v13": "Riley Kapoor",
+     "v14": "Riley Kapoor"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 0.0,
+     "v8": 1.0,
+     "v9": 0.0,
+     "v11": 0.0,
+     "v12": 0.0,
+     "v13": 0.0,
+     "v14": 0.0
+    }
+   },
+   {
+    "id": "action_owner_issues-089",
+    "group": "combine",
+    "kind": "action_owner_issues",
+    "question": "In the \"Deepshield Security Review - On\u2011Prem/VPC Segmentation & KMS\" meeting, someone picked up the action item \"Share approved egress FQDN/IP allowlist and SIEM endpoint\". Which ticket keys are assigned to that person?",
+    "expected": {
+     "ids": [
+      "ENG-20456",
+      "ENG-631044",
+      "PM-987654"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 0.0,
+     "v8": 0.0,
+     "v9": 0.0,
+     "v11": 0.5,
+     "v12": 0.5,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Daniel Kim",
+     "v4": "Confirm internal audit scope and required retention windows, Produce private deployment diagram with NAT/bastion/egress flow, Share approved egress FQDN/IP allowlist and SIEM endpoint, Upload SOC2/ISO artifacts to shared folder",
+     "v8": "2025-07-09 Prefetch Hitrate Retrospective \u2014 POC Weekly Sync",
+     "v9": "Upload SOC2/ISO artifacts to shared folder",
+     "v11": "ENG-631044",
+     "v12": "ENG-631044",
+     "v13": "ENG-20456, ENG-631044, PM-987654",
+     "v14": "ENG-20456, ENG-631044, PM-987654"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.25,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 0.25,
+      "24000": 0.25
+     },
+     "v8": {
+      "2000": 0.0,
+      "24000": 0.25
+     },
+     "v9": {
+      "2000": 0.25,
+      "24000": 0.5
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 0.0,
+     "v8": 0.0,
+     "v9": 0.0,
+     "v11": 0.0,
+     "v12": 0.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "compare_two-160",
+    "group": "compare",
+    "kind": "compare_two",
+    "question": "ENG-999901 vs PM-44456 - which one's due first?",
+    "expected": {
+     "ids": [
+      "ENG-999901"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "2026-04-15",
+     "v4": "ENG-999901",
+     "v8": "ENG-999901",
+     "v9": "ENG-999901",
+     "v11": "ENG-999901",
+     "v12": "ENG-999901",
+     "v13": "ENG-999901",
+     "v14": "ENG-999901"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "issue_pr_author-author-114",
+    "group": "link",
+    "kind": "issue_pr_author",
+    "question": "who opened the PR that references ENG-17834?",
+    "expected": {
+     "value": "Aisha Patel"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v4": 0.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Aisha Patel",
+     "v4": "#60921",
+     "v8": "Aisha Patel",
+     "v9": "Aisha Patel",
+     "v11": "Aisha Patel",
+     "v12": "Aisha Patel",
+     "v13": "Aisha Patel",
+     "v14": "Aisha Patel"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 0.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "person_count-003",
+    "group": "combine",
+    "kind": "person_count",
+    "question": "how many tickets r assigned to Liam O'Neill? just need the number",
+    "expected": {
+     "value": "2"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Liam O'Neill",
+     "v4": "2",
+     "v8": "2",
+     "v9": "2",
+     "v11": "2",
+     "v12": "2",
+     "v13": "2",
+     "v14": "2"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "person_first-052",
+    "group": "combine",
+    "kind": "person_first",
+    "question": "out of Marco Gutierrez's tickets which one is due soonest? gimme the key",
+    "expected": {
+     "ids": [
+      "ENG-17896"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "2026-03-28",
+     "v4": "ENG-17896",
+     "v8": "ENG-17896",
+     "v9": "ENG-17896",
+     "v11": "ENG-17896",
+     "v12": "ENG-17896",
+     "v13": "ENG-17896",
+     "v14": "ENG-17896"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "pr_issue-due_date-070",
+    "group": "link",
+    "kind": "pr_issue",
+    "question": "When is the ticket linked to pull request #43678 due? I need the deadline date for the status email.",
+    "expected": {
+     "date": "2025-03-01"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v4": 0.0,
+     "v8": 0.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "2025-03-01",
+     "v4": "In Progress",
+     "v8": "In Progress",
+     "v9": "2025-03-01",
+     "v11": "2025-03-01",
+     "v12": "2025-03-01",
+     "v13": "2025-03-01",
+     "v14": "2025-03-01"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 0.0,
+     "v8": 0.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "ticket_link-assignee-098",
+    "group": "link",
+    "kind": "ticket_link",
+    "question": "Who's on the other ticket that ENG-901234 is linked to?",
+    "expected": {
+     "value": "Miguel Ramirez"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "SUP-1289",
+     "v4": "Miguel Ramirez",
+     "v8": "Miguel Ramirez",
+     "v9": "Miguel Ramirez",
+     "v11": "Miguel Ramirez",
+     "v12": "Miguel Ramirez",
+     "v13": "Miguel Ramirez",
+     "v14": "Miguel Ramirez"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "action_owner_issues-084",
+    "group": "combine",
+    "kind": "action_owner_issues",
+    "question": "whoever got \"Send Dedicated sizing options and pricing + contract outline\" in the \"Kestrel Systems - Platform Integration Onramp (Redwood discovery)\" meeting - what ticket keys are assigned to them?",
+    "expected": {
+     "ids": [
+      "ENG-11024",
+      "ENG-250321",
+      "ENG-811090",
+      "ENG-99101"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 0.0,
+     "v8": 0.0,
+     "v9": 0.0,
+     "v11": 0.4,
+     "v12": 0.4,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Luis Ortega",
+     "v4": "2025-07-09 Prefetch Hitrate Retrospective \u2014 POC Weekly Sync, Apollo Health - Adoption, Cost & Reliability Triage (Q4 2027), Asterion Health - Implementation Ignition & Ops Intake, Async CUDA stream hang diagnostics - Amphora Systems deep dive, AtlasText API Onramp: Credits, Hosting Paths & TTFT Clarify, Aurora Stack - StreamBurst Capacity Discovery, Avalon Retail - Renewal & EU Edge Expansion Playbook Discussion, Borealis Biotech - Network Fence & Throughput POC Scoping, BrynnCore renewal + EU private top-up check-in, Crimson Health vendor risk questionnaire triage & evidence roadmap, Developer Onboarding: Toolchain & LLM Integration Lab, Elysian Health - Tenant Fence & Egress Runway POC scoping, Frostline Systems - GPU cloud onramp exploratory, Go-live orchestration preflight & fallbacks sync, Integra Systems - model stack & infra discovery, Kestrel Systems - Platform Integration Onramp (Redwood discovery), MoE cost analysis & rope scaling on private infra \u2014 performance workshop, Model selection & deployment playbook \u2014 Sapphire Concourse, Northwood Guardian - private onramp & egress scenario discussion, POC Weekly \u2014 Latency Horizon Tune-up, POC sync: routing heuristics, kernel upgrade and telemetry deep-dive, Ramp dress rehearsal and rollout checklist review, Reliability & Incident Tolerance Discovery - Polaris HealthTech, Residency evaluation and ops constraints intake with Harvest Capital, Saga Analytics \u2014 reserved nodes, isolation needs & burst strategy intake, Security & Hosting intake - QuarryLane Finance, Tenant governance, Console + API rate controls walkthrough - Nebula Insights, Vela Systems \u2014 model catalog scouting workflow & compatibility decisioning",
+     "v8": "Provide KMS/HSM constraints and SOC 2 audit windows, Share weekly traffic profiles, token volume estimates, and SLOs",
+     "v9": "Send pricing, model matrix, and benchmark spreadsheet",
+     "v11": "ENG-99101",
+     "v12": "ENG-99101",
+     "v13": "ENG-11024, ENG-250321, ENG-811090, ENG-99101",
+     "v14": "ENG-11024, ENG-250321, ENG-811090, ENG-99101"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.2,
+      "24000": 0.2
+     },
+     "v4": {
+      "2000": 0.2,
+      "24000": 0.2
+     },
+     "v8": {
+      "2000": 0.0,
+      "24000": 0.2
+     },
+     "v9": {
+      "2000": 0.2,
+      "24000": 0.4
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 0.0,
+     "v8": 0.0,
+     "v9": 0.0,
+     "v11": 0.0,
+     "v12": 0.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   }
+  ]
+ },
+ "small": {
+  "questions": 50,
+  "by_group": {
+   "link": 21,
+   "combine": 22,
+   "compare": 7
+  },
+  "direct": {
+   "v1": {
+    "link": 0.143,
+    "combine": 0.0,
+    "compare": 0.0,
+    "mean": 0.048
+   },
+   "v4": {
+    "link": 0.524,
+    "combine": 0.682,
+    "compare": 0.714,
+    "mean": 0.64
+   },
+   "v8": {
+    "link": 0.762,
+    "combine": 0.682,
+    "compare": 0.714,
+    "mean": 0.719
+   },
+   "v9": {
+    "link": 0.952,
+    "combine": 0.761,
+    "compare": 1.0,
+    "mean": 0.904
+   },
+   "v11": {
+    "link": 0.952,
+    "combine": 0.815,
+    "compare": 1.0,
+    "mean": 0.922
+   },
+   "v12": {
+    "link": 0.952,
+    "combine": 0.815,
+    "compare": 1.0,
+    "mean": 0.922
+   },
+   "v13": {
+    "link": 0.952,
+    "combine": 1.0,
+    "compare": 1.0,
+    "mean": 0.984
+   },
+   "v14": {
+    "link": 0.952,
+    "combine": 1.0,
+    "compare": 1.0,
+    "mean": 0.984
+   }
+  },
+  "reason": {
+   "v4": {
+    "link": 0.524,
+    "combine": 0.682,
+    "compare": 0.143,
+    "mean": 0.45
+   },
+   "v8": {
+    "link": 0.714,
+    "combine": 0.682,
+    "compare": 0.143,
+    "mean": 0.513
+   },
+   "v9": {
+    "link": 0.952,
+    "combine": 0.636,
+    "compare": 1.0,
+    "mean": 0.863
+   },
+   "v11": {
+    "link": 0.952,
+    "combine": 0.636,
+    "compare": 1.0,
+    "mean": 0.863
+   },
+   "v12": {
+    "link": 0.952,
+    "combine": 0.636,
+    "compare": 1.0,
+    "mean": 0.863
+   },
+   "v13": {
+    "link": 0.952,
+    "combine": 1.0,
+    "compare": 1.0,
+    "mean": 0.984
+   },
+   "v14": {
+    "link": 0.952,
+    "combine": 1.0,
+    "compare": 1.0,
+    "mean": 0.984
+   }
+  },
+  "by_kind": {
+   "action_owner_issues": {
+    "v1": 0.0,
+    "v4": 0.375,
+    "v8": 0.125,
+    "v9": 0.342,
+    "v11": 0.492,
+    "v12": 0.492,
+    "v13": 1.0,
+    "v14": 1.0,
+    "n": 8
+   },
+   "compare_two": {
+    "v1": 0.0,
+    "v4": 0.714,
+    "v8": 0.714,
+    "v9": 1.0,
+    "v11": 1.0,
+    "v12": 1.0,
+    "v13": 1.0,
+    "v14": 1.0,
+    "n": 7
+   },
+   "issue_pr_author": {
+    "v1": 0.429,
+    "v4": 0.286,
+    "v8": 1.0,
+    "v9": 1.0,
+    "v11": 1.0,
+    "v12": 1.0,
+    "v13": 1.0,
+    "v14": 1.0,
+    "n": 7
+   },
+   "person_count": {
+    "v1": 0.0,
+    "v4": 1.0,
+    "v8": 1.0,
+    "v9": 1.0,
+    "v11": 1.0,
+    "v12": 1.0,
+    "v13": 1.0,
+    "v14": 1.0,
+    "n": 7
+   },
+   "person_first": {
+    "v1": 0.0,
+    "v4": 0.714,
+    "v8": 1.0,
+    "v9": 1.0,
+    "v11": 1.0,
+    "v12": 1.0,
+    "v13": 1.0,
+    "v14": 1.0,
+    "n": 7
+   },
+   "pr_issue": {
+    "v1": 0.0,
+    "v4": 0.571,
+    "v8": 0.571,
+    "v9": 1.0,
+    "v11": 1.0,
+    "v12": 1.0,
+    "v13": 1.0,
+    "v14": 1.0,
+    "n": 7
+   },
+   "ticket_link": {
+    "v1": 0.0,
+    "v4": 0.714,
+    "v8": 0.714,
+    "v9": 0.857,
+    "v11": 0.857,
+    "v12": 0.857,
+    "v13": 0.857,
+    "v14": 0.857,
+    "n": 7
+   }
+  },
+  "rows": [
+   {
+    "id": "action_owner_issues-158",
+    "group": "combine",
+    "kind": "action_owner_issues",
+    "question": "whoever got \"prepare stress test harness + short runbook\" in the \"Surge readiness, roadmap alignment, and pilot commitments\" meeting - what ticket keys are assigned to them?",
+    "expected": {
+     "ids": [
+      "DES-172334",
+      "ENG-64200",
+      "PM-9576"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 0.5,
+     "v11": 0.5,
+     "v12": 0.5,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Ethan Cole",
+     "v4": "DES-172334, ENG-64200, PM-9576",
+     "v8": "DES-172334, ENG-64200, PM-9576",
+     "v9": "ENG-64200",
+     "v11": "ENG-64200",
+     "v12": "ENG-64200",
+     "v13": "DES-172334, ENG-64200, PM-9576",
+     "v14": "DES-172334, ENG-64200, PM-9576"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.75,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 0.0,
+     "v11": 0.0,
+     "v12": 0.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "compare_two-159",
+    "group": "compare",
+    "kind": "compare_two",
+    "question": "ENG-100112 vs PM-6289 - which one's due first?",
+    "expected": {
+     "ids": [
+      "ENG-100112"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "2026-03-31",
+     "v4": "ENG-100112",
+     "v8": "ENG-100112",
+     "v9": "ENG-100112",
+     "v11": "ENG-100112",
+     "v12": "ENG-100112",
+     "v13": "ENG-100112",
+     "v14": "ENG-100112"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 0.0,
+     "v8": 0.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "issue_pr_author-author-126",
+    "group": "link",
+    "kind": "issue_pr_author",
+    "question": "who opened the PR that references ENG-8913?",
+    "expected": {
+     "value": "Aisha Patel"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v4": 0.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Aisha Patel",
+     "v4": "#274801",
+     "v8": "Aisha Patel",
+     "v9": "Aisha Patel",
+     "v11": "Aisha Patel",
+     "v12": "Aisha Patel",
+     "v13": "Aisha Patel",
+     "v14": "Aisha Patel"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 0.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "person_count-038",
+    "group": "combine",
+    "kind": "person_count",
+    "question": "How many tickets are currently assigned to Daniel Kim?",
+    "expected": {
+     "value": "3"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Daniel Kim",
+     "v4": "3",
+     "v8": "3",
+     "v9": "3",
+     "v11": "3",
+     "v12": "3",
+     "v13": "3",
+     "v14": "3"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.6666666666666666,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "person_first-037",
+    "group": "combine",
+    "kind": "person_first",
+    "question": "Of all the tickets assigned to Asha Patel, which one is due first? Please give me its ticket key.",
+    "expected": {
+     "ids": [
+      "ENG-220501"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 0.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Ethan Cole",
+     "v4": "Diego Moreno",
+     "v8": "ENG-220501",
+     "v9": "ENG-220501",
+     "v11": "ENG-220501",
+     "v12": "ENG-220501",
+     "v13": "ENG-220501",
+     "v14": "ENG-220501"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.0,
+      "24000": 0.5
+     },
+     "v4": {
+      "2000": 0.5,
+      "24000": 0.75
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 0.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "pr_issue-due_date-127",
+    "group": "link",
+    "kind": "pr_issue",
+    "question": "When is the ticket linked to pull request #193 due? I need the deadline date for the status email.",
+    "expected": {
+     "date": "2025-11-12"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 0.0,
+     "v8": 0.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "2026-03-28",
+     "v4": "Done",
+     "v8": "Done",
+     "v9": "2025-11-12",
+     "v11": "2025-11-12",
+     "v12": "2025-11-12",
+     "v13": "2025-11-12",
+     "v14": "2025-11-12"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 0.0,
+     "v8": 0.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "ticket_link-assignee-080",
+    "group": "link",
+    "kind": "ticket_link",
+    "question": "Ticket PM-602471 has a linked ticket, and I need to know who owns it. Who is that other ticket assigned to?",
+    "expected": {
+     "value": "Mateo Alvarez"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 0.0,
+     "v8": 0.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Tom\u00e1s Rivera",
+     "v4": "Marcus Nguyen",
+     "v8": "Marcus Nguyen",
+     "v9": "Mateo Alvarez",
+     "v11": "Mateo Alvarez",
+     "v12": "Mateo Alvarez",
+     "v13": "Mateo Alvarez",
+     "v14": "Mateo Alvarez"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 0.0,
+     "v8": 0.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "action_owner_issues-110",
+    "group": "combine",
+    "kind": "action_owner_issues",
+    "question": "whoever got \"Prepare renewal pricing with dedicated burst plan and per-region SLAs\" in the \"Avalon Retail - Renewal & EU Edge Expansion Playbook Discussion\" meeting - what ticket keys are assigned to them?",
+    "expected": {
+     "ids": [
+      "ENG-11024",
+      "ENG-250321",
+      "ENG-811090",
+      "ENG-99101"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 1.0,
+     "v8": 0.0,
+     "v9": 0.0,
+     "v11": 0.4,
+     "v12": 0.4,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Rafael Ortega",
+     "v4": "ENG-11024, ENG-250321, ENG-811090, ENG-99101",
+     "v8": "Provide sample request traces and peak RPS spreadsheet, Send compliance checklist and confirm KMS/HSM requirements",
+     "v9": "Share onboarding runbook + security pack link",
+     "v11": "ENG-99101",
+     "v12": "ENG-99101",
+     "v13": "ENG-11024, ENG-250321, ENG-811090, ENG-99101",
+     "v14": "ENG-11024, ENG-250321, ENG-811090, ENG-99101"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.2,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 0.4,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 1.0,
+     "v8": 0.0,
+     "v9": 0.0,
+     "v11": 0.0,
+     "v12": 0.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "compare_two-162",
+    "group": "compare",
+    "kind": "compare_two",
+    "question": "Between tickets PM-96321 and PM-91234, which one has the earlier due date?",
+    "expected": {
+     "ids": [
+      "PM-96321"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "2026-03-20",
+     "v4": "PM-96321",
+     "v8": "PM-96321",
+     "v9": "PM-96321",
+     "v11": "PM-96321",
+     "v12": "PM-96321",
+     "v13": "PM-96321",
+     "v14": "PM-96321"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 0.0,
+     "v8": 0.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "issue_pr_author-author-071",
+    "group": "link",
+    "kind": "issue_pr_author",
+    "question": "Who opened the pull request that references ticket ENG-6310?",
+    "expected": {
+     "value": "Ava Martinez"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Aisha Patel",
+     "v4": "Ava Martinez",
+     "v8": "Ava Martinez",
+     "v9": "Ava Martinez",
+     "v11": "Ava Martinez",
+     "v12": "Ava Martinez",
+     "v13": "Ava Martinez",
+     "v14": "Ava Martinez"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "person_count-045",
+    "group": "combine",
+    "kind": "person_count",
+    "question": "How many tickets are currently assigned to Diego Ruiz?",
+    "expected": {
+     "value": "2"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Diego Ruiz",
+     "v4": "2",
+     "v8": "2",
+     "v9": "2",
+     "v11": "2",
+     "v12": "2",
+     "v13": "2",
+     "v14": "2"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "person_first-006",
+    "group": "combine",
+    "kind": "person_first",
+    "question": "out of Liam Patel's tickets which one is due soonest? gimme the key",
+    "expected": {
+     "ids": [
+      "ENG-7610"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 0.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "2026-03-24",
+     "v4": "Share onboarding runbook + security pack link",
+     "v8": "ENG-7610",
+     "v9": "ENG-7610",
+     "v11": "ENG-7610",
+     "v12": "ENG-7610",
+     "v13": "ENG-7610",
+     "v14": "ENG-7610"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.25,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 0.125,
+      "24000": 0.5
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 0.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "pr_issue-due_date-085",
+    "group": "link",
+    "kind": "pr_issue",
+    "question": "ticket linked to #998823 - when's it due? need the deadline date",
+    "expected": {
+     "date": "2026-03-21"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 0.0,
+     "v8": 0.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "2026-03-28",
+     "v4": "ENG-220501",
+     "v8": "ENG-99101",
+     "v9": "2026-03-21",
+     "v11": "2026-03-21",
+     "v12": "2026-03-21",
+     "v13": "2026-03-21",
+     "v14": "2026-03-21"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 0.0,
+     "v8": 0.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "ticket_link-assignee-090",
+    "group": "link",
+    "kind": "ticket_link",
+    "question": "Ticket ENG-22334 has a linked ticket, and I need to know who owns it. Who is that other ticket assigned to?",
+    "expected": {
+     "value": "Diego Patel"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Diego Martinez",
+     "v4": "Diego Patel",
+     "v8": "Diego Patel",
+     "v9": "Diego Patel",
+     "v11": "Diego Patel",
+     "v12": "Diego Patel",
+     "v13": "Diego Patel",
+     "v14": "Diego Patel"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "action_owner_issues-120",
+    "group": "combine",
+    "kind": "action_owner_issues",
+    "question": "In the \"Aurelia Logistics - implementation ignition & runbook workshop\" meeting, someone picked up the action item \"Provide SAML metadata and KMS requirements\". Which ticket keys are assigned to that person?",
+    "expected": {
+     "ids": [
+      "ENG-121038",
+      "ENG-204999"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 0.0,
+     "v8": 0.0,
+     "v9": 0.667,
+     "v11": 0.667,
+     "v12": 0.667,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Evan Brooks",
+     "v4": "Export recent traffic histogram and latency P95 targets, Finalize pilot success criteria and representative prompt list, Provide SAML metadata and KMS requirements, Provision test endpoint and sample benchmark scripts; send access info, Share onboarding runbook draft and high-level SLA slide",
+     "v8": "Share onboarding runbook draft and high-level SLA slide",
+     "v9": "ENG-204999",
+     "v11": "ENG-204999",
+     "v12": "ENG-204999",
+     "v13": "ENG-121038, ENG-204999",
+     "v14": "ENG-121038, ENG-204999"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 0.3333333333333333,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 0.3333333333333333,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 0.0,
+     "v8": 0.0,
+     "v9": 0.0,
+     "v11": 0.0,
+     "v12": 0.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "compare_two-166",
+    "group": "compare",
+    "kind": "compare_two",
+    "question": "ENG-21845 vs ENG-681290 - which one's due first?",
+    "expected": {
+     "ids": [
+      "ENG-681290"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "2025-03-28",
+     "v4": "ENG-681290",
+     "v8": "ENG-681290",
+     "v9": "ENG-681290",
+     "v11": "ENG-681290",
+     "v12": "ENG-681290",
+     "v13": "ENG-681290",
+     "v14": "ENG-681290"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 0.0,
+     "v8": 0.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "issue_pr_author-author-100",
+    "group": "link",
+    "kind": "issue_pr_author",
+    "question": "who opened the PR that references ENG-7263?",
+    "expected": {
+     "value": "Riley Chen"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 0.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Ava Martinez",
+     "v4": "#224681",
+     "v8": "Riley Chen",
+     "v9": "Riley Chen",
+     "v11": "Riley Chen",
+     "v12": "Riley Chen",
+     "v13": "Riley Chen",
+     "v14": "Riley Chen"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 0.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "person_count-055",
+    "group": "combine",
+    "kind": "person_count",
+    "question": "How many tickets are currently assigned to Marcus Liu?",
+    "expected": {
+     "value": "3"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Marcus Liu",
+     "v4": "3",
+     "v8": "3",
+     "v9": "3",
+     "v11": "3",
+     "v12": "3",
+     "v13": "3",
+     "v14": "3"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.3333333333333333,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "person_first-042",
+    "group": "combine",
+    "kind": "person_first",
+    "question": "Of all the tickets assigned to Diego Ramirez, which one is due first? Please give me its ticket key.",
+    "expected": {
+     "ids": [
+      "ENG-30345"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Ethan Cole",
+     "v4": "ENG-30345",
+     "v8": "ENG-30345",
+     "v9": "ENG-30345",
+     "v11": "ENG-30345",
+     "v12": "ENG-30345",
+     "v13": "ENG-30345",
+     "v14": "ENG-30345"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.6666666666666666,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "pr_issue-assignee-113",
+    "group": "link",
+    "kind": "pr_issue",
+    "question": "who owns the ticket tied to PR #60921? need a name asap",
+    "expected": {
+     "value": "Rafael Ortega"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Aisha Patel",
+     "v4": "Rafael Ortega",
+     "v8": "Rafael Ortega",
+     "v9": "Rafael Ortega",
+     "v11": "Rafael Ortega",
+     "v12": "Rafael Ortega",
+     "v13": "Rafael Ortega",
+     "v14": "Rafael Ortega"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "ticket_link-assignee-130",
+    "group": "link",
+    "kind": "ticket_link",
+    "question": "Who's on the other ticket that ENG-87321 is linked to?",
+    "expected": {
+     "value": "Marco Rodriguez"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "https://confluence.redwood.com/display/DS/Usage+Journeys+Draft, https://figma.redwood.com/file/DesignSystem/Docs-usage-journeys, https://github.com/redwood-inference/design-system/pull/482, https://storybook.redwood.com/?path=/story/components-button--playground",
+     "v4": "Marco Rodriguez",
+     "v8": "Marco Rodriguez",
+     "v9": "Marco Rodriguez",
+     "v11": "Marco Rodriguez",
+     "v12": "Marco Rodriguez",
+     "v13": "Marco Rodriguez",
+     "v14": "Marco Rodriguez"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "action_owner_issues-122",
+    "group": "combine",
+    "kind": "action_owner_issues",
+    "question": "whoever got \"add distributed trace tags for KV miss path and push new logs\" in the \"Verdant Systems POC - weekly performance sync\" meeting - what ticket keys are assigned to them?",
+    "expected": {
+     "ids": [
+      "DES-33177",
+      "ENG-72111",
+      "ENG-75911",
+      "PM-9842"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 1.0,
+     "v8": 0.0,
+     "v9": 0.4,
+     "v11": 0.4,
+     "v12": 0.4,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Luca Moretti",
+     "v4": "DES-33177, ENG-72111, ENG-75911, PM-9842",
+     "v8": "send updated benchmark sheet with per-route p50/p95 and unit-cost calc",
+     "v9": "ENG-72111",
+     "v11": "ENG-72111",
+     "v12": "ENG-72111",
+     "v13": "DES-33177, ENG-72111, ENG-75911, PM-9842",
+     "v14": "DES-33177, ENG-72111, ENG-75911, PM-9842"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.6,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 0.2,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 1.0,
+     "v8": 0.0,
+     "v9": 0.0,
+     "v11": 0.0,
+     "v12": 0.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "compare_two-164",
+    "group": "compare",
+    "kind": "compare_two",
+    "question": "Between tickets ENG-135790 and PM-273412, which one has the earlier due date?",
+    "expected": {
+     "ids": [
+      "ENG-135790"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "2026-04-15",
+     "v4": "ENG-135790",
+     "v8": "ENG-135790",
+     "v9": "ENG-135790",
+     "v11": "ENG-135790",
+     "v12": "ENG-135790",
+     "v13": "ENG-135790",
+     "v14": "ENG-135790"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 0.0,
+     "v8": 0.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "issue_pr_author-author-146",
+    "group": "link",
+    "kind": "issue_pr_author",
+    "question": "Who opened the pull request that references ticket ENG-7392?",
+    "expected": {
+     "value": "Priya Kannan"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Priya Shah",
+     "v4": "Priya Kannan",
+     "v8": "Priya Kannan",
+     "v9": "Priya Kannan",
+     "v11": "Priya Kannan",
+     "v12": "Priya Kannan",
+     "v13": "Priya Kannan",
+     "v14": "Priya Kannan"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "person_count-034",
+    "group": "combine",
+    "kind": "person_count",
+    "question": "How many tickets are currently assigned to Diego Moreno?",
+    "expected": {
+     "value": "2"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Diego Morales",
+     "v4": "2",
+     "v8": "2",
+     "v9": "2",
+     "v11": "2",
+     "v12": "2",
+     "v13": "2",
+     "v14": "2"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "person_first-008",
+    "group": "combine",
+    "kind": "person_first",
+    "question": "out of Sofia Patel's tickets which one is due soonest? gimme the key",
+    "expected": {
+     "ids": [
+      "PM-24111"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "2025-03-14",
+     "v4": "PM-24111",
+     "v8": "PM-24111",
+     "v9": "PM-24111",
+     "v11": "PM-24111",
+     "v12": "PM-24111",
+     "v13": "PM-24111",
+     "v14": "PM-24111"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "pr_issue-status-072",
+    "group": "link",
+    "kind": "pr_issue",
+    "question": "whats the current status on the ticket that PR #90501 is linked to?",
+    "expected": {
+     "value": "In Progress"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Confluence spec: https://confluence.redwood.ai/display/DX/Iteration+Heatmap+Spec, ENG ticket (SDK telemetry): https://linear.app/redwood/issue/ENG-56890, ENG ticket (quickstart instrumentation): https://linear.app/redwood/issue/ENG-57412, GitHub PR (SDK telemetry): https://github.com/redwood-inference/sdk/pull/487, Grafana prototype: https://grafana.redwood.ai/d/abcd1234/dx-iteration-heatmap, Heatmap mockups (Drive): https://drive.google.com/example/heatmap-mockups",
+     "v4": "In Progress",
+     "v8": "In Progress",
+     "v9": "In Progress",
+     "v11": "In Progress",
+     "v12": "In Progress",
+     "v13": "In Progress",
+     "v14": "In Progress"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "ticket_link-assignee-068",
+    "group": "link",
+    "kind": "ticket_link",
+    "question": "Who's on the other ticket that PM-221334 is linked to?",
+    "expected": {
+     "value": "Liam O'Connor"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Confluence spec: https://confluence.redwood.ai/display/DX/Iteration+Heatmap+Spec, ENG ticket (SDK telemetry): https://linear.app/redwood/issue/ENG-56890, ENG ticket (quickstart instrumentation): https://linear.app/redwood/issue/ENG-57412, GitHub PR (SDK telemetry): https://github.com/redwood-inference/sdk/pull/487, Grafana prototype: https://grafana.redwood.ai/d/abcd1234/dx-iteration-heatmap, Heatmap mockups (Drive): https://drive.google.com/example/heatmap-mockups",
+     "v4": "Liam O'Connor",
+     "v8": "Liam O'Connor",
+     "v9": "Liam O'Connor",
+     "v11": "Liam O'Connor",
+     "v12": "Liam O'Connor",
+     "v13": "Liam O'Connor",
+     "v14": "Liam O'Connor"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "action_owner_issues-092",
+    "group": "combine",
+    "kind": "action_owner_issues",
+    "question": "In the \"Asterion Health - Implementation Ignition & Ops Intake\" meeting, someone picked up the action item \"Run initial latency/cost benchmark with Asterion sample prompts\". Which ticket keys are assigned to that person?",
+    "expected": {
+     "ids": [
+      "DES-761849",
+      "ENG-524789",
+      "ENG-7610",
+      "PM-790321"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 0.0,
+     "v8": 0.0,
+     "v9": 0.0,
+     "v11": 0.4,
+     "v12": 0.4,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Liam Patel",
+     "v4": "Confirm SOC2 scope questions and list of required artifacts, Provide VPC details and IP allowlist, Run initial latency/cost benchmark with Asterion sample prompts, Share onboarding runbook + security pack link",
+     "v8": "Prepare renewal pricing with dedicated burst plan and per-region SLAs, Send Dedicated sizing options and pricing + contract outline, Share onboarding runbook + security pack link",
+     "v9": "Share onboarding runbook + security pack link",
+     "v11": "ENG-7610",
+     "v12": "ENG-7610",
+     "v13": "DES-761849, ENG-524789, ENG-7610, PM-790321",
+     "v14": "DES-761849, ENG-524789, ENG-7610, PM-790321"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.6,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 0.2,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 0.4,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 0.6,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 0.0,
+     "v8": 0.0,
+     "v9": 0.0,
+     "v11": 0.0,
+     "v12": 0.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "compare_two-165",
+    "group": "compare",
+    "kind": "compare_two",
+    "question": "Between tickets PM-709314 and PM-143212, which one has the earlier due date?",
+    "expected": {
+     "ids": [
+      "PM-143212"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 0.0,
+     "v8": 0.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "2025-11-18",
+     "v4": "PM-709314",
+     "v8": "PM-709314",
+     "v9": "PM-143212",
+     "v11": "PM-143212",
+     "v12": "PM-143212",
+     "v13": "PM-143212",
+     "v14": "PM-143212"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 0.0,
+     "v8": 0.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "issue_pr_author-author-106",
+    "group": "link",
+    "kind": "issue_pr_author",
+    "question": "who opened the PR that references ENG-14209?",
+    "expected": {
+     "value": "Avery Collins"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 0.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Maya Chen",
+     "v4": "#988221",
+     "v8": "Avery Collins",
+     "v9": "Avery Collins",
+     "v11": "Avery Collins",
+     "v12": "Avery Collins",
+     "v13": "Avery Collins",
+     "v14": "Avery Collins"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 0.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "person_count-043",
+    "group": "combine",
+    "kind": "person_count",
+    "question": "how many tickets r assigned to Marcus Nguyen? just need the number",
+    "expected": {
+     "value": "3"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Marcus Nguyen",
+     "v4": "3",
+     "v8": "3",
+     "v9": "3",
+     "v11": "3",
+     "v12": "3",
+     "v13": "3",
+     "v14": "3"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.3333333333333333,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "person_first-048",
+    "group": "combine",
+    "kind": "person_first",
+    "question": "Of all the tickets assigned to Marco Rivera, which one is due first? Please give me its ticket key.",
+    "expected": {
+     "ids": [
+      "ENG-991234"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Marco Rivera",
+     "v4": "ENG-991234",
+     "v8": "ENG-991234",
+     "v9": "ENG-991234",
+     "v11": "ENG-991234",
+     "v12": "ENG-991234",
+     "v13": "ENG-991234",
+     "v14": "ENG-991234"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.6666666666666666,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "pr_issue-assignee-138",
+    "group": "link",
+    "kind": "pr_issue",
+    "question": "who owns the ticket tied to PR #119842? need a name asap",
+    "expected": {
+     "value": "Liam Ortega"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Aisha Patel",
+     "v4": "Liam Ortega",
+     "v8": "Liam Ortega",
+     "v9": "Liam Ortega",
+     "v11": "Liam Ortega",
+     "v12": "Liam Ortega",
+     "v13": "Liam Ortega",
+     "v14": "Liam Ortega"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "ticket_link-assignee-082",
+    "group": "link",
+    "kind": "ticket_link",
+    "question": "Who's on the other ticket that ENG-52345 is linked to?",
+    "expected": {
+     "value": "Liam O'Connor"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 1.0,
+     "v8": 0.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Confluence spec: https://confluence.redwood.ai/display/DX/Iteration+Heatmap+Spec, ENG ticket (SDK telemetry): https://linear.app/redwood/issue/ENG-56890, ENG ticket (quickstart instrumentation): https://linear.app/redwood/issue/ENG-57412, GitHub PR (SDK telemetry): https://github.com/redwood-inference/sdk/pull/487, Grafana prototype: https://grafana.redwood.ai/d/abcd1234/dx-iteration-heatmap, Heatmap mockups (Drive): https://drive.google.com/example/heatmap-mockups",
+     "v4": "Liam O'Connor",
+     "v8": "pr:sdk#1421",
+     "v9": "Liam O'Connor",
+     "v11": "Liam O'Connor",
+     "v12": "Liam O'Connor",
+     "v13": "Liam O'Connor",
+     "v14": "Liam O'Connor"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 1.0,
+     "v8": 0.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "action_owner_issues-152",
+    "group": "combine",
+    "kind": "action_owner_issues",
+    "question": "In the \"Q3 Inference Health & Roadmap Readout - Marigold Commerce\" meeting, someone picked up the action item \"Schedule 2-hour latency benchmark with Marigold test set; provide runner script and expected metrics\". Which ticket keys are assigned to that person?",
+    "expected": {
+     "ids": [
+      "ENG-273560",
+      "ENG-67203"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 0.0,
+     "v8": 0.0,
+     "v9": 0.667,
+     "v11": 0.667,
+     "v12": 0.667,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Diego Ruiz",
+     "v4": "Provide network topology and egress constraints for VPC pilot, Schedule 2-hour latency benchmark with Marigold test set; provide runner script and expected metrics, Send July-to-Sept usage CSV and cost breakdown, Share 1-2 representative prompt sets for hallucination/regression checks, Share SOC 2 report excerpt and KMS integration note; redacted PII ok",
+     "v8": "Send July-to-Sept usage CSV and cost breakdown",
+     "v9": "ENG-273560",
+     "v11": "ENG-273560",
+     "v12": "ENG-273560",
+     "v13": "ENG-273560, ENG-67203",
+     "v14": "ENG-273560, ENG-67203"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 0.3333333333333333,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 0.0,
+     "v8": 0.0,
+     "v9": 0.0,
+     "v11": 0.0,
+     "v12": 0.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "compare_two-161",
+    "group": "compare",
+    "kind": "compare_two",
+    "question": "Between tickets DES-87321 and DES-218530, which one has the earlier due date?",
+    "expected": {
+     "ids": [
+      "DES-218530"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "2026-03-28",
+     "v4": "DES-218530",
+     "v8": "DES-218530",
+     "v9": "DES-218530",
+     "v11": "DES-218530",
+     "v12": "DES-218530",
+     "v13": "DES-218530",
+     "v14": "DES-218530"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "issue_pr_author-author-097",
+    "group": "link",
+    "kind": "issue_pr_author",
+    "question": "who opened the PR that references ENG-7610?",
+    "expected": {
+     "value": "Maya Chen"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v4": 0.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Maya Chen",
+     "v4": "#421309",
+     "v8": "Maya Chen",
+     "v9": "Maya Chen",
+     "v11": "Maya Chen",
+     "v12": "Maya Chen",
+     "v13": "Maya Chen",
+     "v14": "Maya Chen"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 0.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "person_count-023",
+    "group": "combine",
+    "kind": "person_count",
+    "question": "how many tickets r assigned to Oliver Chen? just need the number",
+    "expected": {
+     "value": "2"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Oliver Chen",
+     "v4": "2",
+     "v8": "2",
+     "v9": "2",
+     "v11": "2",
+     "v12": "2",
+     "v13": "2",
+     "v14": "2"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "person_first-060",
+    "group": "combine",
+    "kind": "person_first",
+    "question": "out of Jordan Lee's tickets which one is due soonest? gimme the key",
+    "expected": {
+     "ids": [
+      "DES-218476"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "2026-03-28",
+     "v4": "DES-218476",
+     "v8": "DES-218476",
+     "v9": "DES-218476",
+     "v11": "DES-218476",
+     "v12": "DES-218476",
+     "v13": "DES-218476",
+     "v14": "DES-218476"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "pr_issue-status-125",
+    "group": "link",
+    "kind": "pr_issue",
+    "question": "What is the current status of the ticket that PR #274801 is linked to?",
+    "expected": {
+     "value": "In Progress"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Confluence spec: https://confluence.redwood.ai/display/DX/Iteration+Heatmap+Spec, ENG ticket (SDK telemetry): https://linear.app/redwood/issue/ENG-56890, ENG ticket (quickstart instrumentation): https://linear.app/redwood/issue/ENG-57412, GitHub PR (SDK telemetry): https://github.com/redwood-inference/sdk/pull/487, Grafana prototype: https://grafana.redwood.ai/d/abcd1234/dx-iteration-heatmap, Heatmap mockups (Drive): https://drive.google.com/example/heatmap-mockups",
+     "v4": "In Progress",
+     "v8": "In Progress",
+     "v9": "In Progress",
+     "v11": "In Progress",
+     "v12": "In Progress",
+     "v13": "In Progress",
+     "v14": "In Progress"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 1.0,
+     "v8": 0.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "ticket_link-assignee-067",
+    "group": "link",
+    "kind": "ticket_link",
+    "question": "Ticket ENG-96111 has a linked ticket, and I need to know who owns it. Who is that other ticket assigned to?",
+    "expected": {
+     "value": "Miguel Rivera"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 0.0,
+     "v8": 1.0,
+     "v9": 0.0,
+     "v11": 0.0,
+     "v12": 0.0,
+     "v13": 0.0,
+     "v14": 0.0
+    },
+    "answers": {
+     "v1": "Riley Kapoor",
+     "v4": "Riley Kapoor",
+     "v8": "Miguel Rivera",
+     "v9": "Riley Kapoor",
+     "v11": "Riley Kapoor",
+     "v12": "Riley Kapoor",
+     "v13": "Riley Kapoor",
+     "v14": "Riley Kapoor"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 0.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 0.5,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 0.0,
+     "v8": 1.0,
+     "v9": 0.0,
+     "v11": 0.0,
+     "v12": 0.0,
+     "v13": 0.0,
+     "v14": 0.0
+    }
+   },
+   {
+    "id": "action_owner_issues-089",
+    "group": "combine",
+    "kind": "action_owner_issues",
+    "question": "In the \"Deepshield Security Review - On\u2011Prem/VPC Segmentation & KMS\" meeting, someone picked up the action item \"Share approved egress FQDN/IP allowlist and SIEM endpoint\". Which ticket keys are assigned to that person?",
+    "expected": {
+     "ids": [
+      "ENG-20456",
+      "ENG-631044",
+      "PM-987654"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 0.0,
+     "v8": 0.0,
+     "v9": 0.5,
+     "v11": 0.5,
+     "v12": 0.5,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Daniel Kim",
+     "v4": "Asterion Health - Implementation Ignition & Ops Intake",
+     "v8": "Asterion Health - Implementation Ignition & Ops Intake",
+     "v9": "ENG-631044",
+     "v11": "ENG-631044",
+     "v12": "ENG-631044",
+     "v13": "ENG-20456, ENG-631044, PM-987654",
+     "v14": "ENG-20456, ENG-631044, PM-987654"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 0.0,
+     "v8": 0.0,
+     "v9": 0.0,
+     "v11": 0.0,
+     "v12": 0.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "compare_two-160",
+    "group": "compare",
+    "kind": "compare_two",
+    "question": "ENG-999901 vs PM-44456 - which one's due first?",
+    "expected": {
+     "ids": [
+      "ENG-999901"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 0.0,
+     "v8": 0.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "2025-03-28",
+     "v4": "PM-44456",
+     "v8": "PM-44456",
+     "v9": "ENG-999901",
+     "v11": "ENG-999901",
+     "v12": "ENG-999901",
+     "v13": "ENG-999901",
+     "v14": "ENG-999901"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 0.0,
+     "v8": 0.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "issue_pr_author-author-114",
+    "group": "link",
+    "kind": "issue_pr_author",
+    "question": "who opened the PR that references ENG-17834?",
+    "expected": {
+     "value": "Aisha Patel"
+    },
+    "direct": {
+     "v1": 1.0,
+     "v4": 0.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Aisha Patel",
+     "v4": "#60921",
+     "v8": "Aisha Patel",
+     "v9": "Aisha Patel",
+     "v11": "Aisha Patel",
+     "v12": "Aisha Patel",
+     "v13": "Aisha Patel",
+     "v14": "Aisha Patel"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 0.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "person_count-003",
+    "group": "combine",
+    "kind": "person_count",
+    "question": "how many tickets r assigned to Liam O'Neill? just need the number",
+    "expected": {
+     "value": "2"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Liam O'Neill",
+     "v4": "2",
+     "v8": "2",
+     "v9": "2",
+     "v11": "2",
+     "v12": "2",
+     "v13": "2",
+     "v14": "2"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "person_first-052",
+    "group": "combine",
+    "kind": "person_first",
+    "question": "out of Marco Gutierrez's tickets which one is due soonest? gimme the key",
+    "expected": {
+     "ids": [
+      "ENG-17896"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "2025-03-01",
+     "v4": "ENG-17896",
+     "v8": "ENG-17896",
+     "v9": "ENG-17896",
+     "v11": "ENG-17896",
+     "v12": "ENG-17896",
+     "v13": "ENG-17896",
+     "v14": "ENG-17896"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "pr_issue-due_date-070",
+    "group": "link",
+    "kind": "pr_issue",
+    "question": "When is the ticket linked to pull request #43678 due? I need the deadline date for the status email.",
+    "expected": {
+     "date": "2025-03-01"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 0.0,
+     "v8": 0.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "2026-03-28",
+     "v4": "In Progress",
+     "v8": "In Progress",
+     "v9": "2025-03-01",
+     "v11": "2025-03-01",
+     "v12": "2025-03-01",
+     "v13": "2025-03-01",
+     "v14": "2025-03-01"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 0.0,
+     "v8": 0.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "ticket_link-assignee-098",
+    "group": "link",
+    "kind": "ticket_link",
+    "question": "Who's on the other ticket that ENG-901234 is linked to?",
+    "expected": {
+     "value": "Miguel Ramirez"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Confluence spec: https://confluence.redwood.ai/display/DX/Iteration+Heatmap+Spec, ENG ticket (SDK telemetry): https://linear.app/redwood/issue/ENG-56890, ENG ticket (quickstart instrumentation): https://linear.app/redwood/issue/ENG-57412, GitHub PR (SDK telemetry): https://github.com/redwood-inference/sdk/pull/487, Grafana prototype: https://grafana.redwood.ai/d/abcd1234/dx-iteration-heatmap, Heatmap mockups (Drive): https://drive.google.com/example/heatmap-mockups",
+     "v4": "Miguel Ramirez",
+     "v8": "Miguel Ramirez",
+     "v9": "Miguel Ramirez",
+     "v11": "Miguel Ramirez",
+     "v12": "Miguel Ramirez",
+     "v13": "Miguel Ramirez",
+     "v14": "Miguel Ramirez"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.5,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 1.0,
+     "v8": 1.0,
+     "v9": 1.0,
+     "v11": 1.0,
+     "v12": 1.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   },
+   {
+    "id": "action_owner_issues-084",
+    "group": "combine",
+    "kind": "action_owner_issues",
+    "question": "whoever got \"Send Dedicated sizing options and pricing + contract outline\" in the \"Kestrel Systems - Platform Integration Onramp (Redwood discovery)\" meeting - what ticket keys are assigned to them?",
+    "expected": {
+     "ids": [
+      "ENG-11024",
+      "ENG-250321",
+      "ENG-811090",
+      "ENG-99101"
+     ],
+     "id_kind": "key"
+    },
+    "direct": {
+     "v1": 0.0,
+     "v4": 0.0,
+     "v8": 0.0,
+     "v9": 0.0,
+     "v11": 0.4,
+     "v12": 0.4,
+     "v13": 1.0,
+     "v14": 1.0
+    },
+    "answers": {
+     "v1": "Rafael Ortega",
+     "v4": "Asterion Health - Implementation Ignition & Ops Intake, Avalon Retail - Renewal & EU Edge Expansion Playbook Discussion, Kestrel Systems - Platform Integration Onramp (Redwood discovery)",
+     "v8": "Asterion Health - Implementation Ignition & Ops Intake, Avalon Retail - Renewal & EU Edge Expansion Playbook Discussion, Kestrel Systems - Platform Integration Onramp (Redwood discovery)",
+     "v9": "Share onboarding runbook + security pack link",
+     "v11": "ENG-99101",
+     "v12": "ENG-99101",
+     "v13": "ENG-11024, ENG-250321, ENG-811090, ENG-99101",
+     "v14": "ENG-11024, ENG-250321, ENG-811090, ENG-99101"
+    },
+    "pieces": {
+     "v1": {
+      "2000": 0.2,
+      "24000": 1.0
+     },
+     "v4": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v8": {
+      "2000": 0.2,
+      "24000": 1.0
+     },
+     "v9": {
+      "2000": 0.4,
+      "24000": 1.0
+     },
+     "v11": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v12": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v13": {
+      "2000": 1.0,
+      "24000": 1.0
+     },
+     "v14": {
+      "2000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "reason": {
+     "v4": 0.0,
+     "v8": 0.0,
+     "v9": 0.0,
+     "v11": 0.0,
+     "v12": 0.0,
+     "v13": 1.0,
+     "v14": 1.0
+    }
+   }
+  ]
+ },
+ "differences_5k_minus_small": {
+  "v1": 0.079,
+  "v4": -0.06,
+  "v8": 0.001,
+  "v9": -0.017,
+  "v11": -0.015,
+  "v12": -0.015,
+  "v13": -0.016,
+  "v14": -0.016
+ },
+ "changed_questions": [
+  {
+   "id": "action_owner_issues-158",
+   "kind": "action_owner_issues",
+   "gold_docs": [
+    "dsid_0c9dbd36bcac4d7b93e7a99057758810",
+    "dsid_40fb369003af4e1ea7cc05f8b8648c63",
+    "dsid_ce27c17d5cc44e85b4a94a2ee03d153a",
+    "dsid_fa55dc5b1fe147d1874a3428c8261862"
+   ],
+   "v4": [
+    1.0,
+    0.0
+   ],
+   "v8": [
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "id": "compare_two-159",
+   "kind": "compare_two",
+   "gold_docs": [
+    "dsid_b648991f484b48c6bf30022701bb4cc7",
+    "dsid_d0e088bb8c304182bb392efc3fe53eac"
+   ],
+   "v4": [
+    1.0,
+    0.0
+   ],
+   "v8": [
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "id": "pr_issue-due_date-127",
+   "kind": "pr_issue",
+   "gold_docs": [
+    "dsid_0d88094bf92a427b96fdd1978f4e7520",
+    "dsid_9809f9977b7a4f37a71a7e411e77e998"
+   ],
+   "v1": [
+    0.0,
+    1.0
+   ],
+   "v9": [
+    1.0,
+    0.0
+   ],
+   "v11": [
+    1.0,
+    0.0
+   ],
+   "v12": [
+    1.0,
+    0.0
+   ],
+   "v13": [
+    1.0,
+    0.0
+   ],
+   "v14": [
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "id": "action_owner_issues-110",
+   "kind": "action_owner_issues",
+   "gold_docs": [
+    "dsid_6cb6efca70844bbeaff542e1b835d0ba",
+    "dsid_9157792da354497bb3ad46956d418255",
+    "dsid_b6a86b9e749641819f67b6cea1d24fac",
+    "dsid_d876842ba75b44e3b1ebca3412d1ee5a",
+    "dsid_fb47b749cfd74f5c9ccfe41d03d3f198"
+   ],
+   "v4": [
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "id": "pr_issue-due_date-085",
+   "kind": "pr_issue",
+   "gold_docs": [
+    "dsid_326fadedd24646a58a73c5fc04fbb62b",
+    "dsid_a1e1e48f04e74468ad076876c1acd4e2"
+   ],
+   "v1": [
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "id": "pr_issue-assignee-113",
+   "kind": "pr_issue",
+   "gold_docs": [
+    "dsid_6fe2b5ea43f149f68f7bcf23fada1b4e",
+    "dsid_91fa633fb4d34df4b20fef8681d0e0d3"
+   ],
+   "v4": [
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "id": "ticket_link-assignee-130",
+   "kind": "ticket_link",
+   "gold_docs": [
+    "dsid_1eb1b1d4894240a2a58bb7e71567f770",
+    "dsid_a1a636f84e634394a375a52edc44a829"
+   ],
+   "v4": [
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "id": "action_owner_issues-122",
+   "kind": "action_owner_issues",
+   "gold_docs": [
+    "dsid_293411cf6090479596a2c3749e0802c6",
+    "dsid_5643398b2c594617b8aaeb8f8ed0fa47",
+    "dsid_91478baf9e8f4c06acac1177408b7805",
+    "dsid_b3057113501245f2935cdf9062c9a7b8",
+    "dsid_b35946c86a9248eda7fd0bdf6baab298"
+   ],
+   "v4": [
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "id": "issue_pr_author-author-146",
+   "kind": "issue_pr_author",
+   "gold_docs": [
+    "dsid_168d217008e443bfae54c373f08eee84",
+    "dsid_d20e25a1a30b43f1beabb99439944366"
+   ],
+   "v1": [
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "id": "person_first-008",
+   "kind": "person_first",
+   "gold_docs": [
+    "dsid_07280fe7aa8f4675bde87cc10c176b4b",
+    "dsid_56c10f386713409bb05932078e49ff2b"
+   ],
+   "v4": [
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "id": "pr_issue-status-072",
+   "kind": "pr_issue",
+   "gold_docs": [
+    "dsid_0a06f24eaa8342979fe1db2e8e658ebe",
+    "dsid_0ecd270eeb6746b088aed63fd5a48591"
+   ],
+   "v8": [
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "id": "action_owner_issues-092",
+   "kind": "action_owner_issues",
+   "gold_docs": [
+    "dsid_066999f8877646dea53dd785a2c94823",
+    "dsid_10477e26bc9849a68d51f65f95d63025",
+    "dsid_184dbed895c6400d820b4b5d229c8147",
+    "dsid_39e51069f7dd46acb5e24042b049b449",
+    "dsid_d2f2580b9b7442a3bd5b677202df513d"
+   ],
+   "v9": [
+    0.0,
+    0.4
+   ]
+  },
+  {
+   "id": "compare_two-165",
+   "kind": "compare_two",
+   "gold_docs": [
+    "dsid_6fb5d62685384472b536cc7fe2043ae8",
+    "dsid_b65ac2fa204a4f4fa57d3c734220fb0d"
+   ],
+   "v4": [
+    0.0,
+    1.0
+   ],
+   "v8": [
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "id": "issue_pr_author-author-106",
+   "kind": "issue_pr_author",
+   "gold_docs": [
+    "dsid_5a68255fc3db4bbfac5263f08c0d4d5b",
+    "dsid_6eb39d6821b040fda4ebbf9c6ab656e1"
+   ],
+   "v1": [
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "id": "person_first-060",
+   "kind": "person_first",
+   "gold_docs": [
+    "dsid_b2313132ce3e4606b85d127445e1b44b",
+    "dsid_bf412975cec040e59fa9cc0a9b926794"
+   ],
+   "v4": [
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "id": "pr_issue-status-125",
+   "kind": "pr_issue",
+   "gold_docs": [
+    "dsid_970c4f1a46b4484e88ee12af8abf0003",
+    "dsid_f6b70f932ecc4333bdea229728dcc66e"
+   ],
+   "v8": [
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "id": "action_owner_issues-089",
+   "kind": "action_owner_issues",
+   "gold_docs": [
+    "dsid_386b212085a94e308a6954cbd9797c7f",
+    "dsid_4964a9feba074a539737a2142ccd38b8",
+    "dsid_7577683d5c074359bc293cbcfc4283cb",
+    "dsid_e755fd37f1d74debacbf8d44e05cb769"
+   ],
+   "v9": [
+    0.5,
+    0.0
+   ]
+  },
+  {
+   "id": "compare_two-160",
+   "kind": "compare_two",
+   "gold_docs": [
+    "dsid_4b8732157403427f8288526b4ac997ae",
+    "dsid_895a84ee27784b009ec4fb436848c8cd"
+   ],
+   "v4": [
+    0.0,
+    1.0
+   ],
+   "v8": [
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "id": "pr_issue-due_date-070",
+   "kind": "pr_issue",
+   "gold_docs": [
+    "dsid_05bdc13996bd41bf9ef55c4ee22adb02",
+    "dsid_e5e57a1f5a3e4f419ca19168ad63dd04"
+   ],
+   "v1": [
+    0.0,
+    1.0
+   ]
+  }
+ ],
+ "time_ms": {
+  "v1": {
+   "5k": {
+    "median": 1312,
+    "p90": 2110,
+    "max": 2469
+   },
+   "small": {
+    "median": 30,
+    "p90": 56,
+    "max": 77
+   }
+  },
+  "v4": {
+   "5k": {
+    "median": 6474,
+    "p90": 14041,
+    "max": 19196
+   },
+   "small": {
+    "median": 343,
+    "p90": 576,
+    "max": 700
+   }
+  },
+  "v8": {
+   "5k": {
+    "median": 6927,
+    "p90": 13972,
+    "max": 18575
+   },
+   "small": {
+    "median": 327,
+    "p90": 562,
+    "max": 685
+   }
+  },
+  "v9": {
+   "5k": {
+    "median": 7294,
+    "p90": 10165,
+    "max": 13996
+   },
+   "small": {
+    "median": 287,
+    "p90": 449,
+    "max": 595
+   }
+  },
+  "v11": {
+   "5k": {
+    "median": 6585,
+    "p90": 10050,
+    "max": 13946
+   },
+   "small": {
+    "median": 306,
+    "p90": 506,
+    "max": 580
+   }
+  },
+  "v12": {
+   "5k": {
+    "median": 6498,
+    "p90": 9259,
+    "max": 10046
+   },
+   "small": {
+    "median": 315,
+    "p90": 520,
+    "max": 553
+   }
+  },
+  "v13": {
+   "5k": {
+    "median": 6563,
+    "p90": 10379,
+    "max": 12782
+   },
+   "small": {
+    "median": 356,
+    "p90": 557,
+    "max": 579
+   }
+  },
+  "v14": {
+   "5k": {
+    "median": 4306,
+    "p90": 5107,
+    "max": 6398
+   },
+   "small": {
+    "median": 224,
+    "p90": 292,
+    "max": 312
+   }
+  }
+ },
+ "builds": {
+  "md5k/factbank": {
+   "seconds": 8.61,
+   "bytes": 95350784,
+   "facts": 97447,
+   "entities": 14100
+  },
+  "md5k/factbank_v2": {
+   "seconds": 14.37,
+   "bytes": 103288832,
+   "facts": 116132,
+   "entities": 14100
+  },
+  "md5ksmall/factbank": {
+   "seconds": 0.92,
+   "bytes": 3387392,
+   "facts": 3765,
+   "entities": 675
+  },
+  "md5ksmall/factbank_v2": {
+   "seconds": 1.11,
+   "bytes": 3772416,
+   "facts": 4571,
+   "entities": 675
+  }
+ },
+ "hashseed_check": {
+  "questions": 50,
+  "different_answers": []
+ },
+ "peak_memory": {
+  "5k": {
+   "max_mb": 468.0,
+   "commands": [
+    {
+     "cmd": "cie.eval.factbank_test build --work /tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/md5k --name factbank",
+     "seconds": 8.7,
+     "peak_mb": 436.2,
+     "exit": 0
+    },
+    {
+     "cmd": "build --work /tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/md5k --name factbank_v2 --text-facts",
+     "seconds": 14.5,
+     "peak_mb": 468.0,
+     "exit": 0
+    },
+    {
+     "cmd": "cie.eval.factbank_test ask --work /tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/md5k --name factbank",
+     "seconds": 71.4,
+     "peak_mb": 76.2,
+     "exit": 0
+    },
+    {
+     "cmd": "--plans /tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/mdtrain/plan_lessons_v11.json --name factbank_v12 --form /tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/plan9/forms/form_md5k.jsonl",
+     "seconds": 346.2,
+     "peak_mb": 188.5,
+     "exit": 0
+    },
+    {
+     "cmd": "--single /tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/fb50/lessons.json --plans /tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/mdtrain/plan_lessons_v13.json --name factbank_v13",
+     "seconds": 359.0,
+     "peak_mb": 188.2,
+     "exit": 0
+    },
+    {
+     "cmd": "--single /tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/fb50/lessons.json --plans /tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/mdtrain/plan_lessons_v11.json --name factbank_v11",
+     "seconds": 360.8,
+     "peak_mb": 188.2,
+     "exit": 0
+    },
+    {
+     "cmd": "--single /tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/fb50/lessons.json --plans /tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/mdtrain/plan_lessons_v9.json --name factbank_v9",
+     "seconds": 375.9,
+     "peak_mb": 188.0,
+     "exit": 0
+    },
+    {
+     "cmd": "--single /tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/fb50/lessons.json --plans /tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/mdtrain/plan_lessons_v4.json --name factbank_v4",
+     "seconds": 396.6,
+     "peak_mb": 180.2,
+     "exit": 0
+    },
+    {
+     "cmd": "--single /tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/fb50/lessons.json --plans /tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/mdtrain/plan_lessons_v8.json --name factbank_v8",
+     "seconds": 398.6,
+     "peak_mb": 187.2,
+     "exit": 0
+    },
+    {
+     "cmd": "--plans /tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/mdtrain/plan_lessons_v13.json --name factbank_v14 --form /tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/plan9/forms/form_md5k.jsonl",
+     "seconds": 219.4,
+     "peak_mb": 188.5,
+     "exit": 0
+    }
+   ]
+  },
+  "small": {
+   "max_mb": 201.7,
+   "commands": [
+    {
+     "cmd": "cie.eval.factbank_test build --work /tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/md5ksmall --name factbank",
+     "seconds": 1.0,
+     "peak_mb": 201.7,
+     "exit": 0
+    },
+    {
+     "cmd": "build --work /tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/md5ksmall --name factbank_v2 --text-facts",
+     "seconds": 1.2,
+     "peak_mb": 201.7,
+     "exit": 0
+    },
+    {
+     "cmd": "cie.eval.factbank_test ask --work /tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/md5ksmall --name factbank",
+     "seconds": 1.9,
+     "peak_mb": 25.4,
+     "exit": 0
+    },
+    {
+     "cmd": "--single /tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/fb50/lessons.json --plans /tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/mdtrain/plan_lessons_v9.json --name factbank_v9",
+     "seconds": 15.7,
+     "peak_mb": 53.1,
+     "exit": 0
+    },
+    {
+     "cmd": "--single /tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/fb50/lessons.json --plans /tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/mdtrain/plan_lessons_v11.json --name factbank_v11",
+     "seconds": 16.9,
+     "peak_mb": 53.4,
+     "exit": 0
+    },
+    {
+     "cmd": "--plans /tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/mdtrain/plan_lessons_v11.json --name factbank_v12 --form /tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/plan9/forms/form_md5k.jsonl",
+     "seconds": 17.6,
+     "peak_mb": 53.2,
+     "exit": 0
+    },
+    {
+     "cmd": "--single /tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/fb50/lessons.json --plans /tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/mdtrain/plan_lessons_v13.json --name factbank_v13",
+     "seconds": 18.3,
+     "peak_mb": 53.2,
+     "exit": 0
+    },
+    {
+     "cmd": "--single /tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/fb50/lessons.json --plans /tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/mdtrain/plan_lessons_v8.json --name factbank_v8",
+     "seconds": 18.5,
+     "peak_mb": 53.2,
+     "exit": 0
+    },
+    {
+     "cmd": "--single /tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/fb50/lessons.json --plans /tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/mdtrain/plan_lessons_v4.json --name factbank_v4",
+     "seconds": 19.2,
+     "peak_mb": 46.5,
+     "exit": 0
+    },
+    {
+     "cmd": "--plans /tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/mdtrain/plan_lessons_v13.json --name factbank_v14 --form /tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/plan9/forms/form_md5k.jsonl",
+     "seconds": 11.5,
+     "peak_mb": 53.2,
+     "exit": 0
+    }
+   ]
+  }
+ },
+ "draw": {
+  "documents": 5000,
+  "targets": {
+   "confluence": 49,
+   "fireflies": 98,
+   "github": 77,
+   "gmail": 1188,
+   "google_drive": 245,
+   "hubspot": 147,
+   "jira": 59,
+   "linear": 341,
+   "slack": 2796
+  },
+  "drawn": {
+   "confluence": 49,
+   "fireflies": 98,
+   "github": 77,
+   "gmail": 1188,
+   "google_drive": 245,
+   "hubspot": 147,
+   "jira": 59,
+   "linear": 341,
+   "slack": 2796
+  },
+  "skipped": {
+   "ticket key already drawn": 3
+  },
+  "planted": [
+   {
+    "pr": "dsid_b9e8d101b52a4a18944858899164d105",
+    "issue": "dsid_eb6e159f026b46cb8460387a860ed2f8"
+   },
+   {
+    "pr": "dsid_0a06f24eaa8342979fe1db2e8e658ebe",
+    "issue": "dsid_0ecd270eeb6746b088aed63fd5a48591"
+   },
+   {
+    "pr": "dsid_326fadedd24646a58a73c5fc04fbb62b",
+    "issue": "dsid_a1e1e48f04e74468ad076876c1acd4e2"
+   },
+   {
+    "pr": "dsid_970c4f1a46b4484e88ee12af8abf0003",
+    "issue": "dsid_f6b70f932ecc4333bdea229728dcc66e"
+   },
+   {
+    "pr": "dsid_49886c96abf240e5b8c30f05e704d1d4",
+    "issue": "dsid_28da5531e139455a85b8bee82c957705"
+   },
+   {
+    "pr": "dsid_d20e25a1a30b43f1beabb99439944366",
+    "issue": "dsid_168d217008e443bfae54c373f08eee84"
+   },
+   {
+    "pr": "dsid_6fe2b5ea43f149f68f7bcf23fada1b4e",
+    "issue": "dsid_91fa633fb4d34df4b20fef8681d0e0d3"
+   },
+   {
+    "pr": "dsid_5a68255fc3db4bbfac5263f08c0d4d5b",
+    "issue": "dsid_6eb39d6821b040fda4ebbf9c6ab656e1"
+   },
+   {
+    "pr": "dsid_45fc655a86cf4bb2bd8e232daed5c8b2",
+    "issue": "dsid_10477e26bc9849a68d51f65f95d63025"
+   },
+   {
+    "pr": "dsid_05bdc13996bd41bf9ef55c4ee22adb02",
+    "issue": "dsid_e5e57a1f5a3e4f419ca19168ad63dd04"
+   }
+  ],
+  "planted_candidates": 56,
+  "remaining": 306471,
+  "excluded": 205487,
+  "readable": 5000,
+  "questions_drawn": {
+   "action_owner_issues": 32,
+   "compare_two": 8,
+   "issue_pr_author": 10,
+   "person_count": 36,
+   "person_first": 30,
+   "pr_issue": 13,
+   "ticket_link": 37
+  },
+  "unclear": {
+   "named": {},
+   "answer": {},
+   "linked": {
+    "ticket_link": 2
+   },
+   "tickets": {
+    "action_owner_issues": 12,
+    "person_count": 9
+   }
+  },
+  "kept": {
+   "action_owner_issues": 20,
+   "compare_two": 8,
+   "issue_pr_author": 10,
+   "person_count": 27,
+   "person_first": 30,
+   "pr_issue": 13,
+   "ticket_link": 35
+  },
+  "picked": {
+   "action_owner_issues": 8,
+   "compare_two": 7,
+   "issue_pr_author": 7,
+   "person_count": 7,
+   "person_first": 7,
+   "pr_issue": 7,
+   "ticket_link": 7
+  },
+  "not_reproduced_in_small_set": 0,
+  "small_set_documents": 105,
+  "unclear_asked": {
+   "action_owner_issues": 12,
+   "person_count": 9,
+   "ticket_link": 2
+  },
+  "jira_documents": 59
+ },
+ "unclear": {
+  "questions": 23,
+  "by_reason": {
+   "tickets": 21,
+   "linked": 2
+  },
+  "scores": {
+   "v1": {
+    "strict": 0.0,
+    "lenient": 0.0
+   },
+   "v4": {
+    "strict": 0.049,
+    "lenient": 0.399
+   },
+   "v8": {
+    "strict": 0.087,
+    "lenient": 0.261
+   },
+   "v9": {
+    "strict": 0.087,
+    "lenient": 0.478
+   },
+   "v11": {
+    "strict": 0.267,
+    "lenient": 0.673
+   },
+   "v12": {
+    "strict": 0.267,
+    "lenient": 0.673
+   },
+   "v13": {
+    "strict": 0.443,
+    "lenient": 0.957
+   },
+   "v14": {
+    "strict": 0.443,
+    "lenient": 0.957
+   }
+  }
+ },
+ "rules": {
+  "1 nothing lost to size (v13 at 5,000 >= v13 on the small bank - 0.05)": true,
+  "2 the level holds (v13 at 5,000 >= 0.92)": true,
+  "3 the planner's lead holds at 5,000 (v9 - v4 >= +0.10 and v9 - v8 >= +0.05)": true,
+  "4 the same with the small model's form (v14 at 5,000 >= v14 on the small bank - 0.05)": true,
+  "5 right for the right reason (v13 at 5,000 >= v13 on the small bank - 0.05)": true
+ }
+}

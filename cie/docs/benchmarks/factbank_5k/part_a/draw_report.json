@@ -1,0 +1,120 @@
+{
+ "documents": 5000,
+ "targets": {
+  "confluence": 49,
+  "fireflies": 98,
+  "github": 77,
+  "gmail": 1188,
+  "google_drive": 245,
+  "hubspot": 147,
+  "jira": 59,
+  "linear": 341,
+  "slack": 2796
+ },
+ "drawn": {
+  "confluence": 49,
+  "fireflies": 98,
+  "github": 77,
+  "gmail": 1188,
+  "google_drive": 245,
+  "hubspot": 147,
+  "jira": 59,
+  "linear": 341,
+  "slack": 2796
+ },
+ "skipped": {
+  "ticket key already drawn": 3
+ },
+ "planted": [
+  {
+   "pr": "dsid_b9e8d101b52a4a18944858899164d105",
+   "issue": "dsid_eb6e159f026b46cb8460387a860ed2f8"
+  },
+  {
+   "pr": "dsid_0a06f24eaa8342979fe1db2e8e658ebe",
+   "issue": "dsid_0ecd270eeb6746b088aed63fd5a48591"
+  },
+  {
+   "pr": "dsid_326fadedd24646a58a73c5fc04fbb62b",
+   "issue": "dsid_a1e1e48f04e74468ad076876c1acd4e2"
+  },
+  {
+   "pr": "dsid_970c4f1a46b4484e88ee12af8abf0003",
+   "issue": "dsid_f6b70f932ecc4333bdea229728dcc66e"
+  },
+  {
+   "pr": "dsid_49886c96abf240e5b8c30f05e704d1d4",
+   "issue": "dsid_28da5531e139455a85b8bee82c957705"
+  },
+  {
+   "pr": "dsid_d20e25a1a30b43f1beabb99439944366",
+   "issue": "dsid_168d217008e443bfae54c373f08eee84"
+  },
+  {
+   "pr": "dsid_6fe2b5ea43f149f68f7bcf23fada1b4e",
+   "issue": "dsid_91fa633fb4d34df4b20fef8681d0e0d3"
+  },
+  {
+   "pr": "dsid_5a68255fc3db4bbfac5263f08c0d4d5b",
+   "issue": "dsid_6eb39d6821b040fda4ebbf9c6ab656e1"
+  },
+  {
+   "pr": "dsid_45fc655a86cf4bb2bd8e232daed5c8b2",
+   "issue": "dsid_10477e26bc9849a68d51f65f95d63025"
+  },
+  {
+   "pr": "dsid_05bdc13996bd41bf9ef55c4ee22adb02",
+   "issue": "dsid_e5e57a1f5a3e4f419ca19168ad63dd04"
+  }
+ ],
+ "planted_candidates": 56,
+ "remaining": 306471,
+ "excluded": 205487,
+ "readable": 5000,
+ "questions_drawn": {
+  "action_owner_issues": 32,
+  "compare_two": 8,
+  "issue_pr_author": 10,
+  "person_count": 36,
+  "person_first": 30,
+  "pr_issue": 13,
+  "ticket_link": 37
+ },
+ "unclear": {
+  "named": {},
+  "answer": {},
+  "linked": {
+   "ticket_link": 2
+  },
+  "tickets": {
+   "action_owner_issues": 12,
+   "person_count": 9
+  }
+ },
+ "kept": {
+  "action_owner_issues": 20,
+  "compare_two": 8,
+  "issue_pr_author": 10,
+  "person_count": 27,
+  "person_first": 30,
+  "pr_issue": 13,
+  "ticket_link": 35
+ },
+ "picked": {
+  "action_owner_issues": 8,
+  "compare_two": 7,
+  "issue_pr_author": 7,
+  "person_count": 7,
+  "person_first": 7,
+  "pr_issue": 7,
+  "ticket_link": 7
+ },
+ "not_reproduced_in_small_set": 0,
+ "small_set_documents": 105,
+ "unclear_asked": {
+  "action_owner_issues": 12,
+  "person_count": 9,
+  "ticket_link": 2
+ },
+ "jira_documents": 59
+}
