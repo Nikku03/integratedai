@@ -114,6 +114,16 @@ It still missed its pre-registered bar on the action items (+0.207 against +0.25
 
 That mistake is the next thing to fix.
 
+**All of them when the question asks for several** ([`docs/FACTBANK_ORDER_RESULTS.md`](docs/FACTBANK_ORDER_RESULTS.md)).
+A new check: when a question asks for several things ("which ticket keys…"), does not ask for one thing, and uses no word
+of order, the bank no longer answers with just the first one due. On 50 new documents and new writers' wordings:
+- it scored 1.000 against v11's 0.958, and all seven pre-registered rules were met;
+- the 8 action items went from 0.667 to 1.000, and nothing else changed.
+
+The sample is small: the gain comes from 6 questions about 5 people. The writers' wordings were also easy for the check,
+so the main evidence that it does no harm is the reviewers' 2,871 harder rewordings, on which no question asking for an
+order changed.
+
 ## Brain-wired reasoning neurons (research)
 
 `cie.neuro` wires the reasoning engine's spiking neurons like a piece of Blue Brain's cortex model (directed cliques of
