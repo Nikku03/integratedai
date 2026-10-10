@@ -211,8 +211,9 @@ for training and development were written by 34 blind sessions in the same ten r
 **Earlier sets, all seen** (the full trained brain against saved answers):
 - **12 multi-document sets of the earlier tests:** v15 matches or beats v13 on 10. It loses one question on each of the other
   two: "the other ticket linked to ENG-…", where the trained planner reads the named ticket itself.
-- **Part B's single-document sets:** the first test's 50 questions at 50 documents 0.910 (v1 0.885); Part B's 50 on their
-  small set 0.828 (v1 0.866), where the router sends 4 of the benchmark's long descriptive questions to prose.
+- **Part B's single-document sets** (group means): the first test's 50 questions at 50 documents 0.910 (v1 0.885); Part B's
+  50 at 5,089 documents 0.837 (v1 0.850) and on their small set 0.828 (v1 0.866). The router sends 3 or 4 of the benchmark's
+  long descriptive questions to prose, where they score 0.
 
 **Measured and dropped along the way:**
 - retraining the planner on the first test's single-document questions alone (it cost three "other linked ticket" questions);
