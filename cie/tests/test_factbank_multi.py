@@ -416,13 +416,15 @@ def test_v13_a_question_asking_for_several_things_gets_no_first_one_due(tmp_path
     tb = _bank(tmp_path)
     v11, v13 = P.Planner(tb, "v9"), P.Planner(tb, "v9")
     v11.tickets = v13.tickets = v13.orders = True
-    several, rank = P.Planner.asks_several, P.Planner.asks_rank
-    assert several("Which tickets are assigned to Omar Singh? Ticket keys please.") and several("Can you list the ticket IDs?")
-    assert several("Who took it? What are their tickets?") and several("What Linear issues does she have?")
-    assert not several("Which of Omar Singh's tickets has the tightest deadline? Key please."), "which of the tickets asks for one"
-    assert not several("Which ticket assigned to Omar Singh is most overdue?") and not several("Of A and B, which is due first?")
-    assert not several('Who took "List the keys" in the meeting?'), "quoted titles are not read"
-    assert rank("Which is due 1st?") and rank("the soonest") and not rank("Need them as soon as you can, before my call.")
+    acts = P.Planner.wants_several
+    assert acts("Which tickets are assigned to Omar Singh? Ticket keys please.") and acts("Can you list the ticket IDs?")
+    assert acts("Who took it? What are their tickets?") and acts("What Linear issues does she have? Need them before my next meeting.")
+    assert acts("Whoever took it, which ticket(s) do they own? key's please") and acts("Send me the key for each one.")
+    assert not acts("Which of Omar Singh's tickets has the tightest deadline? Keys only."), "which of the tickets asks for one"
+    assert not acts("Which tickets does Omar need to get to next? IDs please."), "a word of order"
+    assert not acts("Which Linear ticket assigned to Omar comes due before all the others? Keys only.")
+    assert not acts("Pull up the ticket list for Omar and tell me which one is due next.")
+    assert not acts('Who took "List the keys" in the meeting?'), "quoted titles are not read"
     q = "Which tickets are assigned to Omar Singh? Keys please."
     cands = v11.candidates(q)
     assert any(p.aggregate == "earliest" for p, _ in v11.check(q, cands, "key")), "v11 keeps plans that pick the first one due"

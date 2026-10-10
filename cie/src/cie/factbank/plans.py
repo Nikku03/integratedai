@@ -47,11 +47,18 @@ TICKET_WORD = re.compile(r"\b(?:tickets?|issues?)\b", re.I)
 TICKET_SYSTEMS = frozenset({"linear", "jira"})
 TICKET_KEY = re.compile(r"^[A-Z][A-Z0-9]{1,9}-\d{1,7}$")
 # v13 (docs/FACTBANK_ORDER_PREREGISTRATION.md): a question that asks for several things ("which tickets are assigned to them?
-# ticket keys please", "list the IDs") is not answered with the first or the last one by a date, unless it also asks for a rank
-# ("the soonest", "the first"). The words are read as written, outside quoted titles; plurals are not stemmed away.
-MANY_WORDS = frozenset(("list", "lists", "listing", "enumerate", "itemize", "keys", "ids", "identifiers", "numbers"))
-MANY_ITEMS = frozenset(("tickets", "issues", "ones", "items", "tasks", "bugs", "cards"))
-RANK_WORDS = frozenset(("first", "1st", "earliest", "soonest", "nearest", "closest", "last", "latest", "final", "oldest", "newest"))
+# ticket keys please", "list the IDs") is not answered with the first or the last one by a date, unless it also asks for one
+# thing ("which of", "which one", "which ticket") or uses a word of order ("next", "soonest", "most urgent"). Words are read
+# as written, outside quoted titles; plurals are not stemmed away.
+MANY_WORDS = frozenset(("list", "lists", "listing", "enumerate", "itemize", "keys", "ids", "identifiers", "numbers", "all", "every",
+                        "each"))
+MANY_ITEMS = frozenset(("tickets", "issues", "ones", "items", "tasks", "bugs", "cards", "jiras"))
+ONE_ITEMS = frozenset(("ticket", "issue", "one", "item", "task", "bug", "card", "jira"))
+ORDER_WORDS = frozenset(("first", "1st", "next", "earliest", "earlier", "soonest", "sooner", "nearest", "nearer", "closest", "closer",
+                         "last", "latest", "later", "final", "oldest", "newest", "recent", "urgent", "overdue", "tightest", "pressing",
+                         "top", "asap", "upcoming", "prior", "priority"))
+NOT_ORDER_AFTER = {"next": frozenset(("meeting", "meetings", "call", "calls", "week", "month", "quarter", "sprint", "sync", "standup",
+                                      "review", "time", "step", "steps", "year", "day", "1"))}
 NOT_LINKS = {"from_document"}
 FEATURES = ["bias", "start_named", "start_rank", "two_starts", "path_len", "path_overlap", "path_assoc", "field_overlap", "field_assoc",
             "kind_fits", "kind_conflicts", "combine_assoc", "label_field", "answer_in_question", "fanout"]
@@ -98,7 +105,7 @@ class Planner:
         self.floor = floor  # how close a known word must be to lend its meaning
         self.glossary = None  # v8: cie.factbank.reader.Glossary, everyday phrases written once by a large language model
         self.tickets = False  # v11: "ticket" or "issue" means a Linear or Jira item (TICKET_WORD)
-        self.orders = False  # v13: a question asking for several things gets no first or last by a date (asks_several)
+        self.orders = False  # v13: a question asking for several things gets no first or last by a date (asks_several, check 5)
         self._facts: dict[str, list] = {}
         self._expanded: dict[frozenset, dict[str, float]] = {}
 
@@ -337,10 +344,15 @@ class Planner:
         own = self.own_systems(starts)
         return next((s for s in systems if s not in own), systems[0] if systems else "")
 
+    @classmethod
+    def wants_several(cls, question: str) -> bool:
+        """v13: check 5 acts: the question asks for several things, not for one thing, and uses no word of order."""
+        return cls.asks_several(question) and not cls.asks_one(question) and not cls.asks_order(question)
+
     @staticmethod
     def asks_several(question: str) -> bool:
-        """v13: the question asks for several things: it says "list", asks for "keys" or "IDs", or asks "which tickets", "what
-        Linear issues" or "what are" (not "which of the tickets", which asks for one of them)."""
+        """v13: the question asks for several things: it says "list", "all", "each" or "every", asks for "keys" or "IDs", or asks
+        "which tickets", "what Linear issues" or "what are"."""
         w = raw_words(question)
         if set(w) & MANY_WORDS:
             return True
@@ -354,9 +366,33 @@ class Planner:
         return False
 
     @staticmethod
-    def asks_rank(question: str) -> bool:
-        """v13: the question asks for a rank by time: "the first", "the soonest", "the latest" (``RANK_WORDS``)."""
-        return bool(set(raw_words(question)) & RANK_WORDS)
+    def asks_one(question: str) -> bool:
+        """v13: the question asks for one thing: "which of", "which one", "which ticket", "which Linear issue", "just one", "the
+        top one", "a single"."""
+        w = raw_words(question)
+        for i, x in enumerate(w):
+            n = w[i + 1:i + 4]
+            if x == "which" and n and n[0] in ("of", "one"):
+                return True
+            if x == "which" and n and (n[0] in ONE_ITEMS or len(n) > 1 and n[1] in ONE_ITEMS and n[0] != "of"):
+                k = 0 if n[0] in ONE_ITEMS else 1
+                if k + 1 >= len(n) or n[k + 1] not in MANY_WORDS | MANY_ITEMS:
+                    return True
+            if x in ("just", "only", "top") and n and n[0] == "one" or x == "single":
+                return True
+        return False
+
+    @staticmethod
+    def asks_order(question: str) -> bool:
+        """v13: the question uses a word of order ("next", "soonest", "most urgent", ``ORDER_WORDS``), or "before" or "ahead of"
+        the others, the rest or anything else. "next" before a meeting, a call or a week is not one."""
+        w = raw_words(question)
+        for i, x in enumerate(w):
+            if x in ORDER_WORDS and (i + 1 >= len(w) or w[i + 1] not in NOT_ORDER_AFTER.get(x, ())):
+                return True
+            if x in ("before", "ahead") and set(w[i + 1:i + 4]) & {"others", "other", "rest", "else", "anything", "everything"}:
+                return True
+        return False
 
     def systems_named(self, question: str) -> list[str]:
         """The systems a question names, in the order of ``SYSTEM_WORDS``. With ``tickets`` (v11), "ticket" or "issue" also
@@ -397,8 +433,9 @@ class Planner:
            things: the plan must start from all of them and follow no link.
         4. **The kind of answer:** when the question's kind of answer is known (``asked``: a count, an item's key, a person, a
            date or another value), the plan must give that kind.
-        5. **Several, not the first** (v13): when the question asks for several things and asks for no rank by time, a plan
-           that picks the first or the last by a date is dropped (``asks_several``, ``asks_rank``).
+        5. **Several, not the first** (v13): when the question asks for several things, asks for no single thing and uses no
+           word of order, a plan that picks the first or the last by a date is dropped (``asks_several``, ``asks_one``,
+           ``asks_order``).
         6. **The field** (v10, from the small model's form): a plan answering with one value must read one of ``fields``; a
            plan choosing an item by date must order by one of them."""
         named = {e for e in self.b.named(question) if e in self.b.kinds and not e.startswith("person:")}
@@ -417,7 +454,7 @@ class Planner:
                 return p.field in fields or not any(f.endswith("date") for f in fields)
             return True
 
-        several = self.orders and self.asks_several(question) and not self.asks_rank(question)
+        several = self.orders and self.wants_several(question)
         rules = [lambda p, k: not about or bool(set(p.starts) & about),
                  lambda p, k: other_system(p),
                  lambda p, k: not (len(named) >= 2 and (p.path or set(p.starts) != named)),
@@ -606,8 +643,11 @@ class AskedKind:
 
 
 def raw_words(question: str) -> list[str]:
-    """v13: the question's words as written, lower case, outside quoted titles (straight or curly double quotes)."""
-    return re.findall(r"[a-z0-9]+", re.sub(r'"[^"]*"|\u201c[^\u201d]*\u201d', " ", question).lower())
+    """v13: the question's words as written, lower case, outside quoted titles (straight or curly double quotes). "ticket(s)"
+    reads as "tickets", and "key's" or "ID's" as "keys" or "ids"."""
+    q = re.sub(r'"[^"]*"|\u201c[^\u201d]*\u201d', " ", question).lower()
+    q = re.sub(r"\b(key|id)['\u2019]s\b", r"\1s", re.sub(r"\(s\)", "s", q))
+    return re.findall(r"[a-z0-9]+", q)
 
 
 def question_words(question: str) -> set[str]:

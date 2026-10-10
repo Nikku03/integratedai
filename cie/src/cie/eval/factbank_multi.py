@@ -834,7 +834,7 @@ ROOM = 0.85  # the order test: above this, v11 leaves less than +0.15 for v13 to
 def order_test(test_dir: Path, changed: Path, training: Path, training_all: Path, earlier: list[Path],
                writers: list[Path] | None = None) -> dict[str, Any]:
     """The order test's rules (docs/FACTBANK_ORDER_PREREGISTRATION.md): v13 (v11, where a question asking for several things gets
-    no first or last one by a date) and v14 (v12 with the same) against v11 and v12. Rules 1 and 3 are judged on the action-item
+    no first or last one by a date, ``Planner.wants_several``) and v14 (v12 with the same) against v11 and v12. Rules 1 and 3 are judged on the action-item
     questions; when v11 already scores more than ``ROOM`` there, a gain of +0.15 is impossible and both are not measurable
     (``None``)."""
     from cie.factbank.plans import Planner
@@ -852,19 +852,18 @@ def order_test(test_dir: Path, changed: Path, training: Path, training_all: Path
     is_action = lambda r: r["kind"] == "action_owner_issues"  # noqa: E731
     ordering = lambda r: r["kind"] in ("compare_two", "person_first")  # noqa: E731
     several = lambda r: Planner.asks_several(r["question"])  # noqa: E731
-    rank = lambda r: Planner.asks_rank(r["question"])  # noqa: E731
+    acts = lambda r: Planner.wants_several(r["question"])  # noqa: E731
     m["action_items"] = {"n": sum(map(is_action, rows)), "asking_for_several": sum(1 for r in rows if is_action(r) and several(r)),
-                         "asking_for_several_and_a_rank": sum(1 for r in rows if is_action(r) and several(r) and rank(r))} | {
-        a: share(rows, a, is_action) for a in arms}
+                         "check_acts": sum(1 for r in rows if is_action(r) and acts(r))} | {a: share(rows, a, is_action) for a in arms}
     m["other_questions"] = {"n": sum(1 for r in rows if not is_action(r))} | {a: share(rows, a, lambda r: not is_action(r)) for a in arms}
     worse = lambda new, old: [r["id"] for r in rows if ordering(r) and new in r["direct"] and old in r["direct"]  # noqa: E731
                               and r["direct"][new] < r["direct"][old]]
     m["ordering_questions"] = {"n": sum(map(ordering, rows)),
-                               "asking_for_several_without_a_rank": sum(1 for r in rows if ordering(r) and several(r) and not rank(r)),
+                               "check_acts": sum(1 for r in rows if ordering(r) and acts(r)),
                                "worse_v13_than_v11": worse("v13", "v11"), "worse_v14_than_v12": worse("v14", "v12")} | {
         a: share(rows, a, ordering) for a in arms}
-    m["changed"] = [{"id": r["id"], **{a: r["direct"].get(a) for a in ("v11", "v13", "v12", "v14")}} for r in rows
-                    if r["direct"].get("v13") != r["direct"].get("v11") or r["direct"].get("v14") != r["direct"].get("v12")]
+    m["changed_questions"] = [{"id": r["id"], **{a: r["direct"].get(a) for a in ("v11", "v13", "v12", "v14")}} for r in rows
+                              if r["direct"].get("v13") != r["direct"].get("v11") or r["direct"].get("v14") != r["direct"].get("v12")]
     m["earlier"] = {str(e.name): {a: measure(e)["direct"].get(a, {}).get("mean") for a in ("v11", "v13", "v12", "v14")} for e in earlier}
     early = list(m["earlier"].values())
     mean = lambda a: round(sum(v[a] for v in early) / len(early), 3) if early and all(v.get(a) is not None for v in early) else None  # noqa: E731
@@ -900,7 +899,8 @@ def order_test(test_dir: Path, changed: Path, training: Path, training_all: Path
     }
     rep = {**m, "rules": rules}
     (test_dir / "order_report.json").write_text(json.dumps(rep, indent=1, default=str))
-    extra = {k: m[k] for k in ("action_items", "other_questions", "ordering_questions", "changed", "earlier", "writers", "v14_form")}
+    extra = {k: m[k] for k in ("action_items", "other_questions", "ordering_questions", "changed_questions", "earlier", "writers",
+                               "v14_form")}
     (test_dir / "order_report.md").write_text(to_markdown(rep, "All of them when several are asked for: the test set",
                                                           ("training", "training_all", "held_out", "changed"))
                                               + "\n" + "\n".join(f"- {k}: {json.dumps(v)}" for k, v in extra.items()) + "\n")

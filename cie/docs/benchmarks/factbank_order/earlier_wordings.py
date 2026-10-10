@@ -1,5 +1,5 @@
 """Every earlier wording of an action item and of a question that asks for an order: does v13's check act on it?
-(The action items should be read as asking for several things; the ordering questions never, unless they also ask for a rank.)
+(The check should act on the action items, which ask for several things, and never on the questions that ask for an order.)
 Run from cie/: PYTHONPATH=src .venv/bin/python docs/benchmarks/factbank_order/earlier_wordings.py"""
 import json
 from pathlib import Path
@@ -13,7 +13,7 @@ B = Path(__file__).resolve().parents[1]
 for t in ("general", "llm", "plan", "ticket"):
     for wr in json.loads((B / f"factbank_{t}/writers.json").read_text())["writers"]:
         src += [(f"{t} writer {wr['writer']}", x["key"].split("/")[0], x["wording"]) for x in wr["wordings"]]
-acts = lambda w: Planner.asks_several(w) and not Planner.asks_rank(w)  # noqa: E731
+acts = Planner.wants_several
 action = [(s, w) for s, k, w in src if k == "action_owner_issues"]
 ordering = [(s, w) for s, k, w in src if k in ("person_first", "compare_two")]
 print(f"action items: the check acts on {sum(acts(w) for _, w in action)} of {len(action)}")
