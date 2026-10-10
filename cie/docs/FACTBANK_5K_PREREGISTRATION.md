@@ -1,7 +1,5 @@
 # The fact bank at 5,000 documents, part A: what decides, fixed before the test
 
-> **Draft, under review:** the design is frozen only by the commit that removes this line.
-
 I wrote this on 2026-10-10:
 - **after** probing the frozen system on a 5,000-document set I had seen (below);
 - **before** drawing the test set's 5,000 documents.
@@ -50,7 +48,11 @@ multi-document questions as before, with the bank built from 5,000 documents ins
   number already drawn is not drawn again, so a question naming one has one right answer. A real company does not reuse
   ticket keys.
 - **Ten planted pull requests.** A plain sample holds almost no pull request together with the ticket it links. So ten are
-  drawn first, each linking one Linear issue that no other pull request in the benchmark references.
+  drawn first, each linking one Linear issue that no other pull request left after the exclusions references. The other
+  tickets a planted pull request links stay out of the set.
+  - **Only 56 pairs qualify** in what is left.
+- **Odd keys stay out.** A ticket whose key is not a plain key (such as `ENG-642317-decision-mesh-schema-refactor`) is not
+  drawn.
 
 **Questions** (`factbank_5k.build_sets`, seed 54):
 - **Drawn over all 5,000 documents** by the same generator as every earlier test (`factbank_multi.questions`). Expected answers
@@ -59,12 +61,18 @@ multi-document questions as before, with the bank built from 5,000 documents ins
   - **named:** a key, pull request number or meeting title they name is on more than one document, or the action item they
     name was taken by more than one person in that meeting. The draw makes this rare.
   - **answer:** a ticket key their answer rests on is on more than one document.
+  - **linked:** the bank follows links both ways, so a ticket that links *to* the named ticket, or another ticket the named
+    pull request links, is a second reading. When that ticket's asked field differs from the expected answer, the question
+    has two right answers. This happens far more often at 5,000 documents than at 50.
   - **tickets:** the wordings say "tickets", but the expected answers count Linear issues only. That never mattered at 50
     documents: no person asked about had a Jira ticket. At 5,000 it can. When reading "tickets" as Linear and Jira items gives
-    another answer, the question has two right answers and is set aside. "Which is due first" never changes, because Jira
-    tickets have no due date.
-- **50 questions picked:** the kinds take turns in name order. Within a kind the order is seeded, and questions about something
-  not yet asked about come first.
+    another answer, the question has two right answers and is set aside.
+    - **"Which is due first" is not set aside.** Jira tickets have no `due_date` field, and their SLA and first-response
+      deadlines are not counted as due dates.
+    - **The planner agrees:** every plan for these questions reads `due_date`, which a review checked.
+- **50 questions picked:** the kinds take turns in name order. Within a kind the order is seeded. At each turn the pick
+  prefers a question about documents no question of any kind is about yet, so one person or pull request does not carry
+  many questions.
 
 **The control: the same questions, a small bank.**
 - **The small set** holds only the documents those 50 questions need: the union of their gold documents.
@@ -78,6 +86,13 @@ They are scored two ways:
 - **lenient:** right under either reading of "tickets".
 
 The draw saves only counts. It prints nothing of the questions.
+
+## How it runs
+
+The script is `docs/benchmarks/factbank_5k/run_5k.sh`.
+- **It checks first that the small model is running.**
+- **It makes the forms before any timed run.**
+- **It waits for an idle machine** before the arms run.
 
 ## Arms
 
@@ -96,8 +111,11 @@ As before:
 ## Rules
 
 1. **Nothing lost to size:** v13 on the 5,000-document bank ≥ v13 on the small bank − 0.05.
-2. **The level holds:** v13 on the 5,000-document bank ≥ 0.92. That is within 0.05 of v13's mean on the eight earlier
-   held-out sets, 0.969.
+2. **The level holds:** v13 on the 5,000-document bank ≥ 0.92. That is within 0.05 of v13's mean on the eight earlier sets
+   (known from development), 0.969.
+   - **Why that reference:** this test's questions are drawn over a new set with another mix of people and kinds, so the
+     reference is v13 across every earlier set.
+   - **For information,** it is also compared with the order test, the same wordings at 50 documents (1.000).
 3. **The planner's lead holds at 5,000:** v9 − v4 ≥ +0.10 and v9 − v8 ≥ +0.05, as in the planner test.
 4. **The same with the small model's form:** v14 on the 5,000-document bank ≥ v14 on the small bank − 0.05. It is expected to
    follow rule 1; it is not a separate confirmation.
@@ -105,17 +123,24 @@ As before:
 
 **What decides:**
 - **It holds at 5,000** if rules 1 and 2 are both met.
+- **Rule 3 not met:** the planner's lead over the old planner does not hold at 5,000. It is reported and does not change
+  "holds".
+- **Rule 5 not met:** it holds, but more right answers come from the wrong plan at 5,000. Each one is diagnosed.
 - **Rule 1 met, rule 2 not met:** size costs nothing, but this set is harder for another reason. Diagnosed question by
   question.
 - **Rule 1 not met:** size costs accuracy. Every question that got worse is diagnosed.
 
 **How to read differences:** one link or combine question moves the mean by about 0.015–0.02, and one compare question by
 about 0.04.
+- **Questions about one person or one pull request fail together.** A person asked about in three combine questions is worth
+  about 0.05 of the mean, and a planted pair asked about twice about 0.03.
+- **So the changed questions are reported grouped by the documents they are about.**
 
 **Also reported:**
 - every arm on both banks, by group and by kind;
 - every question whose score differs between the banks;
 - time per question for each arm on both banks (median, 90th percentile, maximum), the build times, storage and peak memory;
+  - the small model's forms are made once before any timed run, so v12's and v14's times on both banks come from the cache;
 - the draw's counts: documents by source, duplicates skipped, planted pull requests, questions drawn, set aside (by reason and
   kind), kept and picked;
 - the set-aside questions, strict and lenient;
@@ -138,7 +163,11 @@ size. Part B tests search.
   ticket);
 - many more paths for the planner to choose from.
 
-## Development (on a set I had seen)
+## Development (on a set I had seen, and review probes)
+
+**The reviews drew from what is left, with other seeds** (997, 7, 101, 202, 303). They used those draws to count questions and
+to check the filters, and ran v13 and v4 on a few of their questions. So about 4 or 5 of the 10 planted pairs the test draws may
+already have been looked at in review, though not by me.
 
 **The probes** (`docs/benchmarks/factbank_5k/understand.json`) used `mt5k`, the 5,089-document haystack the training documents
 came from. So their scores are optimistic and are not results.
@@ -179,6 +208,29 @@ the score. Its numbers are in `docs/benchmarks/factbank_5k/dry_run.json`. They c
 - **The 2 to 4 window:** a person is asked about only if they have 2 to 4 Linear issues in the set, as before. The busiest
   people are never asked about.
 - **The time per question** was measured on a shared 4-core machine, with several arms running at once.
+
+## The review before freezing
+
+Three reviewers checked the code, the run and the protocol, and a fourth tried to refute each finding
+(`docs/benchmarks/factbank_5k/prefreeze_review_a.json`). What held up, and what was done:
+
+1. **Second readings through links were missed.** The bank follows links both ways, so a ticket linking *to* the named ticket
+   is a second answer. The review found 0 or 1 such picked question per draw. **Fixed:** the "linked" reason.
+2. **Odd keys** could make an expected answer unscoreable, or stop the draw. **Fixed:** they are not drawn, and the compare check
+   is guarded.
+3. **v12's time on the 5,000-document bank included the small model's calls,** and peak memory was not reported. **Fixed:** the
+   forms are made before any timed run, and peak memory is reported.
+4. **One person could carry several questions across kinds.** **Fixed:** the pick prefers new documents across kinds, and the
+   changes are reported grouped by document.
+5. **Rules 3 and 5 had no stated consequence.** **Fixed** above.
+6. **The script did not check that the small model was running,** and would stop if no question was set aside. **Fixed.**
+7. **Wording:**
+   - Jira due dates;
+   - the planted pairs' pool;
+   - "held-out" for sets known from development;
+   - the reference for rule 2.
+
+   **Fixed.**
 
 ## Frozen
 

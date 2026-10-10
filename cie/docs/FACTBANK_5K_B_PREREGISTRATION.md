@@ -1,7 +1,5 @@
 # The fact bank at 5,000 documents, part B: the fact bank against the memory bank, fixed before the test
 
-> **Draft, under review:** the design is frozen only by the commit that removes this line.
-
 I wrote this on 2026-10-10, before collecting any evidence on the 5,089-document haystack. The results go in
 `docs/FACTBANK_5K_RESULTS.md`, with part A's (`docs/FACTBANK_5K_PREREGISTRATION.md`).
 

@@ -13,6 +13,11 @@ A="--single $S/fb50/lessons.json"
 P=$S/mdtrain
 EXCL="$S/mt5k $S/mt50 $S/fb50 $S/fbtest $S/mdtrain $S/mdtest $S/mdfresh $S/mdwords $S/mdblind $S/mdllm $S/mdplan $S/mdrep $S/mdtick $S/mdord $S/lexsample"
 H=${HAYSTACK:+--haystack $HAYSTACK}
+# v12 and v14 need the small model (llama3.2:3b, manifest a80c4f17) for the new questions' forms
+curl -sf -m 5 127.0.0.1:11434/api/tags | grep -q a80c4f17 || { echo "start ollama with llama3.2:3b first"; exit 1; }
+idle() {  # wait (at most 20 minutes) until nothing else is using the CPUs
+  for i in $(seq 40); do [ "$(cut -d. -f1 /proc/loadavg)" -lt 2 ] && return 0; sleep 30; done
+}
 # the set, its questions, the small set and the set-aside questions (drawn only after the pre-registration is committed)
 .venv/bin/python -m cie.eval.factbank_5k draw --index $S/mt5k/index.json --root $S/EnterpriseRAG-Bench --exclude $EXCL $H \
   --big $BIG --small $SMALL --unclear $X --wordings docs/benchmarks/factbank_order/wordings.json --seed 53 --qseed 54
@@ -24,16 +29,21 @@ for W in $BIG $SMALL; do
 done
 for f in factbank.sqlite factbank_v2.sqlite factbank_build.json factbank_v2_build.json; do ln -sf $BIG/$f $X/$f; done
 echo "banks built $(date +%T)"
+# the small model's forms, made once before any timed run, so that v12's and v14's time is read from the cache on both banks
+.venv/bin/python -m cie.eval.factbank_5k forms --big $BIG --cache $S/plan9/forms/form_$PX.jsonl > /dev/null
+[ -s $X/questions.jsonl ] && .venv/bin/python -m cie.eval.factbank_5k forms --big $X --cache $S/plan9/forms/form_${PX}x.jsonl > /dev/null
+idle
 # every arm on each folder; asking never writes to a bank, so the arms run side by side. v12 then v14 share one form cache
 # per question set (the small set asks the same questions as the 5,000).
 for W in $BIG $SMALL $X; do
+  [ -s $W/questions.jsonl ] || { echo "no questions in $W"; continue; }
   FORM=$S/plan9/forms/form_$( [ $W = $X ] && echo ${PX}x || echo $PX ).jsonl
   .venv/bin/python $B/peak.py $W/peak.jsonl -- .venv/bin/python -m cie.eval.factbank_test ask --work $W --name factbank > /dev/null &
   for V in 4 8 9 11 13; do
     .venv/bin/python $B/peak.py $W/peak.jsonl -- .venv/bin/python -m cie.eval.factbank_multi ask --work $W $A --plans $P/plan_lessons_v$V.json --name factbank_v$V > /dev/null &
   done
-  ( .venv/bin/python -m cie.eval.factbank_multi ask --work $W $A --plans $P/plan_lessons_v11.json --name factbank_v12 --form $FORM > /dev/null
-    .venv/bin/python -m cie.eval.factbank_multi ask --work $W $A --plans $P/plan_lessons_v13.json --name factbank_v14 --form $FORM > /dev/null ) &
+  ( .venv/bin/python $B/peak.py $W/peak.jsonl -- .venv/bin/python -m cie.eval.factbank_multi ask --work $W $A --plans $P/plan_lessons_v11.json --name factbank_v12 --form $FORM > /dev/null
+    .venv/bin/python $B/peak.py $W/peak.jsonl -- .venv/bin/python -m cie.eval.factbank_multi ask --work $W $A --plans $P/plan_lessons_v13.json --name factbank_v14 --form $FORM > /dev/null ) &
   wait
   for f in factbank factbank_v4 factbank_v8 factbank_v9 factbank_v11 factbank_v12 factbank_v13 factbank_v14; do
     test -s $W/$f.jsonl || { echo "missing $f in $W"; exit 1; }

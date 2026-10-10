@@ -42,6 +42,11 @@ def test_the_draw_keeps_one_document_per_key_and_number_and_plants_pull_requests
     ids2, info2 = F.draw({d["dsid"]: f"{d['source']}/{d['dsid']}.json" for d in docs2}, set(), lambda xs: [by2[x] for x in xs if x in by2],
                          n=4, seed=1, planted=1)
     assert info2["planted"] == [{"pr": "g5", "issue": "l3"}] and {"g5", "l3"} <= set(ids2)
+    odd = docs2 + [_lin("l9", "ENG-642317-DECISION-REFACTOR", "Ava Lee", "2026-02-01")]
+    by3 = {d["dsid"]: d for d in odd}
+    ids3, info3 = F.draw({d["dsid"]: f"{d['source']}/{d['dsid']}.json" for d in odd}, set(), lambda xs: [by3[x] for x in xs if x in by3],
+                         n=6, seed=1, planted=1)
+    assert "l9" not in ids3 and info3["skipped"].get("key not a plain ticket key") == 1
 
 
 def test_questions_with_more_than_one_right_answer_are_set_aside():
@@ -61,6 +66,13 @@ def test_questions_with_more_than_one_right_answer_are_set_aside():
             "expected": {"value": "Todo"}, "gold_docs": ["l3", "l4"], "pieces": ["ENG-14", "Todo"]}
     assert F.why_unclear(link, dup) == "named"
     assert F.why_unclear({**liam, "pieces": ["ENG-13", "ENG-14"]}, dup) == "answer"
+    link13 = {**link, "question": "ENG-13 is linked to another ticket - what status is it in?", "expected": {"value": "Todo"},
+              "field": "status", "pieces": ["ENG-14", "Todo"]}
+    back = inside + [{**_lin("l6", "ENG-16", "Ava Lee", "2026-07-01", dependencies=["ENG-13"]), "raw": {
+        "key": "ENG-16", "assignee": "Ava Lee", "status": "Done", "dependencies": ["ENG-13"]}}]
+    assert F.why_unclear(link13, back) == "linked", "a ticket linking to ENG-13 is a second reading, with another status"
+    same = inside + [{"dsid": "l7", "source": "linear", "title": "x", "raw": {"key": "ENG-17", "status": "Todo", "dependencies": ["ENG-13"]}}]
+    assert F.why_unclear(link13, same) is None, "a second reading with the same answer changes nothing"
 
 
 def test_the_selection_takes_turns_and_prefers_new_things():
@@ -69,6 +81,10 @@ def test_the_selection_takes_turns_and_prefers_new_things():
     qs += [{"id": f"b-{i:03d}", "kind": "b", "gold_docs": [f"l{i}"]} for i in range(2)]
     got = F.pick(qs, inside, n=6, seed=3)
     assert [q["kind"] for q in got][:4] == ["a", "b", "a", "b"], "the kinds take turns"
+    cross = [{"id": "a-001", "kind": "a", "gold_docs": ["l1"]}, {"id": "a-002", "kind": "a", "gold_docs": ["l2"]},
+             {"id": "b-001", "kind": "b", "gold_docs": ["l1"]}, {"id": "b-002", "kind": "b", "gold_docs": ["l3"]}]
+    first_two = F.pick(cross, inside, n=2, seed=0)
+    assert not set(first_two[0]["gold_docs"]) & set(first_two[1]["gold_docs"]), "a turn prefers documents no other kind asked about"
     a = [q for q in got if q["kind"] == "a"]
     assert len({json.dumps(q["gold_docs"]) for q in a[:3]}) == 3, "questions about something new come first"
     assert F.pick(qs, inside, n=6, seed=3) == got, "seeded"

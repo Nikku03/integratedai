@@ -99,7 +99,7 @@ def draw(index: dict[str, str], exclude: set[str], load, n: int = N_BIG, seed: i
         if d["source"] != "github" or not p.isdigit() or len(p) < 3 or pr_count[p] != 1:
             continue
         ks = list(dict.fromkeys(k for k in _keys(d["raw"].get("linked_linear")) if k in lin_by_key))
-        if len(ks) == 1 and key_count[ks[0]] == 1 and refs[ks[0]] == {d["dsid"]}:
+        if len(ks) == 1 and KEY.fullmatch(ks[0]) and key_count[ks[0]] == 1 and refs[ks[0]] == {d["dsid"]}:
             cands.append((d["dsid"], lin_by_key[ks[0]]["dsid"]))
     rng.shuffle(cands)
     plant = cands[:planted]
@@ -120,6 +120,8 @@ def draw(index: dict[str, str], exclude: set[str], load, n: int = N_BIG, seed: i
     for pr, issue in plant:
         add(pr)
         add(issue)
+    # the other tickets a planted pull request links (Jira, say) stay out, so that "the ticket linked to PR #n" has one answer
+    planted_links = {k for pr, issue in plant for k in _refs(linked[pr]) if k != _key(linked[issue])}
     src_of = {x: s for s, v in by_src.items() for x in v}
     have = Counter(src_of[x] for x in chosen)
     taken = set(chosen)
@@ -134,7 +136,13 @@ def draw(index: dict[str, str], exclude: set[str], load, n: int = N_BIG, seed: i
                 if d is None:
                     skipped["unreadable"] += 1
                     continue
-                if (k := _key(d)) and k in keys:
+                if (k := _key(d)) and not KEY.fullmatch(k):
+                    skipped["key not a plain ticket key"] += 1
+                    continue
+                if k and k in planted_links:
+                    skipped["ticket linked by a planted pull request"] += 1
+                    continue
+                if k and k in keys:
                     skipped["ticket key already drawn"] += 1
                     continue
                 if (p := _pr(d)) and p in prs:
@@ -187,6 +195,8 @@ def why_unclear(q: dict[str, Any], inside: list[dict[str, Any]]) -> str | None:
     - **named:** a ticket key, pull request number or meeting title it names is on more than one document, or the action item
       it names was taken by more than one person in that meeting;
     - **answer:** a ticket key its answer rests on (``pieces``) is on more than one document;
+    - **linked:** another ticket in the set links to the ticket it names, or the pull request it names links another ticket in
+      the set, and that ticket's asked field differs: the bank follows links both ways, so that ticket is a second reading;
     - **tickets:** read as Linear and Jira items, "tickets" gives another answer (``ticket_reading``)."""
     keys = Counter(k for d in inside if (k := _key(d)))
     prs = Counter(p for d in inside if (p := _pr(d)))
@@ -207,9 +217,49 @@ def why_unclear(q: dict[str, Any], inside: list[dict[str, Any]]) -> str | None:
             return "named"
     if any(keys[k] > 1 for k in KEY.findall(" ".join(map(str, q.get("pieces") or [])))):
         return "answer"
+    if _second_link(q, inside):
+        return "linked"
     if ticket_reading(q, inside) is not None:
         return "tickets"
     return None
+
+
+def _refs(d: dict[str, Any]) -> set[str]:
+    """The ticket keys a document references in the fields the bank follows both ways (``cie.ingest.sources.REF_FIELDS``)."""
+    from cie.ingest.sources import REF_FIELDS
+
+    return set(_keys({f: d["raw"].get(f) for f in REF_FIELDS if d["raw"].get(f)}))
+
+
+def _field_value(d: dict[str, Any], field: str) -> str | None:
+    return _person(d["raw"].get("assignee")) if field == "assignee" else (
+        _iso(d["raw"].get("due_date")) if field == "due_date" else (str(d["raw"].get(field) or "") or None))
+
+
+def _second_link(q: dict[str, Any], inside: list[dict[str, Any]]) -> bool:
+    """A second ticket the bank can reach from what the question names, whose asked field differs from the expected answer:
+    for "the ticket K is linked to", a ticket that links to K; for "the ticket linked to PR #n", another ticket the pull
+    request links."""
+    want = q["expected"].get("value") or q["expected"].get("date")
+    if q["kind"] == "ticket_link":
+        ks = KEY.findall(q["question"])
+        if not ks:
+            return False
+        k, target = ks[0], next((x for x in map(str, q.get("pieces") or []) if KEY.fullmatch(x)), None)
+        return any(_key(d) not in (k, target) and k in _refs(d) and _field_value(d, q["field"]) not in (None, want)
+                   for d in inside if d["source"] in TRACKERS)
+    if q["kind"] == "pr_issue":
+        ns = re.findall(r"#(\d+)", q["question"])
+        prs = [d for d in inside if ns and _pr(d) == ns[0]]
+        if len(prs) != 1:
+            return False
+        target = next((x for x in map(str, q.get("pieces") or []) if KEY.fullmatch(x)), None)
+        linked = {k for k in _refs(prs[0]) if k != target}
+        return any(_key(d) in linked and _field_value(d, q["field"]) not in (None, want) for d in inside if d["source"] in TRACKERS)
+    if q["kind"] == "issue_pr_author":
+        ks = KEY.findall(q["question"])
+        return bool(ks) and sum(1 for d in inside if d["source"] == "github" and ks[0] in _refs(d)) > 1
+    return False
 
 
 def _target(q: dict[str, Any], by_id: dict[str, dict]) -> str:
@@ -220,7 +270,8 @@ def _target(q: dict[str, Any], by_id: dict[str, dict]) -> str:
 
 def pick(qs: list[dict[str, Any]], inside: list[dict[str, Any]], n: int = N_QUESTIONS, seed: int = QSEED) -> list[dict[str, Any]]:
     """``n`` questions, the kinds taking turns in name order. Within a kind, a seeded order, with the questions about something
-    no earlier question of the kind asked about first."""
+    no earlier question of the kind asked about first; at each turn, the first question about documents no chosen question
+    (of any kind) is about, if there is one, so that one person or pull request does not carry many questions."""
     by_id = {d["dsid"]: d for d in inside}
     rng = random.Random(seed)
     by_kind: dict[str, list[dict]] = defaultdict(list)
@@ -236,10 +287,15 @@ def pick(qs: list[dict[str, Any]], inside: list[dict[str, Any]], n: int = N_QUES
             seen.add(t)
         by_kind[k] = first + later
     chosen: list[dict[str, Any]] = []
+    about: set[str] = set()  # the documents (meetings aside) the chosen questions are about, across every kind
+    docs = lambda q: {x for x in q["gold_docs"] if by_id.get(x, {}).get("source") != "fireflies"}  # noqa: E731
     while len(chosen) < n and any(by_kind.values()):
         for k in sorted(by_kind):
             if by_kind[k] and len(chosen) < n:
-                chosen.append(by_kind[k].pop(0))
+                i = next((j for j, q in enumerate(by_kind[k]) if not docs(q) & about), 0)
+                q = by_kind[k].pop(i)
+                chosen.append(q)
+                about |= docs(q)
     return chosen
 
 
@@ -260,8 +316,9 @@ def not_reproduced(docs: list[dict[str, Any]], small: set[str], qs: list[dict[st
     bad = []
     for q in qs:
         if q["kind"] == "compare_two":
-            a, b = KEY.findall(q["question"])[:2]
-            ok = due.get(a) and due.get(b) and due[a] != due[b] and q["expected"]["ids"] == [a if due[a] < due[b] else b]
+            ks = KEY.findall(q["question"])[:2]
+            a, b = (ks + [None, None])[:2]
+            ok = bool(a and b and due.get(a) and due.get(b) and due[a] != due[b] and q["expected"]["ids"] == [a if due[a] < due[b] else b])
         else:
             ok = q["expected"] in regen.get(q["question"], [])
         if not ok:
@@ -318,11 +375,29 @@ def build_sets(index_path: Path, root: Path, exclude_dirs: list[Path], big: Path
     _write_set(unclear, root, ids, aside_picked, index_path, seed)
     count = lambda qs: dict(sorted(Counter(q["kind"] for q in qs).items()))  # noqa: E731
     rep = {**info, "readable": len(docs), "questions_drawn": count(drawn),
-           "unclear": {why: count([q for q in aside if q["unclear"] == why]) for why in ("named", "answer", "tickets")},
+           "unclear": {why: count([q for q in aside if q["unclear"] == why]) for why in ("named", "answer", "linked", "tickets")},
            "kept": count(kept), "picked": count(picked), "not_reproduced_in_small_set": len(bad), "small_set_documents": len(sm),
            "unclear_asked": count(aside_picked), "jira_documents": sum(1 for d in docs if d["source"] == "jira")}
     (big / "draw_report.json").write_text(json.dumps(rep, indent=1))
     return rep
+
+
+def fill_forms(work: Path, cache: Path) -> dict[str, Any]:
+    """The small model's form for every question, made once before any timed run, so that v12's and v14's time on either bank
+    is read from the cache alike."""
+    from cie.factbank.reader import Former
+
+    f = Former(cache)
+    qs = _jsonl(work / "questions.jsonl")
+    for q in qs:
+        f.form(q["question"])
+    return {"questions": len(qs), "cache": str(cache)}
+
+
+def _peak(work: Path) -> dict[str, Any] | None:
+    p = work / "peak.jsonl"
+    rows = _jsonl(p) if p.exists() else []
+    return {"max_mb": max(r["peak_mb"] for r in rows), "commands": rows} if rows else None
 
 
 def _ms(work: Path, name: str) -> dict[str, float] | None:
@@ -367,7 +442,8 @@ def scale_test(big: Path, small: Path, unclear: Path | None = None) -> dict[str,
             at_least(d(mean(mb, "v13", "reason"), mean(ms_, "v13", "reason")), LOSS),
     }
     small_rows = {r["id"]: r for r in ms_["rows"]}
-    changed = [{"id": r["id"], "kind": r["kind"], **{a: [small_rows[r["id"]]["direct"].get(a), r["direct"].get(a)] for a in ARMS
+    gold = {q["id"]: q.get("gold_docs") for q in _jsonl(big / "questions.jsonl")}  # to group changes by person or pull request
+    changed = [{"id": r["id"], "kind": r["kind"], "gold_docs": gold.get(r["id"]), **{a: [small_rows[r["id"]]["direct"].get(a), r["direct"].get(a)] for a in ARMS
                                                      if r["direct"].get(a) != small_rows[r["id"]]["direct"].get(a)}}
                for r in mb["rows"] if any(r["direct"].get(a) != small_rows[r["id"]]["direct"].get(a) for a in ARMS)]
     builds = {}
@@ -388,7 +464,7 @@ def scale_test(big: Path, small: Path, unclear: Path | None = None) -> dict[str,
            "differences_5k_minus_small": {a: d(mean(mb, a), mean(ms_, a)) for a in ARMS},
            "changed_questions": changed,
            "time_ms": {a: {"5k": _ms(big, n), "small": _ms(small, n)} for a, n in FILES.items()},
-           "builds": builds, "hashseed_check": hashseed,
+           "builds": builds, "hashseed_check": hashseed, "peak_memory": {"5k": _peak(big), "small": _peak(small)},
            "draw": json.loads((big / "draw_report.json").read_text()) if (big / "draw_report.json").exists() else None,
            "unclear": _lenient(unclear) if unclear is not None and (unclear / "questions.jsonl").exists() else None,
            "rules": rules}
@@ -421,19 +497,22 @@ def to_markdown(rep: dict[str, Any]) -> str:
 
 def main(argv: list[str] | None = None) -> Any:
     ap = argparse.ArgumentParser(prog="python -m cie.eval.factbank_5k")
-    ap.add_argument("cmd", choices=["draw", "score"])
+    ap.add_argument("cmd", choices=["draw", "forms", "score"])
     ap.add_argument("--index")
     ap.add_argument("--root")
     ap.add_argument("--exclude", nargs="*", default=[])
     ap.add_argument("--haystack", default=None, help="draw: take this folder's documents instead of drawing (a dry run on a seen set)")
     ap.add_argument("--big", required=True)
-    ap.add_argument("--small", required=True)
+    ap.add_argument("--small", default=None)
+    ap.add_argument("--cache", default=None, help="forms: the form cache to fill")
     ap.add_argument("--unclear", default=None)
     ap.add_argument("--wordings", default=None)
     ap.add_argument("--seed", type=int, default=SEED)
     ap.add_argument("--qseed", type=int, default=QSEED)
     a = ap.parse_args(argv)
-    if a.cmd == "draw":
+    if a.cmd == "forms":
+        rep = fill_forms(Path(a.big), Path(a.cache))
+    elif a.cmd == "draw":
         rep = build_sets(Path(a.index), Path(a.root), [Path(x) for x in a.exclude], Path(a.big), Path(a.small), Path(a.unclear),
                          Path(a.wordings), a.seed, a.qseed, Path(a.haystack) if a.haystack else None)
     else:
