@@ -1,0 +1,12 @@
+{"action_owner_issues/": [
+ "Whoever picked up \"{t}\" in \"{m}\", which tickets do they have? Send me the ID's.",
+ "Whoever picked up \"{t}\" in \"{m}\", which tickets do they have?",
+ "Whoever picked up \"{t}\" in \"{m}\", what tickets do they have?",
+ "Whoever picked up \"{t}\" in \"{m}\", what are they working on in the tracker?",
+ "Whoever picked up \"{t}\" in \"{m}\" - which tickets are theirs?",
+ "Whoever picked up \"{t}\" in \"{m}\", what tickets is that person on? IDs please.",
+ "Whoever picked up \"{t}\" in \"{m}\", list their tickets.",
+ "Whoever owns \"{t}\" from \"{m}\": which issues are open on them?",
+ "Who took \"{t}\" in \"{m}\", and which tickets do they own?",
+ "Whoever picked up \"{t}\" in \"{m}\", what items are on their plate?"
+]}

@@ -1,0 +1,2 @@
+{"person_first/": ["which tickets due next for {p}? key pls", "{p} - which ticket is due next? ID's please", "Of {p}'s tickets, which comes due next? Ticket #'s please"],
+ "action_owner_issues/": ["Whoever picked up \"{t}\" in \"{m}\", which tickets do they have? Send me the ID's.", "Whoever got \"{t}\" in \"{m}\" - what's assigned to them? key's please", "Whoever picked up “{t}” in the “{m}” meeting, which tickets are assigned to them? Ticket keys please."]}

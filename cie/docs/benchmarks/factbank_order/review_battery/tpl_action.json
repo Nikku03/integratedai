@@ -1,0 +1,15 @@
+{"action_owner_issues/": [
+ "Whoever picked up \"{t}\" in the \"{m}\" meeting, which ticket(s) do they own?",
+ "Whoever picked up \"{t}\" in \"{m}\", which of their tickets are still open?",
+ "Whoever took \"{t}\" from \"{m}\", what's assigned to them? Ticket key for each one, please.",
+ "Whoever owns \"{t}\" from the \"{m}\" meeting, can you pull up all of their tickets?",
+ "Whoever got \"{t}\" in the \"{m}\" meeting: which JIRAs do they own?",
+ "Whoever picked up \"{t}\" in \"{m}\", what's on their plate? I need every ticket key.",
+ "Whoever picked up \"{t}\" in \"{m}\", what're their tickets?",
+ "Whoever picked up \"{t}\" in \"{m}\", what do they have assigned in the tracker? Send me the key of each.",
+ "Whoever got \"{t}\" in the \"{m}\" meeting, which tix are assigned to them?",
+ "For my weekly status email: whoever picked up \"{t}\" in \"{m}\", which ticket keys are assigned to them?",
+ "Whoever picked up \"{t}\" in \"{m}\", what tickets are on their plate? Need them first thing tomorrow.",
+ "Whoever picked up \"{t}\" in \"{m}\", which Linear and Jira tickets do they have?",
+ "Whoever picked up \"{t}\" in \"{m}\" - which ticket is theirs? If there's more than one, send all the keys."
+]}

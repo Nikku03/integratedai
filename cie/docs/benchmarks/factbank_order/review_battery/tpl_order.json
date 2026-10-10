@@ -1,0 +1,27 @@
+{"person_first/": [
+ "{p} has a few tickets open. Which one is due next? Ticket keys are fine.",
+ "Which tickets does {p} need to get to next? Just the one with the tightest deadline.",
+ "What are {p}'s most urgent tickets by due date? Just the top one, key please.",
+ "Which of {p}'s issues is due next? IDs please.",
+ "Of the tickets on {p}'s plate, which needs attention before the others? Ticket keys please.",
+ "{p}'s queue: what's due next? keys",
+ "Which items on {p}'s plate are due next? Just the top one.",
+ "Pull up the ticket list for {p} and tell me which one is due next.",
+ "What tickets does {p} have coming due next? Just the most pressing one.",
+ "Which of {p}'s tickets has the tightest deadline? Ticket numbers only please.",
+ "of {p}'s tickets which ones due next? need the key",
+ "Which tasks of {p}'s should be done before anything else, going by due date? Just the top one.",
+ "For my weekly status email: which of {p}'s tickets comes due next? Please list the ticket key.",
+ "Which of {p}'s tickets is most overdue? I need the IDs for the incident channel."
+],
+"compare_two/": [
+ "{a} or {b}: which needs to ship sooner? Ticket keys only.",
+ "Between {a} and {b}, which is due sooner? Just reply with one of the IDs.",
+ "I have two ticket numbers, {a} and {b}. Which one comes due earlier?",
+ "Looking at the ticket list: {a} vs {b}, which one is due sooner?",
+ "What are the deadlines on {a} and {b}? Which one comes due earlier?",
+ "{a} and {b} - which one do we need to close out before the other? keys pls",
+ "Two tickets, {a} and {b}: which ones due earlier?",
+ "Which tickets is due sooner, {a} or {b}?",
+ "For the status email, list which of {a} and {b} has the earlier deadline."
+]}

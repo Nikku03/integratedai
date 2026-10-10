@@ -28,6 +28,6 @@ if __name__ == "__main__":
     for c in cases:
         res = ask(c["work"], c["question"], c["expected"], c.get("kind", ""), c.get("pieces", ()))
         flag = "  <-- WORSE" if res[1][1] < res[0][1] else ("  (better)" if res[1][1] > res[0][1] else "")
-        print(f"[{c['work']}] {c['question']}  several={plans.Planner.asks_several(c["question"])} rank={plans.Planner.asks_rank(c["question"])}{flag}")
+        print(f"[{c['work']}] {c['question']}  acts={plans.Planner.wants_several(c["question"])}{flag}")
         for name, sc, ans, plan in res:
             print(f"   {name} {sc} {ans!r}  :: {plan[:140]}")

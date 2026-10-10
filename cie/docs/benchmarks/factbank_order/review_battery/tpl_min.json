@@ -1,0 +1,9 @@
+{"person_first/": [
+ "Which Linear ticket assigned to {p} comes due before all the others? Key only.",
+ "Which Linear ticket assigned to {p} comes due before all the others? Keys only.",
+ "Which of {p}'s Linear tickets is most urgent by date? Key only.",
+ "Which of {p}'s Linear tickets is most urgent by date? Keys only.",
+ "Which of {p}'s tickets is most urgent by date? IDs only.",
+ "Of all the tickets assigned to {p}, which one is due next? Can you give me the ticket key?",
+ "Of all the tickets assigned to {p}, which one is due next? Can you give me the ticket keys?"
+]}

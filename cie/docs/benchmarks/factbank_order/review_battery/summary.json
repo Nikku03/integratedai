@@ -1,0 +1,44 @@
+{
+ "q_order": {
+  "compare_two same": 216,
+  "person_first same": 308
+ },
+ "q_min": {
+  "person_first same": 399
+ },
+ "q_pf_apos": {
+  "person_first same": 26
+ },
+ "q_pf_tick": {
+  "person_first same": 84
+ },
+ "q_c": {
+  "action_owner_issues better": 49,
+  "action_owner_issues same": 7,
+  "action_owner_issues worse": 1,
+  "person_first same": 39
+ },
+ "q_action": {
+  "action_owner_issues better": 126,
+  "action_owner_issues same": 238
+ },
+ "q_act2": {
+  "action_owner_issues better": 282,
+  "action_owner_issues same": 467,
+  "action_owner_issues worse": 1
+ },
+ "q_action_miss": {
+  "action_owner_issues better": 102,
+  "action_owner_issues same": 66
+ },
+ "q_keys_apos": {
+  "action_owner_issues better": 18,
+  "action_owner_issues same": 1
+ },
+ "q_other": {
+  "issue_pr_author same": 69,
+  "person_count same": 156,
+  "pr_issue same": 120,
+  "ticket_link same": 96
+ }
+}

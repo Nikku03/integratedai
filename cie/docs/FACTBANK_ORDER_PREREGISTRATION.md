@@ -1,10 +1,9 @@
 # All of them when the question asks for several: what decides, fixed before the test
 
-> **Draft, under review:** the design is frozen only by the commit that removes this line.
-
-I wrote this on 2026-10-09:
+I wrote this on 2026-10-09 and 2026-10-10:
 - **after** building the check and trying it on every earlier set, all of which I had seen;
-- **after** an independent review, which found that my first design did harm. The check was redesigned (below);
+- **after** two independent reviews. Each found that the check, as it then stood, harmed questions it should not touch, so
+  it was redesigned twice (below);
 - **before** drawing the test set's documents;
 - **before** reading its wordings.
 
@@ -26,27 +25,45 @@ The ticket test (`docs/FACTBANK_TICKET_RESULTS.md`) found the mistake that now c
 
 ### v13: v11, plus "several, not the first"
 
-**The check** (`MANY_WORDS`, `MANY_ITEMS`, `RANK_WORDS`, `raw_words`, `Planner.asks_several`, `Planner.asks_rank` and check
-5 in `Planner.check`, in `cie/src/cie/factbank/plans.py`):
-- **When it acts:** the question asks for several things and asks for no rank by time.
+**The check** (`Planner.wants_several` and check 5 in `Planner.check`, in `cie/src/cie/factbank/plans.py`):
 - **What it does:** it drops the plans that pick the first or the last thing by a date.
-- **"Asks for several"** means one of these:
-  - it says "list", "lists", "listing", "enumerate" or "itemize";
-  - it asks for "keys", "IDs", "identifiers" or "numbers";
-  - it asks "which" or "what" followed by a plural: "which tickets", "what Linear issues", "which ones", "what are".
-    "Which of the tickets…" asks for one of them, so it does not count.
-- **"Asks for a rank by time"** means it uses one of: first, 1st, earliest, soonest, nearest, closest, last, latest,
-  final, oldest, newest.
-- **How words are read:** as written and in lower case, outside quoted titles (straight or curly double quotes). There is
-  no stemming, so "keys" stays plural and "soon" is not "soonest".
+- **When it acts:** all three of these hold:
+  1. the question asks for several things;
+  2. it does not ask for one thing;
+  3. it uses no word of order.
 - **Like every check,** it is skipped if no plan passes it.
 
-**Why this way round:** the check acts only on positive evidence that several things are wanted.
-- **When it is wrong, the cost is small:**
-  - If it misses a way of asking for several, the question is answered as v11 answers it.
-  - If a rank word appears in passing ("last thing for today"), the same happens.
-- **When it could do harm:** only a question that asks for one thing first by date, phrased in the plural with no rank
-  word. That is rare.
+**1. Asks for several** (`asks_several`), any one of:
+- it says "list", "lists", "listing", "enumerate", "itemize", "all", "every" or "each";
+- it asks for "keys", "IDs", "identifiers" or "numbers";
+- it asks "which" or "what" followed by a plural: "which tickets", "what Linear issues", "which ones", "what are".
+
+**2. Asks for one thing** (`asks_one`), any one of:
+- "which of…", "which one";
+- "which" followed by a singular: "which ticket", "which Linear issue". This does not count when a plural follows, as in
+  "which ticket keys";
+- "just one", "only one", "top one", "single".
+
+**3. Uses a word of order** (`asks_order`), any one of:
+- one of: first, 1st, next, earliest, earlier, soonest, sooner, nearest, nearer, closest, closer, last, latest, later,
+  final, oldest, newest, recent, urgent, overdue, tightest, pressing, top, asap, upcoming, prior, priority;
+- "before" or "ahead" followed within three words by others, other, rest, else, anything or everything ("before all the
+  others").
+- "Next" does not count when a meeting, call, week, sprint, review or similar comes right after it ("before my next
+  meeting").
+
+**How words are read** (`raw_words`):
+- as written and in lower case, outside quoted titles (straight or curly double quotes);
+- "ticket(s)" reads as "tickets", and "key's" or "ID's" as "keys" or "IDs";
+- there is no stemming, so "keys" stays plural and "soon" is not "soonest".
+
+**Why it is built this way:** each part of the condition guards against harm.
+- **Where it can only help or do nothing:** the check acts only when the question asks for several things. A missed way of
+  asking for several leaves the question answered as v11 answers it.
+- **Where the harm was:** a question asking for the first one due often carries a generic plural ("Keys only", "IDs
+  please"). Parts 2 and 3 keep the check off for such questions, because they nearly always say "which of", "which one"
+  or a word of order.
+- **The cost:** an action item with a word of order in passing ("last thing for today") is answered as v11 answers it.
 
 **What is unchanged:**
 - **The weights are v11's.** The check acts only when a question is asked, so `plan_lessons_v13.json` is v11's lessons
@@ -61,36 +78,51 @@ It is v13's lessons plus the 3B model's form, used only where the bank's lessons
 
 v4, v8, v9, v11 and v12 are frozen and unchanged.
 
-## The first design, and why it changed
+## How the check got here
 
-**The draft's check was "an order needs a word of order":** a "first one due" plan was kept only if the question used a
-word such as first, soonest, earlier or before.
+**First design: "an order needs a word of order."** A "first one due" plan was kept only if the question used one of 15
+words such as first, soonest, earlier or before.
+- **The first review showed that it did harm** (`docs/benchmarks/factbank_order/prefreeze_review.json`). A question asking
+  for the first one due without one of the 15 words lost its right answer: "tightest deadline", "most overdue", "due 1st".
+- On the reviewers' rewordings of earlier questions, 48 of 154 went from right in v11 to wrong.
 
-**The review showed that it did harm** (`docs/benchmarks/factbank_order/prefreeze_review.json`):
-- **The words were not a closed class.** A question asking for the first one due without one of the 15 words lost its
-  right answer. Examples: "tightest deadline", "most overdue", "most pressing", "closer", "due 1st".
-- **The reviewers' rewordings showed it:** 41 of 42 such rewordings of earlier sets' questions went from right in v11 to
-  wrong in v13.
-- **On the earlier sets it looked harmless only by construction.** The list was built from those sets' wordings, and three
-  of its words each covered exactly one wording.
+**Second design: "several, unless a superlative".** The check acted when the question asked for several things and used
+none of first, soonest, latest and the like.
+- **The second review showed that it still did harm** (`docs/benchmarks/factbank_order/prefreeze_review2.json`). A
+  question asking for the first one due often adds a generic plural: "Which of P's issues is due next? IDs please." With
+  "next", "most urgent" or "before the others", which are not superlatives, the check acted.
+- On the reviewers' new rewordings, 286 of 308 such questions went from right in v11 to wrong.
 
-**The new check acts the other way round.** It needs evidence that several things are wanted, not evidence that an order
-is wanted.
+**Third design, frozen here:** "asks for one thing" and the wider set of order words also keep the check off.
 
-## Development (all on sets I had seen)
+**On every earlier set, all three designs give exactly the same answers.** They differ only on wordings outside those sets.
+So the earlier sets cannot tell them apart; only the reviewers' rewordings can.
+
+## Development (all on sets I had seen, and on the reviewers' rewordings)
 
 **On every earlier wording** (`docs/benchmarks/factbank_order/earlier_wordings.py`):
 - The check acts on **all 25** action-item wordings.
-- It acts on **none** of the 50 wordings that ask for an order ("which of two is due first", "a person's first issue
-  due").
+- It acts on **none** of the 50 wordings that ask for an order.
+- **Both are true by construction:** the word lists were written while looking at these wordings. They show that the check
+  fits the seen wordings, not that it is safe on others.
 
-**On the reviewers' rewordings** (`docs/benchmarks/factbank_order/review_probes/`):
-- **154 rewordings of questions that ask for an order:** none gets worse in v13. With the first design, 41 did.
-- **18 action items with words in passing** ("as soon as you can", "before my 1:1", "after standup"): 12 are now right.
-  - The other 6 use a rank word in passing ("last thing for today", "not just the first one"). They are answered as v11
-    answers them.
+**On the reviewers' rewordings, the real test of harm** (`docs/benchmarks/factbank_order/review_battery/`):
+- **What they are:** the second review wrote new wordings in a project manager's, an on-call engineer's and a VP's style,
+  including generic plurals, typos and one-letter edits of earlier writers' wordings. Expected answers come from the
+  documents of eight earlier sets.
+- **1,072 questions that ask for an order:** none changed in v13.
+- **441 questions of other kinds:** none changed.
+- **1,358 action items:** 577 better, 779 the same, 2 worse. The 2 worse are one question asked twice, below.
+- Of the action items the check acted on but did not get right, all but that one already failed in v11 with the same plan,
+  for reasons the check does not touch ("what tickets do they have?" read as asking for a status).
 
-**Three-group mean of own answers:**
+**On the first review's probes** (`docs/benchmarks/factbank_order/review_probes/`):
+- **154 rewordings that ask for an order:** the check acts on none, so none changes.
+- **18 action items with words in passing:** 12 are now right.
+  - The other 6 use a word of order in passing ("last thing for today", "not just the first one"). They are answered as
+    v11 answers them.
+
+**Three-group mean of own answers on the earlier sets:**
 
 | set | v11 | v13 | v12 | v14 |
 |---|---|---|---|---|
@@ -106,40 +138,50 @@ is wanted.
 | **ticket test** | 0.942 | **1.000** | 0.942 | **1.000** |
 | ticket test, writers 1 / 2 / 3 alone | 0.942 / 0.942 / 1.000 | **1.000 / 1.000 / 1.000** | 0.942 / 0.942 / 1.000 | 1.000 / 1.000 / 1.000 |
 
-**Question by question:**
-- **v13 against v11:** 33 questions changed. All are gains on action items, and no question anywhere got worse. v14 against
-  v12 is the same.
-- **Most of the gains are the ticket test's own failing questions:** 8 on the test set, and 8 in each of writers 1 and 2
-  alone.
-- **The rest are on earlier sets:**
-  - the planner test's one action-item miss;
-  - one on the blind set;
-  - 3 in training.
-- **The new check gives exactly the same answers as the first design** on every one of these sets. They differ only on
-  wordings outside the earlier sets.
+**Question by question:** 33 answers changed across the 19 sets and wordings, v13 against v11. All are gains on action
+items, and none got worse; v14 against v12 is the same. They are:
+- 8 on the ticket test set, and 8 in each of writers 1 and 2 alone;
+- the planner test's one action-item miss, in the set and in each of its three writers' wordings (4);
+- one on the blind set;
+- one training question, which counts once in the first 48 and three times in the 201, since the 201 hold three wordings of it
+  (4).
 
-## The review before freezing
+## The reviews before freezing
 
-Three reviewers checked the check, the scoring and the protocol, and a fourth tried to refute each finding
-(`docs/benchmarks/factbank_order/prefreeze_review.json`). What held up, and what was done:
+Each review had three reviewers (two in the second), and a further one tried to refute each finding. What held up, and
+what was done:
 
-1. **The first design did harm** to questions asking for the first one due without a listed word. **Fixed:** the check
-   was redesigned (above).
+**First review** (`prefreeze_review.json`):
+1. **The first design did harm.** **Fixed:** redesigned (above).
 2. **No rule protected the questions that ask for an order.** Rule 2's −0.03 allowed one of them to be lost outright.
    - **Fixed:** rule 2 now also requires that no such question scores lower in v13 than in v11, or in v14 than in v12.
-3. **Rules 1 and 3 could only fail when v11 scored between 0.85 and 0.9.** In that band a gain of +0.15 is impossible.
-   - **Fixed:** they are judged only when v11 scores 0.85 or less on the action items.
+3. **When v11 scored between 0.85 and 0.9 on the action items, rules 1 and 3 were judged but could not be met:** a gain of
+   +0.15 is impossible there.
+   - **Fixed:** they are judged only when v11 scores 0.85 or less.
 4. **Rule 3's "not measurable" condition used v12's score, while this document said v11's.** **Fixed:** both rules now use
    v11's.
+   - Rule 3 keeps v11's condition on purpose. In every earlier set, v11 and v12 score the same on every action item.
 5. **The single-writer runs would have used the one wording the selection rule rejected.** **Fixed:** a rejected wording is
    replaced by writer 3's, as in the drawn set. Only the number replaced is printed.
-6. **"Quoted titles" meant straight double quotes only.** The new check also ignores curly double quotes.
-7. **The motivation overstated v9's part marks.** It is corrected above.
+6. **"Quoted titles" meant straight double quotes only.** The check also ignores curly double quotes.
+7. **The motivation overstated v9's part marks.** Corrected above.
+
+**Second review** (`prefreeze_review2.json`):
+1. **The second design still did harm,** through generic plurals. **Fixed:** redesigned (above).
+2. **The scoring would have crashed** while writing the report. **Fixed:** a name clash in `order_test`.
+   - It was then run end to end on copies of the ticket test, with development answers.
+3. **The development evidence never exercised the check** on questions that ask for an order. **Fixed:** the reviewers'
+   rewordings, which do, are now the main evidence (above), and the by-construction results are marked as such.
+4. **Ways of asking for all that the check missed:** "ticket(s)", "key's", "ID's", "JIRAs", "key for each one". **Fixed:**
+   they are now read.
+5. **Number and wording errors in this document.** Corrected.
 
 **Known limits, not fixed:**
-- A rank word in passing turns the check off, and the question is answered as v11 answers it.
-- "All" and "every" are not read as asking for several, because "due before all the others" asks for one.
-- Earlier versions read titles only in straight quotes. A writer using curly quotes affects every version alike.
+- **A word of order in passing turns the check off,** and the question is answered as v11 answers it.
+- **Dropping the "first one due" plan can let an unrelated plan win.** In the battery this happened on one question:
+  "…which tickets do they have? Send me the ID's." Its "ID's" left the kind of answer unknown, so the owner's name won.
+  It went from 0.5 to 0.
+- **Earlier versions read titles only in straight quotes.** A writer using curly quotes affects every version alike.
 
 ## The test set (frozen)
 
@@ -154,6 +196,8 @@ Three reviewers checked the check, the scoring and the protocol, and a fourth tr
   - a project manager writing a weekly status email;
   - a support engineer on call;
   - a VP of engineering on a phone between meetings.
+- **The second review's rewordings imitate these roles.** The reviewers knew the roles from this document, but they never
+  saw the sealed wordings.
 - The brief is the ticket test's: it names no tracker.
 - Each writer saved its wordings to a file itself. I have not read them.
 - The same selection rule applies: writers 1 and 2 give the pair, and writer 3 stands in for an invalid wording. A
@@ -205,9 +249,8 @@ As before:
 **Also reported:**
 - every arm on the whole test set and by kind;
 - every question whose score changed;
-- how many action items the check reads as asking for several, and how many of them also use a rank word;
-- how many questions that ask for an order the check reads as asking for several with no rank word (where harm could
-  happen);
+- how many action items ask for several, and how many of them the check acts on;
+- how many questions that ask for an order the check acts on (where harm could happen);
 - the same questions in each writer's wording;
 - v14's form use and the model's time.
 
