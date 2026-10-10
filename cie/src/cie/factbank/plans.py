@@ -70,6 +70,11 @@ BEFORE_NOUN = frozenset(("is", "was", "s", "the", "its", "their", "exact", "targ
 ONE_ITEM = frozenset(("the", "that", "this", "its"))
 ASKS_COUNT = re.compile(r"\bhow many\b|\bnumber of\b(?!\s+(?:the|that|this|its)\b)|\bcount\b", re.I)
 QUOTED = re.compile(r'"[^"]*"|\u201c[^\u201d]*\u201d')
+# v15 (``brain``): words that make a "person" a team, a group or a role ("Customer Success", "People Ops", "Recorder Bot"); documents'
+# owner fields hold them as if they were people's names, and a question naming one is not about a person
+TEAM_NAME = re.compile(r"\b(?:teams?|ops|operations|success|engineering|support|sales|security|finance|people|product|platform|infra|"
+                       r"infrastructure|marketing|legal|customers?|group|council|committee|department|staff|bot|recorder|notetaker|"
+                       r"assistant|org|squad|rotation|leads?|growth|everyone|unknown|research|devrel|partnerships?|enablement)\b")
 # v15 (``brain``, check 7): words that ask to follow a link from what the question names ("the ticket linked to PR #4821", "its
 # assignee", "whoever took it", "ENG-1 is tied to another ticket"); a question without one is answered from the named thing
 # itself when a plan can
@@ -475,7 +480,8 @@ class Planner:
     def named_fully(self, question: str) -> list[str]:
         """v15: the entities the question names (``bank.named``), without a person named only by a one-word alias ("Priya",
         "Redwood"): among thousands of documents, a first name, or a word that is also somebody's name, does not say who the
-        question is about. A full name still counts."""
+        question is about. A full name still counts, unless it is a team's or a role's ("Customer Success", "People Ops"), which
+        documents' owner fields hold as if it were a person's (``TEAM_NAME``)."""
         if self._person_aliases is None:
             self._person_aliases = defaultdict(list)
             for alias, ents in self.b.aliases.items():
@@ -488,7 +494,7 @@ class Planner:
         def full(e: str) -> bool:
             return any(len(a) >= 4 and re.search(r"(?<![\w-])" + re.escape(a) + r"(?![\w-])", q) for a in self._person_aliases.get(e, ()))
 
-        return [e for e in self.b.named(question) if not e.startswith("person:") or full(e)]
+        return [e for e in self.b.named(question) if not e.startswith("person:") or (full(e) and not TEAM_NAME.search(e[7:]))]
 
     def about(self, question: str) -> set[str]:
         """v15: what the question is about for check 1 with ``brain``: the entities it names (``named_fully``) and its quoted
@@ -564,7 +570,9 @@ class Planner:
            plan choosing an item by date must order by one of them.
         7. **No hop asked for** (v15, ``brain``): when the question names something and asks for no link (``asks_link``), a
            plan that follows a link from a named start is dropped if a plan that reads that start itself is still there
-           ("when is the Linear issue "X" due?" reads X's due date, not that of a ticket X depends on).
+           ("when is the Linear issue "X" due?" reads X's due date, not that of a ticket X depends on); and of the plans from a
+           named start, only those with the fewest hops stay ("the attendees of the meeting "X"" reads its attendees, not
+           the meetings they attended).
 
         With ``brain``, check 1 leaves out a person named only by a one-word alias (``named_fully``)."""
         named = {e for e in self.b.named(question) if e in self.b.kinds and not e.startswith("person:")}
@@ -603,6 +611,9 @@ class Planner:
         if self.brain and about and not self.asks_link(question):
             bare = {p.starts for p, _ in keep if not p.path and set(p.starts) & about}
             keep = [(p, m) for p, m in keep if not (p.path and p.starts in bare)]
+            from_named = [len(p.path) for p, _ in keep if set(p.starts) & about]
+            if from_named:  # no hop asked for: the shortest way from what the question names ("the attendees of the meeting")
+                keep = [(p, m) for p, m in keep if not (set(p.starts) & about and len(p.path) > min(from_named))]
         return keep
 
     def out_kind(self, plan: Plan, answer: str) -> str:

@@ -144,7 +144,9 @@ def test_several_things_get_no_count_with_brain(tb):
                "Give the number of tickets on every list Omar Singh has."):
         assert any(p.aggregate == "count" for p, _ in brain.check(q2, brain.candidates(q2))), "it asks for a count too"
     q3 = "Which of Omar Singh's tickets is due first?"
-    assert brain.check(q3, brain.candidates(q3)) == v13.check(q3, v13.candidates(q3)), "one thing asked for: nothing changes"
+    old, new = v13.check(q3, v13.candidates(q3)), brain.check(q3, brain.candidates(q3))
+    fewest = min(len(p.path) for p, _ in old)
+    assert new == [(p, m) for p, m in old if len(p.path) == fewest], "one thing asked for: no count dropped, only longer routes"
 
 
 def test_a_one_word_alias_does_not_say_who_the_question_is_about(tb):
@@ -187,3 +189,8 @@ def test_brain_is_saved_with_the_lessons(tb, tmp_path):
     v13 = P.PlanLessons.load(tmp_path / "v13.json")
     assert not v13.brain and not v13.planner(tb).brain, "lessons saved before v15 load without the brain fixes"
     assert not P.learn_plans(tb, qs, log=lambda *_: None, rules="v9").brain and not P.Planner(tb, "v9").brain
+
+
+def test_brain_a_team_in_an_owner_field_is_not_a_person_the_question_names():
+    assert P.TEAM_NAME.search("customer success") and P.TEAM_NAME.search("people ops") and P.TEAM_NAME.search("redwood recorder bot")
+    assert not P.TEAM_NAME.search("maya chen") and not P.TEAM_NAME.search("omar singh")
