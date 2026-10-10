@@ -160,7 +160,7 @@ class TrainedBank(FactBank):
         written, journal, seed_list = self.run(question, seeds=seeds)
         is_list = sigmoid(dot(self.lessons.list_w, self.list_x(question))) > 0.5
         head: list[str] = []
-        facts: list[str] = []  # with ``brain``: the facts the answer rests on, to print first
+        facts: list[str] = []  # with ``leads_with_answer``: the facts the answer rests on, to print first
         if is_list:
             answer, reason, head = self.list_ask(question)
             facts = [x[2:] for x in head]
@@ -170,7 +170,7 @@ class TrainedBank(FactBank):
             if scored:
                 best = scored[0][1]
                 answer, reason = best["value"], f"{best['parameter']} of {self.names.get(best['entity'], best['entity'])}"
-                if self.brain:
+                if self.leads_with_answer:
                     ctx = f' — "{best["claim"][:240]}"' if best["parameter"].startswith("text_") else ""
                     facts = [f"{best['parameter'].replace('_', ' ')} of {self.cited(best['entity'], {})}: {best['value'][:300]}{ctx}"]
             else:
@@ -179,7 +179,7 @@ class TrainedBank(FactBank):
                 src = self.names.get(c["entity"], c["entity"])
                 ctx = f' — "{c["claim"][:240]}"' if c["parameter"].startswith("text_") else ""
                 head.append(f"- {c['parameter'].replace('_', ' ')}: {c['value'][:300]} — {src}{ctx}")
-        if not self.brain:
+        if not self.leads_with_answer:
             top = "Most likely answers, best first:\n" + "\n".join(head) if head else ""
         else:  # the answer and the facts it rests on, then the other candidates
             others = [] if is_list else head[1:]
@@ -221,7 +221,7 @@ class TrainedBank(FactBank):
                 continue
             lab = self.label_of(e)
             out.append(lab)
-            if not self.brain:
+            if not self.leads_with_answer:
                 lines.append(f"- {lab}: {self.names.get(e, e)}")
             elif people and best:  # one line per item: the fact that put it on the list
                 lines.append(f"- {best[2][:-3].replace('_', ' ')} of {self.cited(e, {})}: {self.names.get(best[1], best[1])}")

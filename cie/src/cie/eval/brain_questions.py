@@ -15,7 +15,9 @@ Four families of questions:
 
 Every expected answer is computed from the documents' own fields. A question with more than one right answer in the
 haystack is set aside: a title, key or number on two documents, a field with several values, a list that holds an entry
-that is not a person, a name written inside another name, and the reasons of ``factbank_5k.why_unclear``.
+that is not a person (a bot, a team, a role label), a name or field value written as whole words inside another whatever
+the hyphens and spaces ('redwood' in 'redwood-docs', 'AcmeAI' in 'Acme AI (Corp)'), and the reasons of
+``factbank_5k.why_unclear``.
 
 ``kinds()`` is the catalogue, ``generate`` makes every question the documents allow and counts what it sets aside,
 ``draw_questions`` draws a seeded sample in a given mix, and ``score`` scores one answer.
@@ -57,6 +59,9 @@ EMPTY = {"none", "null", "n/a", "na", "tbd", "unknown", "-", "[]", "{}"}
 ADDRESS = {"google_drive": "title", "confluence": "title", "hubspot": "title", "fireflies": "title", "jira": "key", "linear": "key",
            "github": "pr"}
 NOT_FOUND_RE = re.compile(r"^\W*(?:not found|none found|no such)\b", re.I)
+NOT_PERSON_RE = re.compile(r"[&:]|\b(?:bot|recorder|notetaker|taker|assistant|teams?|group|engineering|ops|growth|council|all|org|support|"
+                           r"everyone|squad|committee|department|staff|platform|customer|unknown|unidentified|unattributed|participants?|"
+                           r"speaker|caller|rotation|leads?)\b", re.I)
 
 
 @dataclass(frozen=True)
@@ -262,23 +267,59 @@ def _expected(v: Any, typ: str) -> tuple[dict[str, Any] | None, str]:
     return {"value": s, **({"alts": alts} if alts else {})}, ""
 
 
+def _person(raw: Any) -> str | None:
+    """A person's name (``person_name``), or None for a bot, a team, a group or a role label ('Redwood Recorder Bot',
+    'Product Team', 'Revenue & Growth', 'Finance: Priya Desai', 'Unknown Speaker')."""
+    from cie.ingest.sources import person_name
+
+    p = person_name(raw)
+    return None if p is None or NOT_PERSON_RE.search(p) else p
+
+
 def _people(raw: dict[str, Any], fields: Iterable[str]) -> tuple[list[str] | None, str]:
     """The distinct people the fields list, or None and why not (an entry that is not a person makes the list inexact)."""
-    from cie.ingest.sources import as_list, person_name
+    from cie.ingest.sources import as_list
 
     items = [x for f in fields for x in as_list(raw.get(f)) if str(x).strip()]
     if not items:
         return None, "no value"
-    names = [person_name(x) for x in items]
+    names = [_person(x) for x in items]
     if any(n is None for n in names):
         return None, "not a person"
     out = list(dict.fromkeys(names))
     return (out, "") if len(out) <= LIST_MAX else (None, "too many")
 
 
-def _inside_another(key: str, others: Iterable[str]) -> bool:
-    """Whether a normalised name is a whole-word part of another (one reading of it would name both)."""
-    return any(o != key and (f" {key} " in f" {o} " or f" {o} " in f" {key} ") for o in others)
+def _words(s: Any) -> list[str]:
+    return re.findall(r"[^\W_]+", str(s).lower())
+
+
+def _squash(s: Any) -> str:
+    """A name in lower case with only its letters and digits: 'AcmeAI', 'Acme AI' and 'acme-ai' are one name."""
+    return "".join(_words(s))
+
+
+def _nested(names: Iterable[str], outer: bool = True) -> set[str]:
+    """The squashed names (``_squash``) of the names written as a run of whole words inside another name
+    ('runtime-stability' in 'runtime-stability-2025', 'AcmeAI' in 'Acme AI (Corp)'), and with ``outer`` those of the names
+    holding one too: one reading of such a name would name both."""
+    names = list(names)
+    runs: dict[str, set[str]] = defaultdict(set)
+    for n in names:
+        w = _words(n)
+        for i in range(len(w)):
+            for j in range(i + 1, len(w) + 1):
+                if j - i < len(w):
+                    runs["".join(w[i:j])].add("".join(w))
+    out: set[str] = set()
+    for n in names:
+        s = _squash(n)
+        holders = runs.get(s, set()) - {s}
+        if holders:
+            out.add(s)
+            if outer:
+                out |= holders
+    return out
 
 
 def _note(aside: Counter | None, why: str) -> None:
@@ -302,13 +343,21 @@ def _emit(kind: str, cands: list[dict[str, Any]], rng: random.Random, cap: int |
 # ------------------------------------------------------------------ single-document and list generators
 def field_questions(kind: str, docs: list[dict[str, Any]], rng: random.Random, cap: int | None = None,
                     aside: Counter | None = None) -> list[dict[str, Any]]:
-    """One field of a document named by a unique title, key or pull request number (``FIELDS``)."""
+    """One field of a document named by a unique title, key or pull request number (``FIELDS``). A value written inside
+    another value of the field ('redwood' in 'redwood-docs', 'Onboarding Revamp' in 'Dedicated Onboarding Revamp') is set
+    aside: the other value would hold the expected one."""
     src, field, typ, wordings = FIELDS[kind]
     names = _names(docs)
+    mine = _of(docs, src)
+    exps = [_expected(d["raw"].get(field), typ) for d in mine]
+    inner = _nested({e["value"] for e, _ in exps if e and "value" in e}, outer=False)
     cands = []
-    for d in _of(docs, src):
+    for d, (exp, why) in zip(mine, exps, strict=True):
         fmt, name = _address(d, names)
-        exp, why = _expected(d["raw"].get(field), typ) if fmt else (None, name)
+        if fmt is None:
+            exp, why = None, name
+        elif exp is not None and "value" in exp and _squash(exp["value"]) in inner:
+            exp, why = None, "named inside another"
         if exp is None:
             _note(aside, why)
             continue
@@ -335,12 +384,14 @@ def name_questions(kind: str, docs: list[dict[str, Any]], rng: random.Random, ca
 
 def project_members(docs: list[dict[str, Any]], rng: random.Random, cap: int | None = None,
                     aside: Counter | None = None) -> list[dict[str, Any]]:
-    """The people assigned issues in a Linear project of two or more issues."""
+    """The people assigned issues in a Linear project of two or more issues ('model-onboarding' and 'Model Onboarding' are
+    one project; one written inside another, as in 'model-onboarding-v2', is set aside)."""
     by: dict[str, list[dict]] = defaultdict(list)
     for d in _of(docs, "linear"):
         p = str(d["raw"].get("project") or "").strip()
-        if p and p.lower() not in EMPTY:
-            by[_norm(p)].append(d)
+        if p and p.lower() not in EMPTY and _squash(p):
+            by[_squash(p)].append(d)
+    nested = _nested({str(d["raw"]["project"]).strip() for ds in by.values() for d in ds})
     cands = []
     for key in sorted(by):
         ds = by[key]
@@ -350,7 +401,7 @@ def project_members(docs: list[dict[str, Any]], rng: random.Random, cap: int | N
         if '"' in name:
             _note(aside, "title unusable")
             continue
-        if _inside_another(key, by):
+        if key in nested:
             _note(aside, "named inside another")
             continue
         people, why = _people({"a": [d["raw"].get("assignee") for d in ds]}, ["a"])
@@ -364,13 +415,15 @@ def project_members(docs: list[dict[str, Any]], rng: random.Random, cap: int | N
 
 def customer_tickets(docs: list[dict[str, Any]], rng: random.Random, cap: int | None = None,
                      aside: Counter | None = None) -> list[dict[str, Any]]:
-    """The keys of every Jira ticket of one customer company (one to ``LIST_MAX`` tickets)."""
+    """The keys of every Jira ticket of one customer company (one to ``LIST_MAX`` tickets). 'AcmeAI' and 'Acme AI' are one
+    customer; a customer written inside another, as 'Acme AI' in 'Acme AI (Corp)', is set aside."""
     names = _names(docs)
     by: dict[str, list[dict]] = defaultdict(list)
     for d in _of(docs, "jira"):
         c = str(d["raw"].get("customer_company") or "").strip()
-        if c and c.lower() not in EMPTY and not c.lower().startswith("redwood"):
-            by[_norm(c)].append(d)
+        if c and c.lower() not in EMPTY and not c.lower().startswith("redwood") and _squash(c):
+            by[_squash(c)].append(d)
+    nested = _nested({str(d["raw"]["customer_company"]).strip() for ds in by.values() for d in ds})
     cands = []
     for key in sorted(by):
         ds = by[key]
@@ -379,7 +432,7 @@ def customer_tickets(docs: list[dict[str, Any]], rng: random.Random, cap: int | 
         if any(not k or not KEY.fullmatch(k) or names["keys"][k] != 1 for k in keys):
             _note(aside, "named twice")
             continue
-        if _inside_another(key, by):
+        if key in nested:
             _note(aside, "named inside another")
             continue
         if len(keys) > LIST_MAX:
@@ -499,9 +552,7 @@ def missing_titles(docs: list[dict[str, Any]], rng: random.Random, cap: int | No
 def missing_people(docs: list[dict[str, Any]], rng: random.Random, cap: int | None = None,
                    aside: Counter | None = None) -> list[dict[str, Any]]:
     """A real first name and a real last name whose full name no document writes."""
-    from cie.ingest.sources import person_name
-
-    people = sorted({p for d in docs for f in PERSON_FIELDS if (p := person_name(d["raw"].get(f))) and len(p.split()) == 2})
+    people = sorted({p for d in docs for f in PERSON_FIELDS if (p := _person(d["raw"].get(f))) and len(p.split()) == 2})
     if len(people) < 2:
         return []
     firsts, lasts = sorted({p.split()[0] for p in people}), sorted({p.split()[1] for p in people})
@@ -662,12 +713,13 @@ def pick(qs: list[dict[str, Any]], docs: list[dict[str, Any]], quota: dict[str, 
 def draw_questions(docs: list[dict[str, Any]], seed: int = SEED, mix: dict[str, int] | None = None,
                    prose: list[dict[str, Any]] | None = None, multi_wordings: dict | None = None) -> list[dict[str, Any]]:
     """A seeded sample of the questions the documents allow, in a mix of {kind, group or family: number} (``DEFAULT_MIX``);
-    prose questions come from ``prose`` (``load_prose``). A kind with too few questions gives what it has."""
+    prose questions come from ``prose`` (``load_prose``), those code can check (``checkable``). A kind with too few
+    questions gives what it has."""
     mix = dict(DEFAULT_MIX if mix is None else mix)
     wanted = set().union(*(resolve(k) for k in mix)) if mix else set()
     pool, _ = generate(docs, seed, kinds=wanted - {"prose", "metadata"}, multi_wordings=multi_wordings)
     if "prose" in wanted:
-        pool += list(prose or [])
+        pool += [q for q in prose or [] if checkable(q)]
     return pick(pool, docs, quotas(mix, Counter(q["kind"] for q in pool), seed), seed)
 
 
@@ -729,15 +781,42 @@ def prose_reach(q: dict[str, Any], evidence: str, budget: int = EVIDENCE_CHARS) 
     return round(sum(any(present(f, b, st) for b, st in blocks) for f in facts) / len(facts), 3)
 
 
-def score(q: dict[str, Any], row: dict[str, Any] | str) -> float:
-    """One answer's score in [0, 1]. ``row`` is the brain's row ({"answer", "route"?}) or the answer itself.
+def checkable(q: dict[str, Any]) -> bool:
+    """Whether code can score an answer to the question: it expects not found, names, a value, a date, keys, or answer facts
+    with a number or a content word. A benchmark metadata question whose field held nothing cannot be scored
+    (``memory_test.check`` marks it None)."""
+    e = q.get("expected") or {}
+    fam = family(q)
+    if fam == "not_found":
+        return True
+    if fam == "prose":
+        return bool(_checkable(e.get("facts") or []))
+    return any(e.get(x) for x in ("names", "value", "date", "ids"))
+
+
+def value_hit(e: dict[str, Any], answer: str) -> float:
+    """1 if the answer line, read as ``factbank_test.direct`` reads it, holds the expected value or one of its alternatives
+    between boundaries that no letter, digit or hyphen crosses ('redwood-docs' does not hold 'redwood'), else 0."""
+    line = _norm(final_answer("Answer: " + answer))
+    return float(any(re.search(r"(?<![\w-])" + re.escape(_norm(v)) + r"(?![\w-])", line) for v in [e["value"], *e.get("alts", [])]))
+
+
+def score(q: dict[str, Any], row: dict[str, Any] | str) -> float | None:
+    """One answer's score in [0, 1]. ``row`` is the brain's row ({"answer", "route"?}) or the answer itself. A question of a
+    catalogue kind that code cannot check (``checkable``) scores None, and callers leave it out, as ``memory_test.check``
+    does; one of another kind raises ValueError.
 
     - not_found: 1 if the answer says not found, else 0; for every other kind an answer of not found scores 0;
     - prose: the share of the answer facts in the answer;
     - name lists: ``name_f1``;
     - multi: ``factbank_multi.own_score``;
-    - the rest (the memory test's kinds and the field and list kinds): ``factbank_test.direct``. For the field kinds a
-      timestamp in the answer ("2027-03-25T15:00:00Z") is read as its date, as the field was."""
+    - the field kinds with a value: ``value_hit``. For the field kinds a timestamp in the answer ("2027-03-25T15:00:00Z") is
+      read as its date, as the field was;
+    - the rest (the memory test's kinds, the field kinds with a date, and the list kinds): ``factbank_test.direct``."""
+    if not checkable(q):
+        if q.get("kind") in CATALOGUE:
+            return None
+        raise ValueError(f"{q.get('id')}: no expected answer that code can check")
     answer, route = (row, None) if isinstance(row, str) else (str(row.get("answer") or ""), row.get("route"))
     if q.get("kind") in FIELDS:
         answer = re.sub(r"\b(\d{4}-\d{2}-\d{2})T(?=\d)", r"\1 ", answer)
@@ -752,6 +831,6 @@ def score(q: dict[str, Any], row: dict[str, Any] | str) -> float:
         return fact_share(e.get("facts") or [], answer)
     if "names" in e:
         return name_f1(e["names"], answer)
-    if not any(x in e for x in ("value", "date", "ids")):
-        raise ValueError(f"{q.get('id')}: no expected answer that code can check")
+    if q.get("kind") in FIELDS and "value" in e:
+        return value_hit(e, answer)
     return own_score(q, answer) if fam == "multi" else direct(q, answer)

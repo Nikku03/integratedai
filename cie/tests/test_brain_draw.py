@@ -131,6 +131,20 @@ def test_a_zone_draw_refuses_the_test_zone_and_pairs_from_other_zones():
         B.draw(index, zone_map | {"g9": "train"}, "train", load, seed=1, n=5, planted=[("g2", "l2")])
 
 
+def test_a_zone_draw_checks_each_pair_against_the_rule_among_the_zone_documents():
+    docs = [_lin("l1", "ENG-11"), _pr("g1", "7100", ["ENG-11"]), _pr("g4", "7400", ["ENG-11"])]  # two pull requests for ENG-11
+    index, _, load = _setup(docs)
+    zone_map = {d: "train" for d in index}
+    assert F.draw(index, set(), load, n=13, seed=1, planted=1)[1]["planted_candidates"] == 0
+    with pytest.raises(RuntimeError, match="rule"):  # hiding g4's link from draw must not let the pair through
+        B.draw(index, zone_map, "train", load, seed=1, n=13, planted=[("g1", "l1")])
+    zone_map["g4"] = "dev"
+    ids, info = B.draw(index, zone_map, "train", load, seed=1, n=12, planted=[("g1", "l1")])
+    assert info["planted"] == [{"pr": "g1", "issue": "l1"}] and {"g1", "l1"} <= set(ids) and "g4" not in ids
+    with pytest.raises(ValueError, match="lacks 1 documents"):
+        B.draw(index, zone_map | {"gone": "train"}, "train", load, seed=1, n=12, planted=[("g1", "l1")])
+
+
 def _bench(tmp_path):
     """A small benchmark on disk: 4 plantable pairs, other tracker documents and Slack messages."""
     root = tmp_path / "bench"
@@ -181,8 +195,36 @@ def test_the_cli_writes_reproducible_zones_and_draws_only_from_allowed_zones(tmp
     assert hay["zone"] == "train" and hay["seed"] == 601 and hay["index"] == str(folder_idx)
     assert len(hay["dsids"]) == hay["n_docs"] == dr["documents"] >= n
     assert all(zone_map[d] == "train" for d in hay["dsids"]) and (out / "index.json").resolve() == folder_idx.resolve()
+    assert json.loads((out / "index.json").read_text())["index"].keys() >= set(hay["dsids"]), "the folder reads as other draws do"
     want = sorted((p["pr"], p["issue"]) for p in rep["planted"]["pairs"]["train"])
     assert sorted((p["pr"], p["issue"]) for p in dr["planted"]) == want and all(x in hay["dsids"] for p in want for x in p)
     assert dr["haystack_sha256"] == hashlib.sha256((out / "haystack.json").read_bytes()).hexdigest()
     test = B.write_draw(zones_path, "test", 7, folder_idx, root, tmp_path / "test", n=3, preregistered=True)
     assert len(test["planted"]) == 1 and all(zone_map[d] == "test" for d in json.loads((tmp_path / "test" / "haystack.json").read_text())["dsids"])
+
+
+def test_a_draw_needs_a_folder_index_of_the_same_benchmark(tmp_path, monkeypatch):
+    root, idx, folder_idx, scratch = _bench(tmp_path)
+    monkeypatch.setattr(B, "PLANT_COUNTS", {"test": 1, "dev": 1, "train": 2})
+    B.main(["zones", "--scratch", str(scratch), "--index", str(idx), "--root", str(root)])
+    zones_path = scratch / "brain" / "zones.json.gz"
+
+    def run(index, out):
+        return B.main(["draw", "--zone", "train", "--seed", "601", "-n", "8", "--zones", str(zones_path), "--index", str(index),
+                       "--root", str(root), "--out", str(out)])
+
+    with pytest.raises(ValueError, match="not a folder index"):  # the flat index used for the zones
+        run(idx, tmp_path / "flat")
+    assert not (tmp_path / "flat").exists()
+    elsewhere = tmp_path / "elsewhere.json"
+    elsewhere.write_text(json.dumps({"root": str(tmp_path / "other"), "index": json.loads(idx.read_text())}))
+    with pytest.raises(ValueError, match="reads documents from"):
+        run(elsewhere, tmp_path / "elsewhere")
+    out = tmp_path / "train"
+    first = run(folder_idx, out)
+    assert first["index_sha256"] == hashlib.sha256(folder_idx.read_bytes()).hexdigest()
+    assert run(folder_idx, out)["haystack_sha256"] == first["haystack_sha256"], "drawing again into the folder is allowed"
+    copy = tmp_path / "copy.json"
+    copy.write_bytes(folder_idx.read_bytes())
+    with pytest.raises(ValueError, match="another index"):
+        run(copy, out)

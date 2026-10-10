@@ -61,7 +61,7 @@ NOT_ORDER_AFTER = {"next": frozenset(("meeting", "meetings", "call", "calls", "w
                                       "review", "time", "step", "steps", "year", "day", "1"))}
 # v15 (the company brain, ``brain``): a question word that opens a clause says what kind of answer is asked for, when it asks
 # plainly (Planner.interrogative_kind); "what" or "which" asks for a date only before a date word, and for a count only before
-# "number of"
+# "number of" (not "the number of the pull request", which asks for one item's number)
 QUESTION_WORDS = frozenset(("who", "whom", "whose", "when", "how", "what", "which", "where", "why"))
 CLAUSE_OPENERS = frozenset(("and", "but", "so", "then", "also"))
 PREPOSITIONS = frozenset(("by", "until", "till", "since", "on", "at", "to", "for", "from"))

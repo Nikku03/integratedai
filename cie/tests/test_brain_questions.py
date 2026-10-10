@@ -25,8 +25,8 @@ def _jira(dsid, key, who="Omar Singh", **x):
     return _d(dsid, "jira", f"Ticket {key} about 5xx", key=key, assignee=who, status="Resolved", priority="P2", reporter="Ava Lee", **x)
 
 
-def _pr(dsid, n, author="Maya Chen", **x):
-    return _d(dsid, "github", f"PR {n}: add a smoke test", pr_number=n, author=author, repo="runtime", merged_at="2026-02-20", **x)
+def _pr(dsid, n, author="Maya Chen", repo="runtime", **x):
+    return _d(dsid, "github", f"PR {n}: add a smoke test", pr_number=n, author=author, repo=repo, merged_at="2026-02-20", **x)
 
 
 def _gen(fn, docs, seed=1, cap=None):
@@ -251,3 +251,64 @@ def test_an_impossible_due_date_starts_no_window():
     qs = generate_questions(bad, 7, caps={"linear_due_window": 50})
     starts = {q["question"].split("between ")[1][:10] for q in qs if q["kind"] == "linear_due_window"}
     assert starts and "2026-02-29" not in starts
+
+
+def test_a_field_value_is_not_matched_inside_a_longer_value():
+    repo = {"id": "pr_repo-001", "kind": "pr_repo", "question": "?", "expected": {"value": "redwood"}}
+    assert B.score(repo, "redwood-docs") == 0.0 and B.score(repo, "It is in redwood-private-installer.") == 0.0
+    assert B.score(repo, "redwood") == 1.0 and B.score(repo, "The repository is redwood.") == 1.0
+    proj = {"id": "p", "kind": "linear_issue_project", "question": "?", "expected": {"value": "runtime-stability", "alts": ["runtime stability"]}}
+    assert B.score(proj, "runtime-stability-2025") == 0.0 and B.score(proj, "Runtime Stability") == 1.0
+    meta = {"id": "m", "kind": "metadata", "question": "?", "expected": {"value": "redwood"}}
+    assert B.score(meta, "redwood-docs") == 1.0, "the memory test's kinds keep factbank_test.direct as it is"
+
+
+def test_a_field_value_written_inside_another_value_is_set_aside():
+    docs = [_pr("p1", "4821", repo="redwood"), _pr("p2", "4822", repo="redwood"), _pr("p3", "4823", repo="redwood-docs"),
+            _pr("p4", "4824", repo="eval-harness")]
+    qs, aside = _gen(lambda *a, **k: B.field_questions("pr_repo", *a, **k), docs)
+    assert sorted(q["expected"]["value"] for q in qs) == ["eval-harness", "redwood-docs"] and aside == {"named inside another": 2}
+    docs = [_lin("l1", "DES-11", "Ava Lee", project="Onboarding Revamp"), _lin("l2", "DES-12", "Ava Lee", project="Dedicated Onboarding Revamp")]
+    qs, aside = _gen(lambda *a, **k: B.field_questions("linear_issue_project", *a, **k), docs)
+    assert [q["expected"]["value"] for q in qs] == ["Dedicated Onboarding Revamp"] and aside == {"named inside another": 1}
+    assert B._nested(["runtime-stability", "runtime-stability-2025", "Runtime Stability"]) == {"runtimestability", "runtimestability2025"}
+    assert B._nested(["AcmeAI", "Acme AI (Corp)", "Acme Retail"], outer=False) == {"acmeai"}
+
+
+def test_names_are_grouped_and_compared_whatever_the_hyphens_and_spaces():
+    docs = [_lin("l1", "ENG-11", "Omar Singh", project="runtime-stability"), _lin("l2", "ENG-12", "Liam Chen", project="runtime-stability"),
+            _lin("l3", "ENG-13", "Ava Lee", project="runtime-stability-2025"), _lin("l4", "ENG-14", "Ava Lee", project="runtime-stability-2025"),
+            _lin("l5", "ENG-15", "Ava Lee", project="Model Onboarding"), _lin("l6", "ENG-16", "Zoe Park", project="model-onboarding")]
+    qs, aside = _gen(B.project_members, docs)
+    assert [(q["expected"]["names"], sorted(q["gold_docs"])) for q in qs] == [(["Ava Lee", "Zoe Park"], ["l5", "l6"])]
+    assert aside == {"named inside another": 2}, "runtime-stability is part of runtime-stability-2025"
+    tickets = [_jira("j1", "SUP-350121", customer_company="AcmeAI"), _jira("j2", "SUP-28463", customer_company="Acme AI"),
+               _jira("j3", "SUP-28421", customer_company="Acme AI")]
+    qs, _ = _gen(B.customer_tickets, tickets)
+    assert [q["expected"]["ids"] for q in qs] == [["SUP-28421", "SUP-28463", "SUP-350121"]], "AcmeAI and Acme AI are one customer"
+    qs, aside = _gen(B.customer_tickets, tickets + [_jira("j4", "SUP-1860", customer_company="Acme AI (Corp)")])
+    assert qs == [] and aside == {"named inside another": 2}
+
+
+def test_bots_teams_and_role_labels_are_not_people():
+    docs = [_d("f1", "fireflies", "Guardrail regression walkthrough", redwood_attendees=["Jordan Ellis (AE)", "Redwood Recorder Bot"],
+               customer_attendees=["Marco Ruiz"]),
+            _d("f2", "fireflies", "Quarterly business review", redwood_attendees=["Jordan Ellis"], customer_attendees=["Product Team"]),
+            _d("f3", "fireflies", "Budget sync with Prism", redwood_attendees=["Finance: Priya Desai"], customer_attendees=["Marco Ruiz"]),
+            _d("f4", "fireflies", "Pricing call with Lantana", redwood_attendees=["Maya Chen (Growth)"], customer_attendees=["Revenue & Growth"]),
+            _d("f5", "fireflies", "Capacity planning session", redwood_attendees=["Maya Chen (Growth)"], customer_attendees=["Marco Ruiz"])]
+    qs, aside = _gen(lambda *a, **k: B.name_questions("meeting_attendees", *a, **k), docs)
+    assert [q["expected"]["names"] for q in qs] == [["Maya Chen", "Marco Ruiz"]] and aside == {"not a person": 4}
+    assert B._person("Unknown Speaker") is None and B._person("Kimberly Park") == "Kimberly Park"
+
+
+def test_a_question_code_cannot_check_scores_none():
+    empty = {"id": "qst_0013", "kind": "metadata", "question": "Who owns it?", "expected": {}}
+    assert not B.checkable(empty) and B.score(empty, "Maya Chen") is None and B.score(empty, "not found") is None
+    assert B.checkable({"kind": "metadata", "expected": {"value": "Maya Chen"}}) and B.checkable({"kind": "nf_pr", "expected": {"not_found": True}})
+    vague = {"id": "prose-001", "kind": "prose", "family": "prose", "question": "?", "expected": {"facts": ["the"]}, "gold_docs": ["g1"], "pieces": []}
+    assert B.score(vague, "the") is None
+    with pytest.raises(ValueError):
+        B.score({"id": "c", "kind": "conflicting_info", "question": "?", "expected": {}}, "x")
+    drawn = B.draw_questions(_haystack(), seed=3, mix={"prose": 2}, prose=[vague, {**vague, "id": "prose-002", "expected": {"facts": ["p99 840 ms"]}}])
+    assert [q["id"] for q in drawn] == ["prose-002"]

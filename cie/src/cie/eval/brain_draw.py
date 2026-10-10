@@ -8,9 +8,13 @@ training zones, and 5,000-document draws from one zone.
 - **Draws** are ``factbank_5k.draw`` over one zone, planting exactly that zone's pairs (``draw``). The test zone is drawn only
   after the pre-registration (``--i-have-preregistered``); until then only its counts are written.
 
+``zones`` takes the flat dsid -> path index (uuid_index.json). ``draw`` takes a folder index, ``{"root": <benchmark>/
+generated_data/sources, "index": {dsid: path}}`` (mt5k/index.json), because it links the index into the draw folder as
+index.json and the readers of a draw folder expect that format.
+
     python -m cie.eval.brain_draw zones --scratch $S --index $BENCH/generated_data/uuid_index.json --root $BENCH
-    python -m cie.eval.brain_draw draw --zone train --seed 601 --zones $S/brain/zones.json.gz --index $IDX --root $BENCH \\
-        --out $S/brain/train5k
+    python -m cie.eval.brain_draw draw --zone train --seed 601 --zones $S/brain/zones.json.gz --index $S/mt5k/index.json \\
+        --root $BENCH --out $S/brain/train5k
 """
 
 from __future__ import annotations
@@ -124,19 +128,25 @@ def draw(index: dict[str, str], zone_map: dict[str, str], zone: str, load: Loade
          planted: Iterable[Pair] = (), preregistered: bool = False) -> tuple[list[str], dict[str, Any]]:
     """``factbank_5k.draw`` over the documents of one zone, planting exactly ``planted``.
 
-    Draw plants pull requests that meet its rule inside its pool, and a zone holds pairs that meet it only there (the other
-    document with that pull request number is in another zone, say). The loader handed to draw therefore hides the Linear links
-    of every other pull request. Nothing else in draw reads them, so the sample is draw's own, with ``planted`` as its only
-    candidates; draw still keeps out the other tickets a planted pull request links."""
+    Each planted pair must first meet draw's rule among the zone's own documents (no second pull request linking the issue, no
+    reused number or key). Draw plants pull requests that meet its rule inside its pool, and a zone holds pairs that meet it
+    only there (the other document with that pull request number is in another zone, say). The loader handed to draw therefore
+    hides the Linear links of every other pull request. Nothing else in draw reads them, so the sample is draw's own, with
+    ``planted`` as its only candidates; draw still keeps out the other tickets a planted pull request links."""
     if zone == "test" and not preregistered:
         raise PermissionError("the test zone is drawn only after the pre-registration")
     if zone not in ZONES:
         raise ValueError(f"unknown zone {zone!r}")
     planted = sorted(planted)
     inside = {d for d, z in zone_map.items() if z == zone}
+    if missing := len(inside - set(index)):
+        raise ValueError(f"the index lacks {missing} documents of the {zone} zone")
     outside = sorted(x for pair in planted for x in pair if x not in inside)
     if outside:
         raise ValueError(f"{len(outside)} planted documents are not in the {zone} zone")
+    stale = sorted(set(planted) - set(planted_pairs(index, inside, load)))
+    if stale:
+        raise RuntimeError(f"{len(stale)} planted pairs do not meet draw's rule among the {zone} zone's documents")
     prs = {pr for pr, _ in planted}
 
     def view(ids: list[str]) -> list[dict[str, Any]]:
@@ -146,7 +156,7 @@ def draw(index: dict[str, str], zone_map: dict[str, str], zone: str, load: Loade
     ids, info = factbank_5k.draw(index, set(index) - inside, view, n=n, seed=seed, planted=len(planted))
     got = sorted((p["pr"], p["issue"]) for p in info["planted"])
     if got != planted:
-        raise RuntimeError(f"draw planted {len(got)} pairs, not the zone's {len(planted)}: a pair no longer meets the rule here")
+        raise RuntimeError(f"draw planted {len(got)} pairs, not the zone's {len(planted)}")
     return ids, {**info, "zone": zone, "seed": seed}
 
 
@@ -162,6 +172,19 @@ def load_index(path: Path) -> dict[str, str]:
     """A dsid -> relative path index, flat (uuid_index.json) or under ``index`` (a haystack folder's index.json)."""
     d = json.loads(path.read_text())
     return d["index"] if isinstance(d.get("index"), dict) else d
+
+
+def load_folder_index(path: Path, root: Path) -> dict[str, str]:
+    """The dsid -> relative path index of a folder index, ``{"root": <root>/generated_data/sources, "index": {...}}``
+    (mt5k/index.json), the format the readers of a draw folder expect in its index.json."""
+    d = json.loads(path.read_text())
+    if not (isinstance(d, dict) and isinstance(d.get("root"), str) and isinstance(d.get("index"), dict)):
+        raise ValueError(f"{path} is not a folder index: draw links it as index.json, whose readers need "
+                         '{"root": <benchmark>/generated_data/sources, "index": {dsid: path}} (mt5k/index.json, say), '
+                         "not a flat dsid -> path map such as uuid_index.json")
+    if Path(d["root"]).resolve() != (root / "generated_data" / "sources").resolve():
+        raise ValueError(f"{path} reads documents from {d['root']}, not from {root / 'generated_data' / 'sources'}")
+    return d["index"]
 
 
 def _loader(root: Path, index: dict[str, str]) -> Loader:
@@ -220,14 +243,17 @@ def zone_pairs(zones_path: Path, zone: str, index: dict[str, str], load: Loader)
 
 def write_draw(zones_path: Path, zone: str, seed: int, index_path: Path, root: Path, out: Path, n: int = N_DOCS,
                preregistered: bool = False, load: Loader | None = None) -> dict[str, Any]:
-    """Draw ``n`` documents from one zone and write ``out``/haystack.json (with the index linked as index.json, as the other
-    draws do) and ``out``/draw_report.json."""
+    """Draw ``n`` documents from one zone and write ``out``/haystack.json (with the folder index linked as index.json, as the
+    other draws do) and ``out``/draw_report.json."""
     if zone == "test" and not preregistered:
         raise PermissionError("the test zone is drawn only after the pre-registration")
+    index = load_folder_index(index_path, root)
+    link = out / "index.json"
+    if (link.exists() or link.is_symlink()) and link.resolve() != index_path.resolve():
+        raise ValueError(f"{link} already names another index ({link.resolve()})")
     rep_z = json.loads(summary_path(zones_path).read_text())
     if _sha256(zones_path) != rep_z["sha256"]:
         raise RuntimeError(f"{zones_path} differs from the file its summary describes")
-    index = load_index(index_path)
     load = load or _loader(root, index)
     zone_map = read_zones(zones_path)
     planted = zone_pairs(zones_path, zone, index, load)
@@ -236,10 +262,11 @@ def write_draw(zones_path: Path, zone: str, seed: int, index_path: Path, root: P
     hay = out / "haystack.json"
     hay.write_text(json.dumps({"root": str(root), "n_docs": len(ids), "seed": seed, "base_questions": 0, "documents": len(ids),
                                "zone": zone, "index": str(index_path), "zones_sha256": rep_z["sha256"], "dsids": ids}))
-    if not (out / "index.json").exists():
-        (out / "index.json").symlink_to(index_path.resolve())
+    if not (link.exists() or link.is_symlink()):
+        link.symlink_to(index_path.resolve())
     rep = {**info, "n": n, "zone_documents": sum(1 for z in zone_map.values() if z == zone), "by_source": _by_source(index, ids),
-           "zones_file": str(zones_path), "zones_sha256": rep_z["sha256"], "haystack": str(hay), "haystack_sha256": _sha256(hay)}
+           "zones_file": str(zones_path), "zones_sha256": rep_z["sha256"], "index": str(index_path),
+           "index_sha256": _sha256(index_path), "haystack": str(hay), "haystack_sha256": _sha256(hay)}
     (out / "draw_report.json").write_text(json.dumps(rep, indent=1))
     return rep
 
@@ -248,7 +275,8 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
     ap = argparse.ArgumentParser(prog="python -m cie.eval.brain_draw")
     ap.add_argument("cmd", choices=["zones", "draw"])
     ap.add_argument("--scratch", help="zones: the folder whose haystacks are the seen documents")
-    ap.add_argument("--index", required=True, help="the dsid -> path index (draw: linked into the folder as index.json)")
+    ap.add_argument("--index", required=True, help="zones: the flat dsid -> path index (uuid_index.json); draw: a folder index "
+                    '{"root": <root>/generated_data/sources, "index": {...}} (mt5k/index.json), linked into the folder as index.json')
     ap.add_argument("--root", required=True, help="the benchmark folder (holding generated_data/sources)")
     ap.add_argument("--zones", default=None, help="the zone file (default: <scratch>/brain/zones.json.gz)")
     ap.add_argument("--zone", choices=ZONES)

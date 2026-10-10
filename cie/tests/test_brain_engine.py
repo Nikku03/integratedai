@@ -141,6 +141,31 @@ def test_answer_first_with_its_facts(tmp_path):
                                                   ["reviewers of #4821 (Add retry to badge sync): Omar Singh"])
 
 
+def test_answer_first_is_separate_from_the_brain_order(tmp_path):
+    """Under a planner that prints its own answer: the brain order and keys without the engine's "Answer:" line; and the
+    answer first without the brain order."""
+    fb = _bank(tmp_path)
+    assert fb.answer_first is None and fb.leads_with_answer is False
+    fb.brain = True
+    assert fb.leads_with_answer is True, "None follows brain"
+    fb.answer_first = False
+    assert fb.leads_with_answer is False
+    for q in QUESTIONS:
+        r = fb.ask(q)
+        written, _, seeds = fb.run(q)
+        assert r.evidence == fb.evidence(written, seeds, 24_000) and not re.search(r"^Answer:", r.evidence, re.M)
+    q = "What is the forecast close month of Brightfjord Labs?"
+    assert fb.ask(q).evidence.split("\n")[0] == "[document] Brightfjord Labs", "the largest single vote first, as with brain"
+    ev = fb.ask("Which issues is Omar Singh working on?").evidence
+    assert "- assignee of: ENG-11: Fix keycard reader timeouts, ENG-12: Rotate office wifi keys" in ev
+    fb.brain, fb.answer_first = False, True
+    r = fb.ask(q)
+    written, _, seeds = fb.run(q)
+    head = "Answer: 2026-04\n- forecast close month of Brightfjord Labs: 2026-04"
+    assert r.evidence == (head + "\n\n" + _old_evidence(fb, written, seeds, 24_000 - len(head) - 2)).strip(), "v1 order after"
+    assert FactBank.answer_first is None, "set on the instance only"
+
+
 def test_blocks_ordered_by_largest_single_vote(tmp_path):
     fb = _bank(tmp_path)
     q = "What is the forecast close month of Brightfjord Labs?"
@@ -239,6 +264,16 @@ def test_trained_bank_inherits_the_modes(tmp_path):
     q = "Who authored the pull request adding retry to badge sync?"
     head = tb.ask(q).evidence.split("\n\n")
     assert head[0].startswith(f"Answer: {tb.ask(q).answer}\n- ") and head[1].startswith("Other likely answers, best first:\n- ")
+    for q in [x["question"] for x in qs] + ["What is the forecast close month of Brightfjord Labs?"]:
+        tb.brain, tb.answer_first = False, None
+        off = tb.ask(q)
+        tb.brain, tb.answer_first = True, False  # as under ask_plans: the planner prints the only answer
+        r = tb.ask(q)
+        top = off.evidence.split("\n\n")[0]
+        assert r.answer == off.answer and top.startswith("Most likely answers, best first:\n"), "v2's candidates, as v13 shows them"
+        assert r.evidence == (top + "\n\n" + tb.evidence(r.written, r.seeds, 24_000 - len(top) - 2)).strip()
+        assert not re.search(r"^(Answer|Other likely answers)", r.evidence, re.M)
+    tb.brain, tb.answer_first = False, None
     tb.whole_system_words = True
     assert tb.list_ask("List every issue assigned to Omar Singh that is CI-driven.")[0] != "not found"
     tb.whole_system_words = False

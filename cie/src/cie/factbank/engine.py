@@ -28,6 +28,9 @@ Opt-in modes (off by default, so that earlier results reproduce exactly; set the
 - ``FactBank.brain``: the evidence starts with the engine's own answer and the fact lines it rests on; entity blocks are
   ordered by their largest single vote, not the sum (a person in many messages of one Slack channel is not printed first);
   and a line whose values point to entities with a key shows the key ("assignee of: ENG-123: title").
+- ``FactBank.answer_first``: whether the evidence starts with the engine's own answer; None (the default) follows ``brain``.
+  Set it False under a planner that prints its own answer (``factbank_multi.ask_plans`` builds the rest of its evidence
+  with the bank's ``ask``), so that the planner's answer is the only "Answer:" line and the rest keeps the brain order.
 - ``FactBank.passages``: the text of the documents that best match the question, cut into passages and ranked.
 """
 
@@ -149,6 +152,7 @@ class Result:
 
 class FactBank:
     brain = False  # set True on an instance: answer first, blocks by their largest single vote, keys on relation lines
+    answer_first: bool | None = None  # None follows ``brain``; False keeps the brain order and keys without the answer first
     whole_system_words = False  # set True on an instance: system words count only as whole words (``systems_in``)
 
     def __init__(self, path: str | Path):
@@ -191,6 +195,11 @@ class FactBank:
         rows = self.con.execute("SELECT id FROM entities_fts WHERE entities_fts MATCH ? ORDER BY bm25(entities_fts, 0.0, 3.0, 1.0) LIMIT ?",
                                 (match, k)).fetchall()
         return [r["id"] for r in rows]
+
+    @property
+    def leads_with_answer(self) -> bool:
+        """Whether the evidence starts with the engine's own answer: ``answer_first``, or ``brain`` when that is None."""
+        return self.brain if self.answer_first is None else self.answer_first
 
     def named_systems(self, text: str) -> list[str]:
         """The systems a text names (``systems_in``), as whole words when ``whole_system_words`` is set."""
@@ -271,7 +280,7 @@ class FactBank:
     def ask(self, question: str, k: int = 5, budget: int = 24_000) -> Result:
         t = time.perf_counter()
         written, journal, seeds = self.run(question, k)
-        if not self.brain:
+        if not self.leads_with_answer:
             answer, reason = self.answer(question, written, seeds)
             evidence = self.evidence(written, seeds, budget)
         else:
@@ -283,7 +292,7 @@ class FactBank:
 
     @staticmethod
     def head(answer: str, lines: list[str]) -> str:
-        """The answer and the fact lines it rests on, to start the evidence with (``brain``); nothing for "not found"."""
+        """The answer and the fact lines it rests on, to start the evidence with (``leads_with_answer``); nothing for "not found"."""
         if answer == "not found":
             return ""
         return "\n".join([f"Answer: {answer}", *(f"- {x}" for x in lines)])

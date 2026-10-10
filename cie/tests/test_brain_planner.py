@@ -63,6 +63,14 @@ def _v13(tb, brain=False):
     ("How many Linear issues does Omar Singh have?", "count"),
     ("How many tickets does the person who opened PR #4821 have?", "count"),
     ("What's the total number of Linear tickets on Omar Singh's list?", "count"),
+    ("What is the number of Linear tickets with Omar Singh as assignee?", "count"),
+    # a question word after a preposition that opens the clause
+    ("By when does the Linear work behind PR #4821 need to be done?", "date"),
+    ('From "Badge rollout sync": by when does Priya Nair have to finish "order spare keycards"?', "date"),
+    ("On what date was PR #4821 merged?", "date"),
+    ("To whom is ENG-11 assigned?", "person"),
+    # a title that ends with its own full stop inside the quotes still ends the sentence
+    ('Maya took the action item "send the checklist." When is it due?', "date"),
 ])
 def test_question_words_that_ask_plainly(question, kind):
     assert P.Planner.interrogative_kind(question) == kind
@@ -79,6 +87,9 @@ def test_question_words_that_ask_plainly(question, kind):
     "What is the PR number of the pull request linked to ENG-11?",
     "List every GitHub pull request authored by Maya Chen.",
     "Where does the ticket linked to PR #4821 stand right now?",
+    "List the pull requests merged by when ENG-11 closed.",
+    "What is the number of the pull request linked to ENG-11?",
+    "What's the number of that PR?",
 ])
 def test_question_words_that_leave_the_kind_open(question):
     assert P.Planner.interrogative_kind(question) is None
@@ -92,6 +103,17 @@ def test_the_question_word_overrides_the_learned_kind_only_with_brain(tb):
     assert brain.asked_kind(q, None) == "date", "an unsure lesson is filled in"
     assert brain.asked_kind("What is the status of ENG-11?", "other") == "other", "an open question word leaves the lesson's kind"
     assert brain.asked_kind("What is the status of ENG-11?", None) is None
+    q = 'From "Badge rollout sync": by when does Priya Nair have to finish "order spare keycards for the lobby"?'
+    assert brain.asked_kind(q, "person") == "date", "'by when' asks for a date"
+    assert brain.asked_kind("What is the number of the pull request linked to ENG-11?", "key") == "key", "an item's number"
+
+
+def test_quoted_titles_and_asking_for_a_count():
+    assert P.unquoted('item "send the checklist." When').split() == ["item", ".", "When"]
+    assert P.unquoted('took "send the checklist", so').split() == ["took", ",", "so"]
+    assert P.unquoted("“Q3?” and “”").split() == ["?", "and"]
+    assert P.ASKS_COUNT.search("Give the number of tickets Omar Singh has.") and P.ASKS_COUNT.search("How many are open?")
+    assert not P.ASKS_COUNT.search("List the number of the pull request linked to each of Omar Singh's tickets.")
 
 
 def test_answer_uses_the_question_word_with_brain(tb):
