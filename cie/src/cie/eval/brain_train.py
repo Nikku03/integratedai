@@ -9,7 +9,8 @@ Three steps, each from questions with known answers over a training bank (``cie.
    Earlier training sets can join on their own banks, so that what v13 learned is learned again.
 3. **The router** (``cie.factbank.brain.Router``) on every fact and prose question: fact or prose.
 
-    python -m cie.eval.brain_train train --work TRAIN --out DIR [--extra WORK ...] [--glossary G]
+    python -m cie.eval.brain_train train --work TRAIN --out DIR [--extra WORK ...] [--glossary G] [--workers N]
+    python -m cie.eval.brain_train router --work TRAIN --out DIR [--workers N]   (the router alone, on lessons in DIR)
 """
 
 from __future__ import annotations
@@ -103,14 +104,51 @@ def learn_plans_many(pairs: list[tuple[Any, list[dict[str, Any]]]], glossary_pat
     return les
 
 
+def _signals(args: tuple[str, str, str, list[str]]) -> list[dict[str, float]]:
+    from cie.factbank.brain import Brain
+
+    bank, single, plans, questions = args
+    brain = Brain(bank, single, plans)
+    return [brain.signals(q) for q in questions]
+
+
+class _Signals:
+    """Signals worked out beforehand, read back by question, so that ``Router.train`` need not run the planner again."""
+
+    def __init__(self, by_question: dict[str, dict[str, float]]):
+        self.by_question = by_question
+
+    def signals(self, question: str) -> dict[str, float]:
+        return self.by_question[question]
+
+
+def fit_router(work: Path, single: Path, plans: Path, qs: list[dict[str, Any]], workers: int = 1):
+    """The router, trained on the fact and prose questions of ``qs``; their signals (which run the planner, a few seconds a
+    question at 5,000 documents) are worked out in ``workers`` processes."""
+    from concurrent.futures import ProcessPoolExecutor
+
+    from cie.factbank.brain import Router
+
+    routed = [q for q in qs if q.get("family") in ("single", "multi", "prose")]
+    texts = sorted({q["question"] for q in routed})
+    chunks = [texts[i::max(1, workers)] for i in range(max(1, workers))]
+    args = [(str(work / "factbank_v2.sqlite"), str(single), str(plans), c) for c in chunks if c]
+    if workers > 1:
+        with ProcessPoolExecutor(workers) as ex:
+            got = list(ex.map(_signals, args))
+    else:
+        got = [_signals(a) for a in args]
+    by_question = {t: s for (_, _, _, c), sigs in zip(args, got, strict=True) for t, s in zip(c, sigs, strict=True)}
+    return Router.train(routed, _Signals(by_question))
+
+
 def train(work: Path, out: Path, extra: list[Path] = (), glossary: Path | None = None, extra_single: Path | None = None,
-          log=print) -> dict[str, Any]:
+          workers: int = 1, log=print) -> dict[str, Any]:
     """Train the three parts on ``work`` (questions.jsonl over its v2 bank), the plan lessons also on each ``extra`` folder's
     questions over its own bank (read with ``extra_single``, the single-fact lessons those questions were asked with). Writes
     ``single_lessons.json``, ``plan_lessons.json`` and ``router.json`` to ``out``."""
     import time
 
-    from cie.factbank.brain import Brain, Router
     from cie.factbank.learn import Lessons
     from cie.factbank.learn import train as fit_single
     from cie.factbank.trained import TrainedBank
@@ -131,9 +169,7 @@ def train(work: Path, out: Path, extra: list[Path] = (), glossary: Path | None =
     plan.save(out / "plan_lessons.json")
     times["plans"] = round(time.perf_counter() - t, 1)
     t = time.perf_counter()
-    brain = Brain(work / "factbank_v2.sqlite", out / "single_lessons.json", out / "plan_lessons.json")
-    routed = [q for q in qs if q.get("family") in ("single", "multi", "prose")]
-    router = Router.train(routed, brain)
+    router = fit_router(work, out / "single_lessons.json", out / "plan_lessons.json", qs, workers)
     router.save(out / "router.json")
     times["router"] = round(time.perf_counter() - t, 1)
     rep = {"work": str(work), "extra": [str(w) for w in extra], "glossary": str(glossary) if glossary else "",
@@ -145,14 +181,20 @@ def train(work: Path, out: Path, extra: list[Path] = (), glossary: Path | None =
 
 def main(argv: list[str] | None = None) -> Any:
     ap = argparse.ArgumentParser(prog="python -m cie.eval.brain_train")
-    ap.add_argument("cmd", choices=["train"])
+    ap.add_argument("cmd", choices=["train", "router"])
     ap.add_argument("--work", required=True, type=Path)
     ap.add_argument("--out", required=True, type=Path)
     ap.add_argument("--extra", nargs="*", default=[], type=Path, help="earlier training folders whose questions join the plan lessons")
     ap.add_argument("--extra-single", type=Path, help="the single-fact lessons the extra folders' questions were asked with")
     ap.add_argument("--glossary", type=Path)
+    ap.add_argument("--workers", type=int, default=1, help="processes for the router's signals")
     a = ap.parse_args(argv)
-    rep = train(a.work, a.out, a.extra, a.glossary, a.extra_single)
+    if a.cmd == "router":  # the router alone, on lessons already in --out
+        router = fit_router(a.work, a.out / "single_lessons.json", a.out / "plan_lessons.json", _jsonl(a.work / "questions.jsonl"), a.workers)
+        router.save(a.out / "router.json")
+        print(json.dumps(router.trained_on))
+        return router.trained_on
+    rep = train(a.work, a.out, a.extra, a.glossary, a.extra_single, a.workers)
     print(json.dumps(rep, indent=1))
     return rep
 
