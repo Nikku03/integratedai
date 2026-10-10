@@ -1,7 +1,5 @@
 # The company brain (v15): one version for every kind of question, fixed before the test
 
-DRAFT: this line is removed by the commit that freezes the test.
-
 I wrote this on 2026-10-10 and 2026-10-11:
 - **after** building and tuning v15 on training and development documents (below);
 - **before** drawing the test documents or writing a single test question.
@@ -312,7 +310,8 @@ done:
 - the seeds 809 to 812 were never used on the test zone.
 
 **The sealed rehearsal of the writers** (`writers_test.js` on the 10 development batches, writing their own files):
-REHEARSAL.
+all 10 files were there, read as JSON lines and answered every packet; the checks kept 37 of 40 descriptive and 50 of 60
+free-text questions (development's writers: 36 and 52). The rehearsal's questions are not used anywhere.
 
 ## Frozen
 
