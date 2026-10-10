@@ -156,6 +156,18 @@ came from. So their scores are optimistic and are not results.
 
 **A dry run of the whole pipeline on `mt5k`** checked every step: the draw's filters, the small set, both banks, every arm and
 the score. Its numbers are in `docs/benchmarks/factbank_5k/dry_run.json`. They come from a seen set and are not results.
+- **Every step ran,** and every picked question reproduced its expected answer on the small set.
+- **The hash-seed check changed no answer.**
+- **v13 scored 1.000 on the small bank and 0.937 on the 5,089-document bank,** so rule 1 would not have been met there.
+- **The whole difference was three questions in one wording:** "When is the ticket linked to pull request #N due? I need the
+  deadline date for the status email."
+  - The bank reads "email" as asking for an answer from Gmail.
+  - At 5,089 documents there are Gmail messages about the ticket, so the plan ends there. At 50 documents there are none, and
+    the check that would act is skipped.
+- **This is a real way size can cost accuracy, and it stays in the test.** The wordings and code are not changed to avoid it.
+  The test set may or may not draw that wording.
+- **Timing:** the arms ran up to seven at a time on four cores. v13 took a median of 11.8 seconds per question at 5,089
+  documents, against 0.45 on the small bank.
 
 ## Known limits
 
@@ -166,7 +178,7 @@ the score. Its numbers are in `docs/benchmarks/factbank_5k/dry_run.json`. They c
   reported, strict and lenient.
 - **The 2 to 4 window:** a person is asked about only if they have 2 to 4 Linear issues in the set, as before. The busiest
   people are never asked about.
-- **The time per question** was measured on a shared 4-core machine.
+- **The time per question** was measured on a shared 4-core machine, with several arms running at once.
 
 ## Frozen
 

@@ -1,0 +1,686 @@
+{
+ "rules": {
+  "1 nothing lost to size (v13 at 5,000 >= v13 on the small bank - 0.05)": false,
+  "2 the level holds (v13 at 5,000 >= 0.92)": true,
+  "3 the planner's lead holds at 5,000 (v9 - v4 >= +0.10 and v9 - v8 >= +0.05)": true,
+  "4 the same with the small model's form (v14 at 5,000 >= v14 on the small bank - 0.05)": false,
+  "5 right for the right reason (v13 at 5,000 >= v13 on the small bank - 0.05)": false
+ },
+ "differences_5k_minus_small": {
+  "v1": 0.063,
+  "v4": 0.132,
+  "v8": 0.11,
+  "v9": -0.083,
+  "v11": -0.062,
+  "v12": -0.062,
+  "v13": -0.063,
+  "v14": -0.063
+ },
+ "changed_questions": [
+  {
+   "id": "action_owner_issues-098",
+   "kind": "action_owner_issues",
+   "v4": [
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "id": "pr_issue-status-106",
+   "kind": "pr_issue",
+   "v1": [
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "id": "action_owner_issues-128",
+   "kind": "action_owner_issues",
+   "v4": [
+    1.0,
+    0.0
+   ],
+   "v8": [
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "id": "compare_two-189",
+   "kind": "compare_two",
+   "v4": [
+    0.0,
+    1.0
+   ],
+   "v8": [
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "id": "pr_issue-status-142",
+   "kind": "pr_issue",
+   "v8": [
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "id": "compare_two-191",
+   "kind": "compare_two",
+   "v4": [
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "id": "person_first-004",
+   "kind": "person_first",
+   "v4": [
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "id": "pr_issue-due_date-132",
+   "kind": "pr_issue",
+   "v1": [
+    0.0,
+    1.0
+   ],
+   "v9": [
+    1.0,
+    0.0
+   ],
+   "v11": [
+    1.0,
+    0.0
+   ],
+   "v12": [
+    1.0,
+    0.0
+   ],
+   "v13": [
+    1.0,
+    0.0
+   ],
+   "v14": [
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "id": "pr_issue-due_date-127",
+   "kind": "pr_issue",
+   "v1": [
+    0.0,
+    1.0
+   ],
+   "v9": [
+    1.0,
+    0.0
+   ],
+   "v11": [
+    1.0,
+    0.0
+   ],
+   "v12": [
+    1.0,
+    0.0
+   ],
+   "v13": [
+    1.0,
+    0.0
+   ],
+   "v14": [
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "id": "ticket_link-status-135",
+   "kind": "ticket_link",
+   "v1": [
+    0.0,
+    1.0
+   ],
+   "v4": [
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "id": "compare_two-192",
+   "kind": "compare_two",
+   "v4": [
+    0.0,
+    1.0
+   ],
+   "v8": [
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "id": "pr_issue-due_date-158",
+   "kind": "pr_issue",
+   "v1": [
+    0.0,
+    1.0
+   ],
+   "v9": [
+    1.0,
+    0.0
+   ],
+   "v11": [
+    1.0,
+    0.0
+   ],
+   "v12": [
+    1.0,
+    0.0
+   ],
+   "v13": [
+    1.0,
+    0.0
+   ],
+   "v14": [
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "id": "ticket_link-assignee-109",
+   "kind": "ticket_link",
+   "v4": [
+    1.0,
+    0.0
+   ],
+   "v8": [
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "id": "compare_two-193",
+   "kind": "compare_two",
+   "v4": [
+    0.0,
+    1.0
+   ],
+   "v8": [
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "id": "ticket_link-assignee-177",
+   "kind": "ticket_link",
+   "v4": [
+    0.0,
+    1.0
+   ],
+   "v8": [
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "id": "person_first-041",
+   "kind": "person_first",
+   "v4": [
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "id": "ticket_link-assignee-118",
+   "kind": "ticket_link",
+   "v8": [
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "id": "person_first-045",
+   "kind": "person_first",
+   "v4": [
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "id": "ticket_link-status-094",
+   "kind": "ticket_link",
+   "v8": [
+    1.0,
+    0.0
+   ],
+   "v9": [
+    1.0,
+    0.0
+   ]
+  }
+ ],
+ "time_ms": {
+  "v1": {
+   "5k": {
+    "median": 2333,
+    "p90": 3108,
+    "max": 5016
+   },
+   "small": {
+    "median": 32,
+    "p90": 63,
+    "max": 93
+   }
+  },
+  "v4": {
+   "5k": {
+    "median": 12878,
+    "p90": 28474,
+    "max": 37003
+   },
+   "small": {
+    "median": 488,
+    "p90": 696,
+    "max": 933
+   }
+  },
+  "v8": {
+   "5k": {
+    "median": 12921,
+    "p90": 27445,
+    "max": 34236
+   },
+   "small": {
+    "median": 466,
+    "p90": 695,
+    "max": 768
+   }
+  },
+  "v9": {
+   "5k": {
+    "median": 12136,
+    "p90": 20315,
+    "max": 22520
+   },
+   "small": {
+    "median": 452,
+    "p90": 608,
+    "max": 755
+   }
+  },
+  "v11": {
+   "5k": {
+    "median": 11739,
+    "p90": 17409,
+    "max": 23227
+   },
+   "small": {
+    "median": 464,
+    "p90": 610,
+    "max": 767
+   }
+  },
+  "v12": {
+   "5k": {
+    "median": 7019,
+    "p90": 49667,
+    "max": 58845
+   },
+   "small": {
+    "median": 459,
+    "p90": 597,
+    "max": 778
+   }
+  },
+  "v13": {
+   "5k": {
+    "median": 11763,
+    "p90": 17898,
+    "max": 23127
+   },
+   "small": {
+    "median": 445,
+    "p90": 625,
+    "max": 834
+   }
+  },
+  "v14": {
+   "5k": {
+    "median": 4257,
+    "p90": 5262,
+    "max": 5862
+   },
+   "small": {
+    "median": 213,
+    "p90": 258,
+    "max": 310
+   }
+  }
+ },
+ "builds": {
+  "dry5k/factbank": {
+   "seconds": 11.21,
+   "bytes": 106016768,
+   "facts": 109528,
+   "entities": 15300
+  },
+  "dry5k/factbank_v2": {
+   "seconds": 17.62,
+   "bytes": 115056640,
+   "facts": 130184,
+   "entities": 15300
+  },
+  "dry5ksmall/factbank": {
+   "seconds": 0.84,
+   "bytes": 3338240,
+   "facts": 3690,
+   "entities": 702
+  },
+  "dry5ksmall/factbank_v2": {
+   "seconds": 0.95,
+   "bytes": 3760128,
+   "facts": 4582,
+   "entities": 702
+  }
+ },
+ "hashseed_check": {
+  "questions": 50,
+  "different_answers": []
+ },
+ "draw": {
+  "documents": 5089,
+  "from": "/tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/mt5k",
+  "readable": 5089,
+  "questions_drawn": {
+   "action_owner_issues": 29,
+   "compare_two": 8,
+   "issue_pr_author": 1,
+   "person_count": 42,
+   "person_first": 35,
+   "pr_issue": 14,
+   "ticket_link": 64
+  },
+  "unclear": {
+   "named": {
+    "compare_two": 1,
+    "pr_issue": 1,
+    "ticket_link": 4
+   },
+   "answer": {
+    "person_count": 3,
+    "person_first": 2,
+    "pr_issue": 8,
+    "ticket_link": 16
+   },
+   "tickets": {
+    "action_owner_issues": 24,
+    "person_count": 15
+   }
+  },
+  "kept": {
+   "action_owner_issues": 5,
+   "compare_two": 7,
+   "issue_pr_author": 1,
+   "person_count": 24,
+   "person_first": 33,
+   "pr_issue": 5,
+   "ticket_link": 44
+  },
+  "picked": {
+   "action_owner_issues": 5,
+   "compare_two": 7,
+   "issue_pr_author": 1,
+   "person_count": 11,
+   "person_first": 11,
+   "pr_issue": 5,
+   "ticket_link": 10
+  },
+  "not_reproduced_in_small_set": 0,
+  "small_set_documents": 97,
+  "unclear_asked": {
+   "action_owner_issues": 13,
+   "compare_two": 1,
+   "person_count": 13,
+   "person_first": 2,
+   "pr_issue": 9,
+   "ticket_link": 12
+  },
+  "jira_documents": 183
+ },
+ "unclear": {
+  "questions": 50,
+  "by_reason": {
+   "tickets": 23,
+   "named": 4,
+   "answer": 23
+  },
+  "scores": {
+   "v1": {
+    "strict": 0.08,
+    "lenient": 0.08
+   },
+   "v4": {
+    "strict": 0.16,
+    "lenient": 0.36
+   },
+   "v8": {
+    "strict": 0.14,
+    "lenient": 0.22
+   },
+   "v9": {
+    "strict": 0.221,
+    "lenient": 0.421
+   },
+   "v11": {
+    "strict": 0.345,
+    "lenient": 0.545
+   },
+   "v12": {
+    "strict": 0.345,
+    "lenient": 0.545
+   },
+   "v13": {
+    "strict": 0.389,
+    "lenient": 0.66
+   },
+   "v14": {
+    "strict": 0.389,
+    "lenient": 0.66
+   }
+  }
+ },
+ "by_arm": {
+  "5k": {
+   "v1": {
+    "link": 0.438,
+    "combine": 0.0,
+    "compare": 0.0,
+    "mean": 0.146
+   },
+   "v4": {
+    "link": 0.5,
+    "combine": 0.667,
+    "compare": 0.571,
+    "mean": 0.579
+   },
+   "v8": {
+    "link": 0.438,
+    "combine": 0.778,
+    "compare": 0.429,
+    "mean": 0.548
+   },
+   "v9": {
+    "link": 0.75,
+    "combine": 0.877,
+    "compare": 1.0,
+    "mean": 0.876
+   },
+   "v11": {
+    "link": 0.812,
+    "combine": 0.926,
+    "compare": 1.0,
+    "mean": 0.913
+   },
+   "v12": {
+    "link": 0.812,
+    "combine": 0.926,
+    "compare": 1.0,
+    "mean": 0.913
+   },
+   "v13": {
+    "link": 0.812,
+    "combine": 1.0,
+    "compare": 1.0,
+    "mean": 0.937
+   },
+   "v14": {
+    "link": 0.812,
+    "combine": 1.0,
+    "compare": 1.0,
+    "mean": 0.937
+   }
+  },
+  "small": {
+   "v1": {
+    "link": 0.25,
+    "combine": 0.0,
+    "compare": 0.0,
+    "mean": 0.083
+   },
+   "v4": {
+    "link": 0.562,
+    "combine": 0.778,
+    "compare": 0.0,
+    "mean": 0.447
+   },
+   "v8": {
+    "link": 0.5,
+    "combine": 0.815,
+    "compare": 0.0,
+    "mean": 0.438
+   },
+   "v9": {
+    "link": 1.0,
+    "combine": 0.877,
+    "compare": 1.0,
+    "mean": 0.959
+   },
+   "v11": {
+    "link": 1.0,
+    "combine": 0.926,
+    "compare": 1.0,
+    "mean": 0.975
+   },
+   "v12": {
+    "link": 1.0,
+    "combine": 0.926,
+    "compare": 1.0,
+    "mean": 0.975
+   },
+   "v13": {
+    "link": 1.0,
+    "combine": 1.0,
+    "compare": 1.0,
+    "mean": 1.0
+   },
+   "v14": {
+    "link": 1.0,
+    "combine": 1.0,
+    "compare": 1.0,
+    "mean": 1.0
+   }
+  },
+  "reason_5k": {
+   "v4": {
+    "link": 0.25,
+    "combine": 0.667,
+    "compare": 0.0,
+    "mean": 0.306
+   },
+   "v8": {
+    "link": 0.375,
+    "combine": 0.778,
+    "compare": 0.143,
+    "mean": 0.432
+   },
+   "v9": {
+    "link": 0.75,
+    "combine": 0.815,
+    "compare": 1.0,
+    "mean": 0.855
+   },
+   "v11": {
+    "link": 0.75,
+    "combine": 0.815,
+    "compare": 1.0,
+    "mean": 0.855
+   },
+   "v12": {
+    "link": 0.75,
+    "combine": 0.815,
+    "compare": 1.0,
+    "mean": 0.855
+   },
+   "v13": {
+    "link": 0.75,
+    "combine": 1.0,
+    "compare": 1.0,
+    "mean": 0.917
+   },
+   "v14": {
+    "link": 0.75,
+    "combine": 1.0,
+    "compare": 1.0,
+    "mean": 0.917
+   }
+  },
+  "reason_small": {
+   "v4": {
+    "link": 0.375,
+    "combine": 0.778,
+    "compare": 0.0,
+    "mean": 0.384
+   },
+   "v8": {
+    "link": 0.375,
+    "combine": 0.815,
+    "compare": 0.0,
+    "mean": 0.397
+   },
+   "v9": {
+    "link": 0.938,
+    "combine": 0.815,
+    "compare": 1.0,
+    "mean": 0.918
+   },
+   "v11": {
+    "link": 0.938,
+    "combine": 0.815,
+    "compare": 1.0,
+    "mean": 0.918
+   },
+   "v12": {
+    "link": 0.938,
+    "combine": 0.815,
+    "compare": 1.0,
+    "mean": 0.918
+   },
+   "v13": {
+    "link": 0.938,
+    "combine": 1.0,
+    "compare": 1.0,
+    "mean": 0.979
+   },
+   "v14": {
+    "link": 0.938,
+    "combine": 1.0,
+    "compare": 1.0,
+    "mean": 0.979
+   }
+  }
+ },
+ "note": "Dry run on mt5k, a seen 5,089-document set (the training documents came from it). Not a result. Times measured with up to 7 arms running at once on 4 cores."
+}
