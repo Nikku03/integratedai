@@ -278,7 +278,10 @@ def generate_questions(docs: list[dict[str, Any]], seed: int = 7, caps: dict[str
     dated = sorted((_iso(d["raw"].get("due_date")), d["raw"]["key"]) for d in linear if _iso(d["raw"].get("due_date")))
     windows: dict[tuple[str, str], set[str]] = {}
     for when, _ in rng.sample(dated, min(len(dated), 8 * caps["linear_due_window"])):
-        d1 = date.fromisoformat(when)
+        try:
+            d1 = date.fromisoformat(when)
+        except ValueError:  # a date no calendar has ('2026-02-29') starts no window; the draws stay as they were
+            continue
         w = (d1.isoformat(), (d1 + timedelta(days=13)).isoformat())
         windows.setdefault(w, {k for x, k in dated if w[0] <= x <= w[1]})
     pick("linear_due_window", windows, lambda w: f"Which Linear issues are due between {w[0]} and {w[1]}, inclusive? Give the issue keys.", "key")
