@@ -20,8 +20,8 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import math
 import random
-import re
 import statistics
 from pathlib import Path
 from typing import Any
@@ -47,13 +47,20 @@ def _pool(q: dict[str, Any]) -> str | None:
     return "lists" if q["group"] == "lists" else None
 
 
-def draw_questions(src: list[dict[str, Any]], used: set[str], seed: int = SEED) -> list[dict[str, Any]]:
+def content(q: dict[str, Any]) -> tuple:
+    """A question as what it asks: its kind, expected answer and gold documents. Ids cannot tell questions apart across sets:
+    a set generated on its own haystack numbers its questions from 1 again."""
+    return (q["kind"], json.dumps(q["expected"], sort_keys=True), tuple(sorted(q.get("gold_docs") or [])))
+
+
+def draw_questions(src: list[dict[str, Any]], used: set[tuple], seed: int = SEED) -> list[dict[str, Any]]:
     """50 questions in the first test's mix (26 owners; 10 Linear due dates and 8 action items; 6 lists), each part a seeded
-    sample of the checkable questions no earlier test used, leaving out the list questions known to be flawed."""
+    sample of the checkable questions no earlier test used (``used``: their ``content``), leaving out the list questions known
+    to be flawed."""
     rng = random.Random(seed)
     out: list[dict[str, Any]] = []
     for pool, n in MIX:
-        cands = sorted((q for q in src if q.get("expected") and q["group"] in GROUPS and _pool(q) == pool and q["id"] not in used
+        cands = sorted((q for q in src if q.get("expected") and q["group"] in GROUPS and _pool(q) == pool and content(q) not in used
                         and q["id"] not in FLAWED), key=lambda q: q["id"])
         if len(cands) < n:
             raise SystemExit(f"only {len(cands)} unused {pool} questions, {n} needed")
@@ -75,47 +82,100 @@ def assemble(work: Path, root: str, dsids: list[str], qs: list[dict[str, Any]], 
 
 
 class _GiveUps(logging.Handler):
-    """Counts the bank's bounded queries that gave up on a time limit (cie.retrieval.bounded logs them at DEBUG only)."""
+    """Counts the bank's bounded queries that gave up on a time limit (cie.retrieval.bounded logs them at DEBUG only), in all
+    and for the question being searched."""
 
     def __init__(self) -> None:
         super().__init__(logging.DEBUG)
         self.n = 0
         self.names: dict[str, int] = {}
+        self.current: str | None = None
+        self.by_question: dict[str, int] = {}
 
     def emit(self, record: logging.LogRecord) -> None:
         if "gave up" in record.getMessage():
             self.n += 1
             name = str(record.args[0]) if record.args else "?"
             self.names[name] = self.names.get(name, 0) + 1
+            if self.current is not None:
+                self.by_question[self.current] = self.by_question.get(self.current, 0) + 1
 
 
-def collect(work: Path, arms: tuple[str, ...] = ("plain-words", "plain", "bank")) -> dict[str, Any]:
-    """memory_test's evidence for ``arms``, unchanged, with the give-ups counted (saved to giveups.json)."""
-    from cie.eval.memory_test import collect_evidence
+def collect(work: Path, arms: tuple[str, ...] = ("plain-words", "plain", "bank"), out: str = "giveups.json") -> dict[str, Any]:
+    """memory_test's evidence for ``arms``, unchanged, with what could silently weaken the bank's search recorded in ``out``:
+    the searches that gave up on a time limit (in all and per question), whether the tenant's BM25 index is ready (if not,
+    the bank falls back to full-text search), and the machine's load."""
+    import os
 
+    from cie.core.db import session_scope
+    from cie.eval.memory_test import _context, collect_evidence
+    from cie.retrieval import bm25
+    from cie.retrieval.pipeline import Retriever
+
+    _ld, tenant_id, _c, _a = _context(work)
+    with session_scope() as s:
+        ready = bm25.ready(s, tenant_id)
+    text_of = {q["question"]: q["id"] for q in _jsonl(work / "questions.jsonl")}
     h = _GiveUps()
     lg = logging.getLogger("cie.retrieval.bounded")
     lg.setLevel(logging.DEBUG)
     lg.addHandler(h)
+    orig = Retriever.retrieve
+
+    def retrieve(self, query, *a, **k):  # noqa: ANN001 - the same call, with the question noted for the give-up count
+        h.current = text_of.get(query, query)
+        try:
+            return orig(self, query, *a, **k)
+        finally:
+            h.current = None
+
+    Retriever.retrieve = retrieve
+    load_before = os.getloadavg()
     try:
         info = collect_evidence(work, list(arms))
     finally:
+        Retriever.retrieve = orig
         lg.removeHandler(h)
-    (work / "giveups.json").write_text(json.dumps({"gave_up": h.n, "by_query": h.names}, indent=1))
-    return {"gave_up": h.n, **{k: v for k, v in info.items() if k == "storage"}}
+    rep = {"gave_up": h.n, "by_query": h.names, "by_question": h.by_question, "bm25_ready": ready,
+           "load_average_before": [round(x, 2) for x in load_before], "load_average_after": [round(x, 2) for x in os.getloadavg()]}
+    (work / out).write_text(json.dumps(rep, indent=1))
+    return {k: v for k, v in rep.items() if k != "by_question"} | {k: v for k, v in info.items() if k == "storage"}
+
+
+def affected(work: Path, name: str = "giveups.json") -> set[str]:
+    """The questions whose bank evidence a time limit or an error may have cut short in the scored pass."""
+    ev = {r["id"]: r for r in _jsonl(work / "evidence.jsonl")} if (work / "evidence.jsonl").exists() else {}
+    g = json.loads((work / name).read_text()) if (work / name).exists() else {}
+    return {q for q, r in ev.items() if r.get("bank_error")} | set(g.get("by_question", {}))
+
+
+def retry(work: Path) -> dict[str, Any]:
+    """Collect once more, on an idle machine, the questions the scored pass may have cut short; what is still cut short after
+    that is reported (and the rules are also given without those questions)."""
+    first = affected(work)
+    if not first:
+        rep: dict[str, Any] = {"retried": [], "still_affected": []}
+    else:
+        keep = [r for r in _jsonl(work / "evidence.jsonl") if r["id"] not in first]
+        _write_jsonl(work / "evidence.jsonl", keep)
+        collect(work, out="giveups_retry.json")
+        still = affected(work, "giveups_retry.json") & first
+        rep = {"retried": sorted(first), "still_affected": sorted(still)}
+    (work / "retry.json").write_text(json.dumps(rep, indent=1))
+    return rep
 
 
 def _ms(xs: list[float]) -> dict[str, float] | None:
     xs = sorted(x for x in xs if x is not None)
     if not xs:
         return None
-    return {"median": round(statistics.median(xs), 1), "p90": round(xs[min(len(xs) - 1, int(0.9 * len(xs)))], 1), "max": round(xs[-1], 1)}
+    return {"median": round(statistics.median(xs), 1), "p90": round(xs[max(0, math.ceil(0.9 * len(xs)) - 1)], 1), "max": round(xs[-1], 1)}
 
 
-def measure_b(work: Path) -> dict[str, Any]:
+def measure_b(work: Path, exclude: set[str] | frozenset = frozenset()) -> dict[str, Any]:
     """Each arm's answer within its evidence at 2,000 / 6,000 / 24,000 characters, by group and mean; the fact banks' own
-    answers; time per question; storage; and the integrity checks."""
-    qs = _jsonl(work / "questions.jsonl")
+    answers; time per question; load and build times; storage; and the integrity checks. ``exclude``: questions left out."""
+    qs = [q for q in _jsonl(work / "questions.jsonl") if q["id"] not in exclude]
     ev = {r["id"]: r for r in _jsonl(work / "evidence.jsonl")} if (work / "evidence.jsonl").exists() else {}
     fb = {a: {r["id"]: r for r in _jsonl(work / f"{n}.jsonl")} for a, n in FACT_FILES.items() if (work / f"{n}.jsonl").exists()}
     rows = []
@@ -146,17 +206,27 @@ def measure_b(work: Path) -> dict[str, Any]:
     info = json.loads((work / "evidence_info.json").read_text()) if (work / "evidence_info.json").exists() else {}
     st = info.get("storage") or {}
     fbb = {a: json.loads((work / f"{n}_build.json").read_text()) for a, n in FACT_FILES.items() if (work / f"{n}_build.json").exists()}
-    giveups = json.loads((work / "giveups.json").read_text()) if (work / "giveups.json").exists() else None
+    read = lambda name: json.loads((work / name).read_text()) if (work / name).exists() else {}  # noqa: E731
+    ld, pm, g, rt = read("load.json"), read("plain_meta.json"), read("giveups.json"), read("retry.json")
+    hay = read("haystack.json")
+    lex = ld.get("lexical_index") or {}
     return {
-        "questions": len(rows), "by_group": {g: sum(1 for r in rows if r["group"] == g) for g in GROUPS},
+        "questions": len(rows), "by_group": {g_: sum(1 for r in rows if r["group"] == g_) for g_ in GROUPS},
         "reach": {a: {str(b): gm(lambda r, a=a, b=b: (r["reach"].get(a) or {}).get(str(b))) for b in BUDGETS} for a in ARMS},
         "direct": {a: gm(lambda r, a=a: r["direct"].get(a)) for a in fb},
         "ms": {a: _ms([r["ms"].get(a) for r in rows]) for a in ARMS},
+        "times_s": {"bank_load": ld.get("load_seconds"), "bank_embed": ld.get("embed_seconds"), "bank_finish": ld.get("finish_seconds"),
+                    "bank_bm25": lex.get("seconds"), "plain_bm25": pm.get("bm25_seconds"), "plain_embed": pm.get("embed_seconds"),
+                    **{f"{a}_build": b.get("seconds") for a, b in fbb.items()}},
         "storage": {"bank_total": st.get("bank_total"), "bank_bytes": st.get("bank_bytes"), "plain_total": st.get("plain_total"),
                     **{f"{a}_bytes": b.get("bytes") for a, b in fbb.items()}},
         "checks": {"bank_errors": sum(1 for r in ev.values() if r.get("bank_error")),
                    "evidence_missing": sum(1 for q in qs if q["id"] not in ev or not all(a in ev[q["id"]] for a in ("plain-words", "plain", "bank"))),
-                   "gave_up": giveups, "fact_bank_documents": {a: b.get("documents") for a, b in fbb.items()}},
+                   "gave_up": g.get("gave_up"), "gave_up_questions": sorted(g.get("by_question", {})), "bm25_ready": g.get("bm25_ready"),
+                   "load_average": g.get("load_average_before"), "retry": rt or None,
+                   "bank_documents": ld.get("documents"), "bank_failed": ld.get("failed"), "bank_bm25_error": lex.get("error"),
+                   "haystack_documents": len(hay.get("dsids", [])),
+                   "fact_bank_sources": {a: b.get("sources") for a, b in fbb.items()}},
         "rows": rows}
 
 
@@ -169,7 +239,7 @@ def rules_b(m: dict[str, Any], control: dict[str, Any] | None, arm: str = "v1") 
     st = m["storage"]
     return {
         "1 not worse at the evidence budget (fact bank - bank >= -0.03 in every group, 24,000 chars)":
-            all((x := d(f24.get(g), b24.get(g))) is not None and x >= -0.03 for g in GROUPS if f24.get(g) is not None),
+            all((d(f24.get(g), b24.get(g)) or 0) >= -0.03 for g in GROUPS if f24.get(g) is not None),
         "2 better near the top (fact bank - bank >= +0.10 on the mean, first 2,000 chars)": (x := d(f2.get("mean"), b2.get("mean"))) is not None and x >= 0.10,
         "3 answers without a model (own answers >= 0.70 on the mean)": own is not None and own >= 0.70,
         "4 smaller (fact bank <= 1/3 of the bank's storage)": bool(st.get("bank_total")) and st.get(f"{arm}_bytes") is not None
@@ -201,21 +271,25 @@ def same_as_original(work: Path) -> dict[str, Any] | None:
 
 
 def chance(work: Path) -> dict[str, int]:
-    """For each question, how many documents of the haystack other than its gold documents carry the expected answer's text:
-    a hit in the evidence may come from one of them."""
-    from cie.eval.memory_test import _norm, haystack_docs
+    """For each question, how many documents of the haystack other than its gold documents hold the expected answer by the
+    measure's own check (``reachable`` > 0 on the document's text as plain search indexes it): a hit in the evidence may come
+    from one of them."""
+    from cie.eval.memory_test import render_doc
+    from cie.ingest.sources import read
 
     hay = json.loads((work / "haystack.json").read_text())
     index = json.loads((work / "index.json").read_text())["index"]
-    docs = haystack_docs(Path(hay["root"]) / "generated_data" / "sources", index, hay["dsids"])
-    texts = {d["dsid"]: _norm(json.dumps(d["raw"], ensure_ascii=False)) for d in docs}
+    sources = Path(hay["root"]) / "generated_data" / "sources"
+    texts = {}
+    for dsid in hay["dsids"]:
+        try:
+            texts[dsid] = render_doc(read(sources / index[dsid], index[dsid]))
+        except Exception:  # noqa: BLE001 - as the loader: a malformed export is left out
+            continue
     out = {}
     for q in _jsonl(work / "questions.jsonl"):
-        e = q["expected"]
-        vals = [e["date"]] if "date" in e else (e["ids"] if "ids" in e else [e["value"], *e.get("alts", [])])
-        pats = [re.compile(r"(?<!\w)" + re.escape(_norm(v)) + r"(?!\w)") for v in vals if v]
         gold = set(q.get("gold_docs") or [])
-        out[q["id"]] = sum(1 for dsid, t in texts.items() if dsid not in gold and any(p.search(t) for p in pats))
+        out[q["id"]] = sum(1 for dsid, t in texts.items() if dsid not in gold and reachable(q, t) > 0)
     return out
 
 
@@ -228,21 +302,27 @@ def b_test(big: Path, small: Path, fb: Path, fb50: Path) -> dict[str, Any]:
         return {a: {b: {g: d(m["reach"][a][b].get(g), c["reach"][a][b].get(g)) for g in (*GROUPS, "mean")} for b in m["reach"][a]} for a in ARMS}
 
     rules = rules_b(mb, ms_, "v1")
+    hit = {w.name: sorted(set((json.loads((w / "retry.json").read_text()) if (w / "retry.json").exists() else {}).get("still_affected", [])))
+           for w in (big, small, fb, fb50)}
+    left = set(hit[big.name]) | set(hit[small.name])
     rep = {
         "primary_5k": {k: v for k, v in mb.items() if k != "rows"}, "primary_small": {k: v for k, v in ms_.items() if k != "rows"},
         "fb50_5k": {k: v for k, v in mf.items() if k != "rows"}, "fb50_50": {k: v for k, v in mf50.items() if k != "rows"},
         "rules": rules, "replace": bool(list(rules.values())[0] and list(rules.values())[1] and list(rules.values())[3]),
         "rules_v2_primary": rules_b(mb, ms_, "v2"), "rules_fb50_5k": rules_b(mf, mf50, "v1"),
+        "still_affected_after_retry": hit,
+        "rules_without_affected": rules_b(measure_b(big, left), measure_b(small, left), "v1") if left else None,
         "change_primary_5k_minus_small": change(mb, ms_), "change_fb50_5k_minus_50": change(mf, mf50),
         "fact_bank_minus_plain_words": {b: d(mb["reach"]["v1"][b]["mean"], mb["reach"]["plain-words"][b]["mean"]) for b in mb["reach"]["v1"]},
         "bank_evidence_twice": {w.name: same_bank_evidence(w) for w in (big, small, fb, fb50)},
         "control_against_original_run": same_as_original(fb50),
         "rows": {"primary_5k": mb["rows"], "primary_small": ms_["rows"], "fb50_5k": mf["rows"], "fb50_50": mf50["rows"]},
     }
-    for w in (big, small):
+    for w in (big, small, fb):
         p = w / "chance.json"
         if p.exists():
-            rep[f"chance_{w.name}"] = json.loads(p.read_text())
+            c = json.loads(p.read_text())
+            rep[f"chance_{w.name}"] = {"median": statistics.median(c.values()) if c else None, "per_question": c}
     (big / "b_report.json").write_text(json.dumps(rep, indent=1, default=str))
     (big / "b_report.md").write_text(to_markdown(rep))
     return rep
@@ -261,20 +341,23 @@ def to_markdown(rep: dict[str, Any]) -> str:
                 out.append(f"| {a} | {int(b):,} | " + " | ".join("–" if r.get(x) is None else f"{r[x]:.3f}" for x in g) + " |")
         for a, r in m["direct"].items():
             out.append(f"| own answers, {a} | | " + " | ".join("–" if r.get(x) is None else f"{r[x]:.3f}" for x in g) + " |")
-        out += ["", f"time per question (ms): {json.dumps(m['ms'])}", f"storage: {json.dumps(m['storage'])}", f"checks: {json.dumps(m['checks'])}", ""]
+        out += ["", f"time per question (ms): {json.dumps(m['ms'])}", f"load and build times (s): {json.dumps(m['times_s'])}",
+                f"storage: {json.dumps(m['storage'])}", f"checks: {json.dumps(m['checks'])}", ""]
     out += ["Rules (fact bank v1, primary questions, 5,089 documents):"] + [f"- {k}: **{'met' if v else ('not met' if v is not None else 'n/a')}**"
                                                                           for k, v in rep["rules"].items()]
     out += [f"- replace (rules 1, 2 and 4): **{'met' if rep['replace'] else 'not met'}**", "",
             f"- v2 on the same rules: {json.dumps(rep['rules_v2_primary'])}", f"- the first test's questions at 5,089: {json.dumps(rep['rules_fb50_5k'])}",
             f"- fact bank minus plain-words: {json.dumps(rep['fact_bank_minus_plain_words'])}",
             f"- bank evidence collected twice: {json.dumps(rep['bank_evidence_twice'])}",
-            f"- the control against the original run: {json.dumps(rep['control_against_original_run'])}"]
+            f"- the control against the original run: {json.dumps(rep['control_against_original_run'])}",
+            f"- still cut short after the retry: {json.dumps(rep['still_affected_after_retry'])}",
+            f"- the rules without those questions: {json.dumps(rep['rules_without_affected'])}"]
     return "\n".join(out) + "\n"
 
 
 def main(argv: list[str] | None = None) -> Any:
     ap = argparse.ArgumentParser(prog="python -m cie.eval.factbank_5k_b")
-    ap.add_argument("cmd", choices=["questions", "assemble", "collect", "chance", "score"])
+    ap.add_argument("cmd", choices=["questions", "assemble", "collect", "retry", "chance", "score"])
     ap.add_argument("--src")
     ap.add_argument("--used", nargs="*", default=[])
     ap.add_argument("--out")
@@ -291,7 +374,7 @@ def main(argv: list[str] | None = None) -> Any:
     ap.add_argument("--fb50")
     a = ap.parse_args(argv)
     if a.cmd == "questions":
-        used = {q["id"] for d in a.used for q in _jsonl(Path(d) / "questions.jsonl")}
+        used = {content(q) for d in a.used for q in _jsonl(Path(d) / "questions.jsonl")}
         qs = draw_questions(_jsonl(Path(a.src) / "questions.jsonl"), used, a.seed)
         _write_jsonl(Path(a.out), qs)
         rep: Any = {"questions": len(qs), "by_pool": {p: sum(1 for q in qs if _pool(q) == p) for p, _ in MIX}}
@@ -302,6 +385,8 @@ def main(argv: list[str] | None = None) -> Any:
         rep = assemble(Path(a.work), a.root, ids, qs, Path(a.index), a.seed)
     elif a.cmd == "collect":
         rep = collect(Path(a.work))
+    elif a.cmd == "retry":
+        rep = retry(Path(a.work))
     elif a.cmd == "chance":
         c = chance(Path(a.work))
         (Path(a.work) / "chance.json").write_text(json.dumps(c, indent=1))

@@ -17,13 +17,16 @@ def test_the_questions_keep_the_first_tests_mix_and_leave_out_used_and_flawed_on
            + [_q(i, "deadlines", "linear_due", {"date": "2026-03-01"}) for i in range(15)]
            + [_q(i, "deadlines", "action_due", {"date": "2026-03-02"}) for i in range(12)]
            + [_q(i, "lists", "linear_assignee", {"ids": ["ENG-1"], "id_kind": "key"}) for i in range(1, 9)])
-    used = {"metadata-000", "linear_due-001"}
+    used_qs = [q for q in src if q["id"] in ("metadata-000", "linear_due-001")]
+    used = {F.content(q) for q in used_qs}
+    clash = {**src[5], "id": "linear_due-099"}  # another set numbers its questions anew: the id differs, the question is the same
+    used.add(F.content(clash))
     qs = F.draw_questions(src, used, seed=3)
     assert len(qs) == 50
     assert [F._pool(q) for q in qs].count("owners") == 26 and [q["kind"] for q in qs].count("linear_due") == 10
     assert [q["kind"] for q in qs].count("action_due") == 8 and [q["group"] for q in qs].count("lists") == 6
     ids = {q["id"] for q in qs}
-    assert not ids & used and not ids & F.FLAWED, "used and flawed questions are left out"
+    assert not ids & {"metadata-000", "linear_due-001", src[5]["id"]} and not ids & F.FLAWED, "used (by content) and flawed questions are left out"
     assert F.draw_questions(src, used, seed=3) == qs
 
 
@@ -51,7 +54,8 @@ def test_the_measure_and_rules_compare_the_fact_bank_with_the_bank(tmp_path):
     assert r["2 better near the top (fact bank - bank >= +0.10 on the mean, first 2,000 chars)"]
     assert not r["4 smaller (fact bank <= 1/3 of the bank's storage)"], "600 bytes is more than a third of 900"
     assert r["5 own answers hold at size (5,089 documents >= control - 0.05)"] is None
-    assert m["ms"]["v1"]["median"] == 800.0
+    assert m["ms"]["v1"]["median"] == 800.0 and m["checks"]["fact_bank_sources"] == {"v1": None}
+    assert F.measure_b(w, exclude={"l1"})["questions"] == 2
 
 
 def test_the_bank_evidence_collected_twice_is_compared(tmp_path):

@@ -25,10 +25,18 @@ is hard", because 50 documents make finding the right one easy. **Part B is that
 characters, for owners (a document's field), deadlines and lists; and the fact bank's own answers.
 
 **The haystack:** the memory test's 5,089 documents (`mt5k`), the haystack the first test's 50 documents came from.
-- It is the only haystack where owner questions with checkable answers exist. All 100 of the benchmark's metadata questions
-  have their gold documents there.
-- **It is a set I had seen, for both systems.** The memory bank's search was developed on it, and the fact bank's first test
-  drew from it. That is disclosed, not hidden: no part of either system changes for this test.
+- **Why this haystack:** it is the one the first test promised, it holds owner questions with checkable answers, and the
+  earlier 5,000-document runs' embedding cache makes loading it cheap.
+- **The unseen alternative was rejected for cost and disk.** That alternative was part A's new sample plus the gold documents
+  of new owner questions. It would need about 1.5 hours of embedding and more disk than this machine has.
+- **It is a set I had seen, for both systems:**
+  - The memory bank's search was developed on it.
+  - The fact bank's first test drew its 50 documents from it.
+  - The multi-document training and test sets (v2 to v14) lie inside it.
+  - Part A's dry run already ran the fact bank v1 on it, on other questions.
+  - The trained fact bank (v2) learned from questions in the same wording as the primary questions.
+
+  No part of either system changes for this test.
 
 ## Questions
 
@@ -38,7 +46,9 @@ characters, for owners (a document's field), deadlines and lists; and the fact b
   - 10 Linear due dates and 8 meeting action items;
   - 6 lists.
 - **Each part is a seeded sample of the memory test's checkable questions that no earlier test used.** The fb50, fbtest and
-  mt50 questions are left out.
+  mt50 questions are left out, matched by what they ask (kind, expected answer and gold documents), not by id: mt50 numbers its
+  questions anew.
+- **The unused pools:** 47 owners, 20 Linear due dates, 12 action items and 33 lists.
 - **Ten list questions are left out as flawed:** their expected list misses a real item, because the item's key is reused on
   another document.
 - **The lists cannot match the first test's kinds.** Only 2 unused pull-request lists remain, so the lists will be mostly
@@ -48,24 +58,34 @@ characters, for owners (a document's field), deadlines and lists; and the fact b
 its own memory bank, plain index and fact banks. The difference between the two is the effect of the other 5,000 or so
 documents.
 
-**Secondary: the first test's own 50 questions** (fb50) on the 5,089 documents: literally "the same test". Its control is the
-first test's 50-document run, collected again with today's code. The memory bank, retrieval and memory-test code have not
-changed since that run.
-- **The re-collected control is compared with the original run's evidence,** and every difference is reported.
+**Secondary: the first test's own 50 questions** (fb50) on the 5,089 documents: literally "the same test".
+- **Its control is the first test's 50 documents, loaded again with today's code into a database of their own.** The
+  original database now holds five other banks, which share its indexes and change the bank's graph budget.
+- **The memory bank, retrieval and memory-test code have not changed since the first test.** The control's plain-search
+  index is the original one.
+- **The control is compared with the original run's evidence,** and every difference is reported. A difference in the bank's
+  evidence would come from the new load, the database or the hash seed, not from the code.
 - **v2 is in-sample here:** it was trained on these exact questions.
 
 ## How it runs
 
-The script is `docs/benchmarks/factbank_5k/run_5k_b.sh`. It runs after part A, on an idle machine.
-- **A new database at the current schema for each size,** so each size's memory bank is alone in its indexes. That matches
-  the first test, whose 50-document bank was alone in its database.
-- **The 5,089-document memory bank** is loaded with today's code. It reuses the embedding cache of the earlier 5,000-document
-  runs: the same model and the same texts, so only the time changes.
+The script is `docs/benchmarks/factbank_5k/run_5k_b.sh`. It runs after part A, on an idle machine, from fresh folders and
+databases.
+- **A new database at the current schema for each bank:** the control, the 5,089 and the small set. Each memory bank is
+  alone in its indexes, as the first test's 50-document bank was.
+- **The 5,089-document memory bank** is loaded with today's code. It reuses a copy of the earlier 5,000-document runs'
+  embedding cache: the same model and the same texts, so only the time changes.
 - **Plain search** builds its passages, BM25 index and vectors before any evidence is collected.
-- **The evidence is collected twice.** The first pass warms the caches; the second is scored. Any difference in the bank's
-  evidence between them is reported.
-- **Searches that give up on a time limit are counted.** The bank's search gives up silently, logged only at debug level, so
-  the run counts every give-up.
+- **Each load is checked.** The run stops if a memory bank is missing documents, or if its BM25 index failed to build. Without
+  that index, the bank's search falls back to full text without a word. Whether the index is ready is also recorded when the
+  evidence is collected.
+- **The evidence is collected twice, on an idle machine.** The first pass warms the caches; the second is scored. Any
+  difference in the bank's evidence between them is reported.
+- **Questions cut short are collected again once.** The bank's search gives up silently on a time limit, logged only at debug
+  level, so the run counts every give-up, per question.
+  - Every question where the scored pass gave up or hit an error is collected once more.
+  - The questions still cut short after that are reported.
+  - Rules 1 and 2 are then also given without them. That only ever helps the bank, which has the time limits.
 - **Python's hash seed is fixed** (`PYTHONHASHSEED=0`).
 
 ## Rules
@@ -85,7 +105,9 @@ Plus one new rule, as in part A:
 **What decides:**
 - **Replace,** as originally written: rules 1, 2 and 4 all met.
 - **Stated now: rule 4 is expected not to be met.**
-  - On today's schema, a design probe puts the fact bank at about 0.58 to 0.64 of the bank's storage at 5,000 documents.
+  - A projection, not a measurement, puts the fact bank v1 at about 0.58 to 0.59 of the bank's storage at 5,000 documents
+    (v2 at 0.63 to 0.64). It is projected from the old-schema 5,000-document bank, without its stored text index and with
+    16-bit vectors.
   - At 50 documents it was 0.60, also not met.
   - So "replace" is expected not to be met, whatever rules 1 and 2 show. Storage is not re-judged against a new bar here.
 - **The headline is whether the evidence lead holds at size: rules 1 and 2.**
@@ -104,9 +126,37 @@ question by up to 0.167. So rule 1's −0.03 means "no question lost" in the own
 - the fact bank minus plain keyword search at each budget;
 - the trained fact bank (v2) on the same rules;
 - time per question for each arm (median, 90th percentile, maximum), the load and build times, and storage by part;
-- the checks: bank errors, give-ups, missing evidence, the bank's evidence collected twice, and the control against the
-  original run;
-- for each question, how many other documents carry the answer's text (`chance`).
+- the checks:
+  - bank errors, give-ups and the retry;
+  - whether BM25 was ready;
+  - missing evidence;
+  - documents loaded;
+  - the bank's evidence collected twice;
+  - the control against the original run;
+- for each question, how many other documents hold the answer by the measure's own check (`chance`), for all three 5,089 and
+  small folders.
+
+## The review before freezing
+
+Three reviewers checked the run, the measure and the protocol, and a fourth tried to refute each finding
+(`docs/benchmarks/factbank_5k/prefreeze_review_b.json`). What held up, and what was done:
+
+1. **A failed BM25 build would have gone unseen,** and the bank would have been measured on full-text search. **Fixed:** each
+   load is checked, and readiness is recorded.
+2. **Give-ups and errors were only counted.** They only ever hurt the bank, and one can decide rule 1. **Fixed:** the questions
+   cut short are collected again once, on an idle machine, and the rules are also given without the ones still cut short.
+3. **The control's database is no longer the original's alone.** **Fixed:** the control is loaded again into its own database,
+   and the difference from the original run is reported.
+4. **The earlier embedding cache would have been written to through a link.** **Fixed:** it is copied.
+5. **Used questions were matched by id,** which dropped 4 questions no test used. **Fixed:** they are matched by content.
+6. **The `chance` count did not match the measure** (pull request numbers over-counted, written-out dates missed). **Fixed:** it
+   uses the measure's own check on the text plain search indexes.
+7. **Promised reports were missing:** load and build times, and the `chance` counts of two folders. **Fixed.**
+8. **Rule 1 treated a missing bank group differently from the first test.** **Fixed:** it is now literally the first test's
+   rule.
+9. **The disclosure of what was seen was incomplete,** and rule 4's figure mixed v1 and v2. **Fixed** above.
+10. **A rerun after a failure would have overwritten the first pass.** **Fixed:** the run stops if a folder already has
+    evidence.
 
 ## Disclosures
 
