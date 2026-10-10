@@ -12,7 +12,7 @@ import time
 from collections import defaultdict
 from typing import Any
 
-from cie.factbank.engine import LAM, SYSTEM_WORDS, FactBank, Result, words
+from cie.factbank.engine import LAM, FactBank, Result, words
 from cie.factbank.learn import (
     ID_WORDS,
     LIST_WORDS,
@@ -160,34 +160,43 @@ class TrainedBank(FactBank):
         written, journal, seed_list = self.run(question, seeds=seeds)
         is_list = sigmoid(dot(self.lessons.list_w, self.list_x(question))) > 0.5
         head: list[str] = []
+        facts: list[str] = []  # with ``brain``: the facts the answer rests on, to print first
         if is_list:
             answer, reason, head = self.list_ask(question)
+            facts = [x[2:] for x in head]
         else:
             cands = self.answer_candidates(question)
             scored = sorted(((sigmoid(dot(self.lessons.answer_w, self.answer_x(question, c))), c) for c in cands), key=lambda x: -x[0])
             if scored:
                 best = scored[0][1]
                 answer, reason = best["value"], f"{best['parameter']} of {self.names.get(best['entity'], best['entity'])}"
+                if self.brain:
+                    ctx = f' — "{best["claim"][:240]}"' if best["parameter"].startswith("text_") else ""
+                    facts = [f"{best['parameter'].replace('_', ' ')} of {self.cited(best['entity'], {})}: {best['value'][:300]}{ctx}"]
             else:
                 answer, reason = "not found", "no candidate"
             for _s, c in scored[:8]:
                 src = self.names.get(c["entity"], c["entity"])
                 ctx = f' — "{c["claim"][:240]}"' if c["parameter"].startswith("text_") else ""
                 head.append(f"- {c['parameter'].replace('_', ' ')}: {c['value'][:300]} — {src}{ctx}")
-        top = "Most likely answers, best first:\n" + "\n".join(head) if head else ""
+        if not self.brain:
+            top = "Most likely answers, best first:\n" + "\n".join(head) if head else ""
+        else:  # the answer and the facts it rests on, then the other candidates
+            others = [] if is_list else head[1:]
+            more = "Other likely answers, best first:\n" + "\n".join(others) if others else ""
+            top = "\n\n".join(x for x in (self.head(answer, facts), more) if x)
         rest = self.evidence(written, seed_list, max(0, budget - len(top) - 2))
         return Result(answer, (top + "\n\n" + rest).strip()[:budget], journal, written, seed_list, (time.perf_counter() - t) * 1000, reason)
 
     def list_ask(self, question: str) -> tuple[str, str, list[str]]:
-        ql = question.lower() + " "
-        system = next((s for w, s in SYSTEM_WORDS.items() if w in ql), "")
+        system = (self.named_systems(question) or [""])[0]
         status = re.findall(r"\"([^\"]+)\"", question)
         window = re.findall(r"\b\d{4}-\d{2}-\d{2}\b", question)
         people = [e for e in self.named(question) if e.startswith("person:")]
         docs: list[str] = []
         reason = ""
+        best = None
         if people:
-            best = None
             for person in people:
                 for rel in self.relations(person):
                     s = sigmoid(dot(self.lessons.relation_w, self.relation_x(question, person, rel, system)))
@@ -212,5 +221,10 @@ class TrainedBank(FactBank):
                 continue
             lab = self.label_of(e)
             out.append(lab)
-            lines.append(f"- {lab}: {self.names.get(e, e)}")
+            if not self.brain:
+                lines.append(f"- {lab}: {self.names.get(e, e)}")
+            elif people and best:  # one line per item: the fact that put it on the list
+                lines.append(f"- {best[2][:-3].replace('_', ' ')} of {self.cited(e, {})}: {self.names.get(best[1], best[1])}")
+            else:
+                lines.append(f"- due date of {self.cited(e, {})}: {facts.get('due_date', '')}")
         return (", ".join(out) if out else "not found"), reason, lines

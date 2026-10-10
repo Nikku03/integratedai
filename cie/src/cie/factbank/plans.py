@@ -59,6 +59,15 @@ ORDER_WORDS = frozenset(("first", "1st", "next", "earliest", "earlier", "soonest
                          "top", "asap", "upcoming", "prior", "priority"))
 NOT_ORDER_AFTER = {"next": frozenset(("meeting", "meetings", "call", "calls", "week", "month", "quarter", "sprint", "sync", "standup",
                                       "review", "time", "step", "steps", "year", "day", "1"))}
+# v15 (the company brain, ``brain``): a question word that opens a clause says what kind of answer is asked for, when it asks
+# plainly (Planner.interrogative_kind); "what" or "which" asks for a date only before a date word, and for a count only before
+# "number of"
+QUESTION_WORDS = frozenset(("who", "whom", "whose", "when", "how", "what", "which", "where", "why"))
+CLAUSE_OPENERS = frozenset(("and", "but", "so", "then", "also"))
+DATE_NOUNS = frozenset(("date", "dates", "day", "days", "deadline", "deadlines"))
+BEFORE_NOUN = frozenset(("is", "was", "s", "the", "its", "their", "exact", "target", "expected", "planned", "final", "due", "total"))
+ASKS_COUNT = re.compile(r"\bhow many\b|\bnumber of\b|\bcount\b", re.I)
+QUOTED = re.compile(r'"[^"]*"|\u201c[^\u201d]*\u201d')
 NOT_LINKS = {"from_document"}
 FEATURES = ["bias", "start_named", "start_rank", "two_starts", "path_len", "path_overlap", "path_assoc", "field_overlap", "field_assoc",
             "kind_fits", "kind_conflicts", "combine_assoc", "label_field", "answer_in_question", "fanout"]
@@ -92,10 +101,15 @@ class Plan:
 class Planner:
     """``rules="v4"`` (after the first test): every hop must reach something new, no plan walks or reads straight back the way it
     came or answers with only what it started from or passed through, and "one value" needs every entity reached to agree on it.
-    ``"v3"`` is the planner as first tested."""
+    ``"v3"`` is the planner as first tested.
+
+    ``brain`` (v15, the company brain) changes three things, all off by default: a plainly asked question word ("who", "when",
+    "how many") overrides the learned kind of answer (``asked_kind``); a question asking for several things gets no count unless
+    it asks for one (``check``, 5b); and a person named only by a one-word alias does not say what the question is about
+    (``named_fully``)."""
 
     def __init__(self, bank, rules: str = "v3", lexicon=None, known: list[str] | None = None, general=None, combine: str = "company",
-                 floor: float = 0.5):
+                 floor: float = 0.5, brain: bool = False):
         self.b = bank
         self.rules = rules
         self.lex = lexicon  # v5: learned word meanings (cie.factbank.lexicon.Lexicon)
@@ -106,6 +120,8 @@ class Planner:
         self.glossary = None  # v8: cie.factbank.reader.Glossary, everyday phrases written once by a large language model
         self.tickets = False  # v11: "ticket" or "issue" means a Linear or Jira item (TICKET_WORD)
         self.orders = False  # v13: a question asking for several things gets no first or last by a date (asks_several, check 5)
+        self.brain = brain  # v15: question words over the learned kind, no count for several things, no one-word person aliases
+        self._person_aliases: dict[str, list[str]] | None = None
         self._facts: dict[str, list] = {}
         self._expanded: dict[frozenset, dict[str, float]] = {}
 
@@ -394,6 +410,73 @@ class Planner:
                 return True
         return False
 
+    @staticmethod
+    def interrogative_kind(question: str) -> str | None:
+        """v15: the kind of answer the question words ask for, when they ask plainly: "who", "whom" or "whose" a person;
+        "when", "what date" or "what is the due date" a date; "how many" or "what is the number of" a count. Only a question
+        word that opens a clause counts (at the start, after punctuation, or after "and"), so "the person who took it" asks
+        nothing. Any other question word opening a clause ("which ticket", "what is the status", "where"), or two that
+        disagree, leaves the kind open (None). "Which deadline is sooner?", "whose due date is earlier?" and "what is the
+        deadline of the next one?" ask for an item, so they leave it open too."""
+        toks = re.findall(r"[a-z0-9]+|[,:;.?!()\u2014\u2013]|(?<=\s)-(?=\s)", QUOTED.sub(" ", question.lower()))
+        kinds = []
+        for i, t in enumerate(toks):
+            if t not in QUESTION_WORDS or (i and toks[i - 1][0].isalnum() and toks[i - 1] not in CLAUSE_OPENERS):
+                continue
+            nxt = toks[i + 1:i + 7]
+            if t in ("who", "whom"):
+                kinds.append("person")
+            elif t == "whose":
+                kinds.append(None if set(nxt[:3]) & (DATE_NOUNS | {"due"}) else "person")
+            elif t == "when":
+                kinds.append("date")
+            elif t == "how":
+                kinds.append("count" if nxt[:1] == ["many"] else None)
+            elif t == "what":
+                rest = list(nxt)
+                while rest and rest[0] in BEFORE_NOUN:
+                    rest.pop(0)
+                if rest[:1] and rest[0] in DATE_NOUNS and not Planner.asks_order(question):
+                    kinds.append("date")
+                else:
+                    kinds.append("count" if rest[:2] == ["number", "of"] else None)
+            else:
+                kinds.append(None)
+        return kinds[0] if kinds and len(set(kinds)) == 1 else None
+
+    def asked_kind(self, question: str, learned: str | None) -> str | None:
+        """The kind of answer check 4 uses: the learned one (``AskedKind``). With ``brain`` (v15), a kind the question words ask
+        for plainly (``interrogative_kind``) replaces a learned one that differs, and fills in when the lessons are not sure."""
+        return (self.interrogative_kind(question) or learned) if self.brain else learned
+
+    def named_fully(self, question: str) -> list[str]:
+        """v15: the entities the question names (``bank.named``), without a person named only by a one-word alias ("Priya",
+        "Redwood"): among thousands of documents, a first name, or a word that is also somebody's name, does not say who the
+        question is about. A full name still counts."""
+        if self._person_aliases is None:
+            self._person_aliases = defaultdict(list)
+            for alias, ents in self.b.aliases.items():
+                if len(alias.split()) > 1:
+                    for e in ents:
+                        if e.startswith("person:"):
+                            self._person_aliases[e].append(alias)
+        q = question.lower()
+
+        def full(e: str) -> bool:
+            return any(len(a) >= 4 and re.search(r"(?<![\w-])" + re.escape(a) + r"(?![\w-])", q) for a in self._person_aliases.get(e, ()))
+
+        return [e for e in self.b.named(question) if not e.startswith("person:") or full(e)]
+
+    def about(self, question: str) -> set[str]:
+        """v15: what the question is about for check 1 with ``brain``: the entities it names (``named_fully``) and its quoted
+        titles."""
+        return {e for e in self.named_fully(question) if e in self.b.kinds} | set(self.titled(question))
+
+    def start_named(self, plan: Plan, question: str) -> bool:
+        """v15: the plan starts from something the question names: a key, a pull request number, a person's full name or a
+        quoted title (check 1's set, without one-word person aliases, whether or not ``brain`` is on)."""
+        return bool(set(plan.starts) & self.about(question))
+
     def systems_named(self, question: str) -> list[str]:
         """The systems a question names, in the order of ``SYSTEM_WORDS``. With ``tickets`` (v11), "ticket" or "issue" also
         names the ticket trackers, after any system named by name, so "the Linear ticket" still asks about Linear."""
@@ -436,10 +519,17 @@ class Planner:
         5. **Several, not the first** (v13): when the question asks for several things, asks for no single thing and uses no
            word of order, a plan that picks the first or the last by a date is dropped (``asks_several``, ``asks_one``,
            ``asks_order``).
+        5b. **Several, not how many** (v15, ``brain``): such a question that does not ask "how many", "the number of" or to
+           count gets no count either.
         6. **The field** (v10, from the small model's form): a plan answering with one value must read one of ``fields``; a
-           plan choosing an item by date must order by one of them."""
+           plan choosing an item by date must order by one of them.
+
+        With ``brain``, check 1 leaves out a person named only by a one-word alias (``named_fully``)."""
         named = {e for e in self.b.named(question) if e in self.b.kinds and not e.startswith("person:")}
-        about = {e for e in self.b.named(question) if e in self.b.kinds} | set(self.titled(question))
+        if self.brain:
+            about = self.about(question)
+        else:
+            about = {e for e in self.b.named(question) if e in self.b.kinds} | set(self.titled(question))
         systems = self.systems_named(question)
 
         def other_system(p: Plan) -> bool:
@@ -461,6 +551,8 @@ class Planner:
                  lambda p, k: not asked or k == asked,
                  lambda p, k: not several or p.aggregate not in ("earliest", "latest"),
                  lambda p, k: not fields or field_fits(p, k)]
+        if self.brain and self.wants_several(question) and not ASKS_COUNT.search(QUOTED.sub(" ", question)):
+            rules.insert(5, lambda p, k: p.aggregate != "count")
         keep = cands
         for rule in rules:
             nxt = [(p, m) for p, m in keep if rule(p, self.kind9(p, m["answer"]))]
@@ -674,6 +766,7 @@ class PlanLessons:
     kind_floor: float = 0.9  # v9: how sure the lessons must be of the kind of answer before the check uses it
     tickets: bool = False  # v11: "ticket" or "issue" means a Linear or Jira item; False for every earlier version
     orders: bool = False  # v13: a question asking for several things gets no first or last by a date; False before v13
+    brain: bool = False  # v15: the company brain's planner fixes (Planner, ``brain``); False before v15
 
     def known(self) -> list[str]:
         return list(self.known_words)
@@ -686,7 +779,7 @@ class PlanLessons:
         if self.general_lexicon and general is None:
             general = Lexicon.load(self.general_lexicon)
         pl = Planner(bank, self.rules, lexicon if self.lexicon else None, self.known(), general if self.general_lexicon else None,
-                     self.combine, self.floor)
+                     self.combine, self.floor, self.brain)
         if self.glossary:
             from cie.factbank.reader import Glossary
 
@@ -760,7 +853,7 @@ def matches(expected: dict[str, Any], answer: str) -> bool:
 def learn_plans(bank, questions: list[dict[str, Any]], log=print, features: list[str] = FEATURES_V4, rules: str = "v4",
                 lexicon=None, lexicon_path: str = "", general=None, general_path: str = "", combine: str = "company",
                 floor: float = 0.5, glossary_path: str = "", proper: bool = False, tickets: bool = False,
-                orders: bool = False) -> PlanLessons:
+                orders: bool = False, brain: bool = False) -> PlanLessons:
     """Fit the plan weights on questions with answers. Associations leave each question's own share out. With a lexicon (v5),
     question words also reach the known words nearest them; with a general-English lexicon too (v6), nearness can be read
     from general English. With ``proper`` (v9), a plan counts as right only if its answer is right and it read every fact the
@@ -815,7 +908,7 @@ def learn_plans(bank, questions: list[dict[str, Any]], log=print, features: list
                       list(features), kind_total.to_json() if use_kind else {}, rules, lexicon_path if lexicon is not None else "",
                       pl.known if lexicon is not None else [], general_path if general is not None else "",
                       combine if general is not None else "company", floor, glossary_path,
-                      asked.to_json() if rules == "v9" else {}, 0.9, tickets, orders)
+                      asked.to_json() if rules == "v9" else {}, 0.9, tickets, orders, brain)
     log("\n".join(les.describe()))
     return les
 
@@ -835,6 +928,7 @@ def answer(bank, lessons: PlanLessons, question: str, planner: Planner | None = 
     cands = pl.candidates(question)
     if lessons.rules == "v9":  # v9: only plans that pass the checks
         asked = AskedKind(lessons.asked_kind).asked(question, lessons.kind_floor) if lessons.asked_kind else None
+        asked = pl.asked_kind(question, asked)  # v15: with ``brain``, a plainly asked question word decides
         fields: tuple[str, ...] = ()
         if form is not None and form.get("kind"):
             asked = asked or form["kind"]
