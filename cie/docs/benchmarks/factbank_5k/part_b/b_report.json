@@ -1,0 +1,9858 @@
+{
+ "primary_5k": {
+  "questions": 50,
+  "by_group": {
+   "owners": 26,
+   "deadlines": 18,
+   "lists": 6
+  },
+  "reach": {
+   "plain-words": {
+    "2000": {
+     "owners": 0.808,
+     "deadlines": 1.0,
+     "lists": 0.0,
+     "mean": 0.603
+    },
+    "6000": {
+     "owners": 0.885,
+     "deadlines": 1.0,
+     "lists": 0.0,
+     "mean": 0.628
+    },
+    "24000": {
+     "owners": 0.962,
+     "deadlines": 1.0,
+     "lists": 0.128,
+     "mean": 0.697
+    }
+   },
+   "plain": {
+    "2000": {
+     "owners": 0.654,
+     "deadlines": 1.0,
+     "lists": 0.024,
+     "mean": 0.559
+    },
+    "6000": {
+     "owners": 0.885,
+     "deadlines": 1.0,
+     "lists": 0.048,
+     "mean": 0.644
+    },
+    "24000": {
+     "owners": 0.962,
+     "deadlines": 1.0,
+     "lists": 0.113,
+     "mean": 0.692
+    }
+   },
+   "bank": {
+    "2000": {
+     "owners": 0.423,
+     "deadlines": 0.333,
+     "lists": 0.0,
+     "mean": 0.252
+    },
+    "6000": {
+     "owners": 0.5,
+     "deadlines": 0.5,
+     "lists": 0.042,
+     "mean": 0.347
+    },
+    "24000": {
+     "owners": 0.692,
+     "deadlines": 0.5,
+     "lists": 0.125,
+     "mean": 0.439
+    }
+   },
+   "v1": {
+    "2000": {
+     "owners": 0.346,
+     "deadlines": 0.278,
+     "lists": 0.0,
+     "mean": 0.208
+    },
+    "6000": {
+     "owners": 0.692,
+     "deadlines": 0.611,
+     "lists": 0.0,
+     "mean": 0.434
+    },
+    "24000": {
+     "owners": 0.923,
+     "deadlines": 0.889,
+     "lists": 0.083,
+     "mean": 0.632
+    }
+   },
+   "v2": {
+    "2000": {
+     "owners": 0.923,
+     "deadlines": 1.0,
+     "lists": 1.0,
+     "mean": 0.974
+    },
+    "6000": {
+     "owners": 0.962,
+     "deadlines": 1.0,
+     "lists": 1.0,
+     "mean": 0.987
+    },
+    "24000": {
+     "owners": 1.0,
+     "deadlines": 1.0,
+     "lists": 1.0,
+     "mean": 1.0
+    }
+   }
+  },
+  "direct": {
+   "v1": {
+    "owners": 0.615,
+    "deadlines": 0.944,
+    "lists": 0.989,
+    "mean": 0.849
+   },
+   "v2": {
+    "owners": 0.577,
+    "deadlines": 0.833,
+    "lists": 1.0,
+    "mean": 0.803
+   }
+  },
+  "ms": {
+   "plain-words": {
+    "median": 1.8,
+    "p90": 2.6,
+    "max": 3.7
+   },
+   "plain": {
+    "median": 22.7,
+    "p90": 33.7,
+    "max": 52.1
+   },
+   "bank": {
+    "median": 462.5,
+    "p90": 771.8,
+    "max": 943.2
+   },
+   "v1": {
+    "median": 778.4,
+    "p90": 1200.1,
+    "max": 1379.0
+   },
+   "v2": {
+    "median": 1883.3,
+    "p90": 2065.8,
+    "max": 2343.2
+   }
+  },
+  "times_s": {
+   "bank_load": 385.8,
+   "bank_embed": 180.2,
+   "bank_finish": 17.6,
+   "bank_bm25": 8.4,
+   "plain_bm25": 4.1,
+   "plain_embed": 3298.1,
+   "v1_build": 8.36,
+   "v2_build": 13.73
+  },
+  "storage": {
+   "bank_total": 183697907,
+   "bank_bytes": {
+    "documents": 5420030,
+    "sections": 69027764,
+    "memory_records": 87292935,
+    "record_links": 6143368,
+    "section_facts": 0,
+    "bm25": 15813810
+   },
+   "plain_total": 68021155,
+   "v1_bytes": 106016768,
+   "v2_bytes": 115056640
+  },
+  "checks": {
+   "bank_errors": 0,
+   "evidence_missing": 0,
+   "gave_up": 2,
+   "gave_up_questions": [
+    "metadata-qst_0047",
+    "metadata-qst_0063"
+   ],
+   "bm25_ready": true,
+   "load_average": [
+    1.42,
+    3.11,
+    3.72
+   ],
+   "retry": {
+    "retried": [
+     "metadata-qst_0047",
+     "metadata-qst_0063"
+    ],
+    "still_affected": [
+     "metadata-qst_0047",
+     "metadata-qst_0063"
+    ]
+   },
+   "bank_documents": 5089,
+   "bank_failed": 0,
+   "bank_bm25_error": null,
+   "haystack_documents": 5089,
+   "fact_bank_sources": {
+    "v1": 5089,
+    "v2": 5089
+   }
+  }
+ },
+ "primary_small": {
+  "questions": 50,
+  "by_group": {
+   "owners": 26,
+   "deadlines": 18,
+   "lists": 6
+  },
+  "reach": {
+   "plain-words": {
+    "2000": {
+     "owners": 0.962,
+     "deadlines": 1.0,
+     "lists": 0.128,
+     "mean": 0.697
+    },
+    "6000": {
+     "owners": 1.0,
+     "deadlines": 1.0,
+     "lists": 0.723,
+     "mean": 0.908
+    },
+    "24000": {
+     "owners": 1.0,
+     "deadlines": 1.0,
+     "lists": 1.0,
+     "mean": 1.0
+    }
+   },
+   "plain": {
+    "2000": {
+     "owners": 0.923,
+     "deadlines": 1.0,
+     "lists": 0.333,
+     "mean": 0.752
+    },
+    "6000": {
+     "owners": 0.962,
+     "deadlines": 1.0,
+     "lists": 0.609,
+     "mean": 0.857
+    },
+    "24000": {
+     "owners": 1.0,
+     "deadlines": 1.0,
+     "lists": 0.911,
+     "mean": 0.97
+    }
+   },
+   "bank": {
+    "2000": {
+     "owners": 0.615,
+     "deadlines": 0.333,
+     "lists": 0.134,
+     "mean": 0.361
+    },
+    "6000": {
+     "owners": 0.692,
+     "deadlines": 0.444,
+     "lists": 0.25,
+     "mean": 0.462
+    },
+    "24000": {
+     "owners": 0.769,
+     "deadlines": 0.5,
+     "lists": 0.718,
+     "mean": 0.662
+    }
+   },
+   "v1": {
+    "2000": {
+     "owners": 0.923,
+     "deadlines": 0.889,
+     "lists": 0.356,
+     "mean": 0.723
+    },
+    "6000": {
+     "owners": 1.0,
+     "deadlines": 1.0,
+     "lists": 0.674,
+     "mean": 0.891
+    },
+    "24000": {
+     "owners": 1.0,
+     "deadlines": 1.0,
+     "lists": 0.872,
+     "mean": 0.957
+    }
+   },
+   "v2": {
+    "2000": {
+     "owners": 0.962,
+     "deadlines": 1.0,
+     "lists": 1.0,
+     "mean": 0.987
+    },
+    "6000": {
+     "owners": 1.0,
+     "deadlines": 1.0,
+     "lists": 1.0,
+     "mean": 1.0
+    },
+    "24000": {
+     "owners": 1.0,
+     "deadlines": 1.0,
+     "lists": 1.0,
+     "mean": 1.0
+    }
+   }
+  },
+  "direct": {
+   "v1": {
+    "owners": 0.654,
+    "deadlines": 0.944,
+    "lists": 1.0,
+    "mean": 0.866
+   },
+   "v2": {
+    "owners": 0.538,
+    "deadlines": 0.778,
+    "lists": 1.0,
+    "mean": 0.772
+   }
+  },
+  "ms": {
+   "plain-words": {
+    "median": 0.8,
+    "p90": 1.2,
+    "max": 2.9
+   },
+   "plain": {
+    "median": 17.1,
+    "p90": 26.3,
+    "max": 35.5
+   },
+   "bank": {
+    "median": 228.9,
+    "p90": 340.6,
+    "max": 440.3
+   },
+   "v1": {
+    "median": 9.7,
+    "p90": 13.6,
+    "max": 21.8
+   },
+   "v2": {
+    "median": 109.1,
+    "p90": 137.2,
+    "max": 168.5
+   }
+  },
+  "times_s": {
+   "bank_load": 131.8,
+   "bank_embed": 127.0,
+   "bank_finish": 1.8,
+   "bank_bm25": 0.2,
+   "plain_bm25": 0.6,
+   "plain_embed": 54.2,
+   "v1_build": 0.72,
+   "v2_build": 0.81
+  },
+  "storage": {
+   "bank_total": 4437405,
+   "bank_bytes": {
+    "documents": 88488,
+    "sections": 1286936,
+    "memory_records": 2402940,
+    "record_links": 153560,
+    "section_facts": 0,
+    "bm25": 505481
+   },
+   "plain_total": 1359466,
+   "v1_bytes": 2404352,
+   "v2_bytes": 2641920
+  },
+  "checks": {
+   "bank_errors": 0,
+   "evidence_missing": 0,
+   "gave_up": 0,
+   "gave_up_questions": [],
+   "bm25_ready": true,
+   "load_average": [
+    1.78,
+    2.65,
+    3.47
+   ],
+   "retry": {
+    "retried": [],
+    "still_affected": []
+   },
+   "bank_documents": 67,
+   "bank_failed": 0,
+   "bank_bm25_error": null,
+   "haystack_documents": 67,
+   "fact_bank_sources": {
+    "v1": 67,
+    "v2": 67
+   }
+  }
+ },
+ "fb50_5k": {
+  "questions": 50,
+  "by_group": {
+   "owners": 26,
+   "deadlines": 18,
+   "lists": 6
+  },
+  "reach": {
+   "plain-words": {
+    "2000": {
+     "owners": 0.692,
+     "deadlines": 1.0,
+     "lists": 0.0,
+     "mean": 0.564
+    },
+    "6000": {
+     "owners": 0.885,
+     "deadlines": 1.0,
+     "lists": 0.0,
+     "mean": 0.628
+    },
+    "24000": {
+     "owners": 0.962,
+     "deadlines": 1.0,
+     "lists": 0.167,
+     "mean": 0.71
+    }
+   },
+   "plain": {
+    "2000": {
+     "owners": 0.769,
+     "deadlines": 1.0,
+     "lists": 0.0,
+     "mean": 0.59
+    },
+    "6000": {
+     "owners": 0.846,
+     "deadlines": 1.0,
+     "lists": 0.0,
+     "mean": 0.615
+    },
+    "24000": {
+     "owners": 0.923,
+     "deadlines": 1.0,
+     "lists": 0.083,
+     "mean": 0.669
+    }
+   },
+   "bank": {
+    "2000": {
+     "owners": 0.5,
+     "deadlines": 0.389,
+     "lists": 0.0,
+     "mean": 0.296
+    },
+    "6000": {
+     "owners": 0.577,
+     "deadlines": 0.444,
+     "lists": 0.083,
+     "mean": 0.368
+    },
+    "24000": {
+     "owners": 0.731,
+     "deadlines": 0.444,
+     "lists": 0.083,
+     "mean": 0.419
+    }
+   },
+   "v1": {
+    "2000": {
+     "owners": 0.346,
+     "deadlines": 0.333,
+     "lists": 0.0,
+     "mean": 0.226
+    },
+    "6000": {
+     "owners": 0.538,
+     "deadlines": 0.667,
+     "lists": 0.0,
+     "mean": 0.402
+    },
+    "24000": {
+     "owners": 0.846,
+     "deadlines": 0.889,
+     "lists": 0.5,
+     "mean": 0.745
+    }
+   },
+   "v2": {
+    "2000": {
+     "owners": 0.962,
+     "deadlines": 1.0,
+     "lists": 1.0,
+     "mean": 0.987
+    },
+    "6000": {
+     "owners": 0.962,
+     "deadlines": 1.0,
+     "lists": 1.0,
+     "mean": 0.987
+    },
+    "24000": {
+     "owners": 0.962,
+     "deadlines": 1.0,
+     "lists": 1.0,
+     "mean": 0.987
+    }
+   }
+  },
+  "direct": {
+   "v1": {
+    "owners": 0.538,
+    "deadlines": 1.0,
+    "lists": 1.0,
+    "mean": 0.846
+   },
+   "v2": {
+    "owners": 0.423,
+    "deadlines": 0.889,
+    "lists": 1.0,
+    "mean": 0.771
+   }
+  },
+  "ms": {
+   "plain-words": {
+    "median": 1.8,
+    "p90": 2.4,
+    "max": 3.2
+   },
+   "plain": {
+    "median": 22.5,
+    "p90": 28.4,
+    "max": 40.3
+   },
+   "bank": {
+    "median": 445.9,
+    "p90": 610.0,
+    "max": 837.2
+   },
+   "v1": {
+    "median": 822.7,
+    "p90": 1098.0,
+    "max": 1296.9
+   },
+   "v2": {
+    "median": 1802.6,
+    "p90": 2037.7,
+    "max": 2156.9
+   }
+  },
+  "times_s": {
+   "bank_load": 385.8,
+   "bank_embed": 180.2,
+   "bank_finish": 17.6,
+   "bank_bm25": 8.4,
+   "plain_bm25": 4.1,
+   "plain_embed": 3298.1,
+   "v1_build": 8.36,
+   "v2_build": 13.73
+  },
+  "storage": {
+   "bank_total": 183697907,
+   "bank_bytes": {
+    "documents": 5420030,
+    "sections": 69027764,
+    "memory_records": 87292935,
+    "record_links": 6143368,
+    "section_facts": 0,
+    "bm25": 15813810
+   },
+   "plain_total": 68021155,
+   "v1_bytes": 106016768,
+   "v2_bytes": 115056640
+  },
+  "checks": {
+   "bank_errors": 0,
+   "evidence_missing": 0,
+   "gave_up": 0,
+   "gave_up_questions": [],
+   "bm25_ready": true,
+   "load_average": [
+    2.05,
+    2.92,
+    3.61
+   ],
+   "retry": {
+    "retried": [],
+    "still_affected": []
+   },
+   "bank_documents": 5089,
+   "bank_failed": 0,
+   "bank_bm25_error": null,
+   "haystack_documents": 5089,
+   "fact_bank_sources": {
+    "v1": 5089,
+    "v2": 5089
+   }
+  }
+ },
+ "fb50_50": {
+  "questions": 50,
+  "by_group": {
+   "owners": 26,
+   "deadlines": 18,
+   "lists": 6
+  },
+  "reach": {
+   "plain-words": {
+    "2000": {
+     "owners": 0.885,
+     "deadlines": 1.0,
+     "lists": 0.583,
+     "mean": 0.823
+    },
+    "6000": {
+     "owners": 1.0,
+     "deadlines": 1.0,
+     "lists": 0.917,
+     "mean": 0.972
+    },
+    "24000": {
+     "owners": 1.0,
+     "deadlines": 1.0,
+     "lists": 1.0,
+     "mean": 1.0
+    }
+   },
+   "plain": {
+    "2000": {
+     "owners": 0.885,
+     "deadlines": 1.0,
+     "lists": 0.167,
+     "mean": 0.684
+    },
+    "6000": {
+     "owners": 0.962,
+     "deadlines": 1.0,
+     "lists": 0.333,
+     "mean": 0.765
+    },
+    "24000": {
+     "owners": 1.0,
+     "deadlines": 1.0,
+     "lists": 1.0,
+     "mean": 1.0
+    }
+   },
+   "bank": {
+    "2000": {
+     "owners": 0.654,
+     "deadlines": 0.389,
+     "lists": 0.083,
+     "mean": 0.375
+    },
+    "6000": {
+     "owners": 0.769,
+     "deadlines": 0.389,
+     "lists": 0.083,
+     "mean": 0.414
+    },
+    "24000": {
+     "owners": 0.808,
+     "deadlines": 0.5,
+     "lists": 0.583,
+     "mean": 0.63
+    }
+   },
+   "v1": {
+    "2000": {
+     "owners": 0.885,
+     "deadlines": 1.0,
+     "lists": 0.417,
+     "mean": 0.767
+    },
+    "6000": {
+     "owners": 0.885,
+     "deadlines": 1.0,
+     "lists": 1.0,
+     "mean": 0.962
+    },
+    "24000": {
+     "owners": 0.962,
+     "deadlines": 1.0,
+     "lists": 1.0,
+     "mean": 0.987
+    }
+   },
+   "v2": {
+    "2000": {
+     "owners": 1.0,
+     "deadlines": 1.0,
+     "lists": 1.0,
+     "mean": 1.0
+    },
+    "6000": {
+     "owners": 1.0,
+     "deadlines": 1.0,
+     "lists": 1.0,
+     "mean": 1.0
+    },
+    "24000": {
+     "owners": 1.0,
+     "deadlines": 1.0,
+     "lists": 1.0,
+     "mean": 1.0
+    }
+   }
+  },
+  "direct": {
+   "v1": {
+    "owners": 0.654,
+    "deadlines": 1.0,
+    "lists": 1.0,
+    "mean": 0.885
+   },
+   "v2": {
+    "owners": 0.5,
+    "deadlines": 0.889,
+    "lists": 1.0,
+    "mean": 0.796
+   }
+  },
+  "ms": {
+   "plain-words": {
+    "median": 0.9,
+    "p90": 1.2,
+    "max": 1.4
+   },
+   "plain": {
+    "median": 16.9,
+    "p90": 29.1,
+    "max": 43.7
+   },
+   "bank": {
+    "median": 246.9,
+    "p90": 315.7,
+    "max": 395.2
+   },
+   "v1": {
+    "median": 9.5,
+    "p90": 13.3,
+    "max": 27.5
+   },
+   "v2": {
+    "median": 112.6,
+    "p90": 147.0,
+    "max": 169.4
+   }
+  },
+  "times_s": {
+   "bank_load": 12.6,
+   "bank_embed": 0.0,
+   "bank_finish": 10.6,
+   "bank_bm25": 0.2,
+   "plain_bm25": 0.4,
+   "plain_embed": 28.6,
+   "v1_build": 0.79,
+   "v2_build": 0.86
+  },
+  "storage": {
+   "bank_total": 3045210,
+   "bank_bytes": {
+    "documents": 64849,
+    "sections": 951652,
+    "memory_records": 1549124,
+    "record_links": 103152,
+    "section_facts": 0,
+    "bm25": 376433
+   },
+   "plain_total": 1068217,
+   "v1_bytes": 1814528,
+   "v2_bytes": 1949696
+  },
+  "checks": {
+   "bank_errors": 0,
+   "evidence_missing": 0,
+   "gave_up": 0,
+   "gave_up_questions": [],
+   "bm25_ready": true,
+   "load_average": [
+    1.25,
+    1.95,
+    2.45
+   ],
+   "retry": {
+    "retried": [],
+    "still_affected": []
+   },
+   "bank_documents": 50,
+   "bank_failed": 0,
+   "bank_bm25_error": null,
+   "haystack_documents": 50,
+   "fact_bank_sources": {
+    "v1": 50,
+    "v2": 50
+   }
+  }
+ },
+ "rules": {
+  "1 not worse at the evidence budget (fact bank - bank >= -0.03 in every group, 24,000 chars)": false,
+  "2 better near the top (fact bank - bank >= +0.10 on the mean, first 2,000 chars)": false,
+  "3 answers without a model (own answers >= 0.70 on the mean)": true,
+  "4 smaller (fact bank <= 1/3 of the bank's storage)": false,
+  "5 own answers hold at size (5,089 documents >= control - 0.05)": true
+ },
+ "replace": false,
+ "rules_v2_primary": {
+  "1 not worse at the evidence budget (fact bank - bank >= -0.03 in every group, 24,000 chars)": true,
+  "2 better near the top (fact bank - bank >= +0.10 on the mean, first 2,000 chars)": true,
+  "3 answers without a model (own answers >= 0.70 on the mean)": true,
+  "4 smaller (fact bank <= 1/3 of the bank's storage)": false,
+  "5 own answers hold at size (5,089 documents >= control - 0.05)": true
+ },
+ "rules_fb50_5k": {
+  "1 not worse at the evidence budget (fact bank - bank >= -0.03 in every group, 24,000 chars)": true,
+  "2 better near the top (fact bank - bank >= +0.10 on the mean, first 2,000 chars)": false,
+  "3 answers without a model (own answers >= 0.70 on the mean)": true,
+  "4 smaller (fact bank <= 1/3 of the bank's storage)": false,
+  "5 own answers hold at size (5,089 documents >= control - 0.05)": true
+ },
+ "still_affected_after_retry": {
+  "b5k": [
+   "metadata-qst_0047",
+   "metadata-qst_0063"
+  ],
+  "b5ksmall": [],
+  "b5kfb": [],
+  "b5kfb50": []
+ },
+ "rules_without_affected": {
+  "1 not worse at the evidence budget (fact bank - bank >= -0.03 in every group, 24,000 chars)": false,
+  "2 better near the top (fact bank - bank >= +0.10 on the mean, first 2,000 chars)": false,
+  "3 answers without a model (own answers >= 0.70 on the mean)": true,
+  "4 smaller (fact bank <= 1/3 of the bank's storage)": false,
+  "5 own answers hold at size (5,089 documents >= control - 0.05)": true
+ },
+ "change_primary_5k_minus_small": {
+  "plain-words": {
+   "2000": {
+    "owners": -0.154,
+    "deadlines": 0.0,
+    "lists": -0.128,
+    "mean": -0.094
+   },
+   "6000": {
+    "owners": -0.115,
+    "deadlines": 0.0,
+    "lists": -0.723,
+    "mean": -0.28
+   },
+   "24000": {
+    "owners": -0.038,
+    "deadlines": 0.0,
+    "lists": -0.872,
+    "mean": -0.303
+   }
+  },
+  "plain": {
+   "2000": {
+    "owners": -0.269,
+    "deadlines": 0.0,
+    "lists": -0.309,
+    "mean": -0.193
+   },
+   "6000": {
+    "owners": -0.077,
+    "deadlines": 0.0,
+    "lists": -0.561,
+    "mean": -0.213
+   },
+   "24000": {
+    "owners": -0.038,
+    "deadlines": 0.0,
+    "lists": -0.798,
+    "mean": -0.278
+   }
+  },
+  "bank": {
+   "2000": {
+    "owners": -0.192,
+    "deadlines": 0.0,
+    "lists": -0.134,
+    "mean": -0.109
+   },
+   "6000": {
+    "owners": -0.192,
+    "deadlines": 0.056,
+    "lists": -0.208,
+    "mean": -0.115
+   },
+   "24000": {
+    "owners": -0.077,
+    "deadlines": 0.0,
+    "lists": -0.593,
+    "mean": -0.223
+   }
+  },
+  "v1": {
+   "2000": {
+    "owners": -0.577,
+    "deadlines": -0.611,
+    "lists": -0.356,
+    "mean": -0.515
+   },
+   "6000": {
+    "owners": -0.308,
+    "deadlines": -0.389,
+    "lists": -0.674,
+    "mean": -0.457
+   },
+   "24000": {
+    "owners": -0.077,
+    "deadlines": -0.111,
+    "lists": -0.789,
+    "mean": -0.325
+   }
+  },
+  "v2": {
+   "2000": {
+    "owners": -0.039,
+    "deadlines": 0.0,
+    "lists": 0.0,
+    "mean": -0.013
+   },
+   "6000": {
+    "owners": -0.038,
+    "deadlines": 0.0,
+    "lists": 0.0,
+    "mean": -0.013
+   },
+   "24000": {
+    "owners": 0.0,
+    "deadlines": 0.0,
+    "lists": 0.0,
+    "mean": 0.0
+   }
+  }
+ },
+ "change_fb50_5k_minus_50": {
+  "plain-words": {
+   "2000": {
+    "owners": -0.193,
+    "deadlines": 0.0,
+    "lists": -0.583,
+    "mean": -0.259
+   },
+   "6000": {
+    "owners": -0.115,
+    "deadlines": 0.0,
+    "lists": -0.917,
+    "mean": -0.344
+   },
+   "24000": {
+    "owners": -0.038,
+    "deadlines": 0.0,
+    "lists": -0.833,
+    "mean": -0.29
+   }
+  },
+  "plain": {
+   "2000": {
+    "owners": -0.116,
+    "deadlines": 0.0,
+    "lists": -0.167,
+    "mean": -0.094
+   },
+   "6000": {
+    "owners": -0.116,
+    "deadlines": 0.0,
+    "lists": -0.333,
+    "mean": -0.15
+   },
+   "24000": {
+    "owners": -0.077,
+    "deadlines": 0.0,
+    "lists": -0.917,
+    "mean": -0.331
+   }
+  },
+  "bank": {
+   "2000": {
+    "owners": -0.154,
+    "deadlines": 0.0,
+    "lists": -0.083,
+    "mean": -0.079
+   },
+   "6000": {
+    "owners": -0.192,
+    "deadlines": 0.055,
+    "lists": 0.0,
+    "mean": -0.046
+   },
+   "24000": {
+    "owners": -0.077,
+    "deadlines": -0.056,
+    "lists": -0.5,
+    "mean": -0.211
+   }
+  },
+  "v1": {
+   "2000": {
+    "owners": -0.539,
+    "deadlines": -0.667,
+    "lists": -0.417,
+    "mean": -0.541
+   },
+   "6000": {
+    "owners": -0.347,
+    "deadlines": -0.333,
+    "lists": -1.0,
+    "mean": -0.56
+   },
+   "24000": {
+    "owners": -0.116,
+    "deadlines": -0.111,
+    "lists": -0.5,
+    "mean": -0.242
+   }
+  },
+  "v2": {
+   "2000": {
+    "owners": -0.038,
+    "deadlines": 0.0,
+    "lists": 0.0,
+    "mean": -0.013
+   },
+   "6000": {
+    "owners": -0.038,
+    "deadlines": 0.0,
+    "lists": 0.0,
+    "mean": -0.013
+   },
+   "24000": {
+    "owners": -0.038,
+    "deadlines": 0.0,
+    "lists": 0.0,
+    "mean": -0.013
+   }
+  }
+ },
+ "fact_bank_minus_plain_words": {
+  "2000": -0.395,
+  "6000": -0.194,
+  "24000": -0.065
+ },
+ "bank_evidence_twice": {
+  "b5k": {
+   "questions": 50,
+   "different": []
+  },
+  "b5ksmall": {
+   "questions": 50,
+   "different": []
+  },
+  "b5kfb": {
+   "questions": 50,
+   "different": []
+  },
+  "b5kfb50": {
+   "questions": 50,
+   "different": []
+  }
+ },
+ "control_against_original_run": {
+  "plain-words": [],
+  "plain": [],
+  "bank": [
+   "action_due-018",
+   "linear_due-005",
+   "metadata-qst_0027",
+   "metadata-qst_0069",
+   "metadata-qst_0079"
+  ]
+ },
+ "rows": {
+  "primary_5k": [
+   {
+    "id": "metadata-qst_0067",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 3.0,
+     "plain": 25.5,
+     "bank": 898.3,
+     "v1": 709.07,
+     "v2": 1774.43
+    }
+   },
+   {
+    "id": "metadata-qst_0017",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 3.7,
+     "plain": 27.4,
+     "bank": 711.0,
+     "v1": 930.47,
+     "v2": 2065.78
+    }
+   },
+   {
+    "id": "metadata-qst_0082",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 2.3,
+     "plain": 17.3,
+     "bank": 408.7,
+     "v1": 937.71,
+     "v2": 1962.13
+    }
+   },
+   {
+    "id": "metadata-qst_0033",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.8,
+     "plain": 19.3,
+     "bank": 344.3,
+     "v1": 683.59,
+     "v2": 1650.83
+    }
+   },
+   {
+    "id": "metadata-qst_0089",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 2.3,
+     "plain": 26.8,
+     "bank": 540.0,
+     "v1": 770.27,
+     "v2": 1764.95
+    }
+   },
+   {
+    "id": "metadata-qst_0023",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 1.7,
+     "plain": 35.5,
+     "bank": 357.2,
+     "v1": 841.63,
+     "v2": 2068.15
+    }
+   },
+   {
+    "id": "metadata-qst_0021",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.7,
+     "plain": 52.1,
+     "bank": 286.4,
+     "v1": 750.45,
+     "v2": 1813.95
+    }
+   },
+   {
+    "id": "metadata-qst_0073",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.6,
+     "plain": 26.3,
+     "bank": 416.6,
+     "v1": 673.44,
+     "v2": 1964.03
+    }
+   },
+   {
+    "id": "metadata-qst_0059",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.5,
+     "plain": 24.4,
+     "bank": 345.6,
+     "v1": 677.6,
+     "v2": 1745.53
+    }
+   },
+   {
+    "id": "metadata-qst_0036",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 2.6,
+     "plain": 22.4,
+     "bank": 380.7,
+     "v1": 842.73,
+     "v2": 2044.14
+    }
+   },
+   {
+    "id": "metadata-qst_0040",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 1.9,
+     "plain": 24.3,
+     "bank": 311.7,
+     "v1": 872.81,
+     "v2": 2039.5
+    }
+   },
+   {
+    "id": "metadata-qst_0022",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.8,
+     "plain": 18.1,
+     "bank": 287.8,
+     "v1": 746.53,
+     "v2": 1904.07
+    }
+   },
+   {
+    "id": "metadata-qst_0052",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 1.8,
+     "plain": 38.8,
+     "bank": 461.2,
+     "v1": 800.72,
+     "v2": 1884.02
+    }
+   },
+   {
+    "id": "metadata-qst_0055",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 1.8,
+     "plain": 16.7,
+     "bank": 297.8,
+     "v1": 859.24,
+     "v2": 2033.19
+    }
+   },
+   {
+    "id": "metadata-qst_0097",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.6,
+     "plain": 22.4,
+     "bank": 733.1,
+     "v1": 931.77,
+     "v2": 2158.38
+    }
+   },
+   {
+    "id": "metadata-qst_0060",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.5,
+     "plain": 36.0,
+     "bank": 771.8,
+     "v1": 600.17,
+     "v2": 1666.89
+    }
+   },
+   {
+    "id": "metadata-qst_0024",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.9,
+     "plain": 17.4,
+     "bank": 334.5,
+     "v1": 930.03,
+     "v2": 2056.43
+    }
+   },
+   {
+    "id": "metadata-qst_0031",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 2.0,
+     "plain": 30.1,
+     "bank": 435.2,
+     "v1": 742.47,
+     "v2": 1830.25
+    }
+   },
+   {
+    "id": "metadata-qst_0047",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 3.5,
+     "plain": 33.7,
+     "bank": 876.2,
+     "v1": 807.98,
+     "v2": 2016.86
+    }
+   },
+   {
+    "id": "metadata-qst_0094",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 3.6,
+     "plain": 19.2,
+     "bank": 424.2,
+     "v1": 779.57,
+     "v2": 1961.7
+    }
+   },
+   {
+    "id": "metadata-qst_0092",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 1.9,
+     "plain": 24.4,
+     "bank": 340.1,
+     "v1": 720.54,
+     "v2": 1805.29
+    }
+   },
+   {
+    "id": "metadata-qst_0061",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 2.8,
+     "plain": 23.0,
+     "bank": 442.4,
+     "v1": 731.25,
+     "v2": 1851.91
+    }
+   },
+   {
+    "id": "metadata-qst_0063",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 2.0,
+     "plain": 28.1,
+     "bank": 792.4,
+     "v1": 931.6,
+     "v2": 2154.82
+    }
+   },
+   {
+    "id": "metadata-qst_0020",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 1.6,
+     "plain": 20.3,
+     "bank": 247.5,
+     "v1": 923.55,
+     "v2": 2062.23
+    }
+   },
+   {
+    "id": "metadata-qst_0068",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 1.9,
+     "plain": 20.2,
+     "bank": 694.8,
+     "v1": 768.23,
+     "v2": 2057.13
+    }
+   },
+   {
+    "id": "metadata-qst_0016",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 1.8,
+     "plain": 16.2,
+     "bank": 298.5,
+     "v1": 846.16,
+     "v2": 2085.98
+    }
+   },
+   {
+    "id": "linear_due-033",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 1.5,
+     "plain": 21.9,
+     "bank": 580.3,
+     "v1": 686.18,
+     "v2": 1822.51
+    }
+   },
+   {
+    "id": "linear_due-036",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.7,
+     "plain": 15.1,
+     "bank": 448.2,
+     "v1": 918.6,
+     "v2": 1895.46
+    }
+   },
+   {
+    "id": "linear_due-021",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.4,
+     "plain": 18.0,
+     "bank": 469.2,
+     "v1": 763.75,
+     "v2": 1949.03
+    }
+   },
+   {
+    "id": "linear_due-008",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.6,
+     "plain": 16.9,
+     "bank": 461.2,
+     "v1": 783.98,
+     "v2": 2007.54
+    }
+   },
+   {
+    "id": "linear_due-009",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.6,
+     "plain": 28.5,
+     "bank": 514.4,
+     "v1": 719.37,
+     "v2": 1882.53
+    }
+   },
+   {
+    "id": "linear_due-031",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 1.2,
+     "plain": 16.4,
+     "bank": 565.1,
+     "v1": 1158.03,
+     "v2": 2343.2
+    }
+   },
+   {
+    "id": "linear_due-029",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.4,
+     "plain": 25.1,
+     "bank": 609.9,
+     "v1": 679.53,
+     "v2": 1688.3
+    }
+   },
+   {
+    "id": "linear_due-034",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.5,
+     "plain": 20.3,
+     "bank": 438.3,
+     "v1": 753.39,
+     "v2": 1793.28
+    }
+   },
+   {
+    "id": "linear_due-032",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.6,
+     "plain": 15.8,
+     "bank": 434.5,
+     "v1": 852.96,
+     "v2": 1968.85
+    }
+   },
+   {
+    "id": "linear_due-038",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 1.8,
+     "plain": 14.4,
+     "bank": 463.8,
+     "v1": 777.2,
+     "v2": 1943.21
+    }
+   },
+   {
+    "id": "action_due-012",
+    "group": "deadlines",
+    "kind": "action_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 2.3,
+     "plain": 21.5,
+     "bank": 749.7,
+     "v1": 640.03,
+     "v2": 1732.45
+    }
+   },
+   {
+    "id": "action_due-030",
+    "group": "deadlines",
+    "kind": "action_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 2.3,
+     "plain": 29.1,
+     "bank": 589.0,
+     "v1": 795.12,
+     "v2": 1785.15
+    }
+   },
+   {
+    "id": "action_due-020",
+    "group": "deadlines",
+    "kind": "action_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 2.5,
+     "plain": 43.6,
+     "bank": 516.6,
+     "v1": 590.44,
+     "v2": 1673.73
+    }
+   },
+   {
+    "id": "action_due-017",
+    "group": "deadlines",
+    "kind": "action_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 2.1,
+     "plain": 20.3,
+     "bank": 485.1,
+     "v1": 599.79,
+     "v2": 1796.27
+    }
+   },
+   {
+    "id": "action_due-007",
+    "group": "deadlines",
+    "kind": "action_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 2.2,
+     "plain": 19.4,
+     "bank": 355.9,
+     "v1": 729.94,
+     "v2": 1803.93
+    }
+   },
+   {
+    "id": "action_due-025",
+    "group": "deadlines",
+    "kind": "action_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 2.6,
+     "plain": 24.6,
+     "bank": 537.3,
+     "v1": 714.41,
+     "v2": 1786.64
+    }
+   },
+   {
+    "id": "action_due-001",
+    "group": "deadlines",
+    "kind": "action_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 2.0,
+     "plain": 26.2,
+     "bank": 434.1,
+     "v1": 582.04,
+     "v2": 1643.63
+    }
+   },
+   {
+    "id": "action_due-019",
+    "group": "deadlines",
+    "kind": "action_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 2.2,
+     "plain": 31.9,
+     "bank": 600.7,
+     "v1": 649.33,
+     "v2": 1829.38
+    }
+   },
+   {
+    "id": "linear_due_window-006",
+    "group": "lists",
+    "kind": "linear_due_window",
+    "reach": {
+     "plain-words": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.125
+     },
+     "plain": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 0.933,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.7,
+     "plain": 16.3,
+     "bank": 494.2,
+     "v1": 1358.35,
+     "v2": 1895.0
+    }
+   },
+   {
+    "id": "linear_status-002",
+    "group": "lists",
+    "kind": "linear_status",
+    "reach": {
+     "plain-words": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.2,
+     "plain": 25.8,
+     "bank": 844.4,
+     "v1": 1262.7,
+     "v2": 1625.72
+    }
+   },
+   {
+    "id": "linear_assignee-014",
+    "group": "lists",
+    "kind": "linear_assignee",
+    "reach": {
+     "plain-words": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.5
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.5
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.4,
+     "plain": 25.1,
+     "bank": 437.6,
+     "v1": 1200.1,
+     "v2": 1796.1
+    }
+   },
+   {
+    "id": "linear_status-009",
+    "group": "lists",
+    "kind": "linear_status",
+    "reach": {
+     "plain-words": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.5
+     },
+     "plain": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.25
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.25,
+      "24000": 0.25
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.4,
+     "plain": 15.5,
+     "bank": 943.2,
+     "v1": 1357.88,
+     "v2": 1646.54
+    }
+   },
+   {
+    "id": "linear_status-010",
+    "group": "lists",
+    "kind": "linear_status",
+    "reach": {
+     "plain-words": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.14285714285714285
+     },
+     "plain": {
+      "2000": 0.14285714285714285,
+      "6000": 0.2857142857142857,
+      "24000": 0.42857142857142855
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.2,
+     "plain": 32.3,
+     "bank": 566.4,
+     "v1": 1378.98,
+     "v2": 1899.54
+    }
+   },
+   {
+    "id": "linear_assignee-005",
+    "group": "lists",
+    "kind": "linear_assignee",
+    "reach": {
+     "plain-words": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.1,
+     "plain": 16.2,
+     "bank": 466.5,
+     "v1": 1373.35,
+     "v2": 1878.66
+    }
+   }
+  ],
+  "primary_small": [
+   {
+    "id": "metadata-qst_0067",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.1,
+     "plain": 13.6,
+     "bank": 268.2,
+     "v1": 21.75,
+     "v2": 134.47
+    }
+   },
+   {
+    "id": "metadata-qst_0017",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 0.8,
+     "plain": 22.0,
+     "bank": 298.8,
+     "v1": 14.19,
+     "v2": 168.48
+    }
+   },
+   {
+    "id": "metadata-qst_0082",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 0.9,
+     "plain": 23.5,
+     "bank": 190.2,
+     "v1": 9.08,
+     "v2": 158.85
+    }
+   },
+   {
+    "id": "metadata-qst_0033",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 0.8,
+     "plain": 19.3,
+     "bank": 181.9,
+     "v1": 8.9,
+     "v2": 120.98
+    }
+   },
+   {
+    "id": "metadata-qst_0089",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 0.8,
+     "plain": 11.6,
+     "bank": 210.6,
+     "v1": 11.36,
+     "v2": 114.16
+    }
+   },
+   {
+    "id": "metadata-qst_0023",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 0.9,
+     "plain": 22.6,
+     "bank": 220.9,
+     "v1": 13.74,
+     "v2": 111.02
+    }
+   },
+   {
+    "id": "metadata-qst_0021",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 0.8,
+     "plain": 20.0,
+     "bank": 184.7,
+     "v1": 8.96,
+     "v2": 104.13
+    }
+   },
+   {
+    "id": "metadata-qst_0073",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 0.7,
+     "plain": 10.9,
+     "bank": 177.3,
+     "v1": 9.21,
+     "v2": 127.19
+    }
+   },
+   {
+    "id": "metadata-qst_0059",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 0.8,
+     "plain": 18.3,
+     "bank": 317.6,
+     "v1": 4.52,
+     "v2": 87.74
+    }
+   },
+   {
+    "id": "metadata-qst_0036",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 0.9,
+     "plain": 21.5,
+     "bank": 192.4,
+     "v1": 12.18,
+     "v2": 123.97
+    }
+   },
+   {
+    "id": "metadata-qst_0040",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 0.8,
+     "plain": 11.2,
+     "bank": 185.1,
+     "v1": 11.62,
+     "v2": 112.47
+    }
+   },
+   {
+    "id": "metadata-qst_0022",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 0.9,
+     "plain": 12.8,
+     "bank": 182.3,
+     "v1": 9.84,
+     "v2": 125.8
+    }
+   },
+   {
+    "id": "metadata-qst_0052",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 0.8,
+     "plain": 14.1,
+     "bank": 177.2,
+     "v1": 6.18,
+     "v2": 111.29
+    }
+   },
+   {
+    "id": "metadata-qst_0055",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 2.3,
+     "plain": 14.5,
+     "bank": 200.7,
+     "v1": 12.57,
+     "v2": 141.02
+    }
+   },
+   {
+    "id": "metadata-qst_0097",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 0.7,
+     "plain": 29.4,
+     "bank": 201.1,
+     "v1": 14.38,
+     "v2": 146.6
+    }
+   },
+   {
+    "id": "metadata-qst_0060",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 0.7,
+     "plain": 12.1,
+     "bank": 316.4,
+     "v1": 9.48,
+     "v2": 114.34
+    }
+   },
+   {
+    "id": "metadata-qst_0024",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 0.8,
+     "plain": 13.4,
+     "bank": 193.4,
+     "v1": 7.67,
+     "v2": 107.13
+    }
+   },
+   {
+    "id": "metadata-qst_0031",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 0.8,
+     "plain": 14.2,
+     "bank": 225.4,
+     "v1": 7.33,
+     "v2": 115.37
+    }
+   },
+   {
+    "id": "metadata-qst_0047",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.0,
+     "plain": 16.2,
+     "bank": 206.7,
+     "v1": 9.49,
+     "v2": 117.6
+    }
+   },
+   {
+    "id": "metadata-qst_0094",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 1.0,
+     "plain": 19.2,
+     "bank": 224.0,
+     "v1": 13.24,
+     "v2": 124.08
+    }
+   },
+   {
+    "id": "metadata-qst_0092",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 0.8,
+     "plain": 27.0,
+     "bank": 205.2,
+     "v1": 10.17,
+     "v2": 113.61
+    }
+   },
+   {
+    "id": "metadata-qst_0061",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 0.8,
+     "plain": 14.0,
+     "bank": 317.5,
+     "v1": 10.16,
+     "v2": 128.0
+    }
+   },
+   {
+    "id": "metadata-qst_0063",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 0.8,
+     "plain": 12.0,
+     "bank": 216.7,
+     "v1": 12.28,
+     "v2": 137.2
+    }
+   },
+   {
+    "id": "metadata-qst_0020",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 1.2,
+     "plain": 16.3,
+     "bank": 181.5,
+     "v1": 4.07,
+     "v2": 42.31
+    }
+   },
+   {
+    "id": "metadata-qst_0068",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 1.1,
+     "plain": 35.5,
+     "bank": 205.8,
+     "v1": 8.66,
+     "v2": 105.72
+    }
+   },
+   {
+    "id": "metadata-qst_0016",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 0.8,
+     "plain": 13.8,
+     "bank": 224.0,
+     "v1": 9.43,
+     "v2": 104.96
+    }
+   },
+   {
+    "id": "linear_due-033",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 0.8,
+     "plain": 18.8,
+     "bank": 253.0,
+     "v1": 14.35,
+     "v2": 130.87
+    }
+   },
+   {
+    "id": "linear_due-036",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 0.8,
+     "plain": 14.2,
+     "bank": 244.5,
+     "v1": 13.46,
+     "v2": 103.95
+    }
+   },
+   {
+    "id": "linear_due-021",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 0.8,
+     "plain": 18.8,
+     "bank": 389.6,
+     "v1": 12.58,
+     "v2": 64.35
+    }
+   },
+   {
+    "id": "linear_due-008",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 0.8,
+     "plain": 11.8,
+     "bank": 342.6,
+     "v1": 11.97,
+     "v2": 113.67
+    }
+   },
+   {
+    "id": "linear_due-009",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 0.9,
+     "plain": 25.2,
+     "bank": 253.4,
+     "v1": 10.09,
+     "v2": 102.21
+    }
+   },
+   {
+    "id": "linear_due-031",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 0.8,
+     "plain": 14.8,
+     "bank": 242.7,
+     "v1": 10.89,
+     "v2": 58.95
+    }
+   },
+   {
+    "id": "linear_due-029",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 0.7,
+     "plain": 20.3,
+     "bank": 248.9,
+     "v1": 10.12,
+     "v2": 101.93
+    }
+   },
+   {
+    "id": "linear_due-034",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 0.8,
+     "plain": 18.1,
+     "bank": 253.3,
+     "v1": 9.1,
+     "v2": 91.99
+    }
+   },
+   {
+    "id": "linear_due-032",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 0.8,
+     "plain": 18.9,
+     "bank": 248.7,
+     "v1": 7.77,
+     "v2": 123.38
+    }
+   },
+   {
+    "id": "linear_due-038",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 0.8,
+     "plain": 11.6,
+     "bank": 359.8,
+     "v1": 10.62,
+     "v2": 107.08
+    }
+   },
+   {
+    "id": "action_due-012",
+    "group": "deadlines",
+    "kind": "action_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 2.9,
+     "plain": 19.0,
+     "bank": 278.9,
+     "v1": 5.37,
+     "v2": 63.54
+    }
+   },
+   {
+    "id": "action_due-030",
+    "group": "deadlines",
+    "kind": "action_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.6,
+     "plain": 20.8,
+     "bank": 261.8,
+     "v1": 5.36,
+     "v2": 105.85
+    }
+   },
+   {
+    "id": "action_due-020",
+    "group": "deadlines",
+    "kind": "action_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.2,
+     "plain": 26.8,
+     "bank": 255.0,
+     "v1": 4.87,
+     "v2": 99.71
+    }
+   },
+   {
+    "id": "action_due-017",
+    "group": "deadlines",
+    "kind": "action_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.0,
+     "plain": 26.3,
+     "bank": 232.4,
+     "v1": 5.03,
+     "v2": 59.47
+    }
+   },
+   {
+    "id": "action_due-007",
+    "group": "deadlines",
+    "kind": "action_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.4,
+     "plain": 18.3,
+     "bank": 304.9,
+     "v1": 8.22,
+     "v2": 138.57
+    }
+   },
+   {
+    "id": "action_due-025",
+    "group": "deadlines",
+    "kind": "action_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.0,
+     "plain": 18.0,
+     "bank": 223.0,
+     "v1": 7.04,
+     "v2": 123.56
+    }
+   },
+   {
+    "id": "action_due-001",
+    "group": "deadlines",
+    "kind": "action_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 0.9,
+     "plain": 23.5,
+     "bank": 340.6,
+     "v1": 4.96,
+     "v2": 97.44
+    }
+   },
+   {
+    "id": "action_due-019",
+    "group": "deadlines",
+    "kind": "action_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.1,
+     "plain": 26.4,
+     "bank": 240.3,
+     "v1": 6.09,
+     "v2": 102.6
+    }
+   },
+   {
+    "id": "linear_due_window-006",
+    "group": "lists",
+    "kind": "linear_due_window",
+    "reach": {
+     "plain-words": {
+      "2000": 0.125,
+      "6000": 0.5,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "6000": 0.125,
+      "24000": 0.75
+     },
+     "bank": {
+      "2000": 0.125,
+      "6000": 0.125,
+      "24000": 0.375
+     },
+     "v1": {
+      "2000": 0.125,
+      "6000": 0.125,
+      "24000": 0.375
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 0.7,
+     "plain": 11.7,
+     "bank": 214.5,
+     "v1": 13.52,
+     "v2": 78.43
+    }
+   },
+   {
+    "id": "linear_status-002",
+    "group": "lists",
+    "kind": "linear_status",
+    "reach": {
+     "plain-words": {
+      "2000": 0.0,
+      "6000": 0.6,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.4,
+      "6000": 0.6,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.2,
+      "6000": 0.4,
+      "24000": 0.8
+     },
+     "v1": {
+      "2000": 0.2,
+      "6000": 0.6,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 0.7,
+     "plain": 9.8,
+     "bank": 316.4,
+     "v1": 11.16,
+     "v2": 53.99
+    }
+   },
+   {
+    "id": "linear_assignee-014",
+    "group": "lists",
+    "kind": "linear_assignee",
+    "reach": {
+     "plain-words": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.5,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.5,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 0.6,
+     "plain": 8.5,
+     "bank": 205.6,
+     "v1": 7.31,
+     "v2": 43.07
+    }
+   },
+   {
+    "id": "linear_status-009",
+    "group": "lists",
+    "kind": "linear_status",
+    "reach": {
+     "plain-words": {
+      "2000": 0.5,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.5,
+      "6000": 0.5,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.75
+     },
+     "v1": {
+      "2000": 0.5,
+      "6000": 0.75,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 0.7,
+     "plain": 9.3,
+     "bank": 362.4,
+     "v1": 10.64,
+     "v2": 49.33
+    }
+   },
+   {
+    "id": "linear_status-010",
+    "group": "lists",
+    "kind": "linear_status",
+    "reach": {
+     "plain-words": {
+      "2000": 0.14285714285714285,
+      "6000": 0.5714285714285714,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.42857142857142855,
+      "6000": 0.42857142857142855,
+      "24000": 0.7142857142857143
+     },
+     "bank": {
+      "2000": 0.14285714285714285,
+      "6000": 0.14285714285714285,
+      "24000": 0.7142857142857143
+     },
+     "v1": {
+      "2000": 0.14285714285714285,
+      "6000": 0.5714285714285714,
+      "24000": 0.8571428571428571
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.0,
+     "plain": 13.5,
+     "bank": 440.3,
+     "v1": 13.62,
+     "v2": 61.67
+    }
+   },
+   {
+    "id": "linear_assignee-005",
+    "group": "lists",
+    "kind": "linear_assignee",
+    "reach": {
+     "plain-words": {
+      "2000": 0.0,
+      "6000": 0.6666666666666666,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.6666666666666666,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.3333333333333333,
+      "6000": 0.3333333333333333,
+      "24000": 0.6666666666666666
+     },
+     "v1": {
+      "2000": 0.6666666666666666,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.1,
+     "plain": 8.6,
+     "bank": 207.7,
+     "v1": 7.18,
+     "v2": 44.77
+    }
+   }
+  ],
+  "fb50_5k": [
+   {
+    "id": "github_author-001",
+    "group": "lists",
+    "kind": "github_author",
+    "reach": {
+     "plain-words": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.5
+     },
+     "plain": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.5
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 3.0,
+     "plain": 15.6,
+     "bank": 571.4,
+     "v1": 1251.69,
+     "v2": 1792.74
+    }
+   },
+   {
+    "id": "github_author-002",
+    "group": "lists",
+    "kind": "github_author",
+    "reach": {
+     "plain-words": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.3,
+     "plain": 15.5,
+     "bank": 333.9,
+     "v1": 991.62,
+     "v2": 1606.09
+    }
+   },
+   {
+    "id": "github_author-004",
+    "group": "lists",
+    "kind": "github_author",
+    "reach": {
+     "plain-words": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.5
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.3,
+     "plain": 16.1,
+     "bank": 350.5,
+     "v1": 1199.17,
+     "v2": 1677.52
+    }
+   },
+   {
+    "id": "github_author-005",
+    "group": "lists",
+    "kind": "github_author",
+    "reach": {
+     "plain-words": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.2,
+     "plain": 11.4,
+     "bank": 475.1,
+     "v1": 1296.87,
+     "v2": 1879.86
+    }
+   },
+   {
+    "id": "github_author-006",
+    "group": "lists",
+    "kind": "github_author",
+    "reach": {
+     "plain-words": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.5
+     },
+     "plain": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.5
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.5
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.3,
+     "plain": 18.7,
+     "bank": 461.6,
+     "v1": 1199.6,
+     "v2": 1900.46
+    }
+   },
+   {
+    "id": "jira_assignee-003",
+    "group": "lists",
+    "kind": "jira_assignee",
+    "reach": {
+     "plain-words": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.5,
+      "24000": 0.5
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.5
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.8,
+     "plain": 25.8,
+     "bank": 406.5,
+     "v1": 1237.53,
+     "v2": 1685.78
+    }
+   },
+   {
+    "id": "metadata-qst_0095",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 2.7,
+     "plain": 22.6,
+     "bank": 753.9,
+     "v1": 705.65,
+     "v2": 1800.98
+    }
+   },
+   {
+    "id": "metadata-qst_0025",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.8,
+     "plain": 14.1,
+     "bank": 297.4,
+     "v1": 835.26,
+     "v2": 1855.51
+    }
+   },
+   {
+    "id": "metadata-qst_0030",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 2.1,
+     "plain": 16.5,
+     "bank": 486.2,
+     "v1": 853.08,
+     "v2": 1932.6
+    }
+   },
+   {
+    "id": "metadata-qst_0035",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.7,
+     "plain": 23.8,
+     "bank": 283.0,
+     "v1": 855.39,
+     "v2": 1915.14
+    }
+   },
+   {
+    "id": "action_due-022",
+    "group": "deadlines",
+    "kind": "action_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.9,
+     "plain": 27.3,
+     "bank": 359.3,
+     "v1": 650.13,
+     "v2": 1729.26
+    }
+   },
+   {
+    "id": "metadata-qst_0050",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 1.7,
+     "plain": 18.9,
+     "bank": 713.9,
+     "v1": 716.15,
+     "v2": 1753.16
+    }
+   },
+   {
+    "id": "action_due-029",
+    "group": "deadlines",
+    "kind": "action_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 2.4,
+     "plain": 20.6,
+     "bank": 625.2,
+     "v1": 968.54,
+     "v2": 2042.33
+    }
+   },
+   {
+    "id": "action_due-024",
+    "group": "deadlines",
+    "kind": "action_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.6,
+     "plain": 25.5,
+     "bank": 543.8,
+     "v1": 822.18,
+     "v2": 1769.98
+    }
+   },
+   {
+    "id": "linear_due-026",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.5,
+     "plain": 17.5,
+     "bank": 542.1,
+     "v1": 803.75,
+     "v2": 1656.28
+    }
+   },
+   {
+    "id": "metadata-qst_0015",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 1.7,
+     "plain": 22.2,
+     "bank": 514.3,
+     "v1": 1097.98,
+     "v2": 2129.85
+    }
+   },
+   {
+    "id": "metadata-qst_0083",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.9,
+     "plain": 32.8,
+     "bank": 327.8,
+     "v1": 947.21,
+     "v2": 2156.93
+    }
+   },
+   {
+    "id": "metadata-qst_0085",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 1.9,
+     "plain": 26.3,
+     "bank": 622.1,
+     "v1": 983.31,
+     "v2": 2095.36
+    }
+   },
+   {
+    "id": "action_due-018",
+    "group": "deadlines",
+    "kind": "action_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 2.1,
+     "plain": 27.8,
+     "bank": 561.7,
+     "v1": 850.65,
+     "v2": 1657.49
+    }
+   },
+   {
+    "id": "metadata-qst_0070",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 2.1,
+     "plain": 23.9,
+     "bank": 532.6,
+     "v1": 881.22,
+     "v2": 1908.19
+    }
+   },
+   {
+    "id": "linear_due-028",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.7,
+     "plain": 12.9,
+     "bank": 433.5,
+     "v1": 791.72,
+     "v2": 2003.68
+    }
+   },
+   {
+    "id": "metadata-qst_0005",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 1.9,
+     "plain": 28.4,
+     "bank": 302.8,
+     "v1": 904.44,
+     "v2": 1856.44
+    }
+   },
+   {
+    "id": "metadata-qst_0079",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 1.5,
+     "plain": 22.7,
+     "bank": 505.0,
+     "v1": 678.89,
+     "v2": 1672.85
+    }
+   },
+   {
+    "id": "metadata-qst_0002",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 2.1,
+     "plain": 21.6,
+     "bank": 329.5,
+     "v1": 823.19,
+     "v2": 1683.45
+    }
+   },
+   {
+    "id": "metadata-qst_0069",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 2.1,
+     "plain": 24.6,
+     "bank": 430.2,
+     "v1": 731.38,
+     "v2": 1767.01
+    }
+   },
+   {
+    "id": "metadata-qst_0071",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 2.0,
+     "plain": 28.7,
+     "bank": 351.2,
+     "v1": 878.94,
+     "v2": 1971.98
+    }
+   },
+   {
+    "id": "metadata-qst_0075",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 2.5,
+     "plain": 18.1,
+     "bank": 311.8,
+     "v1": 859.8,
+     "v2": 1838.23
+    }
+   },
+   {
+    "id": "metadata-qst_0006",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 1.6,
+     "plain": 22.4,
+     "bank": 439.3,
+     "v1": 925.85,
+     "v2": 1869.9
+    }
+   },
+   {
+    "id": "action_due-015",
+    "group": "deadlines",
+    "kind": "action_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 2.2,
+     "plain": 25.6,
+     "bank": 600.7,
+     "v1": 893.5,
+     "v2": 1798.21
+    }
+   },
+   {
+    "id": "metadata-qst_0042",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 2.0,
+     "plain": 21.2,
+     "bank": 369.6,
+     "v1": 703.95,
+     "v2": 1835.93
+    }
+   },
+   {
+    "id": "linear_due-002",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.4,
+     "plain": 15.8,
+     "bank": 463.3,
+     "v1": 727.99,
+     "v2": 1825.57
+    }
+   },
+   {
+    "id": "linear_due-005",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.7,
+     "plain": 24.6,
+     "bank": 452.5,
+     "v1": 723.76,
+     "v2": 1758.36
+    }
+   },
+   {
+    "id": "metadata-qst_0007",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.9,
+     "plain": 15.9,
+     "bank": 404.0,
+     "v1": 885.58,
+     "v2": 2103.37
+    }
+   },
+   {
+    "id": "linear_due-001",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.4,
+     "plain": 20.7,
+     "bank": 457.0,
+     "v1": 656.84,
+     "v2": 1760.83
+    }
+   },
+   {
+    "id": "linear_due-037",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.4,
+     "plain": 15.6,
+     "bank": 591.3,
+     "v1": 693.89,
+     "v2": 1804.3
+    }
+   },
+   {
+    "id": "metadata-qst_0027",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 3.2,
+     "plain": 40.3,
+     "bank": 505.4,
+     "v1": 688.74,
+     "v2": 1828.29
+    }
+   },
+   {
+    "id": "linear_due-010",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 1.4,
+     "plain": 24.8,
+     "bank": 435.4,
+     "v1": 779.66,
+     "v2": 1816.57
+    }
+   },
+   {
+    "id": "metadata-qst_0087",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v2": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     }
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 1.9,
+     "plain": 26.4,
+     "bank": 583.8,
+     "v1": 697.8,
+     "v2": 1778.15
+    }
+   },
+   {
+    "id": "metadata-qst_0004",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 1.9,
+     "plain": 26.0,
+     "bank": 395.8,
+     "v1": 974.89,
+     "v2": 2037.67
+    }
+   },
+   {
+    "id": "metadata-qst_0043",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.7,
+     "plain": 25.6,
+     "bank": 326.8,
+     "v1": 923.32,
+     "v2": 1759.75
+    }
+   },
+   {
+    "id": "metadata-qst_0088",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 1.9,
+     "plain": 27.7,
+     "bank": 362.8,
+     "v1": 747.35,
+     "v2": 1789.85
+    }
+   },
+   {
+    "id": "metadata-qst_0034",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 1.8,
+     "plain": 33.9,
+     "bank": 356.3,
+     "v1": 624.68,
+     "v2": 1556.63
+    }
+   },
+   {
+    "id": "linear_due-003",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.3,
+     "plain": 23.0,
+     "bank": 610.0,
+     "v1": 694.54,
+     "v2": 1719.12
+    }
+   },
+   {
+    "id": "action_due-010",
+    "group": "deadlines",
+    "kind": "action_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.7,
+     "plain": 20.7,
+     "bank": 497.0,
+     "v1": 574.83,
+     "v2": 1611.08
+    }
+   },
+   {
+    "id": "action_due-021",
+    "group": "deadlines",
+    "kind": "action_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.9,
+     "plain": 20.8,
+     "bank": 503.0,
+     "v1": 583.42,
+     "v2": 1556.29
+    }
+   },
+   {
+    "id": "linear_due-022",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.3,
+     "plain": 23.7,
+     "bank": 410.4,
+     "v1": 674.77,
+     "v2": 1646.56
+    }
+   },
+   {
+    "id": "linear_due-020",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 1.4,
+     "plain": 18.9,
+     "bank": 417.1,
+     "v1": 707.91,
+     "v2": 1951.73
+    }
+   },
+   {
+    "id": "action_due-027",
+    "group": "deadlines",
+    "kind": "action_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 2.5,
+     "plain": 32.0,
+     "bank": 837.2,
+     "v1": 634.56,
+     "v2": 1734.4
+    }
+   },
+   {
+    "id": "metadata-qst_0093",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.7,
+     "plain": 17.5,
+     "bank": 325.4,
+     "v1": 988.73,
+     "v2": 2014.49
+    }
+   },
+   {
+    "id": "metadata-qst_0010",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 2.0,
+     "plain": 16.6,
+     "bank": 380.4,
+     "v1": 804.83,
+     "v2": 1832.31
+    }
+   }
+  ],
+  "fb50_50": [
+   {
+    "id": "github_author-001",
+    "group": "lists",
+    "kind": "github_author",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 0.5,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.1,
+     "plain": 24.1,
+     "bank": 324.4,
+     "v1": 27.51,
+     "v2": 63.47
+    }
+   },
+   {
+    "id": "github_author-002",
+    "group": "lists",
+    "kind": "github_author",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.5
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 0.6,
+     "plain": 26.6,
+     "bank": 315.7,
+     "v1": 10.6,
+     "v2": 49.19
+    }
+   },
+   {
+    "id": "github_author-004",
+    "group": "lists",
+    "kind": "github_author",
+    "reach": {
+     "plain-words": {
+      "2000": 0.0,
+      "6000": 0.5,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "6000": 0.5,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.5,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 0.6,
+     "plain": 10.6,
+     "bank": 202.5,
+     "v1": 10.47,
+     "v2": 39.52
+    }
+   },
+   {
+    "id": "github_author-005",
+    "group": "lists",
+    "kind": "github_author",
+    "reach": {
+     "plain-words": {
+      "2000": 0.5,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.5
+     },
+     "v1": {
+      "2000": 0.5,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 0.6,
+     "plain": 20.6,
+     "bank": 241.2,
+     "v1": 10.16,
+     "v2": 45.24
+    }
+   },
+   {
+    "id": "github_author-006",
+    "group": "lists",
+    "kind": "github_author",
+    "reach": {
+     "plain-words": {
+      "2000": 0.5,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "6000": 0.5,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.5
+     },
+     "v1": {
+      "2000": 0.5,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 0.7,
+     "plain": 16.8,
+     "bank": 233.4,
+     "v1": 11.13,
+     "v2": 48.0
+    }
+   },
+   {
+    "id": "jira_assignee-003",
+    "group": "lists",
+    "kind": "jira_assignee",
+    "reach": {
+     "plain-words": {
+      "2000": 0.5,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.5,
+      "6000": 0.5,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.5,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 0.8,
+     "plain": 12.0,
+     "bank": 253.2,
+     "v1": 12.36,
+     "v2": 22.91
+    }
+   },
+   {
+    "id": "metadata-qst_0095",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.1,
+     "plain": 18.7,
+     "bank": 225.7,
+     "v1": 10.59,
+     "v2": 95.48
+    }
+   },
+   {
+    "id": "metadata-qst_0025",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.1,
+     "plain": 16.6,
+     "bank": 236.1,
+     "v1": 8.46,
+     "v2": 107.09
+    }
+   },
+   {
+    "id": "metadata-qst_0030",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 1.3,
+     "plain": 16.4,
+     "bank": 216.3,
+     "v1": 11.62,
+     "v2": 144.47
+    }
+   },
+   {
+    "id": "metadata-qst_0035",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 0.8,
+     "plain": 11.0,
+     "bank": 284.0,
+     "v1": 11.88,
+     "v2": 140.07
+    }
+   },
+   {
+    "id": "action_due-022",
+    "group": "deadlines",
+    "kind": "action_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 0.9,
+     "plain": 18.0,
+     "bank": 298.5,
+     "v1": 8.41,
+     "v2": 116.18
+    }
+   },
+   {
+    "id": "metadata-qst_0050",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.2,
+     "plain": 25.6,
+     "bank": 205.2,
+     "v1": 10.81,
+     "v2": 131.8
+    }
+   },
+   {
+    "id": "action_due-029",
+    "group": "deadlines",
+    "kind": "action_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.4,
+     "plain": 24.6,
+     "bank": 269.7,
+     "v1": 9.36,
+     "v2": 65.59
+    }
+   },
+   {
+    "id": "action_due-024",
+    "group": "deadlines",
+    "kind": "action_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 0.8,
+     "plain": 16.8,
+     "bank": 272.0,
+     "v1": 10.65,
+     "v2": 104.22
+    }
+   },
+   {
+    "id": "linear_due-026",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.1,
+     "plain": 14.0,
+     "bank": 234.1,
+     "v1": 13.49,
+     "v2": 148.06
+    }
+   },
+   {
+    "id": "metadata-qst_0015",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 0.8,
+     "plain": 19.2,
+     "bank": 253.4,
+     "v1": 12.44,
+     "v2": 159.75
+    }
+   },
+   {
+    "id": "metadata-qst_0083",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 0.9,
+     "plain": 19.5,
+     "bank": 325.4,
+     "v1": 13.34,
+     "v2": 146.6
+    }
+   },
+   {
+    "id": "metadata-qst_0085",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 1.1,
+     "plain": 15.0,
+     "bank": 249.7,
+     "v1": 8.69,
+     "v2": 123.4
+    }
+   },
+   {
+    "id": "action_due-018",
+    "group": "deadlines",
+    "kind": "action_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 0.9,
+     "plain": 27.1,
+     "bank": 266.3,
+     "v1": 3.94,
+     "v2": 95.12
+    }
+   },
+   {
+    "id": "metadata-qst_0070",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 1.1,
+     "plain": 17.1,
+     "bank": 245.2,
+     "v1": 10.42,
+     "v2": 124.02
+    }
+   },
+   {
+    "id": "linear_due-028",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 0.9,
+     "plain": 11.1,
+     "bank": 246.2,
+     "v1": 9.23,
+     "v2": 106.9
+    }
+   },
+   {
+    "id": "metadata-qst_0005",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 0.9,
+     "plain": 25.7,
+     "bank": 220.2,
+     "v1": 17.42,
+     "v2": 120.38
+    }
+   },
+   {
+    "id": "metadata-qst_0079",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 0.8,
+     "plain": 13.1,
+     "bank": 218.4,
+     "v1": 16.17,
+     "v2": 94.49
+    }
+   },
+   {
+    "id": "metadata-qst_0002",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 1.2,
+     "plain": 36.0,
+     "bank": 199.5,
+     "v1": 7.85,
+     "v2": 113.75
+    }
+   },
+   {
+    "id": "metadata-qst_0069",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 1.4,
+     "plain": 32.5,
+     "bank": 385.6,
+     "v1": 16.33,
+     "v2": 138.13
+    }
+   },
+   {
+    "id": "metadata-qst_0071",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 0.8,
+     "plain": 11.5,
+     "bank": 191.2,
+     "v1": 10.53,
+     "v2": 169.38
+    }
+   },
+   {
+    "id": "metadata-qst_0075",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 0.9,
+     "plain": 13.8,
+     "bank": 198.8,
+     "v1": 10.89,
+     "v2": 152.72
+    }
+   },
+   {
+    "id": "metadata-qst_0006",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 0.8,
+     "plain": 13.3,
+     "bank": 196.3,
+     "v1": 9.13,
+     "v2": 145.83
+    }
+   },
+   {
+    "id": "action_due-015",
+    "group": "deadlines",
+    "kind": "action_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.3,
+     "plain": 19.4,
+     "bank": 308.7,
+     "v1": 5.94,
+     "v2": 119.68
+    }
+   },
+   {
+    "id": "metadata-qst_0042",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 1.0,
+     "plain": 16.2,
+     "bank": 248.5,
+     "v1": 7.85,
+     "v2": 146.96
+    }
+   },
+   {
+    "id": "linear_due-002",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 0.8,
+     "plain": 13.6,
+     "bank": 260.2,
+     "v1": 9.3,
+     "v2": 107.69
+    }
+   },
+   {
+    "id": "linear_due-005",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 0.7,
+     "plain": 11.6,
+     "bank": 360.9,
+     "v1": 9.16,
+     "v2": 105.02
+    }
+   },
+   {
+    "id": "metadata-qst_0007",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.0,
+     "plain": 32.0,
+     "bank": 226.0,
+     "v1": 11.26,
+     "v2": 118.55
+    }
+   },
+   {
+    "id": "linear_due-001",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 0.9,
+     "plain": 13.4,
+     "bank": 247.7,
+     "v1": 6.51,
+     "v2": 107.28
+    }
+   },
+   {
+    "id": "linear_due-037",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 0.7,
+     "plain": 13.1,
+     "bank": 284.1,
+     "v1": 7.53,
+     "v2": 110.22
+    }
+   },
+   {
+    "id": "metadata-qst_0027",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 0.9,
+     "plain": 20.2,
+     "bank": 285.7,
+     "v1": 6.98,
+     "v2": 131.31
+    }
+   },
+   {
+    "id": "linear_due-010",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 1.0,
+     "plain": 17.0,
+     "bank": 266.3,
+     "v1": 6.41,
+     "v2": 94.85
+    }
+   },
+   {
+    "id": "metadata-qst_0087",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 1.0,
+     "plain": 20.3,
+     "bank": 265.1,
+     "v1": 11.36,
+     "v2": 147.17
+    }
+   },
+   {
+    "id": "metadata-qst_0004",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 0.8,
+     "plain": 14.8,
+     "bank": 206.6,
+     "v1": 10.28,
+     "v2": 114.73
+    }
+   },
+   {
+    "id": "metadata-qst_0043",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 0.8,
+     "plain": 26.4,
+     "bank": 302.9,
+     "v1": 9.48,
+     "v2": 120.47
+    }
+   },
+   {
+    "id": "metadata-qst_0088",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 1.0,
+     "plain": 25.9,
+     "bank": 203.9,
+     "v1": 9.57,
+     "v2": 128.26
+    }
+   },
+   {
+    "id": "metadata-qst_0034",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 0.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 0.8,
+     "plain": 11.6,
+     "bank": 206.9,
+     "v1": 9.45,
+     "v2": 111.42
+    }
+   },
+   {
+    "id": "linear_due-003",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 0.8,
+     "plain": 12.0,
+     "bank": 231.0,
+     "v1": 9.27,
+     "v2": 105.3
+    }
+   },
+   {
+    "id": "action_due-010",
+    "group": "deadlines",
+    "kind": "action_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 0.8,
+     "plain": 29.7,
+     "bank": 233.2,
+     "v1": 6.99,
+     "v2": 59.6
+    }
+   },
+   {
+    "id": "action_due-021",
+    "group": "deadlines",
+    "kind": "action_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 0.9,
+     "plain": 43.7,
+     "bank": 267.4,
+     "v1": 4.63,
+     "v2": 83.41
+    }
+   },
+   {
+    "id": "linear_due-022",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 0.8,
+     "plain": 10.0,
+     "bank": 225.3,
+     "v1": 7.06,
+     "v2": 95.67
+    }
+   },
+   {
+    "id": "linear_due-020",
+    "group": "deadlines",
+    "kind": "linear_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 0.0
+    },
+    "ms": {
+     "plain-words": 0.7,
+     "plain": 27.1,
+     "bank": 248.6,
+     "v1": 7.67,
+     "v2": 104.46
+    }
+   },
+   {
+    "id": "action_due-027",
+    "group": "deadlines",
+    "kind": "action_due",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.4,
+     "plain": 29.1,
+     "bank": 395.2,
+     "v1": 5.28,
+     "v2": 132.29
+    }
+   },
+   {
+    "id": "metadata-qst_0093",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 0.0,
+      "6000": 0.0,
+      "24000": 0.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 0.8,
+     "plain": 10.3,
+     "bank": 193.1,
+     "v1": 10.49,
+     "v2": 121.99
+    }
+   },
+   {
+    "id": "metadata-qst_0010",
+    "group": "owners",
+    "kind": "metadata",
+    "reach": {
+     "plain-words": {
+      "2000": 0.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "plain": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "bank": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v1": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     },
+     "v2": {
+      "2000": 1.0,
+      "6000": 1.0,
+      "24000": 1.0
+     }
+    },
+    "direct": {
+     "v1": 1.0,
+     "v2": 1.0
+    },
+    "ms": {
+     "plain-words": 1.2,
+     "plain": 13.8,
+     "bank": 220.8,
+     "v1": 6.32,
+     "v2": 59.44
+    }
+   }
+  ]
+ },
+ "chance_b5k": {
+  "median": 20.0,
+  "per_question": {
+   "metadata-qst_0067": 321,
+   "metadata-qst_0017": 61,
+   "metadata-qst_0082": 40,
+   "metadata-qst_0033": 567,
+   "metadata-qst_0089": 46,
+   "metadata-qst_0023": 82,
+   "metadata-qst_0021": 114,
+   "metadata-qst_0073": 18,
+   "metadata-qst_0059": 619,
+   "metadata-qst_0036": 74,
+   "metadata-qst_0040": 0,
+   "metadata-qst_0022": 114,
+   "metadata-qst_0052": 987,
+   "metadata-qst_0055": 0,
+   "metadata-qst_0097": 0,
+   "metadata-qst_0060": 987,
+   "metadata-qst_0024": 0,
+   "metadata-qst_0031": 0,
+   "metadata-qst_0047": 25,
+   "metadata-qst_0094": 87,
+   "metadata-qst_0092": 0,
+   "metadata-qst_0061": 141,
+   "metadata-qst_0063": 212,
+   "metadata-qst_0020": 322,
+   "metadata-qst_0068": 40,
+   "metadata-qst_0016": 0,
+   "linear_due-033": 39,
+   "linear_due-036": 316,
+   "linear_due-021": 17,
+   "linear_due-008": 32,
+   "linear_due-009": 20,
+   "linear_due-031": 117,
+   "linear_due-029": 117,
+   "linear_due-034": 14,
+   "linear_due-032": 11,
+   "linear_due-038": 20,
+   "action_due-012": 3,
+   "action_due-030": 34,
+   "action_due-020": 5,
+   "action_due-017": 7,
+   "action_due-007": 9,
+   "action_due-025": 4,
+   "action_due-001": 10,
+   "action_due-019": 8,
+   "linear_due_window-006": 2,
+   "linear_status-002": 0,
+   "linear_assignee-014": 0,
+   "linear_status-009": 1,
+   "linear_status-010": 0,
+   "linear_assignee-005": 0
+  }
+ },
+ "chance_b5ksmall": {
+  "median": 1.0,
+  "per_question": {
+   "metadata-qst_0067": 3,
+   "metadata-qst_0017": 1,
+   "metadata-qst_0082": 1,
+   "metadata-qst_0033": 25,
+   "metadata-qst_0089": 2,
+   "metadata-qst_0023": 2,
+   "metadata-qst_0021": 6,
+   "metadata-qst_0073": 1,
+   "metadata-qst_0059": 33,
+   "metadata-qst_0036": 5,
+   "metadata-qst_0040": 0,
+   "metadata-qst_0022": 6,
+   "metadata-qst_0052": 15,
+   "metadata-qst_0055": 0,
+   "metadata-qst_0097": 0,
+   "metadata-qst_0060": 15,
+   "metadata-qst_0024": 0,
+   "metadata-qst_0031": 0,
+   "metadata-qst_0047": 2,
+   "metadata-qst_0094": 3,
+   "metadata-qst_0092": 0,
+   "metadata-qst_0061": 0,
+   "metadata-qst_0063": 5,
+   "metadata-qst_0020": 0,
+   "metadata-qst_0068": 1,
+   "metadata-qst_0016": 0,
+   "linear_due-033": 1,
+   "linear_due-036": 15,
+   "linear_due-021": 1,
+   "linear_due-008": 0,
+   "linear_due-009": 1,
+   "linear_due-031": 6,
+   "linear_due-029": 6,
+   "linear_due-034": 0,
+   "linear_due-032": 1,
+   "linear_due-038": 1,
+   "action_due-012": 0,
+   "action_due-030": 1,
+   "action_due-020": 0,
+   "action_due-017": 0,
+   "action_due-007": 0,
+   "action_due-025": 0,
+   "action_due-001": 0,
+   "action_due-019": 0,
+   "linear_due_window-006": 0,
+   "linear_status-002": 0,
+   "linear_assignee-014": 0,
+   "linear_status-009": 1,
+   "linear_status-010": 0,
+   "linear_assignee-005": 0
+  }
+ },
+ "chance_b5kfb": {
+  "median": 11.0,
+  "per_question": {
+   "github_author-001": 1,
+   "github_author-002": 0,
+   "github_author-004": 0,
+   "github_author-005": 1,
+   "github_author-006": 0,
+   "jira_assignee-003": 0,
+   "metadata-qst_0095": 116,
+   "metadata-qst_0025": 30,
+   "metadata-qst_0030": 0,
+   "metadata-qst_0035": 47,
+   "action_due-022": 3,
+   "metadata-qst_0050": 212,
+   "action_due-029": 5,
+   "action_due-024": 10,
+   "linear_due-026": 36,
+   "metadata-qst_0015": 0,
+   "metadata-qst_0083": 865,
+   "metadata-qst_0085": 0,
+   "action_due-018": 10,
+   "metadata-qst_0070": 40,
+   "linear_due-028": 37,
+   "metadata-qst_0005": 0,
+   "metadata-qst_0079": 0,
+   "metadata-qst_0002": 89,
+   "metadata-qst_0069": 54,
+   "metadata-qst_0071": 136,
+   "metadata-qst_0075": 1,
+   "metadata-qst_0006": 321,
+   "action_due-015": 74,
+   "metadata-qst_0042": 0,
+   "linear_due-002": 48,
+   "linear_due-005": 12,
+   "metadata-qst_0007": 212,
+   "linear_due-001": 96,
+   "linear_due-037": 16,
+   "metadata-qst_0027": 0,
+   "linear_due-010": 16,
+   "metadata-qst_0087": 0,
+   "metadata-qst_0004": 0,
+   "metadata-qst_0043": 63,
+   "metadata-qst_0088": 18,
+   "metadata-qst_0034": 0,
+   "linear_due-003": 91,
+   "action_due-010": 3,
+   "action_due-021": 10,
+   "linear_due-022": 15,
+   "linear_due-020": 11,
+   "action_due-027": 74,
+   "metadata-qst_0093": 11,
+   "metadata-qst_0010": 5
+  }
+ }
+}

@@ -1,0 +1,16 @@
+{
+ "gave_up": 0,
+ "by_query": {},
+ "by_question": {},
+ "bm25_ready": true,
+ "load_average_before": [
+  1.45,
+  2.64,
+  3.48
+ ],
+ "load_average_after": [
+  1.84,
+  2.68,
+  3.48
+ ]
+}

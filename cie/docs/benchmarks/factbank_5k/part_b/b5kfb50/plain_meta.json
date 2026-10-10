@@ -1,0 +1,9 @@
+{
+ "documents": 50,
+ "passages": 499,
+ "text_bytes": 447961,
+ "bm25_bytes": 236896,
+ "bm25_seconds": 0.4,
+ "vector_bytes": 383360,
+ "embed_seconds": 28.6
+}

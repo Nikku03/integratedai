@@ -1,0 +1,20 @@
+{
+ "gave_up": 1,
+ "by_query": {
+  "ent_sim": 1
+ },
+ "by_question": {
+  "metadata-qst_0095": 1
+ },
+ "bm25_ready": true,
+ "load_average_before": [
+  1.23,
+  2.87,
+  3.62
+ ],
+ "load_average_after": [
+  2.05,
+  2.92,
+  3.61
+ ]
+}

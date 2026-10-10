@@ -1,0 +1,20 @@
+{
+ "storage": {
+  "bank_bytes": {
+   "documents": 88488,
+   "sections": 1286936,
+   "memory_records": 2402940,
+   "record_links": 153560,
+   "section_facts": 0,
+   "bm25": 505481
+  },
+  "bank_total": 4437405,
+  "plain_bytes": {
+   "text_bytes": 579406,
+   "bm25_bytes": 283036,
+   "vector_bytes": 497024
+  },
+  "plain_words_total": 862442,
+  "plain_total": 1359466
+ }
+}

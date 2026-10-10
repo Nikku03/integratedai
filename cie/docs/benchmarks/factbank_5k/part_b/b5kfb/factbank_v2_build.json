@@ -1,0 +1,15 @@
+{
+ "sources": 5089,
+ "entities": 15300,
+ "facts": 130184,
+ "bytes": 115056640,
+ "check": {
+  "ok": true,
+  "errors": [],
+  "facts": 130184,
+  "stale": 130171,
+  "contradictions": 0,
+  "contradiction_examples": []
+ },
+ "seconds": 13.73
+}

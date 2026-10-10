@@ -1,0 +1,53 @@
+{
+ "tenant_id": "c2964c6d-13f4-435f-9422-4a21e1ab20c9",
+ "tenant_name": "erbfull-67-70c0c2",
+ "company_id": "986a871c-81a2-4c74-ac34-cd7d37775a5a",
+ "memory": "full",
+ "documents": 67,
+ "failed": 0,
+ "sections": 653,
+ "records": 868,
+ "records_by_type": {
+  "document": 67,
+  "metric": 86,
+  "requirement": 179,
+  "risk": 78,
+  "task": 157,
+  "result": 14,
+  "decision": 41,
+  "fact": 5,
+  "deadline": 22,
+  "open_question": 10,
+  "person": 154,
+  "project": 38,
+  "organization": 17
+ },
+ "links_by_kind": {
+  "mentions": 279,
+  "part_of": 631,
+  "references": 1,
+  "depends_on": 2,
+  "relates_to": 1
+ },
+ "entities": 171,
+ "restricted_entities": 0,
+ "projects": 38,
+ "near_duplicate_pairs": 0,
+ "contradictions": 0,
+ "contradiction_records": 0,
+ "refs_unresolved": 304,
+ "refs_ambiguous": 0,
+ "same_key_collisions": 0,
+ "load_seconds": 131.8,
+ "embed_seconds": 127.0,
+ "embedding_cache_hits": 0,
+ "embedded_texts": 1521,
+ "finish_seconds": 1.8,
+ "index_build_seconds": {},
+ "lexical_index": {
+  "records": 868,
+  "sections": 653,
+  "bytes": 505467,
+  "seconds": 0.2
+ }
+}
