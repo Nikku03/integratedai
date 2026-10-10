@@ -6,7 +6,20 @@ drawn after it, at 08:30:41; part B's primary questions were drawn at 08:54.
 - **Raw results, run scripts and reviews:** `docs/benchmarks/factbank_5k/` (`part_a/`, `part_b/`).
 - **All data is fictional:** the benchmark's made-up company.
 
-**Part B** (the fact bank against the memory bank on finding evidence) is still running; its results follow in this file.
+## Both parts in short
+
+**Part A: the planner's own answers hold at 5,000 documents.** All five rules were met: v13 scored 0.968 at 5,000 documents
+against 0.984 on a small bank holding only the documents the questions need. Size cost one question, through a system named
+in passing ("for the status email").
+
+**Part B: the fact bank's evidence does not beat the memory bank's at 5,089 documents.** Rules 1 and 2 were not met for the
+untrained fact bank, so "replace" is not met. (Rule 4, storage, was stated in advance to fail, and did.)
+- **Its answers still hold:** 0.849 at 5,089 documents against 0.866 on the small set.
+- **Its evidence text is what broke:** blocks about people who post often in one Slack channel are printed first and push the
+  answer down.
+- **Plain keyword search beats both banks' evidence at this size.**
+- **The trained fact bank's evidence holds the answer near the top almost every time,** but because it prints its own
+  candidate answers first, not because of what it learned.
 
 # Part A: the planner's answers at 5,000 documents
 
@@ -250,3 +263,269 @@ unrelated:
 
 The post-run review is `docs/benchmarks/factbank_5k/postrun_review_a.json`: three lenses, each finding checked by a refuter.
 None changes a rule or the verdict.
+
+# Part B: the fact bank against the memory bank on finding evidence
+
+## In short
+
+**The untrained fact bank's evidence lead does not hold at 5,089 documents.** Rules 1 and 2 were not met, so "replace" is
+not met.
+- **Near the top** (the first 2,000 characters), its evidence held the answer for 0.208 of the questions, against the memory
+  bank's 0.252. On the small set it was 0.723 against 0.361.
+- **At the full budget** (24,000 characters), rule 1 failed on lists by one key in one question. The fact bank was ahead on
+  document fields and deadlines.
+- **That lead comes from fields the memory bank does not show.** Linear due dates are an example: they are stored only as a
+  document field, which the memory bank's evidence never prints. On the questions whose answer both can show, the memory
+  bank's evidence is ahead at every budget at 5,089 documents.
+
+**What broke is the order of the fact bank's evidence, not its search or its answers.**
+- It still finds the document that holds the answer: among its top five starting points for 41 of the 44 single-answer
+  questions, against 42 on the small set.
+- Its own answers hold: 0.849 at 5,089 documents against 0.866 on the small set (rules 3 and 5 met).
+- **But it orders its evidence by adding up votes.** Slack messages carry their channel's name as their title, so a person in
+  six messages of one channel gets six votes. Such people are printed first.
+  - 36 of the 50 evidence texts start with a block about a person, against 12 on the small set.
+  - One person's 5,100-character block leads 12 of them.
+  - The small set has no Slack messages, so it could not show this.
+
+**The trained fact bank (v2) held the answer within 2,000 characters for 0.974,** and met rules 1, 2, 3 and 5.
+- That comes from its layout: it prints its own top 8 candidate answers first.
+- The untrained bank with the same layout would score 0.942 (a check after the run, not a result).
+- Counting only v2's first candidate, it scores 0.816.
+
+**Plain keyword search beats both banks' evidence at 5,089 documents:** 0.603 / 0.628 / 0.697 at the three budgets, against
+the fact bank's 0.208 / 0.434 / 0.632 and the memory bank's 0.252 / 0.347 / 0.439.
+
+**Storage:** the fact bank takes 0.577 of the memory bank's storage, not a third, as stated in advance.
+
+## Decision
+
+Rules on the untrained fact bank (v1), primary questions, 5,089 documents:
+
+| Rule | Result |
+|---|---|
+| 1. Not worse at the evidence budget (fact bank − bank ≥ −0.03 in every group, 24,000 characters) | **Not met:** lists 0.083 against 0.125 (one key in one question); document fields 0.923 against 0.692; deadlines 0.889 against 0.500 |
+| 2. Better near the top (fact bank − bank ≥ +0.10 on the mean, 2,000 characters) | **Not met:** 0.208 against 0.252 (−0.044) |
+| 3. Answers without a model (own answers ≥ 0.70) | **Met:** 0.849 |
+| 4. Smaller (at most a third of the bank's storage) | **Not met:** 106.0 MB against 183.7 MB, 0.577 (projected 0.58–0.59) |
+| 5. Own answers hold at size (5,089 ≥ small − 0.05) | **Met:** 0.849 against 0.866 (−0.017) |
+
+**Replace (rules 1, 2 and 4): not met.**
+
+**The pre-registered reading of "rule 1 not met"** was "at the full budget, the memory bank's evidence is better at 5,000
+documents".
+- **Taken literally, the rule fails on one key.** On lists, both arms hold almost none of the keys: 0.125 against 0.083. The
+  gap is one key of one question (`linear_status-009`).
+- **On the other groups the fact bank looks far ahead,** but only through answers the memory bank cannot show.
+- **Like for like, the pre-registered reading holds.** On the 28 document-field and deadline questions whose answer the
+  memory bank's evidence can show, the memory bank is ahead at every budget (below).
+
+**Questions cut short.** The memory bank's search gave up on 4 questions in the first pass, and on 2 in the scored pass and
+the retry (`metadata-qst_0047` and `-0063`).
+- All of them were the same name lookup, which has a 400 ms limit.
+- Run with no limit, it finds nothing for those 2 questions, so nothing was lost.
+- The rules without them read the same.
+
+## Results
+
+Answer within the evidence, mean of the three groups:
+
+| arm | 5,089 documents: 2,000 / 6,000 / 24,000 | small set: 2,000 / 6,000 / 24,000 |
+|---|---|---|
+| plain keyword search | 0.603 / 0.628 / 0.697 | 0.697 / 0.908 / 1.000 |
+| plain keyword + vector search | 0.559 / 0.644 / 0.692 | 0.752 / 0.857 / 0.970 |
+| memory bank | 0.252 / 0.347 / 0.439 | 0.361 / 0.462 / 0.662 |
+| **fact bank (v1)** | **0.208 / 0.434 / 0.632** | 0.723 / 0.891 / 0.957 |
+| trained fact bank (v2) | 0.974 / 0.987 / 1.000 | 0.987 / 1.000 / 1.000 |
+
+By group, at 24,000 characters, 5,089 documents (26 document-field questions, 18 deadlines, 6 lists):
+
+| arm | document fields | deadlines | lists |
+|---|---|---|---|
+| plain keyword search | 0.962 | 1.000 | 0.128 |
+| plain keyword + vector search | 0.962 | 1.000 | 0.113 |
+| memory bank | 0.692 | 0.500 | 0.125 |
+| fact bank (v1) | 0.923 | 0.889 | 0.083 |
+| trained fact bank (v2) | 1.000 | 1.000 | 1.000 |
+
+The "owners" group of the first test is really document fields: owner and assignee, but also status, release, forecast close
+month and others.
+
+**The fact banks' own answers:**
+
+| | document fields | deadlines | lists | mean | small set |
+|---|---|---|---|---|---|
+| v1 | 0.615 | 0.944 | 0.989 | **0.849** | 0.866 |
+| v2 | 0.577 | 0.833 | 1.000 | 0.803 | 0.772 |
+
+**The first test's own questions** (secondary):
+
+| arm | at 50 documents (the control) | at 5,089 documents |
+|---|---|---|
+| plain keyword search | 0.823 / 0.972 / 1.000 | 0.564 / 0.628 / 0.710 |
+| memory bank | 0.375 / 0.414 / 0.630 | 0.296 / 0.368 / 0.419 |
+| fact bank (v1) | 0.767 / 0.962 / 0.987 | 0.226 / 0.402 / 0.745 |
+| trained fact bank (v2, trained on these questions) | 1.000 / 1.000 / 1.000 | 0.987 / 0.987 / 0.987 |
+
+- **The control reproduces the first test exactly:** every arm, every budget, and v1's own answers (0.885).
+- **At 5,089 documents:** rule 1 is met here (lists 0.500 against 0.083) and rule 2 is not (0.226 against 0.296).
+- **It reproduces the design probe** recalled in the pre-registration: about 0.23 / 0.40 / 0.75.
+
+## Why the fact bank's evidence fell behind
+
+**It still finds the document and answers right.**
+- For the 44 single-answer questions, the document holding the answer is among its top five starting points for 41 at 5,089
+  documents, against 42 on the small set. It is the top one for 26, against 30.
+- It answers 33 of the 44 right, against 34.
+
+**Its evidence is ordered by adding up votes, and Slack messages repeat their titles.**
+- **The bank adds up a fact's votes** over every document that states it, and prints the entities with the highest scores
+  first.
+- **Slack titles repeat.** 2,472 of the 5,089 documents are Slack messages, with only 126 distinct titles: their channels'
+  names. So "participant of customer-success" collects one vote per message.
+- **Example:** a person reached from the top document with 6 messages in one channel scores 1.54. The top document itself
+  scores 0.86.
+- **How much it crowds out:**
+  - 36 of the 50 evidence texts start with a person block, against 12 on the small set.
+  - Person blocks fill 72% of the first 2,000 characters, against 22%.
+  - In 32 of the 36, the leading block's top fact is "participant of" a Slack channel.
+  - Maya Chen's 5,100-character block leads 12 of them.
+- **The person shown is reached through the right document in about half the cases.** Even then, the block lists their
+  channels and other work, never the answer.
+- **The small set has no Slack messages,** and the first test's 50 documents had one. So the effect appears only at size.
+
+**Lists fail for another reason too: the evidence never prints the fact bank's own list answer.**
+- Its list answers are right (0.989).
+- But its evidence shows a person's tickets by title, not by key.
+- The keys appear only in each ticket's own block, which the person blocks push past 24,000 characters.
+- The date-window list cannot be shown at all, because the evidence does not run the date-range query the answer uses.
+
+**Checks after the run.** These change the code, so they are not results. A fix would need a new pre-registered test on new
+questions.
+- **Ordering by the largest single vote instead of the sum** would give v1 0.541 / 0.692 / 0.806 at 5,089 documents. It changes
+  nothing on the small set or the control.
+- **Printing keys instead of titles** in a person's lines would raise lists at 24,000 characters from 0.083 to 0.830.
+- **Printing v1's own top 8 answers first,** as v2 does, would give 0.942 / 0.967 / 0.967.
+
+## Like for like, the memory bank's evidence is ahead
+
+**Most of the memory bank's misses are answers it cannot show.**
+- **16 of its 17 misses** in document fields and deadlines at 24,000 characters are answers stored only as a document field:
+  - Linear due date, forecast close month, release, transcription quality, merge method.
+  - None of these is in the sections or records its evidence prints.
+  - This is the field gap the first test already warned of.
+- **On Linear due dates, it scores 1 of 10 at both sizes.** Its first block is the right issue in every case, but no block shows
+  the date.
+- **On meeting action items at 5,089 documents, it is ahead:** 8 of 8 against the fact bank's 6 of 8.
+
+**On the 28 questions whose answer the memory bank can show** (answer found in the document that holds it):
+
+| | memory bank, 2,000 / 6,000 / 24,000 | fact bank (v1) |
+|---|---|---|
+| document fields (19), 5,089 documents | 0.58 / 0.68 / 0.95 | 0.32 / 0.53 / 0.84 |
+| deadlines (9), 5,089 documents | 0.67 / 1.00 / 1.00 | 0.22 / 0.56 / 0.78 |
+| document fields, small set | 0.84 / 0.95 / 1.00 | 0.95 / 1.00 / 1.00 |
+
+- **On the small set the fact bank led; at 5,089 documents the memory bank does.**
+- **The same holds on the first test's questions at 5,089.** Like for like, the fact bank would fail rule 1 there too.
+- **So the fact bank's real advantage is that it stores every field,** which is what it was built for. On finding and ordering
+  evidence at size, as laid out now, it is behind.
+
+## The trained fact bank's lead is its layout
+
+v2 starts its evidence with "Most likely answers, best first": its top 8 candidates, or the whole list for a list question.
+Then it prints the same kind of evidence as v1.
+
+| v2 at 5,089 documents, 2,000 characters | document fields | deadlines | lists | mean |
+|---|---|---|---|---|
+| as scored | 0.923 | 1.000 | 1.000 | 0.974 |
+| first candidate only | 0.615 | 0.833 | 1.000 | 0.816 |
+| first candidate, then the rest of its evidence | 0.769 | 0.889 | 1.000 | 0.886 |
+| the rest of its evidence alone | 0.269 | 0.167 | 0.000 | 0.145 |
+
+- **v2 meets rules 1 and 2 even counting only its first candidate:** 0.816 against the memory bank's 0.252.
+- **11 of the 44 single-answer questions are credited only through candidates 2 to 8.** A reader would still have to choose
+  among those. For one question, seven candidates name different accounts with the same month.
+- **The untrained bank with the same layout gets 0.942.** So about 0.73 of v2's 0.77 lead over v1 is the layout, not the
+  lessons.
+- **Its own answers are below v1's:** 0.803 against 0.849.
+- **Its deadline questions use the training questions' two wordings.** On new wordings, an earlier test found its deadline
+  answers fell to 0.200. On the first test's questions it is in-sample.
+
+## How much is chance
+
+The measure checks only that the answer's text is present. At 5,089 documents a median of 20 other documents hold each
+answer (`chance`). The review traced every piece of evidence to its document and rescored with only the pieces from the
+document that holds the answer:
+
+| arm | as scored | from the right document only |
+|---|---|---|
+| plain keyword search | 0.603 / 0.628 / 0.697 | 0.577 / 0.603 / 0.677 |
+| plain keyword + vector search | 0.559 / 0.644 / 0.692 | 0.559 / 0.631 / 0.679 |
+| memory bank | 0.252 / 0.347 / 0.439 | 0.252 / 0.347 / 0.439 |
+| fact bank (v1) | 0.208 / 0.434 / 0.632 | 0.208 / 0.396 / 0.593 |
+| trained fact bank (v2) | 0.974 / 0.987 / 1.000 | 0.956 / 0.956 / 0.987 |
+
+- **Chance credit is small and falls mostly on v1:** 3 of its document-field hits come only from other documents.
+- **No rule changes** under the stricter count.
+- **Two of the fact banks' right answers at 5,089 come from another account.** One shares the month by coincidence. The other
+  fits an ambiguous question as well as the expected account does: the near-duplicate case the pre-registration did not cover.
+  Without both, rule 5's margin is −0.042 against the −0.05 allowed.
+- **The deadline questions do not make search hard.** Each quotes the exact title, and plain search puts the right document
+  first for 16 or 17 of the 18.
+
+## Time, size and the checks
+
+**Time per question at 5,089 documents** (median): plain keyword search 2 ms, plus vectors 23 ms, memory bank 0.46 s, fact
+bank 0.78 s, trained fact bank 1.9 s. On the small set: 1 ms, 17 ms, 0.23 s, 10 ms and 0.11 s.
+
+**Loading 5,089 documents:**
+- The memory bank took 386 s, reusing earlier embeddings.
+- Plain search's vectors took 55 minutes, not cached.
+- The fact banks took 8 s (v1) and 14 s (v2).
+
+**Storage:**
+
+| | bytes |
+|---|---|
+| memory bank | 183.7 MB: records 87.3, sections 69.0, BM25 15.8, links 6.1, documents 5.4 |
+| fact bank v1 | 106.0 MB (0.577 of the memory bank) |
+| fact bank v2 | 115.1 MB (0.626) |
+| plain search | 68.0 MB |
+
+**Checks:**
+- **The review recomputed every number** with the repository's own measure, and found no difference.
+- **The primary questions** were drawn after the freeze and reproduce from seed 61. No earlier test used them, matched by
+  content. No flawed question is among them, and the mix is as pre-registered.
+- **The setup:** the code is unchanged since the freeze. Every memory bank held all its documents, alone in its database, with
+  its BM25 index ready.
+- **The memory bank's evidence was identical across the two passes,** in all four folders.
+- **The budgets bind every arm alike:** each arm's evidence is 22,955 to 24,050 characters long.
+- **Time limits explain no verdict.** Only the memory bank has them.
+
+## Corrections and disclosures found after the run
+
+1. **"Still cut short" overstates it.** The 2 questions' name lookup finds nothing even without its time limit.
+2. **The first pass's evidence was not saved at first,** so the two-pass check could not be redone from the repository. It is
+   now saved (`evidence_pass1.jsonl.gz` in each folder).
+3. **The "owners" group is document fields,** as above.
+4. **A suspicion that the small set flatters lists was refuted.** On the small set, every list key the arms found came from a
+   block naming the person asked about, so the drop on lists at size is real. Only the date-window question was partly
+   flattered.
+
+The post-run review is `docs/benchmarks/factbank_5k/postrun_review_b.json`: three lenses, each finding checked by a refuter.
+None changes a rule outcome. One changes the diagnosis of the lists, and is used above.
+
+## What it means
+
+- **The memory bank should not be replaced by the fact bank as it stands.** Neither bank's evidence beats plain keyword search
+  at 5,089 documents.
+- **The fact bank's lookups and answers hold at size** (part A, and rules 3 and 5 here). Its evidence text does not.
+- **The checks after the run point to three changes:**
+  - print the answer first;
+  - stop adding up votes from same-titled messages;
+  - print keys in list lines.
+
+  Each needs its own pre-registered test on new questions.
+- **The memory bank's own gap is unchanged at size:** fields stored only on the document, such as Linear due dates, never reach
+  its evidence.

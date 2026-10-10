@@ -124,6 +124,19 @@ The sample is small: the gain comes from 6 questions about 5 people. The writers
 so the main evidence that it does no harm is the reviewers' 2,871 harder rewordings, on which no question asking for an
 order changed.
 
+**At 5,000 documents** ([`docs/FACTBANK_5K_RESULTS.md`](docs/FACTBANK_5K_RESULTS.md)).
+- **The planner's answers hold.** v13 scored 0.968 on a 5,000-document bank, against 0.984 on a small bank holding only the
+  documents the questions need. All five pre-registered rules were met.
+  - Size cost one question. "…for the status email" pulled the plan into Gmail through the pull request's people.
+  - A probe shows this would happen for most pull requests that wording names.
+- **The fact bank's evidence does not beat the memory bank's at this size.** This is the first test, repeated on 5,089
+  documents. Rules 1 and 2 were not met, so the memory bank should not be replaced by the fact bank as it stands.
+  - **Its own answers hold** (0.849 against 0.866).
+  - **Its evidence text does not.** It adds up votes, so people who post often in one Slack channel are printed first and
+    push the answer down.
+  - **Plain keyword search beats both banks' evidence at this size.**
+  - **The trained fact bank's lead** comes from printing its candidate answers first, not from what it learned.
+
 ## Brain-wired reasoning neurons (research)
 
 `cie.neuro` wires the reasoning engine's spiking neurons like a piece of Blue Brain's cortex model (directed cliques of
