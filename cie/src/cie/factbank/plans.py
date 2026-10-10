@@ -70,6 +70,16 @@ BEFORE_NOUN = frozenset(("is", "was", "s", "the", "its", "their", "exact", "targ
 ONE_ITEM = frozenset(("the", "that", "this", "its"))
 ASKS_COUNT = re.compile(r"\bhow many\b|\bnumber of\b(?!\s+(?:the|that|this|its)\b)|\bcount\b", re.I)
 QUOTED = re.compile(r'"[^"]*"|\u201c[^\u201d]*\u201d')
+# v15 (``brain``, check 7): words that ask to follow a link from what the question names ("the ticket linked to PR #4821", "its
+# assignee", "whoever took it", "ENG-1 is tied to another ticket"); a question without one is answered from the named thing
+# itself when a plan can
+LINK_WORDS = frozenset(("link", "links", "linked", "linking", "reference", "references", "referenced", "referencing", "ref", "refs",
+                        "other", "another", "parent", "child", "children", "blocked", "blocks", "blocking", "blocker", "depend",
+                        "depends", "dependent", "dependency", "dependencies", "related", "behind", "attached", "connected", "connects",
+                        "connection", "tied", "ties", "points", "pointing", "pointed", "mentions", "mentioned", "mentioning",
+                        "associated", "corresponding", "underlying", "its", "whoever", "someone", "somebody"))
+LINK_PHRASES = re.compile(r"\bowner of\b|\bperson who\b|\bthe one that\b|\bthat (?:one|ticket|issue|pr|person)\b|\bgoes? with\b|"
+                          r"\bwent to\b|\bworked on in\b")
 
 NOT_LINKS = {"from_document"}
 FEATURES = ["bias", "start_named", "start_rank", "two_starts", "path_len", "path_overlap", "path_assoc", "field_overlap", "field_assoc",
@@ -106,10 +116,12 @@ class Planner:
     came or answers with only what it started from or passed through, and "one value" needs every entity reached to agree on it.
     ``"v3"`` is the planner as first tested.
 
-    ``brain`` (v15, the company brain) changes three things, all off by default: a plainly asked question word ("who", "when",
+    ``brain`` (v15, the company brain) changes these things, all off by default: a plainly asked question word ("who", "when",
     "how many") overrides the learned kind of answer (``asked_kind``); a question asking for several things gets no count unless
-    it asks for one (``check``, 5b); and a person named only by a one-word alias does not say what the question is about
-    (``named_fully``)."""
+    it asks for one (``check``, 5b); a person named only by a one-word alias does not say what the question is about
+    (``named_fully``); a question that names something and asks for no link is answered without a hop when it can be
+    (``check``, 7); and, when the bank reads system words as whole words (``FactBank.whole_system_words``), so does the
+    planner (``systems_named``)."""
 
     def __init__(self, bank, rules: str = "v3", lexicon=None, known: list[str] | None = None, general=None, combine: str = "company",
                  floor: float = 0.5, brain: bool = False):
@@ -287,7 +299,10 @@ class Planner:
             if e not in named:
                 starts.append(((e,), {"named": 0.0, "rank": 1.0 / (1 + i)}))
         ql = question.lower() + " "
-        system = next((s for w, s in SYSTEM_WORDS.items() if w in ql), "")
+        if self.whole_words():
+            system = (self.b.named_systems(question) or [""])[0]
+        else:
+            system = next((s for w, s in SYSTEM_WORDS.items() if w in ql), "")
         systems = self.systems_named(question)
         quoted = re.findall(r"\"([^\"]+)\"", question)
         out = []
@@ -485,11 +500,27 @@ class Planner:
         quoted title (check 1's set, without one-word person aliases, whether or not ``brain`` is on)."""
         return bool(set(plan.starts) & self.about(question))
 
+    def whole_words(self) -> bool:
+        """v15: system words count only as whole words, as the bank reads them: ``brain`` and the bank's
+        ``whole_system_words``."""
+        return self.brain and bool(getattr(self.b, "whole_system_words", False))
+
+    @staticmethod
+    def asks_link(question: str) -> bool:
+        """v15: the question asks to follow a link from what it names: a word such as "linked", "parent", "blocks", "its" or
+        "whoever" (``LINK_WORDS``), or "owner of", "person who" or "the one that", outside quoted titles."""
+        w = raw_words(question)
+        return bool(set(w) & LINK_WORDS or LINK_PHRASES.search(" ".join(w)))
+
     def systems_named(self, question: str) -> list[str]:
         """The systems a question names, in the order of ``SYSTEM_WORDS``. With ``tickets`` (v11), "ticket" or "issue" also
-        names the ticket trackers, after any system named by name, so "the Linear ticket" still asks about Linear."""
-        ql = question.lower() + " "
-        systems = list(dict.fromkeys(s for w, s in SYSTEM_WORDS.items() if w in ql))
+        names the ticket trackers, after any system named by name, so "the Linear ticket" still asks about Linear. With
+        ``whole_words`` (v15), a system word counts only as a whole word ("CI-driven" names no Google Drive)."""
+        if self.whole_words():
+            systems = self.b.named_systems(question)
+        else:
+            ql = question.lower() + " "
+            systems = list(dict.fromkeys(s for w, s in SYSTEM_WORDS.items() if w in ql))
         if self.tickets and TICKET_WORD.search(question) and "ticket" not in systems:
             systems.append("ticket")
         return systems
@@ -531,6 +562,9 @@ class Planner:
            count gets no count either.
         6. **The field** (v10, from the small model's form): a plan answering with one value must read one of ``fields``; a
            plan choosing an item by date must order by one of them.
+        7. **No hop asked for** (v15, ``brain``): when the question names something and asks for no link (``asks_link``), a
+           plan that follows a link from a named start is dropped if a plan that reads that start itself is still there
+           ("when is the Linear issue "X" due?" reads X's due date, not that of a ticket X depends on).
 
         With ``brain``, check 1 leaves out a person named only by a one-word alias (``named_fully``)."""
         named = {e for e in self.b.named(question) if e in self.b.kinds and not e.startswith("person:")}
@@ -566,6 +600,9 @@ class Planner:
             nxt = [(p, m) for p, m in keep if rule(p, self.kind9(p, m["answer"]))]
             if nxt:
                 keep = nxt
+        if self.brain and about and not self.asks_link(question):
+            bare = {p.starts for p, _ in keep if not p.path and set(p.starts) & about}
+            keep = [(p, m) for p, m in keep if not (p.path and p.starts in bare)]
         return keep
 
     def out_kind(self, plan: Plan, answer: str) -> str:
