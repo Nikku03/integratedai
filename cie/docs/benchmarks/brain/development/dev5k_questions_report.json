@@ -1,0 +1,231 @@
+{
+ "documents": 5000,
+ "seed": 721,
+ "mix": {
+  "deadlines": 15,
+  "lists": 15,
+  "fields": 30,
+  "names": 10,
+  "link": 15,
+  "combine": 15,
+  "compare": 6,
+  "not_found": 20,
+  "prose": 52
+ },
+ "questions": 214,
+ "by_family": {
+  "multi": 36,
+  "not_found": 20,
+  "prose": 52,
+  "single": 106
+ },
+ "by_group": {
+  "combine": 15,
+  "compare": 6,
+  "deadlines": 15,
+  "descriptive": 36,
+  "fields": 30,
+  "link": 15,
+  "lists": 15,
+  "names": 10,
+  "not_found": 20,
+  "prose": 52
+ },
+ "by_kind": {
+  "action_due": 7,
+  "action_owner_issues": 5,
+  "compare_two": 6,
+  "confluence_author": 1,
+  "confluence_space": 1,
+  "confluence_updated": 1,
+  "customer_tickets": 2,
+  "descriptive": 36,
+  "drive_created": 1,
+  "drive_owner": 1,
+  "drive_status": 1,
+  "github_author": 2,
+  "hubspot_close": 1,
+  "hubspot_owner": 1,
+  "hubspot_se": 1,
+  "hubspot_stage": 1,
+  "issue_pr_author": 4,
+  "jira_assignee": 2,
+  "jira_customer": 2,
+  "jira_priority": 1,
+  "jira_reporter": 1,
+  "jira_sla": 1,
+  "jira_status": 1,
+  "jira_ticket_assignee": 2,
+  "linear_assignee": 3,
+  "linear_due": 8,
+  "linear_due_window": 3,
+  "linear_issue_assignee": 1,
+  "linear_issue_creator": 1,
+  "linear_issue_priority": 1,
+  "linear_issue_project": 1,
+  "linear_issue_status": 1,
+  "linear_project_members": 3,
+  "linear_status": 3,
+  "meeting_attendees": 3,
+  "meeting_customer": 2,
+  "meeting_date": 1,
+  "meeting_owner": 1,
+  "nf_person": 5,
+  "nf_pr": 5,
+  "nf_ticket": 5,
+  "nf_title": 5,
+  "parent_issue": 4,
+  "person_count": 5,
+  "person_first": 5,
+  "pr_author": 1,
+  "pr_issue": 4,
+  "pr_merged": 1,
+  "pr_repo": 1,
+  "pr_reviewers": 4,
+  "prose": 52,
+  "ticket_link": 3
+ },
+ "mix_given": {
+  "deadlines": 15,
+  "lists": 15,
+  "fields": 30,
+  "names": 10,
+  "link": 15,
+  "combine": 15,
+  "compare": 6,
+  "not_found": 20,
+  "prose": 52,
+  "descriptive": 36
+ },
+ "available": {
+  "action_due": 250,
+  "action_owner_issues": 5,
+  "compare_two": 8,
+  "confluence_author": 47,
+  "confluence_space": 43,
+  "confluence_updated": 47,
+  "customer_tickets": 44,
+  "descriptive": 36,
+  "drive_created": 245,
+  "drive_owner": 245,
+  "drive_status": 245,
+  "github_author": 5,
+  "hubspot_close": 134,
+  "hubspot_owner": 146,
+  "hubspot_se": 145,
+  "hubspot_stage": 146,
+  "issue_pr_author": 9,
+  "jira_assignee": 7,
+  "jira_customer": 45,
+  "jira_priority": 59,
+  "jira_reporter": 59,
+  "jira_sla": 47,
+  "jira_status": 59,
+  "jira_ticket_assignee": 57,
+  "linear_assignee": 44,
+  "linear_due": 329,
+  "linear_due_window": 24,
+  "linear_issue_assignee": 341,
+  "linear_issue_creator": 341,
+  "linear_issue_priority": 341,
+  "linear_issue_project": 306,
+  "linear_issue_status": 341,
+  "linear_project_members": 12,
+  "linear_status": 24,
+  "meeting_attendees": 88,
+  "meeting_customer": 96,
+  "meeting_date": 93,
+  "meeting_owner": 98,
+  "nf_person": 60,
+  "nf_pr": 60,
+  "nf_ticket": 60,
+  "nf_title": 60,
+  "parent_issue": 6,
+  "person_count": 29,
+  "person_first": 33,
+  "pr_author": 79,
+  "pr_issue": 9,
+  "pr_merged": 76,
+  "pr_repo": 20,
+  "pr_reviewers": 79,
+  "prose": 52,
+  "ticket_link": 33
+ },
+ "set_aside": {
+  "generated": {
+   "action_owner_issues": {
+    "tickets": 2
+   },
+   "confluence_space": {
+    "named inside another": 4
+   },
+   "hubspot_close": {
+    "no value": 12
+   },
+   "hubspot_se": {
+    "not a person": 1
+   },
+   "jira_customer": {
+    "no value": 14
+   },
+   "jira_sla": {
+    "no value": 12
+   },
+   "jira_ticket_assignee": {
+    "not a person": 2
+   },
+   "linear_issue_project": {
+    "named inside another": 33,
+    "no value": 2
+   },
+   "linear_project_members": {
+    "named inside another": 18
+   },
+   "meeting_attendees": {
+    "not a person": 10
+   },
+   "meeting_customer": {
+    "internal": 2
+   },
+   "meeting_date": {
+    "several values": 5
+   },
+   "parent_issue": {
+    "several values": 1
+   },
+   "person_count": {
+    "tickets": 6
+   },
+   "pr_merged": {
+    "no value": 3
+   },
+   "pr_repo": {
+    "named inside another": 59
+   },
+   "ticket_link": {
+    "linked": 3
+   }
+  },
+  "writers": {
+   "prose": {},
+   "descriptive": {}
+  }
+ },
+ "set_aside_written": {
+  "action_owner_issues": 2,
+  "person_count": 6,
+  "ticket_link": 3
+ },
+ "gold_documents": 257,
+ "prose_file": "/tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/brain/writers/out/dev5k_prose_712.questions.jsonl",
+ "descriptive_file": "/tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/brain/writers/out/dev5k_descriptive_711.questions.jsonl",
+ "multi_wordings": null,
+ "readable": 5000,
+ "listed": 5000,
+ "small": {
+  "folder": "/tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/brain/dev5ksmall",
+  "documents": 257,
+  "not_reproduced": {}
+ },
+ "seconds": 37.4
+}

@@ -680,6 +680,43 @@ def rules(report: dict[str, Any], fns: dict[str, Rule], why: dict[str, str] | No
     return out
 
 
+# the rules of docs/FACTBANK_BRAIN_PREREGISTRATION.md, on the arms labelled v15, v1, v13 and quotes; rules 1 to 4 decide
+EPS = 1e-9
+
+
+def _fam(r: dict[str, Any], arm: str, family: str) -> float:
+    return r["scores"][arm]["by_family"][family]
+
+
+def preregistered() -> dict[str, Rule]:
+    """The pre-registered rules (docs/FACTBANK_BRAIN_PREREGISTRATION.md). Rules 1 to 4 decide whether one brain answers every
+    kind of question at least as well as the best earlier answer for that kind; 5 to 7 are reported."""
+    others = lambda r: [a for a in r["scores"] if a not in ("v15", "v15_seed1")]  # noqa: E731
+    return {
+        "1 single-document questions: v15 >= v1 - 0.03": lambda r: _fam(r, "v15", "single") >= _fam(r, "v1", "single") - 0.03 - EPS,
+        "2 multi-document questions: v15 >= v13 - 0.03": lambda r: _fam(r, "v15", "multi") >= _fam(r, "v13", "multi") - 0.03 - EPS,
+        "3 free text: v15 >= plain search with quotes - 0.05": lambda r: _fam(r, "v15", "prose") >= _fam(r, "quotes", "prose") - 0.05 - EPS,
+        "4 not found: v15 >= 0.80 on questions about nothing in the bank, and false 'not found' <= 0.03 on the others":
+            lambda r: _fam(r, "v15", "not_found") >= 0.80 - EPS and r["scores"]["v15"]["false_not_found"]["all"] <= 0.03 + EPS,
+        "5 one brain for every kind: v15's mean over families >= every other arm's + 0.20":
+            lambda r: r["scores"]["v15"]["mean_of_families"] >= max(r["scores"][a]["mean_of_families"] for a in others(r)) + 0.20 - EPS,
+        "6 it holds at size: v15 at 5,000 documents >= the small set - 0.05 (mean over families)":
+            lambda r: r["small"]["differences"]["v15"]["mean_of_families"]["big_minus_small"] >= -0.05 - EPS,
+        "7 the right route: v15's route accuracy, mean over families, >= 0.90":
+            lambda r: r["scores"]["v15"]["routes"]["accuracy_mean_over_families"] >= 0.90 - EPS,
+    }
+
+
+def seed_check(work: Path, a: str = "v15", b: str = "v15_seed1") -> dict[str, Any] | None:
+    """The same arm asked under another hash seed: the questions whose answers differ (None when either is missing)."""
+    files = {rec["label"]: work / rec["file"] for rec in registry(work).values()}
+    if a not in files or b not in files or not files[a].exists() or not files[b].exists():
+        return None
+    x = {r["id"]: r["answer"] for r in _jsonl(files[a])}
+    y = {r["id"]: r["answer"] for r in _jsonl(files[b])}
+    return {"questions": len(x), "different": sorted(i for i in x if x[i] != y.get(i))}
+
+
 def _read(path: Path) -> Any:
     return json.loads(path.read_text()) if path.exists() else None
 
@@ -713,6 +750,7 @@ def score(work: Path, small: Path | None = None, out: Path | None = None, rule_f
                         "note": None if same else "the control folder holds other questions (another draw's): no differences",
                         "builds": {n: b for n in ("factbank", "factbank_v2") if (b := _read(small / f"{n}_build.json")) is not None},
                         "rows": sm["rows"]}
+    rep["seed_check"] = seed_check(work)
     why: dict[str, str] = {}
     rep["rules"] = rules(rep, rule_fns or {}, why)
     rep["rules_why"] = why
@@ -765,7 +803,8 @@ def to_markdown(rep: dict[str, Any]) -> str:
     out += ["", "Rules:" if rep["rules"] else "Rules: none given (they come with the pre-registration)."]
     out += [f"- {k}: **{'met' if v else 'not met' if v is not None else 'n/a'}**" + (f" ({rep['rules_why'][k]})" if k in rep["rules_why"] else "")
             for k, v in rep["rules"].items()]
-    out += ["", f"- arms: {json.dumps(rep['arms'])}", f"- left out as stale: {json.dumps(rep['stale_arms'])}",
+    out += ["", f"- hash-seed check (v15 under hash seed 1): {json.dumps(rep.get('seed_check'))}",
+            f"- arms: {json.dumps(rep['arms'])}", f"- left out as stale: {json.dumps(rep['stale_arms'])}",
             f"- builds: {json.dumps(rep['builds'])}",
             f"- draw: {json.dumps({k: rep['draw'].get(k) for k in ('seed', 'mix', 'mix_given', 'set_aside_written', 'gold_documents')})}"]
     return "\n".join(out) + "\n"
@@ -789,6 +828,7 @@ def main(argv: list[str] | None = None) -> Any:
     ap.add_argument("--router", default=None, help="ask, v15: the router, as cie.factbank.brain names it")
     ap.add_argument("--name", default=None, help="ask: the answers file (default: the arm's)")
     ap.add_argument("--out", default=None, help="score: where to write report.json and report.md (default: --work)")
+    ap.add_argument("--preregistered", action="store_true", help="score: decide the rules of docs/FACTBANK_BRAIN_PREREGISTRATION.md")
     a = ap.parse_args(argv)
     work = Path(a.work)
     path = lambda x: Path(x) if x else None  # noqa: E731
@@ -801,8 +841,10 @@ def main(argv: list[str] | None = None) -> Any:
             ap.error("ask needs --arm")
         rep = ask(work, a.arm, path(a.single), path(a.plans), a.router, a.name)
     else:
-        r = score(work, path(a.small), path(a.out))
+        r = score(work, path(a.small), path(a.out), preregistered() if a.preregistered else None)
         rep = {a_: {"by_family": m["by_family"], "mean_of_families": m["mean_of_families"]} for a_, m in r["scores"].items()}
+        if a.preregistered:
+            rep["rules"] = r["rules"]
     print(json.dumps(rep, indent=1, default=str))
     return rep
 

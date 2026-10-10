@@ -1,0 +1,85 @@
+{
+ "documents": 5000,
+ "targets": {
+  "confluence": 47,
+  "fireflies": 98,
+  "github": 79,
+  "gmail": 1181,
+  "google_drive": 245,
+  "hubspot": 146,
+  "jira": 59,
+  "linear": 341,
+  "slack": 2804
+ },
+ "drawn": {
+  "confluence": 47,
+  "fireflies": 98,
+  "github": 79,
+  "gmail": 1181,
+  "google_drive": 245,
+  "hubspot": 146,
+  "jira": 59,
+  "linear": 341,
+  "slack": 2804
+ },
+ "skipped": {
+  "key not a plain ticket key": 2,
+  "ticket key already drawn": 7
+ },
+ "planted": [
+  {
+   "pr": "dsid_9bfb593fe5164d64ae8fd97f44e34080",
+   "issue": "dsid_1d82f061c04c481fb0b4592c7d18a1d0"
+  },
+  {
+   "pr": "dsid_b652269e7ffb4e119da91a6eb2646913",
+   "issue": "dsid_63dc81476f6047fdbdf584c3bcd64f77"
+  },
+  {
+   "pr": "dsid_3ab08d3f46d64ddfa7e66ac5e522a1dc",
+   "issue": "dsid_ee4b552dae804508a13deb35d99ef058"
+  },
+  {
+   "pr": "dsid_2d07a49b525843d494e2d525179336ab",
+   "issue": "dsid_fbdc2fb9e75a48e3aaca833442b8c6e8"
+  },
+  {
+   "pr": "dsid_8a9e62c339e440a7976aae79c40c1b11",
+   "issue": "dsid_cf86304e15994e478eb94e04993c666b"
+  },
+  {
+   "pr": "dsid_1fd456944e0d4f329bbe31ee04b58842",
+   "issue": "dsid_460891f3db32442ea181d0728fa994bd"
+  },
+  {
+   "pr": "dsid_426401cc21e04108be7c894efdf90628",
+   "issue": "dsid_51abd1fc3e054557bd81645b0630a811"
+  },
+  {
+   "pr": "dsid_70584cf6ad804349ba628ce7e5d7605a",
+   "issue": "dsid_2955e2582e0148a6963ee18046b34266"
+  }
+ ],
+ "planted_candidates": 8,
+ "remaining": 56068,
+ "excluded": 455890,
+ "zone": "dev",
+ "seed": 701,
+ "n": 5000,
+ "zone_documents": 56068,
+ "by_source": {
+  "confluence": 47,
+  "fireflies": 98,
+  "github": 79,
+  "gmail": 1181,
+  "google_drive": 245,
+  "hubspot": 146,
+  "jira": 59,
+  "linear": 341,
+  "slack": 2804
+ },
+ "zones_file": "/tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/brain/zones.json.gz",
+ "zones_sha256": "b1afac237c309a82818ab6c99dba291207503f0b33b414a3af5edc0a266d39fa",
+ "haystack": "/tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/brain/dev5k/haystack.json",
+ "haystack_sha256": "83c6b0e98abeff32db957e9abd8287f8953ec04e3453f3040ddfb7a89b6dfe54"
+}

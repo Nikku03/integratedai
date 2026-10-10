@@ -1,0 +1,278 @@
+{
+ "file": "/tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/brain/zones.json.gz",
+ "sha256": "b1afac237c309a82818ab6c99dba291207503f0b33b414a3af5edc0a266d39fa",
+ "sha256_json": "1eff0d258ada1f66a3541677dd2c397888ddbe9a581db8243ea52643fbcb2866",
+ "salt": "brain-zones-v1",
+ "index": "/tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/EnterpriseRAG-Bench/generated_data/uuid_index.json",
+ "documents": 511958,
+ "seen": 229685,
+ "fresh": 282273,
+ "not_in_index": 0,
+ "by_source_all": {
+  "confluence": 5188,
+  "fireflies": 10173,
+  "github": 8052,
+  "gmail": 121390,
+  "google_drive": 25108,
+  "hubspot": 15016,
+  "jira": 6118,
+  "linear": 35308,
+  "slack": 285605
+ },
+ "zones": {
+  "test": {
+   "documents": 56641,
+   "by_source": {
+    "confluence": 540,
+    "fireflies": 1147,
+    "github": 887,
+    "gmail": 13645,
+    "google_drive": 2717,
+    "hubspot": 1666,
+    "jira": 603,
+    "linear": 3876,
+    "slack": 31560
+   }
+  },
+  "dev": {
+   "documents": 56068,
+   "by_source": {
+    "confluence": 523,
+    "fireflies": 1101,
+    "github": 891,
+    "gmail": 13244,
+    "google_drive": 2745,
+    "hubspot": 1638,
+    "jira": 665,
+    "linear": 3825,
+    "slack": 31436
+   }
+  },
+  "train": {
+   "documents": 169564,
+   "by_source": {
+    "confluence": 1686,
+    "fireflies": 3307,
+    "github": 2598,
+    "gmail": 40165,
+    "google_drive": 8379,
+    "hubspot": 4972,
+    "jira": 2032,
+    "linear": 11587,
+    "slack": 94838
+   }
+  }
+ },
+ "planted": {
+  "seed": 900,
+  "candidates": 27,
+  "count": {
+   "test": 10,
+   "dev": 8,
+   "train": 9
+  },
+  "moved_from_hash_zone": 32,
+  "pairs": {
+   "dev": [
+    {
+     "pr": "dsid_1fd456944e0d4f329bbe31ee04b58842",
+     "issue": "dsid_460891f3db32442ea181d0728fa994bd"
+    },
+    {
+     "pr": "dsid_2d07a49b525843d494e2d525179336ab",
+     "issue": "dsid_fbdc2fb9e75a48e3aaca833442b8c6e8"
+    },
+    {
+     "pr": "dsid_3ab08d3f46d64ddfa7e66ac5e522a1dc",
+     "issue": "dsid_ee4b552dae804508a13deb35d99ef058"
+    },
+    {
+     "pr": "dsid_426401cc21e04108be7c894efdf90628",
+     "issue": "dsid_51abd1fc3e054557bd81645b0630a811"
+    },
+    {
+     "pr": "dsid_70584cf6ad804349ba628ce7e5d7605a",
+     "issue": "dsid_2955e2582e0148a6963ee18046b34266"
+    },
+    {
+     "pr": "dsid_8a9e62c339e440a7976aae79c40c1b11",
+     "issue": "dsid_cf86304e15994e478eb94e04993c666b"
+    },
+    {
+     "pr": "dsid_9bfb593fe5164d64ae8fd97f44e34080",
+     "issue": "dsid_1d82f061c04c481fb0b4592c7d18a1d0"
+    },
+    {
+     "pr": "dsid_b652269e7ffb4e119da91a6eb2646913",
+     "issue": "dsid_63dc81476f6047fdbdf584c3bcd64f77"
+    }
+   ],
+   "train": [
+    {
+     "pr": "dsid_07b05783de6246d7aef1166e0faacd3a",
+     "issue": "dsid_840bb964fa24466fb77c279cd72061bf"
+    },
+    {
+     "pr": "dsid_085f3de7adc24dbf909edf8a4c8ab387",
+     "issue": "dsid_8315797176814f49858e9cea7cb11463"
+    },
+    {
+     "pr": "dsid_10c99f998fcf4593bc4b68d0c063f026",
+     "issue": "dsid_44c3abe298274624b84fb8dcdd30e5fe"
+    },
+    {
+     "pr": "dsid_3b8742dd635843da8c0832e03ed63952",
+     "issue": "dsid_4da7b831769845b39054f222620a4b39"
+    },
+    {
+     "pr": "dsid_6137611572494379acc2d1df7700fc44",
+     "issue": "dsid_87cf6e4f004a493cb03115d8475e4d17"
+    },
+    {
+     "pr": "dsid_6695958d215440109b982d8341986865",
+     "issue": "dsid_7534a30f9ed5454588b7319380c57009"
+    },
+    {
+     "pr": "dsid_b22aaab6d5884d79bc7df765266bc561",
+     "issue": "dsid_635d3e5a2cbc40ccbb382423d9bfec89"
+    },
+    {
+     "pr": "dsid_b7299066100f4a1aa8a73d5bd93f1582",
+     "issue": "dsid_48c6460cefc2452296387b9873be2238"
+    },
+    {
+     "pr": "dsid_d9f87ff30e734becbd2c87c70922ec5a",
+     "issue": "dsid_4773f2492d6548e8bdb5c510c010c461"
+    }
+   ]
+  }
+ },
+ "seen_sets": {
+  "audit_protocol_check/regen/haystack.json": 50,
+  "b5k/haystack.json": 5089,
+  "b5kfb/haystack.json": 5089,
+  "b5kfb50/haystack.json": 50,
+  "b5ksmall/haystack.json": 67,
+  "basewt/cie/docs/benchmarks/factbank_5k/part_b/b5k/haystack.json": 5089,
+  "basewt/cie/docs/benchmarks/factbank_5k/part_b/b5kfb50/haystack.json": 50,
+  "basewt/cie/docs/benchmarks/factbank_5k/part_b/b5ksmall/haystack.json": 67,
+  "fb50/haystack.json": 50,
+  "fbchanged/haystack.json": 50,
+  "fbchanged_fixed/haystack.json": 50,
+  "fbtest/haystack.json": 50,
+  "hay5k_docs.json": 5089,
+  "lexsample/haystack.json": 200001,
+  "md5k/haystack.json": 5000,
+  "md5ksmall/haystack.json": 105,
+  "md5kx/haystack.json": 5000,
+  "mdblind/haystack.json": 50,
+  "mdblindchanged/haystack.json": 50,
+  "mdblindchanged_fixed/haystack.json": 50,
+  "mdchanged/haystack.json": 49,
+  "mdchanged_fixed/haystack.json": 49,
+  "mdfresh/haystack.json": 50,
+  "mdfreshchanged/haystack.json": 50,
+  "mdfreshchanged_fixed/haystack.json": 50,
+  "mdllm/haystack.json": 50,
+  "mdllmchanged/haystack.json": 50,
+  "mdord/haystack.json": 50,
+  "mdord_w1/haystack.json": 50,
+  "mdord_w2/haystack.json": 50,
+  "mdord_w3/haystack.json": 50,
+  "mdordchanged/haystack.json": 50,
+  "mdplan/haystack.json": 50,
+  "mdplan_w1/haystack.json": 50,
+  "mdplan_w2/haystack.json": 50,
+  "mdplan_w3/haystack.json": 50,
+  "mdplanchanged/haystack.json": 50,
+  "mdrep/haystack.json": 50,
+  "mdrep_w1/haystack.json": 50,
+  "mdrep_w2/haystack.json": 50,
+  "mdrep_w3/haystack.json": 50,
+  "mdrepchanged/haystack.json": 50,
+  "mdtest/haystack.json": 49,
+  "mdtick/haystack.json": 50,
+  "mdtick_w1/haystack.json": 50,
+  "mdtick_w2/haystack.json": 50,
+  "mdtick_w3/haystack.json": 50,
+  "mdtickchanged/haystack.json": 50,
+  "mdtrain/haystack.json": 50,
+  "mdtrainall/haystack.json": 50,
+  "mdtrainv9/haystack.json": 50,
+  "mdwords/haystack.json": 50,
+  "mdwordschanged/haystack.json": 50,
+  "mdwordschanged_fixed/haystack.json": 50,
+  "mt50/haystack.json": 50,
+  "mt5k/haystack.json": 5089,
+  "nb/from_work/haystack.json": 50,
+  "post5ka/detcheck/haystack.json": 105,
+  "post5ka/emailbank/haystack.json": 379,
+  "post5ka/emailctl/haystack.json": 105,
+  "post5ka/prof/haystack.json": 379,
+  "post5ka/redraw/big/haystack.json": 5000,
+  "post5ka/redraw/small/haystack.json": 105,
+  "post5ka/redraw/x/haystack.json": 5000,
+  "post5ka/smallcopy/haystack.json": 105,
+  "postord/abl/mdord/haystack.json": 50,
+  "postord/abl/mdord_w1/haystack.json": 50,
+  "refute_difficulty/w1all/haystack.json": 50,
+  "refute_difficulty/w3/haystack.json": 50,
+  "refute_noprot/draw/haystack.json": 50,
+  "refute_r4/w3/haystack.json": 50,
+  "refute_r4_numbers/swap/haystack.json": 50,
+  "rev5ka/big101/haystack.json": 5000,
+  "rev5ka/big202/haystack.json": 5000,
+  "rev5ka/big7/haystack.json": 5000,
+  "rev5ka/big7h1/haystack.json": 5000,
+  "rev5ka/emailprobe/ctl/haystack.json": 79,
+  "rev5ka/emailprobe/gm/haystack.json": 348,
+  "rev5ka/inlink/d997/haystack.json": 5000,
+  "rev5ka/inlink/wbig101/haystack.json": 5000,
+  "rev5ka/inlink/wbig101s/haystack.json": 4,
+  "rev5ka/inlink/wbig7/haystack.json": 5000,
+  "rev5ka/inlink/wbig7s/haystack.json": 9,
+  "rev5ka/inlink/wd997/haystack.json": 5000,
+  "rev5ka/inlink/wd997s/haystack.json": 7,
+  "rev5ka/pfprobe/haystack.json": 93,
+  "rev5ka/small101/haystack.json": 79,
+  "rev5ka/small202/haystack.json": 86,
+  "rev5ka/small7/haystack.json": 89,
+  "rev5ka/small7h1/haystack.json": 89,
+  "rev5ka/sym7/haystack.json": 89,
+  "rev5ka/x101/haystack.json": 5000,
+  "rev5ka/x202/haystack.json": 5000,
+  "rev5ka/x7/haystack.json": 5000,
+  "rev5ka/x7h1/haystack.json": 5000,
+  "rev5kb/ctlbudget16/haystack.json": 50,
+  "rev5kb/ctlbudget580/haystack.json": 50,
+  "rev5kb/ctlexact/haystack.json": 50,
+  "rev5kb/ctlprobe/haystack.json": 50,
+  "rev5kb/ctlprobe2/haystack.json": 50,
+  "rev5kb/ctlseed1/haystack.json": 50,
+  "rev5kb/ctlseed2/haystack.json": 50,
+  "rev5kb/ctlseed3/haystack.json": 50,
+  "rev5kb/fb50c/haystack.json": 50,
+  "rev5kb/fbv1/haystack.json": 50,
+  "rev5kb/vchance/haystack.json": 5089,
+  "review_eval/ta/haystack.json": 50,
+  "review_ticket_scoring/mdblind/haystack.json": 50,
+  "review_ticket_scoring/mdfresh/haystack.json": 50,
+  "review_ticket_scoring/mdllm/haystack.json": 50,
+  "review_ticket_scoring/mdplan/haystack.json": 50,
+  "review_ticket_scoring/mdrep/haystack.json": 50,
+  "review_ticket_scoring/mdtest/haystack.json": 49,
+  "review_ticket_scoring/mdtrain/haystack.json": 50,
+  "review_ticket_scoring/mdtrainv9/haystack.json": 50,
+  "review_ticket_scoring/mdwords/haystack.json": 50,
+  "t5k_dsids.txt": 5000,
+  "u5k/protocol/orig50/haystack.json": 50,
+  "u5k/protocol/orig5k/haystack.json": 5089,
+  "u5k/protocol/small/haystack.json": 82,
+  "u5k/protocol/w5k/haystack.json": 5089,
+  "u5k/scale/probe/haystack.json": 5089,
+  "v13on_b5k/haystack.json": 5089,
+  "v13on_b5kfb/haystack.json": 5089,
+  "v13on_b5kfb50/haystack.json": 50,
+  "v13on_b5ksmall/haystack.json": 67
+ }
+}
