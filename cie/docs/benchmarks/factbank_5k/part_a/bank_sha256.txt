@@ -1,2 +1,6 @@
-2c7aa6b3e9c46b7a
-d15d4d9e83fa6c26
+# sha256, first 16 hex characters, of the fact banks part A asked.
+# The 5,000-document banks were hashed and then deleted for disk space, before the review; they cannot be re-checked now.
+2c7aa6b3e9c46b7a  md5k/factbank.sqlite       (5,000 documents, untrained bank v1)
+d15d4d9e83fa6c26  md5k/factbank_v2.sqlite    (5,000 documents, the bank the planner arms asked)
+06a86a22c522ec0f  md5ksmall/factbank.sqlite    (small set)
+5d195c035273a67c  md5ksmall/factbank_v2.sqlite (small set)
