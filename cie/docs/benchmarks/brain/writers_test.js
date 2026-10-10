@@ -3,11 +3,13 @@ export const meta = {
   description: 'Step 2 of the company-brain test: blind writers write descriptive and free-text questions about test documents, sealed (written to files, counts returned)',
   phases: [{ title: 'Write', detail: 'one writer per batch, each in a different role' }],
 }
-// Run as a Workflow with args = the batch names step 1 printed (files in DIR). Each writer reads one batch file, writes its
-// questions to OUT/<batch>.jsonl and returns only how many it wrote, so that nobody but the scoring code reads them.
-const DIR = '/tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/brain/writers/test_batches'
-const OUT = '/tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/brain/writers/test_out'
-const BATCHES = args
+// Run as a Workflow with args = the JSON list of batch names step 1 prints last (files in DIR). Each writer reads one batch
+// file, writes its questions to OUT/<batch>.jsonl and returns only how many it wrote, so that nobody but the scoring code
+// reads them. For a rehearsal on other batches, args = {batches, dir, out}.
+const SCRATCH = '/tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad'
+const DIR = (args && args.dir) || SCRATCH + '/brain/writers/test_batches'
+const OUT = (args && args.out) || SCRATCH + '/brain/writers/test_out'
+const BATCHES = Array.isArray(args) ? args : args.batches
 const ROLES = [
   'a project manager who checks status across teams every morning',
   'a support engineer on call who needs facts fast',

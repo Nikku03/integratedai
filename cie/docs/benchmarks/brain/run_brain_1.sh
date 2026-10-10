@@ -15,11 +15,12 @@ test ! -e $T || { echo "$T exists: start from a fresh folder"; exit 1; }
 $PY -m cie.eval.brain_draw draw --zone test --seed 809 --zones $S/brain/zones.json.gz --index $S/mt5k/index.json --root $BENCH \
   --out $T --i-have-preregistered > /dev/null
 sha256sum $T/haystack.json | cut -c1-16
-# the writers' packets: 40 descriptive (seed 811) and 60 free-text (seed 812), never two on one document
+# the writers' packets: 40 descriptive (seed 811) and 60 free-text (seed 812), never two on one document; their reports hold
+# counts only
 $PY -m cie.eval.brain_writers packets --work $T --kind descriptive --n 40 --seed 811 --out $P/test5k_descriptive_811.packets.jsonl \
-  --keys $P/test5k_descriptive_811.keys.jsonl --i-have-preregistered > /dev/null
+  --keys $P/test5k_descriptive_811.keys.jsonl --i-have-preregistered > $P/test5k_descriptive_811.report.json
 $PY -m cie.eval.brain_writers packets --work $T --kind prose --n 60 --seed 812 --out $P/test5k_prose_812.packets.jsonl \
-  --keys $P/test5k_prose_812.keys.jsonl --avoid $P/test5k_descriptive_811.keys.jsonl --i-have-preregistered > /dev/null
+  --keys $P/test5k_prose_812.keys.jsonl --avoid $P/test5k_descriptive_811.keys.jsonl --i-have-preregistered > $P/test5k_prose_812.report.json
 # batches of 10 packets for the writers; the answers (key files) stay out of them
 mkdir -p $S/brain/writers/test_batches $S/brain/writers/test_out
 $PY - <<EOF
@@ -31,5 +32,6 @@ for name in ("test5k_descriptive_811", "test5k_prose_812"):
                   open(f"$S/brain/writers/test_batches/{name}_b{i // 10:02d}.json", "w"), indent=1)
     print(name, len(ps), "packets")
 EOF
-ls $S/brain/writers/test_batches | wc -l
+# the batch names, as the JSON list writers_test.js takes as its args
+ls $S/brain/writers/test_batches | sed 's/\.json$//' | $PY -c 'import json,sys; print(json.dumps(sys.stdin.read().split()))'
 echo "step 1 done $(date +%T)"

@@ -49,9 +49,9 @@ applies:
 and passages of document text for prose.
 
 **Training** (`cie/src/cie/eval/brain_train.py`), on the training documents only:
-- **single-fact lessons** on 396 single-document questions;
-- **plan lessons** on 511 single- and multi-document questions, plus v13's own 201 training questions on their bank, with v13's
-  rules;
+- **single-fact lessons** on 376 single-document questions (the training set's 20 name-list questions are not learned from);
+- **plan lessons** on 491 training questions (376 single-document, 115 multi-document), plus v13's own 201 training questions on
+  their bank, with v13's rules: 692 in all;
 - **the router** on 622 questions: 396 single-document, 115 multi-document and 111 free-text.
 
 ## The documents: zones never seen before
@@ -81,7 +81,7 @@ Every kind of question that can be checked automatically:
 **Single-document (family "single"):**
 - **deadlines:** Linear due dates and meeting action items;
 - **lists:** a person's Linear issues, by status, due in a date window, Jira tickets, pull requests, a customer's tickets;
-- **document fields:** 31 kinds, such as a Drive document's owner, a Jira ticket's priority, a HubSpot account's stage, a pull
+- **document fields:** 27 kinds, such as a Drive document's owner, a Jira ticket's priority, a HubSpot account's stage, a pull
   request's repository;
 - **names:** meeting attendees, pull request reviewers, a project's members (scored by name-list F1);
 - **descriptive:** written by blind writers, describing a document by what it is about instead of its title, as the
@@ -95,7 +95,8 @@ issues), and a Linear issue's parent.
 the 5,000 documents. Right only if the answer says "not found".
 
 **Free text (family "prose"):** written by blind writers. Each is a question whose answer is stated in a document's text, with
-1 to 3 answer facts copied word for word from it. The score is the share of the facts in the answer.
+1 to 3 answer facts copied word for word from it. The score is the share of the facts in the answer. A fact counts as in the
+answer when every number in it, and at least 70% of its content words (stemmed), appear there (`evidence_audit.present`).
 
 **Questions with two right answers are set aside,** as in the earlier tests.
 
@@ -116,6 +117,13 @@ the 5,000 documents. Right only if the answer says "not found".
 
 **The writers** (`docs/benchmarks/brain/writers_test.js`): independent agent sessions in ten roles, blind to the method. Each
 reads one batch of 10 packets (a document and an instruction) and writes its questions straight to a file.
+- **A change from development:** the training and development writers returned their questions to the author through a checked
+  form; the test writers save their own files, so that nobody reads them. This path was rehearsed, sealed, on the development
+  batches before the freeze (below).
+- **If a writer fails:** each batch's file is checked for being there and answering each of its packets (counts only,
+  `brain_writers status`). A batch that does not is written again by a new writer, still sealed, and the step rerun. Each file
+  is read on its own, as a JSON list, JSON lines or a fenced block.
+- **If fewer free-text questions pass the checks than the mix asks for,** the mix takes all that pass.
 - **The packets:** 40 descriptive (seed 811) and 60 free-text (seed 812), on different test documents
   (`cie/src/cie/eval/brain_writers.py`). The expected answers are kept out of the packets.
 - **Sealed:** the writers return only a count. Their questions are read by code alone (checks, draw, scoring) until the
@@ -152,7 +160,9 @@ Each family's score is the mean of its questions' scores. "Mean over families" i
 3. **Free text:** v15 ≥ quotes − 0.05.
 4. **Not found:** v15 ≥ 0.80 on the not-found questions, and v15 says "not found" to at most 0.03 of the other questions.
 5. **One brain for every kind:** v15's mean over families ≥ every other arm's + 0.20.
-6. **It holds at size:** v15 at 5,000 documents ≥ the small set − 0.05, mean over families.
+6. **It holds at size:** v15 at 5,000 documents ≥ the small set − 0.05, on the mean over the single, multi and free-text
+   families. The not-found family is left out: whether a made-up name is recognised as a person's depends on which names the
+   bank holds, so the small set scores it lower for a reason that is not size.
 7. **The right route:** v15's route accuracy ≥ 0.90, mean over families (fact routes for single and multi, prose for free
    text, not found for not found).
 
@@ -168,9 +178,14 @@ Each family's score is the mean of its questions' scores. "Mean over families" i
 - The multi family has about 35: one question moves it by about 0.03.
 - Free text has 50: one question moves it by up to 0.02.
 - So rule 1's −0.03 allows about three single-document questions; rule 2's allows about one.
+- **Rule 3 is decided within chance.** On the development set, v15 and plain search disagree on 15 of 52 free-text questions,
+  each way about as often. At 50 questions the paired difference has a standard error of about 0.056, more than the rule's
+  0.05 margin. The rules stay as written; the paired difference and its 95% bootstrap interval are reported next to rules 1 to
+  3 (`brain_test.paired_intervals`), and a close verdict is read with them.
 
 **Also reported:**
 - every arm by family, group and kind;
+- the paired differences behind rules 1 to 3, with 95% bootstrap intervals;
 - false "not found" on answerable questions;
 - free-text facts within the first 2,000 / 6,000 / 24,000 characters of each arm's evidence;
 - time per question;
@@ -202,11 +217,13 @@ for training and development were written by 34 blind sessions in the same ten r
 - **Seen on the development set, so the frozen line is optimistic.** The two last fixes (team names; the fewest hops) and the
   choice of the trained router were made after reading its answers.
 - **The trained router** sends 51 of 52 free-text questions to prose and every single- and multi-document question to a fact
-  route. The rule router sent 7 free-text questions to a fact route.
-- **Where the frozen v15 is still below the best other arm on a development question** (12 of 214):
+  route. The rule router sent 8 free-text questions to a fact route (7 to the single-document engine, 1 to the planner) and 6
+  single-document questions to prose.
+- **Where the frozen v15 is still below the best other arm on a development question** (17 of 214):
   - one meeting's attendee list: an extra hop to the meetings the attendees went to;
   - one meeting date and two descriptive questions, which plain search or v13 got;
-  - eight free-text questions, where plain search's passages held more of the facts. On seven others v15's held more.
+  - eight free-text questions, where plain search's passages held more of the facts. On seven others v15's held more;
+  - four descriptive questions and one date-window list that v2 got and v15 did not.
 
 **Earlier sets, all seen** (the full trained brain against saved answers):
 - **12 multi-document sets of the earlier tests:** v15 matches or beats v13 on 10. It loses one question on each of the other
@@ -228,10 +245,17 @@ for training and development were written by 34 blind sessions in the same ten r
   - zones salt `brain-zones-v1`, pull-request deal 900;
   - training 601 (questions 621; packets 611, 612);
   - development 701 (questions 721; packets 711, 712);
-  - a survey's counting draws on the fresh pool, 53 and 101-130, counts only.
-  - The test's seeds 809, 810, 811 and 812 were never used.
-- **The writers and the method are the same model family as the author.** The writers saw only their packets. The router and
-  the descriptive checks were developed on writer questions from the same ten roles.
+  - a survey's counting draws on the fresh pool: 53 and 101-130, with their question seeds 54 and 102-131;
+  - the pre-freeze review's dry run used seed 810 on the development set, not the test zone.
+  - The test's seeds 809, 810, 811 and 812 were never used on the test zone.
+- **Before the zones existed, a survey read the short fields** (titles, owners, statuses, attendees, links) of every fresh
+  document, the future test zone included, to count how many questions of each kind could be drawn. It printed counts and a
+  few field examples (288 of the documents it sampled for examples are now in the test zone). Its cache of those fields was
+  deleted before the freeze. The question kinds and their caps were sized partly on those counts.
+- **The rules' margins and the test mix were chosen with the development scores known.**
+- **The writers and the method are the same model family as the author.** The writers saw only their packets. The router was
+  trained on the training writers' questions. The writers' checks were developed on the training and development packets and
+  reviewers' cases, before any writer question existed.
 - **The glossary** the plan lessons name is `scratchpad/glossary.json`, the same file as
   `docs/benchmarks/factbank_llm/glossary.json` (sha256 `0dd7d0bc2a7788d5…`).
 
@@ -247,11 +271,48 @@ for training and development were written by 34 blind sessions in the same ten r
   far as writers' free-text questions cover them, and abstaining on hard questions is not tested beyond "not found".
 - **Not-found questions are templates** (invented keys, numbers, titles and names), easier to spot than a real question about
   something the company never did.
-- **Time:** about 3–5 seconds per question at 5,000 documents, mostly the planner.
+- **Value answers are matched anywhere in the answer.** A field or count question is right when its value appears in the
+  answer, so a long answer (plain search's quotes, about 1,000 characters) can hold a short value such as "2" or a common status
+  by chance. Dates must match exactly, and lists and names are scored by F1. This favours the quotes arm on fact questions, and
+  softens the cost of a fact question routed to prose. Answer lengths are reported per arm.
+- **Time:** about 3–5 seconds per question at 5,000 documents, mostly the planner. The whole run takes about 70 minutes.
 
 ## The review before freezing
 
-To be filled in from the pre-freeze review (`docs/benchmarks/brain/prefreeze_review.json`).
+Three reviewers checked the run (with a full dry run of the test's steps on the development set), the measure and rules, and
+the protocol; a fourth tried to refute each finding (`docs/benchmarks/brain/prefreeze_review.json`). What held up, and what was
+done:
+
+1. **The test writers' files could silently lose questions.** They save their own files, which development never did, and the
+   files were joined with `cat`: a file without a final newline, or a JSON list, lost or crashed questions. **Fixed:** each file
+   is read on its own, in any of three forms; every batch is checked before the questions are drawn; the procedure was
+   rehearsed, sealed, on the development batches (below).
+2. **Rule 6 counted the not-found family,** which the small set scores lower for a reason that is not size (the names it knows).
+   In the dry run that made up all of v15's difference and would have hidden a drop of almost 0.10 elsewhere. **Fixed:** rule 6
+   is over the single, multi and free-text families.
+3. **Rule 3's margin is about one standard error.** **Disclosed** above, and the paired intervals behind rules 1 to 3 are now
+   reported.
+4. **Run details:** the batch names were not printed for the writers' step, the packet reports were thrown away, and the machine
+   was checked for idleness only once. **Fixed.**
+5. **Value answers are matched anywhere in a long answer.** **Disclosed** under Known limits.
+6. **Errors in this document:** the training counts, the number of field kinds, the development losses (17 with v2, not 12),
+   the rule router's routes, and how free-text facts are scored. **Fixed.**
+7. **Disclosures missing:** the survey that read the whole fresh pool's short fields before the zones existed (and two more
+   seed ranges); that the margins and the mix were set with the development scores known; and that the writers' checks were
+   developed on packets, not writer questions. **Added,** and the survey's field cache deleted.
+
+**Refuted:** that rule 2 comes down to two questions and rule 1 only checks that v15 reproduces v1.
+
+**Confirmed:**
+- the dry run ran every step, and all seven rules were met on development data;
+- no test-zone document is in any training or development file;
+- the frozen lessons match their hashes and were trained only on the training set and v13's own training questions;
+- the run prints counts and scores only;
+- the development table reproduces exactly from the saved answers;
+- the seeds 809 to 812 were never used on the test zone.
+
+**The sealed rehearsal of the writers** (`writers_test.js` on the 10 development batches, writing their own files):
+REHEARSAL.
 
 ## Frozen
 

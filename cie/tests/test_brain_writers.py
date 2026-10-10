@@ -338,3 +338,26 @@ def test_the_command_line_writes_packets_and_keys_apart_and_collects(tmp_path, c
     with pytest.raises(SystemExit):
         W.main(["packets", "--work", str(work), "--kind", "prose", "--n", "1", "--seed", "1", "--out", str(p), "--keys", str(p)])
     capsys.readouterr()
+
+
+def test_a_writers_file_is_read_in_any_of_its_forms_and_each_batch_is_checked(tmp_path):
+    import json as _json
+
+    from cie.eval.brain_writers import batch_status, read_batch
+
+    rows = [{"packet_id": "p1", "question": "a?"}, {"packet_id": "p2", "question": "b?"}]
+    (tmp_path / "l.jsonl").write_text("\n".join(_json.dumps(r) for r in rows))  # no final newline
+    (tmp_path / "a.jsonl").write_text(_json.dumps(rows, indent=2))
+    (tmp_path / "f.jsonl").write_text("Here they are:\n```json\n" + _json.dumps(rows) + "\n```\n")
+    (tmp_path / "x.jsonl").write_text(_json.dumps(rows[0]) + "\nnot json\n")
+    assert read_batch(tmp_path / "l.jsonl") == (rows, "jsonl")
+    assert read_batch(tmp_path / "a.jsonl") == (rows, "list")
+    assert read_batch(tmp_path / "f.jsonl") == (rows, "fenced")
+    assert read_batch(tmp_path / "x.jsonl")[1] == "failed"
+    b, o = tmp_path / "b", tmp_path / "o"
+    b.mkdir(), o.mkdir()
+    for i, ids in enumerate((["p1", "p2"], ["p3"])):
+        (b / f"t_b0{i}.json").write_text(_json.dumps({"packets": [{"packet_id": x} for x in ids]}))
+    (o / "t_b00.jsonl").write_text("\n".join(_json.dumps(r) for r in rows))
+    st = batch_status(b, o, "t")
+    assert [(r["batch"], r["complete"], r["read"]) for r in st] == [("t_b00", True, "jsonl"), ("t_b01", False, "missing")]

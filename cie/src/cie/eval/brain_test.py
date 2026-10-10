@@ -682,6 +682,26 @@ def rules(report: dict[str, Any], fns: dict[str, Rule], why: dict[str, str] | No
 
 # the rules of docs/FACTBANK_BRAIN_PREREGISTRATION.md, on the arms labelled v15, v1, v13 and quotes; rules 1 to 4 decide
 EPS = 1e-9
+# rule 6 leaves out the not-found family: whether a made-up name is recognised as a person's depends on which names the bank
+# holds, so the small set scores it lower for a reason that is not size
+SIZE_FAMILIES = ("single", "multi", "prose")
+# the paired differences reported next to rules 1 to 3 (v15 minus the arm, over the family's questions)
+PAIRED = (("single", "v1"), ("multi", "v13"), ("prose", "quotes"))
+
+
+def paired_intervals(rows: list[dict[str, Any]], arm: str = "v15") -> dict[str, Any]:
+    """For rules 1 to 3: the mean paired difference of ``arm`` minus the other arm over the family's questions, its 95%
+    bootstrap interval (``memory_test.paired_ci``) and the questions it is over. Reported, not decided on."""
+    from cie.eval.memory_test import paired_ci
+
+    out = {}
+    for fam, other in PAIRED:
+        pairs = [(r["score"][arm], r["score"][other]) for r in rows
+                 if r["family"] == fam and r["score"].get(arm) is not None and r["score"].get(other) is not None]
+        a, b = [x for x, _ in pairs], [y for _, y in pairs]
+        out[f"{fam}: {arm} - {other}"] = {"questions": len(pairs), "mean": round(sum(a) / len(a) - sum(b) / len(b), 3) if pairs else None,
+                                          "interval_95": paired_ci(a, b) if pairs else None}
+    return out
 
 
 def _fam(r: dict[str, Any], arm: str, family: str) -> float:
@@ -700,8 +720,8 @@ def preregistered() -> dict[str, Rule]:
             lambda r: _fam(r, "v15", "not_found") >= 0.80 - EPS and r["scores"]["v15"]["false_not_found"]["all"] <= 0.03 + EPS,
         "5 one brain for every kind: v15's mean over families >= every other arm's + 0.20":
             lambda r: r["scores"]["v15"]["mean_of_families"] >= max(r["scores"][a]["mean_of_families"] for a in others(r)) + 0.20 - EPS,
-        "6 it holds at size: v15 at 5,000 documents >= the small set - 0.05 (mean over families)":
-            lambda r: r["small"]["differences"]["v15"]["mean_of_families"]["big_minus_small"] >= -0.05 - EPS,
+        "6 it holds at size: v15 at 5,000 documents >= the small set - 0.05 (mean over single, multi and free text)":
+            lambda r: sum(r["small"]["differences"]["v15"]["big_minus_small"][f] for f in SIZE_FAMILIES) / 3 >= -0.05 - EPS,
         "7 the right route: v15's route accuracy, mean over families, >= 0.90":
             lambda r: r["scores"]["v15"]["routes"]["accuracy_mean_over_families"] >= 0.90 - EPS,
     }
@@ -751,6 +771,7 @@ def score(work: Path, small: Path | None = None, out: Path | None = None, rule_f
                         "builds": {n: b for n in ("factbank", "factbank_v2") if (b := _read(small / f"{n}_build.json")) is not None},
                         "rows": sm["rows"]}
     rep["seed_check"] = seed_check(work)
+    rep["paired"] = paired_intervals(big["rows"]) if "v15" in big["labels"] and all(a in big["labels"] for _, a in PAIRED) else None
     why: dict[str, str] = {}
     rep["rules"] = rules(rep, rule_fns or {}, why)
     rep["rules_why"] = why
@@ -803,7 +824,8 @@ def to_markdown(rep: dict[str, Any]) -> str:
     out += ["", "Rules:" if rep["rules"] else "Rules: none given (they come with the pre-registration)."]
     out += [f"- {k}: **{'met' if v else 'not met' if v is not None else 'n/a'}**" + (f" ({rep['rules_why'][k]})" if k in rep["rules_why"] else "")
             for k, v in rep["rules"].items()]
-    out += ["", f"- hash-seed check (v15 under hash seed 1): {json.dumps(rep.get('seed_check'))}",
+    out += ["", f"- paired differences behind rules 1 to 3 (mean, 95% bootstrap interval): {json.dumps(rep.get('paired'))}",
+            f"- hash-seed check (v15 under hash seed 1): {json.dumps(rep.get('seed_check'))}",
             f"- arms: {json.dumps(rep['arms'])}", f"- left out as stale: {json.dumps(rep['stale_arms'])}",
             f"- builds: {json.dumps(rep['builds'])}",
             f"- draw: {json.dumps({k: rep['draw'].get(k) for k in ('seed', 'mix', 'mix_given', 'set_aside_written', 'gold_documents')})}"]

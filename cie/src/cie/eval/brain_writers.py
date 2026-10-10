@@ -543,6 +543,47 @@ def read_rows(path: Path) -> list[Any]:
     return out
 
 
+FENCE = re.compile(r"```(?:json|jsonl)?\s*\n(.*?)\n```", re.S)
+
+
+def read_batch(path: Path) -> tuple[list[Any], str]:
+    """One writer's file, read on its own: a JSON list, JSON lines, or either inside a fenced block; and how it was read
+    ("list", "jsonl", "fenced" or "failed"). Writers that save their own files may use any of these."""
+    text = path.read_text()
+    m = FENCE.search(text)
+    how = "fenced" if m else ""
+    body = m.group(1) if m else text
+    try:
+        whole = json.loads(body)
+        rows = whole if isinstance(whole, list) else [whole]
+        return rows, how or "list"
+    except ValueError:
+        pass
+    rows: list[Any] = []
+    for line in body.splitlines():
+        if line.strip():
+            try:
+                rows.append(json.loads(line))
+            except ValueError:
+                return rows, "failed"
+    return rows, how or "jsonl"
+
+
+def batch_status(batch_dir: Path, out_dir: Path, prefix: str) -> list[dict[str, Any]]:
+    """For each batch file ``<batch_dir>/<prefix>_bNN.json``: how many packets it holds, whether the writer's
+    ``<out_dir>/<prefix>_bNN.jsonl`` exists, how it was read, and how many of its rows name one of the batch's packets.
+    Counts only: nothing a writer wrote is shown."""
+    out = []
+    for b in sorted(batch_dir.glob(f"{prefix}_b*.json")):
+        ids = {p["packet_id"] for p in json.loads(b.read_text())["packets"]}
+        f = out_dir / (b.stem + ".jsonl")
+        rows, how = read_batch(f) if f.exists() else ([], "missing")
+        named = {r.get("packet_id") for r in rows if isinstance(r, dict)} & ids
+        out.append({"batch": b.stem, "packets": len(ids), "read": how, "rows": len(rows), "packets_answered": len(named),
+                    "complete": how not in ("missing", "failed") and named == ids})
+    return out
+
+
 def main(argv: list[str] | None = None) -> dict[str, Any]:
     ap = argparse.ArgumentParser(prog="python -m cie.eval.brain_writers")
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -559,9 +600,14 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
     c.add_argument("--kind", required=True, choices=KINDS)
     c.add_argument("--packets", required=True)
     c.add_argument("--keys", required=True)
-    c.add_argument("--outputs", required=True, help="the writers' outputs: JSONL or a JSON list of {packet_id, question, ...}")
+    c.add_argument("--outputs", required=True, nargs="+",
+                   help="the writers' outputs: JSONL or a JSON list of {packet_id, question, ...}; several files are each read on their own")
     c.add_argument("--out", required=True, help="the questions, JSONL")
     c.add_argument("--rejected", default=None, help="the rejected outputs, JSONL (default: <out>.rejected.jsonl)")
+    st = sub.add_parser("status", help="whether every batch's writer file is there and answers every packet (counts only)")
+    st.add_argument("--batches", required=True, help="the folder of batch files (<prefix>_bNN.json)")
+    st.add_argument("--outputs", required=True, help="the folder of the writers' files (<prefix>_bNN.jsonl)")
+    st.add_argument("--prefix", required=True)
     a = ap.parse_args(argv)
     if a.cmd == "packets":
         out, keys = Path(a.out), Path(a.keys)
@@ -572,8 +618,16 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
         _write_jsonl(out, ps)
         _write_jsonl(keys, ks)
         rep |= {"out": str(out), "keys": str(keys)}
+    elif a.cmd == "status":
+        rows = batch_status(Path(a.batches), Path(a.outputs), a.prefix)
+        rep = {"batches": rows, "complete": bool(rows) and all(r["complete"] for r in rows)}
+        print(json.dumps(rep, indent=1))
+        if not rep["complete"]:
+            raise SystemExit(f"incomplete batches: {[r['batch'] for r in rows if not r['complete']]}")
+        return rep
     else:
-        qs, rejected = collect(a.kind, read_rows(Path(a.packets)), read_rows(Path(a.keys)), read_rows(Path(a.outputs)))
+        outputs = [r for f in a.outputs for r in read_batch(Path(f))[0]]
+        qs, rejected = collect(a.kind, read_rows(Path(a.packets)), read_rows(Path(a.keys)), outputs)
         out = Path(a.out)
         rej = Path(a.rejected) if a.rejected else out.with_name(out.name.removesuffix(".jsonl") + ".rejected.jsonl")
         _write_jsonl(out, qs)

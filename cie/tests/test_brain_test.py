@@ -392,7 +392,8 @@ def test_the_preregistered_rules_read_the_report():
                 "routes": {"accuracy_mean_over_families": routes}}
     rep = {"scores": {"v1": arm(0.80, 0.05, 0.0, 0.25), "v13": arm(0.25, 0.94, 0.0, 0.0), "quotes": arm(0.1, 0.05, 0.65, 0.0),
                       "v15": arm(0.78, 0.92, 0.61, 0.85, 0.02, 0.95), "v15_seed1": arm(0.78, 0.92, 0.61, 0.85)},
-           "small": {"differences": {"v15": {"mean_of_families": {"big_minus_small": -0.04}}}}}
+           "small": {"differences": {"v15": {"big_minus_small": {"single": -0.04, "multi": -0.02, "prose": -0.03, "not_found": 0.2},
+                                             "mean_of_families": {"big_minus_small": 0.03}}}}}
     got = H.rules(rep, H.preregistered())
     assert all(got.values()), got
     rep["scores"]["v15"]["by_family"]["single"] = 0.76
@@ -402,4 +403,10 @@ def test_the_preregistered_rules_read_the_report():
     assert not got["4 not found: v15 >= 0.80 on questions about nothing in the bank, and false 'not found' <= 0.03 on the others"]
     assert got["2 multi-document questions: v15 >= v13 - 0.03"] and got["3 free text: v15 >= plain search with quotes - 0.05"]
     del rep["small"]
-    assert H.rules(rep, H.preregistered())["6 it holds at size: v15 at 5,000 documents >= the small set - 0.05 (mean over families)"] is None
+    assert H.rules(rep, H.preregistered())["6 it holds at size: v15 at 5,000 documents >= the small set - 0.05 (mean over single, multi and free text)"] is None
+
+
+def test_rule_six_leaves_out_the_not_found_family():
+    rep = {"small": {"differences": {"v15": {"big_minus_small": {"single": -0.06, "multi": -0.06, "prose": -0.06, "not_found": 0.4}}}}}
+    fn = H.preregistered()["6 it holds at size: v15 at 5,000 documents >= the small set - 0.05 (mean over single, multi and free text)"]
+    assert not fn(rep), "a drop on the three families is not hidden by the not-found family"
