@@ -1,0 +1,42 @@
+{
+ "pr_issue/assignee": [
+  "For this week's update, could you tell me who the ticket linked to PR #{n} is currently assigned to?",
+  "who owns the ticket tied to PR #{n}? need a name asap"
+ ],
+ "pr_issue/due_date": [
+  "When is the ticket linked to pull request #{n} due? I need the deadline date for the status email.",
+  "ticket linked to #{n} - when's it due? need the deadline date"
+ ],
+ "pr_issue/status": [
+  "What is the current status of the ticket that PR #{n} is linked to?",
+  "whats the current status on the ticket that PR #{n} is linked to?"
+ ],
+ "issue_pr_author/author": [
+  "Who opened the pull request that references ticket {k}?",
+  "who opened the PR that references {k}?"
+ ],
+ "ticket_link/status": [
+  "Ticket {k} is linked to another ticket. What status is that other ticket in right now?",
+  "{k} is linked to another ticket - what status is that other one sitting in?"
+ ],
+ "ticket_link/assignee": [
+  "Ticket {k} has a linked ticket, and I need to know who owns it. Who is that other ticket assigned to?",
+  "Who's on the other ticket that {k} is linked to?"
+ ],
+ "person_count/": [
+  "How many tickets are currently assigned to {p}?",
+  "how many tickets r assigned to {p}? just need the number"
+ ],
+ "person_first/": [
+  "Of all the tickets assigned to {p}, which one is due first? Please give me its ticket key.",
+  "out of {p}'s tickets which one is due soonest? gimme the key"
+ ],
+ "compare_two/": [
+  "Between tickets {a} and {b}, which one has the earlier due date?",
+  "{a} vs {b} - which one's due first?"
+ ],
+ "action_owner_issues/": [
+  "In the \"{m}\" meeting, someone picked up the action item \"{t}\". Which ticket keys are assigned to that person?",
+  "whoever got \"{t}\" in the \"{m}\" meeting - what ticket keys are assigned to them?"
+ ]
+}
