@@ -64,10 +64,13 @@ NOT_ORDER_AFTER = {"next": frozenset(("meeting", "meetings", "call", "calls", "w
 # "number of"
 QUESTION_WORDS = frozenset(("who", "whom", "whose", "when", "how", "what", "which", "where", "why"))
 CLAUSE_OPENERS = frozenset(("and", "but", "so", "then", "also"))
+PREPOSITIONS = frozenset(("by", "until", "till", "since", "on", "at", "to", "for", "from"))
 DATE_NOUNS = frozenset(("date", "dates", "day", "days", "deadline", "deadlines"))
 BEFORE_NOUN = frozenset(("is", "was", "s", "the", "its", "their", "exact", "target", "expected", "planned", "final", "due", "total"))
-ASKS_COUNT = re.compile(r"\bhow many\b|\bnumber of\b|\bcount\b", re.I)
+ONE_ITEM = frozenset(("the", "that", "this", "its"))
+ASKS_COUNT = re.compile(r"\bhow many\b|\bnumber of\b(?!\s+(?:the|that|this|its)\b)|\bcount\b", re.I)
 QUOTED = re.compile(r'"[^"]*"|\u201c[^\u201d]*\u201d')
+
 NOT_LINKS = {"from_document"}
 FEATURES = ["bias", "start_named", "start_rank", "two_starts", "path_len", "path_overlap", "path_assoc", "field_overlap", "field_assoc",
             "kind_fits", "kind_conflicts", "combine_assoc", "label_field", "answer_in_question", "fanout"]
@@ -414,14 +417,19 @@ class Planner:
     def interrogative_kind(question: str) -> str | None:
         """v15: the kind of answer the question words ask for, when they ask plainly: "who", "whom" or "whose" a person;
         "when", "what date" or "what is the due date" a date; "how many" or "what is the number of" a count. Only a question
-        word that opens a clause counts (at the start, after punctuation, or after "and"), so "the person who took it" asks
-        nothing. Any other question word opening a clause ("which ticket", "what is the status", "where"), or two that
-        disagree, leaves the kind open (None). "Which deadline is sooner?", "whose due date is earlier?" and "what is the
-        deadline of the next one?" ask for an item, so they leave it open too."""
-        toks = re.findall(r"[a-z0-9]+|[,:;.?!()\u2014\u2013]|(?<=\s)-(?=\s)", QUOTED.sub(" ", question.lower()))
+        word that opens a clause counts (at the start, after punctuation, or after "and"), alone or after a preposition that
+        does ("By when", "on what date", "to whom"), so "the person who took it" asks nothing. Any other question word opening
+        a clause ("which ticket", "what is the status", "where"), or two that disagree, leaves the kind open (None). "Which
+        deadline is sooner?", "whose due date is earlier?", "what is the deadline of the next one?" and "what is the number
+        of the pull request?" ask for an item, so they leave it open too."""
+        toks = re.findall(r"[a-z0-9]+|[,:;.?!()\u2014\u2013]|(?<=\s)-(?=\s)", unquoted(question.lower()))
+
+        def opens(j: int) -> bool:
+            return j == 0 or not toks[j - 1][0].isalnum() or toks[j - 1] in CLAUSE_OPENERS
+
         kinds = []
         for i, t in enumerate(toks):
-            if t not in QUESTION_WORDS or (i and toks[i - 1][0].isalnum() and toks[i - 1] not in CLAUSE_OPENERS):
+            if t not in QUESTION_WORDS or not (opens(i) or toks[i - 1] in PREPOSITIONS and opens(i - 1)):
                 continue
             nxt = toks[i + 1:i + 7]
             if t in ("who", "whom"):
@@ -439,7 +447,7 @@ class Planner:
                 if rest[:1] and rest[0] in DATE_NOUNS and not Planner.asks_order(question):
                     kinds.append("date")
                 else:
-                    kinds.append("count" if rest[:2] == ["number", "of"] else None)
+                    kinds.append("count" if rest[:2] == ["number", "of"] and not set(rest[2:3]) & ONE_ITEM else None)
             else:
                 kinds.append(None)
         return kinds[0] if kinds and len(set(kinds)) == 1 else None
@@ -732,6 +740,12 @@ class AskedKind:
 
     def to_json(self) -> dict[str, Any]:
         return {"n": self.n, "kind": dict(self.kind), "word": {k: dict(v) for k, v in self.word.items()}}
+
+
+def unquoted(text: str) -> str:
+    """The text without its quoted titles, keeping a full stop, question mark or exclamation mark that ends one, so in
+    'item "send the checklist." When is it due?' a new sentence still starts at "When"."""
+    return QUOTED.sub(lambda m: " " + (m.group(0)[-2] if m.group(0)[-2] in ".?!" else "") + " ", text)
 
 
 def raw_words(question: str) -> list[str]:
