@@ -23,9 +23,17 @@
   (``evidence_audit.present``). The questions kept get family "unanswerable", kind "heldout", expected {"not_found": true}
   and no gold documents.
 
-Full person names are anchors too, and their content words count in check (4), but they are left out of check (1) unless
-``person_anchors`` is set: the benchmark reuses a small pool of names, so the strict rule keeps about 1 in 100 dev-zone
-documents (S/brain2/E_draw/anchors_probe.py). Each run reports how many kept documents would also pass with them.
+Two readings were fixed by measurement, since the plain ones keep almost nothing in this benchmark:
+
+- Full person names are anchors, but check (1) leaves them out unless ``person_anchors`` is set. The benchmark reuses a small
+  pool of names: with them, 6 of 640 sampled dev-zone documents pass check (1) against dev5k, against 562 without them
+  (S/brain2/E_draw/anchors_probe.py). Each run reports how many kept documents would pass with them too.
+- An anchor content word, in check (4), is a content word of an anchor (person names included) that at most ``RARE_DF``
+  haystack documents hold. With every content word, a generic fact ("p95 under 350ms") and a common word reject 87% of the
+  train5k writers' prose questions asked without their gold document (dev5k 98%); with words held by at most 10 documents,
+  11% (dev 10%), while 77% (dev 83%) of them are still caught with the gold document in the haystack
+  (S/brain2/E_draw/check4_fit.py; chosen on train as the most caught at about 10% rejected, with one word as the design
+  says: two words held by at most 50 documents do as well).
 
     python -m cie.eval.brain2_draw draw --zone dev --seed 1701 --zones $S/brain/zones.json.gz --index $S/mt5k/index.json \\
         --root $BENCH --exclude $S/brain/dev5k --out W
@@ -59,6 +67,7 @@ TITLE_JACCARD = 0.5
 SHINGLE = 5
 SHINGLE_MAX = 0.1
 FACT_SHARE = 0.5
+RARE_DF = 10  # check (4): an anchor word held by at most this many haystack documents (fixed on train5k, check4_fit.py)
 MIN_TEXT = 300  # characters of text (metadata and body) a writer needs
 KIND = "unanswerable"
 PREFIX = "heldout"
@@ -400,7 +409,7 @@ def anchor_stems(anchor_texts: Iterable[str]) -> set[str]:
 
 class Haystack:
     """The haystack's documents as check (4) reads them: each one's text (``memory_test.render_doc``: title, metadata and
-    body), lower-cased, with its stems (``evidence_audit._stems``)."""
+    body), lower-cased, with its stems (``evidence_audit._stems``), and how many documents hold each stem."""
 
     def __init__(self, docs: list[dict[str, Any]]):
         from cie.eval.evidence_audit import _stems
@@ -409,14 +418,20 @@ class Haystack:
         for d in docs:
             t = render_doc(d["doc"])
             self.rows.append((d["dsid"], t.lower(), _stems(t)))
+        self.df = Counter(s for _, _, stems in self.rows for s in stems)
 
-    def holder(self, facts: list[str], anchor_texts: Iterable[str], share: float = FACT_SHARE) -> str | None:
-        """The first document that holds an anchor content word and at least ``share`` of the facts (those with a number or
-        a content word, each present as ``evidence_audit.present`` finds it), or None."""
+    def anchor_words(self, anchor_texts: Iterable[str], rare: int = RARE_DF) -> set[str]:
+        """The anchors' content words (``anchor_stems``) that at most ``rare`` haystack documents hold: the words that tie a
+        document to what the held-out one is about."""
+        return {w for w in anchor_stems(anchor_texts) if self.df[w] <= rare}
+
+    def holder(self, facts: list[str], anchor_texts: Iterable[str], share: float = FACT_SHARE, rare: int = RARE_DF) -> str | None:
+        """The first document that holds an anchor content word (``anchor_words``) and at least ``share`` of the facts (those
+        with a number or a content word, each present as ``evidence_audit.present`` finds it), or None."""
         from cie.eval.evidence_audit import present
 
         facts = B._checkable(facts)
-        words = anchor_stems(anchor_texts)
+        words = self.anchor_words(anchor_texts, rare)
         if not facts or not words:
             return None
         for dsid, low, stems in self.rows:

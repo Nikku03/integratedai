@@ -456,17 +456,6 @@ class Records:
         return docs[0] if len(docs) == 1 else None
 
     # ------------------------------------------------------------------ 2. counts and filters
-    def relevance(self, question: str, fields: Iterable[str]) -> dict[str, float]:
-        """How much the question's words point to each field: the bank's cue weights (``wanted``) on the question without its
-        quoted titles and the words that name the document itself (system names, item nouns: "the Linear issue" does not ask for
-        ``parent_issue``), plus ``CUE_WEIGHT`` for each of the field's ``FIELD_CUES`` the question holds."""
-        ql = unquoted(question.lower())
-        want = self.b.wanted(" ".join(w for w in re.findall(r"[\w'-]+", ql) if w not in ITEM_WORDS and w not in SYSTEM_NAME_WORDS))
-        out = {}
-        for f in fields:
-            out[f] = want.get(f, 0.0) + CUE_WEIGHT * sum(1 for pat in FIELD_CUES.get(f, ()) if re.search(pat, ql))
-        return out
-
     def intent(self, question: str) -> str | None:
         """What a count or list question asks for: "count", "people" or "keys"; None for anything else."""
         ql = question.lower()
@@ -809,6 +798,17 @@ class Records:
         return False
 
     # ------------------------------------------------------------------ 4. a field the document leaves empty
+    def relevance(self, question: str, fields: Iterable[str]) -> dict[str, float]:
+        """How much the question's words point to each field: the bank's cue weights (``wanted``) on the question without its
+        quoted titles and the words that name the document itself (system names, item nouns: "the Linear issue" does not ask for
+        ``parent_issue``), plus ``CUE_WEIGHT`` for each of the field's ``FIELD_CUES`` the question holds."""
+        ql = unquoted(question.lower())
+        want = self.b.wanted(" ".join(w for w in re.findall(r"[\w'-]+", ql) if w not in ITEM_WORDS and w not in SYSTEM_NAME_WORDS))
+        out = {}
+        for f in fields:
+            out[f] = want.get(f, 0.0) + CUE_WEIGHT * sum(1 for pat in FIELD_CUES.get(f, ()) if re.search(pat, ql))
+        return out
+
     def absent(self, question: str, start: str | None) -> str | None:
         """Why the answer is not found when the asked field (``relevance``) is one ``min_held`` of the system's documents hold but
         the named document leaves empty; None when the document holds it, the question follows a link, or no field stands out."""
