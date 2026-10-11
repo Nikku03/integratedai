@@ -137,6 +137,23 @@ order changed.
   - **Plain keyword search beats both banks' evidence at this size.**
   - **The trained fact bank's lead** comes from printing its candidate answers first, not from what it learned.
 
+**One company brain for every kind of question** ([`docs/FACTBANK_BRAIN_RESULTS.md`](docs/FACTBANK_BRAIN_RESULTS.md)).
+v15 routes each question to one of four answers:
+- the planner, for questions that name a ticket, pull request, title or person;
+- the single-document engine, for other field questions;
+- quotes from the best passages, for free text;
+- "not found", for things the company does not have.
+
+On 215 new questions over 5,000 unseen documents:
+- **The claim was not met.** v15 matched or beat the best earlier version on single-document questions (0.821 against v1's
+  0.794), multi-document questions (0.972 against v13's 0.889) and not-found questions (1.000). On free text its quotes held
+  fewer answer facts than plain keyword search's (0.583 against 0.707).
+- **Routing was near perfect** (0.998), and v15 is the only version that answers every kind (0.844 against at most 0.29).
+- **The free-text gap comes from how v15 cuts and ranks passages** inside the right document. Plain search's passages would
+  close it, which needs a new test.
+- **Counts, history, answers combining several documents, and knowing when not to answer were not tested,** and probes of them
+  mostly failed.
+
 ## Brain-wired reasoning neurons (research)
 
 `cie.neuro` wires the reasoning engine's spiking neurons like a piece of Blue Brain's cortex model (directed cliques of
