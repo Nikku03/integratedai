@@ -63,13 +63,14 @@ found" (route absent_doc), with the coverage and the withdrawn answer in the rea
 words weigh no more than ``COVER_MIN_WEIGHT`` is not checked.
 
 The design and ``COVER_BELOW`` were fixed on train5k and checked on dev5k without refitting (round 2, phase 2, step 2):
-answerable fact-route questions (the v15 single and multi families, and 15 a kind of the new kinds, those that reach the
-planner or v1's engine) against the held-out writers' questions on the fact route and the same answerable questions asked of
-a copy of the bank without their gold documents. Train, at 0.57: 9/901 answerable questions abstain (9/451 of the v15
-families, 3 of them answered right before; 0/450 of the new kinds); 2/2 held-out questions and 82/184 wrongly answered
-gold-removed ones say "not found". Dev: 3/571 (3/125 of the v15 families, all three answered wrong before; 0/446), 2/4
-held-out (the held-out score goes from 40/51 to 42/51) and 28/73 gold-removed. On the 14 guard sets, 1 of 37 checked answers
-is withdrawn (a wrong one) and none gets worse.
+answerable fact-route questions (the v15 single and multi families, and up to 15 questions of each new kind, those that
+reach the planner or v1's engine) against the held-out writers' questions on the fact route and the same answerable
+questions asked of a copy of the bank without their gold documents. The threshold is the largest that abstains on at most 2%
+of each group of answerable questions (the v15 families bind; pooled, the sampled new kinds would allow 0.67). Train, at
+0.57: 9/901 answerable questions abstain (9/451 of the v15 families, 3 of them answered right before; 0/450 of the new
+kinds); 2/2 held-out questions and 82/184 wrongly answered gold-removed ones say "not found". Dev: 3/571 (3/125 of the v15
+families, all three answered wrong before; 0/446), 2/4 held-out (the held-out score goes from 40/51 to 42/51) and 28/73
+gold-removed. On the 14 guard sets, 1 of 37 checked answers is withdrawn (a wrong one) and none gets worse.
 
 Routes derived and table answer with a fact, absent and absent_doc with "not found" (``cie.eval.brain2_test.route_class``).
 Each new route gives the same row as the others: the answer, the reason, the evidence (what it read: the answer first, then
