@@ -205,11 +205,56 @@ family (v1, v2, v13, v15, plain search with quotes). The thresholds are `cie/src
 
 ## Disclosures
 
-⟨TBD⟩
+- **The development set guided every choice after training.** Its scores are not results. The training documents fixed each
+  threshold first (the prose route's 0.47, the fact-route coverage's 0.57, the empty-field share 0.3, the held-out check's rare
+  word), and development confirmed it without refitting, except where noted below.
+- **Choices seen on development data:**
+  - **The unknown-name rule:** the idea came from two development held-out quotes that named a customer the bank never
+    mentions. It was then measured on training first. The ordinary-English exception was added after two guard sets showed
+    month names and place words firing.
+  - **The rule thresholds:** the margins, the 0.70 floors and the mix were set with the development scores known.
+  - **The empty-field share:** set to 0.3 after seeing that HubSpot's CSM field sits at 43% of training accounts and 40% of
+    development accounts, away from the 0.4 the first build used.
+  - **The fact-route coverage gate** was read pooled over the answerable questions. On the writers' descriptive questions
+    alone it withdraws 7% of training answers (3 of 98 right answers lost) and 6% of development answers (0 lost). On
+    development the round-1 families alone exceed the per-group bound by one question.
+- **Round 1's test set is not reused,** but the test zone is the same. The five faults fixed here, and the free-text diagnosis,
+  came from round 1's post-run review of round 1's test answers. The fixes were then built and measured on training and
+  development questions only. The new test draw excludes all 5,000 of round 1's test documents, and the held-out pool excludes
+  them too.
+- **The writers and the method are the same model family as the author.** The writers see only their packets. The held-out
+  writers' instruction was rehearsed on training and development documents (105 questions kept) and in a sealed rehearsal (3
+  batches) before the freeze.
+- **The new kinds' generators and v16's records module were built side by side.** They use the same field lists and wording
+  templates, and the records module was adapted to the generators' wordings on training questions. So the counts, history and
+  email-and-chat families test the pattern-matched wordings v16 was built for, not free wordings. Their development scores
+  (1.0) are an upper bound.
+- **Seeds used so far:**
+  - round 1's (zones salt `brain-zones-v1`; training 601, development 701; questions 621, 721; packets 611, 612, 711, 712;
+    test 809 to 812);
+  - round 2's training and development: kinds generator 16; held-out packets 1612 (training), 1712 (development);
+  - the draw check 1701 and 1702;
+  - the dry run of the test's step 1 on the development zone, which used the test's seeds 909, 911, 912 and 913 there.
+  - The test seeds 909 to 913 were never used on the test zone.
+- **Hash seed:** plan lessons and routers reproduce byte for byte only under a fixed `PYTHONHASHSEED`; the run fixes it at 0, and
+  v16 answers again under 1.
 
 ## Known limits
 
-⟨TBD⟩
+- **No judge, no written answers.** Free-text answers are quotes, scored by whether the answer facts appear word for word.
+- **The new families are templates.** Counts, history, email and chat, the two-document kinds and the empty-field questions are
+  generated from fields, in a few wordings each. Real people phrase these more loosely, and v16's records module reads them
+  with hand-written patterns.
+- **Joins on a person's name** count the same name string as the same person; the bank cannot tell two people apart who share
+  a name.
+- **Held-out questions are about documents near the company's own.** Held-out questions whose documents have no rare name word
+  are checked only through a common word with every answer fact. A question whose answer a near-identical document holds would
+  be answered, and is rejected only when that document holds every fact.
+- **5,000 documents, one fictional company.** Free text has 150 questions; each new family has 40, so one question moves it by
+  0.025.
+- **Value answers are matched anywhere in the answer** (as round 1). A long quote can hold a short value by chance, which helps
+  the quotes arm on fact questions.
+- **Time:** v16 takes about 1 s a question at 5,000 documents; v13 and v15 take about 4.5 s.
 
 ## The review before freezing
 
