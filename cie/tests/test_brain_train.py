@@ -104,10 +104,12 @@ def work(tmp_path):
     weights = dict.fromkeys(P.FEATURES_V4, 0.0) | {"start_named": 2.0, "path_len": -1.0, "field_overlap": 2.0, "label_field": 1.0}
     P.PlanLessons([weights[f] for f in P.FEATURES_V4], {}, {}, {}, list(P.FEATURES_V4), rules="v9", tickets=True,
                   orders=True).save(tmp_path / "plan_lessons.json")
-    qs = [_q("s1", "single", "linear_due", "When is ENG-11 due?", {"date": "2026-03-20"}, pieces=["ENG-11", "2026-03-20"]),
-          _q("s2", "single", "linear_priority", "What is the priority of ENG-12?", {"value": "Low"}, pieces=["ENG-12", "Low"]),
+    qs = [_q("s1", "single", "linear_due", "When is ENG-11 due?", {"date": "2026-03-20"}, pieces=["ENG-11", "2026-03-20"],
+             group="deadlines", gold_docs=["d1"]),
+          _q("s2", "single", "linear_priority", "What is the priority of ENG-12?", {"value": "Low"}, pieces=["ENG-12", "Low"],
+             group="fields", gold_docs=["d2"]),
           _q("m1", "multi", "pr_assignee", "Who is assigned to the Linear issue that pull request #4821 is linked to?",
-             {"value": "Omar Singh"}, pieces=["ENG-11", "Omar Singh"]),
+             {"value": "Omar Singh"}, pieces=["ENG-11", "Omar Singh"], group="link", gold_docs=["d4", "d1"]),
           _q("p1", "prose", "prose", "Why do the keycard readers time out at night?", {"facts": ["readers time out"]}),
           _q("p2", "prose", "prose", "How should the office wifi keys be rotated each quarter?", {"facts": ["quarterly rotation"]})]
     (w / "questions.jsonl").write_text("".join(json.dumps(q) + "\n" for q in qs))
@@ -166,4 +168,21 @@ def test_the_plans_command_learns_v15s_questions_and_the_new_two_document_kinds(
     only = T.main(["plans", "--work", str(work / "work"), "--out", str(work / "plans2"), "--lessons", str(work), "--kinds",
                    str(work / "kinds.jsonl"), "--plan-kinds", "pr_issue_creator"])
     assert only["plan_kinds"] == 0 and only["plan_kinds_named"] == ["pr_issue_creator"] and only["trained_on"]["questions"] == 3
+    capsys.readouterr()
+
+
+def test_the_train_command_with_v16_fits_all_three_parts_and_records_its_inputs(work, capsys):
+    out = work / "all"
+    rep = T.main(["train", "--work", str(work / "work"), "--out", str(out), "--v16", "--kinds", str(work / "kinds.jsonl"), "--per-family", "5"])
+    assert sorted(p.name for p in out.iterdir()) == ["plan_lessons.json", "router.json", "router_signals.jsonl", "single_lessons.json",
+                                                      "train_report.json"]
+    assert rep["v16"] and rep["plan_kinds"] == 1 and rep["plans"]["questions"] == 4, "v15's three fact questions and one new kind"
+    assert rep["router"]["v16"] and rep["router"]["questions"] == 8 and rep["router_sample_ids"] == ["k2", "k3", "k1"]
+    assert rep["sha256"] == {f: T.sha256(out / f) for f in ("single_lessons.json", "plan_lessons.json", "router.json")}
+    assert json.loads((out / "train_report.json").read_text())["kinds_sha256"] == T.sha256(work / "kinds.jsonl")
+    v15 = T.main(["train", "--work", str(work / "work"), "--out", str(work / "v15")])
+    assert "v16" not in v15 and "v16" not in v15["router"] and v15["plans"]["questions"] == 3 and v15["router"]["questions"] == 5
+    assert not (work / "v15" / "router_signals.jsonl").exists()
+    with pytest.raises(ValueError):
+        T.train(work / "work", work / "bad", v16=True)  # v16 training needs the new kinds
     capsys.readouterr()
