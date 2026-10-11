@@ -90,6 +90,7 @@ def test_v16_routes_the_new_families_and_learns_plans_from_the_new_two_document_
     assert [q["id"] for q in T.routed_questions(qs)] == ["a", "b", "g", "h"], "v15: single, multi and prose"
     assert [q["id"] for q in T.routed_questions(qs, v16=True)] == ["a", "b", "c", "d", "g", "h"], "never not_found or held-out"
     assert [q["id"] for q in T.kinds_multi(qs)] == ["g"], "two-document questions with a value, a date or keys"
+    assert T.kinds_multi(qs, ["owner_accounts"]) == [] and [q["id"] for q in T.kinds_multi(qs, ["pr_issue_team"])] == ["g"]
 
 
 @pytest.fixture
@@ -162,4 +163,7 @@ def test_the_plans_command_learns_v15s_questions_and_the_new_two_document_kinds(
     ref = T.learn_plans_many(T.plan_pairs(work / "work", Lessons.load(work / "single_lessons.json"), T._jsonl(work / "work/questions.jsonl"),
                                           kinds=work / "kinds.jsonl"), log=lambda *_: None)
     assert P.PlanLessons.load(out / "plan_lessons.json").weights == ref.weights
+    only = T.main(["plans", "--work", str(work / "work"), "--out", str(work / "plans2"), "--lessons", str(work), "--kinds",
+                   str(work / "kinds.jsonl"), "--plan-kinds", "pr_issue_creator"])
+    assert only["plan_kinds"] == 0 and only["plan_kinds_named"] == ["pr_issue_creator"] and only["trained_on"]["questions"] == 3
     capsys.readouterr()

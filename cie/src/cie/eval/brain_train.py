@@ -16,7 +16,8 @@ same bank). The sample (``sample_kinds``) takes up to ``PER_FAMILY`` questions o
 email_chat, the two-document multi kinds, the embedded single kinds and the empty-field unanswerable kind), shared out over
 the family's kinds in turn, so that they do not swamp v15's questions; every one of them is labelled fact, as the brain
 should route it. Held-out writers' questions (kind "heldout") are never learned from. With ``--kinds``, the plan lessons
-(``train`` or ``plans``) also learn from every two-document question of the new kinds (``kinds_multi``). Each run writes
+(``train`` or ``plans``) also learn from the two-document questions of the new kinds (``kinds_multi``: all of them, or only
+the kinds named by ``--plan-kinds``). Each run writes
 what it fitted with the sha256 of its inputs and outputs (``train_report.json``, ``router_report.json``,
 ``plans_report.json``).
 
@@ -25,7 +26,8 @@ what it fitted with the sha256 of its inputs and outputs (``train_report.json``,
     python -m cie.eval.brain_train router --work TRAIN --out DIR [--workers N]   (the router alone, on lessons in DIR)
         [--lessons DIR2] [--v16 --kinds KINDS [--per-family N] [--seed S]]   (lessons read from DIR2)
     python -m cie.eval.brain_train plans --work TRAIN --out DIR --kinds KINDS [--extra WORK ...] [--extra-single L]
-        [--glossary G] [--lessons DIR2]   (the plan lessons alone, on the single-fact lessons in DIR2 or DIR)
+        [--glossary G] [--lessons DIR2] [--plan-kinds KIND ...]   (the plan lessons alone, on the single-fact lessons in DIR2
+        or DIR)
 """
 
 from __future__ import annotations
@@ -92,10 +94,11 @@ def sample_kinds(qs: list[dict[str, Any]], per_family: int = PER_FAMILY, seed: i
     return out
 
 
-def kinds_multi(qs: list[dict[str, Any]]) -> list[dict[str, Any]]:
+def kinds_multi(qs: list[dict[str, Any]], kinds: list[str] | None = None) -> list[dict[str, Any]]:
     """v16: the two-document questions of round 2's new kinds that the plan lessons learn from (family multi, with a value,
-    a date or keys)."""
-    return [q for q in fact_questions(qs) if q.get("family") == "multi" and q.get("kind") != HELDOUT]
+    a date or keys), only those of ``kinds`` when given."""
+    return [q for q in fact_questions(qs) if q.get("family") == "multi" and q.get("kind") != HELDOUT
+            and (not kinds or q.get("kind") in kinds)]
 
 
 def routed_questions(qs: list[dict[str, Any]], v16: bool = False) -> list[dict[str, Any]]:
@@ -252,14 +255,16 @@ def write_jsonl(path: Path, rows: list[dict[str, Any]]) -> None:
 
 
 def plan_pairs(work: Path, lessons: Any, qs: list[dict[str, Any]], extra: list[Path] = (), extra_single: Path | None = None,
-               kinds: Path | None = None) -> list[tuple[Any, list[dict[str, Any]]]]:
+               kinds: Path | None = None, plan_kinds: list[str] | None = None) -> list[tuple[Any, list[dict[str, Any]]]]:
     """The (bank, questions) pairs the plan lessons learn from: ``work``'s fact questions over its bank (with round 2's
-    two-document kinds from ``kinds`` after them, v16), then each ``extra`` folder's questions over its own bank (read with
-    ``extra_single``, the single-fact lessons those questions were asked with, else ``lessons``)."""
+    two-document kinds from ``kinds`` after them, v16, only those of ``plan_kinds`` when given), then each ``extra`` folder's
+    questions over its own bank (read with ``extra_single``, the single-fact lessons those questions were asked with, else
+    ``lessons``)."""
     from cie.factbank.learn import Lessons
     from cie.factbank.trained import TrainedBank
 
-    pairs = [(TrainedBank(work / "factbank_v2.sqlite", lessons), fact_questions(qs) + (kinds_multi(_jsonl(kinds)) if kinds else []))]
+    new = kinds_multi(_jsonl(kinds), plan_kinds) if kinds else []
+    pairs = [(TrainedBank(work / "factbank_v2.sqlite", lessons), fact_questions(qs) + new)]
     for w in extra:
         pairs.append((TrainedBank(w / "factbank_v2.sqlite", Lessons.load(extra_single) if extra_single else lessons),
                       [{**q, "family": q.get("family", "multi")} for q in _jsonl(w / "questions.jsonl")]))
@@ -268,14 +273,15 @@ def plan_pairs(work: Path, lessons: Any, qs: list[dict[str, Any]], extra: list[P
 
 def train(work: Path, out: Path, extra: list[Path] = (), glossary: Path | None = None, extra_single: Path | None = None,
           workers: int = 1, log=print, v16: bool = False, kinds: Path | None = None, per_family: int = PER_FAMILY,
-          seed: int = KINDS_SEED) -> dict[str, Any]:
+          seed: int = KINDS_SEED, plan_kinds: list[str] | None = None) -> dict[str, Any]:
     """Train the three parts on ``work`` (questions.jsonl over its v2 bank), the plan lessons also on each ``extra`` folder's
     questions over its own bank (read with ``extra_single``, the single-fact lessons those questions were asked with). Writes
     ``single_lessons.json``, ``plan_lessons.json`` and ``router.json`` to ``out``, and ``train_report.json`` with the sha256
     of each.
 
-    With ``kinds`` (round 2's new questions over ``work``'s bank), the plan lessons also learn from its two-document kinds;
-    with ``v16`` (which needs ``kinds``), the router is fitted as ``fit_router16`` fits it."""
+    With ``kinds`` (round 2's new questions over ``work``'s bank), the plan lessons also learn from its two-document kinds
+    (those of ``plan_kinds`` when given); with ``v16`` (which needs ``kinds``), the router is fitted as ``fit_router16`` fits
+    it."""
     import time
 
     from cie.factbank.learn import train as fit_single
@@ -291,7 +297,8 @@ def train(work: Path, out: Path, extra: list[Path] = (), glossary: Path | None =
     lessons.save(out / "single_lessons.json")
     times = {"single": round(time.perf_counter() - t, 1)}
     t = time.perf_counter()
-    plan = learn_plans_many(plan_pairs(work, lessons, qs, extra, extra_single, kinds), str(glossary.resolve()) if glossary else "", log=log)
+    plan = learn_plans_many(plan_pairs(work, lessons, qs, extra, extra_single, kinds, plan_kinds), str(glossary.resolve()) if glossary else "",
+                            log=log)
     plan.save(out / "plan_lessons.json")
     times["plans"] = round(time.perf_counter() - t, 1)
     t = time.perf_counter()
@@ -307,7 +314,8 @@ def train(work: Path, out: Path, extra: list[Path] = (), glossary: Path | None =
            "single": {"questions": len(single), "trained_on": lessons.trained_on},
            "plans": plan.trained_on, "router": router.trained_on, "seconds": times}
     if kinds is not None:
-        rep.update({"v16": v16, "kinds": str(kinds), "kinds_sha256": sha256(kinds), "plan_kinds": len(kinds_multi(_jsonl(kinds)))})
+        rep.update({"v16": v16, "kinds": str(kinds), "kinds_sha256": sha256(kinds), "plan_kinds": len(kinds_multi(_jsonl(kinds), plan_kinds)),
+                    "plan_kinds_named": list(plan_kinds or [])})
         if v16:
             rep["router_sample_ids"] = router_rep["sample_ids"]
         rep["sha256"] = {f: sha256(out / f) for f in ("single_lessons.json", "plan_lessons.json", "router.json")}
@@ -316,10 +324,11 @@ def train(work: Path, out: Path, extra: list[Path] = (), glossary: Path | None =
 
 
 def train_plans(work: Path, out: Path, kinds: Path, lessons_dir: Path | None = None, extra: list[Path] = (),
-                glossary: Path | None = None, extra_single: Path | None = None, log=print) -> dict[str, Any]:
-    """v16: the plan lessons alone, as ``train`` fits them with ``kinds``, on the single-fact lessons in ``lessons_dir`` (else
-    ``out``). Writes ``plan_lessons.json`` and ``plans_report.json`` (what they learned from, the sha256 of every input and
-    of the lessons) to ``out``."""
+                glossary: Path | None = None, extra_single: Path | None = None, log=print, plan_kinds: list[str] | None = None
+                ) -> dict[str, Any]:
+    """v16: the plan lessons alone, as ``train`` fits them with ``kinds`` (and ``plan_kinds``), on the single-fact lessons in
+    ``lessons_dir`` (else ``out``). Writes ``plan_lessons.json`` and ``plans_report.json`` (what they learned from, the
+    sha256 of every input and of the lessons) to ``out``."""
     import time
 
     from cie.factbank.learn import Lessons
@@ -327,12 +336,13 @@ def train_plans(work: Path, out: Path, kinds: Path, lessons_dir: Path | None = N
     single = (lessons_dir or out) / "single_lessons.json"
     out.mkdir(parents=True, exist_ok=True)
     t = time.perf_counter()
-    pairs = plan_pairs(work, Lessons.load(single), _jsonl(work / "questions.jsonl"), extra, extra_single, kinds)
+    pairs = plan_pairs(work, Lessons.load(single), _jsonl(work / "questions.jsonl"), extra, extra_single, kinds, plan_kinds)
     plan = learn_plans_many(pairs, str(glossary.resolve()) if glossary else "", log=log)
     plan.save(out / "plan_lessons.json")
+    new = kinds_multi(_jsonl(kinds), plan_kinds)
     rep = {"work": str(work), "questions_sha256": sha256(work / "questions.jsonl"), "kinds": str(kinds), "kinds_sha256": sha256(kinds),
-           "plan_kinds": len(kinds_multi(_jsonl(kinds))),
-           "plan_kinds_by_kind": dict(sorted(Counter(q["kind"] for q in kinds_multi(_jsonl(kinds))).items())),
+           "plan_kinds_named": list(plan_kinds or []), "plan_kinds": len(new),
+           "plan_kinds_by_kind": dict(sorted(Counter(q["kind"] for q in new).items())),
            "extra": [{"work": str(w), "questions_sha256": sha256(w / "questions.jsonl")} for w in extra],
            "extra_single": str(extra_single) if extra_single else "", "extra_single_sha256": sha256(extra_single) if extra_single else "",
            "glossary": str(glossary) if glossary else "", "glossary_sha256": sha256(glossary) if glossary else "",
@@ -356,13 +366,14 @@ def main(argv: list[str] | None = None) -> Any:
     ap.add_argument("--per-family", type=int, default=PER_FAMILY, help=f"v16: new questions per family for the router (default {PER_FAMILY})")
     ap.add_argument("--seed", type=int, default=KINDS_SEED, help=f"v16: the seed of that sample (default {KINDS_SEED})")
     ap.add_argument("--lessons", type=Path, help="router, plans: read the lessons from this folder instead of --out")
+    ap.add_argument("--plan-kinds", nargs="*", default=None, help="train, plans: only these two-document kinds of --kinds (default: all)")
     a = ap.parse_args(argv)
     if a.v16 and a.kinds is None:
         ap.error("--v16 needs --kinds")
     if a.cmd == "plans":
         if a.kinds is None:
             ap.error("plans needs --kinds")
-        rep = train_plans(a.work, a.out, a.kinds, a.lessons, a.extra, a.glossary, a.extra_single)
+        rep = train_plans(a.work, a.out, a.kinds, a.lessons, a.extra, a.glossary, a.extra_single, plan_kinds=a.plan_kinds)
         print(json.dumps(rep, indent=1))
         return rep
     if a.cmd == "router":  # the router alone, on lessons already in --out (or --lessons)
@@ -382,7 +393,7 @@ def main(argv: list[str] | None = None) -> Any:
         print(json.dumps(router.trained_on))
         return router.trained_on
     rep = train(a.work, a.out, a.extra, a.glossary, a.extra_single, a.workers, v16=a.v16, kinds=a.kinds, per_family=a.per_family,
-                seed=a.seed)
+                seed=a.seed, plan_kinds=a.plan_kinds)
     print(json.dumps(rep, indent=1))
     return rep
 

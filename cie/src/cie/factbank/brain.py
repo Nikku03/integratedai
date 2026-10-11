@@ -62,11 +62,11 @@ plan's starts and ends; v1's answer's entities and the seeds the question names)
 found" (route absent_doc), with the coverage and the withdrawn answer in the reason and the evidence; a question whose rare
 words weigh no more than ``COVER_MIN_WEIGHT`` is not checked.
 
-Routes derived and table answer with a fact, absent and absent_doc with "not found" (``cie.eval.brain2_test.route_class``). Each new route
-gives the same row as the others: the answer, the reason, the evidence (what it read: the answer first, then the facts or
-entries it rests on, or the passages quoted from), ``reads`` (by role, as ``Planner.reads``), a journal that starts with the
-route, the router's family scores when it ran, and the time. One ``Records`` (``min_held``) and one ``ProseRoute`` (its own
-passage index) serve every question of a brain, each built on its first use.
+Routes derived and table answer with a fact, absent and absent_doc with "not found" (``cie.eval.brain2_test.route_class``).
+Each new route gives the same row as the others: the answer, the reason, the evidence (what it read: the answer first, then
+the facts or entries it rests on, or the passages quoted from), ``reads`` (by role, as ``Planner.reads``), a journal that
+starts with the route, the router's family scores when it ran, and the time. One ``Records`` (``min_held``) and one
+``ProseRoute`` (its own passage index) serve every question of a brain, each built on its first use.
 
     python -m cie.factbank.brain ask --work W --single LESSONS --plans PLAN_LESSONS [--router ROUTER] [--name NAME]
         [--no-field-check] [--v16] [--min-held SHARE] [--cover-below SHARE]
@@ -187,12 +187,12 @@ too quite rather really when where why how number count total people person pers
 """.split())
 COVER_STOP = frozenset(CLOSED_WORDS | EMBED_VERBS | EMBED_SKIP | MANY_WORDS | ORDER_WORDS | LINK_WORDS | QUESTION_WORDS)
 # a fact answer chosen by the question's content is "not found" when the documents it rests on hold less than this share of the
-# question's rare words (``Brain.cover``): the train5k fit (round 2, phase 2, step 2), the largest threshold that abstains on at
-# most 2% of the answerable fact-route questions, rounded down
+# question's rare words (``Brain.cover``): the train5k fit (round 2, phase 2, step 2), the largest threshold (0.5747, rounded down)
+# that abstains on at most 2% of the answerable fact-route questions of the v15 families (9/451) and of the new kinds (0/450);
+# see the module docstring for what it catches
 COVER_BELOW = 0.57
 COVER_MIN_WEIGHT = 10.0  # a question whose rare words weigh no more than this (about two rare words) has nothing to check
 COVER_ENDS = 50  # the plan's end entities read for the check, at most
-COVER_BELOW_DEFAULT: float | None = None  # Brain's default: off until confirmed on dev5k
 ROUTE_UNCOVERED = "absent_doc"  # the route of that "not found" (a not_found route, ``cie.eval.brain2_test.route_class``)
 
 
@@ -465,7 +465,7 @@ class Brain:
 
     def __init__(self, bank_path: str | Path, single_lessons_path: str | Path, plan_lessons_path: str | Path, router: Router | None = None,
                  *, budget: int = BUDGET, field_check: bool = True, v16: bool = False, min_held: float = MIN_HELD,
-                 cover_below: float | None = COVER_BELOW_DEFAULT):
+                 cover_below: float | None = COVER_BELOW):
         self.bank = BrainBank(bank_path, Lessons.load(single_lessons_path))
         self.bank.brain = True
         self.bank.answer_first = False  # the planner path prints its own answer; the engine path sets it while it runs
@@ -867,12 +867,11 @@ class Brain:
 
     def ask(self, question: str) -> dict[str, Any]:
         """The brain's answer: {answer, route, reason, evidence, reads, journal, family_scores, ms}. ``route`` is 'not_found',
-        'plan', 'fact' or 'prose', and with ``v16`` also 'derived', 'table', 'absent' or 'absent_doc' (in the order of the module
-        docstring);
-        ``reads`` is what the plan read when the planner answered (``Planner.reads``), or what a records route read. The
-        journal starts with the route; then comes the plan's journal, the engine's steps the answer rests on (``rests_on``),
-        or the step of a v16 route, and v16's fact-route check when it ran (``cover_step``). ``family_scores`` are the router's,
-        when it ran."""
+        'plan', 'fact' or 'prose', and with ``v16`` also 'derived', 'table', 'absent' or 'absent_doc' (in the order of the
+        module docstring); ``reads`` is what the plan read when the planner answered (``Planner.reads``), or what a records
+        route read. The journal starts with the route; then comes the plan's journal, the engine's steps the answer rests on
+        (``rests_on``), or the step of a v16 route, and v16's fact-route check when it ran (``cover_step``). ``family_scores``
+        are the router's, when it ran."""
         t = time.perf_counter()
 
         def done(answer: str, route: str, reason: str, evidence: str, journal: list, reads: Any = None,
@@ -936,7 +935,7 @@ def _jsonl(path: Path) -> list[dict[str, Any]]:
 
 def ask_brain(work: Path, single: Path, plans: Path, name: str | None = None, router: Router | str | Path | None = None,
               budget: int = BUDGET, field_check: bool = True, v16: bool = False, min_held: float = MIN_HELD,
-              cover_below: float | None = COVER_BELOW_DEFAULT) -> dict[str, Any]:
+              cover_below: float | None = COVER_BELOW) -> dict[str, Any]:
     """The brain's answers to ``work/questions.jsonl`` from ``work/factbank_v2.sqlite``, written to ``work/<name>.jsonl`` as
     rows {id, answer, route, reason, evidence, ms, reads, journal, family_scores}. ``router`` is a Router or its file. The name
     is "factbank_v15", or "factbank_v16" with ``v16``, when none is given. ``min_held``: v16's ``Records`` share (``MIN_HELD``);
@@ -972,9 +971,9 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
     a.add_argument("--min-held", type=float, default=MIN_HELD,
                    help=f"v16: the share of a system's documents that must hold a field for the absent route to call it missing "
                         f"(default {MIN_HELD})")
-    a.add_argument("--cover-below", type=float, default=COVER_BELOW_DEFAULT,
+    a.add_argument("--cover-below", type=float, default=COVER_BELOW,
                    help=f"v16: a fact answer chosen by the question's content whose documents hold less than this share of the "
-                        f"question's rare words is 'not found' (default {COVER_BELOW_DEFAULT}; 0 turns the check off)")
+                        f"question's rare words is 'not found' (default {COVER_BELOW}; 0 turns the check off)")
     args = ap.parse_args(argv)
     rep = ask_brain(args.work, args.single, args.plans, args.name, args.router, args.budget, not args.no_field_check, args.v16,
                     args.min_held, args.cover_below)
