@@ -17,8 +17,21 @@
 One bank serves every route: the v2 bank file with the single-fact lessons, in the brain's modes (``brain``, whole-word
 system names), and the plan lessons with the planner's brain fixes, whatever the lessons file says.
 
-    python -m cie.factbank.brain ask --work W --single LESSONS --plans PLAN_LESSONS [--router ROUTER] [--name factbank_v15]
-        [--no-field-check]
+v16 (round 2, ``Brain(..., v16=True)``, off by default so that v15 gives the same answers) fixes five faults of single-document
+questions:
+1. a question word after a verb of knowing or telling ("Do you know when…", "Can you remind me who…") asks plainly
+   (``Planner.interrogative_kind`` and ``asks_field`` with ``embedded``);
+2. a product or a vendor that documents name as if it were a person does not say what the question is about
+   (``BrainBank.not_people``, ``Planner.named_fully``);
+3. when a question word asks for a date or a person, v1's engine reads only values of that kind (``BrainBank.answer_facts``),
+   and the field check weighs the fields of that kind (``Brain.reads_asked_field``);
+4. a list of attendees joins the meeting's attendee fields (``BrainBank.siblings``), and "the attendees of X" asks for people
+   (``Planner.asked_kind``);
+5. "filed under" asks for the project or space, not who filed it (``BrainBank.wanted``).
+The bank also keeps each question's ``named`` result (``BrainBank.named``), most of a question's time otherwise.
+
+    python -m cie.factbank.brain ask --work W --single LESSONS --plans PLAN_LESSONS [--router ROUTER] [--name NAME]
+        [--no-field-check] [--v16]
 """
 
 from __future__ import annotations
@@ -29,14 +42,22 @@ import math
 import re
 import time
 import unicodedata
-from collections import Counter
+from collections import Counter, defaultdict
 from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
 
-from cie.factbank.engine import FactBank, Result, stem
+from cie.factbank.engine import DOC_NOUNS, LIST_RE, FactBank, Result, Written, stem, words
 from cie.factbank.learn import Lessons, sigmoid
-from cie.factbank.plans import QUOTED, PlanLessons, Planner, raw_words, unquoted
+from cie.factbank.plans import (
+    QUOTED,
+    Plan,
+    PlanLessons,
+    Planner,
+    follows_embedding_verb,
+    raw_words,
+    unquoted,
+)
 from cie.factbank.plans import answer as plan_answer
 from cie.factbank.trained import TrainedBank
 
@@ -74,6 +95,18 @@ ISO_DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 WHAT_IS_THE = re.compile(r"\bwhat (?:is|are|was|were) the\b")
 HOW_DO = re.compile(r"\bhow (?:do|does|did|should|can|could|would|to|is|are|was|were)\b")
 WHAT_CAUSED = re.compile(r"\bwhat (?:caused|causes|led to)\b|\b(?:root )?cause\b")
+# v16 (round 2's fault fixes, ``Brain(..., v16=True)``)
+# fault 2: the fields whose holders are people, learned once on the train5k bank (fields with 20 or more holders, 90% or more
+# of them with a first name two or more people share) and used on every bank, so that a 50-document bank needs no statistics
+PERSON_FIELDS = frozenset(("redwood_owner", "se_assigned", "assignee", "creator", "author", "customer_attendees", "reporter",
+                           "csm_assigned", "redwood_attendees", "reviewers", "collaborators", "owner", "participants"))
+PERSON_DOCS = 3  # a "person" named in this many documents is taken to be one
+# fault 3: a value of the kind a question word asks for: a date written as an ISO date (a time may follow)
+ISO_PREFIX = re.compile(r"^\d{4}-\d{2}-\d{2}")
+ENGINE_SKIP = ("referenced_by", "action_item", "from_document")  # never v1's answer (``FactBank.answer_facts``)
+# fault 5: "filed under" asks for the container (a project, a space), not who filed it
+FILED_UNDER = re.compile(r"\bfiled\s+under\b")
+NAMED_MEMO = 256  # questions whose ``named`` result the bank keeps with ``v16``
 
 
 def squash(s: str) -> str:
@@ -89,13 +122,15 @@ def clause_tokens(question: str) -> list[str]:
     return re.findall(r"[a-z0-9]+|[,:;.?!()\u2014\u2013]", unquoted(question.lower()))
 
 
-def asks_field(question: str) -> bool:
+def asks_field(question: str, embedded: bool = False) -> bool:
     """A clause-opening "what" or "which" (alone, or after "in", "on", "for"…) with a field or an item (``ASKED_NOUNS``) among the
-    next few words, before any punctuation: "what is the current ticket status", "In which month", "which draft doc"."""
+    next few words, before any punctuation: "what is the current ticket status", "In which month", "which draft doc". With
+    ``embedded`` (v16), "what" or "which" right after a verb of knowing or telling opens a clause too ("Could you tell me which
+    project…", ``follows_embedding_verb``)."""
     toks = clause_tokens(question)
 
     def opens(j: int) -> bool:
-        return j == 0 or not toks[j - 1][0].isalnum() or toks[j - 1] in OPENERS
+        return j == 0 or not toks[j - 1][0].isalnum() or toks[j - 1] in OPENERS or (embedded and follows_embedding_verb(toks, j))
 
     for i, t in enumerate(toks):
         if t not in ("what", "which") or not (opens(i) or toks[i - 1] in LEAD_INS and opens(i - 1)):
@@ -120,10 +155,144 @@ def rests_on(journal: list[dict[str, Any]], answer: str, limit: int = JOURNAL_ST
 class BrainBank(TrainedBank):
     """The bank under the brain. v1's engine (``FactBank.ask``) answers from the documents' fields only, not from the dates and
     keys taken from their sentences (``text_*`` facts), as on the v1 bank file it was measured on: in the v2 bank a document's
-    sentence dates would otherwise outvote its own "SLA due" field."""
+    sentence dates would otherwise outvote its own "SLA due" field.
+
+    ``v16`` (off by default; ``Brain`` sets it) adds round 2's fault fixes to v1's engine and the bank:
+    - the kind asked for (fault 3): when a plain question word asks for a date or a person, only values of that kind compete
+      for the answer, if any has a positive weight (``answer_facts``, ``value_fits``);
+    - attendee lists (fault 4): a list read from one multi-valued field joins the entity's other multi-valued fields with the
+      same last word, ``customer_attendees`` with ``redwood_attendees`` (``siblings``);
+    - "filed under" (fault 5) asks for the project or space, not the reporter (``wanted``);
+    - products stored as people (fault 2): ``not_people``, which the planner leaves out of what a question names;
+    - speed: ``named`` is kept per question (the alias scan is most of a question's time)."""
+
+    v16 = False
+    _not_people: set[str] | None = None
+    _named_memo: dict[str, list[str]] | None = None
+
+    def named(self, question: str) -> list[str]:
+        """``FactBank.named``; with ``v16``, kept for the last ``NAMED_MEMO`` questions, since the planner, the router and the
+        engine each ask it again for the same question."""
+        if not self.v16:
+            return super().named(question)
+        if self._named_memo is None or len(self._named_memo) >= NAMED_MEMO:
+            self._named_memo = {}
+        if question not in self._named_memo:
+            self._named_memo[question] = super().named(question)
+        return list(self._named_memo[question])
 
     def wanted(self, question: str) -> dict[str, float]:
-        return {p: w for p, w in super().wanted(question).items() if not p.startswith("text_")}
+        """``FactBank.wanted`` without the sentence facts. With ``v16``, "filed under" (outside quoted titles) asks for the
+        container: the weights the cue "file" gave the reporter and the creator go, unless another word brought that cue too
+        ("Who filed the file…"), and the project and the space get them instead."""
+        out = {p: w for p, w in super().wanted(question).items() if not p.startswith("text_")}
+        if self.v16 and FILED_UNDER.search(unquoted(question.lower())):
+            out = defaultdict(float, out)
+            if not any(w.startswith("file") for w in set(words(question)) - {"filed"}):  # only "filed" brought the cue
+                for i, p in enumerate(("reporter", "creator")):
+                    out[p] -= 2.0 - 0.1 * i
+            for i, p in enumerate(("project", "space")):
+                out[p] += 2.0 - 0.1 * i
+            out = {p: w for p, w in out.items() if w > 1e-12}
+        return out
+
+    def not_people(self) -> set[str]:
+        """v16: the bank's "people" with two or more words in their name that the bank does not show to be people, such as a
+        product or a vendor that documents name as if it were a person. A name is a person's when any of these holds: its first
+        word starts the names of two or more people; it holds a field whose holders are people (``PERSON_FIELDS``, as an
+        assignee, an author, an attendee…); or ``PERSON_DOCS`` or more documents name it. Kept on the bank."""
+        if self._not_people is None:
+            people = {e: (n or "") for e, n in self.names.items() if self.kinds.get(e) == "person"}
+            held: dict[str, set[str]] = defaultdict(set)
+            docs: dict[str, set[str | None]] = defaultdict(set)
+            for e, p, v in self.con.execute("SELECT entity, parameter, value_entity FROM facts WHERE entity LIKE 'person:%' "
+                                            "AND parameter LIKE '%\\_of' ESCAPE '\\'"):
+                held[e].add(p[:-3])
+                docs[e].add(v)
+            firsts: dict[str, set[str]] = defaultdict(set)
+            for e, n in people.items():
+                t = n.lower().split()
+                if len(t) >= 2:
+                    firsts[t[0]].add(e)
+            shared = {f for f, es in firsts.items() if len(es) >= 2}
+            self._not_people = {e for e, n in people.items() if len(n.split()) >= 2 and n.lower().split()[0] not in shared
+                                and not held[e] & PERSON_FIELDS and len(docs[e]) < PERSON_DOCS}
+        return self._not_people
+
+    def value_fits(self, value: str, value_entity: str | None, kind: str | None) -> bool:
+        """v16: whether a value is of the kind a question word asks for: a date (written as an ISO date) or a person (a person
+        entity, or a person's name). Any value fits any other kind."""
+        if kind == "date":
+            return bool(ISO_PREFIX.match(value))
+        if kind == "person":
+            return (value_entity or "").startswith("person:") or value.lower() in self.people
+        return True
+
+    def answer_facts(self, question: str, written: dict[tuple[str, str], Written], seeds: list[tuple[str, float]]
+                     ) -> tuple[str, str, list[str]]:
+        """v1's answer (``FactBank.answer_facts``). With ``v16``, when a plain question word asks for a date or a person
+        (``Planner.interrogative_kind``) and some written value with a positive weight is of that kind, only such values
+        compete (``value_fits``: every value of the field must fit); the first of the best, in the order written, is picked as
+        v1 picks. A list from a multi-valued field takes in its siblings' values (``siblings``)."""
+        if not self.v16:
+            return super().answer_facts(question, written, seeds)
+        ql = question.lower()
+        want = self.wanted(question)
+        if LIST_RE.search(question):
+            return self.list_facts(question, want, written)
+        rel = dict(seeds)
+        kind = Planner.interrogative_kind(question, True)
+        kind = kind if kind in ("date", "person") else None  # a count is not read from one field
+        cands = []
+        for (e, p), w in written.items():
+            if p.endswith("_of") or p in ENGINE_SKIP:
+                continue
+            s = want.get(p, 0.0)
+            if s <= 0:
+                continue
+            fits = kind is None or all(self.value_fits(v, w.value_entities[i] if i < len(w.value_entities) else None, kind)
+                                       for i, v in enumerate(w.values))
+            cands.append((e, p, w, s * (rel.get(e, 0) + w.score), fits))
+        if kind is not None and any(c[4] for c in cands):
+            cands = [c for c in cands if c[4]]
+        best, best_s, why = None, 0.0, ""
+        for e, p, w, score, _ in cands:  # the first of the best, in the order written, as v1 picks
+            if score > best_s:
+                best, best_s, why = w, score, f"{p} of {self.names.get(e, e)}"
+        if best is not None:
+            values, parts = list(best.values), [best]
+            for sib in self.siblings(question, best, written):
+                parts.append(sib)
+                values += [v for v in sib.values if v not in values]
+            if len(parts) > 1:
+                why += " + " + " + ".join(x.parameter for x in parts[1:])
+            lines = [f"{x.parameter.replace('_', ' ')} of {self.cited(x.entity, written)}: {v[:300]}" for x in parts for v in dict.fromkeys(x.values)]
+            return ", ".join(values), why, lines
+        if any(n in set(re.findall(r"[a-z]+", ql)) for n in DOC_NOUNS) and seeds and re.match(r"\s*(in [^,]+,\s*)?(which|what)\b", ql):
+            e = next((e for e, _ in seeds if self.kinds.get(e) == "document"), None)
+            if e:
+                lab, title = self.label(e, written), self.names.get(e, e)
+                return title, "the best document's title", [f"title of {lab}: {title}"] if lab != title else []
+        return "not found", "no written fact matches what the question asks", []
+
+    def siblings(self, question: str, best: Written, written: dict[tuple[str, str], Written]) -> list[Written]:
+        """v16: the other multi-valued fields written for the same entity whose names end in the same word as the best one's
+        (``customer_attendees`` for ``redwood_attendees``). When the question (outside quoted titles) names a part that tells
+        them apart ("the customer attendees"), only the parts it names: none if it names a part the best field does not have."""
+        p = best.parameter
+        if p in self.single or "_" not in p:
+            return []
+        last = p.split("_")[-1]
+        sibs = [w for (e, q), w in written.items() if e == best.entity and q != p and q not in self.single and not q.endswith("_of")
+                and q.split("_")[-1] == last]
+        if not sibs:
+            return []
+        qw = set(words(unquoted(question)))
+        own = {stem(t) for t in p.split("_")[:-1]}
+        named = [w for w in [best, *sibs] if {stem(t) for t in w.parameter.split("_")[:-1]} & qw]
+        if named:  # the question names one part: only the parts it names
+            return [w for w in sibs if w in named] if own & qw else []
+        return sibs
 
 
 def question_words(question: str) -> set[str]:
@@ -188,10 +357,14 @@ class Router:
 class Brain:
     """The company brain over one bank (``bank_path``, a v2 bank file), the single-fact lessons and the plan lessons. With
     ``field_check`` (the default), the planner's answer to a question that names its start stands only when its plan reads
-    what the question asks for (``reads_asked_field``); otherwise the engine answers, as when the start is not named."""
+    what the question asks for (``reads_asked_field``); otherwise the engine answers, as when the start is not named.
+
+    ``v16`` (off by default) turns on round 2's fault fixes in the bank (``BrainBank``), the planner (``Planner``) and the
+    brain's own reading of the question: a question word after a verb of knowing or telling asks plainly (``signals``), and
+    the field check weighs the fields of the asked kind (``reads_asked_field``)."""
 
     def __init__(self, bank_path: str | Path, single_lessons_path: str | Path, plan_lessons_path: str | Path, router: Router | None = None,
-                 *, budget: int = BUDGET, field_check: bool = True):
+                 *, budget: int = BUDGET, field_check: bool = True, v16: bool = False):
         self.bank = BrainBank(bank_path, Lessons.load(single_lessons_path))
         self.bank.brain = True
         self.bank.answer_first = False  # the planner path prints its own answer; the engine path sets it while it runs
@@ -200,6 +373,7 @@ class Brain:
         self.lessons.brain = True
         self.planner = self.lessons.planner(self.bank)
         self.planner.brain = True
+        self.v16 = self.bank.v16 = self.planner.v16 = v16
         self.router = router
         self.budget = budget
         self.field_check = field_check
@@ -322,12 +496,12 @@ class Brain:
         """What the router reads: ``bias``, the signals of ``SIGNALS`` and the question's words (``w:<stem>``)."""
         plan = plan if plan is not None else self.plan(question)
         ql = unquoted(question.lower())
-        kind = Planner.interrogative_kind(question)
+        kind = Planner.interrogative_kind(question, self.v16)
         rw = raw_words(question)
         sig = {"bias": 1.0, "start_named": float(plan["start_named"]), "names": float(bool(self.planner.about(question))),
                "has_id": float(bool(TICKET.search(question) or PR_NUMBER.search(question))), "quoted": float(bool(QUOTED.search(question))),
                "plan_score": plan["score"], "plan_high": float(plan["score"] >= 0.5), "who": float(kind == "person"),
-               "when": float(kind == "date"), "how_many": float(kind == "count"), "field_word": float(asks_field(question)),
+               "when": float(kind == "date"), "how_many": float(kind == "count"), "field_word": float(asks_field(question, self.v16)),
                "keys": float(bool(set(rw) & KEY_WORDS)), "list": float(Planner.asks_several(question)),
                "what_is_the": float(bool(WHAT_IS_THE.search(ql))), "how_do": float(bool(HOW_DO.search(ql))),
                "why": float("why" in rw), "what_caused": float(bool(WHAT_CAUSED.search(ql))), "long": min(1.0, len(rw) / 40)}
@@ -340,16 +514,42 @@ class Brain:
         another field the thing has (``FactBank.wanted``: its cue words and field names), of the kind a plainly asked question
         word wants ("who": a person). The plan lessons learned from multi-document questions read "What is the priority of
         ENG-1?" as its assignee; v1's engine reads the priority. 'Whose document is "X"?' keeps the planner's owner, since
-        the field v1 would read there (the drive area) holds no person."""
+        the field v1 would read there (the drive area) holds no person.
+
+        With ``v16``, the fields are weighed against each other: a plain read of one field fails when another field of the
+        named thing that fits the asked kind (``BrainBank.value_fits``: any of its values; any field when no date or person is
+        asked for) weighs more for the question, or weighs as much while the plan's field does not fit."""
         best = plan["best"]
         if best.path or best.aggregate != "single" or best.field == "label" or len(best.starts) != 1:
             return True
+        if self.v16:
+            return self.weighs_asked_field(question, best)
         want = self.bank.wanted(question)
         if want.get(best.field, 0.0) > 0:
             return True
         kind = Planner.interrogative_kind(question)
         return not any(want.get(f["parameter"], 0.0) > 0 and (kind is None or self.kind_of(f["value"]) == kind)
                        for f in self.planner.facts(best.starts[0]) if f["parameter"] != best.field)
+
+    def weighs_asked_field(self, question: str, best: Plan) -> bool:
+        """v16's field check for a plain read of one field of one start (``reads_asked_field``)."""
+        want = self.bank.wanted(question)
+        kind = Planner.interrogative_kind(question, True)
+        vals: dict[str, list[tuple[str, str | None]]] = defaultdict(list)
+        for f in self.planner.facts(best.starts[0]):
+            vals[f["parameter"]].append((f["value"], f["value_entity"]))
+
+        def fits(p: str) -> bool:
+            return kind not in ("date", "person") or any(self.bank.value_fits(v, ve, kind) for v, ve in vals.get(p, []))
+
+        mine = want.get(best.field, 0.0)
+        for p in vals:
+            w = want.get(p, 0.0)
+            if p == best.field or w <= 0 or not fits(p):
+                continue
+            if w > mine or (w == mine and not fits(best.field)):
+                return False
+        return True
 
     def kind_of(self, value: str) -> str:
         """A field value's kind as a question word asks for it: a person, a date, a count or another value."""
@@ -440,14 +640,16 @@ def _jsonl(path: Path) -> list[dict[str, Any]]:
     return [json.loads(x) for x in path.read_text().splitlines() if x.strip()]
 
 
-def ask_brain(work: Path, single: Path, plans: Path, name: str = "factbank_v15", router: Router | str | Path | None = None,
-              budget: int = BUDGET, field_check: bool = True) -> dict[str, Any]:
+def ask_brain(work: Path, single: Path, plans: Path, name: str | None = None, router: Router | str | Path | None = None,
+              budget: int = BUDGET, field_check: bool = True, v16: bool = False) -> dict[str, Any]:
     """The brain's answers to ``work/questions.jsonl`` from ``work/factbank_v2.sqlite``, written to ``work/<name>.jsonl`` as
-    rows {id, answer, route, reason, evidence, ms, reads, journal, family_scores}. ``router`` is a Router or its file."""
+    rows {id, answer, route, reason, evidence, ms, reads, journal, family_scores}. ``router`` is a Router or its file. The name
+    is "factbank_v15", or "factbank_v16" with ``v16``, when none is given."""
     work = Path(work)
+    name = name or ("factbank_v16" if v16 else "factbank_v15")
     if isinstance(router, (str, Path)):
         router = Router.load(router)
-    brain = Brain(work / "factbank_v2.sqlite", single, plans, router, budget=budget, field_check=field_check)
+    brain = Brain(work / "factbank_v2.sqlite", single, plans, router, budget=budget, field_check=field_check, v16=v16)
     rows = []
     for q in _jsonl(work / "questions.jsonl"):
         r = brain.ask(q["question"])
@@ -466,11 +668,12 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
     a.add_argument("--single", type=Path, required=True, help="the single-fact lessons (cie.factbank.learn)")
     a.add_argument("--plans", type=Path, required=True, help="the plan lessons (cie.factbank.plans)")
     a.add_argument("--router", type=Path, default=None, help="a trained Router; the rule when left out")
-    a.add_argument("--name", default="factbank_v15")
+    a.add_argument("--name", default=None, help="the rows' file name: factbank_v15, or factbank_v16 with --v16, when left out")
     a.add_argument("--budget", type=int, default=BUDGET)
     a.add_argument("--no-field-check", action="store_true", help="the planner answers every question that names its start")
+    a.add_argument("--v16", action="store_true", help="round 2's fault fixes (Brain, v16)")
     args = ap.parse_args(argv)
-    rep = ask_brain(args.work, args.single, args.plans, args.name, args.router, args.budget, not args.no_field_check)
+    rep = ask_brain(args.work, args.single, args.plans, args.name, args.router, args.budget, not args.no_field_check, args.v16)
     print(json.dumps(rep, indent=1))
     return rep
 

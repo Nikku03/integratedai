@@ -18,6 +18,9 @@ carried out, and learned weights (``learn_plans``) pick one. The weights cover:
 - the clue rule: an answer the question already contains is not the answer.
 
 Nothing learned is a value from the training documents.
+
+The company brain's planner changes sit behind flags that are off by default: ``brain`` (v15) and ``v16`` (round 2's fault
+fixes, ``Planner``), so that every earlier version still gives the same answers.
 """
 
 from __future__ import annotations
@@ -69,6 +72,15 @@ DATE_NOUNS = frozenset(("date", "dates", "day", "days", "deadline", "deadlines")
 BEFORE_NOUN = frozenset(("is", "was", "s", "the", "its", "their", "exact", "target", "expected", "planned", "final", "due", "total"))
 ONE_ITEM = frozenset(("the", "that", "this", "its"))
 ASKS_COUNT = re.compile(r"\bhow many\b|\bnumber of\b(?!\s+(?:the|that|this|its)\b)|\bcount\b", re.I)
+# v16 (the company brain, round 2, ``v16``), fault 1: a question word right after a verb of knowing or telling opens the
+# question that verb embeds ("Do you know when…", "Can you remind me who…", "I wonder which…"), also past a few small words
+# ("tell me exactly who"). Verbs of finding or seeing are not on the list: "Find who owns X, then list their tickets" is two
+# steps, not a question for a person.
+EMBED_VERBS = frozenset(("know", "tell", "remind", "recall", "remember", "wonder", "wondering", "idea", "sure", "curious", "confirm",
+                         "clarify", "explain", "understand"))
+EMBED_SKIP = frozenset(("me", "us", "out", "up", "exactly", "precisely", "again", "please", "offhand"))
+# v16, fault 4: with no plain question word, a list of these asks for people ("List the attendees of the meeting X")
+PEOPLE_LIST_WORDS = frozenset(("attendees", "participants", "reviewers", "collaborators", "stakeholders"))
 QUOTED = re.compile(r'"[^"]*"|\u201c[^\u201d]*\u201d')
 # v15 (``brain``): words that make a "person" a team, a group or a role ("Customer Success", "People Ops", "Recorder Bot"); documents'
 # owner fields hold them as if they were people's names, and a question naming one is not about a person
@@ -126,7 +138,15 @@ class Planner:
     it asks for one (``check``, 5b); a person named only by a one-word alias does not say what the question is about
     (``named_fully``); a question that names something and asks for no link is answered without a hop when it can be
     (``check``, 7); and, when the bank reads system words as whole words (``FactBank.whole_system_words``), so does the
-    planner (``systems_named``)."""
+    planner (``systems_named``).
+
+    ``v16`` (the company brain, round 2; off by default, set on an instance by ``cie.factbank.brain.Brain``) adds three faults'
+    fixes to ``brain``: a question word after a verb of knowing or telling opens a clause (``interrogative_kind`` with
+    ``embedded``); a list of attendees, participants or reviewers asks for people when no question word says otherwise
+    (``asked_kind``); and a "person" the bank does not show to be one (a product or a vendor stored as a person,
+    ``BrainBank.not_people``) does not say what the question is about (``named_fully``)."""
+
+    v16 = False
 
     def __init__(self, bank, rules: str = "v3", lexicon=None, known: list[str] | None = None, general=None, combine: str = "company",
                  floor: float = 0.5, brain: bool = False):
@@ -434,18 +454,22 @@ class Planner:
         return False
 
     @staticmethod
-    def interrogative_kind(question: str) -> str | None:
+    def interrogative_kind(question: str, embedded: bool = False) -> str | None:
         """v15: the kind of answer the question words ask for, when they ask plainly: "who", "whom" or "whose" a person;
         "when", "what date" or "what is the due date" a date; "how many" or "what is the number of" a count. Only a question
         word that opens a clause counts (at the start, after punctuation, or after "and"), alone or after a preposition that
         does ("By when", "on what date", "to whom"), so "the person who took it" asks nothing. Any other question word opening
         a clause ("which ticket", "what is the status", "where"), or two that disagree, leaves the kind open (None). "Which
         deadline is sooner?", "whose due date is earlier?", "what is the deadline of the next one?" and "what is the number
-        of the pull request?" ask for an item, so they leave it open too."""
+        of the pull request?" ask for an item, so they leave it open too.
+
+        With ``embedded`` (v16), a question word right after a verb of knowing or telling opens a clause too ("Do you know
+        when…", "Can you remind me who…", ``follows_embedding_verb``)."""
         toks = re.findall(r"[a-z0-9]+|[,:;.?!()\u2014\u2013]|(?<=\s)-(?=\s)", unquoted(question.lower()))
 
         def opens(j: int) -> bool:
-            return j == 0 or not toks[j - 1][0].isalnum() or toks[j - 1] in CLAUSE_OPENERS
+            return (j == 0 or not toks[j - 1][0].isalnum() or toks[j - 1] in CLAUSE_OPENERS
+                    or (embedded and follows_embedding_verb(toks, j)))
 
         kinds = []
         for i, t in enumerate(toks):
@@ -474,14 +498,22 @@ class Planner:
 
     def asked_kind(self, question: str, learned: str | None) -> str | None:
         """The kind of answer check 4 uses: the learned one (``AskedKind``). With ``brain`` (v15), a kind the question words ask
-        for plainly (``interrogative_kind``) replaces a learned one that differs, and fills in when the lessons are not sure."""
-        return (self.interrogative_kind(question) or learned) if self.brain else learned
+        for plainly (``interrogative_kind``) replaces a learned one that differs, and fills in when the lessons are not sure.
+        With ``v16``, a question word after a verb of knowing or telling asks plainly too, and a question with no plain
+        question word that names attendees, participants, reviewers, collaborators or stakeholders (``PEOPLE_LIST_WORDS``)
+        asks for a person: "List the attendees of the meeting X" reads the meeting's attendees, not the meetings they
+        attended."""
+        kind = (self.interrogative_kind(question, self.v16) or learned) if self.brain else learned
+        if self.v16 and kind != "person" and set(raw_words(question)) & PEOPLE_LIST_WORDS and self.interrogative_kind(question, True) is None:
+            return "person"
+        return kind
 
     def named_fully(self, question: str) -> list[str]:
         """v15: the entities the question names (``bank.named``), without a person named only by a one-word alias ("Priya",
         "Redwood"): among thousands of documents, a first name, or a word that is also somebody's name, does not say who the
         question is about. A full name still counts, unless it is a team's or a role's ("Customer Success", "People Ops"), which
-        documents' owner fields hold as if it were a person's (``TEAM_NAME``)."""
+        documents' owner fields hold as if it were a person's (``TEAM_NAME``). With ``v16``, neither does a "person" the bank
+        does not show to be one (``BrainBank.not_people``: a product or a vendor that documents name as if it were a person)."""
         if self._person_aliases is None:
             self._person_aliases = defaultdict(list)
             for alias, ents in self.b.aliases.items():
@@ -494,7 +526,11 @@ class Planner:
         def full(e: str) -> bool:
             return any(len(a) >= 4 and re.search(r"(?<![\w-])" + re.escape(a) + r"(?![\w-])", q) for a in self._person_aliases.get(e, ()))
 
-        return [e for e in self.b.named(question) if not e.startswith("person:") or (full(e) and not TEAM_NAME.search(e[7:]))]
+        out = [e for e in self.b.named(question) if not e.startswith("person:") or (full(e) and not TEAM_NAME.search(e[7:]))]
+        if self.v16:
+            bad = self.b.not_people()
+            out = [e for e in out if e not in bad]
+        return out
 
     def about(self, question: str) -> set[str]:
         """v15: what the question is about for check 1 with ``brain``: the entities it names (``named_fully``) and its quoted
@@ -794,6 +830,15 @@ def unquoted(text: str) -> str:
     """The text without its quoted titles, keeping a full stop, question mark or exclamation mark that ends one, so in
     'item "send the checklist." When is it due?' a new sentence still starts at "When"."""
     return QUOTED.sub(lambda m: " " + (m.group(0)[-2] if m.group(0)[-2] in ".?!" else "") + " ", text)
+
+
+def follows_embedding_verb(toks: list[str], j: int) -> bool:
+    """v16: the token at ``j`` comes right after a verb of knowing or telling (``EMBED_VERBS``), past small words such as "me",
+    "us" or "exactly" (``EMBED_SKIP``): the "who" of "can you remind me who owns it" opens the question that verb embeds."""
+    k = j - 1
+    while k >= 0 and toks[k] in EMBED_SKIP:
+        k -= 1
+    return k >= 0 and toks[k] in EMBED_VERBS
 
 
 def raw_words(question: str) -> list[str]:
