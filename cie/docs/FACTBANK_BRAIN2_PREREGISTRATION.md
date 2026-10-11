@@ -138,9 +138,31 @@ document as a round-1 question, with the same answer, is set aside.
 **The mix** (questions seed 910): round 1's mix with 150 free-text questions; `brain2_test.MIX16` for the new kinds; every
 held-out question that passes the checks.
 
-**The writers** (`docs/benchmarks/brain2/writers_test2.js`): independent agent sessions in ten roles, blind to the method,
-sealed. Each reads one batch of 10 packets and writes its questions straight to a file. They return only a count, and nobody
-reads their questions until the scores are written.
+**Messy, as people type.** Real questions are not templates. Two blind steps make every question casual:
+- **The writers** (`docs/benchmarks/brain2/writers_test2.js`): independent agent sessions in ten roles, blind to the method,
+  sealed. They write the descriptive, free-text and held-out questions as people type into a work chat or a search box:
+  - often lower case, short, maybe a greeting or context first;
+  - abbreviations, an indirect ask, now and then a typo in an ordinary word;
+  - still one question ending in a question mark, with names, keys, numbers and the answer facts' words spelled right.
+
+  Each reads one batch of 20 packets and writes its questions straight to a file. They return only a count, and nobody reads
+  their questions until the scores are written.
+- **The rewriters** (`docs/benchmarks/brain2/rewriters_test2.js`, `cie/src/cie/eval/brain2_messy.py`): the same kind of
+  sessions, sealed, reword every generated question the same way. Each gets 40 questions' text alone, with no document and no
+  answer. A rewrite is kept only when it still names everything the question needs (`brain2_messy.why_rejected`):
+  - every key, pull request number and token with a digit;
+  - every capitalised word that does not open a sentence (people, systems, values);
+  - at least 60% of the words of each quoted title;
+  - one question mark at the end.
+
+  The expected answer is unchanged. A question whose rewrite fails the check is left out of the messy set, and the count is
+  reported.
+
+**Two sets on the same 5,000 documents:**
+- **the messy set,** which decides the rules: the writers' questions and the generated questions in the rewriters' words;
+- **the tidy set,** reported beside it: the same questions with the generated ones in the generators' own words.
+
+The difference between them is what messy wording costs each arm.
 
 The packets:
 - 45 descriptive (seed 911), up to 40 kept;
@@ -155,20 +177,28 @@ of the held-out document's names together with half its answer facts (every fact
 ## How it runs
 
 1. `docs/benchmarks/brain2/run_brain2_1.sh`: the draw and the packets.
-2. The writers (`writers_test2.js`).
+2. The writers (`writers_test2.js`), sealed.
 3. `docs/benchmarks/brain2/run_brain2_2.sh`:
-   - the writers' questions are checked and converted, the questions drawn and the small set written;
+   - the writers' questions are checked and converted;
+   - the questions are drawn and the small set written;
    - the banks are built;
-   - every arm answers, one at a time, on the small set and then on the 5,000 documents;
-   - v16 answers again under hash seed 1;
-   - `brain2_test score --preregistered` decides the rules.
+   - the rewriters' batches are written.
+4. The rewriters (`rewriters_test2.js`), sealed.
+5. `docs/benchmarks/brain2/run_brain2_3.sh`, once with `SET=messy` and once with `SET=tidy`:
+   - the rewrites are checked and the messy folders written;
+   - every arm answers on the small set and then on the 5,000 documents, three arms at a time, so times per question are
+     measured under that load;
+   - on the messy set v16 answers again under hash seed 1, and `brain2_test score --preregistered` decides the rules;
+   - the tidy set is scored without rules.
 
 **The arms:** plain search with quotes, v1, v2, v13 and v15 (round 1's frozen files), and v16 (the frozen files below).
 
 ## Rules
 
-Each family's score is the mean of its questions' scores. "The best other arm" is the best of the five other arms on that
-family (v1, v2, v13, v15, plain search with quotes). The thresholds are `cie/src/cie/eval/brain2_test.py`'s constants.
+The rules are decided on **the messy set**. Each family's score is the mean of its questions' scores. "The best other arm" is
+the best of the five other arms on that family (v1, v2, v13, v15, plain search with quotes). The thresholds are
+`cie/src/cie/eval/brain2_test.py`'s constants. They were set on development data in tidy wordings, so a floor missed on the
+messy set says how much messy wording costs, which the tidy set then measures directly.
 
 1. **Single-document questions:** v16 ≥ the best other arm − 0.03.
 2. **Multi-document questions:** v16 ≥ the best other arm − 0.03.

@@ -1,0 +1,43 @@
+# The company-brain round-2 test (docs/FACTBANK_BRAIN2_PREREGISTRATION.md), step 5 of 5, run once per set: SET=messy (the
+# decided set: the generated questions in the rewriters' wordings, and the writers' questions) and then SET=tidy (the same
+# questions in the generators' own wordings). The first run checks the rewrites and writes the messy folders, which share the
+# tidy folders' banks. Every arm answers on the small set and then on the 5,000 documents, three at a time (quotes, v1, v2 and
+# v16 in one line, v13 and v15 in two others), so times per question are measured under that load; on the messy set v16 answers
+# again under hash seed 1; then the set is scored, with the pre-registered rules on the messy set. It prints counts and scores
+# only.
+set -e
+export PYTHONHASHSEED=0
+cd /home/user/integratedai/cie
+export PYTHONPATH=src
+S=/tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad
+PY=.venv/bin/python
+T=${T:-$S/brain2/test5k}; TS=${TS:-${T}small}; N=$(basename $T); R=${R:-$S/brain2/rewrite/$N}
+L=docs/benchmarks/brain/lessons; L2=docs/benchmarks/brain2/lessons
+FB=$S/fb50/lessons.json; V13=$S/mdtrain/plan_lessons_v13.json
+SET=${SET:?SET=messy or SET=tidy}
+if [ ! -e ${T}_messy ]; then
+  $PY -m cie.eval.brain_writers status --batches $R/batches --outputs $R/out --prefix ${N}_messy > $R.status.json
+  $PY -m cie.eval.brain2_messy collect --work $T --batches $R/batches --outputs $R/out --out ${T}_messy --small $TS \
+    --small-out ${TS}_messy > $R.collect.json
+  $PY -c "import json,sys; r=json.load(open(sys.argv[1])); print('rewrites kept', r['kept'], 'of', r['generated'], r['rejected'])" $R.collect.json
+fi
+if [ "$SET" = messy ]; then W=${T}_messy; WS=${TS}_messy; else W=$T; WS=$TS; fi
+for X in $WS $W; do
+  ( set -e
+    $PY -m cie.eval.brain2_test ask --work $X --arm quotes > /dev/null
+    $PY -m cie.eval.brain2_test ask --work $X --arm v1 > /dev/null
+    $PY -m cie.eval.brain2_test ask --work $X --arm v2 --single $FB > /dev/null
+    $PY -m cie.eval.brain2_test ask --work $X --arm v16 --single $L2/single_lessons.json --plans $L2/plan_lessons.json --router $L2/router.json > /dev/null ) & A=$!
+  ( $PY -m cie.eval.brain2_test ask --work $X --arm v13 --single $FB --plans $V13 > /dev/null ) & B=$!
+  ( $PY -m cie.eval.brain2_test ask --work $X --arm v15 --single $L/single_lessons.json --plans $L/plan_lessons.json --router $L/router.json > /dev/null ) & C=$!
+  wait $A; wait $B; wait $C  # set -e: a failed arm stops the step
+  echo "asked $X $(date +%T)"
+done
+if [ "$SET" = messy ]; then
+  PYTHONHASHSEED=1 $PY -m cie.eval.brain2_test ask --work $W --arm v16 --single $L2/single_lessons.json --plans $L2/plan_lessons.json \
+    --router $L2/router.json --name v16_seed1 > /dev/null
+  $PY -m cie.eval.brain2_test score --work $W --small $WS --preregistered
+else
+  $PY -m cie.eval.brain2_test score --work $W --small $WS
+fi
+echo "scored $SET $(date +%T)"

@@ -1,6 +1,7 @@
 # The company-brain round-2 test (docs/FACTBANK_BRAIN2_PREREGISTRATION.md), step 1 of 3: draw the test set and the blind
 # writers' packets. Run only after the pre-registration is committed. It prints counts only: nothing about the test documents.
-# Step 2 is the writers' sessions (writers_test2.js); step 3 is run_brain2_2.sh.
+# Step 2 is the writers' sessions (writers_test2.js); step 3 is run_brain2_2.sh, step 4 the rewriters (rewriters_test2.js) and
+# step 5 run_brain2_3.sh.
 set -e
 export PYTHONHASHSEED=0
 cd /home/user/integratedai/cie
@@ -27,22 +28,28 @@ $PY -m cie.eval.brain_writers packets --work $T --kind prose --n 180 --seed 912 
 # held-out documents (seed 913): test-zone documents in neither test set, that pass the checks against this haystack; the
 # writers ask about them, and the right answer is "not found"
 $PY -m cie.eval.brain2_draw heldout --work $T --zones $S/brain/zones.json.gz --n 75 --seed 913 --out $H --i-have-preregistered > /dev/null
-# batches of 10 packets for the writers; the answers (key files) stay out of them
+# batches of 20 packets for the writers; the answers (key files) stay out of them
 $PY - <<PYEOF
 import json
 for name in ("${N}_descriptive_911", "${N}_prose_912"):
     ps = [json.loads(line) for line in open("$P/" + name + ".packets.jsonl")]
-    for i in range(0, len(ps), 10):
-        json.dump({"batch": f"{name}_b{i // 10:02d}", "kind": ps[0]["kind"], "packets": ps[i:i + 10]},
-                  open(f"$B/{name}_b{i // 10:02d}.json", "w"), indent=1)
+    for i in range(0, len(ps), 20):
+        json.dump({"batch": f"{name}_b{i // 20:02d}", "kind": ps[0]["kind"], "packets": ps[i:i + 20]},
+                  open(f"$B/{name}_b{i // 20:02d}.json", "w"), indent=1)
     print(name, len(ps), "packets")
-print("heldout", sum(1 for _ in open(next(__import__("glob").iglob("$H/*.packets.jsonl")))), "packets")
+import os
+os.makedirs("$H/batches20", exist_ok=True)
+hp = [json.loads(line) for line in open("$H/${N}_heldout_913.packets.jsonl")]
+for i in range(0, len(hp), 20):
+    json.dump({"batch": f"${N}_heldout_913_b{i // 20:02d}", "kind": hp[0]["kind"], "packets": hp[i:i + 20]},
+              open(f"$H/batches20/${N}_heldout_913_b{i // 20:02d}.json", "w"), indent=1)
+print("heldout", len(hp), "packets")
 PYEOF
 # the batch lists, as writers_test2.js takes them
 $PY - <<PYEOF
 import json, os
 sets = [{"dir": "$B", "out": "$OW", "batches": sorted(f[:-5] for f in os.listdir("$B") if f.endswith(".json"))},
-        {"dir": "$H/batches", "out": "$H/out", "batches": sorted(f[:-5] for f in os.listdir("$H/batches") if f.endswith(".json"))}]
+        {"dir": "$H/batches20", "out": "$H/out", "batches": sorted(f[:-5] for f in os.listdir("$H/batches20") if f.endswith(".json"))}]
 print(json.dumps({"sets": sets}))
 PYEOF
 echo "step 1 done $(date +%T)"
