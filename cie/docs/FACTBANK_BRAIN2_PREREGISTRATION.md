@@ -85,10 +85,11 @@ questionnaire thread?". v16 reads that as "how many messages are in the "Kickoff
 steps:
 - **Chat shorthand** is read as the words it stands for (`CHAT_WORDS`: r, u, pls, msgs, mtg, rn, w/, teh...).
 - **A one-letter slip** in an ordinary lower-case word is fixed when it is unambiguous ("mnay", "attachmnets"). The word must be
-  four letters or more and held neither by ordinary English nor by the bank. It is read as the one word one slip away that
-  either holds, preferring the bank's word when several fit. Names are never changed.
+  four letters or more and held neither by ordinary English nor by the bank. It is read as the only word one slip away that
+  either holds; when several fit, as the only one the bank holds; otherwise it is left as typed. Names are never changed.
 - **An unquoted title:** the longest document title or action item of three words or more that the question writes without
-  quotes is put in quotes, when the question quotes nothing.
+  quotes is put in quotes, when the question quotes nothing. Only the count, history and email routes (`Records`) see the
+  quoted copy; the other routes read the question with only the first two steps applied.
 
 Also:
 - the counts and filters accept the filler people add ("quick q", "do you know", "fyi", "prepping for a call");
