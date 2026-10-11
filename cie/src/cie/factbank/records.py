@@ -77,6 +77,9 @@ from cie.factbank.plans import LINK_PHRASES, LINK_WORDS, QUOTED, unquoted
 TICKET = re.compile(r"\b([A-Z][A-Z0-9]{1,9})-(\d{1,7})\b")
 PR_NUMBER = re.compile(r"(?:(?<![\w&#])#|\b(?:PR|pull request)\s*[#-]?\s*)(\d{2,7})\b", re.I)
 ISO_DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+# v16, messy questions: a Slack thread named by its first words without quotes ("the thread that begins hey team we need")
+OPENS_WITH = re.compile(r"\b(?:begins|beginning|begin|starts|starting|started|start|opens|opening|kicks off|kicking off)(?: with| off)?[:,]?\s+(.+)",
+                        re.I)
 LEVELS_MAX = 12  # values of a scale field whose "none" is a level (``Records.level_none``)
 EMPTY_VALUES = frozenset(("", "none", "null", "nil", "n/a", "na", "tbd", "tba", "unknown", "-", "--", "[]", "{}", "unassigned",
                           "not assigned", "not set", "no csm", "none assigned"))
@@ -96,7 +99,10 @@ FILLER = frozenset("""how many number count total what which who whom whose list
     keys key ids id numbers identifiers titles people person persons everyone everybody someone anyone set marked listed labelled
     labeled tagged assigned owned own owns created reported authored written wrote opened filed raised handled sent belong belongs
     belonging held hold holds get gets so far today can could would you recorded side relate relates related concern concerns
-    concerning""".split())
+    concerning""".split()) | frozenset(  # v16, messy questions: what people add when they type a question into a chat
+    """hey hi hello quick q qq quickly thanks know anyone anybody somebody remind need needs want wondering wonder curious idea
+    tally doing figure figuring trying try find looking sorry dumb maybe might learning here fyi asap prepping prep before
+    my our we i im ok okay got let lemme mind btw anyway sitting roughly again also actually real just""".split())
 CLOSED = {"jira": frozenset(("resolved", "closed", "done", "cancelled", "canceled", "won't fix", "wontfix")),
           "linear": frozenset(("done", "canceled", "cancelled", "duplicate"))}
 # words that point to a field beyond its own name (whole-word patterns, lower case); each adds CUE_WEIGHT to the field
@@ -457,6 +463,14 @@ class Records:
             out += [e for e in self.b.aliases.get(m.group(0).lower(), ()) if self.b.kinds.get(e) == "document"]
         for m in PR_NUMBER.finditer(bare):
             out += [e for e in self.b.aliases.get(f"#{m.group(1)}", ()) if self.b.kinds.get(e) == "document"]
+        if quotes and text_quotes and not QUOTED.search(question):
+            m = OPENS_WITH.search(question)
+            words = m.group(1).split() if m else []
+            for n in range(min(len(words), 12), 4, -1):
+                docs = self.quoted_in_text(" ".join(words[:n]).rstrip("?.!,;:"))
+                if len(docs) == 1:
+                    out += docs
+                    break
         if quotes:
             for m in QUOTED.finditer(question):
                 inner = m.group(0)[1:-1].strip()

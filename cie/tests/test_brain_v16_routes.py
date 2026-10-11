@@ -359,3 +359,20 @@ def test_ordinary_english_is_not_an_unknown_name(v16):
     assert v16.unknown_names("Which Jira tickets were opened in February?") == []
     assert v16.unknown_names("Which tickets came from North America?") == []
     assert v16.unknown_names("Which tickets did SouthWind open?") == ["SouthWind"]
+
+
+# ------------------------------------------------------------------ messy questions
+def test_tidy_reads_chat_typos_and_unquoted_titles(v16, v15):
+    """v16 reads a question as typed: chat shorthand and an ordinary word with one slip of a letter (``tidy``), and, for the records'
+    lookups, a document title written without quotes (``quote_titles``); quoted text is left as written."""
+    assert v16.tidy("how many msgs r in it rn?") == "how many messages are in it now?"
+    assert v16.tidy("how mnay tickets are open?") == "how many tickets are open?"
+    assert v16.quote_titles("who wrote the telemetry runbook local-only mode page?") == 'who wrote the "telemetry runbook local-only mode" page?'
+    assert v16.tidy('who wrote "Telemetry Runbook: local-only mode" w/ Maya?') == 'who wrote "Telemetry Runbook: local-only mode" with Maya?'
+    assert v16.tidy('what does "mnay msgs" mean?') == 'what does "mnay msgs" mean?'
+    assert v16.tidy("did Marcoo ask about supercalifragilistic?") == "did Marcoo ask about supercalifragilistic?", "names are left alone"
+
+
+def test_a_messy_question_takes_the_same_route(v16):
+    r = v16.ask("quick q - who wrote the telemetry runbook local-only mode page in confluence pls?")
+    assert "Maya Chen" in r["answer"]

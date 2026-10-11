@@ -221,6 +221,18 @@ CAMEL = re.compile(r"[a-z][A-Z]")
 # phase 2 after the guard sets showed month names and place words firing; measured again on train5k (0 of 16,663 answerable
 # questions, 9 of 46 held-out), dev5k (0 of 15,973; 8 of 51) and the 14 guard sets (0 of 698)
 GENERAL_WORDS = Path(__file__).with_name("data") / "general_words.txt.gz"
+# v16, messy questions (``Brain.tidy``): how people type into a chat or a search box. Chat shorthand is read as the words it stands
+# for, an ordinary word with one slip of a letter that neither the bank nor ordinary English holds is read as the one word it
+# can be, and a document title or action item written without quotes is quoted. Added in round 2 after messy rewrites of the
+# training questions (round 2's phase 3) fell from 0.96 to 0.70 with tidy wording's v16
+CHAT_WORDS = {"r": "are", "u": "you", "ur": "your", "pls": "please", "plz": "please", "msgs": "messages", "msg": "message",
+              "mtg": "meeting", "mtgs": "meetings", "rn": "now", "atm": "now", "tix": "tickets", "acct": "account", "accts": "accounts",
+              "thx": "thanks", "convo": "conversation", "bc": "because", "abt": "about", "ppl": "people", "info": "information",
+              "w/": "with", "w/o": "without", "b/c": "because", "teh": "the", "hte": "the", "adn": "and", "waht": "what",
+              "taht": "that", "wiht": "with", "jsut": "just", "whos": "who is", "whats": "what is", "wheres": "where is"}
+CHAT_TOKEN = re.compile(r"(?<![\w/])(w/o|w/|b/c|[a-z]+)(?![\w/])")
+TITLE_MIN = (3, 12)  # a title quoted by ``Brain.tidy`` has at least this many words and characters
+LETTERS = "abcdefghijklmnopqrstuvwxyz"
 
 
 @functools.cache
@@ -228,6 +240,17 @@ def general_words() -> frozenset[str]:
     """Ordinary English words, lower case (``GENERAL_WORDS``)."""
     with gzip.open(GENERAL_WORDS, "rt", encoding="utf-8") as f:
         return frozenset(w.strip() for w in f if w.strip() and not w.startswith("#"))
+
+
+def edits1(w: str) -> tuple[set[str], set[str], set[str], set[str]]:
+    """The words one slip away from ``w``: two neighbouring letters swapped; one letter left out; one letter added; one letter
+    wrong."""
+    splits = [(w[:i], w[i:]) for i in range(len(w) + 1)]
+    swaps = {a + b[1] + b[0] + b[2:] for a, b in splits if len(b) > 1}
+    drops = {a + b[1:] for a, b in splits if b}
+    adds = {a + c + b for a, b in splits for c in LETTERS}
+    wrong = {a + c + b[1:] for a, b in splits if b for c in LETTERS if c != b[0]}
+    return swaps - {w}, drops - {w}, adds - {w}, wrong - {w}
 
 
 def squash(s: str) -> str:
@@ -518,6 +541,8 @@ class Brain:
         self._fts: dict[str, bool] = {}
         self.min_held = min_held
         self._records: Records | None = None
+        self._title_texts: list[str] | None = None
+        self.read_messy = True  # v16 reads chat shorthand, slips of a letter and unquoted titles (``tidy``)
         self._prose_route: ProseRoute | None = None
         self.cover_below = cover_below
         self._entity_count: int | None = None
@@ -708,6 +733,61 @@ class Brain:
         """Whether the bank holds a ticket key: a document's alias, a key its documents cite, or written in its text."""
         k = key.lower()
         return k in self.bank.aliases or f"key:{k}" in self.bank.kinds or self.holds_text(key)
+
+    def tidy(self, question: str) -> str:
+        """v16: the question as the routes read it (``CHAT_WORDS``, one-letter slips); quoted text is left as written. "how mnay
+        msgs r in it?" reads "how many messages are in it?". The records' lookups also read an unquoted title in quotes
+        (``quote_titles``); the router, the planner and the prose route read the question without them, as they were trained."""
+        parts = re.split(r'("[^"]*"|\u201c[^\u201d]*\u201d)', question)
+        for i in range(0, len(parts), 2):
+            parts[i] = CHAT_TOKEN.sub(lambda m: self.read_word(m.group(1)), parts[i])
+        return "".join(parts)
+
+    def read_word(self, w: str) -> str:
+        """A lower-case word as it was meant: chat shorthand spelt out; an ordinary word that neither ordinary English nor the
+        bank holds, of four letters or more, read as the one word one slip away that ordinary English or the bank holds (two
+        letters swapped, before one left out or added, before one wrong; when several fit, the one the bank holds)."""
+        if w in CHAT_WORDS:
+            return CHAT_WORDS[w]
+        if len(w) < 4 or w in general_words() or not w.isalpha() or self.bank.doc_freq(w) > 0:
+            return w
+        swaps, drops, adds, wrong = edits1(w)
+        for cands in (swaps, drops | adds, wrong & general_words()):
+            hits = {c for c in cands if c in general_words() or self.bank.doc_freq(c) > 0}
+            held = {c for c in hits if self.bank.doc_freq(c) > 0}
+            if len(hits) == 1 or len(held) == 1:
+                return next(iter(hits if len(hits) == 1 else held))
+            if hits:
+                return w
+        return w
+
+    def quote_titles(self, question: str) -> str:
+        """The question with the longest document title or action item it writes without quotes put in quotes, when it quotes
+        nothing: "who got cc'd on the first email in pilot affordability & batching levers?" quotes the thread's subject."""
+        if QUOTED.search(question):
+            return question
+        sq = f" {squash(question)} "
+        best = max((t for t in self.title_texts() if f" {t} " in sq), key=len, default=None)
+        if best is None:
+            return question
+        alt = {"and": "(?:and|&)", "plus": r"(?:plus|\+)"}
+        pat = r"[\W_]*".join(alt.get(w, re.escape(w)) for w in best.split())
+        m = re.search(rf"(?<!\w){pat}(?!\w)", question, re.I)
+        return question if m is None else f'{question[:m.start()]}"{m.group(0)}"{question[m.end():]}'
+
+    def title_texts(self) -> list[str]:
+        """The bank's document titles and action items, squashed, of ``TITLE_MIN`` words and characters or more (a Gmail
+        subject also without its "Re:")."""
+        if self._title_texts is None:
+            out = set()
+            for e, k in self.bank.kinds.items():
+                if k in ("document", "action_item"):
+                    t = squash(self.bank.names.get(e, ""))
+                    for x in (t, re.sub(r"^(?:(?:re|fwd|fw)\s+)+", "", t)):
+                        if len(x.split()) >= TITLE_MIN[0] and len(x) >= TITLE_MIN[1]:
+                            out.add(x)
+            self._title_texts = sorted(out)
+        return self._title_texts
 
     def missing(self, question: str) -> str | None:
         """What the question names that the bank does not hold, or None: a ticket key in a prefix the bank uses ("ticket
@@ -928,6 +1008,8 @@ class Brain:
             return {"answer": answer, "route": route, "reason": reason, "evidence": evidence[:self.budget], "reads": reads or [],
                     "journal": [head, *journal], "family_scores": scores or {}, "ms": round((time.perf_counter() - t) * 1000, 2)}
 
+        if self.v16 and self.read_messy:
+            question = self.tidy(question)
         miss = self.missing(question)
         if not miss and self.v16:
             unknown = self.unknown_names(question)
@@ -937,8 +1019,9 @@ class Brain:
         start = None
         if self.v16:
             rec = self.records()
-            start = rec.start(question)
-            d = rec.derived(question, start) if start else None
+            titled = self.quote_titles(question) if self.read_messy else question  # an unquoted title, for the records' lookups
+            start = rec.start(titled)
+            d = rec.derived(titled, start) if start else None
             if d is not None:
                 reason, evidence, journal, reads = self.derived_row(start, d)
                 return done(d["answer"], "derived", reason, evidence, journal, reads)
@@ -955,7 +1038,7 @@ class Brain:
             answer, reason, evidence = self.prose(question)
             return done(answer, "prose", reason, evidence, [], None, scores)
         if start:
-            why = self.records().absent(question, start)
+            why = self.records().absent(titled, start)
             if why:
                 evidence, journal, reads = self.absent_row(start, why)
                 return done("not found", "absent", why, evidence, journal, reads, scores)

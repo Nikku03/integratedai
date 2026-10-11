@@ -80,6 +80,22 @@ Three more ways of saying "not found", all fitted on the training documents:
   answered below 0.9 on training (a planted pull request's issue's creator and team; the HubSpot accounts owned by a meeting's
   owner). Every old training, development and guard answer is unchanged or better.
 
+**Reading messy questions** (`Brain.tidy`, before every route): people type "how mnay msgs r in the Kickoff: security
+questionnaire thread?". v16 reads that as "how many messages are in the "Kickoff: security questionnaire" thread?", with three
+steps:
+- **Chat shorthand** is read as the words it stands for (`CHAT_WORDS`: r, u, pls, msgs, mtg, rn, w/, teh...).
+- **A one-letter slip** in an ordinary lower-case word is fixed when it is unambiguous ("mnay", "attachmnets"). The word must be
+  four letters or more and held neither by ordinary English nor by the bank. It is read as the one word one slip away that
+  either holds, preferring the bank's word when several fit. Names are never changed.
+- **An unquoted title:** the longest document title or action item of three words or more that the question writes without
+  quotes is put in quotes, when the question quotes nothing.
+
+Also:
+- the counts and filters accept the filler people add ("quick q", "do you know", "fyi", "prepping for a call");
+- a Slack thread named by its first words without quotes ("the thread that begins hey team…") is found as a quoted one is.
+
+All of this was built on messy rewrites of 116 training questions and confirmed on 80 development ones (Development, below).
+
 **Speed:** v15 spent most of its time on repeated name lookups; v16 remembers them per question. On the development set v16
 takes about 1.1 s a question against v15's 4.6 s.
 
@@ -301,6 +317,14 @@ differences are the passage each chose, not abstention: no answerable free-text 
   templates, and the records module was adapted to the generators' wordings on training questions. So the counts, history and
   email-and-chat families test the pattern-matched wordings v16 was built for, not free wordings. Their development scores
   (1.0) are an upper bound.
+- **Messy wording was developed on, but only a little:**
+  - The reading step was built on blind rewrites of 116 training questions. On those it took v16 from 0.697 to the figure in
+    Development.
+  - It was confirmed once on rewrites of 80 development questions. They had already been seen once before the step existed:
+    they showed the weakness and prompted the work.
+  - The writers' casual style is new in the test. The development writers wrote tidy questions, so free text, descriptive and
+    held-out questions are messier in the test than in any development run.
+  - The thresholds were set on tidy development data.
 - **Seeds used so far:**
   - round 1's (zones salt `brain-zones-v1`; training 601, development 701; questions 621, 721; packets 611, 612, 711, 712;
     test 809 to 812);
