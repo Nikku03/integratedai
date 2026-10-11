@@ -1118,7 +1118,8 @@ def email_questions(kind: str, hay: Haystack, rng: random.Random, cap: int | Non
     """One fact of an email thread named by its subject: the first email's sender, recipients or Cc (every entry a person
     with a display name), the thread's start date (first_email_at, which must be the earliest message's and read the same in
     UTC), its message count (equal to the messages written), its attachments (one to ten files) or its account (not written
-    inside another account's name, and with no note in brackets)."""
+    inside another account's name, and a customer account by ``_not_account``: not on a hiring thread, not a label of a
+    candidate, an internal matter or a team, one name, no note in brackets)."""
     cands = []
     accounts = [a.strip() for d in hay.of("gmail") if isinstance(a := d["raw"].get("related_account"), str) and not _none(a)]
     inner = _nested(set(accounts), outer=False)
@@ -1363,12 +1364,14 @@ def owner_accounts(hay: Haystack, rng: random.Random, cap: int | None = None, as
 
 # ------------------------------------------------------------------ field absent
 def _known_accounts(hay: Haystack) -> re.Pattern | None:
-    """Every account or customer name the haystack writes in an account field (four letters or more), as one pattern."""
+    """Every account or customer name the haystack writes in an account field (four letters or more), as one pattern; a
+    label of a candidate, an internal matter or a team (``LABEL``: 'internal', 'Candidate: Alex Romero') names no account."""
     names: set[str] = set()
     for d in hay.docs:
         for f in ("related_account", "customer_company", "company_name"):
             v = d["raw"].get(f)
-            if isinstance(v, str) and not _none(v) and len(_squash(v)) >= 4 and not v.lower().startswith("redwood"):
+            if (isinstance(v, str) and not _none(v) and len(_squash(v)) >= 4 and not v.lower().startswith("redwood")
+                    and not LABEL.search(v)):
                 names.add(_norm(v))
     if not names:
         return None
