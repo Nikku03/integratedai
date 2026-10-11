@@ -3,27 +3,32 @@ v16 brain beside them, and one score over eight families.
 
 - **questions:** one W/questions.jsonl in three parts, each drawn by its own module so that no part changes another:
   (a) v15's four families (single, multi, not_found, prose) drawn exactly as ``brain_test.draw`` draws them, in a v15 mix
-  (``MIX15``, v15's test mix, by default), with the writers' prose and descriptive questions; (b) the new kinds,
-  ``brain2_questions.draw_questions`` in ``MIX16`` (counts, history, email_chat, the two-document multi kinds, field_absent and
-  the embedded single kinds; a key of ``MIX16`` may name no kind of v15's, which belong in the v15 mix); (c) the held-out
+  (``MIX15``, v15's test mix, by default: at most 40 descriptive questions, as v15's pre-registration says), with the writers'
+  prose and descriptive questions; (b) the new kinds, ``brain2_questions.draw_questions`` in ``MIX16`` (counts, history,
+  email_chat, the two-document multi kinds, field_absent and the embedded single kinds; a key of ``MIX16`` may name no kind of
+  v15's, which belong in the v15 mix), none about the same document and field as a question of v15's part (the embedded kinds
+  reword v15's field kinds: such a question is taken out before the pick and set aside as re-asking it); (c) the held-out
   writers' questions that ``brain2_draw collect`` kept (family unanswerable, kind heldout: a natural question whose answer is in
   a document outside the haystack). Ids are unique across the parts. Set aside, and written with their reasons to
-  W/set_aside_questions.jsonl: what ``brain_test.draw`` sets aside, and a held-out question that expects an answer, has gold
-  documents, has no held-out document or one inside the haystack, or repeats another; the new kinds' generators only count
-  what they set aside (W/questions_report.json). With ``--small``, the control folder holds only the questions' gold documents,
-  and the questions whose expected answer is not the same there are recorded: v15's by ``brain_test.not_reproduced``, the new
-  kinds by drawing them again within the set (``not_reproduced2``).
+  W/set_aside_questions.jsonl: what ``brain_test.draw`` sets aside, the new kinds' set-aside questions (``brain2_questions``'
+  unclear candidates, and those re-asking a v15 question), and a held-out question that expects an answer, has gold
+  documents, has no held-out document or one inside the haystack, or repeats another; W/questions_report.json counts every
+  reason and records the sha256 of every input file (prose, descriptive, held-out, wordings). With ``--small``, the control
+  folder holds only the questions' gold documents, and the questions whose expected answer is not the same there are
+  recorded: v15's by ``brain_test.not_reproduced``, the new kinds by drawing them again within the set (``not_reproduced2``).
 - **ask:** one arm's answers. v1, v2, v13 and v15 are ``brain_test.ask`` unchanged; v16 is ``cie.factbank.brain.ask_brain``
   with ``v16=True`` (default answers file factbank_v16.jsonl); quotes is ``brain_test.ask_quotes`` unchanged, with the
   documents of its quoted passages recorded on the way into each row ("quote_docs", one per citation marker, in turn), so
-  that a strict free-text score can be computed. W/arms.json records, for every arm, the sha256 of its lessons files and the
-  PYTHONHASHSEED it ran under (the v15 post-run review asked for both).
+  that a strict free-text score can be computed. W/arms.json records, for every arm, the sha256 of the lessons files it
+  reads and the PYTHONHASHSEED it runs under, both taken when the arm starts (the v15 post-run review asked for both).
 - **score:** every arm's answers scored by ``brain2_questions.score`` (``brain_questions.score`` for v15's kinds; a held-out
   question scores 1 when the answer says not found), over ``FAMILIES2``: per family, group and kind, the mean over the eight
   families and over v15's four, route accuracy (``ROUTE2``), false "not found" on answerable questions, the strict free-text
   score (``strict_prose``), the paired difference of v16 and the best other arm in each family with its bootstrap interval,
   the hash-seed check (v16 against v16_seed1), the small set's differences (``brain_test.against_small``) and time per
-  question. ``preregistered2`` holds the rules; ``--preregistered`` applies them (``brain_test.rules``).
+  question. ``preregistered2`` holds the rules; ``--preregistered`` applies them (``brain_test.rules``). The size rule is
+  per family: for each of single, multi and prose, the 5,000-document score minus the small-set score >= -``SIZE_MARGIN``
+  (v15's rule took the mean of the three).
 
 The banks come from ``brain_test build``. A work folder may link a bank built elsewhere from the same documents (W/banks.json
 records which documents each bank holds).
@@ -67,8 +72,9 @@ HELDOUT = "heldout"  # the kind and group of the held-out writers' questions
 ROUTE2 = {"single": "fact", "multi": "fact", "counts": "fact", "history": "fact", "email_chat": "fact", "prose": "prose",
           "not_found": "not_found"}
 NOT_FOUND_ROUTES = ("not_found", "absent")  # route names (prefixes) that decline; "prose" quotes; every other is a fact route
-# v15's test mix (docs/FACTBANK_BRAIN_PREREGISTRATION.md); with no "descriptive" key, every descriptive question that passes
-MIX15 = {"deadlines": 15, "lists": 15, "fields": 30, "names": 10, "link": 15, "combine": 15, "compare": 6, "not_found": 20, "prose": 50}
+# v15's test mix (docs/FACTBANK_BRAIN_PREREGISTRATION.md): the descriptive questions that pass the checks, up to 40
+MIX15 = {"deadlines": 15, "lists": 15, "fields": 30, "names": 10, "link": 15, "combine": 15, "compare": 6, "not_found": 20, "prose": 50,
+         "descriptive": 40}
 # the new kinds, an even spread over the new families: about 40 questions each of counts, history and email and chat (each
 # shared out over its kinds in turn), 20 of the two-document kinds (named one by one: 'link' and 'combine' are v15's groups
 # too), 20 empty-field questions with no answer and 20 embedded single-document questions
@@ -76,9 +82,19 @@ MIX16 = {"counts": 40, "history": 40, "email_chat": 40, "pr_issue_project": 3, "
          "author_issues": 4, "reporter_issues": 4, "owner_accounts": 3, "field_absent": 20, "embedded": 20}
 QUOTED_FROM = re.compile(r"quoted from \d+ passage\(s\) of (?:\d+ document\(s\): )?([^;]+)")  # the brain's prose routes' reason
 PROVENANCE = ("single_sha256", "plans_sha256", "router_sha256", "pythonhashseed")
+INPUTS = ("prose", "descriptive", "heldout", "wordings")  # the input files of a draw, each hashed in W/questions_report.json
+REASK = "re-asks"  # how the reason of a new-kind question set aside for re-asking a v15 question begins
+SIZE_FAMILIES2 = ("single", "multi", "prose")  # the size rule's families, each on its own
 
 
 # ------------------------------------------------------------------ questions
+def _file_sha(path: Any) -> str | None:
+    """The sha256 of a file, or None when there is none (not given; a router may be named rather than given as a file)."""
+    if path is None or not Path(path).is_file():
+        return None
+    return H._sha(Path(path))
+
+
 def part(q: dict[str, Any]) -> str:
     """Which part of the question set a question belongs to: 'heldout', 'v16' (a kind of ``brain2_questions``) or 'v15'."""
     return HELDOUT if q.get("kind") == HELDOUT else "v16" if q.get("kind") in Q2.CATALOGUE else "v15"
@@ -138,14 +154,19 @@ def draw2(docs: list[dict[str, Any]], seed: int = Q2.SEED, mix15: dict[str, int]
     """The questions (v15's part, the new kinds, the held-out questions, in that order), those set aside, and a report.
 
     v15's part is ``brain_test.draw(docs, seed, mix15, prose, descriptive, multi_wordings)``; the new kinds are
-    ``brain2_questions.draw_questions(docs, seed, mix16)``, with what their generators make and set aside counted by
-    ``brain2_questions.generate``; the held-out questions are those ``why_heldout_aside`` keeps. ValueError when an id is used
-    twice or a key of ``mix16`` names v15's kinds."""
+    ``brain2_questions.draw_questions(docs, seed, mix16)`` with every question about the same document and field as one of
+    v15's part (``brain2_questions.about``) kept out of the pick, and what their generators make and set aside counted by
+    ``brain2_questions.generate``; the held-out questions are those ``why_heldout_aside`` keeps. Set aside, with their
+    reasons: v15's, the new kinds' unclear candidates and re-asked questions, and the held-out questions not kept.
+    ValueError when an id is used twice or a key of ``mix16`` names v15's kinds."""
     mix15 = dict(MIX15 if mix15 is None else mix15)
     mix16 = dict(MIX16 if mix16 is None else mix16)
     check_mix16(mix16)
     qs15, aside, rep15 = H.draw(docs, seed, mix15, prose, descriptive, multi_wordings)
-    qs16 = Q2.draw_questions(docs, seed, mix16)
+    asked15 = {key: q["id"] for q in qs15 if (key := Q2.about(q)) is not None}
+    aside16: list[dict[str, Any]] = []
+    qs16 = Q2.draw_questions(docs, seed, mix16, avoid=asked15, aside_rows=aside16)
+    aside += aside16
     wanted = set().union(*(Q2.resolve(k) for k in mix16)) if mix16 else set()
     gen = Q2.generate(docs, seed, kinds=wanted)[1] if wanted else {"by_kind": {}, "aside": {}}
     dsids = {d["dsid"] for d in docs}
@@ -166,7 +187,8 @@ def draw2(docs: list[dict[str, Any]], seed: int = Q2.SEED, mix15: dict[str, int]
     rep = {"documents": len(docs), "seed": seed, "questions": len(qs), "by_part": _count(qs, part), "by_family": _count(qs, Q2.family),
            "by_group": _count(qs, lambda q: str(q.get("group"))), "by_kind": _count(qs, lambda q: str(q.get("kind"))),
            "mix15": {"asked": rep15["mix"], "given": rep15["mix_given"]}, "mix16": {"asked": mix16, "given": given16},
-           "v15": rep15, "v16": {"questions": len(qs16), "available": gen["by_kind"], "set_aside": gen["aside"]},
+           "v15": rep15, "v16": {"questions": len(qs16), "available": gen["by_kind"], "set_aside": gen["aside"],
+                                 "reasked": _count((q for q in aside16 if q["unclear"].startswith(REASK)), lambda q: q["kind"])},
            "heldout": {"read": len(heldout or []), "kept": len(held), "set_aside": dict(sorted(why_held.items()))},
            "set_aside_written": _count(aside, lambda q: str(q.get("kind"))), "gold_documents": len(factbank_5k.small_set(qs))}
     return qs, aside, rep
@@ -257,8 +279,9 @@ def write_questions(work: Path, seed: int = Q2.SEED, mix15: dict[str, int] | Non
                     prose: Path | None = None, descriptive: Path | None = None, heldout: Path | None = None,
                     small: Path | None = None, multi_wordings: Path | None = None) -> dict[str, Any]:
     """Draw the questions of a work folder (``draw2``) and write W/questions.jsonl, W/set_aside_questions.jsonl and
-    W/questions_report.json; with ``small``, the control folder too, recording the questions whose expected answer is not the
-    same there (``brain_test.not_reproduced`` for v15's part, ``not_reproduced2`` for the rest)."""
+    W/questions_report.json, which records each input file and its sha256 ("inputs_sha256", None for a file not given); with
+    ``small``, the control folder too, recording the questions whose expected answer is not the same there
+    (``brain_test.not_reproduced`` for v15's part, ``not_reproduced2`` for the rest)."""
     from cie.eval.factbank_multi import load_wordings
 
     if small is not None and small.resolve() == work.resolve():
@@ -273,6 +296,7 @@ def write_questions(work: Path, seed: int = Q2.SEED, mix15: dict[str, int] | Non
     _write_jsonl(work / "set_aside_questions.jsonl", aside)
     rep |= {"prose_file": str(prose) if prose else None, "descriptive_file": str(descriptive) if descriptive else None,
             "heldout_file": str(heldout) if heldout else None, "multi_wordings": str(multi_wordings) if multi_wordings else None,
+            "inputs_sha256": dict(zip(INPUTS, map(_file_sha, (prose, descriptive, heldout, multi_wordings)), strict=True)),
             "readable": len(docs), "listed": len(hay["dsids"]), "small": None}
     if small is not None:
         sm = factbank_5k.small_set(qs)
@@ -287,13 +311,6 @@ def write_questions(work: Path, seed: int = Q2.SEED, mix15: dict[str, int] | Non
 
 
 # ------------------------------------------------------------------ ask
-def _file_sha(path: Any) -> str | None:
-    """The sha256 of a lessons file, or None when there is none (a router may be named rather than given as a file)."""
-    if path is None or not Path(path).is_file():
-        return None
-    return H._sha(Path(path))
-
-
 @contextmanager
 def _quote_documents() -> Iterator[list[tuple[str, list[str]]]]:
     """While open, each call of ``cie.retrieval.answer.quote_answer`` (which ``brain_test.ask_quotes`` looks up when it runs)
@@ -368,9 +385,10 @@ def ask(work: Path, arm: str, single: Path | None = None, plans: Path | None = N
         name: str | None = None) -> dict[str, Any]:
     """One arm's answers to W/questions.jsonl, written to W/<name>.jsonl (``FILES2[arm]`` by default): v1, v2, v13 and v15 by
     ``brain_test.ask``, quotes by ``brain_test.ask`` with the quoted documents recorded (``_ask_quotes``), v16 by
-    ``_ask_v16``. The arm's record in W/arms.json gets the sha256 of each lessons file it was given (single, plans, router)
-    and the PYTHONHASHSEED it ran under (None: not set, so random). A name may not be another arm's answers file, nor
-    another arm's name ('v15', 'quotes'), nor, for an arm other than v16, a label of v16's own answers (``OWN``)."""
+    ``_ask_v16``. The arm's record in W/arms.json gets the sha256 of each lessons file it reads (single for v2, v13, v15 and
+    v16; plans for v13, v15 and v16; router for v15 and v16) and the PYTHONHASHSEED it runs under (None: not set, so random),
+    both taken when the arm starts, before it reads anything. A name may not be another arm's answers file, nor another
+    arm's name ('v15', 'quotes'), nor, for an arm other than v16, a label of v16's own answers (``OWN``)."""
     if arm not in ARMS2:
         raise ValueError(f"unknown arm {arm!r}: one of {', '.join(ARMS2)}")
     name = name or FILES2[arm]
@@ -382,14 +400,15 @@ def ask(work: Path, arm: str, single: Path | None = None, plans: Path | None = N
         raise ValueError(f"{name!r} is arm {name}'s label: choose another name")
     if arm != "v16" and name in OWN:
         raise ValueError(f"{name!r} labels the v16 brain's answers: choose another name")
+    reads = {"single": arm in ("v2", "v13", "v15", "v16"), "plans": arm in ("v13", "v15", "v16"), "router": arm in ("v15", "v16")}
+    extra = {"single_sha256": _file_sha(single) if reads["single"] else None, "plans_sha256": _file_sha(plans) if reads["plans"] else None,
+             "router_sha256": _file_sha(router) if reads["router"] else None, "pythonhashseed": os.environ.get("PYTHONHASHSEED")}
     if arm == "v16":
         rec = _ask_v16(work, single, plans, router, name)
     elif arm == "quotes":
         rec = _ask_quotes(work, name)
     else:
         rec = H.ask(work, arm, single, plans, router, name)
-    extra = {"single_sha256": _file_sha(rec.get("single")), "plans_sha256": _file_sha(rec.get("plans")),
-             "router_sha256": _file_sha(rec.get("router")), "pythonhashseed": os.environ.get("PYTHONHASHSEED")}
     reg = H.registry(work)
     reg[name] = {**reg[name], **extra}
     (work / H.REGISTRY).write_text(json.dumps(reg, indent=1))
@@ -407,11 +426,8 @@ def route_class(route: Any) -> str | None:
 
 
 def score_one(q: dict[str, Any], row: dict[str, Any] | str) -> float | None:
-    """One answer's score: ``brain2_questions.score``, and for an unanswerable question of no catalogue kind (the held-out
-    writers' questions) 1 if the answer says not found (``brain_questions.says_not_found``), else 0."""
-    if Q2.family(q) == "unanswerable" and q.get("kind") not in Q2.CATALOGUE:
-        answer, route = (row, None) if isinstance(row, str) else (str(row.get("answer") or ""), row.get("route"))
-        return float(B.says_not_found(answer, route))
+    """One answer's score: ``brain2_questions.score``, which scores every unanswerable question (field_absent and the held-out
+    writers' questions) 1 when the answer says not found (``brain_questions.says_not_found``), else 0."""
     return Q2.score(q, row)
 
 
@@ -610,7 +626,7 @@ NEW_MIN = 0.60  # set before the freeze: counts, history, email and chat, each a
 NEW_LEAD = 0.10  # set before the freeze: ... and at least the best other arm + this
 MEAN_LEAD = 0.20  # set before the freeze: the mean over the eight families >= every other arm's + this
 ROUTE_MIN = 0.90  # set before the freeze: route accuracy, mean over families
-SIZE_MARGIN = 0.05  # set before the freeze: single, multi and free text at 5,000 documents >= the small set - this, each
+SIZE_MARGIN = 0.05  # set before the freeze: for each of single, multi and free text, 5,000 documents >= the small set - this
 
 
 def _fam(r: dict[str, Any], family: str, arm: str = "v16") -> float:
@@ -630,7 +646,11 @@ def _best(r: dict[str, Any], family: str) -> float:
 
 def preregistered2() -> dict[str, Rule]:
     """The rules of the v16 test, each named with its threshold (the module constants above, set before the freeze); applied
-    by ``brain_test.rules``, which gives None when the report lacks what a rule reads."""
+    by ``brain_test.rules``, which gives None when the report lacks what a rule reads.
+
+    Rule 12, the size rule, holds for each family on its own: for each of single, multi and prose (``SIZE_FAMILIES2``), v16's
+    score on the 5,000-document folder minus its score on the small control folder >= -``SIZE_MARGIN``. One family falling
+    by more than the margin fails it, whatever the other two do (v15's rule took the mean of the three)."""
     others = lambda r: [a for a in r["scores"] if a not in _own(r)]  # noqa: E731
     out: dict[str, Rule] = {
         f"1 single-document questions: v16 >= the best other arm - {SINGLE_MARGIN}":
@@ -653,8 +673,8 @@ def preregistered2() -> dict[str, Rule]:
             lambda r: r["scores"]["v16"]["mean_of_families"] >= max(r["scores"][a]["mean_of_families"] for a in others(r)) + MEAN_LEAD - EPS,
         f"11 the right route: v16's route accuracy, mean over families, >= {ROUTE_MIN}":
             lambda r: r["scores"]["v16"]["routes"]["accuracy_mean_over_families"] >= ROUTE_MIN - EPS,
-        f"12 it holds at size: v16 at 5,000 documents >= the small set - {SIZE_MARGIN} on each of single, multi and free text":
-            lambda r: all(r["small"]["differences"]["v16"]["big_minus_small"][f] >= -SIZE_MARGIN - EPS for f in H.SIZE_FAMILIES),
+        f"12 it holds at size: for each of single, multi and free text, v16 at 5,000 documents >= the small set - {SIZE_MARGIN}":
+            lambda r: all(r["small"]["differences"]["v16"]["big_minus_small"][f] >= -SIZE_MARGIN - EPS for f in SIZE_FAMILIES2),
     }
     return out
 
@@ -753,8 +773,8 @@ def to_markdown(rep: dict[str, Any]) -> str:
     elif rep["small"]:
         sm = rep["small"]
         out += ["", f"Big folder minus the small one ({sm['work']}; not reproduced there, left out: {len(sm['not_reproduced'])}):", ""]
-        out += _table(["arm", "questions", *H.SIZE_FAMILIES, "changed"],
-                      [[a, d["questions"], *(d["big_minus_small"][f] for f in H.SIZE_FAMILIES), len(d["changed"])]
+        out += _table(["arm", "questions", *SIZE_FAMILIES2, "changed"],
+                      [[a, d["questions"], *(d["big_minus_small"][f] for f in SIZE_FAMILIES2), len(d["changed"])]
                        for a, d in sm["differences"].items()])
     out += ["", "Rules:" if rep["rules"] else "Rules: none applied (`--preregistered` applies them)."]
     out += [f"- {k}: **{'met' if v else 'not met' if v is not None else 'n/a'}**" + (f" ({rep['rules_why'][k]})" if k in rep["rules_why"] else "")

@@ -306,30 +306,53 @@ def test_multi_questions_have_the_format_the_plan_lessons_learn_from():
 
 
 # ------------------------------------------------------------------ unanswerable
-def test_field_absent_asks_for_a_usually_present_field_that_is_empty_here():
-    docs = [_d(f"l{i}", "linear", f"Issue {i}", key=f"ENG-60{i}", due_date="2026-03-01") for i in range(3)]
-    docs += [_d("l3", "linear", "Issue 3", key="ENG-603", due_date=""),
-             _d("l4", "linear", "Issue 4", key="ENG-604", description="the deadline moved to next month"),
-             _d("j0", "jira", "T0", key="SUP-1", sla_due_at="2026-03-01"), _d("j1", "jira", "T1", key="SUP-2"),
-             _d("j2", "jira", "T2", key="SUP-3", sla_due_at="TBD")]
-    qs, aside = _gen(["field_absent"], docs)
-    got = {(q["field"], q["pieces"][0]): (q["expected"], q["absent_value"]) for q in qs}
-    assert got == {("due_date", "ENG-603"): ({"not_found": True}, "")}
-    assert aside["field_absent"] == {"another field mentions it": 1, "field usually empty": 2 + 5 + 5 + 3}, \
-        "sla_due_at on two of three tickets; customer_impact and release on no issue, first_response_due_at on no ticket"
-    assert qs[0]["family"] == "unanswerable" and "ENG-603" in qs[0]["question"]
+def test_field_absent_asks_for_a_field_the_system_uses_that_is_missing_or_empty_here():
+    lin = [_d(f"l{i}", "linear", f"Issue {i}", key=f"ENG-60{i}", due_date="2026-03-01") for i in range(1, 4)]
+    lin += [_d("l4", "linear", "Issue 4", key="ENG-604", due_date=""), _d("l5", "linear", "Issue 5", key="ENG-605"),
+            _d("l6", "linear", "Issue 6", key="ENG-606", due_date="TBD"), _d("l7", "linear", "Issue 7", key="ENG-607", due_date="N/A"),
+            _d("l8", "linear", "Issue 8", key="ENG-608", description="the deadline moved to next month"),
+            _d("l9", "linear", "Issue 9", key="ENG-609", due_date=None), _d("l10", "linear", "Issue 10", key="ENG-610", due_date="  ")]
+    jira = [_d("j1", "jira", "T1", key="SUP-101", sla_due_at="2026-03-01")] + [_d(f"j{i}", "jira", f"T{i}", key=f"SUP-10{i}") for i in (2, 3, 4)]
+    rows: list = []
+    qs, rep = Q.generate(lin + jira, 1, ["field_absent"], aside_rows=rows)
+    got = {(q["field"], q["pieces"][0]): q["absent_value"] for q in qs}
+    assert got == {("due_date", "ENG-604"): "", ("due_date", "ENG-605"): "<absent>", ("due_date", "ENG-609"): "None",
+                   ("due_date", "ENG-610"): "  "}, "a due date on 3 of 10 issues is a field Linear uses (at least USUAL = 0.3)"
+    assert Q.USUAL == 0.3 and all(q["expected"] == {"not_found": True} and q["family"] == "unanswerable" for q in qs)
+    assert rep["aside"]["field_absent"] == {"a placeholder value": 2, "another field mentions it": 1, "field usually empty": 10 + 10 + 3 + 4}, \
+        "TBD and N/A would be right answers too; an SLA on 1 of 4 tickets is below 0.3; customer impact, release and first response on none"
+    assert [(r["id"], r["pieces"][0], r["absent_value"], r["unclear"]) for r in rows] == [
+        ("field_absent-aside-001", "ENG-606", "TBD", "a placeholder value"), ("field_absent-aside-002", "ENG-607", "N/A", "a placeholder value"),
+        ("field_absent-aside-003", "ENG-608", "<absent>", "another field mentions it")]
+    assert all(r["question"] and r["pieces"][0] in r["question"] and r["expected"] == {"not_found": True} for r in rows)
+    assert Q.generate(lin + jira, 1, ["field_absent"])[0] == qs, "keeping the set-aside rows changes no question"
 
 
-def test_none_is_a_value_where_the_fields_scale_has_that_level():
+def test_none_is_a_value_where_the_fields_scale_has_that_level_and_a_placeholder_elsewhere():
     docs = [_d(f"l{i}", "linear", f"Issue {i}", key=f"ENG-70{i}", customer_impact=v) for i, v in enumerate(("medium", "high", "low"))]
     docs += [_d("l3", "linear", "Issue 3", key="ENG-703", customer_impact="none"), _d("l4", "linear", "Issue 4", key="ENG-704")]
     docs += [_d(f"h{i}", "hubspot", n, csm_assigned=c) for i, (n, c) in
-             enumerate((("Northwind Health", "Maya Chen"), ("Fjord Bank Group", "Liam Wu"), ("Kestrel Analytics", "none")))]
+             enumerate((("Northwind Health", "Maya Chen"), ("Fjord Bank Group", "Liam Wu"), ("Kestrel Analytics", "none"),
+                        ("Helios Labs", ""), ("Orbit Freight", "unassigned")))]
     qs, aside = _gen(["field_absent"], docs)
     got = {(q["field"], q["pieces"][0]): q["absent_value"] for q in qs}
-    assert got == {("customer_impact", "ENG-704"): "<absent>", ("csm_assigned", "Kestrel Analytics"): "none"}, \
-        "'none' is no customer impact, but no CSM"
-    assert aside["field_absent"]["'none' is a level of the field"] == 1
+    assert got == {("customer_impact", "ENG-704"): "<absent>", ("csm_assigned", "Helios Labs"): ""}, \
+        "'none' is no customer impact; 'none' and 'unassigned' as a CSM are words for no value, set aside"
+    assert aside["field_absent"]["'none' is a level of the field"] == 1 and aside["field_absent"]["a placeholder value"] == 2
+
+
+def test_set_aside_rows_are_the_unclear_questions_of_every_kind():
+    lin = [_d(f"l{i}", "linear", f"Issue {i}", key=f"ENG-20{i}", estimate=e, team="infra") for i, e in enumerate(("2", "2", "3"))]
+    rows: list = []
+    qs, rep = Q.generate(lin + MULTI, 1, ["count1_linear", "pr_issue_project"], aside_rows=rows)
+    assert {r["kind"]: r["unclear"] for r in rows} == {"count1_linear": "answer in the question", "pr_issue_project": "linked"}
+    count = next(r for r in rows if r["kind"] == "count1_linear")
+    assert count["expected"] == {"value": "2"} and "2" in count["question"] and count["filters"] == [["estimate", "2"]]
+    assert count["id"] == "count1_linear-aside-001" and count["family"] == "counts" and count["gold_docs"] == ["l0", "l1"]
+    link = next(r for r in rows if r["kind"] == "pr_issue_project")
+    assert link["expected"] == {"value": "Edge Cache"} and "#34502" in link["question"] and link["field"] == "project"
+    assert sum(sum(v.values()) for v in rep["aside"].values()) >= len(rows), "every row is counted among the reasons"
+    assert Q.generate(lin + MULTI, 1, ["count1_linear", "pr_issue_project"])[0] == qs
 
 
 # ------------------------------------------------------------------ embedded question words
@@ -384,3 +407,44 @@ def test_score_by_kind():
     assert Q.score(emb, "2026-02-26T10:00:00Z") == 1
     old = {"kind": "drive_owner", "family": "single", "expected": {"value": "Maya Chen"}}
     assert Q.score(old, "Maya Chen") == B.score(old, "Maya Chen") == 1
+
+
+def test_unanswerable_questions_score_a_not_found_before_any_catalogue_lookup():
+    held = {"id": "heldout-1", "kind": "heldout", "family": "unanswerable", "expected": {"not_found": True}, "gold_docs": []}
+    assert Q.score(held, "Not found: nothing in the documents") == 1 and Q.score(held, "It is 12%.") == 0
+    assert Q.score(held, {"answer": "12%", "route": "not_found"}) == 1, "the route says not found"
+    assert Q.score({**held, "family": None}, "not found") == 1 and Q.score({**held, "family": None}, "12%") == 0, "by its kind alone"
+    assert Q.score({"kind": "field_absent", "expected": {"not_found": True}}, "Not found") == 1
+    assert Q.score({"kind": "anything", "family": "unanswerable"}, "no such thing") == 1
+    with pytest.raises(ValueError):
+        B.score(held, "not found")  # the old scorer has no kind or family for it
+
+
+def test_attachments_split_on_semicolons_when_the_answer_holds_one_since_file_names_hold_commas():
+    files = {"kind": "email_attachments", "expected": {"files": ["Q3 plan, final.pdf", "budget.xlsx"]}}
+    assert Q.score(files, "Q3 plan, final.pdf; budget.xlsx") == 1, "one part per file"
+    assert Q.score(files, "Q3 plan, final.pdf, budget.xlsx") == 0.5, "cut at ', ': 'Q3 plan' and 'final.pdf' hold no file"
+    assert Q.files_f1(["a.pdf", "b.pdf"], "a.pdf, b.pdf") == 1 and Q.files_f1(["a.pdf", "b.pdf"], "a.pdf;b.pdf") == 1
+    assert Q.files_f1(["a.pdf"], "a.pdf; notes, v2.docx") == pytest.approx(0.667), "a semicolon present: commas do not cut"
+
+
+def test_owner_accounts_asked_as_how_many_is_scored_as_a_count():
+    many = {"kind": "owner_accounts", "family": "multi", "field": "count", "expected": {"value": "2"}, "pieces": ["Jordan Reyes"]}
+    assert Q.is_count(many) and Q.score(many, "2") == 1 and Q.score(many, "Two accounts: Fjord Bank Group and Northwind Health") == 1
+    assert Q.score(many, "Jordan Reyes owns 3 accounts, not 2") == 0, "the first number counts"
+    one = {"kind": "owner_accounts", "family": "multi", "field": "name", "expected": {"value": "Northwind Health"}}
+    assert not Q.is_count(one) and Q.score(one, "Northwind Health") == 1 and Q.score(one, "1") == 0
+    assert Q.is_count({"kind": "count2_jira"}) and Q.is_count({"kind": "email_count"}) and not Q.is_count({"kind": "email_to"})
+
+
+def test_draw_questions_keeps_out_a_question_about_a_document_and_field_asked_elsewhere():
+    docs = [_d(f"g{i}", "google_drive", f"Runway model number {i}", owner=o) for i, o in enumerate(("Maya Chen", "Ana Ruiz", "Liam Wu"))]
+    mix = {"embedded_drive_owner": 2}
+    free = Q.draw_questions(docs, 3, mix)
+    clash = free[0]
+    assert Q.about(clash) == ((clash["gold_docs"][0],), "owner") and Q.about({"field": "owner", "gold_docs": []}) is None
+    rows: list = []
+    got = Q.draw_questions(docs, 3, mix, avoid={Q.about(clash): "drive_owner-001"}, aside_rows=rows)
+    assert len(got) == 2 and clash["gold_docs"] not in [q["gold_docs"] for q in got], "the mix is still filled"
+    assert [(r["id"], r["unclear"]) for r in rows] == [(clash["id"], "re-asks drive_owner-001: the same document and field")]
+    assert Q.draw_questions(docs, 3, mix) == free, "without avoid, the same draw"

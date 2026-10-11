@@ -22,9 +22,11 @@ no document holds. v16 adds what those never asked (S/brain2/survey.txt, kinds l
   meeting's Redwood owner (``author_issues``, ``reporter_issues``, ``owner_accounts``). A join rests on the same name
   string, not on a confirmed same person. These are written as ``factbank_multi`` writes its questions (a value, a date or
   keys, with pieces), so the plan lessons can learn from them;
-* **unanswerable:** a field that most documents of a system hold is empty, missing, TBD or N/A on the named one
-  (``field_absent``); the right answer is "not found". "none" is a value, not an empty field, where the field's scale has
-  that level (Linear customer_impact: none, low, medium, high);
+* **unanswerable:** a field that the system uses (held by at least ``USUAL`` of its documents in the haystack, as
+  ``cie.factbank.records.Records`` counts a field it uses) is missing or empty on the named one (``field_absent``); the right
+  answer is "not found". A field that says in words that it has no value ('TBD', 'N/A', 'unassigned') is set aside: "TBD"
+  would be a right answer too. "none" is a value, not an empty field, where the field's scale has that level (Linear
+  customer_impact: none, low, medium, high);
 * **single, group embedded:** the field questions of ``brain_questions.FIELDS`` asked after a verb of knowing or telling
   ("Do you know when…", "Can you remind me who…"), with the same expected answers.
 
@@ -32,11 +34,14 @@ Every expected answer is computed from the raw document fields. A question with 
 is set aside, as ``brain_questions`` does: a name on two documents, a value written inside another value, an entry that is
 not a person, a tie for first or latest, a document whose own fields disagree (a thread's first message that is not its
 earliest, a history entry dated before the document was created), an answer written in the question itself, and the reasons
-of ``factbank_5k.why_unclear``. ``generate`` counts what it sets aside, by kind and reason.
+of ``factbank_5k.why_unclear``. ``generate`` counts what it sets aside, by kind and reason, and, given a list, writes there
+each set-aside candidate that was a question (an expected answer worked out, set aside as unclear) with its reason; a
+document with no value to ask about is only counted.
 
 ``kinds()`` is the catalogue, ``generate`` makes every question the documents allow, ``draw_questions`` draws a seeded sample
-in a mix (the kinds of ``brain_questions`` may join it), ``score`` scores one answer (``brain_questions.score`` for the old
-kinds) and ``family`` gives a question's family.
+in a mix (the kinds of ``brain_questions`` may join it; questions about a document and field already asked elsewhere can be
+kept out), ``score`` scores one answer (``brain_questions.score`` for the old kinds; family unanswerable first) and
+``family`` gives a question's family.
 
     python -m cie.eval.brain2_questions generate --work W | --docs DOCS.pkl --out Q.jsonl --report R.json [--seed 16]
 """
@@ -83,7 +88,7 @@ FILTER_MAX = 10  # keys in a filter list
 JOIN_MAX = 5  # documents a person's join reaches
 VALUE_MAX = 60  # characters of a value filtered on
 QUOTE_WORDS, QUOTE_MIN = 10, 8  # a Slack thread is named by its first ten words (eight when it is shorter)
-USUAL = 0.5  # a field "most documents hold": more than this share of the system's documents in the haystack
+USUAL = 0.3  # a field the system uses: held by at least this share of its documents in the haystack (Records' min_held)
 NONE = EMPTY | {"", "unassigned", "not assigned"}
 ROLE_WORDS = frozenset((
     "manager", "engineer", "engineering", "lead", "director", "head", "analyst", "owner", "admin", "administrator", "architect",
@@ -383,7 +388,8 @@ CATALOGUE: dict[str, Kind] = {
         ("email_to", "email", "person names, F1 (name_f1)", "gmail: the first message's To"),
         ("email_cc", "email", "person names, F1 (name_f1)", "gmail: the first message's Cc"),
         ("email_count", "email", _COUNT_SCORE, "gmail: message_count, equal to the messages written"),
-        ("email_attachments", "email", "file names, F1 (files_f1)", "gmail: attachments"),
+        ("email_attachments", "email", "file names, F1 (files_f1: parts split on ';' when the answer holds one, else on ', ')",
+         "gmail: attachments"),
         ("email_account", "email", "value in the answer (value_hit)", "gmail: related_account"),
         ("slack_channel", "chat", "value in the answer (value_hit)", "slack: the channel of a thread quoted by its first words"),
         ("slack_starter", "chat", "value in the answer (value_hit)", "slack: the first speaker, a full name"))},
@@ -391,14 +397,16 @@ CATALOGUE: dict[str, Kind] = {
        for k, (f, _, _) in LINK.items()},
     **{k: Kind(k, "multi", "combine", "key list, F1 (factbank_multi.own_score)", f"{s}.{f} -> linear issues assigned to the same name")
        for k, (s, f, _) in JOIN.items()},
-    "owner_accounts": Kind("owner_accounts", "multi", "combine", "value in the answer (factbank_multi.own_score)",
+    "owner_accounts": Kind("owner_accounts", "multi", "combine",
+                           "how many: count_hit; which one: value in the answer (factbank_multi.own_score)",
                            "fireflies.redwood_owner -> hubspot accounts owned by the same name: how many, or which one"),
     "field_absent": Kind("field_absent", "unanswerable", "absent", "1 if the answer says not found, else 0",
-                         "a usually-present field empty, missing, TBD or N/A on the named document"),
+                         "a field the system uses (held by at least USUAL of its documents) missing or empty on the named document"),
     **{f"embedded_{k}": Kind(f"embedded_{k}", "single", "embedded", f"as {k} (brain_questions.score)",
                              f"{k} asked after a verb of knowing or telling") for k in EMBEDDED},
 }
 COUNT_KINDS = frozenset(k for k in CATALOGUE if k.startswith(("count1_", "count2_")) or k in ("count_gmail", "pr_days_to_merge", "email_count"))
+UNANSWERABLE_KINDS = frozenset({"field_absent", "heldout"})  # heldout: the held-out writers' questions (``brain2_draw collect``)
 DEFAULT_MIX = {"count": 16, "filter": 6, "history": 16, "email": 14, "chat": 6, **{k: 2 for k in (*LINK, *JOIN, "owner_accounts")},
                "absent": 12, "embedded": 12}
 
@@ -418,9 +426,33 @@ def family(q: dict[str, Any]) -> str:
 
 
 # ------------------------------------------------------------------ helpers
-def _note(aside: Counter | None, why: str) -> None:
+class Aside(Counter):
+    """What one kind's generator set aside: a Counter of reasons, and ``rows``, the set-aside candidates that were questions
+    (an expected answer worked out, set aside as unclear), each written as ``_emit`` writes a question (in its first wording)
+    with its reason ("unclear")."""
+
+    def __init__(self, kind: str):
+        super().__init__()
+        self.kind = kind
+        self.rows: list[dict[str, Any]] = []
+
+
+def _row(kind: str, c: dict[str, Any], why: str) -> dict[str, Any]:
+    """A set-aside candidate as a question, in its first wording, with the reason it was set aside."""
+    k = CATALOGUE[kind]
+    ws = c.get("wordings") or ()
+    return {"kind": kind, "group": k.group, "family": k.family, **({"field": c["field"]} if c.get("field") is not None else {}),
+            "question": ws[0].format(**c.get("fmt", {})) if ws else None, "expected": c.get("expected"),
+            "gold_docs": sorted(set(c.get("gold") or [])), "pieces": [str(p) for p in c.get("pieces") or []], "generated": True,
+            **c.get("extra", {}), "unclear": why}
+
+
+def _note(aside: Counter | None, why: str, cand: dict[str, Any] | None = None) -> None:
+    """Count a reason; with a candidate question and an ``Aside``, keep the candidate too."""
     if aside is not None:
         aside[why] += 1
+        if cand is not None and isinstance(aside, Aside):
+            aside.rows.append(_row(aside.kind, cand, why))
 
 
 def _none(v: Any) -> bool:
@@ -514,7 +546,7 @@ def _emit(kind: str, cands: list[dict[str, Any]], rng: random.Random, cap: int |
     kept = []
     for c in cands:
         if _leaks(c):
-            _note(aside, "answer in the question")
+            _note(aside, "answer in the question", c)
         else:
             kept.append(c)
     if cap is not None and cap < len(kept):
@@ -693,6 +725,7 @@ class _Counts:
     def __init__(self, hay: Haystack):
         self.cands: dict[str, list[dict[str, Any]]] = defaultdict(list)
         self.aside: dict[str, Counter] = defaultdict(Counter)
+        self.rows: dict[str, list[dict[str, Any]]] = defaultdict(list)  # the set-aside count questions (``Aside.rows``)
         for src, spec in COUNT_FIELDS.items():
             self._source(hay, src, spec)
 
@@ -724,24 +757,25 @@ class _Counts:
         seen: set[frozenset[str]] = set()
 
         def add(kind: str, picked: list[tuple[str, str]], s: frozenset[str]) -> None:
+            filters = [(f, groups[(f, sq)][1]) for f, sq in picked]
+            gold = sorted(s)
+            ks = sorted(k for g in gold if (k := keys.get(g)))
+            n = len(s)
+            ws = _count_wordings(src, filters, False)
+            cand = {"source": src, "filters": filters, "n": n, "gold": gold, "fmt": {}, "expected": {"value": str(n)}, "wordings": ws,
+                    "pieces": [v for _, v in filters if v != "open"] + [str(n)] + ks, "extra": {"filters": [list(x) for x in filters]}}
             why = next((bad[g] for g in picked if g in bad), None)
             if why is None and s in seen:
                 why = "same set as another filter"
             if why:
                 self.aside[kind][why] += 1
+                if ws:
+                    self.rows[kind].append(_row(kind, cand, why))
                 return
             seen.add(s)
-            filters = [(f, groups[(f, sq)][1]) for f, sq in picked]
-            gold = sorted(s)
-            ks = sorted(k for g in gold if (k := keys.get(g)))
-            n = len(s)
-            cand = {"source": src, "filters": filters, "n": n, "gold": gold}
-            ws = _count_wordings(src, filters, False)
             if not ws:
                 return
-            self.cands[kind].append({**cand, "fmt": {}, "expected": {"value": str(n)}, "wordings": ws,
-                                     "pieces": [v for _, v in filters if v != "open"] + [str(n)] + ks,
-                                     "extra": {"filters": [list(x) for x in filters]}})
+            self.cands[kind].append(cand)
             if src in ("jira", "linear") and n <= FILTER_MAX:
                 if any(not k or not KEY.fullmatch(k) or hay.names["keys"][k] != 1 for k in (keys.get(g) for g in gold)):
                     self.aside["filter_list"]["named twice"] += 1
@@ -782,6 +816,8 @@ def count_questions(kind: str, hay: Haystack, rng: random.Random, cap: int | Non
     document holds inside a list, a set already asked about, and a count outside 2 to 15 are set aside."""
     if aside is not None:
         aside.update(hay.counts.aside.get(kind, Counter()))
+        if isinstance(aside, Aside):
+            aside.rows += hay.counts.rows.get(kind, [])
     return _emit(kind, hay.counts.cands.get(kind, []), rng, cap, aside)
 
 
@@ -808,14 +844,15 @@ def gmail_counts(hay: Haystack, rng: random.Random, cap: int | None = None, asid
         if not LO <= len(ds) <= HI:
             _note(aside, "count outside 2-15")
             continue
-        if sq in nested[p]:
-            _note(aside, "named inside another")
-            continue
         t = Counter(str(d["raw"]["thread_type"]).strip() for d in ds).most_common(1)[0][0]
         h = handles[p].most_common(1)[0][0]
         ws = tuple(dict.fromkeys(_literal(w.format(t=tt, p=pp)) for w in GMAIL_OWNER for tt, pp in ((t, p), (t.replace("_", " "), p), (t, h))))
-        cands.append({"fmt": {}, "expected": {"value": str(len(ds))}, "gold": [d["dsid"] for d in ds], "wordings": ws,
-                      "pieces": [p, t, str(len(ds))], "extra": {"filters": [["mailbox_owner", p], ["thread_type", t]]}})
+        cand = {"fmt": {}, "expected": {"value": str(len(ds))}, "gold": [d["dsid"] for d in ds], "wordings": ws,
+                "pieces": [p, t, str(len(ds))], "extra": {"filters": [["mailbox_owner", p], ["thread_type", t]]}}
+        if sq in nested[p]:
+            _note(aside, "named inside another", cand)
+            continue
+        cands.append(cand)
     accounts: dict[str, list[dict]] = defaultdict(list)
     shown: dict[str, Counter] = defaultdict(Counter)
     for d in g:
@@ -827,21 +864,22 @@ def gmail_counts(hay: Haystack, rng: random.Random, cap: int | None = None, asid
     listed = _listed(g, "related_account")
     for sq, ds in sorted(accounts.items()):
         a = shown[sq].most_common(1)[0][0]
+        cand = {"fmt": {"a": a}, "expected": {"value": str(len(ds))}, "gold": [d["dsid"] for d in ds],
+                "wordings": GMAIL_ACCOUNT, "pieces": [a, str(len(ds))], "extra": {"filters": [["related_account", a]]}}
         if not LO <= len(ds) <= HI:
             _note(aside, "count outside 2-15")
         elif sq.startswith("acme"):
-            _note(aside, "generic account name")
+            _note(aside, "generic account name", cand)
         elif sq in inner:
-            _note(aside, "named inside another")
+            _note(aside, "named inside another", cand)
         elif sq in listed:
-            _note(aside, "value also in a list")
+            _note(aside, "value also in a list", cand)
         elif any(_says(sq, d["title"]) for d in g if d not in ds):
-            _note(aside, "another thread's subject names it")
+            _note(aside, "another thread's subject names it", cand)
         elif why := next((r for d in ds if (r := _not_account(d["raw"], a))), ""):
-            _note(aside, why)
+            _note(aside, why, cand)
         else:
-            cands.append({"fmt": {"a": a}, "expected": {"value": str(len(ds))}, "gold": [d["dsid"] for d in ds],
-                          "wordings": GMAIL_ACCOUNT, "pieces": [a, str(len(ds))], "extra": {"filters": [["related_account", a]]}})
+            cands.append(cand)
     return _emit("count_gmail", cands, rng, cap, aside)
 
 
@@ -859,13 +897,15 @@ def created_on(hay: Haystack, rng: random.Random, cap: int | None = None, aside:
         for d in hay.of(src):
             fmt, name = hay.address(d)
             exp, why = _expected(d["raw"].get("created_at"), "date") if fmt else (None, name)
-            if exp is not None and (hist := _history_dates(d["raw"])) and hist[0] < exp["date"]:
-                exp, why = None, "history dated before it"
             if exp is None:
                 _note(aside, why)
                 continue
-            cands.append({"fmt": fmt, "expected": exp, "gold": [d["dsid"]], "pieces": [name, exp["date"]], "wordings": CREATED[src],
-                          "field": "created_at"})
+            cand = {"fmt": fmt, "expected": exp, "gold": [d["dsid"]], "pieces": [name, exp["date"]], "wordings": CREATED[src],
+                    "field": "created_at"}
+            if (hist := _history_dates(d["raw"])) and hist[0] < exp["date"]:
+                _note(aside, "history dated before it", cand)
+                continue
+            cands.append(cand)
     return _emit("created_on", cands, rng, cap, aside)
 
 
@@ -877,17 +917,18 @@ def last_updated(hay: Haystack, rng: random.Random, cap: int | None = None, asid
         for d in hay.of(src):
             fmt, name = hay.address(d)
             exp, why = _expected(d["raw"].get("updated_at"), "date") if fmt else (None, name)
-            if exp is not None:
-                made = _expected(d["raw"].get("created_at"), "date")[0]
-                if (hist := _history_dates(d["raw"])) and hist[-1] > exp["date"]:
-                    exp, why = None, "history dated after it"
-                elif made and made["date"] > exp["date"]:
-                    exp, why = None, "updated before created"
             if exp is None:
                 _note(aside, why)
                 continue
-            cands.append({"fmt": fmt, "expected": exp, "gold": [d["dsid"]], "pieces": [name, exp["date"]], "wordings": UPDATED[src],
-                          "field": "updated_at"})
+            cand = {"fmt": fmt, "expected": exp, "gold": [d["dsid"]], "pieces": [name, exp["date"]], "wordings": UPDATED[src],
+                    "field": "updated_at"}
+            made = _expected(d["raw"].get("created_at"), "date")[0]
+            if (hist := _history_dates(d["raw"])) and hist[-1] > exp["date"]:
+                _note(aside, "history dated after it", cand)
+            elif made and made["date"] > exp["date"]:
+                _note(aside, "updated before created", cand)
+            else:
+                cands.append(cand)
     return _emit("last_updated", cands, rng, cap, aside)
 
 
@@ -1133,6 +1174,7 @@ def email_questions(kind: str, hay: Haystack, rng: random.Random, cap: int | Non
             continue
         raw, th = d["raw"], _Thread(d["raw"])
         exp: dict[str, Any] | None = None
+        unclear: dict[str, Any] | None = None  # the answer of a question set aside as unclear
         why = ""
         if kind in ("email_sender", "email_to", "email_cc"):
             why = th.first_ok()
@@ -1195,15 +1237,18 @@ def email_questions(kind: str, hay: Haystack, rng: random.Random, cap: int | Non
             if not isinstance(a, str) or _none(a):
                 why = "no value" if not isinstance(a, list) else "several values"
             elif _squash(a) in inner:
-                why = "named inside another"
-            elif not (why := _not_account(raw, a)):
+                why, unclear = "named inside another", {"value": a.strip()}
+            elif why := _not_account(raw, a):
+                unclear = {"value": a.strip()}
+            else:
                 exp = {"value": a.strip()}
+        wordings = {"email_sender": SENDER, "email_date": STARTED, "email_to": TO, "email_cc": CC, "email_count": MESSAGES,
+                    "email_attachments": ATTACHED, "email_account": ACCOUNT}[kind]
         if exp is None:
-            _note(aside, why)
+            _note(aside, why, unclear and {"fmt": fmt, "expected": unclear, "gold": [d["dsid"]], "pieces": [name, *_answers(unclear)],
+                                           "wordings": wordings})
             continue
-        cands.append({"fmt": fmt, "expected": exp, "gold": [d["dsid"]], "pieces": [name, *_answers(exp)],
-                      "wordings": {"email_sender": SENDER, "email_date": STARTED, "email_to": TO, "email_cc": CC, "email_count": MESSAGES,
-                                   "email_attachments": ATTACHED, "email_account": ACCOUNT}[kind]})
+        cands.append({"fmt": fmt, "expected": exp, "gold": [d["dsid"]], "pieces": [name, *_answers(exp)], "wordings": wordings})
     return _emit(kind, cands, rng, cap, aside)
 
 
@@ -1265,20 +1310,21 @@ def link_questions(kind: str, hay: Haystack, rng: random.Random, cap: int | None
         pr, iss = by_id[u["pr"]], by_id[u["issue"]]
         n, key = str(pr["raw"]["pr_number"]), _key(iss) or ""
         exp, why = _expected(iss["raw"].get(field), typ)
-        if exp is not None and _squash(exp["value"]) in inner:
-            exp, why = None, "named inside another"
-        if exp is not None and any(k != key and k in trackers and _other_value(trackers[k], field) not in (None, exp["value"])
-                                   for k in _refs(pr)):
-            exp, why = None, "linked"
-        if exp is not None:
-            q = {"kind": kind, "question": wordings[0].format(n=n), "expected": exp, "pieces": [key, exp["value"]], "gold_docs": u["docs"]}
-            why = why_unclear(q, hay.docs) or ""
-            exp = None if why else exp
         if exp is None:
             _note(aside, why)
             continue
-        cands.append({"fmt": {"n": n}, "expected": exp, "gold": u["docs"], "pieces": [key, exp["value"]], "wordings": wordings,
-                      "field": field})
+        cand = {"fmt": {"n": n}, "expected": exp, "gold": u["docs"], "pieces": [key, exp["value"]], "wordings": wordings, "field": field}
+        if _squash(exp["value"]) in inner:
+            why = "named inside another"
+        elif any(k != key and k in trackers and _other_value(trackers[k], field) not in (None, exp["value"]) for k in _refs(pr)):
+            why = "linked"
+        else:
+            q = {"kind": kind, "question": wordings[0].format(n=n), "expected": exp, "pieces": [key, exp["value"]], "gold_docs": u["docs"]}
+            why = why_unclear(q, hay.docs) or ""
+        if why:
+            _note(aside, why, cand)
+            continue
+        cands.append(cand)
     return _emit(kind, cands, rng, cap, aside)
 
 
@@ -1326,11 +1372,12 @@ def join_questions(kind: str, hay: Haystack, rng: random.Random, cap: int | None
             _note(aside, why)
             continue
         q = {"kind": kind, "question": wordings[0].format(**fmt), "pieces": [p, *keys], "expected": {"ids": keys, "id_kind": "key"}}
+        cand = {"fmt": fmt, "expected": {"ids": keys, "id_kind": "key"}, "gold": [d["dsid"], *(x["dsid"] for x in ds)],
+                "pieces": [p, *keys], "wordings": wordings, "field": field}
         if why := why_unclear(q, hay.docs):
-            _note(aside, why)
+            _note(aside, why, cand)
             continue
-        cands.append({"fmt": fmt, "expected": {"ids": keys, "id_kind": "key"}, "gold": [d["dsid"], *(x["dsid"] for x in ds)],
-                      "pieces": [p, *keys], "wordings": wordings, "field": field})
+        cands.append(cand)
     return _emit(kind, cands, rng, cap, aside)
 
 
@@ -1354,11 +1401,12 @@ def owner_accounts(hay: Haystack, rng: random.Random, cap: int | None = None, as
         accts = sorted(str(x["title"]).strip() for x in ds)
         one = accts[0]
         if len(ds) == 1 and rng.random() < 0.5:
+            cand = {"fmt": fmt, "expected": {"value": one}, "gold": [d["dsid"], ds[0]["dsid"]], "pieces": [p, one], "wordings": OWNER_NAME,
+                    "field": "name"}
             if hay.names["titles"][_norm(one)] != 1 or _squash(one) in inner:
-                _note(aside, "named twice" if hay.names["titles"][_norm(one)] != 1 else "named inside another")
+                _note(aside, "named twice" if hay.names["titles"][_norm(one)] != 1 else "named inside another", cand)
                 continue
-            cands.append({"fmt": fmt, "expected": {"value": one}, "gold": [d["dsid"], ds[0]["dsid"]], "pieces": [p, one],
-                          "wordings": OWNER_NAME, "field": "name"})
+            cands.append(cand)
         else:
             cands.append({"fmt": fmt, "expected": {"value": str(len(ds))}, "gold": [d["dsid"], *(x["dsid"] for x in ds)],
                           "pieces": [p, *accts], "wordings": OWNER_COUNT, "field": "count"})
@@ -1382,15 +1430,24 @@ def _known_accounts(hay: Haystack) -> re.Pattern | None:
 
 
 def _absent(src: str, field: str, v: Any) -> bool:
-    """Whether a field_absent field is empty on a document (``_none``): missing, null, empty, 'TBD', 'N/A', 'unassigned' and
-    the like, and 'none' except where it is a level of the field's scale (``NONE_LEVEL``: no customer impact)."""
+    """Whether a field_absent field holds no value on a document (``_none``): missing, null, empty, 'TBD', 'N/A',
+    'unassigned' and the like, and 'none' except where it is a level of the field's scale (``NONE_LEVEL``: no customer
+    impact)."""
     return _none(v) and not ((src, field) in NONE_LEVEL and isinstance(v, str) and v.strip().lower() == "none")
 
 
+def _empty(v: Any) -> bool:
+    """Whether a field is truly empty: missing or null, an empty list or mapping, or text of nothing but spaces. A field
+    that says in words that it has no value ('TBD', 'N/A', 'unassigned', 'none') is not."""
+    return v is None or v == [] or v == {} or (isinstance(v, str) and not v.strip())
+
+
 def field_absent(hay: Haystack, rng: random.Random, cap: int | None = None, aside: Counter | None = None) -> list[dict[str, Any]]:
-    """A field that most documents of a system hold (``USUAL``) but that is empty, missing, TBD or N/A on the named one
-    (``_absent``: "none" is a value where the field's scale has that level), and that the document's other fields never
-    mention; for an email thread with no account, no account name written in the thread either. Expected: not found."""
+    """A field that the system uses (a value on at least ``USUAL`` of its documents in the haystack; "none" is a value where
+    the field's scale has that level) but that is missing or empty on the named one (``_empty``), and that the document's
+    other fields never mention; for an email thread with no account, no account name written in the thread either.
+    Expected: not found, the one right answer. A field holding a word for no value ('TBD', 'N/A', 'unassigned', 'none') is
+    set aside ("a placeholder value"): an answer quoting it would be right too."""
     cands = []
     accounts = None
     for (src, field), (mention, wordings) in ABSENT.items():
@@ -1404,24 +1461,28 @@ def field_absent(hay: Haystack, rng: random.Random, cap: int | None = None, asid
                 if _none(d["raw"].get(field)):
                     _note(aside, "'none' is a level of the field")
                 continue
-            if share <= USUAL:
+            if share < USUAL:
                 _note(aside, "field usually empty")
                 continue
             fmt, name = hay.address(d)
             if fmt is None:
                 _note(aside, name)
                 continue
+            cand = {"fmt": fmt, "expected": {"not_found": True}, "gold": [d["dsid"]], "pieces": [name], "wordings": wordings,
+                    "field": field, "extra": {"absent_value": "<absent>" if v == "<absent>" else str(v)[:20]}}
+            if not _empty(d["raw"].get(field)):
+                _note(aside, "a placeholder value", cand)
+                continue
             rest = json.dumps({k: x for k, x in d["raw"].items() if k != field}, ensure_ascii=False, default=str)
             if re.search(mention, rest, re.I):
-                _note(aside, "another field mentions it")
+                _note(aside, "another field mentions it", cand)
                 continue
             if src == "gmail":
                 accounts = accounts if accounts is not None else _known_accounts(hay)
                 if accounts is not None and accounts.search(_norm(str(d["title"]) + " " + rest)):
-                    _note(aside, "the thread names an account")
+                    _note(aside, "the thread names an account", cand)
                     continue
-            cands.append({"fmt": fmt, "expected": {"not_found": True}, "gold": [d["dsid"]], "pieces": [name], "wordings": wordings,
-                          "field": field, "extra": {"absent_value": "<absent>" if v == "<absent>" else str(v)[:20]}})
+            cands.append(cand)
     return _emit("field_absent", cands, rng, cap, aside)
 
 
@@ -1452,23 +1513,34 @@ GENERATORS: dict[str, Callable[..., list[dict[str, Any]]]] = {
 
 
 # ------------------------------------------------------------------ every question, and a draw
-def generate(docs: list[dict[str, Any]], seed: int = SEED, kinds: Iterable[str] | None = None, cap: int | None = None
-             ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+def generate(docs: list[dict[str, Any]], seed: int = SEED, kinds: Iterable[str] | None = None, cap: int | None = None,
+             aside_rows: list[dict[str, Any]] | None = None) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     """Every question of the new kinds (all by default) the documents allow, at most ``cap`` per kind, and a report as
     ``brain_questions.generate`` gives it: questions per kind ("by_kind") and what was set aside, by kind and reason
-    ("aside")."""
+    ("aside"). Given ``aside_rows``, the set-aside candidates that were questions (``Aside.rows``) are added to it, kind by
+    kind, each with an id ('<kind>-aside-001') and its reason ("unclear"); the questions are the same either way."""
     want = set(kinds) if kinds is not None else set(CATALOGUE)
     unknown = want - set(CATALOGUE)
     if unknown:
         raise ValueError(f"unknown kind(s) {sorted(unknown)}")
     hay = Haystack(docs)
     out: list[dict[str, Any]] = []
-    aside: dict[str, Counter] = defaultdict(Counter)
+    aside = {k: Aside(k) for k in sorted(want)}
     for k in sorted(want):
         out += GENERATORS[k](hay, random.Random(f"{seed}/{k}"), cap, aside=aside[k])
+        if aside_rows is not None:
+            aside_rows += [{"id": f"{k}-aside-{i:03d}", **r} for i, r in enumerate(aside[k].rows, 1)]
     by_kind = Counter(q["kind"] for q in out)
     return out, {"by_kind": {k: by_kind[k] for k in CATALOGUE if k in want},
                  "aside": {k: dict(sorted(v.items())) for k, v in sorted(aside.items()) if v}}
+
+
+def about(q: dict[str, Any]) -> tuple[tuple[str, ...], str] | None:
+    """What a question asks about, as two questions asking the same thing share it: its gold documents and its field; None
+    for a question with no field or no gold document."""
+    if q.get("field") is None or not q.get("gold_docs"):
+        return None
+    return tuple(sorted(q["gold_docs"])), str(q["field"])
 
 
 def resolve(key: str) -> set[str]:
@@ -1501,14 +1573,31 @@ def quotas(mix: dict[str, int], available: Counter, seed: int = SEED) -> dict[st
 
 
 def draw_questions(docs: list[dict[str, Any]], seed: int = SEED, mix: dict[str, int] | None = None,
-                   prose: list[dict[str, Any]] | None = None, multi_wordings: dict | None = None) -> list[dict[str, Any]]:
+                   prose: list[dict[str, Any]] | None = None, multi_wordings: dict | None = None,
+                   avoid: dict[tuple[tuple[str, ...], str], str] | None = None,
+                   aside_rows: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     """A seeded sample in a mix of {kind, group or family: number} (``DEFAULT_MIX``), picked as ``brain_questions.pick``
     picks; a key may name the old kinds too ('multi' is both catalogues' multi-document kinds), whose questions come from
-    ``brain_questions.generate`` (prose from ``prose``)."""
+    ``brain_questions.generate`` (prose from ``prose``).
+
+    ``avoid`` maps what questions asked elsewhere are about (``about``: gold documents and field) to their ids: a new-kind
+    question about the same is taken out of the pool before the pick, so that the mix is still filled, and is set aside as
+    re-asking that question. Given ``aside_rows``, the new kinds' set-aside questions (``generate``) and those taken out are
+    added to it with their reasons."""
     mix = dict(DEFAULT_MIX if mix is None else mix)
     wanted = set().union(*(resolve(k) for k in mix)) if mix else set()
     new = wanted & set(CATALOGUE)
-    pool = generate(docs, seed, kinds=new)[0] if new else []
+    pool = generate(docs, seed, kinds=new, aside_rows=aside_rows)[0] if new else []
+    if avoid:
+        kept = []
+        for q in pool:
+            key = about(q)
+            if key is not None and (seen := avoid.get(key)) is not None:
+                if aside_rows is not None:
+                    aside_rows.append({**q, "unclear": f"re-asks {seen}: the same document and field"})
+            else:
+                kept.append(q)
+        pool = kept
     old = wanted - new - {"prose", "metadata"}
     if old:
         pool += B.generate(docs, seed, kinds=old, multi_wordings=multi_wordings)[0]
@@ -1541,10 +1630,11 @@ def _file(s: str) -> str:
 
 def files_f1(files: list[str], answer: str) -> float:
     """F1 of the file names in the answer line: a file is found when its name (letters and digits) is written there; a part
-    of the line between commas, semicolons or line breaks is right when it holds an expected file."""
+    of the line is right when it holds an expected file. File names may hold commas ('Q3 plan, final.pdf'), so the brain
+    joins them with "; ": the line is cut at semicolons when it holds one, else at a comma and a space, and at line breaks."""
     want = {f for f in (_file(x) for x in files) if f}
     line = final_answer(answer or "")
-    parts = [p for p in (_file(x) for x in re.split(r"[,;\n]", line)) if p]
+    parts = [p for p in (_file(x) for x in re.split(r"[;\n]" if ";" in line else r",\s|\n", line)) if p]
     if not want or not parts:
         return 0.0
 
@@ -1556,31 +1646,36 @@ def files_f1(files: list[str], answer: str) -> float:
     return round(2 * p * r / (p + r), 3) if p and r else 0.0
 
 
-def score(q: dict[str, Any], row: dict[str, Any] | str) -> float | None:
-    """One answer's score in [0, 1]. ``row`` is the brain's row ({"answer", "route"?}) or the answer itself. A question of an
-    old kind is scored by ``brain_questions.score``.
+def is_count(q: dict[str, Any]) -> bool:
+    """Whether the question asks for a number scored by ``count_hit``: a count kind, or owner_accounts asked as how many."""
+    return q.get("kind") in COUNT_KINDS or (q.get("kind") == "owner_accounts" and q.get("field") == "count")
 
-    - unanswerable: 1 if the answer says not found, else 0; for every other kind an answer of not found scores 0;
-    - counts, days to merge and message counts: ``count_hit``;
+
+def score(q: dict[str, Any], row: dict[str, Any] | str) -> float | None:
+    """One answer's score in [0, 1]. ``row`` is the brain's row ({"answer", "route"?}) or the answer itself.
+
+    - unanswerable (family unanswerable, or kind field_absent or heldout; before any catalogue lookup, so the held-out
+      writers' questions too): 1 if the answer says not found (``brain_questions.says_not_found``), else 0;
+    - an old kind: ``brain_questions.score``; for every other new kind an answer of not found scores 0;
+    - counts, days to merge, message counts and owner_accounts asked as how many (``is_count``): ``count_hit``;
     - embedded: as the field kind it rewords;
     - file lists: ``files_f1``; person lists: ``brain_questions.name_f1``;
     - multi: ``factbank_multi.own_score``;
     - keys and dates: ``factbank_test.direct`` (a timestamp read as its date); values: ``brain_questions.value_hit``."""
     kind = q.get("kind")
+    answer, route = (row, None) if isinstance(row, str) else (str(row.get("answer") or ""), row.get("route"))
+    if kind in UNANSWERABLE_KINDS or family(q) == "unanswerable":
+        return float(B.says_not_found(answer, route))
     if kind not in CATALOGUE:
         return B.score(q, row)
     if kind.startswith("embedded_"):
         return B.score({**q, "kind": kind[len("embedded_"):], "family": "single"}, row)
-    answer, route = (row, None) if isinstance(row, str) else (str(row.get("answer") or ""), row.get("route"))
     answer = re.sub(r"\b(\d{4}-\d{2}-\d{2})T(?=\d)", r"\1 ", answer)
-    nf = B.says_not_found(answer, route)
-    fam = family(q)
-    if fam == "unanswerable":
-        return float(nf)
-    if nf:
+    if B.says_not_found(answer, route):
         return 0.0
+    fam = family(q)
     e = q.get("expected") or {}
-    if kind in COUNT_KINDS:
+    if is_count(q):
         return count_hit(int(e["value"]), answer)
     if "files" in e:
         return files_f1(e["files"], answer)

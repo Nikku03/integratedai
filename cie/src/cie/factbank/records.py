@@ -595,11 +595,14 @@ class Records:
         return out
 
     @staticmethod
-    def nearest_fields(point: list[set[str]], m: Match, values: list[Match]) -> set[str] | None:
+    def nearest_fields(toks: list[str], point: list[set[str]], m: Match, values: list[Match]) -> set[str] | None:
         """The fields named by the pointing words closest to a value (within ``NEAR`` words on either side), leaving out a word
-        closer to another value ("pages of the platform team in review": "team" is the platform's, not the review's); None
-        when no word next to the value points to a field."""
+        closer to another value ("pages of the platform team in review": "team" is the platform's, not the review's) and a
+        role verb before "by" or "to", which names the value after it ("forecast to close in 2026-04 owned by Maya Chen":
+        "owned" is Maya Chen's); None when no word next to the value points to a field."""
         def dist(j: int, x: Match) -> int:
+            if j > x.start and toks[j] in CUE_VERBS and toks[j + 1:j + 2] in (["by"], ["to"]):
+                return NEAR + 1  # "owned by", "assigned to": the value after it
             return x.start - j if j < x.start else j - x.end + 1
 
         best, got = NEAR + 1, set()
@@ -607,7 +610,7 @@ class Records:
             if not point[j] or m.start <= j < m.end:
                 continue
             d = dist(j, m)
-            if d > best or any(dist(j, o) < d for o in values if o is not m and not o.start <= j < o.end):
+            if d > min(best, NEAR) or any(dist(j, o) < d for o in values if o is not m and not o.start <= j < o.end):
                 continue
             got = set(point[j]) if d < best else got | point[j]
             best = d
@@ -655,7 +658,7 @@ class Records:
         chosen: list[tuple[Match, str, bool]] = []
         attached: set[int] = set()
         for m, fields in live:
-            named = self.nearest_fields(point, m, [o for o, _ in live])
+            named = self.nearest_fields(toks, point, m, [o for o, _ in live])
             if named is not None:
                 fields = {p: k for p, k in fields.items() if p in named}
                 if not fields:

@@ -5,6 +5,7 @@ and the scores over eight families with the rules."""
 from __future__ import annotations
 
 import json
+import os
 import sys
 import types
 from pathlib import Path
@@ -147,7 +148,7 @@ def test_the_new_kinds_mix_spreads_over_the_new_families_and_names_none_of_v15s_
     assert per == {"counts": 40, "history": 40, "email_chat": 40, "multi": 20, "unanswerable": 20, "single": 20}
     assert {k for k in T.MIX16 if fam(k) == {"multi"}} == {k for k, v in Q2.CATALOGUE.items() if v.family == "multi"}
     assert T.MIX15 == {"deadlines": 15, "lists": 15, "fields": 30, "names": 10, "link": 15, "combine": 15, "compare": 6, "not_found": 20,
-                       "prose": 50}, "v15's test mix"
+                       "prose": 50, "descriptive": 40}, "v15's test mix, descriptive questions up to 40"
     T.check_mix16(T.MIX16)
     for bad in ({"multi": 5}, {"link": 2}, {"fields": 3}):
         with pytest.raises(ValueError, match="mix15"):
@@ -173,7 +174,10 @@ def test_the_draw_is_v15s_draw_then_the_new_kinds_then_the_held_out_questions(tm
     q15, a15, r15 = H.draw(docs, 3, MIX15, prose)
     n15, n16 = len(q15), rep["by_part"]["v16"]
     assert qs[:n15] == q15, "v15's part is brain_test.draw's, unchanged"
-    assert qs[n15:n15 + n16] == Q2.draw_questions(docs, 3, MIX16), "the new kinds are brain2_questions.draw_questions'"
+    asked15 = {Q2.about(q): q["id"] for q in q15 if Q2.about(q)}
+    assert qs[n15:n15 + n16] == Q2.draw_questions(docs, 3, MIX16, avoid=asked15), \
+        "the new kinds are brain2_questions.draw_questions', none about a document and field v15's part asks about"
+    assert not {Q2.about(q) for q in qs[n15:n15 + n16]} & set(asked15)
     assert [q["id"] for q in qs[n15 + n16:]] == ["heldout-9-001", "heldout-8"]
     assert len({q["id"] for q in qs}) == len(qs) == rep["questions"] and sum(rep["by_family"].values()) == len(qs)
     assert {q["kind"] for q in qs[n15:n15 + n16]} >= {"count1_jira", "pr_issue_project", "author_issues", "owner_accounts", "field_absent"}
@@ -183,9 +187,20 @@ def test_the_draw_is_v15s_draw_then_the_new_kinds_then_the_held_out_questions(tm
     assert rep["v16"]["available"] == gen["by_kind"] and rep["v16"]["set_aside"] == gen["aside"] and gen["by_kind"]["count1_jira"] == 2
     assert rep["heldout"] == {"read": 7, "kept": 2, "set_aside": {"asked twice": 1, "expects an answer": 1, "has gold documents": 1,
                                                                    "held-out document in the haystack": 1, "no held-out document": 1}}
-    assert aside[:len(a15)] == a15 and {q["id"]: q["unclear"] for q in aside[len(a15):]} == {
+    assert aside[:len(a15)] == a15 and {q["id"]: q["unclear"] for q in aside[len(a15):] if T.part(q) == "heldout"} == {
         "heldout-9-002": "held-out document in the haystack", "heldout-9-003": "expects an answer", "heldout-9-004": "has gold documents",
         "heldout-9-005": "asked twice", "heldout-7": "no held-out document"}
+    rows16 = [q for q in aside[len(a15):] if T.part(q) == "v16"]
+    reask = [q for q in rows16 if q["unclear"].startswith(T.REASK)]
+    by_id15 = {q["id"]: q for q in q15}
+    assert reask and all(q["unclear"] == f"re-asks {asked15[Q2.about(q)]}: the same document and field" for q in reask)
+    assert {(q["kind"], by_id15[asked15[Q2.about(q)]]["kind"]) for q in reask} == {
+        ("embedded_hubspot_stage", "hubspot_stage"), ("embedded_linear_issue_priority", "linear_issue_priority"),
+        ("embedded_pr_author", "pr_author"), ("embedded_pr_repo", "pr_repo")}, "the embedded wordings of v15's field questions"
+    assert rep["v16"]["reasked"] == {q["kind"]: 1 for q in reask} and all(q["unclear"] and q.get("expected") for q in rows16)
+    gen_rows: list = []
+    Q2.generate(docs, 3, kinds=set().union(*map(Q2.resolve, MIX16)), aside_rows=gen_rows)
+    assert [q for q in rows16 if q not in reask] == gen_rows, "the new kinds' set-aside questions with their reasons"
     assert rep["by_part"] == {"heldout": 2, "v15": n15, "v16": n16} and rep["set_aside_written"]["heldout"] == 5
     with pytest.raises(ValueError, match="twice"):
         T.draw2(docs, 3, MIX15, MIX16, prose, None, [{**held[0], "id": q15[0]["id"]}])
@@ -198,6 +213,9 @@ def test_questions_write_the_set_and_the_small_control_where_every_answer_reprod
     rep = T.write_questions(work, 3, MIX15, MIX16, prose=tmp_path / "prose.jsonl", heldout=tmp_path / "heldout.jsonl", small=small)
     qs = _jsonl(work / "questions.jsonl")
     assert len(qs) == rep["questions"] and json.loads((work / H.REPORT).read_text())["by_part"] == rep["by_part"]
+    sha = {"prose": H._sha(tmp_path / "prose.jsonl"), "descriptive": None, "heldout": H._sha(tmp_path / "heldout.jsonl"), "wordings": None}
+    assert rep["inputs_sha256"] == sha and json.loads((work / H.REPORT).read_text())["inputs_sha256"] == sha
+    assert any(q["unclear"].startswith(T.REASK) for q in _jsonl(work / "set_aside_questions.jsonl") if T.part(q) == "v16")
     assert {q["id"]: q["unclear"] for q in _jsonl(work / "set_aside_questions.jsonl") if q.get("origin") == "heldout"}["heldout-7"] \
         == "no held-out document"
     gold = sorted({x for q in qs for x in q["gold_docs"]})
@@ -337,6 +355,47 @@ def test_every_arm_is_asked_recorded_with_its_lessons_and_hash_seed_and_scored(t
     assert json.loads((work / "report.json").read_text())["questions"] == rep["questions"]
 
 
+def test_the_lessons_hashes_and_the_hash_seed_are_taken_when_the_arm_starts(tmp_path, monkeypatch):
+    work = _bench(tmp_path)
+    T.write_questions(work, 3, {"fields": 2}, {"counts": 1})
+    H.build(work)
+    single, plans = _lessons(tmp_path)
+    calls: list = []
+    _brain_stub(monkeypatch, calls)
+    stub = sys.modules["cie.factbank.brain"]
+    real = stub.ask_brain
+
+    def changing(work, single, plans, **kw):  # the lessons and the hash seed change while the arm runs
+        Path(single).write_text(Path(single).read_text() + " ")
+        os.environ["PYTHONHASHSEED"] = "9"
+        return real(work, single, plans, **kw)
+
+    stub.ask_brain = changing
+    for arm in ("v16", "v15"):
+        monkeypatch.setenv("PYTHONHASHSEED", "0")
+        before = H._sha(single), H._sha(plans)
+        rec = T.ask(work, arm, single, plans, router=str(plans))
+        reg = H.registry(work)[T.FILES2[arm]]
+        assert (reg["single_sha256"], reg["plans_sha256"], reg["router_sha256"]) == (*before, before[1]), arm
+        assert reg["pythonhashseed"] == rec["pythonhashseed"] == "0" and os.environ["PYTHONHASHSEED"] == "9", arm
+        assert H._sha(single) != before[0], "the file changed after the arm started"
+    assert [c["v16"] for c in calls] == [True, False]
+
+
+def test_v15s_part_takes_at_most_40_descriptive_questions(tmp_path):
+    work = _bench(tmp_path)
+    docs = H.load_docs(work)
+    rows = [{"id": f"desc-9-{i:03d}", "group": "descriptive", "kind": "descriptive", "family": "single", "field": "owner",
+             "question": "Who owns the planning sheet for the next quarter's runway?", "expected": {"value": "Maya Chen"},
+             "gold_docs": ["d14"], "pieces": ["Runway model for Q3 planning", "Maya Chen"]} for i in range(45)]
+    _write_jsonl(tmp_path / "descriptive.jsonl", rows)
+    desc = H.load_descriptive(tmp_path / "descriptive.jsonl")
+    qs, _, rep = T.draw2(docs, 3, None, {"counts": 1}, None, desc)
+    assert sum(q["kind"] == "descriptive" for q in qs) == 40 == rep["mix15"]["given"]["descriptive"] == rep["mix15"]["asked"]["descriptive"]
+    qs, _, rep = T.draw2(docs, 3, None, {"counts": 1}, None, desc[:12])
+    assert sum(q["kind"] == "descriptive" for q in qs) == 12, "all of them when fewer pass"
+
+
 def test_a_name_cannot_take_another_arms_file_or_label_and_v16_checks_what_it_reads(tmp_path, monkeypatch):
     work = _bench(tmp_path)
     T.write_questions(work, 3, {"fields": 2}, {"counts": 1})
@@ -386,6 +445,11 @@ def test_the_rules_read_the_report():
     got = H.rules(rep, fns)
     failed = sorted(k.split()[0] for k, v in got.items() if v is False)
     assert failed == ["12", "3", "6", "7"], got
+    rep["small"]["differences"]["v16"]["big_minus_small"] |= {"single": -0.06, "multi": 0.06, "prose": 0.0}
+    got = {k.split()[0]: v for k, v in H.rules(rep, fns).items()}
+    assert got["12"] is False, "the size rule holds for each of single, multi and prose, not for their mean (0.0 here)"
+    assert T.SIZE_FAMILIES2 == ("single", "multi", "prose") and "for each of single, multi and free text" in next(k for k in fns if k.startswith("12 "))
+    assert "for each of single, multi and prose" in T.preregistered2.__doc__
     del rep["small"]
     rep["scores"] = {"v16": rep["scores"]["v16"]}
     why: dict = {}

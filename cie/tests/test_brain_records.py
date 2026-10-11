@@ -132,6 +132,7 @@ def test_start_none(rec, question):
     ("Can you count the issues in Linear in cycle 2026-W07?", "2"),
     ("How many email threads relate to the account Atlas Health AI?", "1"),
     ("How many meetings recorded in Fireflies are there with call type demo and owned on the Redwood side by Jordan Kim?", "1"),
+    ("How many HubSpot accounts in evaluation owned by Jordan Reyes are there?", "1"),  # "owned by" names the value after it
 ])
 def test_table_counts(rec, question, answer):
     got = rec.table(question)
