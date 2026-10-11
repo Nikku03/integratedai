@@ -331,3 +331,23 @@ def test_main_min_held(paths, capsys):
     assert BR.main([*base, "--name", "v16cli"])["routes"]["absent"] == 1
     rep = BR.main([*base, "--name", "v16strict", "--min-held", "0.9"])
     assert "absent" not in rep["routes"] and '"written": "v16strict.jsonl"' in capsys.readouterr().out
+
+
+# ------------------------------------------------------------------ unknown names
+@pytest.mark.parametrize("question, names", [
+    ("What latency did the VeloxBridge pilot agree on?", ["VeloxBridge"]),  # CamelCase, held by no entity
+    ("Which Jira tickets did Quintessa raise?", ["Quintessa"]),  # capitalised inside the sentence
+    ("Quintessa raised which Jira tickets?", []),  # the first word of a sentence is not read as a name
+    ("Who is assigned to the Jira ticket SUP-101?", []),  # every name-like word is held
+    ("How do we verify the Telemetry mode?", []),  # capitalised but held
+])
+def test_unknown_names(v16, question, names):
+    assert v16.unknown_names(question) == names
+
+
+def test_an_unknown_name_is_not_found_with_v16_only(v16, v15):
+    q = "What latency did the VeloxBridge pilot agree on?"
+    r = v16.ask(q)
+    _row_ok(v16, r, "not_found")
+    assert r["answer"] == "not found" and 'name "VeloxBridge"' in r["reason"]
+    assert v15.ask(q)["route"] != "not_found"

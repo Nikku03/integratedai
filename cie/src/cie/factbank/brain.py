@@ -209,6 +209,12 @@ COVER_BELOW = 0.57
 COVER_MIN_WEIGHT = 10.0  # a question whose rare words weigh no more than this (about two rare words) has nothing to check
 COVER_ENDS = 50  # the plan's end entities read for the check, at most
 ROUTE_UNCOVERED = "absent_doc"  # the route of that "not found" (a not_found route, ``cie.eval.brain2_test.route_class``)
+# v16, unknown names (``Brain.unknown_names``): a word written as a name, capitalised inside a sentence or in CamelCase, three
+# characters or more, that no entity of the bank holds: the question is about something the company does not have. Measured in
+# round 2's phase 2 on train5k (0 of 16,436 answerable questions; 11 of 46 held-out questions) and then dev5k (0 of 15,885; 11
+# of 51); the idea came from two dev held-out quotes that named a customer the bank never mentions
+NAME_WORD_TOKEN = re.compile(r"(?<![\w'])([A-Za-z][A-Za-z0-9]{2,})(?![\w'])")
+CAMEL = re.compile(r"[a-z][A-Z]")
 
 
 def squash(s: str) -> str:
@@ -712,6 +718,18 @@ class Brain:
         people = self.people_asked(text)
         return f"person {people[0]}" if people else None
 
+    def unknown_names(self, question: str) -> list[str]:
+        """v16: the words of the question written as names (capitalised, not opening a sentence, or in CamelCase; three characters
+        or more, quoted text included) that no entity of the bank holds (``FactBank.doc_freq``): "VeloxBridge" in "What did the
+        VeloxBridge pilot agree?" when the company never mentions VeloxBridge."""
+        out = []
+        for m in NAME_WORD_TOKEN.finditer(question):
+            w, before = m.group(1), question[:m.start()].rstrip()
+            opens = not before or before[-1] in ".?!:\"'\u201c(-"
+            if (w[0].isupper() and not opens or CAMEL.search(w)) and self.bank.doc_freq(w.lower()) == 0:
+                out.append(w)
+        return list(dict.fromkeys(out))
+
     # ------------------------------------------------------------------ planning and routing
     def plan(self, question: str) -> dict[str, Any]:
         """The planner's answer, best plan, journal and top plans, the best plan's score, and whether it starts from something
@@ -896,6 +914,9 @@ class Brain:
                     "journal": [head, *journal], "family_scores": scores or {}, "ms": round((time.perf_counter() - t) * 1000, 2)}
 
         miss = self.missing(question)
+        if not miss and self.v16:
+            unknown = self.unknown_names(question)
+            miss = f'name "{unknown[0]}"' if unknown else None
         if miss:
             return done("not found", "not_found", f"the bank holds no {miss}", f"Not found: the bank holds no {miss}.", [])
         start = None
