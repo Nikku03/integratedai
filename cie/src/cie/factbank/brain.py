@@ -484,6 +484,93 @@ class Brain:
             self._prose_route = ProseRoute(self.bank, budget=self.budget)
         return self._prose_route
 
+    # ------------------------------------------------------------------ v16: fact-route abstention
+    def entity_count(self) -> int:
+        """The number of entities in the bank's text index (what IDF counts over)."""
+        if self._entity_count is None:
+            self._entity_count = self.bank.con.execute("SELECT count(*) FROM entities_fts").fetchone()[0]
+        return self._entity_count
+
+    def cover_weights(self, question: str) -> dict[str, float]:
+        """v16: the question's words that the documents a fact answer rests on should hold, stem -> weight. Words as
+        ``ProseRoute.weights`` takes them (``[a-z0-9]+``, two characters or more, not ``engine.STOP``, ``engine.stem``), each
+        weighted by its rarity in the bank (IDF over the bank's entities, the larger for two forms of one stem), without: the words
+        found only inside quoted titles; the cue words of the fields the question asks for (a word that starts with one of v1's
+        ``CUES`` or is a word of a field name ``BrainBank.wanted`` weighs); the words of asking (``COVER_STOP``); and numbers."""
+        ql = question.lower()
+        inside = {t for m in QUOTED.finditer(ql) for t in re.findall(r"[a-z0-9]+", m.group(0))}
+        outside = set(re.findall(r"[a-z0-9]+", QUOTED.sub(" ", ql)))
+        asked = {stem(x) for p, w in self.bank.wanted(question).items() if w > 0 for x in p.split("_") if x}
+        n = self.entity_count()
+        out: dict[str, float] = {}
+        for t in sorted(set(re.findall(r"[a-z0-9]+", ql))):
+            if len(t) < 2 or t in STOP or t in COVER_STOP or t.isdigit() or (t in inside and t not in outside):
+                continue
+            s = stem(t)
+            if s in asked or any(s.startswith(c) for c in CUES):
+                continue
+            df = self.bank.doc_freq(t)
+            out[s] = max(out.get(s, 0.0), math.log(1 + (n - df + 0.5) / (df + 0.5)))
+        return out
+
+    def stems_of(self, entity: str) -> set[str]:
+        """v16: the stemmed words of the stored text an entity stands for: a document's title and text, an action item's meeting's,
+        or any other entity's own (a person's name). Kept for the last ``NAMED_MEMO`` documents."""
+        doc = self.bank.source_doc(entity) if self.bank.kinds.get(entity) == "action_item" else entity
+        if doc not in self._stems:
+            if len(self._stems) >= NAMED_MEMO:
+                self._stems = {}
+            row = self.bank.con.execute("SELECT name, text FROM entities_fts WHERE id = ?", (doc,)).fetchone()
+            text = " ".join(x or "" for x in row).lower() if row else ""
+            self._stems[doc] = {stem(w) for w in re.findall(r"[a-z0-9]+", text)}
+        return self._stems[doc]
+
+    def cover(self, question: str, entities: list[str]) -> tuple[float, float, list[str]]:
+        """v16: the share of the question's rare words (``cover_weights``), by weight, that the stored text of the entities a fact
+        answer rests on holds, with the words' total weight and the words missing. The share is 1.0 when the words weigh no more
+        than ``COVER_MIN_WEIGHT``: such a question says too little beyond what it names to check."""
+        weights = self.cover_weights(question)
+        total = sum(weights.values())
+        if total <= COVER_MIN_WEIGHT:
+            return 1.0, total, []
+        have: set[str] = set()
+        for e in entities:
+            have |= self.stems_of(e)
+        return sum(w for s, w in weights.items() if s in have) / total, total, sorted(s for s in weights if s not in have)
+
+    def cover_step(self, question: str, start: str | None, plan: dict[str, Any] | None = None, result: Result | None = None
+                   ) -> dict[str, Any] | None:
+        """v16: the fact-route abstention check of a planner's answer (``plan``) or v1's (``result``), as a journal step
+        {op: "cover", docs, cover, weight, missing, threshold, abstained}; None when the answer is not chosen by the question's
+        content, so there is nothing to check: a plan that starts from what the question names (``Planner.about`` or
+        ``Records.start``: a key, a pull request number, a quoted title, a person's full name), or an answer resting on a document
+        the question names so. The entities an answer rests on are a plan's starts and the entities it ends at (up to
+        ``COVER_ENDS``), or v1's answer's entities (``BrainBank.answered``) and the seeds the question names (``FactBank.named``).
+        ``abstained``: the share (``cover``) is below ``cover_below``."""
+        about = self.planner.about(question) | ({start} if start else set())
+        if plan is not None:
+            best = plan["best"]
+            if set(best.starts) & about:
+                return None
+            docs = list(dict.fromkeys([*best.starts, *self.planner.ends(best)[:COVER_ENDS]]))
+        else:
+            named = set(self.bank.named(question))
+            docs = list(dict.fromkeys([*self.bank.answered, *(e for e, _ in result.seeds if e in named)]))
+        if set(docs) & {e for e in about if not e.startswith("person:")}:
+            return None
+        share, total, missing = self.cover(question, docs)
+        return {"op": "cover", "docs": docs[:JOURNAL_STEPS], "cover": round(share, 4), "weight": round(total, 2), "missing": missing,
+                "threshold": self.cover_below, "abstained": share < self.cover_below}
+
+    def uncovered_row(self, step: dict[str, Any], answer: str, why: str, route: str) -> tuple[str, str]:
+        """v16, route absent_doc: the reason and the evidence (the reason, then the answer the fact route would have given and
+        the documents it rests on) of a fact answer withdrawn by the check (``cover_step``)."""
+        reason = (f"the documents the {route} answer rests on hold {step['cover']:.3f} of the question's rare words by weight, below "
+                  f"{step['threshold']} (missing: {', '.join(step['missing'][:8])})")
+        lines = [f"Not found: {reason}.", f"The {route} route would have answered: {answer} ({why})"]
+        lines += [f"- {self.bank.label_of(e)}: {self.bank.names.get(e, e)[:160]}" for e in step["docs"][:5]]
+        return reason, "\n".join(lines)
+
     # ------------------------------------------------------------------ not found
     def holds_text(self, phrase: str) -> bool:
         """Whether any entity's name or text writes the phrase as whole words, both read as ``squash`` reads them: case,
@@ -800,11 +887,21 @@ class Brain:
         if found and plan["start_named"] and (not self.field_check or self.reads_asked_field(question, plan)):
             return done(plan["answer"], "plan", plan["best"].describe(self.bank.names), self.plan_evidence(question, plan), plan["journal"],
                         self.planner.reads(plan["best"]), scores)
+        check = self.v16 and self.cover_below is not None  # a plan from a named start (above) has nothing to check
         r = self.engine(question)
         if r.answer == "not found" and found:
-            return done(plan["answer"], "plan", plan["best"].describe(self.bank.names) + " (the engine found nothing)",
-                        self.plan_evidence(question, plan), plan["journal"], self.planner.reads(plan["best"]), scores)
-        return done(r.answer, "fact", r.reason, r.evidence, rests_on(r.journal, r.answer), None, scores)
+            why = plan["best"].describe(self.bank.names) + " (the engine found nothing)"
+            step = self.cover_step(question, start, plan=plan) if check else None
+            if step is not None and step["abstained"]:
+                reason, evidence = self.uncovered_row(step, plan["answer"], why, "plan")
+                return done("not found", ROUTE_UNCOVERED, reason, evidence, [*plan["journal"], step], None, scores)
+            return done(plan["answer"], "plan", why, self.plan_evidence(question, plan), [*plan["journal"], *([step] if step else [])],
+                        self.planner.reads(plan["best"]), scores)
+        step = self.cover_step(question, start, result=r) if check and r.answer != "not found" else None
+        if step is not None and step["abstained"]:
+            reason, evidence = self.uncovered_row(step, r.answer, r.reason, "fact")
+            return done("not found", ROUTE_UNCOVERED, reason, evidence, [*rests_on(r.journal, r.answer), step], None, scores)
+        return done(r.answer, "fact", r.reason, r.evidence, [*rests_on(r.journal, r.answer), *([step] if step else [])], None, scores)
 
 
 def _jsonl(path: Path) -> list[dict[str, Any]]:
