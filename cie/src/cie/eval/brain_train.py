@@ -21,6 +21,12 @@ the kinds named by ``--plan-kinds``). Each run writes
 what it fitted with the sha256 of its inputs and outputs (``train_report.json``, ``router_report.json``,
 ``plans_report.json``).
 
+Why ``--plan-kinds``: on train5k, plan lessons learned from all six new two-document kinds made 9 answers of v15's own
+questions worse (Linear issue assignees behind pull requests read as issue keys, HubSpot owners, a customer's Jira tickets),
+the lessons learned from only the kinds v15's lessons answered below 0.9 on train (owner_accounts, pr_issue_creator,
+pr_issue_team) none. Plan lessons are reproducible in content but not byte for byte: the order of their associations and
+the last bits of their weights follow Python's string hashing (``PYTHONHASHSEED``).
+
     python -m cie.eval.brain_train train --work TRAIN --out DIR [--extra WORK ...] [--glossary G] [--workers N]
         [--v16 --kinds KINDS [--per-family N] [--seed S]]
     python -m cie.eval.brain_train router --work TRAIN --out DIR [--workers N]   (the router alone, on lessons in DIR)
