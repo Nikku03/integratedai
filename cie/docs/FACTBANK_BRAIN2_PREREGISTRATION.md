@@ -201,7 +201,49 @@ family (v1, v2, v13, v15, plain search with quotes). The thresholds are `cie/src
 
 ## Development
 
-⟨TBD⟩
+**The development run** (`docs/benchmarks/brain2/development/dev5k_q2_report.md`): 443 questions on round 1's development set
+(seed 721), drawn by `brain2_test questions` with this test's mixes. That is round 1's 212 development questions (50 free text),
+180 new-kind questions and 51 held-out writers' questions. Every arm was run, with the small control set and v16 under a
+second hash seed.
+
+| arm | single | multi | free text | not found | counts | history | email/chat | unanswerable | mean of 8 |
+|---|---|---|---|---|---|---|---|---|---|
+| quotes | 0.114 | 0.071 | 0.640 | 0.000 | 0.150 | 0.025 | 0.393 | 0.000 | 0.174 |
+| v1 | 0.800 | 0.071 | 0.000 | 0.250 | 0.000 | 0.175 | 0.250 | 0.183 | 0.216 |
+| v2 | 0.646 | 0.089 | 0.007 | 0.250 | 0.000 | 0.225 | 0.265 | 0.014 | 0.187 |
+| v13 | 0.294 | 0.768 | 0.000 | 0.000 | 0.150 | 0.100 | 0.125 | 0.000 | 0.180 |
+| v15 | 0.811 | 0.911 | 0.650 | 1.000 | 0.150 | 0.375 | 0.325 | 0.014 | 0.529 |
+| **v16** | **0.878** | **0.929** | **0.777** | **1.000** | **1.000** | **1.000** | **1.000** | **0.901** | **0.936** |
+
+- **All twelve rules are met on development data.**
+- **The paired differences against the best other arm** (95% intervals):
+  - single +0.067 (0.028 to 0.112, against v15);
+  - multi +0.018 (0.000 to 0.054, v15);
+  - free text +0.127 (0.027 to 0.223, v15);
+  - counts +0.85, history +0.63, email and chat +0.61, unanswerable +0.72.
+- **The unanswerable family:**
+  - empty fields: 20 of 20;
+  - held-out writers' questions: 0.863 (44 of 51). The unknown-name rule caught 8 of them, the prose route's coverage most of
+    the rest, and the fact-route coverage 2.
+- **False "not found"** on answerable questions: 0.009. That is 3 single questions withdrawn by the fact-route coverage, all of
+  them answered wrong before.
+- **Routes:** 0.994 right.
+- **At size:** single 0.000, multi +0.018 and free text −0.003 against the small set.
+- **Hash-seed check:** 0 of 443 answers differ.
+- **Time:** v16's median is 0.96 s a question; v15's is about 4.5 s.
+
+**The development set is seen,** so these numbers are optimistic:
+- The free-text design, the five fixes and the thresholds were fitted on training and confirmed here.
+- The records module was adapted to the new kinds' templates.
+- Expect lower on the test, most of all where real wordings differ from the templates.
+
+**The dry run** of the test's steps on a fresh development-zone draw (`run_brain2_1.sh` with `ZONE=dev`; then the sealed writer
+rehearsal on 3 batches; then `run_brain2_2.sh` with `SMALL_ONLY=1`) ran every step without error:
+- draw, packets (45 descriptive, 180 free text, 98 held-out);
+- sealed writers, checks (29 of 30 kept), question draw, banks, every arm on the small set, and the score.
+
+On that small set v16 led every family except free text, where 10 questions gave v15 0.50, quotes 0.47 and v16 0.45. The
+differences are the passage each chose, not abstention: no answerable free-text question said "not found".
 
 ## Disclosures
 
