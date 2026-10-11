@@ -207,6 +207,28 @@ def test_email_questions_read_the_first_message_and_check_it_against_the_thread_
     assert all(f'"{q["pieces"][0]}"' in q["question"] for q in qs)
 
 
+def test_attachments_are_asked_by_file_name_without_the_note_in_brackets_after_it():
+    assert Q.file_name("terms.pdf (stub)") == "terms.pdf" and Q.file_name(" plan.xlsx (XLSX, 48KB) ") == "plan.xlsx"
+    assert Q.file_name("docusign-initial-link (docusign)") == "docusign-initial-link" and Q.file_name("(attached)") == "(attached)"
+    assert Q.file_name("report (1).pdf") == "report (1).pdf", "brackets inside a name are part of it"
+
+    def t(i, att):
+        return _d(f"e{i}", "gmail", f"Thread number {i}", attachments=att)
+
+    qs, aside = _gen(["email_attachments"], [t(1, ["heliolabs_requirements.pdf (pdf)", "trial_usage_snapshot.png (image/png)"]),
+                                             t(2, ["a.pdf (stub)", "a.pdf (PDF, 3KB)"])])
+    assert [q["expected"] for q in qs] == [{"files": ["heliolabs_requirements.pdf", "trial_usage_snapshot.png"]}]
+    assert qs[0]["pieces"][1:] == ["heliolabs_requirements.pdf", "trial_usage_snapshot.png"]
+    assert aside["email_attachments"] == {"a file listed twice": 1}, "one file under two notes"
+    q = qs[0]
+    assert Q.score(q, "heliolabs_requirements.pdf; trial_usage_snapshot.png") == 1, "the names alone"
+    assert Q.score(q, "heliolabs_requirements.pdf, trial_usage_snapshot.png") == 1
+    assert Q.score(q, "heliolabs_requirements.pdf (pdf); trial_usage_snapshot.png (image/png)") == 1, "as the raw field writes them"
+    assert Q.files_f1(["Novacorp_W9.pdf (stub)", "vendor-contact-sheet.csv (stub)"], "Novacorp_W9.pdf, vendor-contact-sheet.csv") == 1, \
+        "an expected list still written with its notes"
+    assert Q.files_f1(["x.pdf (PDF, 312KB)", "y.csv"], "x.pdf (PDF, 312KB), y.csv") == 1, "a comma inside a note does not cut"
+
+
 def test_the_account_of_a_thread_is_asked_only_when_it_is_a_customer_account():
     def t(i, subject, account, ttype="sales"):
         return _d(f"e{i}", "gmail", subject, related_account=account, thread_type=ttype)
@@ -437,14 +459,39 @@ def test_owner_accounts_asked_as_how_many_is_scored_as_a_count():
     assert Q.is_count({"kind": "count2_jira"}) and Q.is_count({"kind": "email_count"}) and not Q.is_count({"kind": "email_to"})
 
 
-def test_draw_questions_keeps_out_a_question_about_a_document_and_field_asked_elsewhere():
+def test_a_question_re_asks_another_with_the_same_field_of_a_document_they_share_and_the_same_answer():
+    link = {"id": "pr_issue-109", "kind": "pr_issue", "field": "assignee", "gold_docs": ["pr1", "iss1"], "expected": {"value": "Marco Rivera"}}
+    back = {"id": "issue_pr_author-001", "kind": "issue_pr_author", "field": "author", "gold_docs": ["iss2", "pr2"],
+            "expected": {"value": "Maya Torres"}}
+    proj = {"id": "linear_issue_project-001", "field": "project", "gold_docs": ["iss1"],
+            "expected": {"value": "decode-runtime", "alts": ["decode runtime"]}}
+    combine = {"id": "person_count-001", "field": "", "gold_docs": ["iss1"], "expected": {"value": "2"}}
+    asked = Q.Asked([link, back, proj, combine, {"id": "nf-1", "gold_docs": [], "expected": {"not_found": True}}])
+    emb = {"id": "embedded_linear_issue_assignee-039", "field": "assignee", "gold_docs": ["iss1"], "expected": {"value": "marco rivera"}}
+    assert Q.about(emb) == (frozenset({"iss1"}), "assignee", frozenset({"marco rivera"}))
+    assert asked(emb) == "pr_issue-109", "the issue's assignee, asked by v15 through the pull request that links it"
+    assert asked({**emb, "expected": {"value": "Ana Ruiz"}}) is None and asked({**emb, "field": "status"}) is None
+    assert asked({**emb, "gold_docs": ["iss9"]}) is None
+    join = {"id": "author_issues-001", "field": "author", "gold_docs": ["pr2", "iss2"], "expected": {"ids": ["ENG-1"], "id_kind": "key"}}
+    assert asked(join) is None, "the same documents and field, another question: the issues of the author, not the author"
+    two = {"id": "pr_issue_project-001", "field": "project", "gold_docs": ["pr3", "iss1"], "expected": {"value": "Decode runtime"}}
+    assert asked(two) == "linear_issue_project-001", "an alternative form of the same answer"
+    assert asked({"field": "", "gold_docs": ["iss1"], "expected": {"value": "2"}}) is None, "no field"
+    assert Q.about({"field": "csm_assigned", "gold_docs": ["h1"], "expected": {"not_found": True}}) is None, "no answer"
+    assert Q.answer_forms({"names": ["Liam Wu", "Maya Chen"]}) == Q.answer_forms({"names": ["maya chen", "Liam Wu"]})
+    assert Q.answer_forms({"ids": ["ENG-1"]}) != Q.answer_forms({"ids": ["ENG-1", "ENG-2"]})
+
+
+def test_draw_questions_keeps_out_a_question_that_re_asks_one_asked_elsewhere():
     docs = [_d(f"g{i}", "google_drive", f"Runway model number {i}", owner=o) for i, o in enumerate(("Maya Chen", "Ana Ruiz", "Liam Wu"))]
     mix = {"embedded_drive_owner": 2}
     free = Q.draw_questions(docs, 3, mix)
     clash = free[0]
-    assert Q.about(clash) == ((clash["gold_docs"][0],), "owner") and Q.about({"field": "owner", "gold_docs": []}) is None
     rows: list = []
-    got = Q.draw_questions(docs, 3, mix, avoid={Q.about(clash): "drive_owner-001"}, aside_rows=rows)
+    other = {**clash, "id": "drive_owner-001", "kind": "drive_owner", "expected": {"value": "Someone Else"}}
+    assert Q.draw_questions(docs, 3, mix, avoid=[other], aside_rows=rows) == free and rows == [], "another answer: not re-asked"
+    got = Q.draw_questions(docs, 3, mix, avoid=[{**clash, "id": "drive_owner-001", "kind": "drive_owner"}], aside_rows=rows)
     assert len(got) == 2 and clash["gold_docs"] not in [q["gold_docs"] for q in got], "the mix is still filled"
-    assert [(r["id"], r["unclear"]) for r in rows] == [(clash["id"], "re-asks drive_owner-001: the same document and field")]
+    assert [(r["id"], r["unclear"]) for r in rows] == [
+        (clash["id"], "re-asks drive_owner-001: the same field of the same document, the same answer")]
     assert Q.draw_questions(docs, 3, mix) == free, "without avoid, the same draw"

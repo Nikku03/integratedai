@@ -174,10 +174,10 @@ def test_the_draw_is_v15s_draw_then_the_new_kinds_then_the_held_out_questions(tm
     q15, a15, r15 = H.draw(docs, 3, MIX15, prose)
     n15, n16 = len(q15), rep["by_part"]["v16"]
     assert qs[:n15] == q15, "v15's part is brain_test.draw's, unchanged"
-    asked15 = {Q2.about(q): q["id"] for q in q15 if Q2.about(q)}
-    assert qs[n15:n15 + n16] == Q2.draw_questions(docs, 3, MIX16, avoid=asked15), \
-        "the new kinds are brain2_questions.draw_questions', none about a document and field v15's part asks about"
-    assert not {Q2.about(q) for q in qs[n15:n15 + n16]} & set(asked15)
+    asked15 = Q2.Asked(q15)
+    assert qs[n15:n15 + n16] == Q2.draw_questions(docs, 3, MIX16, avoid=q15), \
+        "the new kinds are brain2_questions.draw_questions', none re-asking a question of v15's part"
+    assert not any(asked15(q) for q in qs[n15:n15 + n16])
     assert [q["id"] for q in qs[n15 + n16:]] == ["heldout-9-001", "heldout-8"]
     assert len({q["id"] for q in qs}) == len(qs) == rep["questions"] and sum(rep["by_family"].values()) == len(qs)
     assert {q["kind"] for q in qs[n15:n15 + n16]} >= {"count1_jira", "pr_issue_project", "author_issues", "owner_accounts", "field_absent"}
@@ -193,10 +193,11 @@ def test_the_draw_is_v15s_draw_then_the_new_kinds_then_the_held_out_questions(tm
     rows16 = [q for q in aside[len(a15):] if T.part(q) == "v16"]
     reask = [q for q in rows16 if q["unclear"].startswith(T.REASK)]
     by_id15 = {q["id"]: q for q in q15}
-    assert reask and all(q["unclear"] == f"re-asks {asked15[Q2.about(q)]}: the same document and field" for q in reask)
-    assert {(q["kind"], by_id15[asked15[Q2.about(q)]]["kind"]) for q in reask} == {
+    assert reask and all(q["unclear"] == f"re-asks {asked15(q)}: the same field of the same document, the same answer" for q in reask)
+    assert {(q["kind"], by_id15[asked15(q)]["kind"]) for q in reask} == {
         ("embedded_hubspot_stage", "hubspot_stage"), ("embedded_linear_issue_priority", "linear_issue_priority"),
-        ("embedded_pr_author", "pr_author"), ("embedded_pr_repo", "pr_repo")}, "the embedded wordings of v15's field questions"
+        ("embedded_pr_author", "pr_author"), ("embedded_pr_repo", "pr_repo"), ("embedded_linear_issue_status", "pr_issue")}, \
+        "the embedded wordings of v15's field questions, and the status of the issue a v15 link question asks through a pull request"
     assert rep["v16"]["reasked"] == {q["kind"]: 1 for q in reask} and all(q["unclear"] and q.get("expected") for q in rows16)
     gen_rows: list = []
     Q2.generate(docs, 3, kinds=set().union(*map(Q2.resolve, MIX16)), aside_rows=gen_rows)

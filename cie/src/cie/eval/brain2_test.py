@@ -6,10 +6,11 @@ v16 brain beside them, and one score over eight families.
   (``MIX15``, v15's test mix, by default: at most 40 descriptive questions, as v15's pre-registration says), with the writers'
   prose and descriptive questions; (b) the new kinds, ``brain2_questions.draw_questions`` in ``MIX16`` (counts, history,
   email_chat, the two-document multi kinds, field_absent and the embedded single kinds; a key of ``MIX16`` may name no kind of
-  v15's, which belong in the v15 mix), none about the same document and field as a question of v15's part (the embedded kinds
-  reword v15's field kinds: such a question is taken out before the pick and set aside as re-asking it); (c) the held-out
-  writers' questions that ``brain2_draw collect`` kept (family unanswerable, kind heldout: a natural question whose answer is in
-  a document outside the haystack). Ids are unique across the parts. Set aside, and written with their reasons to
+  v15's, which belong in the v15 mix), none re-asking a question of v15's part (``brain2_questions.Asked``: the same field of
+  a document they share, with the same answer; the embedded kinds reword v15's field kinds, and v15's link questions ask for
+  a field of their second document: such a question is taken out before the pick and set aside as re-asking it); (c) the
+  held-out writers' questions that ``brain2_draw collect`` kept (family unanswerable, kind heldout: a natural question whose
+  answer is in a document outside the haystack). Ids are unique across the parts. Set aside, and written with their reasons to
   W/set_aside_questions.jsonl: what ``brain_test.draw`` sets aside, the new kinds' set-aside questions (``brain2_questions``'
   unclear candidates, and those re-asking a v15 question), and a held-out question that expects an answer, has gold
   documents, has no held-out document or one inside the haystack, or repeats another; W/questions_report.json counts every
@@ -154,18 +155,18 @@ def draw2(docs: list[dict[str, Any]], seed: int = Q2.SEED, mix15: dict[str, int]
     """The questions (v15's part, the new kinds, the held-out questions, in that order), those set aside, and a report.
 
     v15's part is ``brain_test.draw(docs, seed, mix15, prose, descriptive, multi_wordings)``; the new kinds are
-    ``brain2_questions.draw_questions(docs, seed, mix16)`` with every question about the same document and field as one of
-    v15's part (``brain2_questions.about``) kept out of the pick, and what their generators make and set aside counted by
-    ``brain2_questions.generate``; the held-out questions are those ``why_heldout_aside`` keeps. Set aside, with their
-    reasons: v15's, the new kinds' unclear candidates and re-asked questions, and the held-out questions not kept.
-    ValueError when an id is used twice or a key of ``mix16`` names v15's kinds."""
+    ``brain2_questions.draw_questions(docs, seed, mix16)`` with every question that re-asks one of v15's part
+    (``brain2_questions.Asked``: the same field of a document they share, with the same answer) kept out of the pick, and
+    what their generators make and set aside counted by ``brain2_questions.generate``; the held-out questions are those
+    ``why_heldout_aside`` keeps. Set aside, with their reasons: v15's, the new kinds' unclear candidates and re-asked
+    questions, and the held-out questions not kept. ValueError when an id is used twice or a key of ``mix16`` names v15's
+    kinds."""
     mix15 = dict(MIX15 if mix15 is None else mix15)
     mix16 = dict(MIX16 if mix16 is None else mix16)
     check_mix16(mix16)
     qs15, aside, rep15 = H.draw(docs, seed, mix15, prose, descriptive, multi_wordings)
-    asked15 = {key: q["id"] for q in qs15 if (key := Q2.about(q)) is not None}
     aside16: list[dict[str, Any]] = []
-    qs16 = Q2.draw_questions(docs, seed, mix16, avoid=asked15, aside_rows=aside16)
+    qs16 = Q2.draw_questions(docs, seed, mix16, avoid=qs15, aside_rows=aside16)
     aside += aside16
     wanted = set().union(*(Q2.resolve(k) for k in mix16)) if mix16 else set()
     gen = Q2.generate(docs, seed, kinds=wanted)[1] if wanted else {"by_kind": {}, "aside": {}}

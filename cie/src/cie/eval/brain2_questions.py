@@ -12,7 +12,8 @@ no document holds. v16 adds what those never asked (S/brain2/survey.txt, kinds l
   activity with a HubSpot account. No field records earlier values, so there are no questions about a previous assignee
   or status;
 * **email_chat:** an email thread named by its subject: who sent the first email, when the thread started, who the first
-  email went to and who was copied, how many messages it holds, its attachments and its account (a customer account: a
+  email went to and who was copied, how many messages it holds, its attachments (by name: a note in brackets after a file
+  name, such as '(stub)' or '(PDF, 312KB)', is not part of it) and its account (a customer account: a
   hiring thread's account field names candidates, recruiters and employers, and labels such as 'Candidate: Alex Romero' or
   'Internal - Monthly QBR prep' are not asked); a Slack thread named by a quote of its first ten words: its channel and,
   when that is a full name, who started it;
@@ -39,9 +40,9 @@ each set-aside candidate that was a question (an expected answer worked out, set
 document with no value to ask about is only counted.
 
 ``kinds()`` is the catalogue, ``generate`` makes every question the documents allow, ``draw_questions`` draws a seeded sample
-in a mix (the kinds of ``brain_questions`` may join it; questions about a document and field already asked elsewhere can be
-kept out), ``score`` scores one answer (``brain_questions.score`` for the old kinds; family unanswerable first) and
-``family`` gives a question's family.
+in a mix (the kinds of ``brain_questions`` may join it; a question that re-asks one asked elsewhere, the same field of a
+document they share with the same answer, can be kept out: ``Asked``), ``score`` scores one answer (``brain_questions.score``
+for the old kinds; family unanswerable first) and ``family`` gives a question's family.
 
     python -m cie.eval.brain2_questions generate --work W | --docs DOCS.pkl --out Q.jsonl --report R.json [--seed 16]
 """
@@ -389,7 +390,7 @@ CATALOGUE: dict[str, Kind] = {
         ("email_cc", "email", "person names, F1 (name_f1)", "gmail: the first message's Cc"),
         ("email_count", "email", _COUNT_SCORE, "gmail: message_count, equal to the messages written"),
         ("email_attachments", "email", "file names, F1 (files_f1: parts split on ';' when the answer holds one, else on ', ')",
-         "gmail: attachments"),
+         "gmail: attachments, each without a note in brackets after its name"),
         ("email_account", "email", "value in the answer (value_hit)", "gmail: related_account"),
         ("slack_channel", "chat", "value in the answer (value_hit)", "slack: the channel of a thread quoted by its first words"),
         ("slack_starter", "chat", "value in the answer (value_hit)", "slack: the first speaker, a full name"))},
@@ -1120,6 +1121,18 @@ def _not_account(raw: dict[str, Any], a: str) -> str:
     return ""
 
 
+FILE_NOTE = re.compile(r"\s*\([^()]*\)\s*$")  # a note in brackets after a file name: 'terms.pdf (stub)'
+NOTE_IN_LINE = re.compile(r"(\.[A-Za-z0-9]{1,10})\s*\([^()\n]*\)")  # such a note after a file's extension in an answer
+
+
+def file_name(s: Any) -> str:
+    """A file name without the note in brackets a thread may write after it, on its type, size or state ('terms.pdf (stub)',
+    'plan.xlsx (XLSX, 48KB)', 'deck.pdf (application/pdf)' -> 'terms.pdf', 'plan.xlsx', 'deck.pdf'): the note is not part of
+    the name, and nobody naming the files would write it. A value that is all note stays as it is."""
+    s = str(s).strip()
+    return FILE_NOTE.sub("", s).strip() or s
+
+
 def _addressed(field: str | None) -> list[str]:
     return [p.strip() for p in re.split(r"[,;](?![^<]*>)", field or "") if p.strip()]
 
@@ -1161,7 +1174,8 @@ def email_questions(kind: str, hay: Haystack, rng: random.Random, cap: int | Non
                     aside: Counter | None = None) -> list[dict[str, Any]]:
     """One fact of an email thread named by its subject: the first email's sender, recipients or Cc (every entry a person
     with a display name), the thread's start date (first_email_at, which must be the earliest message's and read the same in
-    UTC), its message count (equal to the messages written), its attachments (one to ten files) or its account (not written
+    UTC), its message count (equal to the messages written), its attachments (one to ten files, each by its name without a
+    note in brackets after it: ``file_name``) or its account (not written
     inside another account's name, and a customer account by ``_not_account``: not on a hiring thread, not a label of a
     candidate, an internal matter or a team, one name, no note in brackets)."""
     cands = []
@@ -1228,10 +1242,10 @@ def email_questions(kind: str, hay: Haystack, rng: random.Random, cap: int | Non
                 why = "unusable list"
             elif has in ("false", "no", "0"):
                 why = "has_attachments says none"
-            elif len({_file(a) for a in att}) < len(att):
+            elif len({_file(file_name(a)) for a in att}) < len(att):
                 why = "a file listed twice"
             else:
-                exp = {"files": [a.strip() for a in att]}
+                exp = {"files": [file_name(a) for a in att]}
         else:  # email_account
             a = raw.get("related_account")
             if not isinstance(a, str) or _none(a):
@@ -1535,12 +1549,52 @@ def generate(docs: list[dict[str, Any]], seed: int = SEED, kinds: Iterable[str] 
                  "aside": {k: dict(sorted(v.items())) for k, v in sorted(aside.items()) if v}}
 
 
-def about(q: dict[str, Any]) -> tuple[tuple[str, ...], str] | None:
-    """What a question asks about, as two questions asking the same thing share it: its gold documents and its field; None
-    for a question with no field or no gold document."""
-    if q.get("field") is None or not q.get("gold_docs"):
+def answer_forms(e: dict[str, Any]) -> frozenset[str]:
+    """The forms a right answer to an expected answer takes, normalised: a value or a date with its alternatives, or a whole
+    list (names, keys, files) as one form; none for no answer (not found)."""
+    if "value" in e or "date" in e:
+        return frozenset(_norm(v) for v in ([e["value"]] if "value" in e else []) + ([e["date"]] if "date" in e else [])
+                         + list(e.get("alts") or []) if _norm(v))
+    for k in ("names", "ids", "files"):
+        if e.get(k):
+            return frozenset({"; ".join(sorted(_norm(v) for v in e[k]))})
+    return frozenset()
+
+
+def about(q: dict[str, Any]) -> tuple[frozenset[str], str, frozenset[str]] | None:
+    """What a question asks: its gold documents, its field and the forms of its answer (``answer_forms``); None for a question
+    with no field, no gold document or no answer."""
+    forms = answer_forms(q.get("expected") or {})
+    if not q.get("field") or not q.get("gold_docs") or not forms:
         return None
-    return tuple(sorted(q["gold_docs"])), str(q["field"])
+    return frozenset(q["gold_docs"]), str(q["field"]), forms
+
+
+class Asked:
+    """What questions asked elsewhere ask (``about``), to find a question that re-asks one: the same field, a gold document
+    in common and the same answer. So a question about one document re-asks a two-document question that asks for that
+    document's field (a pull request's linked issue's assignee, and the assignee of that issue), while two questions with
+    the same field and documents but different answers ask different things (the issues assigned to a pull request's
+    author, and the author of the pull request an issue links)."""
+
+    def __init__(self, qs: Iterable[dict[str, Any]]):
+        self.by: dict[tuple[str, str], list[tuple[frozenset[str], str]]] = defaultdict(list)
+        for q in qs:
+            if (a := about(q)) is not None:
+                for doc in a[0]:
+                    self.by[doc, a[1]].append((a[2], str(q["id"])))
+
+    def __call__(self, q: dict[str, Any]) -> str | None:
+        """The id of the first question asked elsewhere that ``q`` re-asks (its gold documents in sorted order, each in the
+        order the questions were given), or None."""
+        a = about(q)
+        if a is None:
+            return None
+        for doc in sorted(a[0]):
+            for forms, qid in self.by.get((doc, a[1]), ()):
+                if forms & a[2]:
+                    return qid
+        return None
 
 
 def resolve(key: str) -> set[str]:
@@ -1574,27 +1628,26 @@ def quotas(mix: dict[str, int], available: Counter, seed: int = SEED) -> dict[st
 
 def draw_questions(docs: list[dict[str, Any]], seed: int = SEED, mix: dict[str, int] | None = None,
                    prose: list[dict[str, Any]] | None = None, multi_wordings: dict | None = None,
-                   avoid: dict[tuple[tuple[str, ...], str], str] | None = None,
+                   avoid: Iterable[dict[str, Any]] | None = None,
                    aside_rows: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     """A seeded sample in a mix of {kind, group or family: number} (``DEFAULT_MIX``), picked as ``brain_questions.pick``
     picks; a key may name the old kinds too ('multi' is both catalogues' multi-document kinds), whose questions come from
     ``brain_questions.generate`` (prose from ``prose``).
 
-    ``avoid`` maps what questions asked elsewhere are about (``about``: gold documents and field) to their ids: a new-kind
-    question about the same is taken out of the pool before the pick, so that the mix is still filled, and is set aside as
-    re-asking that question. Given ``aside_rows``, the new kinds' set-aside questions (``generate``) and those taken out are
-    added to it with their reasons."""
+    ``avoid`` holds questions asked elsewhere: a new-kind question that re-asks one (``Asked``: the same field, a gold
+    document in common and the same answer) is taken out of the pool before the pick, so that the mix is still filled, and
+    is set aside as re-asking it. Given ``aside_rows``, the new kinds' set-aside questions (``generate``) and those taken out
+    are added to it with their reasons."""
     mix = dict(DEFAULT_MIX if mix is None else mix)
     wanted = set().union(*(resolve(k) for k in mix)) if mix else set()
     new = wanted & set(CATALOGUE)
     pool = generate(docs, seed, kinds=new, aside_rows=aside_rows)[0] if new else []
     if avoid:
-        kept = []
+        asked, kept = Asked(avoid), []
         for q in pool:
-            key = about(q)
-            if key is not None and (seen := avoid.get(key)) is not None:
+            if (seen := asked(q)) is not None:
                 if aside_rows is not None:
-                    aside_rows.append({**q, "unclear": f"re-asks {seen}: the same document and field"})
+                    aside_rows.append({**q, "unclear": f"re-asks {seen}: the same field of the same document, the same answer"})
             else:
                 kept.append(q)
         pool = kept
@@ -1629,11 +1682,13 @@ def _file(s: str) -> str:
 
 
 def files_f1(files: list[str], answer: str) -> float:
-    """F1 of the file names in the answer line: a file is found when its name (letters and digits) is written there; a part
-    of the line is right when it holds an expected file. File names may hold commas ('Q3 plan, final.pdf'), so the brain
-    joins them with "; ": the line is cut at semicolons when it holds one, else at a comma and a space, and at line breaks."""
-    want = {f for f in (_file(x) for x in files) if f}
-    line = final_answer(answer or "")
+    """F1 of the file names in the answer line: a file is found when its name (letters and digits, without a note in brackets
+    after it: ``file_name``) is written there, with or without the note; a part of the line is right when it holds an
+    expected file. File names may hold commas ('Q3 plan, final.pdf'), so the brain joins them with "; ": the line is cut at
+    semicolons when it holds one, else at a comma and a space, and at line breaks. A note in brackets after a file's extension
+    in the answer ('x.pdf (PDF, 312KB)') is dropped first, so that a comma inside it does not cut."""
+    want = {f for f in (_file(file_name(x)) for x in files) if f}
+    line = NOTE_IN_LINE.sub(r"\1", final_answer(answer or ""))
     parts = [p for p in (_file(x) for x in re.split(r"[;\n]" if ";" in line else r",\s|\n", line)) if p]
     if not want or not parts:
         return 0.0

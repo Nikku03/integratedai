@@ -73,9 +73,15 @@ from collections.abc import Iterator
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-from cie.factbank.engine import DOC_NOUNS, LIST_RE, FactBank, Result, Written, stem, words
+from cie.factbank.engine import CUES, DOC_NOUNS, LIST_RE, STOP, FactBank, Result, Written, stem, words
 from cie.factbank.learn import Lessons, norm, sigmoid
 from cie.factbank.plans import (
+    EMBED_SKIP,
+    EMBED_VERBS,
+    LINK_WORDS,
+    MANY_WORDS,
+    ORDER_WORDS,
+    QUESTION_WORDS,
     QUOTED,
     Plan,
     PlanLessons,
@@ -142,6 +148,29 @@ NAMED_MEMO = 256  # questions whose ``named`` result the bank keeps with ``v16``
 MIN_HELD = 0.3
 # the kinds of ``Records.derived`` answer that name people (who commented, sent, received, was copied, started a thread)
 DERIVED_PEOPLE = frozenset(("first_commenter", "latest_commenter", "email_sender", "email_to", "email_cc", "slack_starter"))
+# v16, fact-route abstention (``Brain.cover``): the words that say how a question asks, not what it asks about, which the
+# documents a fact answer rests on need not hold: closed-class English words (prepositions, conjunctions, auxiliaries and modals,
+# determiners and quantifiers, pronouns, a few adverbs), the words of asking for a count or a person, and the planner's words of
+# knowing or telling, of listing, of order, of linking and of questions
+CLOSED_WORDS = frozenset("""
+about above across after against along among around as at before behind below beneath beside besides between beyond by despite
+down during except for from in inside into like near of off on onto out outside over past per since than through throughout till
+to toward towards under underneath unlike until up upon via with within without and but or nor so yet because although though
+while whereas if unless whether once can could may might must shall should will would do does did done doing be been being am is
+are was were has have had having get gets got getting a an the this that these those each every either neither some any no not
+all both few many much more most other another such own same several i me my mine we us our ours you your yours he him his she
+her hers it its they them their theirs who whom whose which what one ones someone somebody anyone anybody everyone nobody
+something anything everything nothing also just only even still already again ever never always often then there here now very
+too quite rather really when where why how number count total people person persons please s t d ll re ve
+""".split())
+COVER_STOP = frozenset(CLOSED_WORDS | EMBED_VERBS | EMBED_SKIP | MANY_WORDS | ORDER_WORDS | LINK_WORDS | QUESTION_WORDS)
+# a fact answer chosen by the question's content is "not found" when the documents it rests on hold less than this share of the
+# question's rare words (``Brain.cover``): the train5k fit (round 2, phase 2, step 2), the largest threshold that abstains on at
+# most 2% of the answerable fact-route questions, rounded down
+COVER_BELOW = 0.57
+COVER_MIN_WEIGHT = 10.0  # a question whose rare words weigh no more than this (about two rare words) has nothing to check
+COVER_ENDS = 50  # the plan's end entities read for the check, at most
+ROUTE_UNCOVERED = "absent_doc"  # the route of that "not found" (a not_found route, ``cie.eval.brain2_test.route_class``)
 
 
 def squash(s: str) -> str:
@@ -199,11 +228,14 @@ class BrainBank(TrainedBank):
       same last word, ``customer_attendees`` with ``redwood_attendees`` (``siblings``);
     - "filed under" (fault 5) asks for the project or space, not the reporter (``wanted``);
     - products stored as people (fault 2): ``not_people``, which the planner leaves out of what a question names;
-    - speed: ``named`` is kept per question (the alias scan is most of a question's time)."""
+    - speed: ``named`` is kept per question (the alias scan is most of a question's time);
+    - ``answered``: the entities v1's last answer read (the best fact's entity, the document whose title it gave, or the items
+      of a list), for the brain's fact-route abstention (``Brain.cover``)."""
 
     v16 = False
     _not_people: set[str] | None = None
     _named_memo: dict[str, list[str]] | None = None
+    answered: list[str] = []
 
     def named(self, question: str) -> list[str]:
         """``FactBank.named``; with ``v16``, kept for the last ``NAMED_MEMO`` questions, since the planner, the router and the
@@ -268,13 +300,18 @@ class BrainBank(TrainedBank):
         """v1's answer (``FactBank.answer_facts``). With ``v16``, when a plain question word asks for a date or a person
         (``Planner.interrogative_kind``) and some written value with a positive weight is of that kind, only such values
         compete (``value_fits``: every value of the field must fit); the first of the best, in the order written, is picked as
-        v1 picks. A list from a multi-valued field takes in its siblings' values (``siblings``)."""
+        v1 picks. A list from a multi-valued field takes in its siblings' values (``siblings``). ``answered`` keeps the entities
+        the answer read."""
         if not self.v16:
             return super().answer_facts(question, written, seeds)
         ql = question.lower()
         want = self.wanted(question)
+        self.answered = []
         if LIST_RE.search(question):
-            return self.list_facts(question, want, written)
+            out = self.list_facts(question, want, written)
+            if out[0] != "not found":  # the items listed, by their keys or pull request numbers
+                self.answered = [e for lab in out[0].split(", ") for e in sorted(self.aliases.get(lab.lower(), ()))]
+            return out
         rel = dict(seeds)
         kind = Planner.interrogative_kind(question, True)
         kind = kind if kind in ("date", "person") else None  # a count is not read from one field
@@ -295,6 +332,7 @@ class BrainBank(TrainedBank):
             if score > best_s:
                 best, best_s, why = w, score, f"{p} of {self.names.get(e, e)}"
         if best is not None:
+            self.answered = [best.entity]
             values, parts = list(best.values), [best]
             for sib in self.siblings(question, best, written):
                 parts.append(sib)
@@ -306,6 +344,7 @@ class BrainBank(TrainedBank):
         if any(n in set(re.findall(r"[a-z]+", ql)) for n in DOC_NOUNS) and seeds and re.match(r"\s*(in [^,]+,\s*)?(which|what)\b", ql):
             e = next((e for e, _ in seeds if self.kinds.get(e) == "document"), None)
             if e:
+                self.answered = [e]
                 lab, title = self.label(e, written), self.names.get(e, e)
                 return title, "the best document's title", [f"title of {lab}: {title}"] if lab != title else []
         return "not found", "no written fact matches what the question asks", []
@@ -401,7 +440,8 @@ class Brain:
     default) and one ``ProseRoute`` (``prose_route``), each built on first use."""
 
     def __init__(self, bank_path: str | Path, single_lessons_path: str | Path, plan_lessons_path: str | Path, router: Router | None = None,
-                 *, budget: int = BUDGET, field_check: bool = True, v16: bool = False, min_held: float = MIN_HELD):
+                 *, budget: int = BUDGET, field_check: bool = True, v16: bool = False, min_held: float = MIN_HELD,
+                 cover_below: float | None = None):
         self.bank = BrainBank(bank_path, Lessons.load(single_lessons_path))
         self.bank.brain = True
         self.bank.answer_first = False  # the planner path prints its own answer; the engine path sets it while it runs
@@ -421,6 +461,9 @@ class Brain:
         self.min_held = min_held
         self._records: Records | None = None
         self._prose_route: ProseRoute | None = None
+        self.cover_below = cover_below
+        self._entity_count: int | None = None
+        self._stems: dict[str, set[str]] = {}
 
     # ------------------------------------------------------------------ v16: records and free text, built on first use
     def records(self) -> Records:
