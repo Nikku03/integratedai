@@ -20,29 +20,42 @@ answers them from the bank alone, never from the raw documents:
    implied by an item noun (tickets, issues, accounts, pages, docs, meetings, threads, pull requests). The conditions are field
    values the question writes as whole words, matched against the values the system's documents hold in short fields with
    one value per document (not identifiers, not dates) or in person fields. A value written inside a longer matched value,
-   or inside a field's name ("doc" in "doc type sheet"), does not count. A value several fields hold goes to the field the
-   words next to it point to, then the whole question's words (``cue_score``: the engine's cue words, the field's name words,
-   ``FIELD_CUES``): "owned by Maya Chen and with Arjun Patel as the solutions engineer". A short, numeric or generic value
-   needs such a word. Values that differ only in spaces or punctuation are one ("HeliosHealth", "Helios Health"), except a
-   person's name ("Liam Oconnor" is not "Liam O'Connor"); accents count ("Martínez" is not "Martinez"). "open" means a status other
+   or inside a field's name ("doc" in "doc type sheet"), does not count. The pointing words closest to a value (a field's cue
+   or name words, ``FIELD_CUES``, the verbs that name a role; ``pointers``), leaving out a word closer to another value, say
+   which field holds it: "owned by Maya Chen and with Arjun Patel as the solutions engineer". When they name only fields that
+   do not hold it, the question is not one ``table`` can read ("high-priority Linear issues": high is a customer impact).
+   With no such word, the whole question's words decide (``cue_score``). A short, numeric or generic value needs a word
+   pointing to its field. Values that differ only in spaces or punctuation are one ("HeliosHealth", "Helios Health"), except
+   a person's name ("Liam Oconnor" is not "Liam O'Connor"); accents count ("Martínez" is not "Martinez"). A "not" negates the
+   value it comes before (within three words) and the values of the same field listed after it ("not Resolved or Closed",
+   "not assigned to X", "not in cycle C"); a "not" before no value leaves the question to v15. "open" means a status other
    than the closed ones (Jira: Resolved, Closed; Linear: Done, Canceled), or other than the ones the question lists after
-   "not". Every other word of the question must be a question word, a filler, a system or item noun, or a word of a matched
-   field's name or cues; otherwise the question asks something more (an order, a date window, a deadline) and ``table``
-   leaves it to v15. Answers: the count ("12", the documents as evidence), the keys (or titles), or the people a person field
-   holds over the matched documents ("Who is assigned issues in the Linear project P?").
+   "not"; for a system without closed statuses (HubSpot accounts) it means nothing ``table`` can count. Every other word of
+   the question must be a question word, a filler, a system or item noun, or a word of (or pointing to) a matched or asked
+   field; otherwise the question asks something more (an order, a date window, a deadline, a field no value names: "How
+   many P1 tickets have an assignee?") and ``table`` leaves it to v15. A list question must ask for documents: say keys or
+   titles, or have its "which" govern an item noun ("Which open Jira tickets…", not "Which team owns…"). Answers: the count
+   ("12", the documents as evidence), the keys (or titles), or the people a person field holds over the matched documents
+   ("Who is assigned issues in the Linear project P?").
 3. ``derived(question, start)``: the history and messages of the one named document: its created or opened date, its last
    updated date, the days from opened to merged (a pull request), who left the first comment and when the latest comment was
    posted (dated entries "YYYY-MM-DD[ HH:MM][ -] Name[ (role)]: text"), the first recorded activity (a HubSpot timeline), the
    date it moved to a status ("moved to S", "changed status to S", "marking as S"), a Gmail thread's first sender, its To and
-   Cc, message count, attachments, account and start date, and a Slack thread's channel and the person who started it.
+   Cc (or how many), message count, attachments (joined by "; ": file names hold commas), account and start date, and a
+   Slack thread's channel and the person who started it. A question that follows a link from the named document ("When was
+   the parent issue of ENG-1 created?", "the Linear issue behind PR #n": ``plans.LINK_WORDS`` and ``LINK_PHRASES``, but the
+   words its own questions use, ``DERIVED_OWN``) asks about another document and is not one.
 4. ``absent(question, start)``: the field the question asks for (``relevance``: the bank's cue weights, ``FactBank.wanted``,
-   and ``FIELD_CUES``, at least ``MIN_ASK``, ahead of every other field) is one most documents of the system hold
-   (``min_held`` of them, ``MIN_HELD`` by default), but this document's is empty, missing, "TBD" or "N/A": the reason ("the
-   HubSpot account X has no CSM assigned"), and the brain answers "not found". A question that follows a link ("the parent
-   issue of…", ``plans.LINK_WORDS``), counts, or asks for the document's history (``derived``'s kinds) is not one.
+   and ``FIELD_CUES``, at least ``MIN_ASK``, ahead of every other field) is one the system uses (held by ``min_held`` of its
+   documents, ``MIN_HELD`` = 0.3 by default) with one short value per document (``askable``), but this document's is empty,
+   missing, "TBD" or "N/A", and its text holds none of the field's values on a line of its own (``written_bare``): the reason
+   ("the HubSpot account X has no CSM assigned"), and the brain answers "not found". A question that follows a link ("the
+   parent issue of…", ``plans.LINK_WORDS``), counts, or asks for the document's history (``derived``'s kinds) is not one.
 
-What the bank cannot show, ``Records`` cannot either: a field a system's documents write as a content field (its value in the
-text with no field name) reads as missing.
+What the bank cannot show, ``Records`` cannot either: a field some documents write as a content field (its value in the text
+with no field name) has no fact there. On the train draw those are list and text fields (a HubSpot next step and blockers,
+a meeting's topics, next steps and action items), which ``absent`` never calls missing, and two Linear customer impacts
+written as a bare line ("medium"), which ``written_bare`` finds; a value written inside a sentence still reads as missing.
 """
 
 from __future__ import annotations
@@ -884,7 +897,7 @@ class Records:
                 return None
             cc = addresses(m.get("Cc"))
             if counting:
-                return out(str(len(cc)), "email_cc_count", f"the Cc line of the {which} message", [f"Cc: {m.get('Cc', '')}"])
+                return out(str(len(cc)), "email_cc_count", f"the Cc line of the {which} message", [f"Cc: {m.get('Cc', '')}"]) if cc else None
             return out(", ".join(cc), "email_cc", f"the Cc line of the {which} message", [f"Cc: {m.get('Cc', '')}"]) if cc else None
         if G_ATTACH.search(ql):
             att = [v for v in self.values(start, "attachments") if not is_empty(v)]
