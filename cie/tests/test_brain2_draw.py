@@ -202,6 +202,8 @@ def test_heldout_keeps_only_documents_that_pass_the_three_checks(tmp_path, monke
     assert {"kind": "key", "text": "SUP-777"} in by["j-c1"]["anchors"] and {"kind": "customer", "text": "Brightwater Labs"} in by["j-c1"]["anchors"]
     assert [a["kind"] for a in by["h-c1"]["anchors"]] == ["title"], "a company name that is the title is one anchor"
     assert rep["kept_with_no_person_written"] == 4
+    assert all(h["check4"]["words"] and not h["check4"]["fallback"] for h in held), "few documents: every anchor word is rare"
+    assert sum(rep["kept_check4_words"].values()) == len(held) and set(by["h-c1"]["check4"]["words"]) == {"fernfield", "connect"}
     strict, srep = D.heldout(work, zones_path, 100, seed=5, exclude=[other], person_anchors=True)
     assert {h["doc"]["dsid"] for h in strict} == kept - {"l-c2"} and srep["person_anchors"]
 
@@ -267,6 +269,7 @@ def test_packets_follow_the_writers_format_and_keep_the_keys_apart(tmp_path):
         assert p["instruction"] == D.INSTRUCTION and "whose answer is in this document" in p["instruction"]
         assert not p["text"].startswith(p["title"]) and p["text"].startswith(f"source: {p['source']}")
         assert k["dsid"] and k["anchors"] and set(k["checks"]) == {"anchors_written", "title_jaccard", "shingle_overlap"}
+        assert k["check4_words"] and k["check4_fallback"] is False and "check4" not in json.dumps(p)
     assert "c-" not in json.dumps(ps) and not any(k["dsid"] in json.dumps(ps) for k in ks), "no document id reaches a writer"
     jira = next(p for p in ps if p["source"] == "jira")
     assert "status: Open" in jira["text"] and FACT in jira["text"], "the writer sees metadata and body"
@@ -301,9 +304,11 @@ def test_collect_runs_the_prose_checks_then_check_4(tmp_path):
     reasons = Counter(r["reason"] for r in rejected)
     assert reasons == {D.FOUND: 1, "yes/no question": 1, "answer fact not in the text": 1, "unknown packet id": 1,
                        "not a JSON object": 1}
-    assert next(r for r in rejected if r["reason"] == D.FOUND)["holder"] == "s-h1"
+    found = next(r for r in rejected if r["reason"] == D.FOUND)
+    assert found["holder"] == "s-h1" and "brightwat" in found["check4_words"] and found["check4_fallback"] is False
     assert len(qs) == 1
     q = qs[0]
+    assert q["check4_words"] and q["check4_fallback"] is False
     assert q["family"] == "unanswerable" and q["kind"] == "heldout" and q["group"] == "heldout"
     assert q["expected"] == {"not_found": True} and q["gold_docs"] == [] and q["heldout_doc"] == "f-c1" and q["id"] == pid["f-c1"]
     assert D.score(q, "Not found: nothing in the documents.") == 1.0 and D.score(q, "Sequoia Retail") == 0.0
@@ -314,6 +319,14 @@ def test_collect_runs_the_prose_checks_then_check_4(tmp_path):
                   str(tmp_path / "out" / f"{name}.keys.jsonl"), "--outputs", str(tmp_path / "w.jsonl"), "--out", str(out)])
     assert rep["kept"] == 1 and rep["reasons"] == {D.FOUND: 1, "yes/no question": 1, "answer fact not in the text": 1}
     assert W.read_rows(out)[0]["heldout_doc"] == "f-c1" and (tmp_path / "q.rejected.jsonl").exists()
+    assert rep["check4_fallback_kept"] == 0
+    # keys whose anchors give check (4) only common words, or none: the fallback word, or a rejection
+    common = [{**k, "anchors": [{"kind": "title", "text": "Latency budget review"}]} if k["dsid"] == "f-c1" else k for k in ks]
+    qs2, _ = D.collect(ps, common, outputs, hay)
+    assert [(q["heldout_doc"], q["check4_words"], q["check4_fallback"]) for q in qs2] == [("f-c1", ["budget"], True)]
+    none = [{**k, "anchors": [{"kind": "title", "text": "Q3 v2"}]} if k["dsid"] == "f-c1" else k for k in ks]
+    qs3, rej3 = D.collect(ps, none, outputs, hay)
+    assert qs3 == [] and Counter(r["reason"] for r in rej3)[D.UNTESTED] == 1
 
 
 def _sd(dsid, title, body):
@@ -327,7 +340,42 @@ def test_check_4_needs_an_anchor_word_few_documents_hold():
              _sd("y2", "eng", "Kestrelpoint asked again: the cutover freeze lasts 6 days in March.")]
     hay = D.Haystack(docs)
     assert hay.anchor_words(["Latency budget for Kestrelpoint"]) == {"kestrelpoint"}, "latency and budget are on 12 documents"
+    assert hay.check_words(["Latency budget for Kestrelpoint"]) == ({"kestrelpoint"}, False)
     assert hay.holder(["p95 under 350 ms"], ["Latency budget for Kestrelpoint"]) is None, "a generic fact with common words"
     assert hay.holder(["cutover freeze lasts 6 days", "approved by legal"], ["Latency budget for Kestrelpoint"]) == "y2"
     assert hay.holder(["cutover freeze lasts 6 days", "approved by legal", "signed in May"], ["Kestrelpoint"]) is None, "1 of 3"
-    assert hay.holder(["cutover freeze lasts 6 days"], ["Latency budget"]) is None, "no anchor word few documents hold"
+    assert hay.holder(["cutover freeze lasts 6 days"], ["Latency budget"]) is None, "y2 lacks the fallback word"
+
+
+def test_check_4_falls_back_to_the_rarest_anchor_word_and_then_needs_every_fact():
+    docs = [_sd(f"x{i}", "general", f"latency budget review {i}") for i in range(11)]
+    docs += [_sd(f"z{i}", "general", f"Zed Quill was on call {i}") for i in range(11)]
+    docs += [_sd("y1", "eng", "Budget note: the cutover freeze lasts 6 days in March."),
+             _sd("y2", "eng", "Latency review: p95 under 350 ms for search, approved by legal.")]
+    hay = D.Haystack(docs)
+    assert hay.anchor_words(["Latency budget"]) == set(), "both words are on 12 documents"
+    assert hay.check_words(["Latency budget"]) == ({"budget"}, True), "a tie goes to the first word in alphabetical order"
+    title, person = {"kind": "title", "text": "Latency budget"}, {"kind": "person", "text": "Zed Quill"}
+    assert hay.check_words([title, person]) == ({"budget"}, True), "a person's name stands in only when nothing else can"
+    assert hay.check_words([person]) == ({"quill"}, True)
+    assert hay.check_words([{"kind": "title", "text": "Q3 v2"}]) == (set(), False), "no content word"
+    assert hay.holder(["cutover freeze lasts 6 days"], [title, person]) == "y1"
+    assert hay.holder(["cutover freeze lasts 6 days", "approved by legal"], [title, person]) is None, "the fallback needs every fact"
+    assert hay.holder(["cutover freeze lasts 6 days", "approved by legal"], [title], fallback_share=0.5) == "y1"
+    assert hay.holder(["p95 under 350 ms", "approved by legal"], [{"kind": "title", "text": "Latency review"}]) == "y2"
+    assert hay.holder(["cutover freeze lasts 6 days"], [{"kind": "title", "text": "Q3 v2"}]) is None
+
+
+def test_heldout_records_check_4_words_and_drops_documents_check_4_cannot_test(tmp_path):
+    hay = [("slack", _rec(f"s-x{i}", "general", _body(f"s-x{i}", "latency budget review"))) for i in range(12)]
+    pool = [("confluence", _rec("c-1", "Review: latency budget")),  # every anchor word on 12 haystack documents
+            ("confluence", _rec("c-2", "Kestrelpoint cutover plan")),
+            ("confluence", _rec("c-3", "Q3 v2 42"))]  # no anchor has a content word
+    root, folder_idx, zones_path, _ = _bench(tmp_path, hay + pool, lambda d: "dev")
+    work = _hay(tmp_path / "w", root, folder_idx, [r["dataset_doc_uuid"] for _, r in hay], zone="dev")
+    rep = D.write_heldout(work, zones_path, 10, 3, tmp_path / "out")
+    assert rep["dropped"] == {"confluence": {D.UNTESTED: 1}} and rep["kept"] == 2
+    assert rep["kept_check4_words"] == {"fallback_word": 1, "rare_words": 1}
+    ks = {k["dsid"]: k for k in W.read_rows(tmp_path / "out" / "w_heldout_3.keys.jsonl")}
+    assert (ks["c-1"]["check4_words"], ks["c-1"]["check4_fallback"]) == (["budget"], True)
+    assert (sorted(ks["c-2"]["check4_words"]), ks["c-2"]["check4_fallback"]) == (["cutov", "kestrelpoint", "plan"], False)

@@ -48,13 +48,22 @@ DOCS = [
     (_doc("l3", "linear", "Replace the badge printer", {"key": "ENG-13", "status": "In Progress", "priority": "P2", "project": "Lobby Refresh",
                                                         "assignee": "Omar Singh", "creator": "Liam Chen", "cycle": "2026-W08",
                                                         "customer_impact": "TBD"}, keys=["ENG-13"]), {}),
+    # the customer impact written in the text, as a content field: the bank holds no fact for it
+    (_doc("l4", "linear", "Rotate the lobby kiosk certificates", {"key": "ENG-14", "status": "Planned", "priority": "P1",
+                                                                  "project": "Lobby Refresh", "assignee": "Priya Nair", "creator": "Liam Chen",
+                                                                  "cycle": "2026-W09", "due_date": "2026-04-09"},
+          "Rotate the kiosk certificates before they expire.\nlow\nSee the runbook.", ["ENG-14"]), {}),
     (_doc("h1", "hubspot", "Emeris Skyline Platform", {"stage": "procurement", "owner": "Jordan Reyes", "se_assigned": "Maya Chen",
-                                                       "csm_assigned": "Oliver Park", "account_tier": "enterprise", "created_at": "2025-11-03"},
+                                                       "csm_assigned": "Oliver Park", "account_tier": "enterprise", "created_at": "2025-11-03",
+                                                       "next_step": "Finalize the Dedicated SOW and commit the ramp schedule with procurement",
+                                                       "blockers": ["Security review pending", "Budget approval for Q3"]},
           "- 2025-11-10 discovery call (CTO + eng lead)\n- 2025-12-05 hosted API POC kickoff"), {}),
     (_doc("h2", "hubspot", "Bluestone MLOps", {"stage": "evaluation", "owner": "Maya Chen", "se_assigned": "Jordan Reyes", "csm_assigned": "TBD",
                                                "account_tier": "enterprise"}), {}),
     (_doc("h3", "hubspot", "Cobalt Retail", {"stage": "evaluation", "owner": "Jordan Reyes", "se_assigned": "Derek Huang",
-                                             "csm_assigned": "Aaliyah Gomez", "account_tier": "smb"}), {}),
+                                             "csm_assigned": "Aaliyah Gomez", "account_tier": "smb",
+                                             "next_step": "Send the usage-based pricing proposal and book the security review call",
+                                             "blockers": ["Legal redlines"]}), {}),
     (_doc("g1", "github", "Add retry to badge sync", {"pr_number": "4821", "author": "Maya Chen", "created_at": "2026-02-18",
                                                       "merged_at": "2026-02-24", "state": "merged", "repo": "incident-bot"}), {}),
     (_doc("m1", "gmail", "Re: QuickStart POC extension", {"thread_id": "t-1", "mailbox_owner": "hannah_schmitt", "thread_type": "sales",
@@ -152,6 +161,31 @@ def test_table_reads_the_words_next_to_each_value(rec):
     assert got["docs"] == ["doc:h2"]
 
 
+@pytest.mark.parametrize("question, answer, filters", [
+    ("How many Jira tickets do not have priority P1?", "1", ["priority not P1"]),
+    ("How many Jira tickets don't have priority P1?", "1", ["priority not P1"]),
+    ("How many HubSpot accounts are not in the evaluation stage?", "1", ["stage not evaluation"]),
+    ("How many Linear issues are not assigned to Omar Singh?", "2", ["assignee not Omar Singh"]),
+    ("How many Linear issues not in cycle 2026-W07 have status In Progress?", "1", ["status = In Progress", "cycle not 2026-W07"]),
+    ("How many open Jira tickets (status not Resolved or Closed) are for dedicated-tier customers?", "1",
+     ["customer_tier = dedicated", "status not Resolved"]),
+])
+def test_table_not_negates_the_value_it_precedes(rec, question, answer, filters):
+    got = rec.table(question)
+    assert got is not None and got["answer"] == answer and got["filters"] == filters, got
+
+
+def test_table_not_in_a_list_question(rec):
+    got = rec.table("Which HubSpot accounts owned by Jordan Reyes are not in the evaluation stage?")
+    assert got["kind"] == "keys" and got["answer"] == "Emeris Skyline Platform"
+
+
+def test_table_words_next_to_a_value_name_its_field(rec):
+    """Pointing words claimed by the nearest value: "stage" is the evaluation's, "own" is Maya Chen's."""
+    got = rec.table("How many enterprise HubSpot accounts in the evaluation stage does Maya Chen own?")
+    assert got["answer"] == "1" and got["docs"] == ["doc:h2"]
+
+
 @pytest.mark.parametrize("question", [
     "Which Linear issue assigned to Omar Singh is due soonest? Give the key.",  # an order
     "Which Linear issues are due between 2026-04-01 and 2026-04-05? Give the issue keys.",  # a date window
@@ -161,6 +195,17 @@ def test_table_reads_the_words_next_to_each_value(rec):
     "How many Linear tickets does Omar Singh have on their plate?",  # a word that is not a condition
     "Who owns the infra sheet tracking the GPU reservation defaults across regions?",
     "How do I rotate the office wifi keys?",
+    # a field of the documents, not the documents
+    "Which priority do the Jira tickets of type Bug have?",
+    "What are the statuses of the Linear issues in the project Badge Revamp?",
+    "Which tier are the HubSpot accounts owned by Jordan Reyes in?",
+    "Which repo do the pull requests authored by Maya Chen belong to?",
+    # the words next to a value name a field that does not hold it, or a field the question names is not a condition
+    "How many high-priority Linear issues are in cycle 2026-W07?",  # "high" is a customer impact, not a priority
+    "How many HubSpot accounts owned by Jordan Reyes have a CSM assigned?",
+    "How many Jira tickets with priority P1 have an assignee?",
+    "How many open HubSpot accounts are in the evaluation stage?",  # accounts are not open or closed
+    "How many Jira tickets with priority P1 are not assigned?",  # "not" before no value
 ])
 def test_table_falls_through(rec, question):
     assert rec.table(question) is None
@@ -179,11 +224,18 @@ def test_table_falls_through(rec, question):
     ('Who was the first email in the thread "Re: QuickStart POC extension" sent to?', "email_to", "Soojin Lee"),
     ('Who was copied on the first email in "Re: QuickStart POC extension"?', "email_cc", "Pete Lawson, marissa_cole@redwood.ai"),
     ('How many messages are in the email thread "Re: QuickStart POC extension"?', "email_count", "2"),
-    ('What files were attached in the email thread "Re: QuickStart POC extension"?', "email_attachments", "usage_report.csv, terms-v2.docx"),
+    ('What files were attached in the email thread "Re: QuickStart POC extension"?', "email_attachments", "usage_report.csv; terms-v2.docx"),
     ('Which account is the email thread "Re: QuickStart POC extension" about?', "email_account", "Atlas Health AI"),
     ('When did the email thread "Re: QuickStart POC extension" start?', "email_date", "2026-04-05"),
     ('In which Slack channel was the thread starting "Quick sketch attached for the latency toolbar" posted?', "slack_channel", "design"),
     ('Who started the Slack thread that begins "Quick sketch attached for the latency toolbar"?', "slack_starter", "Maya Patel"),
+    ('Who started the thread in the Slack channel that begins "Quick sketch attached for the latency toolbar"?', "slack_starter",
+     "Maya Patel"),
+    ("When did someone last comment on the Linear issue DES-1?", "latest_comment_date", "2026-03-14"),
+    ("Who left the first comment on the Linear issue DES-1, and when?", "first_comment", "Ava Chen, 2026-03-10"),
+    ('How many people were copied on the first email in "Re: QuickStart POC extension"?', "email_cc_count", "2"),
+    ('How many recipients did the first email in "Re: QuickStart POC extension" have?', "email_to_count", "1"),
+    ('How many attachments does the email thread "Re: QuickStart POC extension" have?', "email_attachment_count", "2"),
 ])
 def test_derived(rec, question, kind, answer):
     got = rec.derived(question, rec.start(question))
@@ -202,6 +254,9 @@ def test_message_bullets_are_not_messages(rec):
     "When is the Linear issue ENG-12 due?",
     "On what date did ENG-12 move to In Review?",  # no entry says so
     "Who left the first comment on the Linear issue ENG-12?",  # no comments
+    "When was the parent issue of DES-1 created?",  # another document: its own date is not the answer
+    "When was the parent issue of DES-1 last updated?",
+    "When was the Linear issue behind PR #4821 created?",
 ])
 def test_derived_falls_through(rec, question):
     assert rec.derived(question, rec.start(question)) is None
@@ -232,15 +287,26 @@ def test_absent(rec, question, reason):
     "Who left the first comment on the Linear issue ENG-13?",  # history, not a field
     "How many Linear issues does ENG-13 block?",
     "What date is on the Linear issue ENG-13?",  # "date" alone is half of "due date": no field stands out (``MIN_ASK``)
+    # a text field and a list field, which documents may write as content fields: never called missing
+    'What is the next step for the HubSpot account "Bluestone MLOps"?',
+    'What are the blockers on the HubSpot account "Bluestone MLOps"?',
+    "What is the customer impact of the Linear issue ENG-14?",  # "low" on a line of its own in the text
 ])
 def test_absent_falls_through(rec, question):
     assert rec.absent(question, rec.start(question)) is None
 
 
 def test_absent_needs_a_usually_held_field(rec):
-    """Only one Linear issue in three has a release: below ``MIN_HELD`` it is not a usual field, and ENG-12 lacking one says
-    nothing. ``min_held`` sets the share."""
+    """Only one Linear issue in four has a release: below ``MIN_HELD`` (0.3) it is not a usual field, and ENG-12 lacking one
+    says nothing. ``min_held`` sets the share."""
     question = "Which release is the Linear issue ENG-12 in?"
     assert rec.absent(question, "doc:l2") is None
-    assert R.Records(rec.b, min_held=0.3).absent(question, "doc:l2") == "the Linear issue ENG-12 has no release"
+    assert R.Records(rec.b, min_held=0.25).absent(question, "doc:l2") == "the Linear issue ENG-12 has no release"
     assert R.Records(rec.b, min_held=0.9).absent("What is the customer impact of the Linear issue ENG-13?", "doc:l3") is None
+
+
+def test_absent_fields(rec):
+    """``askable``: usual fields with one short value per document (not the HubSpot next step, a text, or its blockers, a list);
+    ``written_bare``: a field's value on a line of its own in the text."""
+    assert {"csm_assigned", "se_assigned", "stage"} <= rec.askable("hubspot") and not {"next_step", "blockers"} & rec.askable("hubspot")
+    assert rec.written_bare("doc:l4", "customer_impact") and not rec.written_bare("doc:l3", "customer_impact")

@@ -87,7 +87,7 @@ CLOSED = {"jira": frozenset(("resolved", "closed", "done", "cancelled", "cancele
           "linear": frozenset(("done", "canceled", "cancelled", "duplicate"))}
 # words that point to a field beyond its own name (whole-word patterns, lower case); each adds CUE_WEIGHT to the field
 FIELD_CUES = {
-    "csm_assigned": (r"\bcsm\b", r"\bcustomer success\b"), "se_assigned": (r"\bse\b", r"\bsolutions? engineers?\b"),
+    "csm_assigned": (r"\bcsm\b", r"\bcustomer success(?: managers?)?\b"), "se_assigned": (r"\bse\b", r"\bsolutions? engineers?\b"),
     "forecast_close_month": (r"\bclos(?:e|es|ing)\b", r"\bforecast\w*\b"),
     "due_date": (r"\bdue\b", r"\bdeadlines?\b", r"\bby when\b"),
     "customer_impact": (r"\bimpact\b",), "release": (r"\breleases?\b",), "sla_due_at": (r"\bsla\b",),
@@ -107,10 +107,22 @@ FIELD_WORDS = frozenset("""status state priority type kind tier stage space team
     creators reporter reporters author authors doc call employee employees headcount count impacting""".split())
 CUE_WEIGHT = 2.0
 NEAR = 4  # table: the words on each side of a value that say which field holds it
-MIN_HELD = 0.4  # absent: the share of the system's documents that hold the asked field (with a value that is not empty)
+# table: the words that can point to a field next to a value (besides the field's cue and name words, the verbs of FILLER that
+# name a role), and the words that make a value's condition its opposite
+CUE_VERBS = frozenset(("assigned", "owned", "own", "owns", "created", "reported", "authored", "written", "wrote", "opened", "filed",
+                       "raised"))
+NEGATORS = frozenset(("not", "nor"))
+NEGATED_VERB = re.compile(r"\b(do|does|did|is|are|was|were|have|has|had)n['’]t\b", re.I)
+# table: the nouns a "which" or "list" question must govern to ask for documents (not for a field of them: "Which team owns…")
+DOC_ITEMS = frozenset(("ticket", "tickets", "issue", "issues", "account", "accounts", "page", "pages", "doc", "docs", "document",
+                       "documents", "meeting", "meetings", "call", "calls", "thread", "threads", "email", "emails", "pr", "prs", "pull",
+                       "record", "records", "item", "items", "deal", "deals", "company", "companies"))
+KEY_WORDS = frozenset(("key", "keys", "id", "ids", "identifiers", "titles", "numbers"))
+MIN_HELD = 0.3  # absent: the share of the system's documents that hold the asked field (with a value that is not empty)
 MIN_ASK = 1.0  # absent: how much the question must point to the field (a cue word, the whole field name, or one of its FIELD_CUES)
 MAX_VALUE_CHARS = 60
-SINGLE_SHARE = 0.9  # a table field: this share of its holders give it one value
+SINGLE_SHARE = 0.9  # a table field: this share of its holders give it one value; absent: the same, for a field it may call missing
+SHORT_SHARE = 0.9  # absent: this share of a field's values are at most MAX_VALUE_CHARS (not a text field)
 ID_SHARE = 0.95  # a field whose values are this distinct over its holders is an identifier (not a person field)
 PERSON_SHARE = 0.8
 # history: the fields whose items are dated entries, the ways a status change is written, and the kinds of question
@@ -161,6 +173,8 @@ HEADER = re.compile(r"^(From|To|Cc|Date|Subject):[ \t]*(.*)$", re.I)
 # absent: "Which CRM deal is the meeting X linked to?" links the named document itself to the field asked for; "the ticket
 # linked to ENG-1" names another document, which may hold the field
 SELF_LINK = re.compile(r"\b(?:linked|tied|associated|connected|related|attached)(?:\s+(?:to|with))?\s*(?=[?.!,;]|$)")
+# derived: the link words its own questions use ("What files were attached in the thread…", "When did someone last comment on…")
+DERIVED_OWN = frozenset(("attached", "its", "someone", "somebody"))
 
 
 def squash(s: Any) -> str:
@@ -244,6 +258,8 @@ class Records:
         self._titles: dict[str, list[str]] | None = None
         self._index: dict[str, dict[str, list[tuple[tuple[str, ...], str, str]]]] = {}
         self._units: dict[str, list[str]] = {}
+        self._askable: dict[str, set[str]] = {}
+        self._field_values: dict[tuple[str, str], set[str]] = {}
 
     # ------------------------------------------------------------------ the bank, read once
     def doc_facts(self) -> dict[str, dict[str, list[tuple[str, str | None]]]]:
@@ -482,6 +498,7 @@ class Records:
     def table(self, question: str) -> dict[str, Any] | None:
         """A count, a list of keys or a list of people over one system's documents that hold the field values the question
         writes, or None (see the module docstring)."""
+        question = NEGATED_VERB.sub(r"\1 not", question)  # "don't have" -> "do not have"
         kind = self.intent(question)
         if kind is None:
             return None
@@ -538,6 +555,70 @@ class Records:
         return (len(k) <= 2 or k.replace(" ", "").isdigit() or k in ("true", "false", "yes", "no")
                 or all(w in STOP or w in FILLER or w in ITEM_WORDS or w in SYSTEM_NAME_WORDS for w in words)) and not st.person
 
+    def pointers(self, system: str, toks: list[str], found: list[Match]) -> list[set[str]]:
+        """For each word of the question, the system's fields it points to: by its cue and name words (``cue_score`` of the word
+        alone) or a ``FIELD_CUES`` pattern that covers it ("solutions engineer"). Words of a matched value, question and filler
+        words (except the verbs that name a role: ``CUE_VERBS``), system and item nouns, "open" and "not" point to none."""
+        fields = [p for p in self.held(system) if not p.endswith("_of") and p not in ("key", "pr_number")]
+        at, pos = [], 0
+        for t in toks:
+            at.append(pos)
+            pos += len(t) + 1
+        text = " ".join(toks)
+        out: list[set[str]] = [set() for _ in toks]
+        for p in fields:
+            for pat in FIELD_CUES.get(p, ()):
+                for mm in re.finditer(pat, text):
+                    for j, s in enumerate(at):
+                        if mm.start() <= s < mm.end():
+                            out[j].add(p)
+        inside = {j for m in found for j in range(m.start, m.end)}
+        for j, t in enumerate(toks):
+            if (j in inside or t in STOP or t in ITEM_WORDS or t in SYSTEM_NAME_WORDS or t in NEGATORS or t == "open"
+                    or (t in FILLER and t not in CUE_VERBS)):
+                out[j] = set()
+            else:
+                out[j] |= {p for p in fields if self.cue_score(p, [t], "") > 0}
+        return out
+
+    @staticmethod
+    def nearest_fields(point: list[set[str]], m: Match, values: list[Match]) -> set[str] | None:
+        """The fields named by the pointing words closest to a value (within ``NEAR`` words on either side), leaving out a word
+        closer to another value ("pages of the platform team in review": "team" is the platform's, not the review's); None
+        when no word next to the value points to a field."""
+        def dist(j: int, x: Match) -> int:
+            return x.start - j if j < x.start else j - x.end + 1
+
+        best, got = NEAR + 1, set()
+        for j in range(max(0, m.start - NEAR), min(len(point), m.end + NEAR)):
+            if not point[j] or m.start <= j < m.end:
+                continue
+            d = dist(j, m)
+            if d > best or any(dist(j, o) < d for o in values if o is not m and not o.start <= j < o.end):
+                continue
+            got = set(point[j]) if d < best else got | point[j]
+            best = d
+        return got or None
+
+    @staticmethod
+    def governs_item(toks: list[str], used: list[bool]) -> bool:
+        """Whether a list question asks for documents: it says keys, ids or titles, or its "which" (what, list, give, show,
+        name) governs an item noun ("Which open Jira tickets…", "List the dedicated-tier Jira tickets…"), not a field of
+        them ("Which team owns…", "What are the statuses of…")."""
+        if any(t in KEY_WORDS for t in toks):
+            return True
+        a = next((i for i, t in enumerate(toks) if t in ("which", "what", "list", "give", "show", "name")), None)
+        if a is None:
+            return False
+        for k in range(a + 1, min(len(toks), a + 9)):
+            t = toks[k]
+            if t in DOC_ITEMS:
+                return True
+            if not (used[k] or t in STOP or t in SYSTEM_NAME_WORDS or t in ("me", "us", "please", "open", "each", "currently")
+                    or (k > 0 and used[k - 1] and t in FIELD_WORDS)):  # "dedicated-tier": a field word after its value
+                return False
+        return False
+
     def filter(self, question: str, system: str, kind: str) -> dict[str, Any] | None:
         """``table`` for one system."""
         stats = self.stats(system)
@@ -549,11 +630,23 @@ class Records:
         used = [False] * len(toks)
         status_field = "status" if "status" in stats else ("state" if "state" in stats else None)
         has_open = "open" in toks
-        not_at = [i for i, t in enumerate(toks) if t == "not"]
+        not_at = [i for i, t in enumerate(toks) if t in NEGATORS]
+        live: list[tuple[Match, dict[str, str]]] = []
         for m in sorted(found, key=lambda m: m.start):
+            if system in CLOSED and m.words == ("open",):
+                continue  # "open" means a status that is not closed (below), not a status called "Open"
             fields = {p: k for p, k in m.fields.items() if not (self.weak(m.words, stats[p]) and rel.get(p, 0.0) <= 0)}
-            if not fields:
-                continue
+            if fields:
+                live.append((m, fields))
+        point = self.pointers(system, toks, found)
+        chosen: list[tuple[Match, str, bool]] = []
+        attached: set[int] = set()
+        for m, fields in live:
+            named = self.nearest_fields(point, m, [o for o, _ in live])
+            if named is not None:
+                fields = {p: k for p, k in fields.items() if p in named}
+                if not fields:
+                    return None  # the words next to the value name a field that does not hold it ("high-priority" Linear issues)
             near = toks[max(0, m.start - NEAR):m.start] + toks[m.end:m.end + NEAR]  # the words next to the value weigh first
             score = {p: (self.cue_score(p, near, " ".join(near)), rel.get(p, 0.0)) for p in fields}
             best = max(score.values())
@@ -563,18 +656,29 @@ class Records:
                 if len(sets) > 1:
                     return None  # the value is in several fields and no word says which
             p = sorted(top)[0]
-            negated = any(0 < m.start - j <= 3 for j in not_at) and p == status_field
+            by = {j for j in not_at if 0 < m.start - j <= 3}
+            prev = chosen[-1] if chosen else None
+            # "not Resolved or Closed": a "not" negates the value it precedes and the values of the same field listed after it
+            negated = bool(by) or (prev is not None and prev[2] and prev[1] == p and all(t in ("or", "nor", "and") for t in toks[prev[0].end:m.start]))
+            attached |= by
+            chosen.append((m, p, negated))
             (neg if negated else conds)[p].add(fields[p])
             for j in range(m.start, m.end):
                 used[j] = True
-        if has_open and status_field:
+        if set(not_at) - attached:
+            return None  # a "not" before no value negates something table cannot ("not assigned", "not yet merged")
+        if has_open and not any(m.words == ("open",) for m, _, _ in chosen):
+            if system not in CLOSED or not status_field:
+                return None  # "open" means nothing for this system's documents (a HubSpot account)
             if not neg.get(status_field):
-                closed = {value_words(v) for v in CLOSED.get(system, ())}
+                closed = {value_words(v) for v in CLOSED[system]}
                 neg[status_field] |= {k for k in stats[status_field].values if k in closed}
                 if not neg[status_field]:
                     return None
         if not conds and not neg:
             return None
+        if kind == "keys" and not self.governs_item(toks, used):
+            return None  # "Which team owns the space X?" asks for a field of the documents, not for them
         asked = None
         if kind == "people":
             persons = [p for p, st in stats.items() if st.person and p not in conds and p not in neg]
@@ -582,18 +686,21 @@ class Records:
             if not scored or scored[0][0] <= 0 or (len(scored) > 1 and scored[1][0] == scored[0][0]):
                 return None
             asked = scored[0][1]
-        explained = FILLER | ITEM_WORDS | SYSTEM_NAME_WORDS | STOP | FIELD_WORDS
+        # every other word is a question or filler word, a system or item noun, or a word of (or pointing to) a matched or asked
+        # field: "How many Jira tickets with priority P1 have an assignee?" also asks about the assignee, which table cannot
+        targets = set(conds) | set(neg) | ({asked} if asked else set())
+        explained = FILLER | ITEM_WORDS | SYSTEM_NAME_WORDS | STOP
         if has_open or not_at:
             explained = explained | {"open", "not", "nor"} | {w for v in CLOSED.get(system, ()) for w in value_words(v).split()}
-        for p in list(conds) + list(neg) + ([asked] if asked else []):
+        for p in targets:
             explained = explained | {stem(x) for x in p.split("_")} | set(p.split("_"))
-        if any(not used[i] and t not in explained and stem(t) not in explained for i, t in enumerate(toks)):
+        if any(not used[i] and t not in explained and stem(t) not in explained and not point[i] & targets for i, t in enumerate(toks)):
             return None  # a word that is not a condition: the question asks something more
         docs = set(self.documents(system))
         for p, ks in conds.items():
             docs &= set().union(*(stats[p].values.get(k, set()) for k in ks))
         for p, ks in neg.items():
-            docs = {d for d in docs if self.value(d, p) is not None and value_words(self.value(d, p)) not in ks}
+            docs -= set().union(*(stats[p].values.get(k, set()) for k in ks))
         docs_l = sorted(docs, key=lambda d: (self.label(d), d))
         filters = [f"{p} = {' or '.join(stats[p].shown[k] for k in sorted(ks))}" for p, ks in sorted(conds.items())]
         filters += [f"{p} not {' or '.join(stats[p].shown.get(k, k) for k in sorted(ks))}" for p, ks in sorted(neg.items())]
@@ -675,6 +782,8 @@ class Records:
             return None
         system = self.system_of(start)
         ql = unquoted(question.lower())
+        if self.follows_link(ql, DERIVED_OWN, derived=True):
+            return None  # "When was the parent issue of ENG-1 created?" asks about another document
         lab = self.label(start)
         title = self.b.names.get(start, start)
 
@@ -699,15 +808,17 @@ class Records:
             j = order[1] if first_c and len(order) > 1 else order[-2] if len(order) > 1 else None
             entry = cs[i]
             line = f"{entry[0]} {entry[1]} {entry[2]}: {entry[3][:200]}".replace("  ", " ")
-            if WHO.search(ql) and not WHEN.search(ql.replace("who", "")):
+            which = "first" if first_c else "latest"
+            when = WHEN.search(ql.replace("who", ""))
+            if WHO.search(ql):
                 if j is not None and (cs[j][0], cs[j][1]) == (entry[0], entry[1]) and cs[j][2] != entry[2]:
                     return None  # two people at the same time
                 if len(entry[2].split()) < 2:
                     return None  # a first name or a label ("Update"), not who
-                which = "first" if first_c else "latest"
+                if when:  # "Who left the latest comment, and when?"
+                    return out(f"{entry[2]}, {entry[0]}", f"{which}_comment", f"the {which} dated comment", [line])
                 return out(entry[2], f"{which}_commenter", f"the {which} dated comment", [line])
-            if WHEN.search(ql):
-                which = "first" if first_c else "latest"
+            if when:
                 return out(entry[0], f"{which}_comment_date", f"the {which} dated comment", [line])
             return None
         if D_FIRST_ACTIVITY.search(ql) and WHEN.search(ql):
@@ -732,7 +843,7 @@ class Records:
             if r is not False:
                 return r
         if system == "slack":
-            if S_CHANNEL.search(ql):
+            if S_CHANNEL.search(ql) and not (WHO.search(ql) and S_STARTER.search(ql)):  # "Who started the thread in the channel…"
                 ch = self.value(start, "channel") or title
                 return out(ch, "slack_channel", "the thread's channel", [f"channel: {ch}"])
             if S_STARTER.search(ql):
@@ -765,21 +876,30 @@ class Records:
             ms = self.messages(start)
             return out(str(len(ms)), "email_count", "the messages in the thread", [f"{len(ms)} messages"]) if ms else None
         first = re.search(r"\b(?:last|latest|final|most recent)\s+(?:email|message|reply|mail)\b", ql) is None
+        which = "first" if first else "last"
+        counting = COUNT_ASK.search(ql) is not None  # "How many people were copied…": the number, not the names
         if G_CC.search(ql):
             m = self.first_message(start) if first else (self.messages(start) or [None])[-1]
             if m is None:
                 return None
             cc = addresses(m.get("Cc"))
-            return out(", ".join(cc), "email_cc", "the Cc line of the first message", [f"Cc: {m.get('Cc', '')}"]) if cc else None
+            if counting:
+                return out(str(len(cc)), "email_cc_count", f"the Cc line of the {which} message", [f"Cc: {m.get('Cc', '')}"])
+            return out(", ".join(cc), "email_cc", f"the Cc line of the {which} message", [f"Cc: {m.get('Cc', '')}"]) if cc else None
         if G_ATTACH.search(ql):
             att = [v for v in self.values(start, "attachments") if not is_empty(v)]
-            return out(", ".join(att), "email_attachments", "the thread's attachments", [f"attachments: {a}" for a in att]) if att else None
+            if counting:
+                return out(str(len(att)), "email_attachment_count", "the thread's attachments", [f"attachments: {a}" for a in att])
+            # file names may hold commas ("x.pdf (PDF, 312KB)"): joined by "; "
+            return out("; ".join(att), "email_attachments", "the thread's attachments", [f"attachments: {a}" for a in att]) if att else None
         if G_TO.search(ql) and not G_SENDER.search(re.sub(r"\bsent to\b", " ", ql)):
             m = self.first_message(start) if first else (self.messages(start) or [None])[-1]
             if m is None:
                 return None
             to = addresses(m.get("To"))
-            return out(", ".join(to), "email_to", "the To line of the first message", [f"To: {m.get('To', '')}"]) if to else None
+            if counting:
+                return out(str(len(to)), "email_to_count", f"the To line of the {which} message", [f"To: {m.get('To', '')}"]) if to else None
+            return out(", ".join(to), "email_to", f"the To line of the {which} message", [f"To: {m.get('To', '')}"]) if to else None
         asks_who = WHO.search(ql) or re.search(r"\b(?:what|which) (?:is|was) the (?:name of the )?sender\b", ql)
         if asks_who and (G_SENDER.search(ql) or re.search(r"\b(?:first|start|started|began|kick)", ql)):
             ms = self.messages(start)
@@ -787,7 +907,7 @@ class Records:
                 x["when"] for x in ms) else (ms[-1] if ms else None))
             if m is None or not m.get("From"):
                 return None
-            return out(display_name(m["From"]), "email_sender", "the From line of the first message",
+            return out(display_name(m["From"]), "email_sender", f"the From line of the {which} message",
                        [f"From: {m['From']}", f"Date: {m.get('Date', '')}"])
         if WHEN.search(ql) and (G_START.search(ql) or D_CREATED.search(ql)):
             v = self.value(start, "first_email_at")
@@ -798,6 +918,50 @@ class Records:
         return False
 
     # ------------------------------------------------------------------ 4. a field the document leaves empty
+    @staticmethod
+    def follows_link(ql: str, own: frozenset[str] = frozenset(), derived: bool = False) -> bool:
+        """Whether a question (lower case, without its quoted titles) asks about a document reached from the named one: a link
+        word (``plans.LINK_WORDS``, but ``own``, and "linked to" closing a clause, which links the named document itself) or a
+        link phrase (``plans.LINK_PHRASES``; for ``derived``, "went to" asks who an email went to)."""
+        if set(re.findall(r"[a-z]+", SELF_LINK.sub(" ", ql))) & (LINK_WORDS - own):
+            return True
+        return LINK_PHRASES.search(re.sub(r"\bwent to\b", " ", ql) if derived else ql) is not None
+
+    def askable(self, system: str) -> set[str]:
+        """The fields ``absent`` may call missing on a document of the system: held by ``min_held`` of its documents, with one
+        short value each (``SINGLE_SHARE`` of the holders give one value, ``SHORT_SHARE`` of the values are at most
+        ``MAX_VALUE_CHARS``). A list or text field (a HubSpot next step or blockers, a meeting's topics or next steps) is one that
+        documents also write as a content field, its value in the text with no field name, which the bank cannot tell from
+        missing."""
+        if system not in self._askable:
+            docs = self.documents(system)
+            held = self.held(system)
+            out = set()
+            for p, n in held.items():
+                if p.endswith("_of") or p in ("key", "pr_number") or n < self.min_held * len(docs):
+                    continue
+                rows = [vs for d in docs if (vs := [v for v in self.values(d, p) if not is_empty(v)])]
+                vals = [v for vs in rows for v in vs]
+                if (rows and sum(len(vs) == 1 for vs in rows) >= SINGLE_SHARE * len(rows)
+                        and sum(len(v) <= MAX_VALUE_CHARS for v in vals) >= SHORT_SHARE * len(vals)):
+                    out.add(p)
+            self._askable[system] = out
+        return self._askable[system]
+
+    def field_values(self, system: str, field: str) -> set[str]:
+        """The values (``value_words``) the system's documents hold in a field."""
+        key = (system, field)
+        if key not in self._field_values:
+            self._field_values[key] = {w for d in self.documents(system) for v in self.values(d, field)
+                                       if not is_empty(v) and (w := value_words(v))}
+        return self._field_values[key]
+
+    def written_bare(self, doc: str, field: str) -> bool:
+        """Whether the document's text (after its field lines) holds a line that is one of the values the system's documents
+        hold in the field: the field written as a content field ("medium" for a Linear issue's customer impact)."""
+        vals = self.field_values(self.system_of(doc), field)
+        return any(value_words(u) in vals for u in self.units(doc))
+
     def relevance(self, question: str, fields: Iterable[str]) -> dict[str, float]:
         """How much the question's words point to each field: the bank's cue weights (``wanted``) on the question without its
         quoted titles and the words that name the document itself (system names, item nouns: "the Linear issue" does not ask for
@@ -810,13 +974,14 @@ class Records:
         return out
 
     def absent(self, question: str, start: str | None) -> str | None:
-        """Why the answer is not found when the asked field (``relevance``) is one ``min_held`` of the system's documents hold but
-        the named document leaves empty; None when the document holds it, the question follows a link, or no field stands out."""
+        """Why the answer is not found when the asked field (``relevance``) is one ``min_held`` of the system's documents hold, with
+        one short value each (``askable``), but the named document leaves empty and its text does not hold one of the field's
+        values on a line of its own (``written_bare``); None when the document holds it, the question follows a link, counts or
+        asks for history, or no field stands out."""
         if not start or self.b.kinds.get(start) != "document":
             return None
         ql = unquoted(question.lower())
-        links = set(re.findall(r"[a-z]+", SELF_LINK.sub(" ", ql))) & LINK_WORDS
-        if links or LINK_PHRASES.search(ql) or COUNT_ASK.search(question.lower()):
+        if self.follows_link(ql) or COUNT_ASK.search(question.lower()):
             return None
         if any(r.search(ql) for r in (D_DAYS, D_FIRST_COMMENT, D_LAST_COMMENT, D_FIRST_ACTIVITY, D_UPDATED)):
             return None  # history (``derived``), not a field
@@ -834,6 +999,8 @@ class Records:
             return None
         if held[best] < self.min_held * len(docs) or self.value(start, best) is not None:
             return None
+        if best not in self.askable(system) or self.written_bare(start, best):
+            return None  # a list or text field, or the value written in the text: the bank cannot tell it from missing
         if any(p in known and self.value(start, p) is not None and w >= best_w - 0.5 for w, p in ranked[1:]):
             return None
         noun = {"jira": "Jira ticket", "linear": "Linear issue", "hubspot": "HubSpot account", "gmail": "email thread", "github": "pull request",

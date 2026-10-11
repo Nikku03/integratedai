@@ -105,6 +105,24 @@ def test_gmail_counts_by_mailbox_and_type_and_by_account():
     assert aside["count_gmail"]["generic account name"] == 1 and aside["count_gmail"]["another thread's subject names it"] == 1
 
 
+def test_gmail_type_counts_compare_types_within_the_one_mailbox_and_account_counts_skip_non_accounts():
+    def g(i, owner, ttype, account=None):
+        return _d(f"m{i}", "gmail", f"Thread number {i}", mailbox_owner=owner, thread_type=ttype, related_account=account)
+
+    docs = [g(1, "maya_chen", "sales"), g(2, "maya_chen", "sales"), g(3, "liam_wu", "pre-sales"), g(4, "liam_wu", "pre-sales"),
+            g(5, "ana_ruiz", "sales"), g(6, "ana_ruiz", "sales"), g(7, "ana_ruiz", "pre-sales"), g(8, "ana_ruiz", "pre-sales"),
+            g(9, "bo_li", "renewal", "Fjord Bank"), g(10, "bo_li", "partner", "Fjord Bank"), g(11, "bo_li", "hiring", "Fjord Bank"),
+            g(12, "ben_ode", "leadership_update", "internal"), g(13, "ben_ode", "misc", "internal")]
+    qs, aside = _gen(["count_gmail"], docs)
+    got = {tuple(map(tuple, q["filters"])): q["expected"]["value"] for q in qs}
+    assert got == {(("mailbox_owner", "Maya Chen"), ("thread_type", "sales")): "2",
+                   (("mailbox_owner", "Liam Wu"), ("thread_type", "pre-sales")): "2"}, \
+        "a pre-sales thread in another mailbox leaves Maya Chen's sales threads one reading"
+    assert aside["count_gmail"]["named inside another"] == 2, "Ana Ruiz holds both sales and pre-sales threads"
+    assert aside["count_gmail"]["a hiring thread"] == 1, "one of the Fjord Bank threads is a hiring thread"
+    assert aside["count_gmail"]["a label, not an account"] == 1
+
+
 # ------------------------------------------------------------------ history
 def test_created_and_updated_dates_are_set_aside_when_a_dated_entry_falls_outside_them():
     docs = [_d("l1", "linear", "A", key="ENG-201", created_at="2026-01-10", updated_at="2026-01-20",
@@ -187,6 +205,23 @@ def test_email_questions_read_the_first_message_and_check_it_against_the_thread_
     assert aside["email_count"]["count is not the messages written"] == 1, "message_count says 3, two are written"
     assert aside["email_account"]["answer in the question"] == 1, "the subject names Acme Corp"
     assert all(f'"{q["pieces"][0]}"' in q["question"] for q in qs)
+
+
+def test_the_account_of_a_thread_is_asked_only_when_it_is_a_customer_account():
+    def t(i, subject, account, ttype="sales"):
+        return _d(f"e{i}", "gmail", subject, related_account=account, thread_type=ttype)
+
+    docs = [t(1, "Pilot terms and pricing", "Northwind Health"),
+            t(2, "Final prep: system design loop", "Candidate: Alex Romero", "hiring"),
+            t(3, "Recruiter intro and interview windows", "Talentbridge Recruiting", "hiring"),
+            t(4, "Monthly dashboard sweep", "Internal - Monthly QBR prep", "leadership_update"),
+            t(5, "Intro call coordination", "candidate:kaiya-sundar", "misc"),
+            t(6, "Portfolio signals and exec asks", "NimbusCloud; Stratus; Aurora Analytics", "leadership_update"),
+            t(7, "Workshop agenda wireframes", "TerraLabs (exec workshop)", "misc")]
+    qs, aside = _gen(["email_account"], docs)
+    assert [(q["pieces"][0], q["expected"]) for q in qs] == [("Pilot terms and pricing", {"value": "Northwind Health"})]
+    assert aside["email_account"] == {"a hiring thread": 2, "a label, not an account": 2, "several names in the value": 1,
+                                      "a note in the value": 1}
 
 
 def test_a_subject_shared_once_re_is_stripped_names_no_thread():
@@ -283,6 +318,18 @@ def test_field_absent_asks_for_a_usually_present_field_that_is_empty_here():
     assert aside["field_absent"] == {"another field mentions it": 1, "field usually empty": 2 + 5 + 5 + 3}, \
         "sla_due_at on two of three tickets; customer_impact and release on no issue, first_response_due_at on no ticket"
     assert qs[0]["family"] == "unanswerable" and "ENG-603" in qs[0]["question"]
+
+
+def test_none_is_a_value_where_the_fields_scale_has_that_level():
+    docs = [_d(f"l{i}", "linear", f"Issue {i}", key=f"ENG-70{i}", customer_impact=v) for i, v in enumerate(("medium", "high", "low"))]
+    docs += [_d("l3", "linear", "Issue 3", key="ENG-703", customer_impact="none"), _d("l4", "linear", "Issue 4", key="ENG-704")]
+    docs += [_d(f"h{i}", "hubspot", n, csm_assigned=c) for i, (n, c) in
+             enumerate((("Northwind Health", "Maya Chen"), ("Fjord Bank Group", "Liam Wu"), ("Kestrel Analytics", "none")))]
+    qs, aside = _gen(["field_absent"], docs)
+    got = {(q["field"], q["pieces"][0]): q["absent_value"] for q in qs}
+    assert got == {("customer_impact", "ENG-704"): "<absent>", ("csm_assigned", "Kestrel Analytics"): "none"}, \
+        "'none' is no customer impact, but no CSM"
+    assert aside["field_absent"]["'none' is a level of the field"] == 1
 
 
 # ------------------------------------------------------------------ embedded question words

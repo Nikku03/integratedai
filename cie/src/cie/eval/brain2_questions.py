@@ -12,8 +12,10 @@ no document holds. v16 adds what those never asked (S/brain2/survey.txt, kinds l
   activity with a HubSpot account. No field records earlier values, so there are no questions about a previous assignee
   or status;
 * **email_chat:** an email thread named by its subject: who sent the first email, when the thread started, who the first
-  email went to and who was copied, how many messages it holds, its attachments and its account; a Slack thread named by a
-  quote of its first ten words: its channel and, when that is a full name, who started it;
+  email went to and who was copied, how many messages it holds, its attachments and its account (a customer account: a
+  hiring thread's account field names candidates, recruiters and employers, and labels such as 'Candidate: Alex Romero' or
+  'Internal - Monthly QBR prep' are not asked); a Slack thread named by a quote of its first ten words: its channel and,
+  when that is a full name, who started it;
 * **multi:** two documents joined: the project, creator or team of the Linear issue a pull request links
   (``pr_issue_project``, ``pr_issue_creator``, ``pr_issue_team``), and joins on a person's full name inside the haystack:
   the Linear issues assigned to a pull request's author or to a Jira ticket's reporter, the HubSpot accounts owned by a
@@ -21,7 +23,8 @@ no document holds. v16 adds what those never asked (S/brain2/survey.txt, kinds l
   string, not on a confirmed same person. These are written as ``factbank_multi`` writes its questions (a value, a date or
   keys, with pieces), so the plan lessons can learn from them;
 * **unanswerable:** a field that most documents of a system hold is empty, missing, TBD or N/A on the named one
-  (``field_absent``); the right answer is "not found";
+  (``field_absent``); the right answer is "not found". "none" is a value, not an empty field, where the field's scale has
+  that level (Linear customer_impact: none, low, medium, high);
 * **single, group embedded:** the field questions of ``brain_questions.FIELDS`` asked after a verb of knowing or telling
   ("Do you know when…", "Can you remind me who…"), with the same expected answers.
 
@@ -1378,20 +1381,28 @@ def _known_accounts(hay: Haystack) -> re.Pattern | None:
     return re.compile(r"(?<![\w-])(?:" + "|".join(re.escape(n) for n in sorted(names, key=len, reverse=True)) + r")(?![\w-])")
 
 
+def _absent(src: str, field: str, v: Any) -> bool:
+    """Whether a field_absent field is empty on a document (``_none``): missing, null, empty, 'TBD', 'N/A', 'unassigned' and
+    the like, and 'none' except where it is a level of the field's scale (``NONE_LEVEL``: no customer impact)."""
+    return _none(v) and not ((src, field) in NONE_LEVEL and isinstance(v, str) and v.strip().lower() == "none")
+
+
 def field_absent(hay: Haystack, rng: random.Random, cap: int | None = None, aside: Counter | None = None) -> list[dict[str, Any]]:
-    """A field that most documents of a system hold (``USUAL``) but that is empty, missing, TBD or N/A on the named one, and
-    that the document's other fields never mention; for an email thread with no account, no account name written in the
-    thread either. Expected: not found."""
+    """A field that most documents of a system hold (``USUAL``) but that is empty, missing, TBD or N/A on the named one
+    (``_absent``: "none" is a value where the field's scale has that level), and that the document's other fields never
+    mention; for an email thread with no account, no account name written in the thread either. Expected: not found."""
     cands = []
     accounts = None
     for (src, field), (mention, wordings) in ABSENT.items():
         ds = hay.of(src)
         if not ds:
             continue
-        share = sum(1 for d in ds if not _none(d["raw"].get(field))) / len(ds)
+        share = sum(1 for d in ds if not _absent(src, field, d["raw"].get(field))) / len(ds)
         for d in ds:
             v = d["raw"].get(field, "<absent>")
-            if not _none(d["raw"].get(field)):
+            if not _absent(src, field, d["raw"].get(field)):
+                if _none(d["raw"].get(field)):
+                    _note(aside, "'none' is a level of the field")
                 continue
             if share <= USUAL:
                 _note(aside, "field usually empty")

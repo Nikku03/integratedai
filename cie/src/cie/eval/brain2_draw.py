@@ -12,16 +12,18 @@
   document is kept only if (1) none of its anchors (``anchors``: title or subject, ticket key, pull request number, customer
   or account names) is written in the haystack (``brain_questions._written``, between word boundaries); (2) no haystack
   document of its source has a title whose words overlap its title's by a Jaccard of ``TITLE_JACCARD`` or more; and (3) no
-  haystack document holds ``SHINGLE_MAX`` or more of its body's 5-word shingles.
+  haystack document holds ``SHINGLE_MAX`` or more of its body's 5-word shingles. The words check (4) will look for
+  (``Haystack.check_words``) are worked out here and written in the keys; a document none of whose anchors has a content word
+  is dropped, since check (4) could not test a question about it.
 - **Packets** (``packets``) follow ``brain_writers``' format with the instruction kind "unanswerable": the writer sees the
   whole document (metadata and body) and writes the question a colleague would naturally ask whose answer is in it, with 1 to
-  3 answer facts copied from it. The keys (document, anchors, check values) stay in a separate file, and the packets are also
-  cut into batch files of ``BATCH`` for writers (``brain_writers status`` reads them).
+  3 answer facts copied from it. The keys (document, anchors, check values, check (4)'s words) stay in a separate file, and the
+  packets are also cut into batch files of ``BATCH`` for writers (``brain_writers status`` reads them).
 - **Collect** (``collect``) runs ``brain_writers.collect``'s prose checks on the writers' outputs (one question, not yes/no,
   not "this document", 1 to 3 facts copied verbatim from the packet's text, none of them in the question), then check (4): no
   single haystack document holds an anchor content word and ``FACT_SHARE`` or more of the answer facts
-  (``evidence_audit.present``). The questions kept get family "unanswerable", kind "heldout", expected {"not_found": true}
-  and no gold documents.
+  (``evidence_audit.present``). The questions kept get family "unanswerable", kind "heldout", expected {"not_found": true},
+  no gold documents, and the words check (4) looked for.
 
 Two readings were fixed by measurement, since the plain ones keep almost nothing in this benchmark:
 
@@ -34,6 +36,13 @@ Two readings were fixed by measurement, since the plain ones keep almost nothing
   11% (dev 10%), while 77% (dev 83%) of them are still caught with the gold document in the haystack
   (S/brain2/E_draw/check4_fit.py; chosen on train as the most caught at about 10% rejected, with one word as the design
   says: two words held by at most 50 documents do as well).
+- When no anchor word is that rare (about one kept document in six: 13 of 76 on dev5k, 11 of 74 on train5k), check (4)
+  would test nothing, so the rarest content word of a non-person anchor stands in, and a document holding it must hold every
+  answer fact (``FALLBACK_SHARE``): a word held by tens or hundreds of documents ties a document only loosely to the held-out
+  one. On the proxy above this catches 110 of 111 train5k gold documents (dev5k 52 of 52) instead of 85 (43), and raises the
+  false alarms from 12 to 17 of 111 (dev 5 to 9 of 52); with half the facts it would raise them to 28 (dev 13), with the two
+  rarest words to 19 (dev 10), and standing in also when only person words are rare to 20 (dev 9) for one more gold document
+  caught (S/brain2/E_draw/check4_fallback.py; chosen on train, checked on dev).
 
     python -m cie.eval.brain2_draw draw --zone dev --seed 1701 --zones $S/brain/zones.json.gz --index $S/mt5k/index.json \\
         --root $BENCH --exclude $S/brain/dev5k --out W
@@ -68,6 +77,7 @@ SHINGLE = 5
 SHINGLE_MAX = 0.1
 FACT_SHARE = 0.5
 RARE_DF = 10  # check (4): an anchor word held by at most this many haystack documents (fixed on train5k, check4_fit.py)
+FALLBACK_SHARE = 1.0  # check (4) when no anchor word is rare: a holder of the rarest one must hold every fact (check4_fallback.py)
 MIN_TEXT = 300  # characters of text (metadata and body) a writer needs
 KIND = "unanswerable"
 PREFIX = "heldout"
@@ -83,6 +93,8 @@ INSTRUCTION = W.INTRO + (
     "contain the answer facts and must not be answerable by yes/no. One question. Reply with JSON only: "
     '{"packet_id": "<the packet id>", "question": "<your question>", "answer_facts": ["<fact>", ...]}')
 FOUND = "a haystack document holds an anchor word and half the answer facts"
+FOUND_ALL = "a haystack document holds the rarest anchor word and every answer fact"
+UNTESTED = "no anchor word for check (4)"
 
 
 # ------------------------------------------------------------------ the fresh draw
@@ -262,9 +274,9 @@ def heldout(work: Path, zones_path: Path, n: int, seed: int, *, exclude: Iterabl
     The pool is the haystack's zone less its documents and those of every haystack it left out (haystack.json's
     "excluded_haystacks", and the folders in ``exclude``), in the sources of ``HELD_SOURCES``. Each source gets an equal share
     of ``n`` (``quotas``); ``oversample`` times its share of readable documents with a title and ``MIN_TEXT`` characters of
-    text are examined in a seeded order, and those that pass checks (1) to (3) are kept (see the module notes). Each kept
-    document comes with its anchors and check values. A haystack drawn from the test zone is read only after the
-    pre-registration."""
+    text are examined in a seeded order, and those that pass checks (1) to (3) and give check (4) a word to look for
+    (``Haystack.check_words``) are kept (see the module notes). Each kept document comes with its anchors, check values and
+    check (4)'s words. A haystack drawn from the test zone is read only after the pre-registration."""
     hay = json.loads((work / "haystack.json").read_text())
     if hay.get("zone") == "test" and not preregistered:
         raise PermissionError("the test zone is read only after the pre-registration")
@@ -313,6 +325,7 @@ def heldout(work: Path, zones_path: Path, n: int, seed: int, *, exclude: Iterabl
             cands.append(d)
     docs = read_docs(sources, index, sorted(inside))
     text = written_text(docs)
+    hay4 = Haystack(docs)
     titles: dict[str, list[set[str]]] = defaultdict(list)
     for x in docs:
         titles[x["source"]].append(title_words(x["title"]))
@@ -320,6 +333,7 @@ def heldout(work: Path, zones_path: Path, n: int, seed: int, *, exclude: Iterabl
     kept: list[dict[str, Any]] = []
     why_dropped: dict[str, Counter] = defaultdict(Counter)
     written_kinds: Counter = Counter()
+    check4: Counter = Counter()
     strict_pass = 0
     for d, ov in zip(cands, overlap, strict=True):
         anc = anchors(d)
@@ -329,13 +343,16 @@ def heldout(work: Path, zones_path: Path, n: int, seed: int, *, exclude: Iterabl
         tw = title_words(d["title"])
         jac = max((jaccard(tw, t) for t in titles[d["source"]]), default=0.0)
         checks = {"anchors_written": [a["text"] for a in in_check1], "title_jaccard": round(jac, 3), "shingle_overlap": round(ov, 4)}
+        words, fallback = hay4.check_words(anc)
         why = ("anchor written in the haystack" if in_check1 else f"title Jaccard >= {TITLE_JACCARD}" if jac >= TITLE_JACCARD
-               else f"shingle overlap >= {SHINGLE_MAX}" if ov >= SHINGLE_MAX else None)
+               else f"shingle overlap >= {SHINGLE_MAX}" if ov >= SHINGLE_MAX else UNTESTED if not words else None)
         if why:
             why_dropped[d["source"]][why] += 1
             continue
         strict_pass += not written
-        kept.append({"doc": d, "anchors": anc, "checks": checks,
+        others = anchor_stems(a["text"] for a in anc if a["kind"] != "person")
+        check4["fallback_word" if fallback else "rare_words" if words & others else "rare_person_words_only"] += 1
+        kept.append({"doc": d, "anchors": anc, "checks": checks, "check4": {"words": sorted(words), "fallback": fallback},
                      "persons_written": [a["text"] for a in written if a["kind"] == "person"]})
     ovs = [k["checks"]["shingle_overlap"] for k in kept]
     rep = {"work": str(work), "zone": zone, "n": n, "seed": seed, "oversample": oversample, "person_anchors": person_anchors,
@@ -345,7 +362,7 @@ def heldout(work: Path, zones_path: Path, n: int, seed: int, *, exclude: Iterabl
            "kept_by_source": dict(sorted(Counter(k["doc"]["source"] for k in kept).items())),
            "skipped": dict(sorted(aside.items())), "dropped": {s: dict(c) for s, c in sorted(why_dropped.items())},
            "anchors_written_by_kind": dict(sorted(written_kinds.items())),
-           "kept_with_no_person_written": strict_pass,
+           "kept_with_no_person_written": strict_pass, "kept_check4_words": dict(sorted(check4.items())),
            "kept_shingle_overlap": {"median": round(statistics.median(ovs), 4) if ovs else None, "max": max(ovs, default=None)},
            "kept_title_jaccard_max": max((k["checks"]["title_jaccard"] for k in kept), default=None)}
     return kept, rep
@@ -355,7 +372,8 @@ def heldout(work: Path, zones_path: Path, n: int, seed: int, *, exclude: Iterabl
 def packets(held: list[dict[str, Any]], seed: int, work: Path | str | None = None
             ) -> tuple[list[dict[str, Any]], list[dict[str, Any]], dict[str, Any]]:
     """One packet per held-out document in ``brain_writers``' format (instruction kind "unanswerable"; the sources take turns
-    in a seeded order, ``brain_writers.spread``), their keys (document, anchors, check values) and a report."""
+    in a seeded order, ``brain_writers.spread``), their keys (document, anchors, check values, check (4)'s words) and a
+    report."""
     pools = {}
     for h in held:
         pools.setdefault(h["doc"]["source"], {"": []})[""].append(h)
@@ -367,6 +385,7 @@ def packets(held: list[dict[str, Any]], seed: int, work: Path | str | None = Non
                    "title": d["title"], "text": W._cut(_text(d), TEXT_CHARS), "instruction": INSTRUCTION})
         ks.append({"packet_id": pid, "kind": KIND, "dsid": d["dsid"], "source": d["source"], "title": d["title"],
                    "anchors": h["anchors"], "checks": h["checks"], "persons_written": h.get("persons_written", []),
+                   **({"check4_words": h["check4"]["words"], "check4_fallback": h["check4"]["fallback"]} if "check4" in h else {}),
                    **({"work": str(work)} if work is not None else {})})
     sizes = [len(p["text"]) for p in ps]
     rep = {"packets": len(ps), "seed": seed, "by_source": dict(sorted(Counter(k["source"] for k in ks).items())),
@@ -407,6 +426,11 @@ def anchor_stems(anchor_texts: Iterable[str]) -> set[str]:
     return {s for a in anchor_texts for s in fact_terms(str(a))[1]}
 
 
+def _kinds_texts(anchors: Iterable[dict[str, str] | str]) -> list[tuple[str, str]]:
+    """Anchors as (kind, text): {"kind", "text"} as ``anchors`` gives them, or a bare text of no kind."""
+    return [(str(a.get("kind") or ""), str(a.get("text") or "")) if isinstance(a, dict) else ("", str(a)) for a in anchors]
+
+
 class Haystack:
     """The haystack's documents as check (4) reads them: each one's text (``memory_test.render_doc``: title, metadata and
     body), lower-cased, with its stems (``evidence_audit._stems``), and how many documents hold each stem."""
@@ -420,22 +444,37 @@ class Haystack:
             self.rows.append((d["dsid"], t.lower(), _stems(t)))
         self.df = Counter(s for _, _, stems in self.rows for s in stems)
 
-    def anchor_words(self, anchor_texts: Iterable[str], rare: int = RARE_DF) -> set[str]:
+    def anchor_words(self, anchors: Iterable[dict[str, str] | str], rare: int = RARE_DF) -> set[str]:
         """The anchors' content words (``anchor_stems``) that at most ``rare`` haystack documents hold: the words that tie a
-        document to what the held-out one is about."""
-        return {w for w in anchor_stems(anchor_texts) if self.df[w] <= rare}
+        document to what the held-out one is about. Anchors are {"kind", "text"} or bare texts."""
+        return {w for w in anchor_stems(t for _, t in _kinds_texts(anchors)) if self.df[w] <= rare}
 
-    def holder(self, facts: list[str], anchor_texts: Iterable[str], share: float = FACT_SHARE, rare: int = RARE_DF) -> str | None:
-        """The first document that holds an anchor content word (``anchor_words``) and at least ``share`` of the facts (those
-        with a number or a content word, each present as ``evidence_audit.present`` finds it), or None."""
+    def check_words(self, anchors: Iterable[dict[str, str] | str], rare: int = RARE_DF) -> tuple[set[str], bool]:
+        """The words check (4) looks for, and whether they are the fallback: the rare anchor words (``anchor_words``); or,
+        when none is that rare, the one rarest content word of a non-person anchor (title, key, pull request number,
+        customer; of any anchor when no other has one), ties going to the first in alphabetical order. Empty only when no
+        anchor has a content word."""
+        anchors = list(anchors)
+        if words := self.anchor_words(anchors, rare):
+            return words, False
+        pairs = _kinds_texts(anchors)
+        cands = anchor_stems(t for k, t in pairs if k != "person") or anchor_stems(t for _, t in pairs)
+        return ({min(cands, key=lambda w: (self.df[w], w))}, True) if cands else (set(), False)
+
+    def holder(self, facts: list[str], anchors: Iterable[dict[str, str] | str], share: float = FACT_SHARE, rare: int = RARE_DF,
+               fallback_share: float = FALLBACK_SHARE) -> str | None:
+        """The first document that holds a word of ``check_words`` and at least ``share`` of the facts (``fallback_share``
+        when the word is the fallback), counting the facts with a number or a content word, each present as
+        ``evidence_audit.present`` finds it; or None."""
         from cie.eval.evidence_audit import present
 
         facts = B._checkable(facts)
-        words = self.anchor_words(anchor_texts, rare)
+        words, fallback = self.check_words(anchors, rare)
         if not facts or not words:
             return None
+        need = (fallback_share if fallback else share) * len(facts)
         for dsid, low, stems in self.rows:
-            if words & stems and sum(present(f, low, stems) for f in facts) >= share * len(facts):
+            if words & stems and sum(present(f, low, stems) for f in facts) >= need:
                 return dsid
         return None
 
@@ -444,8 +483,9 @@ def collect(packets: list[dict[str, Any]], keys: list[dict[str, Any]], outputs: 
             ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     """The writers' questions that pass ``brain_writers.collect``'s prose checks against the packet's text and check (4)
     against ``hay``, as held-out unanswerable questions (family "unanswerable", kind "heldout", expected {"not_found": true},
-    no gold documents; the held-out document, its anchors and the answer facts kept beside them); and the outputs rejected,
-    each with its reason."""
+    no gold documents; the held-out document, its anchors, the answer facts and the words check (4) looked for kept beside
+    them); and the outputs rejected, each with its reason. A question check (4) cannot test (no anchor has a content word) is
+    rejected too."""
     ps = [{**p, "kind": "prose"} for p in packets if p.get("kind") == KIND]
     ks = [{**k, "kind": "prose"} for k in keys if k.get("kind") == KIND]
     by_key = {k["packet_id"]: k for k in ks}
@@ -453,14 +493,20 @@ def collect(packets: list[dict[str, Any]], keys: list[dict[str, Any]], outputs: 
     out = []
     for q in passed:
         key = by_key[q["packet_id"]]
-        names = [a["text"] if isinstance(a, dict) else str(a) for a in key.get("anchors") or []]
-        if (at := hay.holder(q["answer_facts"], names)) is not None:
-            rejected.append({"packet_id": q["packet_id"], "question": q["question"], "answer_facts": q["answer_facts"],
-                             "reason": FOUND, "holder": at})
+        anc = key.get("anchors") or []
+        names = [t for _, t in _kinds_texts(anc)]
+        words, fallback = hay.check_words(anc)
+        seen = {"packet_id": q["packet_id"], "question": q["question"], "answer_facts": q["answer_facts"]}
+        check4 = {"check4_words": sorted(words), "check4_fallback": fallback}
+        if not words:
+            rejected.append({**seen, "reason": UNTESTED})
+            continue
+        if (at := hay.holder(q["answer_facts"], anc)) is not None:
+            rejected.append({**seen, "reason": FOUND_ALL if fallback else FOUND, "holder": at, **check4})
             continue
         out.append({"id": q["id"], "group": PREFIX, "kind": PREFIX, "family": KIND, "question": q["question"],
                     "expected": {"not_found": True}, "gold_docs": [], "pieces": q["answer_facts"], "answer_facts": q["answer_facts"],
-                    "heldout_doc": key["dsid"], "anchors": names, "source": key["source"], "packet_id": q["packet_id"]})
+                    "heldout_doc": key["dsid"], "anchors": names, "source": key["source"], "packet_id": q["packet_id"], **check4})
     return out, rejected
 
 
@@ -528,7 +574,8 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
         rej = Path(a.rejected) if a.rejected else out.with_name(out.name.removesuffix(".jsonl") + ".rejected.jsonl")
         _write_jsonl(out, qs)
         _write_jsonl(rej, rejected)
-        rep = {**W.collect_report(qs, rejected), "out": str(out), "rejected_file": str(rej)}
+        rep = {**W.collect_report(qs, rejected), "check4_fallback_kept": sum(bool(q["check4_fallback"]) for q in qs), "out": str(out),
+               "rejected_file": str(rej)}
     print(json.dumps(rep, indent=1))
     return rep
 
