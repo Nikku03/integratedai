@@ -89,6 +89,8 @@ starts with the route, the router's family scores when it ran, and the time. One
 from __future__ import annotations
 
 import argparse
+import functools
+import gzip
 import json
 import math
 import re
@@ -210,11 +212,22 @@ COVER_MIN_WEIGHT = 10.0  # a question whose rare words weigh no more than this (
 COVER_ENDS = 50  # the plan's end entities read for the check, at most
 ROUTE_UNCOVERED = "absent_doc"  # the route of that "not found" (a not_found route, ``cie.eval.brain2_test.route_class``)
 # v16, unknown names (``Brain.unknown_names``): a word written as a name, capitalised inside a sentence or in CamelCase, three
-# characters or more, that no entity of the bank holds: the question is about something the company does not have. Measured in
-# round 2's phase 2 on train5k (0 of 16,436 answerable questions; 11 of 46 held-out questions) and then dev5k (0 of 15,885; 11
-# of 51); the idea came from two dev held-out quotes that named a customer the bank never mentions
+# characters or more, that no entity of the bank holds: the question is about something the company does not have. The idea came
+# from two dev held-out quotes that named a customer the bank never mentions; it was measured on train5k first, then dev5k
 NAME_WORD_TOKEN = re.compile(r"(?<![\w'])([A-Za-z][A-Za-z0-9]{2,})(?![\w'])")
 CAMEL = re.compile(r"[a-z][A-Z]")
+# ordinary English (the 80,000 most frequent words of WikiText-103 and two C4 shards, round 1's general lexicon): a capitalised
+# word in it ("February", "North" in "North America") is not read as an unknown name unless it is CamelCase. Added in round 2's
+# phase 2 after the guard sets showed month names and place words firing; measured again on train5k (0 of 16,663 answerable
+# questions, 9 of 46 held-out), dev5k (0 of 15,973; 8 of 51) and the 14 guard sets (0 of 698)
+GENERAL_WORDS = Path(__file__).with_name("data") / "general_words.txt.gz"
+
+
+@functools.cache
+def general_words() -> frozenset[str]:
+    """Ordinary English words, lower case (``GENERAL_WORDS``)."""
+    with gzip.open(GENERAL_WORDS, "rt", encoding="utf-8") as f:
+        return frozenset(w.strip() for w in f if w.strip() and not w.startswith("#"))
 
 
 def squash(s: str) -> str:
@@ -719,14 +732,16 @@ class Brain:
         return f"person {people[0]}" if people else None
 
     def unknown_names(self, question: str) -> list[str]:
-        """v16: the words of the question written as names (capitalised, not opening a sentence, or in CamelCase; three characters
-        or more, quoted text included) that no entity of the bank holds (``FactBank.doc_freq``): "VeloxBridge" in "What did the
-        VeloxBridge pilot agree?" when the company never mentions VeloxBridge."""
+        """v16: the words of the question written as names (in CamelCase, or capitalised, not opening a sentence and not ordinary
+        English, ``GENERAL_WORDS``; three characters or more, quoted text included) that no entity of the bank holds
+        (``FactBank.doc_freq``): "VeloxBridge" in "What did the VeloxBridge pilot agree?" when the company never mentions
+        VeloxBridge, but not "February"."""
         out = []
         for m in NAME_WORD_TOKEN.finditer(question):
             w, before = m.group(1), question[:m.start()].rstrip()
             opens = not before or before[-1] in ".?!:\"'\u201c(-"
-            if (w[0].isupper() and not opens or CAMEL.search(w)) and self.bank.doc_freq(w.lower()) == 0:
+            camel = CAMEL.search(w) is not None
+            if (camel or w[0].isupper() and not opens and w.lower() not in general_words()) and self.bank.doc_freq(w.lower()) == 0:
                 out.append(w)
         return list(dict.fromkeys(out))
 

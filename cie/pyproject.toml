@@ -52,6 +52,9 @@ cie = "cie.cli:main"
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools.package-data]
+"cie.factbank" = ["data/*.txt.gz"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 markers = [

@@ -351,3 +351,11 @@ def test_an_unknown_name_is_not_found_with_v16_only(v16, v15):
     _row_ok(v16, r, "not_found")
     assert r["answer"] == "not found" and 'name "VeloxBridge"' in r["reason"]
     assert v15.ask(q)["route"] != "not_found"
+
+
+def test_ordinary_english_is_not_an_unknown_name(v16):
+    """A capitalised word of ordinary English (``brain.GENERAL_WORDS``) is not read as a name, though the bank never writes it;
+    a CamelCase word is, whatever its parts."""
+    assert v16.unknown_names("Which Jira tickets were opened in February?") == []
+    assert v16.unknown_names("Which tickets came from North America?") == []
+    assert v16.unknown_names("Which tickets did SouthWind open?") == ["SouthWind"]
