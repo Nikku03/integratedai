@@ -66,11 +66,15 @@ The design and ``COVER_BELOW`` were fixed on train5k and checked on dev5k withou
 answerable fact-route questions (the v15 single and multi families, and up to 15 questions of each new kind, those that
 reach the planner or v1's engine) against the held-out writers' questions on the fact route and the same answerable
 questions asked of a copy of the bank without their gold documents. The threshold is the largest that abstains on at most 2%
-of each group of answerable questions (the v15 families bind; pooled, the sampled new kinds would allow 0.67). Train, at
-0.57: 9/901 answerable questions abstain (9/451 of the v15 families, 3 of them answered right before; 0/450 of the new
-kinds); 2/2 held-out questions and 82/184 wrongly answered gold-removed ones say "not found". Dev: 3/571 (3/125 of the v15
-families, all three answered wrong before; 0/446), 2/4 held-out (the held-out score goes from 40/51 to 42/51) and 28/73
-gold-removed. On the 14 guard sets, 1 of 37 checked answers is withdrawn (a wrong one) and none gets worse.
+of each group of answerable train questions (the v15 families bind; pooled, the sampled new kinds, nearly all unchecked, would
+allow 0.67). Train, at 0.57: 9/901 answerable questions abstain (9/451 of the v15 families, 3 of them answered right before;
+0/450 of the new kinds); 2/2 held-out questions and 82/184 wrongly answered gold-removed ones say "not found". Dev: 3/571
+(0.5%), but 3/125 (2.4%) of the v15 families, one more than that group's 2% allows (all three answered wrong before, so no
+right answer is lost); 0/446 of the new kinds; 2/4 held-out (the held-out score goes from 40/51 to 42/51) and 28/73
+gold-removed. The cost falls on the writers' descriptive questions, nearly all of which are checked: 8/116 withdrawn on train
+(3 of 98 right answers lost) and 2/36 on dev (0 of 27); a threshold held to 2% of those alone (0.13 on train) catches no
+held-out question in either zone. With the round-2 router and plan-lesson candidates the train rows give the same 9/451, and
+dev's v15 families 2/124. On the 14 guard sets, 1 of 37 checked answers is withdrawn (a wrong one) and none gets worse.
 
 Routes derived and table answer with a fact, absent and absent_doc with "not found" (``cie.eval.brain2_test.route_class``).
 Each new route gives the same row as the others: the answer, the reason, the evidence (what it read: the answer first, then
@@ -199,7 +203,8 @@ COVER_STOP = frozenset(CLOSED_WORDS | EMBED_VERBS | EMBED_SKIP | MANY_WORDS | OR
 # a fact answer chosen by the question's content is "not found" when the documents it rests on hold less than this share of the
 # question's rare words (``Brain.cover``): the train5k fit (round 2, phase 2, step 2), the largest threshold (0.5747, rounded down)
 # that abstains on at most 2% of the answerable fact-route questions of the v15 families (9/451) and of the new kinds (0/450);
-# see the module docstring for what it catches
+# on dev the v15 families exceed that bound by one question (3/125, all three wrong answers before); see the module docstring
+# for what it catches and what it costs
 COVER_BELOW = 0.57
 COVER_MIN_WEIGHT = 10.0  # a question whose rare words weigh no more than this (about two rare words) has nothing to check
 COVER_ENDS = 50  # the plan's end entities read for the check, at most
