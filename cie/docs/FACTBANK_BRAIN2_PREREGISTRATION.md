@@ -61,7 +61,24 @@ answer is v15's, byte for byte (checked on the 214 development questions). It ta
    - attendee lists join the company's and the customer's attendees;
    - "filed under" asks for the project or space.
 
-⟨TBD: fact-route abstention, router and plan lessons, from phase 2⟩
+Three more ways of saying "not found", all fitted on the training documents:
+- **Unknown names** (`Brain.unknown_names`, in the not-found route): a word written as a name that no entity of the bank holds.
+  It must be CamelCase, or capitalised inside a sentence and not ordinary English (round 1's 80,000-word general lexicon,
+  shipped as `cie/src/cie/factbank/data/general_words.txt.gz`). An example is "VeloxBridge", when the company never mentions
+  it. On the answerable questions it fired on 0 of 16,663 training questions, 0 of 15,973 development questions and 0 of 698
+  guard-set questions.
+- **Uncovered fact answers** (`Brain.cover`, route `absent_doc`): this applies to a fact answer chosen by the question's content
+  (the single-document engine's, or a plan whose start the question does not name). It becomes "not found" when the documents
+  it rests on hold less than 0.57 of the question's rare words, each weighted by how rare it is.
+- **Empty fields** (route `absent`, above).
+
+**Training:**
+- **Single-fact lessons:** round 1's, unchanged.
+- **Router:** round 1's, unchanged. A router refitted on v16's signals changed one development answer and no routing decision on
+  the reworded questions, so it was not adopted.
+- **Plan lessons:** round 1's recipe plus the training questions of three new two-document kinds that round 1's lessons
+  answered below 0.9 on training (a planted pull request's issue's creator and team; the HubSpot accounts owned by a meeting's
+  owner). Every old training, development and guard answer is unchanged or better.
 
 **Speed:** v15 spent most of its time on repeated name lookups; v16 remembers them per question. On the development set v16
 takes about 1.1 s a question against v15's 4.6 s.
@@ -151,9 +168,36 @@ of the held-out document's names together with half its answer facts (every fact
 ## Rules
 
 Each family's score is the mean of its questions' scores. "The best other arm" is the best of the five other arms on that
-family.
+family (v1, v2, v13, v15, plain search with quotes). The thresholds are `cie/src/cie/eval/brain2_test.py`'s constants.
 
-⟨TBD: thresholds from the development numbers⟩
+1. **Single-document questions:** v16 ≥ the best other arm − 0.03.
+2. **Multi-document questions:** v16 ≥ the best other arm − 0.03.
+3. **Free text:** v16 ≥ the best other arm (no margin: this is the family v15 lost).
+4. **Not found:** v16 ≥ 0.80 on the templated not-found questions.
+5. **No answer in the company's documents:** v16 ≥ 0.70 on the unanswerable family (held-out writers' questions and empty
+   fields together).
+6. **False "not found":** v16 says "not found" to at most 0.05 of the answerable questions (every family except not found and
+   unanswerable).
+7. **Counts and filters:** v16 ≥ 0.70, and ≥ the best other arm + 0.20.
+8. **History:** v16 ≥ 0.70, and ≥ the best other arm + 0.20.
+9. **Email and chat:** v16 ≥ 0.70, and ≥ the best other arm + 0.20.
+10. **One brain for every kind:** v16's mean over the eight families ≥ every other arm's + 0.20.
+11. **The right route:** v16's route accuracy ≥ 0.90, mean over families (a fact route for single, multi, counts, history and
+    email and chat; prose for free text; not found for not found; the unanswerable family is not counted).
+12. **It holds at size:** for each of single, multi and free text on its own, v16 at 5,000 documents ≥ the small set − 0.05.
+
+**What decides:**
+- **The claim:** one brain answers every kind of question tested at least as well as the best earlier answer, and says "not
+  found" when the company does not have the answer, without saying it to answerable questions. It holds when rules 1 to 9 are
+  all met.
+- **Rules 10 to 12** are reported; a failure is diagnosed question by question.
+- **Any decisive rule not met:** v16 does not yet answer that kind as well as the best earlier answer, or does not yet know
+  when not to answer. The questions it loses are diagnosed.
+
+**How to read differences:**
+- Each single family has about 130 questions, multi about 70, free text 150, and the new families 40 each.
+- One question moves single by 0.008, multi by 0.014, free text by up to 0.007, and a new family by 0.025.
+- The paired difference between v16 and the best other arm, with its 95% bootstrap interval, is reported for every family.
 
 ## Development
 

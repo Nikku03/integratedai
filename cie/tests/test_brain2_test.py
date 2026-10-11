@@ -427,7 +427,7 @@ def test_a_name_cannot_take_another_arms_file_or_label_and_v16_checks_what_it_re
 
 
 def test_the_rules_read_the_report():
-    def arm(single=0.8, multi=0.9, prose=0.7, nf=0.9, counts=0.8, history=0.8, email=0.8, unans=0.7, false_nf=0.02, routes=0.95):
+    def arm(single=0.8, multi=0.9, prose=0.75, nf=0.9, counts=0.8, history=0.8, email=0.8, unans=0.7, false_nf=0.02, routes=0.95):
         fam = {"single": single, "multi": multi, "prose": prose, "not_found": nf, "counts": counts, "history": history, "email_chat": email,
                "unanswerable": unans}
         return {"by_family": fam, "mean_of_families": sum(fam.values()) / 8, "false_not_found": {"all": false_nf},
@@ -439,8 +439,8 @@ def test_the_rules_read_the_report():
     assert len(fns) == 12 and all(str(T.SINGLE_MARGIN) in k for k in fns if k.startswith("1 "))
     got = H.rules(rep, fns)
     assert all(got.values()), got
-    rep["scores"]["v16"]["by_family"]["counts"] = 0.35  # >= 0.60 fails though above the best other arm + 0.10
-    rep["scores"]["v16"]["by_family"]["prose"] = 0.68  # quotes 0.74: below by more than 0.05
+    rep["scores"]["v16"]["by_family"]["counts"] = 0.52  # >= 0.70 fails though above the best other arm + 0.20
+    rep["scores"]["v16"]["by_family"]["prose"] = 0.73  # quotes 0.74: below it (the margin is 0)
     rep["scores"]["v16"]["false_not_found"]["all"] = 0.06
     rep["small"]["differences"]["v16"]["big_minus_small"]["prose"] = -0.06
     got = H.rules(rep, fns)

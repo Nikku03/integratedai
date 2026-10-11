@@ -613,18 +613,18 @@ def paired2(rows: list[dict[str, Any]], scores: dict[str, Any], arm: str = "v16"
 
 
 # ------------------------------------------------------------------ rules
-# The thresholds of the rules: placeholders, each set before the freeze (docs/FACTBANK_BRAIN2_PREREGISTRATION.md). A rule reads
+# The thresholds of the rules, each set before the freeze (docs/FACTBANK_BRAIN2_PREREGISTRATION.md). A rule reads
 # v16's answers (label "v16") and, where it says so, the best other arm on the family (``best_other``); no label of the v16
 # brain's own answers is another arm (``own_labels``: v16_seed1 and any label asked as arm v16, read from the report's "arms").
 EPS = H.EPS
 SINGLE_MARGIN = 0.03  # set before the freeze: single, v16 >= the best other arm - this
 MULTI_MARGIN = 0.03  # set before the freeze: multi, v16 >= the best other arm - this
-PROSE_MARGIN = 0.05  # set before the freeze: free text, v16 >= the best other arm - this
+PROSE_MARGIN = 0.0  # set before the freeze: free text, v16 >= the best other arm - this
 NOT_FOUND_MIN = 0.80  # set before the freeze: questions about nothing in the bank
-UNANSWERABLE_MIN = 0.60  # set before the freeze: natural questions with no answer in the haystack
+UNANSWERABLE_MIN = 0.70  # set before the freeze: natural questions with no answer in the haystack
 FALSE_NOT_FOUND_MAX = 0.05  # set before the freeze: "not found" said to answerable questions
-NEW_MIN = 0.60  # set before the freeze: counts, history, email and chat, each at least this
-NEW_LEAD = 0.10  # set before the freeze: ... and at least the best other arm + this
+NEW_MIN = 0.70  # set before the freeze: counts, history, email and chat, each at least this
+NEW_LEAD = 0.20  # set before the freeze: ... and at least the best other arm + this
 MEAN_LEAD = 0.20  # set before the freeze: the mean over the eight families >= every other arm's + this
 ROUTE_MIN = 0.90  # set before the freeze: route accuracy, mean over families
 SIZE_MARGIN = 0.05  # set before the freeze: for each of single, multi and free text, 5,000 documents >= the small set - this
