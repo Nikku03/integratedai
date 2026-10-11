@@ -19,9 +19,12 @@ answers them from the bank alone, never from the raw documents:
 2. ``table(question)``: counts and filters over one system's documents. The system is named ("Jira", "HubSpot", "email") or
    implied by an item noun (tickets, issues, accounts, pages, docs, meetings, threads, pull requests). The conditions are field
    values the question writes as whole words, matched against the values the system's documents hold in short fields with
-   one value per document (not identifiers, not dates) or in person fields. A value written inside a longer matched value
-   does not count; a value several fields hold goes to the field the question's words point to (the bank's cue weights,
-   ``FactBank.wanted``, and ``FIELD_CUES``); a short, numeric or generic value needs such a word. "open" means a status other
+   one value per document (not identifiers, not dates) or in person fields. A value written inside a longer matched value,
+   or inside a field's name ("doc" in "doc type sheet"), does not count. A value several fields hold goes to the field the
+   words next to it point to, then the whole question's words (``cue_score``: the engine's cue words, the field's name words,
+   ``FIELD_CUES``): "owned by Maya Chen and with Arjun Patel as the solutions engineer". A short, numeric or generic value
+   needs such a word. Values that differ only in spaces or punctuation are one ("HeliosHealth", "Helios Health"), except a
+   person's name ("Liam Oconnor" is not "Liam O'Connor"); accents count ("Martínez" is not "Martinez"). "open" means a status other
    than the closed ones (Jira: Resolved, Closed; Linear: Done, Canceled), or other than the ones the question lists after
    "not". Every other word of the question must be a question word, a filler, a system or item noun, or a word of a matched
    field's name or cues; otherwise the question asks something more (an order, a date window, a deadline) and ``table``
@@ -32,15 +35,21 @@ answers them from the bank alone, never from the raw documents:
    posted (dated entries "YYYY-MM-DD[ HH:MM][ -] Name[ (role)]: text"), the first recorded activity (a HubSpot timeline), the
    date it moved to a status ("moved to S", "changed status to S", "marking as S"), a Gmail thread's first sender, its To and
    Cc, message count, attachments, account and start date, and a Slack thread's channel and the person who started it.
-4. ``absent(question, start)``: the field the question asks for (the bank's cue weights and ``FIELD_CUES``) is one most
-   documents of the system hold (``MIN_HELD`` of them), but this document's is empty, missing, "TBD" or "N/A": the reason
-   ("the HubSpot account X has no CSM assigned"), and the brain answers "not found".
+4. ``absent(question, start)``: the field the question asks for (``relevance``: the bank's cue weights, ``FactBank.wanted``,
+   and ``FIELD_CUES``, at least ``MIN_ASK``, ahead of every other field) is one most documents of the system hold
+   (``min_held`` of them, ``MIN_HELD`` by default), but this document's is empty, missing, "TBD" or "N/A": the reason ("the
+   HubSpot account X has no CSM assigned"), and the brain answers "not found". A question that follows a link ("the parent
+   issue of…", ``plans.LINK_WORDS``), counts, or asks for the document's history (``derived``'s kinds) is not one.
+
+What the bank cannot show, ``Records`` cannot either: a field a system's documents write as a content field (its value in the
+text with no field name) reads as missing.
 """
 
 from __future__ import annotations
 
 import ast
 import re
+import sqlite3
 import unicodedata
 from collections import Counter, defaultdict
 from collections.abc import Iterable
@@ -72,13 +81,15 @@ FILLER = frozenset("""how many number count total what which who whom whose list
     at by with from about under within into as and or the a an all every each any their them they its it this that these those s
     keys key ids id numbers identifiers titles people person persons everyone everybody someone anyone set marked listed labelled
     labeled tagged assigned owned own owns created reported authored written wrote opened filed raised handled sent belong belongs
-    belonging held hold holds get gets so far today""".split())
+    belonging held hold holds get gets so far today can could would you recorded side relate relates related concern concerns
+    concerning""".split())
 CLOSED = {"jira": frozenset(("resolved", "closed", "done", "cancelled", "canceled", "won't fix", "wontfix")),
           "linear": frozenset(("done", "canceled", "cancelled", "duplicate"))}
 # words that point to a field beyond its own name (whole-word patterns, lower case); each adds CUE_WEIGHT to the field
 FIELD_CUES = {
     "csm_assigned": (r"\bcsm\b", r"\bcustomer success\b"), "se_assigned": (r"\bse\b", r"\bsolutions? engineers?\b"),
-    "forecast_close_month": (r"\bclos(?:e|es|ing)\b", r"\bforecast\w*\b"), "due_date": (r"\bdue\b", r"\bdeadlines?\b"),
+    "forecast_close_month": (r"\bclos(?:e|es|ing)\b", r"\bforecast\w*\b"),
+    "due_date": (r"\bdue\b", r"\bdeadlines?\b", r"\bby when\b"),
     "customer_impact": (r"\bimpact\b",), "release": (r"\breleases?\b",), "sla_due_at": (r"\bsla\b",),
     "first_response_due_at": (r"\bfirst response\b",), "crm_deal_id": (r"\bcrm\b", r"\bdeal\b"), "deal_id": (r"\bdeal\b",),
     "related_account": (r"\baccount\b",), "mailbox_owner": (r"\bmailbox\b", r"\binbox\b"), "thread_type": (r"\bkind\b", r"\btype\b"),
@@ -120,7 +131,8 @@ D_FIRST_COMMENT = re.compile(r"\b(?:first|earliest|initial|opening)\s+(?:comment
 D_LAST_COMMENT = re.compile(r"\b(?:latest|last|most recent|newest|final|most recently posted)\s+(?:comment|reply|note)\b|"
                             r"\bcommented (?:last|most recently)\b")
 D_FIRST_ACTIVITY = re.compile(r"\b(?:first|earliest|initial)\s+(?:recorded |logged |listed |dated |timeline )?(?:activity|activities|"
-                              r"interaction|touchpoint|touch point|engagement|timeline (?:entry|event)|event|entry)\b")
+                              r"interaction|touchpoint|touch point|engagement|timeline (?:entry|event)|event|entry)\b|"
+                              r"\btimeline\b.*\b(?:begin|begins|start|starts|open|opens)\b")
 D_MOVE_VERB = re.compile(r"\b(?:move|moved|moving|go|goes|went|transition|transitioned|change|changed|switch|switched|set|put|mark|"
                          r"marked|enter|entered|get|got)\b")
 D_CREATED = re.compile(r"\b(?:created|opened|filed|raised|submitted|logged|made|started)\b|\bcreation\b")
@@ -138,13 +150,17 @@ G_START = re.compile(r"\b(?:start|started|begin|began|kick(?:ed)? off|first emai
 S_CHANNEL = re.compile(r"\bchannel\b")
 S_STARTER = re.compile(r"\bwho\s+(?:started|began|kicked off|opened|posted|wrote|sent|initiated)\b|\bstarted by\b|\bposted by\b|"
                        r"\bwho (?:posted|wrote) (?:it|the first)\b|\bfirst (?:message|post)\b.*\bwho\b|\bwho\b.*\bfirst (?:message|post)\b")
-COUNT_ASK = re.compile(r"\bhow many\b|\bnumber of\b|\bcount of\b|\bwhat is the count\b|\btotal number\b|^\W*count\b")
+COUNT_ASK = re.compile(r"\bhow many\b|\bnumber of\b|\bcount of\b|\bwhat is the count\b|\btotal number\b|^\W*count\b|"
+                       r"\bcount (?:the|all|up)\b")
 PEOPLE_ASK = re.compile(r"^\W*(?:who|whom)\b|\b(?:which|what) (?:people|persons|colleagues|engineers|owners|assignees|authors|reporters|"
                         r"creators)\b|\blist (?:everyone|everybody|all the people|the people|the (?:assignees|owners|authors|reporters|"
                         r"creators))\b|\bname (?:everyone|everybody|the people)\b|\bwho (?:is|are|was|were)\b")
 KEYS_ASK = re.compile(r"\bwhich\b|\blist\b|\bwhat are\b|\bgive\b|\bshow\b|\bname\b|\bkeys\b|\bids\b|\bidentifiers\b")
 NAME_WORD = re.compile(r"[^\W_]+")
 HEADER = re.compile(r"^(From|To|Cc|Date|Subject):[ \t]*(.*)$", re.I)
+# absent: "Which CRM deal is the meeting X linked to?" links the named document itself to the field asked for; "the ticket
+# linked to ENG-1" names another document, which may hold the field
+SELF_LINK = re.compile(r"\b(?:linked|tied|associated|connected|related|attached)(?:\s+(?:to|with))?\s*(?=[?.!,;]|$)")
 
 
 def squash(s: Any) -> str:
@@ -203,23 +219,24 @@ class Match:
     start: int
     end: int
     words: tuple[str, ...]
-    fields: dict[str, str] = field(default_factory=dict)  # field -> the value as the bank writes it
-    negated: bool = False
+    fields: dict[str, str] = field(default_factory=dict)  # field -> the value's words (``value_words``)
 
 
 @dataclass
 class FieldStats:
-    values: dict[str, set[str]]  # squashed value -> documents
-    shown: dict[str, str]  # squashed value -> the value as written
+    values: dict[str, set[str]]  # the value's words (``value_words``) -> documents
+    shown: dict[str, str]  # the value's words -> the value as written
     person: bool
     holders: int
 
 
 class Records:
-    """Counts, filters, history, email and chat over one bank (a ``FactBank``, normally the brain's ``BrainBank``)."""
+    """Counts, filters, history, email and chat over one bank (a ``FactBank``, normally the brain's ``BrainBank``). ``min_held``
+    is the share of a system's documents that must hold a field for ``absent`` to call it missing on one of them."""
 
-    def __init__(self, bank: FactBank):
+    def __init__(self, bank: FactBank, min_held: float = MIN_HELD):
         self.b = bank
+        self.min_held = min_held
         self._doc_facts: dict[str, dict[str, list[tuple[str, str | None]]]] | None = None
         self._by_system: dict[str, list[str]] | None = None
         self._stats: dict[str, dict[str, FieldStats]] = {}
@@ -422,12 +439,15 @@ class Records:
 
     def quoted_in_text(self, quote: str) -> list[str]:
         """The documents whose stored text holds a quote of five or more words, as whole words (case, punctuation and accents
-        aside)."""
+        aside): the index finds the phrase, the text confirms it."""
         want = squash(quote)
         words = NAME_WORD.findall("".join(c for c in unicodedata.normalize("NFKD", quote.lower()) if not unicodedata.combining(c)))
         if len(words) < 5:
             return []
-        rows = self.b.con.execute("SELECT id, text FROM entities_fts WHERE entities_fts MATCH ? LIMIT 50", (f'"{" ".join(words)}"',)).fetchall()
+        try:
+            rows = self.b.con.execute("SELECT id, text FROM entities_fts WHERE entities_fts MATCH ? LIMIT 50", (f'"{" ".join(words)}"',)).fetchall()
+        except sqlite3.OperationalError:
+            return []
         return sorted({r[0] for r in rows if self.b.kinds.get(r[0]) == "document" and f" {want} " in f" {squash(r[1])} "})
 
     def start(self, question: str) -> str | None:
@@ -790,12 +810,13 @@ class Records:
 
     # ------------------------------------------------------------------ 4. a field the document leaves empty
     def absent(self, question: str, start: str | None) -> str | None:
-        """Why the answer is not found when the asked field (``relevance``) is one ``MIN_HELD`` of the system's documents hold but
+        """Why the answer is not found when the asked field (``relevance``) is one ``min_held`` of the system's documents hold but
         the named document leaves empty; None when the document holds it, the question follows a link, or no field stands out."""
         if not start or self.b.kinds.get(start) != "document":
             return None
         ql = unquoted(question.lower())
-        if set(re.findall(r"[a-z]+", ql)) & LINK_WORDS or LINK_PHRASES.search(ql) or COUNT_ASK.search(question.lower()):
+        links = set(re.findall(r"[a-z]+", SELF_LINK.sub(" ", ql))) & LINK_WORDS
+        if links or LINK_PHRASES.search(ql) or COUNT_ASK.search(question.lower()):
             return None
         if any(r.search(ql) for r in (D_DAYS, D_FIRST_COMMENT, D_LAST_COMMENT, D_FIRST_ACTIVITY, D_UPDATED)):
             return None  # history (``derived``), not a field
@@ -811,7 +832,7 @@ class Records:
         best_w, best = ranked[0]
         if best_w < MIN_ASK or (len(ranked) > 1 and ranked[1][0] == best_w):
             return None
-        if held[best] < MIN_HELD * len(docs) or self.value(start, best) is not None:
+        if held[best] < self.min_held * len(docs) or self.value(start, best) is not None:
             return None
         if any(p in known and self.value(start, p) is not None and w >= best_w - 0.5 for w, p in ranked[1:]):
             return None

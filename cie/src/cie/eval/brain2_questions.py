@@ -92,8 +92,16 @@ ROLE_WORDS = frozenset((
     "billing", "compliance", "council", "committee", "group", "squad", "channel", "digest", "update", "updates", "announcements",
     "release", "releases", "incident", "oncall", "rotation", "assistant", "noreply", "mailer", "daemon", "redwood", "health",
     "analytics", "labs", "systems", "technologies", "cloud", "capital", "bank", "holdings", "portal", "desk", "helpdesk", "inc",
-    "llc", "corp", "ltd", "user", "admin", "reply"))
-NAME_TOKEN = re.compile(r"(?:[A-Z]')?[A-Z][a-zA-Z]*[a-z](?:-[A-Z][a-zA-Z]*[a-z])*")
+    "llc", "corp", "ltd", "user", "reply", "corporation", "company", "financial", "talent", "events", "marketplace", "payments",
+    "payroll", "treasury", "contracts", "purchasing", "accounting", "logistics", "consulting", "advisory", "ventures", "studio",
+    "studios", "media", "digital", "software", "global", "international", "foundation", "institute", "university", "hospital",
+    "clinic", "pharma", "biotech", "insurance", "energy", "motors", "airlines", "retail", "foods", "industries", "tech", "network",
+    "networks", "networking", "staffing", "store", "trust", "privacy", "partnerships", "engagement", "enablement", "intake",
+    "renewals", "onboarding", "devops", "infosec", "secops", "sec", "it", "hr", "pm", "eng", "travel", "concierge", "distro",
+    "compensation", "benefits", "list", "alias", "leadership", "acme"))
+# A name's word: capitalised, with an inner capital only after a surname prefix ("McDonald", "O'Connor", "DeVries"), so that
+# "CloudStage" or "AcuityMed" is not a person.
+NAME_TOKEN = re.compile(r"(?:(?:O'|D'|Mc|Mac|De|Di|Da|Le|La|Van|Von)?[A-Z][a-z]+)(?:-(?:O'|Mc|Mac)?[A-Z][a-z]+)*")
 
 # ------------------------------------------------------------------ counts and filters
 COUNT_FIELDS: dict[str, dict[str, str]] = {  # source: {field: "value", "person" or "open"} (the survey's countgen.py)
@@ -468,14 +476,23 @@ def _in(name: str, text: str) -> bool:
     return bool(re.search(r"(?<![\w-])" + re.escape(_norm(name)) + r"(?![\w-])", _norm(text)))
 
 
+def _says(sq: str, text: str) -> bool:
+    """Whether a run of the text's words, squashed (``brain_questions._squash``), is the squashed name ``sq``: 'Nexa Health'
+    writes 'NexaHealth'."""
+    w = re.findall(r"[^\W_]+", str(text).lower())
+    return any("".join(w[i:j]) == sq for i in range(len(w)) for j in range(i + 1, min(len(w), i + 8) + 1))
+
+
 def _answers(e: dict[str, Any]) -> list[str]:
     return [str(v) for v in ([e["value"]] if "value" in e else []) + ([e["date"]] if "date" in e else [])
             + list(e.get("names") or []) + list(e.get("files") or []) + list(e.get("ids") or [])]
 
 
 def _leaks(c: dict[str, Any]) -> bool:
-    """Whether a wording of the candidate writes its answer (or a part of it) in the question."""
-    return any(_in(a, w.format(**c["fmt"])) for w in c["wordings"] for a in _answers(c["expected"]))
+    """Whether a wording of the candidate writes its answer (or a part of it) in the question, whatever the spaces and hyphens
+    ('Helios Health' for 'HeliosHealth')."""
+    return any(_in(a, q) or (_squash(a) and _says(_squash(a), q))
+               for q in (w.format(**c["fmt"]) for w in c["wordings"]) for a in _answers(c["expected"]))
 
 
 def _emit(kind: str, cands: list[dict[str, Any]], rng: random.Random, cap: int | None,
@@ -504,7 +521,7 @@ def _emit(kind: str, cands: list[dict[str, Any]], rng: random.Random, cap: int |
 
 class Haystack:
     """The documents, with what several generators read worked out once: the names that address documents, the written
-    text, each source's documents and the people its fields name."""
+    text and its words, each source's documents, the Slack quotes and the count candidates."""
 
     def __init__(self, docs: list[dict[str, Any]]):
         self.docs = docs
@@ -572,22 +589,6 @@ class Haystack:
             else:
                 out[d["dsid"]] = (quote, spk)
         return out
-
-    @cached_property
-    def people(self) -> set[str]:
-        """Every person a person field of the haystack names (``brain_questions.PERSON_FIELDS``, attendees and assignees)."""
-        out: set[str] = set()
-        for d in self.docs:
-            for f in (*B.PERSON_FIELDS, "csm_assigned", "redwood_attendees", "customer_attendees", "reviewers", "collaborators"):
-                v = d["raw"].get(f)
-                for x in v if isinstance(v, list) else [v]:
-                    if (p := _person(x)) and len(p.split()) >= 2:
-                        out.add(p)
-        return out
-
-    @cached_property
-    def nested_people(self) -> set[str]:
-        return _nested(self.people)
 
     def address(self, d: dict[str, Any]) -> tuple[dict[str, str] | None, str]:
         """How a question names the document (``brain_questions._address``; an email thread by its subject)."""
@@ -819,7 +820,7 @@ def gmail_counts(hay: Haystack, rng: random.Random, cap: int | None = None, asid
             _note(aside, "named inside another")
         elif sq in listed:
             _note(aside, "value also in a list")
-        elif any(_in(a, str(d["title"])) for d in g if d not in ds):
+        elif any(_says(sq, d["title"]) for d in g if d not in ds):
             _note(aside, "another thread's subject names it")
         else:
             cands.append({"fmt": {"a": a}, "expected": {"value": str(len(ds))}, "gold": [d["dsid"] for d in ds],
@@ -1085,7 +1086,8 @@ def email_questions(kind: str, hay: Haystack, rng: random.Random, cap: int | Non
                     aside: Counter | None = None) -> list[dict[str, Any]]:
     """One fact of an email thread named by its subject: the first email's sender, recipients or Cc (every entry a person
     with a display name), the thread's start date (first_email_at, which must be the earliest message's and read the same in
-    UTC), its message count (equal to the messages written), its attachments (one to ten files) or its account."""
+    UTC), its message count (equal to the messages written), its attachments (one to ten files) or its account (not written
+    inside another account's name, and with no note in brackets)."""
     cands = []
     accounts = [a.strip() for d in hay.of("gmail") if isinstance(a := d["raw"].get("related_account"), str) and not _none(a)]
     inner = _nested(set(accounts), outer=False)
@@ -1159,6 +1161,8 @@ def email_questions(kind: str, hay: Haystack, rng: random.Random, cap: int | Non
                 why = "no value" if not isinstance(a, list) else "several values"
             elif _squash(a) in inner:
                 why = "named inside another"
+            elif re.search(r"[()\[\]]", a):
+                why = "a note in the value"  # 'Acme AI (candidate source)': nobody would answer with the note
             else:
                 exp = {"value": a.strip()}
         if exp is None:
@@ -1255,9 +1259,7 @@ def _assigned(hay: Haystack, source: str, field: str) -> dict[str, list[dict[str
 
 def _join_target(hay: Haystack, p: str, source: str, field: str, by: dict[str, list[dict]]) -> tuple[list[dict] | None, str]:
     """The documents of ``source`` whose ``field`` is the person ``p`` (one to ``JOIN_MAX``), or None and why not: none, too
-    many, the name written inside another person's, or written in that field of another document in another form."""
-    if p in hay.nested_people:
-        return None, "named inside another"
+    many, or the name written in that field of another document in another form ('Dr. Priya Nair', 'Priya Nair, Ava Lee')."""
     ds = by.get(p, [])
     if not ds:
         return None, "no documents to join"
