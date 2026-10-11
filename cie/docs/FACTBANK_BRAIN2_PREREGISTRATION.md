@@ -260,6 +260,7 @@ second hash seed.
 | v13 | 0.294 | 0.768 | 0.000 | 0.000 | 0.150 | 0.100 | 0.125 | 0.000 | 0.180 |
 | v15 | 0.811 | 0.911 | 0.650 | 1.000 | 0.150 | 0.375 | 0.325 | 0.014 | 0.529 |
 | **v16** | **0.878** | **0.929** | **0.777** | **1.000** | **1.000** | **1.000** | **1.000** | **0.901** | **0.936** |
+| v16 with the messy reading step (frozen) | 0.878 | 0.929 | 0.777 | 1.000 | 1.000 | 1.000 | 1.000 | 0.887 | 0.934 |
 
 - **All twelve rules are met on development data.**
 - **The paired differences against the best other arm** (95% intervals):
@@ -277,6 +278,21 @@ second hash seed.
 - **At size:** single 0.000, multi +0.018 and free text −0.003 against the small set.
 - **Hash-seed check:** 0 of 443 answers differ.
 - **Time:** v16's median is 0.96 s a question; v15's is about 4.5 s.
+
+**Messy wording.** Blind rewriters reworded generated questions the way people type, and v16 answered both wordings:
+
+| | questions | tidy | messy, before the reading step | messy, frozen v16 |
+|---|---|---|---|---|
+| training (built on) | 116 | 0.958 | 0.697 | 0.915 |
+| development (confirmed once) | 80 | 0.963 | 0.713 | 0.913 |
+
+- Before the reading step, messy wording cost most in email and chat (1.0 to 0.27 on development) and counts (1.0 to 0.45). It
+  cost little in single, multi and not-found questions.
+- The frozen v16 loses messy questions mainly where a question shortens or misspells a title or names an action item without
+  quotes.
+- **The tidy development set** with the reading step changes 1 of 443 answers: a held-out question ("w/" read as "with") now
+  gets an answer instead of "not found".
+- **The 14 guard sets** give the same 698 answers with and without it.
 
 **The development set is seen,** so these numbers are optimistic:
 - The free-text design, the five fixes and the thresholds were fitted on training and confirmed here.
