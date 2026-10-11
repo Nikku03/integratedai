@@ -1,7 +1,5 @@
 # The company brain, round 2 (v16): fixed before the test
 
-**DRAFT: not frozen.** The freeze is the commit that removes this line.
-
 I wrote this on 2026-10-11:
 - **after** building and tuning v16 on training and development documents (below);
 - **before** drawing the test documents or writing a single test question.
@@ -307,12 +305,27 @@ second hash seed.
 - Expect lower on the test, most of all where real wordings differ from the templates.
 
 **The dry run** of the test's steps on a fresh development-zone draw (`run_brain2_1.sh` with `ZONE=dev`; then the sealed writer
-rehearsal on 3 batches; then `run_brain2_2.sh` with `SMALL_ONLY=1`) ran every step without error:
+rehearsal on 3 batches; then the scoring script of that time, on the small set alone) ran every step without error:
 - draw, packets (45 descriptive, 180 free text, 98 held-out);
 - sealed writers, checks (29 of 30 kept), question draw, banks, every arm on the small set, and the score.
 
 On that small set v16 led every family except free text, where 10 questions gave v15 0.50, quotes 0.47 and v16 0.45. The
 differences are the passage each chose, not abstention: no answerable free-text question said "not found".
+
+**The second rehearsal,** after the review below, ran the steps that came later (the rewriter batches of step 3, step 4 and
+step 5 for both sets) on the dry run's small set: 335 questions on development documents.
+- **One sealed rewriter** (`rewriters_test2.js`) wrote its batch of 40; all 40 rewrites passed the check.
+- **Seven batches of scripted rewrites,** with deliberate faults, tested the rest of the plumbing. The check rejected every
+  rewrite without a question mark, and kept 212 of 306 in all.
+- Step 5 then:
+  - wrote the messy folders;
+  - asked all six arms three at a time, and v16 again under hash seed 1;
+  - found every arm's record;
+  - scored both sets, with the rules on the messy one.
+- The error file stayed empty.
+- The size rule is computed only when both folders hold the same questions. The rehearsal's small folder held one question in
+  eight, so the rule gave no result there. The test's small folder holds every question, tidy and messy (checked on the
+  development folders).
 
 ## Disclosures
 
@@ -377,8 +390,44 @@ differences are the passage each chose, not abstention: no answerable free-text 
 
 ## The review before freezing
 
-⟨TBD⟩
+One reviewer read this document, the run scripts, the rewriter and writer sessions, the scoring rules and v16's messy-reading
+code. It was not allowed to open any data. It ran the unit tests, `bash -n` and `node --check`.
+
+**Confirmed:**
+- the 12 rules in `brain2_test.preregistered2` match the rules above (thresholds, arms, best other arm);
+- the rules are applied to the messy set and the tidy set is scored without them;
+- the folder names agree across the three scripts;
+- the JSON each step prints is what the next session takes;
+- everything printed is counts, hashes or batch names.
+
+**Found and fixed:**
+1. Step 3 wrote the rewriter list into a folder before creating it, so it would have stopped after building the banks. **Fixed.**
+2. A possessive name ("Jane Doe's") made "Doe's" a word every rewrite had to keep. That would have rejected fair rewrites of
+   person questions, and the rejection reason would have printed the name. **Fixed:** the possessive is dropped, and reasons
+   are counted by category only.
+3. The writers' prompt suggests "can someone remind me…", but the writers' check took "remind me who…" for a yes/no question.
+   **Fixed:** "remind" is accepted like "tell". This is a collection check, so scoring is unchanged.
+4. The description of the unquoted-title step named the wrong routes. **Fixed** (What v16 is).
+5. The steps after the first rehearsal had not been rehearsed. **Done:** the second rehearsal (Development).
+6. No remedy was written for a rewriter batch that fails. **Added** (The questions); step 5 also stops on a batch with no
+   rewrite kept.
+7. The descriptions of the slip fix and the rewrite check left out details. **Added.**
+8. Multi has 56 questions, not about 70. **Fixed.**
+9. A crash could print a traceback holding test text. **Fixed:** each step's errors go to a file next to the work folder.
+10. Three arms asked at once could lose a record in `arms.json`. **Fixed:** records are written under a lock, and step 5
+    checks every arm is there before scoring.
 
 ## Frozen
 
-⟨TBD⟩
+| what | value |
+|---|---|
+| code | the commit that removes the draft line from this document |
+| v16's lessons | `docs/benchmarks/brain2/lessons/`: `single_lessons.json` (`ee8b9d053405a47f…`), `plan_lessons.json` (`4c2c8c6201be08ec…`), `router.json` (`20e9c05046406f14…`) |
+| v15's lessons | `docs/benchmarks/brain/lessons/`: `single_lessons.json` (`ee8b9d053405a47f…`), `plan_lessons.json` (`de756122b9f027be…`), `router.json` (`20e9c05046406f14…`) |
+| v2's and v13's lessons | `fb50/lessons.json` (`afa4e7d9fee0a05c…`), `plan_lessons_v13.json` (`64cf5b302a826b2e…`) |
+| ordinary English words | `src/cie/factbank/data/general_words.txt.gz` (`f36d409bb74a8a4b…`) |
+| zones | `zones.json.gz` (`b1afac237c309a82…`) |
+| seeds | test draw 909, questions 910, packets 911 and 912, held-out 913; hash seed 0 (and 1 for the check) |
+| run | `docs/benchmarks/brain2/run_brain2_1.sh`, `writers_test2.js`, `run_brain2_2.sh`, `rewriters_test2.js`, `run_brain2_3.sh` (`SET=messy`, then `SET=tidy`) |
+
+The seeds 909 to 913 were used only on development documents (the dry run), never on the test zone.
