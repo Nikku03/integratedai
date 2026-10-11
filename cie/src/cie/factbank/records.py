@@ -77,6 +77,7 @@ from cie.factbank.plans import LINK_PHRASES, LINK_WORDS, QUOTED, unquoted
 TICKET = re.compile(r"\b([A-Z][A-Z0-9]{1,9})-(\d{1,7})\b")
 PR_NUMBER = re.compile(r"(?:(?<![\w&#])#|\b(?:PR|pull request)\s*[#-]?\s*)(\d{2,7})\b", re.I)
 ISO_DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+LEVELS_MAX = 12  # values of a scale field whose "none" is a level (``Records.level_none``)
 EMPTY_VALUES = frozenset(("", "none", "null", "nil", "n/a", "na", "tbd", "tba", "unknown", "-", "--", "[]", "{}", "unassigned",
                           "not assigned", "not set", "no csm", "none assigned"))
 # the item nouns that imply a system when none is named, and the systems a plain "tickets" or "issues" may mean
@@ -989,6 +990,16 @@ class Records:
             out[f] = want.get(f, 0.0) + CUE_WEIGHT * sum(1 for pat in FIELD_CUES.get(f, ()) if re.search(pat, ql))
         return out
 
+    def level_none(self, system: str, doc: str, field: str) -> bool:
+        """Whether the document's field says "none" as one level of a scale (Linear customer_impact: none, low, medium,
+        high), not as a missing value: the system's other values of the field are 2 to ``LEVELS_MAX`` single words, none of them
+        a person. "none" in a person field (no CSM) stays missing."""
+        if not any(v.strip().strip(".").lower() == "none" for v in self.values(doc, field)):
+            return False
+        vals = {v.strip().lower() for d in self.documents(system) for v in self.values(d, field) if not is_empty(v)}
+        return 2 <= len(vals) <= LEVELS_MAX and all(re.fullmatch(r"[a-z0-9_-]+", v) for v in vals) and \
+            not any(v in getattr(self.b, "people", ()) for v in vals)
+
     def absent(self, question: str, start: str | None) -> str | None:
         """Why the answer is not found when the asked field (``relevance``) is one ``min_held`` of the system's documents hold, with
         one short value each (``askable``), but the named document leaves empty and its text does not hold one of the field's
@@ -1017,6 +1028,8 @@ class Records:
             return None
         if best not in self.askable(system) or self.written_bare(start, best):
             return None  # a list or text field, or the value written in the text: the bank cannot tell it from missing
+        if self.level_none(system, start, best):
+            return None  # "none" is a level of the field (no customer impact), not a missing value
         if any(p in known and self.value(start, p) is not None and w >= best_w - 0.5 for w, p in ranked[1:]):
             return None
         noun = {"jira": "Jira ticket", "linear": "Linear issue", "hubspot": "HubSpot account", "gmail": "email thread", "github": "pull request",

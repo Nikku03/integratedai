@@ -311,3 +311,18 @@ def test_absent_fields(rec):
     ``written_bare``: a field's value on a line of its own in the text."""
     assert {"csm_assigned", "se_assigned", "stage"} <= rec.askable("hubspot") and not {"next_step", "blockers"} & rec.askable("hubspot")
     assert rec.written_bare("doc:l4", "customer_impact") and not rec.written_bare("doc:l3", "customer_impact")
+
+
+def test_absent_none_as_a_level_of_a_scale(tmp_path):
+    """"none" in a scale field (customer impact none / low / high) is a value, so the field is held; in a person field it is
+    missing."""
+    docs = [(_doc(f"n{i}", "linear", f"Issue number {i}", {"key": f"ENG-{20 + i}", "status": "Done", "customer_impact": v,
+                                                             "assignee": a}, keys=[f"ENG-{20 + i}"]), {})
+            for i, (v, a) in enumerate([("high", "Ava Chen"), ("low", "Omar Singh"), ("none", "none"), ("medium", "Ava Chen")])]
+    path = tmp_path / "factbank_v2.sqlite"
+    B.build(path, docs, text_facts=True)
+    r = R.Records(FactBank(path))
+    q = "What is the customer impact of the Linear issue ENG-22?"
+    assert r.level_none("linear", r.start(q), "customer_impact")
+    assert r.absent(q, r.start(q)) is None
+    assert not r.level_none("linear", r.start(q), "assignee")
