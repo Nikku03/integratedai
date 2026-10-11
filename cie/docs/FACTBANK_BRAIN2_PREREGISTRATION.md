@@ -85,11 +85,14 @@ questionnaire thread?". v16 reads that as "how many messages are in the "Kickoff
 steps:
 - **Chat shorthand** is read as the words it stands for (`CHAT_WORDS`: r, u, pls, msgs, mtg, rn, w/, teh...).
 - **A one-letter slip** in an ordinary lower-case word is fixed when it is unambiguous ("mnay", "attachmnets"). The word must be
-  four letters or more and held neither by ordinary English nor by the bank. It is read as the only word one slip away that
-  either holds; when several fit, as the only one the bank holds; otherwise it is left as typed. Names are never changed.
-- **An unquoted title:** the longest document title or action item of three words or more that the question writes without
-  quotes is put in quotes, when the question quotes nothing. Only the count, history and email routes (`Records`) see the
-  quoted copy; the other routes read the question with only the first two steps applied.
+  four letters or more and held neither by ordinary English nor by the bank. Two letters swapped are tried first, then a letter
+  dropped or added, then a wrong letter (fixed only to an ordinary English word); the first kind that finds a word decides. The
+  word is read as the only one found or, when several are, the only one the bank holds; otherwise it stays as typed.
+  Capitalised words are never changed (a lower-case name the bank does not hold could be).
+- **An unquoted title:** the longest document title or action item of three words and 12 characters or more (an email's
+  subject without "Re:" or "Fwd:") that the question writes without quotes is put in quotes, when the question quotes nothing.
+  Only the history and email/chat lookups and the empty-field check (`Records.start`, `derived`, `absent`) see the quoted
+  copy; the counts route and every other route read the question with the first two steps alone.
 
 Also:
 - the counts and filters accept the filler people add ("quick q", "do you know", "fyi", "prepping for a call");
@@ -125,7 +128,7 @@ Eight families, every question checked by code.
 | family | what | how many |
 |---|---|---|
 | single | round 1's single-document kinds (deadlines, lists, fields, names, descriptive) and 20 of the same fields asked after "do you know", "can you remind me" | about 130 |
-| multi | round 1's multi-document kinds and six new two-document kinds | about 70 |
+| multi | round 1's multi-document kinds (36) and six new two-document kinds (20) | 56 |
 | prose | free text, written by blind writers | 150 |
 | not_found | invented keys, numbers, titles and names, as round 1 | 20 |
 | counts | counts with one or two conditions, Gmail counts, key lists | 40 |
@@ -168,12 +171,14 @@ held-out question that passes the checks.
   sessions, sealed, reword every generated question the same way. Each gets 40 questions' text alone, with no document and no
   answer. A rewrite is kept only when it still names everything the question needs (`brain2_messy.why_rejected`):
   - every key, pull request number and token with a digit;
-  - every capitalised word that does not open a sentence (people, systems, values);
-  - at least 60% of the words of each quoted title;
-  - one question mark at the end.
+  - every capitalised word that does not open a sentence (people, systems, values), without a possessive "'s";
+  - at least 60% of the content words of each quoted title;
+  - one question mark at the end, and no quotes the question did not have.
 
   The expected answer is unchanged. A question whose rewrite fails the check is left out of the messy set, and the count is
-  reported.
+  reported by reason (a category, never the question's words), so the messy families can be a little smaller than the tidy
+  ones. A rewriter batch that is missing, does not answer each of its questions, or keeps no rewrite at all is written again
+  by a new sealed rewriter, and step 5 is run again on fresh messy folders.
 
 **Two sets on the same 5,000 documents:**
 - **the messy set,** which decides the rules: the writers' questions and the generated questions in the rewriters' words;
@@ -242,8 +247,9 @@ messy set says how much messy wording costs, which the tidy set then measures di
   when not to answer. The questions it loses are diagnosed.
 
 **How to read differences:**
-- Each single family has about 130 questions, multi about 70, free text 150, and the new families 40 each.
-- One question moves single by 0.008, multi by 0.014, free text by up to 0.007, and a new family by 0.025.
+- Each single family has about 130 questions, multi 56, free text 150, and the new families 40 each (on the messy set, less
+  the rejected rewrites).
+- One question moves single by 0.008, multi by 0.018, free text by up to 0.007, and a new family by 0.025.
 - The paired difference between v16 and the best other arm, with its 95% bootstrap interval, is reported for every family.
 
 ## Development

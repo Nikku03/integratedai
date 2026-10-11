@@ -376,9 +376,7 @@ def _ask_v16(work: Path, single: Path | None, plans: Path | None, router: str | 
     rec = {"arm": "v16", "label": label, "file": f"{name}.jsonl", "single": str(single), "plans": str(plans), "router": router,
            "seconds": round(time.perf_counter() - t, 2), "answers": len(_jsonl(work / f"{name}.jsonl")),
            "questions_sha256": H._sha(work / "questions.jsonl"), "haystack_sha256": hay}
-    reg = H.registry(work)  # read again: another arm may have been asked meanwhile
-    reg[name] = rec
-    (work / H.REGISTRY).write_text(json.dumps(reg, indent=1))
+    H.record(work, name, rec)
     return {**rec, "result": rep}
 
 
@@ -410,9 +408,7 @@ def ask(work: Path, arm: str, single: Path | None = None, plans: Path | None = N
         rec = _ask_quotes(work, name)
     else:
         rec = H.ask(work, arm, single, plans, router, name)
-    reg = H.registry(work)
-    reg[name] = {**reg[name], **extra}
-    (work / H.REGISTRY).write_text(json.dumps(reg, indent=1))
+    H.record(work, name, extra, merge=True)
     return {**rec, **extra}
 
 

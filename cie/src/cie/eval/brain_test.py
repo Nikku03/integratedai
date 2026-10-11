@@ -27,6 +27,7 @@
 from __future__ import annotations
 
 import argparse
+import fcntl
 import hashlib
 import json
 import random
@@ -451,6 +452,17 @@ def registry(work: Path) -> dict[str, dict[str, Any]]:
     return json.loads(p.read_text()) if p.exists() else {}
 
 
+def record(work: Path, name: str, rec: dict[str, Any], merge: bool = False) -> dict[str, Any]:
+    """Write one ask's record into W/arms.json (merged into the one already there when ``merge``), under a lock, so arms
+    asked at the same time in one folder keep every record."""
+    with open(work / f"{REGISTRY}.lock", "w") as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        reg = registry(work)
+        reg[name] = {**reg.get(name, {}), **rec} if merge else rec
+        (work / REGISTRY).write_text(json.dumps(reg, indent=1))
+        return reg[name]
+
+
 def ask(work: Path, arm: str, single: Path | None = None, plans: Path | None = None, router: str | None = None,
         name: str | None = None) -> dict[str, Any]:
     """One arm's answers to W/questions.jsonl, written to W/<name>.jsonl (``FILES[arm]`` by default) and recorded in
@@ -519,9 +531,7 @@ def ask(work: Path, arm: str, single: Path | None = None, plans: Path | None = N
            "plans": str(plans) if arm in ("v13", "v15") else None, "router": router if arm == "v15" else None,
            "seconds": round(time.perf_counter() - t, 2), "answers": len(_jsonl(work / f"{name}.jsonl")),
            "questions_sha256": _sha(work / "questions.jsonl"), "haystack_sha256": hay}
-    reg = registry(work)  # read again: another arm may have been asked meanwhile
-    reg[name] = rec
-    (work / REGISTRY).write_text(json.dumps(reg, indent=1))
+    record(work, name, rec)
     return {**rec, "result": rep}
 
 

@@ -12,6 +12,8 @@ PY=.venv/bin/python
 T=${T:-$S/brain2/test5k}; TS=${TS:-${T}small}; N=$(basename $T)
 P=${P:-$S/brain2/packets}; O=${OW:-$S/brain2/writers/test_out}; H=${H:-$S/brain2/heldout/$N}; B=${B:-$S/brain2/writers/test_batches}
 R=${R:-$S/brain2/rewrite/$N}
+# errors go to a file, never here: a traceback could hold the test's text
+ERR=${T}.step3.err; exec 2>>$ERR; trap 'echo "step 3 failed: the error is in $ERR"' ERR
 test ! -e $T/questions.jsonl || { echo "$T already has questions: start from a fresh folder"; exit 1; }
 # the writers' questions: each writer wrote one file per batch. First every batch must be there and answer each of its packets
 # (counts only; a batch that is not is written again by a new writer, still sealed, and this step rerun); then each file is
@@ -40,8 +42,8 @@ $PY -m cie.eval.brain_test build --work $T --v1 > /dev/null
 $PY -m cie.eval.brain_test build --work $TS --v1 > /dev/null
 echo "banks built $(date +%T)"
 # the rewriters' batches: the generated questions' text alone, 40 a batch
-$PY -m cie.eval.brain2_messy packets --work $T --out $R/batches --per 40 > $R.packets.json
 mkdir -p $R/out
+$PY -m cie.eval.brain2_messy packets --work $T --out $R/batches --per 40 > $R.packets.json
 $PY -c "import json,sys; r=json.load(open(sys.argv[1])); print(r['questions'], 'generated questions'); print(json.dumps({'dir': sys.argv[2], 'out': sys.argv[3], 'batches': r['batches']}))" \
   $R.packets.json $R/batches $R/out
 echo "step 3 done $(date +%T)"

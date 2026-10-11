@@ -57,7 +57,29 @@ def test_packets_collect_and_folder(tmp_path):
     out, rep = M.collect(w, tmp_path / "b", tmp_path / "o")
     assert [q["id"] for q in out] == ["jira_priority-1", "prose-912-001"]
     assert out[0]["question"].startswith("quick q") and out[0]["clean_question"] == qs[0]["question"] and out[0]["expected"] == {"value": "P1"}
-    assert rep["kept"] == 1 and rep["rejected"] == {"drops": 1}
+    assert rep["kept"] == 1 and rep["rejected"] == {"drops a token": 1} and rep["kept_by_batch"] == {"t5k_messy_b00": 1}
     M.messy_folder(w, tmp_path / "t5k_messy", out)
     assert (tmp_path / "t5k_messy" / "haystack.json").is_symlink()
     assert len((tmp_path / "t5k_messy" / "questions.jsonl").read_text().splitlines()) == 2
+
+
+def test_possessive_names():
+    """A name's possessive is not part of what a rewrite must keep; a rejected rewrite's reason never carries the name."""
+    q = "How many emails are in Jane Doe's mailbox?"
+    assert M.anchors(q)["tokens"] == ["Jane", "Doe"]
+    assert M.why_rejected(q, "how many emails in jane doe mailbox?") is None
+    assert M.why_rejected(q, "how many emails has jane got?") == "drops 'Doe'"
+
+
+def test_rejected_reasons_are_categories(tmp_path):
+    w = tmp_path / "t5k"
+    w.mkdir()
+    qs = [{"id": "count_gmail-1", "kind": "count_gmail", "family": "counts", "question": "How many emails are in Jane O'Doe's mailbox?",
+           "expected": {"value": "4"}}]
+    (w / "questions.jsonl").write_text(json.dumps(qs[0]) + "\n")
+    M.write_packets(w, tmp_path / "b")
+    (tmp_path / "o").mkdir()
+    (tmp_path / "o" / "t5k_messy_b00.jsonl").write_text(json.dumps({"packet_id": "count_gmail-1", "question": "emails for jane?"}) + "\n")
+    _, rep = M.collect(w, tmp_path / "b", tmp_path / "o")
+    assert rep["rejected"] == {"drops a token": 1} and "Doe" not in json.dumps(rep)
+    assert rep["kept_by_batch"] == {"t5k_messy_b00": 0}

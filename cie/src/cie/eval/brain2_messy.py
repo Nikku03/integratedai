@@ -44,6 +44,8 @@ SHARED = ("haystack.json", "index.json", "banks.json", "factbank.sqlite", "factb
 DIGIT_TOKEN = re.compile(r"[A-Za-z0-9][\w./:-]*\d[\w./:-]*|\d[\w./:-]*")
 CAP_WORD = re.compile(r"(?<![\w'])([A-Z][\w'&.-]*)")
 WORD = re.compile(r"[a-z0-9]+")
+POSSESSIVE = re.compile(r"['\u2019]s$")
+REASONS = ("no rewrite", "not one question", "new quotes", "drops a quoted title")
 INSTRUCTION = ("Rewrite each question the way a busy colleague would actually type it into a work chat or a search box. Make it "
                "messy and human: often lower case, short, casual, maybe a greeting or a bit of context first ('hey', 'quick q', "
                "'for the board deck'), abbreviations people use (pls, asap, w/, rn, fyi), an indirect ask ('do you know', 'can "
@@ -73,7 +75,7 @@ def anchors(question: str) -> dict[str, list]:
     for m in CAP_WORD.finditer(rest):
         before = rest[:m.start()].rstrip()
         if before and before[-1] not in ".?!:":
-            tokens.append(m.group(1).rstrip(".'"))
+            tokens.append(POSSESSIVE.sub("", m.group(1)).rstrip(".'"))
     return {"tokens": list(dict.fromkeys(t for t in tokens if t)), "quotes": [w for w in (_words(q) for q in quotes) if w]}
 
 
@@ -122,12 +124,16 @@ def write_packets(work: Path, out: Path, per: int = PER_BATCH) -> dict[str, Any]
 
 def collect(work: Path, batches: Path, outputs: Path) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     """The messy question set: every writer's question as it is, and every generated question whose rewrite is kept, with
-    its rewrite as the question and the tidy wording under "clean_question". The report counts what was kept and why the
-    rest was not."""
+    its rewrite as the question and the tidy wording under "clean_question". The report counts what was kept (in all and by
+    batch) and, by category alone, why the rest was not."""
     written: dict[str, Any] = {}
     reading: dict[str, str] = {}
+    batch_of: dict[str, str] = {}
+    kept: Counter = Counter()
     for f in sorted(batches.glob("*.json")):
-        b = json.loads(f.read_text())["batch"]
+        batch = json.loads(f.read_text())
+        b = batch["batch"]
+        batch_of.update({str(pk["packet_id"]): b for pk in batch["packets"]})
         path = outputs / f"{b}.jsonl"
         if not path.exists():
             reading[b] = "missing"
@@ -147,11 +153,13 @@ def collect(work: Path, batches: Path, outputs: Path) -> tuple[list[dict[str, An
             continue
         reason = why_rejected(q["question"], written[q["id"]])
         if reason:
-            why[reason.split(" '")[0]] += 1
+            why[reason if reason in REASONS else "drops a token"] += 1  # the reason's category: never the question's words
             continue
         out.append({**q, "question": " ".join(written[q["id"]].split()), "clean_question": q["question"], "messy": True})
+        kept[batch_of[q["id"]]] += 1
     gen = sum(1 for q in _jsonl(work / "questions.jsonl") if is_generated(q))
-    return out, {"generated": gen, "kept": sum(1 for q in out if q.get("messy")), "rejected": dict(why), "batches": reading}
+    return out, {"generated": gen, "kept": sum(1 for q in out if q.get("messy")), "rejected": dict(why), "batches": reading,
+                 "kept_by_batch": {b: kept[b] for b in reading}}
 
 
 def messy_folder(work: Path, out: Path, questions: list[dict[str, Any]]) -> None:

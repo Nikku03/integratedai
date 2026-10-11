@@ -81,7 +81,7 @@ YES_NO_RE = re.compile(_OPEN + r"(?:is|are|was|were|am|do|does|did|can|could|wil
                        r"(?:n['’]?t)?\b", re.I)
 WH_OPEN_RE = re.compile(_OPEN + r"(?:(?:in|on|at|by|for|to|from|under|with|of|during|until|since|within|after|before)\s+)?" + _WH
                         + r"\b", re.I)
-WH_ASKED_RE = re.compile(r"\b(?:know|tell(?:\s+(?:me|us))?|say|remember|recall|confirm|check|find(?:\s+out)?|see|wonder(?:ing)?|ask|"
+WH_ASKED_RE = re.compile(r"\b(?:know|tell(?:\s+(?:me|us))?|remind(?:\s+(?:me|us))?|say|remember|recall|confirm|check|find(?:\s+out)?|see|wonder(?:ing)?|ask|"
                          r"of|about)\s+" + _WH + r"\b", re.I)
 FITS = {"person": {"who", "whom", "whose", "which", "what"}, "customer": {"who", "whom", "whose", "which", "what"},
         "value": {"what", "which", "where", "how"}, "date": {"when", "what", "which"}, "month": {"when", "what", "which"}}

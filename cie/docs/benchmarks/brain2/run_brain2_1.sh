@@ -12,6 +12,8 @@ BENCH=$S/EnterpriseRAG-Bench
 # the test by default; the pre-freeze dry run sets ZONE=dev, T to a fresh folder, EXCL to the development set, and P, H, B, OW
 ZONE=${ZONE:-test}; T=${T:-$S/brain2/test5k}; EXCL=${EXCL:-$S/brain/test5k}; N=$(basename $T)
 P=${P:-$S/brain2/packets}; H=${H:-$S/brain2/heldout/$N}; B=${B:-$S/brain2/writers/test_batches}; OW=${OW:-$S/brain2/writers/test_out}
+# errors go to a file, never here: a traceback could hold the test's text
+ERR=${T}.step1.err; exec 2>>$ERR; trap 'echo "step 1 failed: the error is in $ERR"' ERR
 test ! -e $T || { echo "$T exists: start from a fresh folder"; exit 1; }
 mkdir -p $P $B $OW
 # the test set: 5,000 documents of the test zone (seed 909) that round 1's test set (brain/test5k) did not use, with pull

@@ -14,12 +14,16 @@ PY=.venv/bin/python
 T=${T:-$S/brain2/test5k}; TS=${TS:-${T}small}; N=$(basename $T); R=${R:-$S/brain2/rewrite/$N}
 L=docs/benchmarks/brain/lessons; L2=docs/benchmarks/brain2/lessons
 FB=$S/fb50/lessons.json; V13=$S/mdtrain/plan_lessons_v13.json
+# errors go to a file, never here: a traceback could hold the test's text
+ERR=${T}.step5.err; exec 2>>$ERR; trap 'echo "step 5 failed: the error is in $ERR"' ERR
 SET=${SET:?SET=messy or SET=tidy}
 if [ ! -e ${T}_messy ]; then
   $PY -m cie.eval.brain_writers status --batches $R/batches --outputs $R/out --prefix ${N}_messy > $R.status.json
   $PY -m cie.eval.brain2_messy collect --work $T --batches $R/batches --outputs $R/out --out ${T}_messy --small $TS \
     --small-out ${TS}_messy > $R.collect.json
   $PY -c "import json,sys; r=json.load(open(sys.argv[1])); print('rewrites kept', r['kept'], 'of', r['generated'], r['rejected'])" $R.collect.json
+  # a batch with no rewrite kept was answered in the wrong form: it is written again (sealed) and this step rerun on a fresh folder
+  $PY -c "import json,sys; z=[b for b,k in json.load(open(sys.argv[1]))['kept_by_batch'].items() if k == 0]; sys.exit('no rewrite kept in ' + ' '.join(z) if z else 0)" $R.collect.json
 fi
 if [ "$SET" = messy ]; then W=${T}_messy; WS=${TS}_messy; else W=$T; WS=$TS; fi
 for X in $WS $W; do
@@ -32,6 +36,12 @@ for X in $WS $W; do
   ( $PY -m cie.eval.brain2_test ask --work $X --arm v15 --single $L/single_lessons.json --plans $L/plan_lessons.json --router $L/router.json > /dev/null ) & C=$!
   wait $A; wait $B; wait $C  # set -e: a failed arm stops the step
   echo "asked $X $(date +%T)"
+done
+# every arm's record is in each folder's arms.json before scoring
+WANT="quotes v1 v2 v13 v15 v16"
+for X in $WS $W; do
+  $PY -c "import json,sys; have={r['label'] for r in json.load(open(sys.argv[1])).values()}; miss=sorted(set(sys.argv[2].split()) - have); sys.exit('missing arms in ' + sys.argv[1] + ': ' + ' '.join(miss) if miss else 0)" \
+    $X/arms.json "$WANT"
 done
 if [ "$SET" = messy ]; then
   PYTHONHASHSEED=1 $PY -m cie.eval.brain2_test ask --work $W --arm v16 --single $L2/single_lessons.json --plans $L2/plan_lessons.json \
