@@ -60,7 +60,7 @@ ANSWERABLE = tuple(f for f in FAMILIES2 if f not in ("not_found", "unanswerable"
 NEW_FAMILIES = ("counts", "history", "email_chat")
 ARMS2 = (*H.ARMS, "v16")
 FILES2 = {**H.FILES, "v16": "factbank_v16"}
-OWN = ("v16", "v16_seed1")  # the v16 brain's own answers; every other label is another arm
+OWN = ("v16", "v16_seed1")  # the v16 brain's own answers, with every label asked as arm v16 (``own_labels``); the rest are other arms
 HELDOUT = "heldout"  # the kind and group of the held-out writers' questions
 # the right route for each family: single, multi, counts, history and email_chat a fact route, prose the prose route, not_found
 # "not found"; an unanswerable question may be declined by any route, so it is not counted
@@ -557,25 +557,33 @@ def summarise2(rows: list[dict[str, Any]], labels: list[str]) -> dict[str, Any]:
     return out
 
 
-def best_other(scores: dict[str, Any], family: str) -> tuple[str, float] | None:
-    """The other arm (not ``OWN``) with the highest mean on the family, and its mean (ties: the first label in name order);
-    None when no other arm has one."""
-    others = {a: m["by_family"][family] for a, m in scores.items() if a not in OWN and m["by_family"].get(family) is not None}
+def own_labels(arms: dict[str, Any] | None) -> list[str]:
+    """The labels of the v16 brain's own answers, which are never another arm: ``OWN`` and every label whose record (a
+    report's "arms", label -> its record in W/arms.json) names arm v16, such as v16 asked again under another name with other
+    lessons ('--arm v16 --name v16b')."""
+    return sorted(set(OWN) | {label for label, rec in (arms or {}).items() if (rec or {}).get("arm") == "v16"})
+
+
+def best_other(scores: dict[str, Any], family: str, own: Iterable[str] = OWN) -> tuple[str, float] | None:
+    """The other arm (not one of ``own``, the v16 brain's own labels: ``own_labels``) with the highest mean on the family, and
+    its mean (ties: the first label in name order); None when no other arm has one."""
+    own = set(own)
+    others = {a: m["by_family"][family] for a, m in scores.items() if a not in own and m["by_family"].get(family) is not None}
     if not others:
         return None
     a = max(sorted(others), key=lambda x: others[x])
     return a, others[a]
 
 
-def paired2(rows: list[dict[str, Any]], scores: dict[str, Any], arm: str = "v16") -> dict[str, Any]:
-    """For each family, the mean paired difference of ``arm`` minus the best other arm on that family (``best_other``) over
-    the questions both scored, its 95% bootstrap interval (``memory_test.paired_ci``) and the questions it is over, as
-    ``brain_test.paired_intervals`` reports them. Reported, not decided on."""
+def paired2(rows: list[dict[str, Any]], scores: dict[str, Any], arm: str = "v16", own: Iterable[str] = OWN) -> dict[str, Any]:
+    """For each family, the mean paired difference of ``arm`` minus the best other arm on that family (``best_other``, not one
+    of ``own``) over the questions both scored, its 95% bootstrap interval (``memory_test.paired_ci``) and the questions it is
+    over, as ``brain_test.paired_intervals`` reports them. Reported, not decided on."""
     from cie.eval.memory_test import paired_ci
 
     out = {}
     for fam in FAMILIES2:
-        best = best_other(scores, fam)
+        best = best_other(scores, fam, own)
         if best is None or arm not in scores:
             continue
         other = best[0]
@@ -589,7 +597,8 @@ def paired2(rows: list[dict[str, Any]], scores: dict[str, Any], arm: str = "v16"
 
 # ------------------------------------------------------------------ rules
 # The thresholds of the rules: placeholders, each set before the freeze (docs/FACTBANK_BRAIN2_PREREGISTRATION.md). A rule reads
-# v16's answers (label "v16") and, where it says so, the best other arm on the family (``best_other``).
+# v16's answers (label "v16") and, where it says so, the best other arm on the family (``best_other``); no label of the v16
+# brain's own answers is another arm (``own_labels``: v16_seed1 and any label asked as arm v16, read from the report's "arms").
 EPS = H.EPS
 SINGLE_MARGIN = 0.03  # set before the freeze: single, v16 >= the best other arm - this
 MULTI_MARGIN = 0.03  # set before the freeze: multi, v16 >= the best other arm - this
@@ -608,8 +617,12 @@ def _fam(r: dict[str, Any], family: str, arm: str = "v16") -> float:
     return r["scores"][arm]["by_family"][family]
 
 
+def _own(r: dict[str, Any]) -> list[str]:
+    return own_labels(r.get("arms"))
+
+
 def _best(r: dict[str, Any], family: str) -> float:
-    best = best_other(r["scores"], family)
+    best = best_other(r["scores"], family, _own(r))
     if best is None:
         raise KeyError(f"no other arm has a {family} score")
     return best[1]
@@ -618,7 +631,7 @@ def _best(r: dict[str, Any], family: str) -> float:
 def preregistered2() -> dict[str, Rule]:
     """The rules of the v16 test, each named with its threshold (the module constants above, set before the freeze); applied
     by ``brain_test.rules``, which gives None when the report lacks what a rule reads."""
-    others = lambda r: [a for a in r["scores"] if a not in OWN]  # noqa: E731
+    others = lambda r: [a for a in r["scores"] if a not in _own(r)]  # noqa: E731
     out: dict[str, Rule] = {
         f"1 single-document questions: v16 >= the best other arm - {SINGLE_MARGIN}":
             lambda r: _fam(r, "single") >= _best(r, "single") - SINGLE_MARGIN - EPS,
@@ -650,8 +663,8 @@ def score(work: Path, small: Path | None = None, out: Path | None = None, rule_f
     """Score every arm answered in ``work`` (and in ``small``, the control folder) and write report.json and report.md to
     ``out`` (``work`` by default), as ``brain_test.score`` does over ``FAMILIES2``: the big-minus-small differences
     (``brain_test.against_small``) only when the control folder holds the same questions, leaving out those its draw found
-    not to reproduce there; the paired differences of v16 and the best other arm per family; and the hash-seed check of v16
-    against v16_seed1."""
+    not to reproduce there; the paired differences of v16 and the best other arm per family, where no label asked as arm v16
+    is another arm ("own": ``own_labels``); and the hash-seed check of v16 against v16_seed1."""
     out = out or work
     big = score_rows2(work)
     qs = _jsonl(work / "questions.jsonl")
@@ -664,7 +677,8 @@ def score(work: Path, small: Path | None = None, out: Path | None = None, rule_f
         "stale_arms": big["stale"], "scores": summarise2(big["rows"], big["labels"]),
         "builds": {n: b for n in ("factbank", "factbank_v2") if (b := _read(work / f"{n}_build.json")) is not None},
         "draw": draw_rep, "small": None}
-    rep["best_other"] = {f: dict(zip(("arm", "mean"), b, strict=True)) for f in FAMILIES2 if (b := best_other(rep["scores"], f))}
+    rep["own"] = own = own_labels(rep["arms"])
+    rep["best_other"] = {f: dict(zip(("arm", "mean"), b, strict=True)) for f in FAMILIES2 if (b := best_other(rep["scores"], f, own))}
     if small is not None:
         sm = score_rows2(small)
         same = H._asked(qs) == H._asked(_jsonl(small / "questions.jsonl"))
@@ -675,7 +689,7 @@ def score(work: Path, small: Path | None = None, out: Path | None = None, rule_f
                         "builds": {n: b for n in ("factbank", "factbank_v2") if (b := _read(small / f"{n}_build.json")) is not None},
                         "rows": sm["rows"]}
     rep["seed_check"] = H.seed_check(work, "v16", "v16_seed1")
-    rep["paired"] = paired2(big["rows"], rep["scores"]) if "v16" in big["labels"] else None
+    rep["paired"] = paired2(big["rows"], rep["scores"], own=own) if "v16" in big["labels"] else None
     why: dict[str, str] = {}
     rep["rules"] = H.rules(rep, rule_fns or {}, why)
     rep["rules_why"] = why
@@ -746,6 +760,7 @@ def to_markdown(rep: dict[str, Any]) -> str:
     out += [f"- {k}: **{'met' if v else 'not met' if v is not None else 'n/a'}**" + (f" ({rep['rules_why'][k]})" if k in rep["rules_why"] else "")
             for k, v in rep["rules"].items()]
     out += ["", f"- best other arm per family: {json.dumps(rep.get('best_other'))}",
+            f"- the v16 brain's own answers, never another arm: {json.dumps(rep.get('own'))}",
             f"- hash-seed check (v16 under another hash seed, v16_seed1): {json.dumps(rep.get('seed_check'))}",
             f"- arms: {json.dumps(rep['arms'])}", f"- left out as stale: {json.dumps(rep['stale_arms'])}",
             f"- builds: {json.dumps(rep['builds'])}",

@@ -63,6 +63,20 @@ def test_the_index_is_built_once_on_first_use(bank, route):
     assert ix.build() is ix and ix._con is con and ix.rows is rows, "a second build changes nothing"
 
 
+def test_one_index_per_bank(bank, tmp_path):
+    a, b = PR.ProseRoute(bank), PR.ProseRoute(bank, budget=1200, threshold=0.0)
+    assert a.index is b.index is PR.PassageIndex.of(bank), "a new route over the same bank does not build a second index"
+    a.answer(PORT)
+    con, rows = a.index._con, a.index.rows
+    assert b.answer(ZEBRA)["doc"] == "doc:d3" and b.index._con is con and b.index.rows is rows, "built once, on the bank's first question"
+    again = FactBank(tmp_path / "factbank_v2.sqlite")
+    assert PR.ProseRoute(again).index is not a.index and not PR.ProseRoute(again).index.built, "another bank object has its own"
+    small = PR.PassageIndex.of(bank, (300, 600))
+    assert small is not a.index and small.size == (300, 600) and PR.PassageIndex.of(bank, (300, 600)) is small, "one per size"
+    own = PR.PassageIndex(bank)
+    assert own is not a.index and PR.ProseRoute(bank, index=own).index is own, "a private index, or one given, is used as it is"
+
+
 def test_the_index_holds_every_documents_stored_text_cut_in_windows(bank):
     ix = PR.PassageIndex(bank).build()
     docs = sorted(e for e, k in bank.kinds.items() if k == "document")

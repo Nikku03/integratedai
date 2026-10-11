@@ -3,8 +3,9 @@
 
 1. **Passage index** (``PassageIndex``): the bank's stored text of every document (title, fields and body, as
    ``FactBank.passages`` reads it), cut into passages of whole sentences of 600-1,000 characters (``engine.windows``), in an
-   in-memory SQLite FTS5 table (title, body; tokenizer porter unicode61). It is built once, on first use (about 30,000
-   passages and 2-3 seconds for a 5,000-document bank).
+   in-memory SQLite FTS5 table (title, body; tokenizer porter unicode61). It is built once per bank, on first use, and
+   shared by every route over that bank (``PassageIndex.of``; about 30,000 passages, 110 MB and 2-3 seconds for a
+   5,000-document bank).
 2. **One document.** The question's content words, as plain search takes them (``cie.retrieval.lexical._terms``), are an OR
    query ranked by BM25 with the title weighted 2.5 and the body 1.0. The document of the best passage is the only document
    quoted from: its passages in BM25 order, then its other passages in document order, up to 60.
@@ -19,13 +20,18 @@ answers scored by ``cie.eval.brain_questions.score`` after ``cie.eval.brain_test
 against v15's route (``FactBank.passages``, five documents, IDF-share) 0.544 and 0.673 and plain search 0.494 and 0.654.
 Quoting from one document matters most; BM25 with the title weighted beats the IDF share at every number of documents.
 
-The threshold was fixed on train as the most correct abstentions with at most 5% of the answerable questions abstained.
-With it, 5/111 answerable train questions abstain (the train score goes from 0.716 to 0.694) and 86/111 are correctly
-answered "not found" when asked with their gold document left out. On dev 0/52 answerable questions abstain (0.804 stays),
-39/52 asked with their gold document left out and 80/111 train questions asked of the dev bank (where their document does
-not exist) are correctly answered "not found". (The survey's 87/111 and 81/111 compared quote_cov rounded to four decimals
-with the boundary value 0.4718 itself; one more question in each set lies between 0.47 and 0.4718.) The threshold belongs
-to this design (text, cut, ranking, one document); a change to any of them needs it refitted on train.
+The threshold is the survey's train fit rounded. The survey's rule, applied to train only, takes the most correct
+abstentions (questions asked with their gold document left out) with at most 5% of the answerable questions abstained; on
+``quote_cov`` rounded to four decimals it gave 0.4718, and the design rounded that to 0.47 and kept it (not moved after
+seeing dev). So 0.47 is not the rule's optimum: on unrounded values the rule is best for any threshold in (0.4707,
+0.4718], and 0.47 abstains on the same 5 answerable train questions but on one gold-removed train question fewer.
+With 0.47, on train: 5/111 answerable questions abstain (the train score goes from 0.716 to 0.694); 86/111 are correctly
+answered "not found" when asked with their gold document left out (51/65 of those whose facts no other single document
+holds), and 43/52 dev questions asked of the train bank (17/21). On dev: 0/52 answerable questions abstain (0.804 stays);
+39/52 with their gold document left out (17/24), and 80/111 train questions asked of the dev bank, where their document
+does not exist (52/70). The survey's 87/111 (52/65) and 81/111 (53/70) are the counts at 0.4718 on rounded values; one
+question in each lies between 0.47 and 0.4718. The threshold belongs to this design (text, cut, ranking, one document); a
+change to any of them needs it refitted on train.
 
 ``exclude`` (documents left out at query time) simulates a question whose document the bank does not hold: the passages
 of those documents are skipped, and the rarity weights count document frequency as if those documents and their action
@@ -47,7 +53,7 @@ PROSE_SIZE = (600, 1000)
 TITLE_WEIGHT = 2.5  # BM25 weight of a passage's title (its document's title); the body weighs 1.0
 QUOTE_PASSAGES = 60  # passages handed to quote_answer (it reads the first 20)
 BUDGET = 24_000  # characters of evidence (``brain.BUDGET``)
-ABSTAIN_BELOW = 0.47  # "not found" when quote_cov is below this (fixed on train5k)
+ABSTAIN_BELOW = 0.47  # "not found" when quote_cov is below this (the train5k fit, 0.4718, rounded; see the module docstring)
 NOT_FOUND = "not found"
 
 
@@ -60,7 +66,8 @@ class Passage(NamedTuple):
 
 class PassageIndex:
     """The bank's document text cut into passages (``size``, ``engine.windows``) in an in-memory FTS5 table, built on first use
-    (``build``). Passage ``rowid`` r is ``rows[r - 1]``; ``by_doc`` gives a document's rowids in document order."""
+    (``build``). Passage ``rowid`` r is ``rows[r - 1]``; ``by_doc`` gives a document's rowids in document order.
+    ``PassageIndex.of(bank)`` is the bank's shared index (what ``ProseRoute`` uses); ``PassageIndex(bank)`` a private one."""
 
     def __init__(self, bank: FactBank, size: tuple[int, int] = PROSE_SIZE):
         self.bank = bank
@@ -69,6 +76,16 @@ class PassageIndex:
         self.by_doc: dict[str, list[int]] = {}
         self.seconds = 0.0
         self._con: sqlite3.Connection | None = None
+
+    @classmethod
+    def of(cls, bank: FactBank, size: tuple[int, int] = PROSE_SIZE) -> PassageIndex:
+        """The one index of ``bank`` for ``size``, kept on the bank object (``_prose_indexes``), so that every ``ProseRoute``
+        over a bank shares it and it is built once per bank (about 110 MB and 2-3 seconds for a 5,000-document bank); it
+        goes when the bank does."""
+        shared = vars(bank).setdefault("_prose_indexes", {})
+        if size not in shared:
+            shared[size] = cls(bank, size)
+        return shared[size]
 
     @property
     def built(self) -> bool:
@@ -130,13 +147,14 @@ def coverage(weights: dict[str, float], text: str) -> float:
 
 class ProseRoute:
     """The free-text route over one bank: ``answer`` quotes the best document's passages and abstains when the quote covers
-    less than ``threshold`` of the question's words weighted by rarity. ``index`` is built on the first question."""
+    less than ``threshold`` of the question's words weighted by rarity. ``index`` is the bank's shared passage index
+    (``PassageIndex.of``) unless one is given; it is built on the first question asked of the bank, by any route over it."""
 
     def __init__(self, bank: FactBank, *, budget: int = BUDGET, threshold: float = ABSTAIN_BELOW, index: PassageIndex | None = None):
         self.bank = bank
         self.budget = budget
         self.threshold = threshold
-        self.index = index if index is not None else PassageIndex(bank)
+        self.index = index if index is not None else PassageIndex.of(bank)
         self._n: int | None = None
 
     def entity_count(self) -> int:

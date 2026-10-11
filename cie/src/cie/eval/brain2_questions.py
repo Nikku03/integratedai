@@ -228,6 +228,11 @@ CHANNEL = ('In which Slack channel was the thread starting "{q}" posted?', 'Whic
 STARTER = ('Who started the Slack thread that begins "{q}"?', 'Who posted the first message of the Slack thread starting "{q}"?',
            'Who kicked off the Slack thread that opens with "{q}"?')
 SPEAKER = re.compile(r"^\s*([A-Za-z][\w .'()-]{0,39}?)\s*:\s+(.*)$")
+# What a thread's related_account holds when it is no customer account: on a hiring thread, a candidate, a recruiter or the
+# candidate's employer; elsewhere a label of a candidate, an internal matter or a team ('Candidate: Alex Romero',
+# 'candidate:kaiya-sundar', 'Internal - Monthly QBR prep', 'Runtime Team hiring').
+HIRING = frozenset({"hiring", "recruiting", "recruitment"})
+LABEL = re.compile(r"\b(?:candidates?|internal|hiring|team)\b", re.I)
 
 # ------------------------------------------------------------------ two documents
 LINK = {  # kind: (field of the Linear issue, value type, training-style wordings)
@@ -279,6 +284,9 @@ ABSENT: dict[tuple[str, str], tuple[str, tuple[str, ...]]] = {  # (source, field
     ("gmail", "related_account"): (r"\baccount\b", ('Which account is the email thread "{s}" about?',
                                                     'What customer account does the email thread "{s}" relate to?')),
 }
+# Fields whose scale has a level "none" (Linear customer_impact: none, low, medium, high): there "none" is the answer (no
+# customer impact), not an empty field.
+NONE_LEVEL = frozenset({("linear", "customer_impact")})
 
 # ------------------------------------------------------------------ embedded question words (the FIELDS kinds reworded)
 EMBEDDED: dict[str, tuple[str, ...]] = {
@@ -776,24 +784,28 @@ def count_questions(kind: str, hay: Haystack, rng: random.Random, cap: int | Non
 
 def gmail_counts(hay: Haystack, rng: random.Random, cap: int | None = None, aside: Counter | None = None) -> list[dict[str, Any]]:
     """How many email threads of one type are in one person's mailbox, and how many are about one account (2 to 15).
-    'Acme*' accounts, an account or type written inside another, an account some thread holds in a list or whose name another
-    thread's subject writes, and a mailbox owner who is not a person are set aside."""
+    A mailbox owner who is not a person, a type written inside another type of the same mailbox (or holding one: 'sales'
+    beside 'pre-sales'), 'Acme*' accounts, an account written inside another, an account some thread holds in a list or
+    whose name another thread's subject writes, and an account that is no customer account (``_not_account``, on any of
+    its threads) are set aside. Types are compared within the one mailbox counted: a 'pre-sales' thread elsewhere leaves
+    'sales' in this mailbox one reading."""
     g = hay.of("gmail")
     cands = []
     owned: dict[tuple[str, str], list[dict]] = defaultdict(list)
     handles: dict[str, Counter] = defaultdict(Counter)
+    mine: dict[str, set[str]] = defaultdict(set)  # each owner's thread types, as written
     for d in g:
         p, t = _full_name(d["raw"].get("mailbox_owner")), str(d["raw"].get("thread_type") or "").strip()
         if p and t and t.lower() not in EMPTY:
             owned[(p, _squash(t))].append(d)
             handles[p][str(d["raw"]["mailbox_owner"]).strip()] += 1
-    types = {str(d["raw"].get("thread_type")).strip() for ds in owned.values() for d in ds}
-    inner = _nested(types)
+            mine[p].add(t)
+    nested = {p: _nested(ts) for p, ts in mine.items()}
     for (p, sq), ds in sorted(owned.items()):
         if not LO <= len(ds) <= HI:
             _note(aside, "count outside 2-15")
             continue
-        if sq in inner:
+        if sq in nested[p]:
             _note(aside, "named inside another")
             continue
         t = Counter(str(d["raw"]["thread_type"]).strip() for d in ds).most_common(1)[0][0]
@@ -822,6 +834,8 @@ def gmail_counts(hay: Haystack, rng: random.Random, cap: int | None = None, asid
             _note(aside, "value also in a list")
         elif any(_says(sq, d["title"]) for d in g if d not in ds):
             _note(aside, "another thread's subject names it")
+        elif why := next((r for d in ds if (r := _not_account(d["raw"], a))), ""):
+            _note(aside, why)
         else:
             cands.append({"fmt": {"a": a}, "expected": {"value": str(len(ds))}, "gold": [d["dsid"] for d in ds],
                           "wordings": GMAIL_ACCOUNT, "pieces": [a, str(len(ds))], "extra": {"filters": [["related_account", a]]}})
@@ -1045,6 +1059,23 @@ def messages(raw: dict[str, Any]) -> list[dict[str, str]] | None:
     return out
 
 
+def _not_account(raw: dict[str, Any], a: str) -> str:
+    """Why a thread's related_account ``a`` is no customer account to ask about, or '': the thread is a hiring thread (its
+    account field names candidates, recruiters and employers), the value labels a candidate, an internal matter or a team
+    (``LABEL``), it holds several names ('NimbusCloud; Stratus; Aurora Analytics', 'Acme Cloud / EdgeOps'), or it carries a
+    note in brackets ('Acme AI (candidate source)'). Nobody would answer with the label or the note, and the scorer wants the
+    whole value."""
+    if str(raw.get("thread_type") or "").strip().lower() in HIRING:
+        return "a hiring thread"
+    if LABEL.search(a):
+        return "a label, not an account"
+    if re.search(r";|\s/\s", a):
+        return "several names in the value"
+    if re.search(r"[()\[\]]", a):
+        return "a note in the value"
+    return ""
+
+
 def _addressed(field: str | None) -> list[str]:
     return [p.strip() for p in re.split(r"[,;](?![^<]*>)", field or "") if p.strip()]
 
@@ -1161,9 +1192,7 @@ def email_questions(kind: str, hay: Haystack, rng: random.Random, cap: int | Non
                 why = "no value" if not isinstance(a, list) else "several values"
             elif _squash(a) in inner:
                 why = "named inside another"
-            elif re.search(r"[()\[\]]", a):
-                why = "a note in the value"  # 'Acme AI (candidate source)': nobody would answer with the note
-            else:
+            elif not (why := _not_account(raw, a)):
                 exp = {"value": a.strip()}
         if exp is None:
             _note(aside, why)

@@ -281,6 +281,7 @@ def test_every_arm_is_asked_recorded_with_its_lessons_and_hash_seed_and_scored(t
         T.ask(w, "quotes")
     monkeypatch.setenv("PYTHONHASHSEED", "1")
     T.ask(work, "v16", single, plans, name="v16_seed1")
+    T.ask(work, "v16", single, plans, router=str(single), name="v16b")  # v16 again under another name: still v16's own answers
     assert [(c["name"], c["v16"]) for c in calls[:3]] == [("factbank_v15", False), ("factbank_v16", True), ("factbank_v15", False)]
     reg = H.registry(work)
     assert reg["factbank_v16"]["label"] == "v16" and reg["factbank_v16"]["arm"] == "v16" and reg["v16_seed1"]["label"] == "v16_seed1"
@@ -300,7 +301,8 @@ def test_every_arm_is_asked_recorded_with_its_lessons_and_hash_seed_and_scored(t
 
     rep = T.score(work, small, rule_fns=T.preregistered2())
     s = rep["scores"]
-    assert set(s) == {"v1", "v15", "v16", "v16_seed1", "quotes"} and rep["stale_arms"] == {"plain_quotes": "answers file missing"}
+    assert set(s) == {"v1", "v15", "v16", "v16_seed1", "v16b", "quotes"} and rep["stale_arms"] == {"plain_quotes": "answers file missing"}
+    assert rep["own"] == ["v16", "v16_seed1", "v16b"] and rep["arms"]["v16b"]["arm"] == "v16"
     for m in s.values():
         assert set(m["by_family"]) == set(T.FAMILIES2) and m["missing"] == 0
         assert m["mean_of_families"] == H._mean(m["by_family"][f] for f in T.FAMILIES2)
@@ -317,8 +319,9 @@ def test_every_arm_is_asked_recorded_with_its_lessons_and_hash_seed_and_scored(t
     assert s["v15"]["strict_prose"]["mean"] is None and s["v15"]["strict_prose"]["documents_unknown"] == 1, "two documents named"
     assert s["v1"]["strict_prose"]["mean"] is None and s["v1"]["strict_prose"]["quoted"] == 0 and s["v1"]["routes"] is None
     assert s["quotes"]["strict_prose"]["mean"] is not None and s["quotes"]["strict_prose"]["quoted"] == 1
-    assert rep["best_other"]["prose"]["arm"] in ("v15", "quotes") and "v16_seed1" not in {b["arm"] for b in rep["best_other"].values()}
+    assert rep["best_other"]["prose"]["arm"] in ("v15", "quotes") and not {b["arm"] for b in rep["best_other"].values()} & set(rep["own"])
     assert set(rep["paired"]) == set(T.FAMILIES2) - {"email_chat"} and rep["paired"]["counts"]["other"] == rep["best_other"]["counts"]["arm"]
+    assert not {p["other"] for p in rep["paired"].values()} & set(rep["own"]), "v16 is never paired with its own answers"
     assert rep["seed_check"] == {"questions": rep["questions"], "different": []}
     sm = rep["small"]
     assert sm["same_questions"] and set(sm["differences"]) == {"v1", "v15", "v16", "quotes"}
@@ -328,7 +331,8 @@ def test_every_arm_is_asked_recorded_with_its_lessons_and_hash_seed_and_scored(t
     assert rules[next(k for k in rules if k.startswith("12 "))] is True and rules[next(k for k in rules if k.startswith("3 "))] is True
     assert rules[next(k for k in rules if k.startswith("4 "))] is False, "the stub's plan route answers questions about nothing"
     md = (work / "report.md").read_text()
-    for part in ("| v16 |", "Routes of v16", "v16 minus the best other arm", "Big folder minus the small one", "By kind:", "strict prose"):
+    for part in ("| v16 |", "Routes of v16", "v16 minus the best other arm", "Big folder minus the small one", "By kind:", "strict prose",
+                 "own answers, never another arm"):
         assert part in md, part
     assert json.loads((work / "report.json").read_text())["questions"] == rep["questions"]
 
@@ -389,6 +393,24 @@ def test_the_rules_read_the_report():
     assert got[next(k for k in got if k.startswith("12 "))] is None and got[next(k for k in got if k.startswith("1 "))] is None
     assert got[next(k for k in got if k.startswith("4 "))] is True, "a rule with no other arm in it still reads v16"
     assert why[next(k for k in got if k.startswith("10 "))].startswith("ValueError"), "no other arm's mean to beat"
+
+
+def test_no_label_asked_as_v16_is_another_arm():
+    def arm(counts, mean):
+        fam = {f: 0.9 for f in T.FAMILIES2} | {"counts": counts}
+        return {"by_family": fam, "mean_of_families": mean, "false_not_found": {"all": 0.0}, "routes": {"accuracy_mean_over_families": 0.95}}
+    rep = {"scores": {"v16": arm(0.70, 0.70), "v16b": arm(0.72, 0.71), "v15": arm(0.15, 0.50)},
+           "arms": {"v16": {"arm": "v16"}, "v16b": {"arm": "v16"}, "v15": {"arm": "v15"}}}
+    assert T.own_labels(rep["arms"]) == ["v16", "v16_seed1", "v16b"] and T.own_labels(None) == sorted(T.OWN)
+    assert T.best_other(rep["scores"], "counts", T.own_labels(rep["arms"])) == ("v15", 0.15)
+    assert T.best_other(rep["scores"], "counts") == ("v16b", 0.72), "with no records, only OWN is left out"
+    rows = [{"family": "counts", "score": {"v16": 1.0, "v16b": 1.0, "v15": 0.0}}]
+    assert T.paired2(rows, rep["scores"], own=T.own_labels(rep["arms"]))["counts"]["other"] == "v15"
+    got = {k.split()[0]: v for k, v in H.rules(rep, T.preregistered2()).items()}
+    assert got["7"] is True and got["10"] is True, "v16 is not measured against itself asked under another name"
+    rep["arms"]["v16b"]["arm"] = "v15"  # the same label asked as another arm is another arm
+    got = {k.split()[0]: v for k, v in H.rules(rep, T.preregistered2()).items()}
+    assert got["7"] is False and got["10"] is False
 
 
 def test_the_command_line_runs_each_step(tmp_path):

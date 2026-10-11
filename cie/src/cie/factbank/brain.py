@@ -1,6 +1,6 @@
-"""The company brain (fact bank v15): one ``ask`` for every kind of question about the company.
+"""The company brain (fact bank v15; v16 with ``Brain(..., v16=True)``): one ``ask`` for every kind of question about the company.
 
-``Brain.ask`` takes the first route that applies:
+``Brain.ask`` (v15) takes the first route that applies:
 
 1. **not_found:** the question names a ticket key, a pull request number, a quoted title or a person's full name that the
    bank does not hold (``Brain.missing``). The answer is "not found", and the reason names what is missing.
@@ -30,8 +30,34 @@ questions:
 5. "filed under" asks for the project or space, not who filed it (``BrainBank.wanted``).
 The bank also keeps each question's ``named`` result (``BrainBank.named``), most of a question's time otherwise.
 
+v16 also adds four routes. ``Brain.ask`` with v16 takes the first that applies, in this order:
+
+1. **not_found**, as v15.
+2. **derived:** the question names one document (``Records.start``: a ticket key, a pull request number, a quoted title or
+   Gmail subject, or a quote of words, such as a Slack thread's first words, that one document's text holds) and asks for a
+   fact of its history or messages (``Records.derived``): when it was created or last updated, the days from opened to
+   merged, who left the first comment and when the latest was posted, its first recorded activity, the date it moved to a
+   status, a Gmail thread's first sender, To, Cc, message count, attachments, account and start date, a Slack thread's
+   channel and the person who started it.
+3. **table:** a count, a list of keys or a list of people over one system's documents, filtered by field values the question
+   writes as whole words (``Records.table``: "How many Jira tickets have priority P2?").
+4. The router, as v15 (it reads ``Brain.signals``, which fault 1 changes).
+5. **prose**, when the router says prose: ``cie.factbank.prose.ProseRoute`` quotes the one document whose passage best matches
+   the question (BM25 over passages of the bank's document text, ``PassageIndex``) and answers "not found" when the quote
+   covers too little of the question's words weighted by rarity (``quote_cov`` below its default threshold, 0.47).
+6. **absent**, when the router says fact: the named document leaves empty a field that at least ``MIN_HELD`` of its system's
+   documents hold, and the question asks for that field (``Records.absent``). The answer is "not found", and the reason
+   names the field ("the HubSpot account X has no CSM assigned").
+7. **plan** or **fact**, as v15 (with the fault fixes).
+
+Routes derived and table answer with a fact, absent with "not found" (``cie.eval.brain2_test.route_class``). Each new route
+gives the same row as the others: the answer, the reason, the evidence (what it read: the answer first, then the facts or
+entries it rests on, or the passages quoted from), ``reads`` (by role, as ``Planner.reads``), a journal that starts with the
+route, the router's family scores when it ran, and the time. One ``Records`` (``min_held``) and one ``ProseRoute`` (its own
+passage index) serve every question of a brain, each built on its first use.
+
     python -m cie.factbank.brain ask --work W --single LESSONS --plans PLAN_LESSONS [--router ROUTER] [--name NAME]
-        [--no-field-check] [--v16]
+        [--no-field-check] [--v16] [--min-held SHARE]
 """
 
 from __future__ import annotations
@@ -45,10 +71,10 @@ import unicodedata
 from collections import Counter, defaultdict
 from collections.abc import Iterator
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from cie.factbank.engine import DOC_NOUNS, LIST_RE, FactBank, Result, Written, stem, words
-from cie.factbank.learn import Lessons, sigmoid
+from cie.factbank.learn import Lessons, norm, sigmoid
 from cie.factbank.plans import (
     QUOTED,
     Plan,
@@ -60,6 +86,10 @@ from cie.factbank.plans import (
 )
 from cie.factbank.plans import answer as plan_answer
 from cie.factbank.trained import TrainedBank
+
+if TYPE_CHECKING:
+    from cie.factbank.prose import ProseRoute
+    from cie.factbank.records import Records
 
 BUDGET = 24_000
 PROSE_SIZE = (600, 1000)
@@ -107,6 +137,11 @@ ENGINE_SKIP = ("referenced_by", "action_item", "from_document")  # never v1's an
 # fault 5: "filed under" asks for the container (a project, a space), not who filed it
 FILED_UNDER = re.compile(r"\bfiled\s+under\b")
 NAMED_MEMO = 256  # questions whose ``named`` result the bank keeps with ``v16``
+# v16's routes: a field counts as one a system uses when this share of its documents hold it (``Records(min_held=...)``, the
+# absent route; set in round 2's phase 2 so that a field such as HubSpot's csm_assigned is asked and answered alike in every zone)
+MIN_HELD = 0.3
+# the kinds of ``Records.derived`` answer that name people (who commented, sent, received, was copied, started a thread)
+DERIVED_PEOPLE = frozenset(("first_commenter", "latest_commenter", "email_sender", "email_to", "email_cc", "slack_starter"))
 
 
 def squash(s: str) -> str:
@@ -361,10 +396,12 @@ class Brain:
 
     ``v16`` (off by default) turns on round 2's fault fixes in the bank (``BrainBank``), the planner (``Planner``) and the
     brain's own reading of the question: a question word after a verb of knowing or telling asks plainly (``signals``), and
-    the field check weighs the fields of the asked kind (``reads_asked_field``)."""
+    the field check weighs the fields of the asked kind (``reads_asked_field``). It also adds the routes derived, table,
+    absent and v16's prose (see the module docstring), over one ``Records`` (``records``; ``min_held``, ``MIN_HELD`` by
+    default) and one ``ProseRoute`` (``prose_route``), each built on first use."""
 
     def __init__(self, bank_path: str | Path, single_lessons_path: str | Path, plan_lessons_path: str | Path, router: Router | None = None,
-                 *, budget: int = BUDGET, field_check: bool = True, v16: bool = False):
+                 *, budget: int = BUDGET, field_check: bool = True, v16: bool = False, min_held: float = MIN_HELD):
         self.bank = BrainBank(bank_path, Lessons.load(single_lessons_path))
         self.bank.brain = True
         self.bank.answer_first = False  # the planner path prints its own answer; the engine path sets it while it runs
@@ -381,6 +418,28 @@ class Brain:
         self._titles: set[str] | None = None
         self._names: tuple[set[str], set[str]] | None = None
         self._fts: dict[str, bool] = {}
+        self.min_held = min_held
+        self._records: Records | None = None
+        self._prose_route: ProseRoute | None = None
+
+    # ------------------------------------------------------------------ v16: records and free text, built on first use
+    def records(self) -> Records:
+        """v16: counts, filters, history and messages over the bank (``cie.factbank.records.Records`` with ``min_held``), one
+        per brain, built on the first question that needs it."""
+        if self._records is None:
+            from cie.factbank.records import Records
+
+            self._records = Records(self.bank, min_held=self.min_held)
+        return self._records
+
+    def prose_route(self) -> ProseRoute:
+        """v16: the free-text route over the bank (``cie.factbank.prose.ProseRoute`` with its default threshold and the brain's
+        budget), one per brain; its passage index is built on the first free-text question and kept for every later one."""
+        if self._prose_route is None:
+            from cie.factbank.prose import ProseRoute
+
+            self._prose_route = ProseRoute(self.bank, budget=self.budget)
+        return self._prose_route
 
     # ------------------------------------------------------------------ not found
     def holds_text(self, phrase: str) -> bool:
@@ -605,10 +664,59 @@ class Brain:
         docs = list(dict.fromkeys(c["document_id"] for c in quoted[1]))
         return quoted[0], f"quoted from {len(quoted[1])} passage(s) of {len(docs)} document(s): {', '.join(docs)}", "\n\n".join(blocks)
 
+    # ------------------------------------------------------------------ v16's routes
+    def record_reads(self, docs: list[str], values: list[str], people: bool = False) -> dict[str, list[str]]:
+        """v16: what a records route read, by role as ``Planner.reads`` gives it (normalised): the labels of the documents it
+        read, the values of its answer, and the people among them (all of them with ``people``: the answer names people,
+        whether or not the bank holds them as people, such as an email's sender; else the values the bank holds as people)."""
+        out = {"ends": [self.bank.label_of(d) for d in docs], "values": values,
+               "people": values if people else [v for v in values if v.lower() in self.bank.people]}
+        return {k: list(dict.fromkeys(norm(x) for x in v if x)) for k, v in out.items()}
+
+    def derived_row(self, start: str, d: dict[str, Any]) -> tuple[str, str, list[dict[str, Any]], dict[str, list[str]]]:
+        """v16, route derived: the reason, the evidence (the answer, then the document and the fields or entries read), the
+        journal and the reads of ``Records.derived``'s answer about the named document ``start``."""
+        lab = self.records().label(start)
+        journal = [{"op": "start", "doc": start, "label": lab}, {"op": "derived", "kind": d["kind"], "doc": start, "values": [d["answer"]]}]
+        values = d["answer"].split("; " if "; " in d["answer"] else ", ")  # file names, which may hold commas, are joined by "; "
+        return (f"{d['kind']} of {lab}: {d['reason']}", f"Answer: {d['answer']}\n{d['evidence']}", journal,
+                self.record_reads([start], values, d["kind"] in DERIVED_PEOPLE))
+
+    def table_row(self, t: dict[str, Any]) -> tuple[str, str, list[dict[str, Any]], dict[str, list[str]]]:
+        """v16, route table: the reason, the evidence (the answer, then the documents matched and their values), the journal
+        and the reads of ``Records.table``'s count or list."""
+        values = [t["answer"]] if t["kind"] == "count" else [] if not t["docs"] else t["answer"].split(", ")
+        journal = [{"op": "table", "kind": t["kind"], "system": t["system"], "filters": t["filters"], "count": len(t["docs"]),
+                    "docs": t["docs"][:JOURNAL_STEPS], **({"field": t["field"]} if t.get("field") else {})}]
+        return t["reason"], f"Answer: {t['answer']}\n{t['evidence']}", journal, self.record_reads(t["docs"], values, t["kind"] == "people")
+
+    def absent_row(self, start: str, why: str) -> tuple[str, list[dict[str, Any]], dict[str, list[str]]]:
+        """v16, route absent: the evidence (the reason, then the fields the named document does hold), the journal and the
+        reads of ``Records.absent``'s "not found"."""
+        rec = self.records()
+        lab = rec.label(start)
+        lines = [f"Not found: {why}.", f"[{rec.system_of(start)}] {lab}: {self.bank.names.get(start, start)[:160]}"]
+        for p, vs in rec.doc_facts().get(start, {}).items():
+            if not p.endswith("_of"):
+                lines += [f"- {p.replace('_', ' ')}: {v[:200]}" for v, _ in vs[:3]]
+        journal = [{"op": "start", "doc": start, "label": lab}, {"op": "absent", "doc": start, "reason": why}]
+        return "\n".join(lines), journal, self.record_reads([start], [])
+
+    def prose_row(self, question: str) -> tuple[str, str, str, list[dict[str, Any]]]:
+        """v16, route prose: ``ProseRoute.answer``'s answer ("not found" when it abstains), its reason with ``quote_cov``, the
+        passages handed to the quote as evidence, and a journal step with the document quoted from and the coverage."""
+        route = self.prose_route()
+        p = route.answer(question)
+        journal = [{"op": "prose", "doc": p["doc"], "quote_cov": round(p["quote_cov"], 4), "threshold": route.threshold,
+                    "abstained": p["abstained"]}]
+        return p["answer"], f"{p['reason']} (quote_cov {p['quote_cov']:.3f})", p["evidence"], journal
+
     def ask(self, question: str) -> dict[str, Any]:
         """The brain's answer: {answer, route, reason, evidence, reads, journal, family_scores, ms}. ``route`` is 'not_found',
-        'plan', 'fact' or 'prose'; ``reads`` is what the plan read when the planner answered (``Planner.reads``). The journal
-        starts with the route; then comes the plan's journal, or the engine's steps the answer rests on (``rests_on``)."""
+        'plan', 'fact' or 'prose', and with ``v16`` also 'derived', 'table' or 'absent' (in the order of the module docstring);
+        ``reads`` is what the plan read when the planner answered (``Planner.reads``), or what a records route read. The
+        journal starts with the route; then comes the plan's journal, the engine's steps the answer rests on (``rests_on``),
+        or the step of a v16 route. ``family_scores`` are the router's, when it ran."""
         t = time.perf_counter()
 
         def done(answer: str, route: str, reason: str, evidence: str, journal: list, reads: Any = None,
@@ -620,11 +728,31 @@ class Brain:
         miss = self.missing(question)
         if miss:
             return done("not found", "not_found", f"the bank holds no {miss}", f"Not found: the bank holds no {miss}.", [])
+        start = None
+        if self.v16:
+            rec = self.records()
+            start = rec.start(question)
+            d = rec.derived(question, start) if start else None
+            if d is not None:
+                reason, evidence, journal, reads = self.derived_row(start, d)
+                return done(d["answer"], "derived", reason, evidence, journal, reads)
+            tab = rec.table(question)
+            if tab is not None:
+                reason, evidence, journal, reads = self.table_row(tab)
+                return done(tab["answer"], "table", reason, evidence, journal, reads)
         plan = self.plan(question)
         scores = self.family_scores(question, plan)
         if scores["prose"] > scores["fact"]:
+            if self.v16:
+                answer, reason, evidence, journal = self.prose_row(question)
+                return done(answer, "prose", reason, evidence, journal, None, scores)
             answer, reason, evidence = self.prose(question)
             return done(answer, "prose", reason, evidence, [], None, scores)
+        if start:
+            why = self.records().absent(question, start)
+            if why:
+                evidence, journal, reads = self.absent_row(start, why)
+                return done("not found", "absent", why, evidence, journal, reads, scores)
         found = plan["answer"] != "not found"
         if found and plan["start_named"] and (not self.field_check or self.reads_asked_field(question, plan)):
             return done(plan["answer"], "plan", plan["best"].describe(self.bank.names), self.plan_evidence(question, plan), plan["journal"],
@@ -641,15 +769,15 @@ def _jsonl(path: Path) -> list[dict[str, Any]]:
 
 
 def ask_brain(work: Path, single: Path, plans: Path, name: str | None = None, router: Router | str | Path | None = None,
-              budget: int = BUDGET, field_check: bool = True, v16: bool = False) -> dict[str, Any]:
+              budget: int = BUDGET, field_check: bool = True, v16: bool = False, min_held: float = MIN_HELD) -> dict[str, Any]:
     """The brain's answers to ``work/questions.jsonl`` from ``work/factbank_v2.sqlite``, written to ``work/<name>.jsonl`` as
     rows {id, answer, route, reason, evidence, ms, reads, journal, family_scores}. ``router`` is a Router or its file. The name
-    is "factbank_v15", or "factbank_v16" with ``v16``, when none is given."""
+    is "factbank_v15", or "factbank_v16" with ``v16``, when none is given. ``min_held``: v16's ``Records`` share (``MIN_HELD``)."""
     work = Path(work)
     name = name or ("factbank_v16" if v16 else "factbank_v15")
     if isinstance(router, (str, Path)):
         router = Router.load(router)
-    brain = Brain(work / "factbank_v2.sqlite", single, plans, router, budget=budget, field_check=field_check, v16=v16)
+    brain = Brain(work / "factbank_v2.sqlite", single, plans, router, budget=budget, field_check=field_check, v16=v16, min_held=min_held)
     rows = []
     for q in _jsonl(work / "questions.jsonl"):
         r = brain.ask(q["question"])
@@ -671,9 +799,13 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
     a.add_argument("--name", default=None, help="the rows' file name: factbank_v15, or factbank_v16 with --v16, when left out")
     a.add_argument("--budget", type=int, default=BUDGET)
     a.add_argument("--no-field-check", action="store_true", help="the planner answers every question that names its start")
-    a.add_argument("--v16", action="store_true", help="round 2's fault fixes (Brain, v16)")
+    a.add_argument("--v16", action="store_true", help="round 2's fault fixes and routes (Brain, v16)")
+    a.add_argument("--min-held", type=float, default=MIN_HELD,
+                   help=f"v16: the share of a system's documents that must hold a field for the absent route to call it missing "
+                        f"(default {MIN_HELD})")
     args = ap.parse_args(argv)
-    rep = ask_brain(args.work, args.single, args.plans, args.name, args.router, args.budget, not args.no_field_check, args.v16)
+    rep = ask_brain(args.work, args.single, args.plans, args.name, args.router, args.budget, not args.no_field_check, args.v16,
+                    args.min_held)
     print(json.dumps(rep, indent=1))
     return rep
 
