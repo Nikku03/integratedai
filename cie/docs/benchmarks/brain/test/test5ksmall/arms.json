@@ -1,0 +1,62 @@
+{
+ "quotes": {
+  "arm": "quotes",
+  "label": "quotes",
+  "file": "quotes.jsonl",
+  "single": null,
+  "plans": null,
+  "router": null,
+  "seconds": 3.12,
+  "answers": 215,
+  "questions_sha256": "bcfc9a25f5ea451aeb3f8436f5680d064e300006a97aa8593fe1a15884f1f2c6",
+  "haystack_sha256": "1300a80c522a652836a8986a92c385a82e314342c91e368c227837a51cd93744"
+ },
+ "factbank": {
+  "arm": "v1",
+  "label": "v1",
+  "file": "factbank.jsonl",
+  "single": null,
+  "plans": null,
+  "router": null,
+  "seconds": 18.99,
+  "answers": 215,
+  "questions_sha256": "bcfc9a25f5ea451aeb3f8436f5680d064e300006a97aa8593fe1a15884f1f2c6",
+  "haystack_sha256": "1300a80c522a652836a8986a92c385a82e314342c91e368c227837a51cd93744"
+ },
+ "factbank_v2": {
+  "arm": "v2",
+  "label": "v2",
+  "file": "factbank_v2.jsonl",
+  "single": "/tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/fb50/lessons.json",
+  "plans": null,
+  "router": null,
+  "seconds": 57.95,
+  "answers": 215,
+  "questions_sha256": "bcfc9a25f5ea451aeb3f8436f5680d064e300006a97aa8593fe1a15884f1f2c6",
+  "haystack_sha256": "1300a80c522a652836a8986a92c385a82e314342c91e368c227837a51cd93744"
+ },
+ "factbank_v13": {
+  "arm": "v13",
+  "label": "v13",
+  "file": "factbank_v13.jsonl",
+  "single": "/tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/fb50/lessons.json",
+  "plans": "/tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/mdtrain/plan_lessons_v13.json",
+  "router": null,
+  "seconds": 137.21,
+  "answers": 215,
+  "questions_sha256": "bcfc9a25f5ea451aeb3f8436f5680d064e300006a97aa8593fe1a15884f1f2c6",
+  "haystack_sha256": "1300a80c522a652836a8986a92c385a82e314342c91e368c227837a51cd93744"
+ },
+ "factbank_v15": {
+  "arm": "v15",
+  "label": "v15",
+  "file": "factbank_v15.jsonl",
+  "single": "docs/benchmarks/brain/lessons/single_lessons.json",
+  "plans": "docs/benchmarks/brain/lessons/plan_lessons.json",
+  "router": "docs/benchmarks/brain/lessons/router.json",
+  "seconds": 122.1,
+  "answers": 215,
+  "questions_sha256": "bcfc9a25f5ea451aeb3f8436f5680d064e300006a97aa8593fe1a15884f1f2c6",
+  "haystack_sha256": "1300a80c522a652836a8986a92c385a82e314342c91e368c227837a51cd93744"
+ }
+}

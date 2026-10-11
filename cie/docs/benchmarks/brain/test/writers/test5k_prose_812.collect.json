@@ -1,0 +1,23 @@
+{
+ "kept": 54,
+ "rejected": 6,
+ "reasons": {
+  "more than one question": 2,
+  "answer fact shorter than 2 words": 2,
+  "question contains an answer fact": 1,
+  "yes/no question": 1
+ },
+ "by_source": {
+  "confluence": 6,
+  "fireflies": 7,
+  "github": 5,
+  "gmail": 7,
+  "google_drive": 6,
+  "hubspot": 6,
+  "jira": 5,
+  "linear": 6,
+  "slack": 6
+ },
+ "out": "/tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/brain/writers/test_out/test5k_prose_812.questions.jsonl",
+ "rejected_file": "/tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/brain/writers/test_out/test5k_prose_812.questions.rejected.jsonl"
+}

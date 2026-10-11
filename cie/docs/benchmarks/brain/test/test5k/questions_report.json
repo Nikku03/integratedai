@@ -1,0 +1,229 @@
+{
+ "documents": 5000,
+ "seed": 810,
+ "mix": {
+  "deadlines": 15,
+  "lists": 15,
+  "fields": 30,
+  "names": 10,
+  "link": 15,
+  "combine": 15,
+  "compare": 6,
+  "not_found": 20,
+  "prose": 50
+ },
+ "questions": 215,
+ "by_family": {
+  "multi": 36,
+  "not_found": 20,
+  "prose": 50,
+  "single": 109
+ },
+ "by_group": {
+  "combine": 15,
+  "compare": 6,
+  "deadlines": 15,
+  "descriptive": 39,
+  "fields": 30,
+  "link": 15,
+  "lists": 15,
+  "names": 10,
+  "not_found": 20,
+  "prose": 50
+ },
+ "by_kind": {
+  "action_due": 8,
+  "action_owner_issues": 5,
+  "compare_two": 6,
+  "confluence_author": 1,
+  "confluence_space": 1,
+  "confluence_updated": 1,
+  "customer_tickets": 3,
+  "descriptive": 39,
+  "drive_created": 1,
+  "drive_owner": 1,
+  "drive_status": 1,
+  "github_author": 2,
+  "hubspot_close": 1,
+  "hubspot_owner": 1,
+  "hubspot_se": 1,
+  "hubspot_stage": 1,
+  "issue_pr_author": 4,
+  "jira_assignee": 2,
+  "jira_customer": 1,
+  "jira_priority": 1,
+  "jira_reporter": 2,
+  "jira_sla": 1,
+  "jira_status": 1,
+  "jira_ticket_assignee": 1,
+  "linear_assignee": 2,
+  "linear_due": 7,
+  "linear_due_window": 3,
+  "linear_issue_assignee": 1,
+  "linear_issue_creator": 1,
+  "linear_issue_priority": 1,
+  "linear_issue_project": 2,
+  "linear_issue_status": 1,
+  "linear_project_members": 3,
+  "linear_status": 3,
+  "meeting_attendees": 4,
+  "meeting_customer": 1,
+  "meeting_date": 1,
+  "meeting_owner": 1,
+  "nf_person": 5,
+  "nf_pr": 5,
+  "nf_ticket": 5,
+  "nf_title": 5,
+  "parent_issue": 3,
+  "person_count": 5,
+  "person_first": 5,
+  "pr_author": 2,
+  "pr_issue": 4,
+  "pr_merged": 1,
+  "pr_repo": 1,
+  "pr_reviewers": 3,
+  "prose": 50,
+  "ticket_link": 4
+ },
+ "mix_given": {
+  "deadlines": 15,
+  "lists": 15,
+  "fields": 30,
+  "names": 10,
+  "link": 15,
+  "combine": 15,
+  "compare": 6,
+  "not_found": 20,
+  "prose": 50,
+  "descriptive": 39
+ },
+ "available": {
+  "action_due": 199,
+  "action_owner_issues": 8,
+  "compare_two": 8,
+  "confluence_author": 48,
+  "confluence_space": 41,
+  "confluence_updated": 48,
+  "customer_tickets": 38,
+  "descriptive": 39,
+  "drive_created": 240,
+  "drive_owner": 240,
+  "drive_status": 240,
+  "github_author": 11,
+  "hubspot_close": 140,
+  "hubspot_owner": 147,
+  "hubspot_se": 145,
+  "hubspot_stage": 147,
+  "issue_pr_author": 10,
+  "jira_assignee": 8,
+  "jira_customer": 38,
+  "jira_priority": 53,
+  "jira_reporter": 53,
+  "jira_sla": 41,
+  "jira_status": 53,
+  "jira_ticket_assignee": 52,
+  "linear_assignee": 42,
+  "linear_due": 336,
+  "linear_due_window": 28,
+  "linear_issue_assignee": 342,
+  "linear_issue_creator": 342,
+  "linear_issue_priority": 342,
+  "linear_issue_project": 313,
+  "linear_issue_status": 342,
+  "linear_project_members": 15,
+  "linear_status": 28,
+  "meeting_attendees": 89,
+  "meeting_customer": 98,
+  "meeting_date": 101,
+  "meeting_owner": 101,
+  "nf_person": 60,
+  "nf_pr": 60,
+  "nf_ticket": 60,
+  "nf_title": 60,
+  "parent_issue": 13,
+  "person_count": 24,
+  "person_first": 28,
+  "pr_author": 78,
+  "pr_issue": 10,
+  "pr_merged": 73,
+  "pr_repo": 22,
+  "pr_reviewers": 78,
+  "prose": 54,
+  "ticket_link": 40
+ },
+ "set_aside": {
+  "generated": {
+   "action_owner_issues": {
+    "tickets": 8
+   },
+   "confluence_space": {
+    "named inside another": 7
+   },
+   "hubspot_close": {
+    "no value": 7
+   },
+   "hubspot_se": {
+    "no value": 2
+   },
+   "jira_customer": {
+    "no value": 15
+   },
+   "jira_sla": {
+    "no value": 12
+   },
+   "jira_ticket_assignee": {
+    "not a person": 1
+   },
+   "linear_issue_project": {
+    "named inside another": 28,
+    "no value": 1
+   },
+   "linear_project_members": {
+    "named inside another": 8
+   },
+   "meeting_attendees": {
+    "not a person": 12
+   },
+   "meeting_customer": {
+    "internal": 3
+   },
+   "person_count": {
+    "tickets": 5
+   },
+   "pr_merged": {
+    "no value": 5
+   },
+   "pr_repo": {
+    "named inside another": 56
+   },
+   "ticket_link": {
+    "linked": 3
+   }
+  },
+  "writers": {
+   "prose": {},
+   "descriptive": {}
+  }
+ },
+ "set_aside_written": {
+  "action_owner_issues": 8,
+  "person_count": 5,
+  "ticket_link": 3
+ },
+ "gold_documents": 259,
+ "prose_file": "/tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/brain/writers/test_out/test5k_prose_812.questions.jsonl",
+ "descriptive_file": "/tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/brain/writers/test_out/test5k_descriptive_811.questions.jsonl",
+ "multi_wordings": null,
+ "readable": 5000,
+ "listed": 5000,
+ "small": {
+  "folder": "/tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/brain/test5ksmall",
+  "documents": 259,
+  "not_reproduced": {
+   "linear_status-005": "not asked",
+   "linear_status-007": "not asked",
+   "linear_status-011": "not asked"
+  }
+ },
+ "seconds": 26.4
+}

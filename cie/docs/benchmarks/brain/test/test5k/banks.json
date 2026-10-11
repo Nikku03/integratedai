@@ -1,0 +1,20 @@
+{
+ "factbank_v2": {
+  "haystack_sha256": "9c8ab11e4245f7ae269d48fd29aecc15cc65a8c7736ca58fde611dbb8ea32593",
+  "seconds": 14.96,
+  "bytes": 102834176,
+  "sources": 5000,
+  "entities": 14261,
+  "facts": 115455,
+  "check_ok": true
+ },
+ "factbank": {
+  "haystack_sha256": "9c8ab11e4245f7ae269d48fd29aecc15cc65a8c7736ca58fde611dbb8ea32593",
+  "seconds": 7.55,
+  "bytes": 95019008,
+  "sources": 5000,
+  "entities": 14261,
+  "facts": 97324,
+  "check_ok": true
+ }
+}
