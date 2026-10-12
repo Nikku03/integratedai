@@ -29,10 +29,16 @@ seen, typed the way people type.
 - **Free text:** 0.666 against plain keyword search's 0.646 (−0.05 to +0.09). Round 1's v15 lost this rule. v16 meets it,
   but only just.
 
-**What messy typing costs:** v16's mean falls from 0.904 (tidy) to 0.826 (messy). The cost lands mostly on:
+**What messy typing costs:** v16's mean falls from 0.904 (tidy) to 0.826 (messy). The cost lands on:
 - counts: 1.000 to 0.775;
+- empty-field questions: 1.000 to 0.700;
 - history: 1.000 to 0.850;
+- not found: 1.000 to 0.900;
 - single-document facts: 0.794 to 0.736.
+
+The main causes:
+- account names of two words written without quotes;
+- casual words ("thru", "accts", "for the board deck") that two of v16's checks treat as content.
 
 **Its weakest spot:** questions that describe a document instead of naming it ("the PR that added the latency metric"). v16
 gets 0.500 of them; v1 and v2 get 0.725 and 0.750.
@@ -140,34 +146,45 @@ The same generated questions, tidy and messy, answered by the same code:
 
 v16 lost 35 answers to messy wording and gained 1. v15 lost 30 and gained 8, from a lower start.
 
-**What broke, read from the 35 questions:**
-- **Counts asked in new shapes** (9). The misses include "# of github PRs in the benchmark-lab repo?", "whats the count of
-  jira tickets…", "can someone count confluence pages…" and "smb tier hubspot accts forecast to close in 2026-06, how many
-  are there?". The counts route expects "how many ... are/have ..."; most of these went to the fact route and returned a
-  field.
-- **Names people use for fields.** In 6 of the 20 empty-field questions the empty-field check did not recognise the field
-  ("customer success manager", "CSM", "crm deal id", "what month … forecast to close"). Another route then answered from a
-  different field. "solutions engineer on the … acct" cost a single-document answer the same way.
-- **Slips the reading step leaves alone,** so the history lookup does not match (3):
+**What broke, read from the 35 questions** (corrected after the review below):
+- **Two-word account names without quotes** (7: 4 empty-field questions and 3 first-activity questions). For example:
+  "CallFlow SparkWorks", "PebblePort Helpdesk", "InkQuarry Devs".
+  - The reading step quotes an unquoted title only when it has three words or more, so no document is named.
+  - The empty-field check and the history lookup then never run, and another route answers from a different field.
+  - The field words are not the problem: the tidy wordings v16 got right use the same "customer success manager", "CSM"
+    and "forecast to close".
+- **Counts** (9):
+  - **3 use a shape the counts route does not take:** "# of …" twice, and "can someone count …".
+  - **6 are refused by the table's check for words it cannot explain:** "for the board deck", "accts", "for the
+    compliance report", "whats", "both", "his". The counts route already accepts "how many … are there" and "count of".
+- **The coverage check said "not found" to 6 answerable questions.** It counts casual words ("thru", "inclusive", "cash",
+  "took", "plate") as rare question words that the documents should hold. The six:
+  - two action items;
+  - a meeting, already wrong when tidy (0.18, from the wrong meeting);
+  - a customer;
+  - two date-range lists.
+- **Slips the reading step leaves alone** (3):
   - "coment" is itself in the ordinary-English word list;
   - "opend" has two candidates (open, pend).
 
-  A fourth, "activty", was fixed, but "when does the activity timeline … start?" is a phrasing the history lookup does not
-  know.
-- **The coverage check said "not found" to 6 answerable questions,** because the casual wording added many words the
-  documents lack:
-  - two action items and a meeting named inside long sentences;
-  - a customer;
-  - two date-range lists ("due 2026-01-10 thru 2026-01-23").
-- **Invented titles without quotes.** Two not-found questions name a Linear issue title that does not exist. Without quotes,
-  the unknown-title check does not fire, and a near match is answered.
+  The history lookup then does not match.
+- **Invented titles without quotes** (2). The unknown-title check needs quotes, so a near match is answered.
+- **Other** (8):
+  - a "crm deal id" question went to the free-text route, which comes before the empty-field check;
+  - an empty-field question asking for "due date";
+  - "who created" answered with the created date;
+  - "who's the solutions engineer on the … acct";
+  - a customer's ticket list;
+  - a partial project-member list (1.0 to 0.667);
+  - two action-item due dates.
 
 ## Where v16 is weak, whatever the wording
 
 **Descriptive questions** (40, written by the writers): 0.500, the same tidy and messy. v1 gets 0.725 and v2 0.750. Of the 16
 v16 loses to v2:
 - **6 pick the wrong document.** The planner joins on the wrong one.
-- **5 say "not found".** The coverage check judges the description too far from any title.
+- **5 say "not found".** The coverage check compares the question's rare words with the documents the answer rests on. In 3
+  of the 5, the missing words are chat filler ("thru", "tmrw", "hey", "quick", "stuff").
 - **3 answer the wrong field.**
 - **2 go to the free-text route.**
 
@@ -182,10 +199,21 @@ harder, and this is the largest single gap between v16 and the best earlier answ
 Plain keyword search gets 0.646 on the same questions with the same quoting code, so v16's free text is about as good as
 keyword search and no better.
 
-**Held-out questions** (83 about documents that are not in the haystack): 0.855, against v15's 0.301. Ten are answered from
-the free-text route: a nearby document's passage overlaps the question enough to pass the 0.47 threshold.
+**Held-out questions** (83 about documents that are not in the haystack): 0.855, against v15's 0.301. Ten of the 12 it
+answers come from the free-text route: a nearby document's passage overlaps the question enough to pass the 0.47 threshold.
+
+**Wrong answers where none exists:** v16 gave a confident wrong value to 18 of the 103 unanswerable questions and to 2
+invented titles. For example:
+- the solutions engineer's name for a CSM question;
+- the account tier for a close-month question;
+- a near-match issue's due date.
+
+Each answer is a stored value or a quote from the company's data, but the wrong one.
 
 ## Development against test
+
+Development is the pre-registration's row "v16 with the messy reading step (frozen)". That row is
+`development/dev5k_q2_report.md` (unanswerable 0.901, mean 0.936) with one held-out answer changed by the reading step.
 
 | v16 | development (seen) | test, tidy | test, messy |
 |---|---|---|---|
@@ -200,7 +228,9 @@ the free-text route: a nearby document's passage overlaps the question enough to
 | mean | 0.934 | 0.904 | 0.826 |
 
 The pre-registration warned that development was optimistic. On unseen documents:
-- **The template families** (counts, history, email and chat, not found) held at 1.000 when tidy.
+- **The template families** (counts, history, email and chat, not found) held at 1.000 when tidy. Their question
+  generators were built alongside v16's records module, so tidy wording is close to what v16 was built for. The messy set
+  is the fairer measure.
 - **Writer-made questions** dropped: free text by 0.11 and single by 0.08 (through the descriptive questions).
 
 ## Checks
@@ -212,12 +242,42 @@ The pre-registration warned that development was optimistic. On unseen documents
 - **Hash seed 1:** v16 gave the same 579 answers.
 - **The size rule:** the small control sets held the same questions as the 5,000-document sets, tidy and messy.
 
+## The review after the run
+
+One reviewer read the write-up, the frozen plan, the raw results and the scoring code.
+
+**Confirmed:**
+- every official number here matches the reports;
+- re-scoring every arm from the saved answers with the frozen code gives 0 mismatches on both sets;
+- about 20 sampled v16 answers across all families are scored right;
+- the tidy and messy sets hold the same 579 questions and expected answers, and only the 306 generated ones differ in
+  wording;
+- the code is unchanged since the freeze.
+
+**Found, and corrected above:**
+- **Wrong explanations of failures.** The first draft blamed field names, count shapes and the history lookup's phrasing,
+  and said the coverage check compares descriptions with titles. The two-word names, the unexplained-word check and chat
+  filler in the coverage check are the actual causes.
+- **"It never invents an answer"** overclaimed: it answers only from stored values or quotes, but 18 of 103 unanswerable
+  questions got a wrong value.
+- **The development column's source** and the generators' disclosure were added.
+
+**Scored as the rules say, but by luck** (no official number changes):
+- **One history answer** ("who wrote the earliest coment on PM-19834?") was answered from the issue's creator. The creator
+  was also the first commenter. Without it, messy history is 0.825, and rule 8 is still met.
+- **Two single-document answers** were credited because the value sits inside a long free-text quote. The rule takes a value
+  matched anywhere in the answer. Without them, messy single is 0.721, a lead of +0.006 over v2, and rule 1 is still met.
+- **Route accuracy** counts any fact route as right for counts, history and email and chat. 12 of the 40 count questions did
+  not use the counts route and still count as right. v15, which has no counts route, gets 0.975 on that family.
+
 ## What it means, and what is next
 
 v16 is a working "company brain" core:
 - one entry point answers eight kinds of question;
 - it is fast and checkable;
-- it never invents an answer from nothing, and it says "not found" when it should, eight times in ten on natural questions.
+- it answers only from stored values or quotes, and says "not found" when it should, eight times in ten on natural
+  questions;
+- when it is wrong, it is wrong with a real value from the wrong place (18 of 103 unanswerable questions).
 
 **It is not yet a product.** In order of value, the next steps are:
 1. **An answer writer on top.** v16 returns a field, a list or a quoted passage. A language model that writes the reply
@@ -225,6 +285,9 @@ v16 is a working "company brain" core:
    where v16 finds the right document more often than it picks the right passage.
 2. **A standard AI search baseline.** Compare against vector search plus a language model on the same 579 questions, so the
    numbers mean something outside this project.
-3. **Wording robustness.** Field synonyms ("customer success manager", "SE", "crm deal id"), count shapes ("# of",
-   "how many are there"), and slips with more than one candidate word, chosen by context.
+3. **Wording robustness:**
+   - quoting account and document names of two words;
+   - treating chat filler as filler in the coverage check and the counts table's word check;
+   - the count shapes "# of" and "can someone count";
+   - slips with more than one candidate word, chosen by context.
 4. **Real data.** A pilot on one real team's tools: the true test of everything above.
