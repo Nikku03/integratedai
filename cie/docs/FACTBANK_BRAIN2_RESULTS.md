@@ -210,6 +210,26 @@ invented titles. For example:
 
 Each answer is a stored value or a quote from the company's data, but the wrong one.
 
+## A check after the run (not a result): where plain BM25 puts the right document
+
+Plain BM25 over passages, with titles weighted 2.5, is the same search the plain-search arm and v16's free-text route use.
+For each question, the check asks whether BM25's top document is the question's gold document:
+
+| questions | BM25's top document is the gold one | v16's misses whose gold document BM25 ranks first |
+|---|---|---|
+| descriptive, test | 39 of 40 | 20 of 20 |
+| free text, test | 146 of 150 | 38 of 39 |
+| descriptive, development | 34 of 36 | 8 of 9 |
+| free text, development | 49 of 50 | 7 of 8 |
+
+- **Descriptive questions:** v16 misses half of them because it does not find the described document. BM25 finds it almost
+  every time. A route that lets BM25 pick the document and v16 read the field from it is the obvious next fix. It would
+  have to be built on training documents and tested on fresh ones: this check uses the spent test set.
+- **Free text:** BM25 already finds the right document. v16's misses come from choosing the wrong passage inside it, which
+  more BM25 cannot fix. That needs a reader that understands the question: a reranker or a language model.
+
+The script is `docs/benchmarks/brain2/bm25_probe.py`.
+
 ## Development against test
 
 Development is the pre-registration's row "v16 with the messy reading step (frozen)". That row is
