@@ -154,6 +154,27 @@ On 215 new questions over 5,000 unseen documents:
 - **Counts, history, answers combining several documents, and knowing when not to answer were not tested,** and probes of them
   mostly failed.
 
+**Round 2: v16, messy questions** ([`docs/FACTBANK_BRAIN2_RESULTS.md`](docs/FACTBANK_BRAIN2_RESULTS.md)). v16 adds:
+- a free-text route built on keyword-ranked passages;
+- counts and filters;
+- history;
+- email and chat lookups;
+- a check that says "not found" when no document covers the question;
+- a step that reads chat shorthand and typos.
+
+On 579 new questions over 5,000 unseen documents, typed the way people type, **all 12 pre-registered rules were met:**
+- **One brain for every kind:** a mean of 0.826 over eight kinds of question, against 0.462 for v15 (tidy wording: 0.904
+  against 0.524).
+- **Clearly better than every earlier version** on:
+  - counts: 0.775 against 0.175;
+  - history: 0.850 against 0.300;
+  - email and chat: 1.000 against 0.332;
+  - natural questions with no answer: 0.825 against 0.243.
+- **Only a tie** on single-document facts (0.736 against 0.715) and free text (0.666 against plain search's 0.646).
+- **Its weakest spot:** questions that describe a document instead of naming it (0.500).
+- **Messy typing costs it** 0.08 of its mean, mostly in counts and history.
+- **It is five times faster than v15:** a median of 0.84 s a question.
+
 ## Brain-wired reasoning neurons (research)
 
 `cie.neuro` wires the reasoning engine's spiking neurons like a piece of Blue Brain's cortex model (directed cliques of
