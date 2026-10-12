@@ -1,0 +1,834 @@
+{
+ "documents": 5000,
+ "seed": 910,
+ "questions": 579,
+ "by_part": {
+  "heldout": 83,
+  "v15": 316,
+  "v16": 180
+ },
+ "by_family": {
+  "counts": 40,
+  "email_chat": 40,
+  "history": 40,
+  "multi": 56,
+  "not_found": 20,
+  "prose": 150,
+  "single": 130,
+  "unanswerable": 103
+ },
+ "by_group": {
+  "absent": 20,
+  "chat": 8,
+  "combine": 26,
+  "compare": 6,
+  "count": 37,
+  "deadlines": 15,
+  "descriptive": 40,
+  "email": 32,
+  "embedded": 20,
+  "fields": 30,
+  "filter": 3,
+  "heldout": 83,
+  "history": 40,
+  "link": 24,
+  "lists": 15,
+  "names": 10,
+  "not_found": 20,
+  "prose": 150
+ },
+ "by_kind": {
+  "action_due": 7,
+  "action_owner_issues": 5,
+  "author_issues": 4,
+  "compare_two": 6,
+  "confluence_author": 1,
+  "confluence_space": 1,
+  "confluence_updated": 1,
+  "count1_confluence": 3,
+  "count1_fireflies": 2,
+  "count1_github": 2,
+  "count1_gmail": 2,
+  "count1_google_drive": 2,
+  "count1_hubspot": 2,
+  "count1_jira": 3,
+  "count1_linear": 3,
+  "count2_confluence": 2,
+  "count2_fireflies": 2,
+  "count2_google_drive": 3,
+  "count2_hubspot": 2,
+  "count2_jira": 3,
+  "count2_linear": 3,
+  "count_gmail": 3,
+  "created_on": 6,
+  "customer_tickets": 3,
+  "descriptive": 40,
+  "drive_created": 2,
+  "drive_owner": 1,
+  "drive_status": 1,
+  "email_account": 5,
+  "email_attachments": 4,
+  "email_cc": 4,
+  "email_count": 5,
+  "email_date": 5,
+  "email_sender": 4,
+  "email_to": 5,
+  "embedded_confluence_space": 1,
+  "embedded_drive_created": 1,
+  "embedded_drive_owner": 1,
+  "embedded_drive_status": 1,
+  "embedded_hubspot_close": 1,
+  "embedded_hubspot_stage": 1,
+  "embedded_jira_customer": 1,
+  "embedded_jira_priority": 1,
+  "embedded_jira_reporter": 1,
+  "embedded_jira_sla": 1,
+  "embedded_jira_status": 1,
+  "embedded_jira_ticket_assignee": 1,
+  "embedded_linear_issue_assignee": 1,
+  "embedded_linear_issue_priority": 1,
+  "embedded_linear_issue_project": 1,
+  "embedded_meeting_date": 1,
+  "embedded_meeting_owner": 1,
+  "embedded_pr_author": 1,
+  "embedded_pr_merged": 1,
+  "embedded_pr_repo": 1,
+  "field_absent": 20,
+  "filter_list": 3,
+  "first_commenter": 6,
+  "github_author": 3,
+  "heldout": 83,
+  "hubspot_close": 1,
+  "hubspot_first_activity": 6,
+  "hubspot_owner": 1,
+  "hubspot_se": 1,
+  "hubspot_stage": 1,
+  "issue_pr_author": 4,
+  "jira_assignee": 2,
+  "jira_customer": 1,
+  "jira_priority": 1,
+  "jira_reporter": 1,
+  "jira_sla": 1,
+  "jira_status": 1,
+  "jira_ticket_assignee": 1,
+  "last_comment_date": 6,
+  "last_updated": 5,
+  "linear_assignee": 2,
+  "linear_due": 8,
+  "linear_due_window": 3,
+  "linear_issue_assignee": 1,
+  "linear_issue_creator": 2,
+  "linear_issue_priority": 1,
+  "linear_issue_project": 1,
+  "linear_issue_status": 1,
+  "linear_project_members": 3,
+  "linear_status": 2,
+  "meeting_attendees": 3,
+  "meeting_customer": 1,
+  "meeting_date": 1,
+  "meeting_owner": 1,
+  "moved_to_status": 5,
+  "nf_person": 5,
+  "nf_pr": 5,
+  "nf_ticket": 5,
+  "nf_title": 5,
+  "owner_accounts": 3,
+  "parent_issue": 3,
+  "person_count": 5,
+  "person_first": 5,
+  "pr_author": 2,
+  "pr_days_to_merge": 6,
+  "pr_issue": 4,
+  "pr_issue_creator": 3,
+  "pr_issue_project": 3,
+  "pr_issue_team": 3,
+  "pr_merged": 1,
+  "pr_repo": 1,
+  "pr_reviewers": 4,
+  "prose": 150,
+  "reporter_issues": 4,
+  "slack_channel": 4,
+  "slack_starter": 4,
+  "ticket_link": 4
+ },
+ "mix15": {
+  "asked": {
+   "deadlines": 15,
+   "lists": 15,
+   "fields": 30,
+   "names": 10,
+   "link": 15,
+   "combine": 15,
+   "compare": 6,
+   "not_found": 20,
+   "prose": 150,
+   "descriptive": 40
+  },
+  "given": {
+   "deadlines": 15,
+   "lists": 15,
+   "fields": 30,
+   "names": 10,
+   "link": 15,
+   "combine": 15,
+   "compare": 6,
+   "not_found": 20,
+   "prose": 150,
+   "descriptive": 40
+  }
+ },
+ "mix16": {
+  "asked": {
+   "counts": 40,
+   "history": 40,
+   "email_chat": 40,
+   "pr_issue_project": 3,
+   "pr_issue_creator": 3,
+   "pr_issue_team": 3,
+   "author_issues": 4,
+   "reporter_issues": 4,
+   "owner_accounts": 3,
+   "field_absent": 20,
+   "embedded": 20
+  },
+  "given": {
+   "counts": 40,
+   "history": 40,
+   "email_chat": 40,
+   "pr_issue_project": 3,
+   "pr_issue_creator": 3,
+   "pr_issue_team": 3,
+   "author_issues": 4,
+   "reporter_issues": 4,
+   "owner_accounts": 3,
+   "field_absent": 20,
+   "embedded": 20
+  }
+ },
+ "v15": {
+  "documents": 5000,
+  "seed": 910,
+  "mix": {
+   "deadlines": 15,
+   "lists": 15,
+   "fields": 30,
+   "names": 10,
+   "link": 15,
+   "combine": 15,
+   "compare": 6,
+   "not_found": 20,
+   "prose": 150,
+   "descriptive": 40
+  },
+  "questions": 316,
+  "by_family": {
+   "multi": 36,
+   "not_found": 20,
+   "prose": 150,
+   "single": 110
+  },
+  "by_group": {
+   "combine": 15,
+   "compare": 6,
+   "deadlines": 15,
+   "descriptive": 40,
+   "fields": 30,
+   "link": 15,
+   "lists": 15,
+   "names": 10,
+   "not_found": 20,
+   "prose": 150
+  },
+  "by_kind": {
+   "action_due": 7,
+   "action_owner_issues": 5,
+   "compare_two": 6,
+   "confluence_author": 1,
+   "confluence_space": 1,
+   "confluence_updated": 1,
+   "customer_tickets": 3,
+   "descriptive": 40,
+   "drive_created": 2,
+   "drive_owner": 1,
+   "drive_status": 1,
+   "github_author": 3,
+   "hubspot_close": 1,
+   "hubspot_owner": 1,
+   "hubspot_se": 1,
+   "hubspot_stage": 1,
+   "issue_pr_author": 4,
+   "jira_assignee": 2,
+   "jira_customer": 1,
+   "jira_priority": 1,
+   "jira_reporter": 1,
+   "jira_sla": 1,
+   "jira_status": 1,
+   "jira_ticket_assignee": 1,
+   "linear_assignee": 2,
+   "linear_due": 8,
+   "linear_due_window": 3,
+   "linear_issue_assignee": 1,
+   "linear_issue_creator": 2,
+   "linear_issue_priority": 1,
+   "linear_issue_project": 1,
+   "linear_issue_status": 1,
+   "linear_project_members": 3,
+   "linear_status": 2,
+   "meeting_attendees": 3,
+   "meeting_customer": 1,
+   "meeting_date": 1,
+   "meeting_owner": 1,
+   "nf_person": 5,
+   "nf_pr": 5,
+   "nf_ticket": 5,
+   "nf_title": 5,
+   "parent_issue": 3,
+   "person_count": 5,
+   "person_first": 5,
+   "pr_author": 2,
+   "pr_issue": 4,
+   "pr_merged": 1,
+   "pr_repo": 1,
+   "pr_reviewers": 4,
+   "prose": 150,
+   "ticket_link": 4
+  },
+  "mix_given": {
+   "deadlines": 15,
+   "lists": 15,
+   "fields": 30,
+   "names": 10,
+   "link": 15,
+   "combine": 15,
+   "compare": 6,
+   "not_found": 20,
+   "prose": 150,
+   "descriptive": 40
+  },
+  "available": {
+   "action_due": 204,
+   "action_owner_issues": 28,
+   "compare_two": 8,
+   "confluence_author": 48,
+   "confluence_space": 48,
+   "confluence_updated": 48,
+   "customer_tickets": 38,
+   "descriptive": 44,
+   "drive_created": 240,
+   "drive_owner": 240,
+   "drive_status": 240,
+   "github_author": 10,
+   "hubspot_close": 136,
+   "hubspot_owner": 147,
+   "hubspot_se": 143,
+   "hubspot_stage": 147,
+   "issue_pr_author": 12,
+   "jira_assignee": 8,
+   "jira_customer": 41,
+   "jira_priority": 53,
+   "jira_reporter": 53,
+   "jira_sla": 38,
+   "jira_status": 53,
+   "jira_ticket_assignee": 52,
+   "linear_assignee": 48,
+   "linear_due": 333,
+   "linear_due_window": 20,
+   "linear_issue_assignee": 342,
+   "linear_issue_creator": 342,
+   "linear_issue_priority": 342,
+   "linear_issue_project": 292,
+   "linear_issue_status": 342,
+   "linear_project_members": 15,
+   "linear_status": 24,
+   "meeting_attendees": 90,
+   "meeting_customer": 97,
+   "meeting_date": 100,
+   "meeting_owner": 101,
+   "nf_person": 60,
+   "nf_pr": 60,
+   "nf_ticket": 60,
+   "nf_title": 60,
+   "parent_issue": 7,
+   "person_count": 31,
+   "person_first": 37,
+   "pr_author": 78,
+   "pr_issue": 12,
+   "pr_merged": 76,
+   "pr_repo": 28,
+   "pr_reviewers": 78,
+   "prose": 168,
+   "ticket_link": 32
+  },
+  "set_aside": {
+   "generated": {
+    "action_owner_issues": {
+     "tickets": 5
+    },
+    "hubspot_close": {
+     "no value": 11
+    },
+    "hubspot_se": {
+     "no value": 4
+    },
+    "jira_customer": {
+     "no value": 12
+    },
+    "jira_sla": {
+     "no value": 15
+    },
+    "jira_ticket_assignee": {
+     "not a person": 1
+    },
+    "linear_issue_project": {
+     "named inside another": 48,
+     "no value": 2
+    },
+    "linear_project_members": {
+     "named inside another": 7
+    },
+    "meeting_attendees": {
+     "not a person": 11
+    },
+    "meeting_customer": {
+     "internal": 4
+    },
+    "meeting_date": {
+     "several values": 1
+    },
+    "person_count": {
+     "tickets": 6
+    },
+    "pr_merged": {
+     "no value": 2
+    },
+    "pr_repo": {
+     "named inside another": 50
+    },
+    "ticket_link": {
+     "linked": 1
+    }
+   },
+   "writers": {
+    "prose": {},
+    "descriptive": {}
+   }
+  },
+  "set_aside_written": {
+   "action_owner_issues": 5,
+   "person_count": 6,
+   "ticket_link": 1
+  },
+  "gold_documents": 346
+ },
+ "v16": {
+  "questions": 180,
+  "available": {
+   "count1_jira": 11,
+   "count1_linear": 44,
+   "count1_hubspot": 48,
+   "count1_google_drive": 34,
+   "count1_confluence": 18,
+   "count1_fireflies": 16,
+   "count1_github": 2,
+   "count1_gmail": 3,
+   "count2_jira": 56,
+   "count2_linear": 209,
+   "count2_hubspot": 123,
+   "count2_google_drive": 54,
+   "count2_confluence": 14,
+   "count2_fireflies": 6,
+   "count_gmail": 242,
+   "filter_list": 299,
+   "created_on": 589,
+   "last_updated": 465,
+   "pr_days_to_merge": 76,
+   "moved_to_status": 11,
+   "first_commenter": 67,
+   "last_comment_date": 69,
+   "hubspot_first_activity": 52,
+   "email_sender": 1000,
+   "email_date": 1040,
+   "email_to": 788,
+   "email_cc": 445,
+   "email_count": 1080,
+   "email_attachments": 1202,
+   "email_account": 754,
+   "slack_channel": 2578,
+   "slack_starter": 174,
+   "pr_issue_project": 9,
+   "pr_issue_creator": 12,
+   "pr_issue_team": 12,
+   "author_issues": 26,
+   "reporter_issues": 14,
+   "owner_accounts": 25,
+   "field_absent": 182,
+   "embedded_drive_owner": 239,
+   "embedded_drive_status": 221,
+   "embedded_drive_created": 236,
+   "embedded_confluence_author": 48,
+   "embedded_confluence_space": 48,
+   "embedded_confluence_updated": 48,
+   "embedded_hubspot_owner": 147,
+   "embedded_hubspot_stage": 147,
+   "embedded_hubspot_close": 136,
+   "embedded_hubspot_se": 143,
+   "embedded_jira_status": 53,
+   "embedded_jira_priority": 53,
+   "embedded_jira_sla": 38,
+   "embedded_jira_reporter": 53,
+   "embedded_jira_ticket_assignee": 52,
+   "embedded_jira_customer": 41,
+   "embedded_linear_issue_status": 342,
+   "embedded_linear_issue_priority": 342,
+   "embedded_linear_issue_assignee": 342,
+   "embedded_linear_issue_project": 292,
+   "embedded_linear_issue_creator": 342,
+   "embedded_pr_author": 78,
+   "embedded_pr_repo": 28,
+   "embedded_pr_merged": 76,
+   "embedded_meeting_owner": 101,
+   "embedded_meeting_customer": 34,
+   "embedded_meeting_date": 99
+  },
+  "set_aside": {
+   "author_issues": {
+    "no documents to join": 45,
+    "not a person": 1,
+    "too many": 6
+   },
+   "count1_confluence": {
+    "count outside 2-15": 33,
+    "same set as another filter": 3
+   },
+   "count1_fireflies": {
+    "count outside 2-15": 45,
+    "named inside another": 1
+   },
+   "count1_github": {
+    "count outside 2-15": 7,
+    "named inside another": 4
+   },
+   "count1_gmail": {
+    "count outside 2-15": 17,
+    "named inside another": 2
+   },
+   "count1_google_drive": {
+    "count outside 2-15": 131,
+    "named inside another": 15,
+    "value also in a list": 1
+   },
+   "count1_hubspot": {
+    "count outside 2-15": 144
+   },
+   "count1_jira": {
+    "count outside 2-15": 11
+   },
+   "count1_linear": {
+    "answer in the question": 1,
+    "count outside 2-15": 131,
+    "named inside another": 5
+   },
+   "count2_confluence": {
+    "count outside 2-15": 1,
+    "same set as another filter": 3
+   },
+   "count2_fireflies": {
+    "named inside another": 5
+   },
+   "count2_google_drive": {
+    "count outside 2-15": 14,
+    "named inside another": 31,
+    "same set as another filter": 3,
+    "value also in a list": 8
+   },
+   "count2_hubspot": {
+    "answer in the question": 1,
+    "count outside 2-15": 15,
+    "named inside another": 32,
+    "same set as another filter": 29
+   },
+   "count2_jira": {
+    "count outside 2-15": 16,
+    "named inside another": 4,
+    "same set as another filter": 2
+   },
+   "count2_linear": {
+    "answer in the question": 10,
+    "count outside 2-15": 95,
+    "named inside another": 47,
+    "same set as another filter": 16
+   },
+   "count_gmail": {
+    "another thread's subject names it": 1,
+    "count outside 2-15": 965,
+    "generic account name": 14,
+    "named inside another": 19
+   },
+   "created_on": {
+    "history dated before it": 31
+   },
+   "email_account": {
+    "a hiring thread": 12,
+    "a label, not an account": 4,
+    "a note in the value": 7,
+    "answer in the question": 310,
+    "named inside another": 83,
+    "no value": 22,
+    "several names in the value": 9,
+    "several values": 1,
+    "title unusable": 2
+   },
+   "email_attachments": {
+    "title unusable": 2
+   },
+   "email_cc": {
+    "an entry not a named person": 411,
+    "first message is not first_email_at": 25,
+    "first message is not the earliest": 29,
+    "message not dated": 51,
+    "no messages": 45,
+    "no value": 196,
+    "title unusable": 2
+   },
+   "email_count": {
+    "answer in the question": 1,
+    "count is not the messages written": 76,
+    "no messages": 45,
+    "title unusable": 2
+   },
+   "email_date": {
+    "first_email_at is not the earliest message": 51,
+    "message not dated": 49,
+    "no messages": 45,
+    "several values": 17,
+    "title unusable": 2
+   },
+   "email_sender": {
+    "answer in the question": 1,
+    "first message is not first_email_at": 25,
+    "first message is not the earliest": 29,
+    "message not dated": 51,
+    "no messages": 45,
+    "sender not a named person": 51,
+    "title unusable": 2
+   },
+   "email_to": {
+    "an entry not a named person": 260,
+    "answer in the question": 4,
+    "first message is not first_email_at": 25,
+    "first message is not the earliest": 29,
+    "message not dated": 51,
+    "no messages": 45,
+    "title unusable": 2
+   },
+   "embedded_drive_created": {
+    "answer in the question": 4
+   },
+   "embedded_drive_owner": {
+    "answer in the question": 1
+   },
+   "embedded_drive_status": {
+    "answer in the question": 19
+   },
+   "embedded_hubspot_close": {
+    "no value": 11
+   },
+   "embedded_hubspot_se": {
+    "no value": 4
+   },
+   "embedded_jira_customer": {
+    "no value": 12
+   },
+   "embedded_jira_sla": {
+    "no value": 15
+   },
+   "embedded_jira_ticket_assignee": {
+    "not a person": 1
+   },
+   "embedded_linear_issue_project": {
+    "named inside another": 48,
+    "no value": 2
+   },
+   "embedded_meeting_customer": {
+    "answer in the question": 63,
+    "internal": 4
+   },
+   "embedded_meeting_date": {
+    "answer in the question": 1,
+    "several values": 1
+   },
+   "embedded_pr_merged": {
+    "no value": 2
+   },
+   "embedded_pr_repo": {
+    "named inside another": 50
+   },
+   "field_absent": {
+    "a placeholder value": 18,
+    "another field mentions it": 13,
+    "the thread names an account": 2
+   },
+   "filter_list": {
+    "too many": 32
+   },
+   "first_commenter": {
+    "comment unparseable": 246,
+    "no value": 80,
+    "tie for the first comment": 2
+   },
+   "hubspot_first_activity": {
+    "entry not dated": 11,
+    "no value": 84
+   },
+   "last_comment_date": {
+    "comment unparseable": 246,
+    "no value": 80
+   },
+   "last_updated": {
+    "history dated after it": 77
+   },
+   "moved_to_status": {
+    "another noun moved to the status": 1,
+    "move entry not dated": 1,
+    "no move entry": 382
+   },
+   "owner_accounts": {
+    "no documents to join": 48,
+    "too many": 28
+   },
+   "pr_days_to_merge": {
+    "no value": 2
+   },
+   "pr_issue_project": {
+    "named inside another": 2,
+    "no value": 1
+   },
+   "reporter_issues": {
+    "no documents to join": 29,
+    "too many": 10
+   },
+   "slack_channel": {
+    "answer in the question": 68,
+    "first line unparsed": 11,
+    "first message too short": 18,
+    "no value": 1,
+    "quote not unique": 63,
+    "quote unusable": 48
+   },
+   "slack_starter": {
+    "first line unparsed": 11,
+    "first message too short": 18,
+    "quote not unique": 63,
+    "quote unusable": 48,
+    "starter not a full name": 2473
+   }
+  },
+  "reasked": {
+   "embedded_confluence_author": 3,
+   "embedded_confluence_space": 2,
+   "embedded_confluence_updated": 2,
+   "embedded_drive_created": 4,
+   "embedded_drive_owner": 3,
+   "embedded_drive_status": 3,
+   "embedded_hubspot_close": 3,
+   "embedded_hubspot_owner": 3,
+   "embedded_hubspot_se": 2,
+   "embedded_hubspot_stage": 2,
+   "embedded_jira_customer": 2,
+   "embedded_jira_priority": 2,
+   "embedded_jira_reporter": 2,
+   "embedded_jira_sla": 2,
+   "embedded_jira_status": 2,
+   "embedded_jira_ticket_assignee": 2,
+   "embedded_linear_issue_assignee": 8,
+   "embedded_linear_issue_creator": 3,
+   "embedded_linear_issue_priority": 2,
+   "embedded_linear_issue_project": 2,
+   "embedded_linear_issue_status": 8,
+   "embedded_meeting_customer": 3,
+   "embedded_meeting_date": 1,
+   "embedded_meeting_owner": 5,
+   "embedded_pr_author": 8,
+   "embedded_pr_merged": 3,
+   "embedded_pr_repo": 3
+  }
+ },
+ "heldout": {
+  "read": 83,
+  "kept": 83,
+  "set_aside": {}
+ },
+ "set_aside_written": {
+  "action_owner_issues": 5,
+  "count1_confluence": 3,
+  "count1_fireflies": 1,
+  "count1_github": 4,
+  "count1_gmail": 2,
+  "count1_google_drive": 16,
+  "count1_linear": 6,
+  "count2_confluence": 3,
+  "count2_fireflies": 5,
+  "count2_google_drive": 42,
+  "count2_hubspot": 62,
+  "count2_jira": 6,
+  "count2_linear": 73,
+  "count_gmail": 34,
+  "created_on": 31,
+  "email_account": 425,
+  "email_count": 1,
+  "email_sender": 1,
+  "email_to": 4,
+  "embedded_confluence_author": 3,
+  "embedded_confluence_space": 2,
+  "embedded_confluence_updated": 2,
+  "embedded_drive_created": 8,
+  "embedded_drive_owner": 4,
+  "embedded_drive_status": 22,
+  "embedded_hubspot_close": 3,
+  "embedded_hubspot_owner": 3,
+  "embedded_hubspot_se": 2,
+  "embedded_hubspot_stage": 2,
+  "embedded_jira_customer": 2,
+  "embedded_jira_priority": 2,
+  "embedded_jira_reporter": 2,
+  "embedded_jira_sla": 2,
+  "embedded_jira_status": 2,
+  "embedded_jira_ticket_assignee": 2,
+  "embedded_linear_issue_assignee": 8,
+  "embedded_linear_issue_creator": 3,
+  "embedded_linear_issue_priority": 2,
+  "embedded_linear_issue_project": 2,
+  "embedded_linear_issue_status": 8,
+  "embedded_meeting_customer": 66,
+  "embedded_meeting_date": 2,
+  "embedded_meeting_owner": 5,
+  "embedded_pr_author": 8,
+  "embedded_pr_merged": 3,
+  "embedded_pr_repo": 3,
+  "field_absent": 33,
+  "last_updated": 77,
+  "person_count": 6,
+  "pr_issue_project": 2,
+  "slack_channel": 68,
+  "ticket_link": 1
+ },
+ "gold_documents": 550,
+ "prose_file": "/tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/brain2/writers/test_out/test5k_prose_912.questions.jsonl",
+ "descriptive_file": "/tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/brain2/writers/test_out/test5k_descriptive_911.questions.jsonl",
+ "heldout_file": "/tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/brain2/heldout/test5k/test5k_heldout_questions.jsonl",
+ "multi_wordings": null,
+ "inputs_sha256": {
+  "prose": "3da2197ada1e910a6e1601e5b1fb1c0f22e144f190bde3128f1f75ac807130d9",
+  "descriptive": "c899a9fab9369915f7c02cb18be78955001ac12c98dfa1d287d286a9004985a4",
+  "heldout": "74e1bc07016f4d7a58fd90622ee99541fcb36b5193c0eed20323bbfe4a0751af",
+  "wordings": null
+ },
+ "readable": 5000,
+ "listed": 5000,
+ "small": {
+  "folder": "/tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/brain2/test5ksmall",
+  "documents": 550,
+  "not_reproduced": {}
+ },
+ "seconds": 49.5
+}

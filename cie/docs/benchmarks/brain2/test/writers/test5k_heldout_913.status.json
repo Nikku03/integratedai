@@ -1,0 +1,45 @@
+{
+ "batches": [
+  {
+   "batch": "test5k_heldout_913_b00",
+   "packets": 20,
+   "read": "jsonl",
+   "rows": 20,
+   "packets_answered": 20,
+   "complete": true
+  },
+  {
+   "batch": "test5k_heldout_913_b01",
+   "packets": 20,
+   "read": "jsonl",
+   "rows": 20,
+   "packets_answered": 20,
+   "complete": true
+  },
+  {
+   "batch": "test5k_heldout_913_b02",
+   "packets": 20,
+   "read": "jsonl",
+   "rows": 20,
+   "packets_answered": 20,
+   "complete": true
+  },
+  {
+   "batch": "test5k_heldout_913_b03",
+   "packets": 20,
+   "read": "jsonl",
+   "rows": 20,
+   "packets_answered": 20,
+   "complete": true
+  },
+  {
+   "batch": "test5k_heldout_913_b04",
+   "packets": 14,
+   "read": "jsonl",
+   "rows": 14,
+   "packets_answered": 14,
+   "complete": true
+  }
+ ],
+ "complete": true
+}

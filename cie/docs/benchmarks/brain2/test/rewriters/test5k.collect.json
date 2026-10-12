@@ -1,0 +1,25 @@
+{
+ "generated": 306,
+ "kept": 306,
+ "rejected": {},
+ "batches": {
+  "test5k_messy_b00": "jsonl",
+  "test5k_messy_b01": "jsonl",
+  "test5k_messy_b02": "jsonl",
+  "test5k_messy_b03": "jsonl",
+  "test5k_messy_b04": "jsonl",
+  "test5k_messy_b05": "jsonl",
+  "test5k_messy_b06": "jsonl",
+  "test5k_messy_b07": "jsonl"
+ },
+ "kept_by_batch": {
+  "test5k_messy_b00": 40,
+  "test5k_messy_b01": 40,
+  "test5k_messy_b02": 40,
+  "test5k_messy_b03": 40,
+  "test5k_messy_b04": 40,
+  "test5k_messy_b05": 40,
+  "test5k_messy_b06": 40,
+  "test5k_messy_b07": 26
+ }
+}

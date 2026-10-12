@@ -1,0 +1,29 @@
+{
+ "batches": [
+  {
+   "batch": "test5k_descriptive_911_b00",
+   "packets": 20,
+   "read": "jsonl",
+   "rows": 20,
+   "packets_answered": 20,
+   "complete": true
+  },
+  {
+   "batch": "test5k_descriptive_911_b01",
+   "packets": 20,
+   "read": "jsonl",
+   "rows": 20,
+   "packets_answered": 20,
+   "complete": true
+  },
+  {
+   "batch": "test5k_descriptive_911_b02",
+   "packets": 5,
+   "read": "jsonl",
+   "rows": 5,
+   "packets_answered": 5,
+   "complete": true
+  }
+ ],
+ "complete": true
+}

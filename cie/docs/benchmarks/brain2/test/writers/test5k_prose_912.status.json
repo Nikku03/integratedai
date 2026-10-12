@@ -1,0 +1,77 @@
+{
+ "batches": [
+  {
+   "batch": "test5k_prose_912_b00",
+   "packets": 20,
+   "read": "jsonl",
+   "rows": 20,
+   "packets_answered": 20,
+   "complete": true
+  },
+  {
+   "batch": "test5k_prose_912_b01",
+   "packets": 20,
+   "read": "jsonl",
+   "rows": 20,
+   "packets_answered": 20,
+   "complete": true
+  },
+  {
+   "batch": "test5k_prose_912_b02",
+   "packets": 20,
+   "read": "jsonl",
+   "rows": 20,
+   "packets_answered": 20,
+   "complete": true
+  },
+  {
+   "batch": "test5k_prose_912_b03",
+   "packets": 20,
+   "read": "jsonl",
+   "rows": 20,
+   "packets_answered": 20,
+   "complete": true
+  },
+  {
+   "batch": "test5k_prose_912_b04",
+   "packets": 20,
+   "read": "jsonl",
+   "rows": 20,
+   "packets_answered": 20,
+   "complete": true
+  },
+  {
+   "batch": "test5k_prose_912_b05",
+   "packets": 20,
+   "read": "jsonl",
+   "rows": 20,
+   "packets_answered": 20,
+   "complete": true
+  },
+  {
+   "batch": "test5k_prose_912_b06",
+   "packets": 20,
+   "read": "jsonl",
+   "rows": 20,
+   "packets_answered": 20,
+   "complete": true
+  },
+  {
+   "batch": "test5k_prose_912_b07",
+   "packets": 20,
+   "read": "jsonl",
+   "rows": 20,
+   "packets_answered": 20,
+   "complete": true
+  },
+  {
+   "batch": "test5k_prose_912_b08",
+   "packets": 20,
+   "read": "jsonl",
+   "rows": 20,
+   "packets_answered": 20,
+   "complete": true
+  }
+ ],
+ "complete": true
+}
