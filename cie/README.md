@@ -175,6 +175,17 @@ On 579 new questions over 5,000 unseen documents, typed the way people type, **a
 - **Messy typing costs it** 0.08 of its mean, mostly in counts and history.
 - **It is five times faster than v15:** a median of 0.84 s a question.
 
+**Round 3: v17, BM25 finds the described document** ([`docs/FACTBANK_BRAIN3_RESULTS.md`](docs/FACTBANK_BRAIN3_RESULTS.md)).
+For a question that describes a document instead of naming it, BM25 picks the document. The answer is then read from that
+document: the field named after "what/which", or v1's engine seeded with it. A coverage check leaves weak matches to v16.
+
+On 517 messy questions over 5,000 fresh documents:
+- **v17 got 9 answers right that v16 missed, and none wrong that v16 got right.**
+- **Single-document questions:** 0.854 against 0.809.
+- **Every other family is unchanged.**
+- **The claim was not met, by one question:** descriptive questions rose by 0.089 (0.789 to 0.878), against the 0.10 set
+  in advance. These test questions were easier for v16 than round 2's (0.789 against 0.500), so there was less to fix.
+
 ## Brain-wired reasoning neurons (research)
 
 `cie.neuro` wires the reasoning engine's spiking neurons like a piece of Blue Brain's cortex model (directed cliques of
