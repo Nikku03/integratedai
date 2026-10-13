@@ -219,6 +219,7 @@ ROUTE_UNCOVERED = "absent_doc"  # the route of that "not found" (a not_found rou
 DESCRIBED_BELOW = 0.68
 ROUTE_DESCRIBED = "described"
 # a question that asks for several documents' worth (a list, a count, keys) is not about one document
+WHOSE = re.compile(r"\bwhose\b")  # with ``records.WHO``: a question for a person, which v1's engine answers (described, step 4)
 DESCRIBED_SKIP = re.compile(r"\b(?:every|all|list|keys|ids|identifiers|numbers|how many|count|tickets|issues|prs|pull requests|pages|"
                             r"documents|docs|accounts|deals|meetings|threads|emails|repos|repositories)\b")
 # v16, unknown names (``Brain.unknown_names``): a word written as a name, capitalised inside a sentence or in CamelCase, three
@@ -1006,13 +1007,17 @@ class Brain:
         have finds a near one that holds less. Then, with that document as the start:
         1. history or messages (``Records.derived``), as the derived route answers them about a named document;
         2. an empty field (``Records.absent``): "not found", as the absent route;
-        3. otherwise v1's engine seeded with that document alone (``FactBank.run`` with ``seeds``) reads the answer, with the
-           lessons and v16's fixes, as it reads any document's fields; None when it finds nothing.
+        3. a question that asks "what" or "which" (not "when", "who" or "whose"): the field it names, read from that document.
+           The field is the one ``Records.relevance`` weighs most among the document's own fields, at least ``MIN_ASK`` (a cue
+           word, the field's whole name or one of its ``FIELD_CUES``) and ahead of the next; its values are the answer;
+        4. otherwise v1's engine seeded with that document alone (``FactBank.run`` with ``seeds``) reads the answer, with the
+           lessons and v16's fixes (a "when" reads only dates, a "who" only people); None when it finds nothing.
         It is tried only when the router says fact (``ask``). A question that asks for a list, a count or keys
         (``DESCRIBED_SKIP``) is left to the v16 routes. A history answer that is not a person's name does not answer "who"
-        (``Records.derived`` reads "who created" as the creation date). The result: {answer, kind (derived, absent or engine), doc, coverage, reason, evidence, journal, reads}."""
+        (``Records.derived`` reads "who created" as the creation date). The result: {answer, kind (derived, absent, field or
+        engine), doc, coverage, reason, evidence, journal, reads}."""
         from cie.factbank.prose import PassageIndex, coverage
-        from cie.factbank.records import WHO
+        from cie.factbank.records import MIN_ASK, WHEN, WHO
 
         ql = unquoted(question.lower())
         if DESCRIBED_SKIP.search(ql) or LIST_RE.search(question):
@@ -1040,6 +1045,20 @@ class Brain:
             evidence, journal, reads = self.absent_row(doc, why)
             return {"answer": "not found", "kind": "absent", "doc": doc, "coverage": cov, "reason": f"{lead}; {why}",
                     "evidence": evidence, "journal": [step, *journal], "reads": reads}
+        if not (WHEN.search(ql) or WHO.search(ql) or WHOSE.search(ql)):
+            known = {p for p in rec.doc_facts().get(doc, {}) if not p.startswith("text_")}
+            ranked = sorted(((w, p) for p, w in rec.relevance(question, known).items() if w > 0), reverse=True)
+            if ranked and ranked[0][0] >= MIN_ASK and (len(ranked) == 1 or ranked[1][0] < ranked[0][0]):
+                field = ranked[0][1]
+                values = [v for v in rec.values(doc, field) if v.strip()]
+                if values:
+                    answer = ", ".join(values)
+                    evidence = "\n".join([f"Answer: {answer}", f"[{rec.system_of(doc)}] {rec.label(doc)}: {self.bank.names.get(doc, doc)[:160]}",
+                                           *(f"- {field.replace('_', ' ')}: {v[:200]}" for v in values)])
+                    journal = [step, {"op": "field", "doc": doc, "field": field, "weight": round(ranked[0][0], 3), "values": values}]
+                    return {"answer": answer, "kind": "field", "doc": doc, "coverage": cov,
+                            "reason": f"{lead}; the question asks for its {field.replace('_', ' ')}", "evidence": evidence,
+                            "journal": journal, "reads": self.record_reads([doc], values)}
         bank = self.bank
         bank.answer_first = True
         try:

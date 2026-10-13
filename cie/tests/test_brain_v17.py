@@ -85,3 +85,11 @@ def test_ask_brain_and_cli(paths, tmp_path):
     rep = BR.main(["ask", "--work", str(work), "--single", str(paths / "lessons.json"), "--plans", str(paths / "plans.json"), "--v17",
                    "--described-below", "0.99", "--name", "strict"])
     assert rep["written"] == "strict.jsonl" and BR.ROUTE_DESCRIBED not in rep["routes"]
+
+
+def test_what_reads_the_field_the_question_names(paths):
+    r = _brain(paths, v17=True).ask("Which space holds the runbook on the local-only telemetry mode?")
+    assert (r["route"], r["answer"]) == (BR.ROUTE_DESCRIBED, "eng-private")
+    assert r["journal"][2] == {"op": "field", "doc": "doc:c1", "field": "space", "weight": r["journal"][2]["weight"], "values": ["eng-private"]}
+    assert r["reason"].endswith("the question asks for its space") and r["evidence"].startswith("Answer: eng-private")
+    assert r["reads"]["values"] == ["eng-private"]
