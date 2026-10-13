@@ -10,11 +10,17 @@ S=/tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scr
 PY=.venv/bin/python
 BENCH=$S/EnterpriseRAG-Bench
 # the test by default; a dry run sets ZONE=dev, T to a fresh folder, EXCL to the development sets, and P, H, B, OW
-ZONE=${ZONE:-test}; T=${T:-$S/brain3/test5k}; EXCL=${EXCL:-"$S/brain/test5k $S/brain2/test5k"}; N=$(basename $T)
+ZONE=${ZONE:-test}; T=${T:-$S/brain3/test5k}; X2=$S/brain3/r2heldout; EXCL=${EXCL:-"$S/brain/test5k $S/brain2/test5k $X2"}; N=$(basename $T)
 P=${P:-$S/brain3/packets}; H=${H:-$S/brain3/heldout/$N}; B=${B:-$S/brain3/writers/test_batches}; OW=${OW:-$S/brain3/writers/test_out}
+mkdir -p "$(dirname "$T")"
 # errors go to a file, never here: a traceback could hold the test's text
 ERR=${T}.step1.err; exec 2>>$ERR; trap 'echo "step 1 failed: the error is in $ERR"' ERR
 test ! -e $T || { echo "$T exists: start from a fresh folder"; exit 1; }
+# round 2's held-out documents guided v17's design (its held-out questions are development data): they are left out of this
+# draw and of the held-out pool, as a haystack folder of their ids
+mkdir -p $X2
+$PY -c "import json,sys; ids=sorted({json.loads(l)['dsid'] for l in open(sys.argv[1]) if l.strip()}); json.dump({'dsids': ids}, open(sys.argv[2], 'w')); print(len(ids), 'round-2 held-out documents left out')" \
+  $S/brain2/heldout/test5k/test5k_heldout_913.keys.jsonl $X2/haystack.json
 mkdir -p $P $B $OW
 # the test set: 5,000 documents of the test zone (seed 1009) that neither round 1's test set (brain/test5k) nor round 2's
 # (brain2/test5k) used, with pull request -> Linear issue pairs planted from the zone's remaining documents

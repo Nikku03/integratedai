@@ -103,7 +103,9 @@ def changed(rows: list[dict[str, Any]], a: str = NEW, b: str = OLD) -> list[dict
 
 def to_markdown3(rep: dict[str, Any]) -> str:
     """Round 3's section of report.md: the rules (when applied), v17 minus v16, the seed check and the described route's use."""
-    out = ["", "### Round 3: v17 against v16", ""]
+    out = ["", "### Round 3: v17 against v16", "",
+           "Round 3's rules are the ones below. The round-2 sections above (their rules, \"own\" labels and best-other pairing) are",
+           "not used in round 3: there v17 and v17_seed1 count as other arms.", ""]
     if rep.get("rules3"):
         out += ["| rule | met |", "|---|---|", *(f"| {k} | {v} |" for k, v in rep["rules3"].items()), ""]
     out += ["v17 minus v16 (paired over the questions; 95% bootstrap interval; questions better and worse):", "",

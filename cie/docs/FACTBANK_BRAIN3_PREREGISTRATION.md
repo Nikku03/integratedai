@@ -1,7 +1,5 @@
 # The company brain, round 3 (v17): fixed before the test
 
-**DRAFT: not frozen.** The freeze is the commit that removes this line.
-
 I wrote this on 2026-10-13:
 - **after** building v17 on training documents and checking it on development documents and on round 2's spent test set
   (below);
@@ -45,7 +43,8 @@ v16 gives the same answers as before.
 3. **The answer, from that document,** the first of these that applies:
    - its history or messages, as the derived route answers them about a named document; a date never answers "who";
    - "not found" when the asked field is empty there, as the absent route says it;
-   - for a "what" or "which" question (not "when", "who" or "whose"): the field named in the five words from the first
+   - for a "what" or "which" question that does not ask for a date or a person (`records.WHEN`: "when", "date", "what
+     day"…; `records.WHO`: "who", "whom", "which person"…; or "whose"): the field named in the five words from the first
      "what" or "which" on, when one of the document's fields stands out there (`Records.relevance` at least 1.0 and ahead of
      the next). The rest of the question describes the document, and its words name fields too ("the customer's bug
      about…");
@@ -76,7 +75,10 @@ The route answers with the same row as every other route. Its journal records th
 - **5,000 documents of the test zone** (seed 1009), drawn by `brain2_draw draw` as in round 2. None of them is in round 1's
   test set (`brain/test5k`) or round 2's (`brain2/test5k`).
 - Pull request → Linear issue pairs are planted as in round 2.
-- **The held-out documents** (seed 1013) are test-zone documents in none of the three test sets.
+- **Round 2's held-out documents** (the 94 behind its held-out packets) are left out of the draw and of the held-out pool.
+  Their questions guided v17's design.
+- **The held-out documents** (seed 1013) are test-zone documents in none of the three test sets, nor among round 2's
+  held-out documents.
 - **The small control:** the same questions on a set holding only their gold documents.
 
 ## The questions
@@ -104,7 +106,7 @@ changes):
 The packets:
 - 100 descriptive (seed 1011), up to 90 kept;
 - 60 free text (seed 1012), up to 50 kept;
-- about 90 held-out (75 documents, seed 1013).
+- about 90–100 held-out (`--n 75`, seed 1013).
 
 **Two sets on the same 5,000 documents, as in round 2:**
 - **the messy set,** which decides the rules: the writers' questions and the generated questions in the rewriters' words;
@@ -207,8 +209,45 @@ optimistic.
 
 ## The review before freezing
 
-⟨TBD⟩
+One reviewer read this document, the v17 code, the round-3 scoring, the run scripts and the reused writer and rewriter
+sessions. It was not allowed to open any data. It ran the unit tests, `bash -n` and `node --check`, and ran the whole
+pipeline once on the unit tests' tiny made-up bank.
+
+**Confirmed:**
+- the described route does what "What v17 is" says;
+- with v17 off, v16 is unchanged, and a described route that gives up leaves no state behind;
+- the 7 rules match the table, and the report holds everything they read;
+- seeds and file names agree across the steps, and nothing prints test text.
+
+**Found and fixed:**
+1. **Step 1 could stop** before drawing when the round-3 folder did not exist. **Fixed:** it creates the folder first.
+2. **Round 2's held-out documents could be drawn again.** Their questions guided v17's coverage measure, which would mildly
+   favour v17 on the unanswerable questions. **Fixed:** they are left out of the draw and of the held-out pool (The
+   documents).
+3. **The field step's "when/who" was described too narrowly.** It also skips "date", "what day", "whom", "which person" and
+   the like (`records.WHEN`, `WHO`). **Fixed** in the text.
+4. **The held-out count was misstated:** `--n 75` is a target, not a number of documents. **Fixed** in the text.
+5. **A described "not found"** (an empty field) carries route "described", which route accuracy counts as a fact route.
+   Scores and false "not found" read the answer, so no rule is affected. **Reported** in the results.
+6. **The report's round-2 sections** say no rules were applied, and count v17 as another arm. **A note** in the round-3
+   section says those parts are not used.
+
+**The second rehearsal** ran step 5 (`run_brain3_3.sh`, both sets) on round 2's rehearsal folders, 335 development
+questions. Every arm answered, both sets were scored, the rules were applied, the hash-seed check found no difference, and
+the error file stayed empty. The size rule gave no result there because that small folder holds other questions; the
+test's small folder holds the same ones.
 
 ## Frozen
 
-⟨TBD⟩
+| what | value |
+|---|---|
+| code | the commit that removes the draft line from this document |
+| v17's threshold | `DESCRIBED_BELOW` 0.68, the five-word head (`DESCRIBED_HEAD`) |
+| v16's and v17's lessons | `docs/benchmarks/brain2/lessons/`: `single_lessons.json` (`ee8b9d053405a47f…`), `plan_lessons.json` (`4c2c8c6201be08ec…`), `router.json` (`20e9c05046406f14…`) |
+| v2's lessons | `fb50/lessons.json` (`afa4e7d9fee0a05c…`) |
+| ordinary English words | `src/cie/factbank/data/general_words.txt.gz` (`f36d409bb74a8a4b…`) |
+| zones | `zones.json.gz` (`b1afac237c309a82…`) |
+| seeds | test draw 1009, questions 1010, packets 1011 and 1012, held-out 1013; hash seed 0 (and 1 for the check) |
+| run | `docs/benchmarks/brain3/run_brain3_1.sh`, `brain2/writers_test2.js`, `run_brain3_2.sh`, `brain2/rewriters_test2.js`, `run_brain3_3.sh` (`SET=messy`, then `SET=tidy`) |
+
+The seeds 1009 to 1013 were never used before this test.
