@@ -70,7 +70,7 @@ def preregistered3() -> dict[str, Rule]:
             lambda r: _fam(r, "unanswerable", NEW) >= UNANSWERABLE_MIN - EPS,
         f"5 false 'not found': v17 says not found to at most {FALSE_NOT_FOUND_MAX} of the answerable questions":
             lambda r: r["scores"][NEW]["false_not_found"]["all"] <= FALSE_NOT_FOUND_MAX + EPS,
-        f"6 better overall: v17's mean over the eight families >= v16's + {MEAN_LEAD}":
+        f"6 not worse overall: v17's mean over the eight families >= v16's + {MEAN_LEAD}":
             lambda r: r["scores"][NEW]["mean_of_families"] >= r["scores"][OLD]["mean_of_families"] + MEAN_LEAD - EPS,
         f"7 it holds at size: for each of single, multi and free text, v17 at 5,000 documents >= the small set - {SIZE_MARGIN}":
             lambda r: all(r["small"]["differences"][NEW]["big_minus_small"][f] >= -SIZE_MARGIN - EPS for f in SIZE_FAMILIES),
