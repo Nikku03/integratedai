@@ -211,6 +211,13 @@ COVER_BELOW = 0.57
 COVER_MIN_WEIGHT = 10.0  # a question whose rare words weigh no more than this (about two rare words) has nothing to check
 COVER_ENDS = 50  # the plan's end entities read for the check, at most
 ROUTE_UNCOVERED = "absent_doc"  # the route of that "not found" (a not_found route, ``cie.eval.brain2_test.route_class``)
+# v17 (round 3, ``Brain(..., v17=True)``): the described route (``Brain.described``). A question that names no document is
+# answered from the document BM25 ranks first (the free-text route's passage index) when that document's stored text holds
+# DESCRIBED_BELOW or more of the question's words weighted by rarity (``prose.coverage`` with ``ProseRoute.weights``). The
+# threshold is train5k's: the highest that still keeps 95% of the 110 train descriptive questions whose gold document BM25
+# ranks first (0.687), rounded down
+DESCRIBED_BELOW = 0.68
+ROUTE_DESCRIBED = "described"
 # v16, unknown names (``Brain.unknown_names``): a word written as a name, capitalised inside a sentence or in CamelCase, three
 # characters or more, that no entity of the bank holds: the question is about something the company does not have. The idea came
 # from two dev held-out quotes that named a customer the bank never mentions; it was measured on train5k first, then dev5k
@@ -522,7 +529,7 @@ class Brain:
 
     def __init__(self, bank_path: str | Path, single_lessons_path: str | Path, plan_lessons_path: str | Path, router: Router | None = None,
                  *, budget: int = BUDGET, field_check: bool = True, v16: bool = False, min_held: float = MIN_HELD,
-                 cover_below: float | None = COVER_BELOW):
+                 cover_below: float | None = COVER_BELOW, v17: bool = False, described_below: float = DESCRIBED_BELOW):
         self.bank = BrainBank(bank_path, Lessons.load(single_lessons_path))
         self.bank.brain = True
         self.bank.answer_first = False  # the planner path prints its own answer; the engine path sets it while it runs
@@ -531,7 +538,10 @@ class Brain:
         self.lessons.brain = True
         self.planner = self.lessons.planner(self.bank)
         self.planner.brain = True
+        v16 = v16 or v17  # v17 is v16 with the described route
         self.v16 = self.bank.v16 = self.planner.v16 = v16
+        self.v17 = v17
+        self.described_below = described_below
         self.router = router
         self.budget = budget
         self.field_check = field_check
@@ -984,6 +994,55 @@ class Brain:
         journal = [{"op": "start", "doc": start, "label": lab}, {"op": "absent", "doc": start, "reason": why}]
         return "\n".join(lines), journal, self.record_reads([start], [])
 
+    def described(self, question: str) -> dict[str, Any] | None:
+        """v17: the answer about the one document a question describes without naming it, or None (the v16 routes answer).
+
+        The document is the one whose passage BM25 ranks first for the question (``PassageIndex.search``, the free-text route's
+        index: title weighted 2.5). It stands only when its stored text holds ``described_below`` or more of the question's words
+        weighted by rarity (``prose.coverage`` with ``ProseRoute.weights``); a question about a document the company does not
+        have finds a near one that holds less. Then, with that document as the start:
+        1. history or messages (``Records.derived``), as the derived route answers them about a named document;
+        2. an empty field (``Records.absent``): "not found", as the absent route;
+        3. otherwise v1's engine seeded with that document alone (``FactBank.run`` with ``seeds``) reads the answer, with the
+           lessons and v16's fixes, as it reads any document's fields; None when it finds nothing.
+        The result: {answer, kind (derived, absent or engine), doc, coverage, reason, evidence, journal, reads}."""
+        from cie.factbank.prose import PassageIndex, coverage
+
+        idx = PassageIndex.of(self.bank)
+        hits = idx.search(question)
+        if not hits:
+            return None
+        doc = idx.rows[hits[0][0] - 1].doc
+        rec = self.records()
+        cov = coverage(self.prose_route().weights(question), rec.text(doc))
+        step = {"op": "described", "doc": doc, "label": rec.label(doc), "coverage": round(cov, 4), "threshold": self.described_below}
+        if cov < self.described_below:
+            return None
+        lead = f"{rec.label(doc)} is the document BM25 ranks first; its text holds {cov:.3f} of the question's words by rarity"
+        d = rec.derived(question, doc)
+        if d is not None:
+            reason, evidence, journal, reads = self.derived_row(doc, d)
+            return {"answer": d["answer"], "kind": "derived", "doc": doc, "coverage": cov, "reason": f"{lead}; {reason}",
+                    "evidence": evidence, "journal": [step, *journal], "reads": reads}
+        why = rec.absent(question, doc)
+        if why:
+            evidence, journal, reads = self.absent_row(doc, why)
+            return {"answer": "not found", "kind": "absent", "doc": doc, "coverage": cov, "reason": f"{lead}; {why}",
+                    "evidence": evidence, "journal": [step, *journal], "reads": reads}
+        bank = self.bank
+        bank.answer_first = True
+        try:
+            written, journal, seeds = bank.run(question, seeds={doc: 1.0})
+            answer, reason, lines = bank.answer_facts(question, written, seeds)
+            if answer == "not found":
+                return None
+            head = bank.head(answer, lines)
+            evidence = (head + "\n\n" + bank.evidence(written, seeds, max(0, self.budget - len(head) - 2))).strip()[:self.budget]
+        finally:
+            bank.answer_first = False
+        return {"answer": answer, "kind": "engine", "doc": doc, "coverage": cov, "reason": f"{lead}; {reason}", "evidence": evidence,
+                "journal": [step, *rests_on(journal, answer)], "reads": None}
+
     def prose_row(self, question: str) -> tuple[str, str, str, list[dict[str, Any]]]:
         """v16, route prose: ``ProseRoute.answer``'s answer ("not found" when it abstains), its reason with ``quote_cov``, the
         passages handed to the quote as evidence, and a journal step with the document quoted from and the coverage."""
@@ -1042,6 +1101,10 @@ class Brain:
             if why:
                 evidence, journal, reads = self.absent_row(start, why)
                 return done("not found", "absent", why, evidence, journal, reads, scores)
+        if self.v17 and not start:
+            hit = self.described(question)
+            if hit is not None:
+                return done(hit["answer"], ROUTE_DESCRIBED, hit["reason"], hit["evidence"], hit["journal"], hit["reads"], scores)
         found = plan["answer"] != "not found"
         if found and plan["start_named"] and (not self.field_check or self.reads_asked_field(question, plan)):
             return done(plan["answer"], "plan", plan["best"].describe(self.bank.names), self.plan_evidence(question, plan), plan["journal"],
@@ -1069,17 +1132,17 @@ def _jsonl(path: Path) -> list[dict[str, Any]]:
 
 def ask_brain(work: Path, single: Path, plans: Path, name: str | None = None, router: Router | str | Path | None = None,
               budget: int = BUDGET, field_check: bool = True, v16: bool = False, min_held: float = MIN_HELD,
-              cover_below: float | None = COVER_BELOW) -> dict[str, Any]:
+              cover_below: float | None = COVER_BELOW, v17: bool = False, described_below: float = DESCRIBED_BELOW) -> dict[str, Any]:
     """The brain's answers to ``work/questions.jsonl`` from ``work/factbank_v2.sqlite``, written to ``work/<name>.jsonl`` as
     rows {id, answer, route, reason, evidence, ms, reads, journal, family_scores}. ``router`` is a Router or its file. The name
     is "factbank_v15", or "factbank_v16" with ``v16``, when none is given. ``min_held``: v16's ``Records`` share (``MIN_HELD``);
     ``cover_below``: v16's fact-route abstention threshold (None: off)."""
     work = Path(work)
-    name = name or ("factbank_v16" if v16 else "factbank_v15")
+    name = name or ("factbank_v17" if v17 else "factbank_v16" if v16 else "factbank_v15")
     if isinstance(router, (str, Path)):
         router = Router.load(router)
     brain = Brain(work / "factbank_v2.sqlite", single, plans, router, budget=budget, field_check=field_check, v16=v16, min_held=min_held,
-                  cover_below=cover_below)
+                  cover_below=cover_below, v17=v17, described_below=described_below)
     rows = []
     for q in _jsonl(work / "questions.jsonl"):
         r = brain.ask(q["question"])
@@ -1108,9 +1171,12 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
     a.add_argument("--cover-below", type=float, default=COVER_BELOW,
                    help=f"v16: a fact answer chosen by the question's content whose documents hold less than this share of the "
                         f"question's rare words is 'not found' (default {COVER_BELOW}; 0 turns the check off)")
+    a.add_argument("--v17", action="store_true", help="v16 with round 3's described route (Brain, v17)")
+    a.add_argument("--described-below", type=float, default=DESCRIBED_BELOW,
+                   help=f"v17: the share of the question's words by rarity BM25's first document must hold (default {DESCRIBED_BELOW})")
     args = ap.parse_args(argv)
     rep = ask_brain(args.work, args.single, args.plans, args.name, args.router, args.budget, not args.no_field_check, args.v16,
-                    args.min_held, args.cover_below)
+                    args.min_held, args.cover_below, args.v17, args.described_below)
     print(json.dumps(rep, indent=1))
     return rep
 
