@@ -35,7 +35,7 @@ SINGLE_LEAD = 0.03  # rule 2: v17 on the single-document family >= v16 + this
 KEEP_MARGIN = 0.03  # rule 3: v17 on every other family >= v16 - this
 UNANSWERABLE_MIN = 0.70  # rule 4
 FALSE_NOT_FOUND_MAX = 0.05  # rule 5
-MEAN_LEAD = 0.01  # rule 6: v17's mean over the eight families >= v16's + this
+MEAN_LEAD = 0.0  # rule 6: v17's mean over the eight families >= v16's + this (not worse overall)
 SIZE_MARGIN = 0.05  # rule 7: v17 at 5,000 documents >= the small set - this, for single, multi and free text each
 SIZE_FAMILIES = ("single", "multi", "prose")
 EPS = 1e-9

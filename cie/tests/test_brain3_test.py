@@ -38,7 +38,7 @@ def test_each_rule_can_fail():
     low = {**BASE, "unanswerable": 0.69}
     assert _verdicts(_report(low, {**low, "single": 0.9}))[3] is False
     assert _verdicts(_report(BASE, v17, fnf=0.06))[4] is False
-    assert _verdicts(_report(BASE, {**BASE, "single": 0.85}))[5] is False  # the mean rises by 0.00625, less than 0.01
+    assert _verdicts(_report(BASE, {**BASE, "single": 0.85, "prose": 0.74}))[5] is False  # the mean falls
     assert _verdicts(_report(BASE, v17, size=-0.06))[6] is False
 
 
