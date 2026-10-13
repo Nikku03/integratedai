@@ -1,0 +1,23 @@
+{
+ "kept": 72,
+ "rejected": 26,
+ "reasons": {
+  "a haystack document holds an anchor word and half the answer facts": 14,
+  "yes/no question": 5,
+  "a haystack document holds the rarest anchor word and every answer fact": 5,
+  "answer fact shorter than 2 words": 2
+ },
+ "by_source": {
+  "confluence": 7,
+  "fireflies": 8,
+  "github": 7,
+  "gmail": 9,
+  "google_drive": 8,
+  "hubspot": 12,
+  "jira": 12,
+  "linear": 9
+ },
+ "check4_fallback_kept": 5,
+ "out": "/tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/brain3/heldout/test5k/test5k_heldout_questions.jsonl",
+ "rejected_file": "/tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/brain3/heldout/test5k/test5k_heldout_questions.rejected.jsonl"
+}

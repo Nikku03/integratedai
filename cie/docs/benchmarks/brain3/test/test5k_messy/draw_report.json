@@ -1,0 +1,98 @@
+{
+ "documents": 5000,
+ "targets": {
+  "confluence": 46,
+  "fireflies": 100,
+  "github": 77,
+  "gmail": 1206,
+  "google_drive": 239,
+  "hubspot": 146,
+  "jira": 52,
+  "linear": 342,
+  "slack": 2792
+ },
+ "drawn": {
+  "confluence": 46,
+  "fireflies": 100,
+  "github": 77,
+  "gmail": 1206,
+  "google_drive": 239,
+  "hubspot": 146,
+  "jira": 52,
+  "linear": 342,
+  "slack": 2792
+ },
+ "skipped": {
+  "pull request number already drawn": 1,
+  "ticket key already drawn": 5
+ },
+ "planted": [
+  {
+   "pr": "dsid_42f72e55d3914bafaeddfe099b6eea12",
+   "issue": "dsid_0f77f61d3b564cd5be01ba455fcf85b6"
+  },
+  {
+   "pr": "dsid_f56c0970969641be8a3f9784c8120a9a",
+   "issue": "dsid_f48fc26726c441598fbfc3f555fa2259"
+  },
+  {
+   "pr": "dsid_9a0da489b7b74b58b76b354fb3c08ff3",
+   "issue": "dsid_7abf0939a8d6485983e05c6ac69df56c"
+  },
+  {
+   "pr": "dsid_afdbe000649f4c66881c9c08d7b44187",
+   "issue": "dsid_af8cb184a4ed4eed8e547015f0933e00"
+  },
+  {
+   "pr": "dsid_b863259905b24314b7ec70f4bc5e8075",
+   "issue": "dsid_e426bfab2906476d8cc6f93df761599a"
+  },
+  {
+   "pr": "dsid_6bc555e7377e43b7a1b21301b64f14e0",
+   "issue": "dsid_8542a92f02ad493a859dc8c99190afba"
+  },
+  {
+   "pr": "dsid_0a92e752628d48dda666d2a4ca1cb987",
+   "issue": "dsid_3cda590bf7554a6798d471199d832f9a"
+  },
+  {
+   "pr": "dsid_5a81502b6e0447d780e7ff79a66b9a03",
+   "issue": "dsid_a262ca734c4b43f0a1b004e7ada9dbb5"
+  }
+ ],
+ "planted_candidates": 8,
+ "remaining": 46547,
+ "zone": "test",
+ "seed": 1009,
+ "zone_documents": 56641,
+ "excluded_in_zone": 10094,
+ "n": 5000,
+ "by_source": {
+  "confluence": 46,
+  "fireflies": 100,
+  "github": 77,
+  "gmail": 1206,
+  "google_drive": 239,
+  "hubspot": 146,
+  "jira": 52,
+  "linear": 342,
+  "slack": 2792
+ },
+ "excluded_haystacks": {
+  "/tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/brain/test5k/haystack.json": {
+   "in_zone": 5000
+  },
+  "/tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/brain2/test5k/haystack.json": {
+   "in_zone": 5000
+  },
+  "/tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/brain3/r2heldout/haystack.json": {
+   "in_zone": 94
+  }
+ },
+ "zones_file": "/tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/brain/zones.json.gz",
+ "zones_sha256": "b1afac237c309a82818ab6c99dba291207503f0b33b414a3af5edc0a266d39fa",
+ "index": "/tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/mt5k/index.json",
+ "index_sha256": "4c78806b2f310150b44a8e1826a72b1d4c512d4a8fc7a03aa7e1f006af057547",
+ "haystack": "/tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/brain3/test5k/haystack.json",
+ "haystack_sha256": "7236e7687a2a8031676d57e9e1a0189f7dd873d3d91970d8787d17d78524900b"
+}

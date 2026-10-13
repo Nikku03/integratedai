@@ -1,0 +1,4 @@
+{"packet_id": "desc-1011-017", "question": "whats the forecast close month on the hubspot record for the smb ecommerce trial that went quiet after the first api key and was eyeing APIFlow?", "reason": "yes/no question"}
+{"packet_id": "desc-1011-045", "question": "before my call, can someone remind me the forecast close month on the hubspot account for the industrial automation prospect running the 72h soak test on a dedicated pool?", "reason": "yes/no question"}
+{"packet_id": "desc-1011-049", "question": "do you know the status of the internal support ticket where okta deprecating the location attribute left ~12 engineers without feature-flag-admin and getting 403s on flag toggles?", "reason": "yes/no question"}
+{"packet_id": "desc-1011-093", "question": "do you remmber who authored the batcher scheduler PR that added a token reservoir admission gate and an age multiplier for queued slots to stop small requests getting starved?", "reason": "yes/no question"}

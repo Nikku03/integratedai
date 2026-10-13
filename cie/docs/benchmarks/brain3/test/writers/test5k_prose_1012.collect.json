@@ -1,0 +1,18 @@
+{
+ "kept": 60,
+ "rejected": 0,
+ "reasons": {},
+ "by_source": {
+  "confluence": 6,
+  "fireflies": 6,
+  "github": 7,
+  "gmail": 7,
+  "google_drive": 6,
+  "hubspot": 7,
+  "jira": 7,
+  "linear": 7,
+  "slack": 7
+ },
+ "out": "/tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/brain3/writers/test_out/test5k_prose_1012.questions.jsonl",
+ "rejected_file": "/tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/brain3/writers/test_out/test5k_prose_1012.questions.rejected.jsonl"
+}

@@ -1,0 +1,109 @@
+{
+ "work": "/tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/brain3/test5k",
+ "kind": "descriptive",
+ "n": 100,
+ "seed": 1011,
+ "documents": 5000,
+ "packets": 100,
+ "by_source": {
+  "confluence": 14,
+  "fireflies": 14,
+  "github": 15,
+  "google_drive": 14,
+  "hubspot": 14,
+  "jira": 14,
+  "linear": 15
+ },
+ "by_field": {
+  "confluence.author": 4,
+  "confluence.last_updated": 5,
+  "confluence.space": 5,
+  "fireflies.customer_company": 7,
+  "fireflies.redwood_owner": 7,
+  "github.author": 5,
+  "github.merged_at": 5,
+  "github.repo": 5,
+  "google_drive.created_at": 5,
+  "google_drive.owner": 5,
+  "google_drive.status": 4,
+  "hubspot.forecast_close_month": 3,
+  "hubspot.owner": 4,
+  "hubspot.se_assigned": 3,
+  "hubspot.stage": 4,
+  "jira.assignee": 2,
+  "jira.customer_company": 2,
+  "jira.priority": 2,
+  "jira.reporter": 3,
+  "jira.sla_due_at": 2,
+  "jira.status": 3,
+  "linear.assignee": 2,
+  "linear.creator": 3,
+  "linear.due_date": 2,
+  "linear.priority": 2,
+  "linear.project": 3,
+  "linear.status": 3
+ },
+ "candidates": {
+  "confluence": {
+   "author": 46,
+   "last_updated": 46,
+   "space": 41
+  },
+  "fireflies": {
+   "customer_company": 38,
+   "recorded_at": 0,
+   "redwood_owner": 100
+  },
+  "github": {
+   "author": 77,
+   "merged_at": 76,
+   "repo": 29
+  },
+  "google_drive": {
+   "created_at": 228,
+   "owner": 232,
+   "status": 222
+  },
+  "hubspot": {
+   "forecast_close_month": 133,
+   "owner": 146,
+   "se_assigned": 143,
+   "stage": 146
+  },
+  "jira": {
+   "assignee": 52,
+   "customer_company": 30,
+   "priority": 52,
+   "reporter": 52,
+   "sla_due_at": 32,
+   "status": 52
+  },
+  "linear": {
+   "assignee": 342,
+   "creator": 342,
+   "due_date": 323,
+   "priority": 342,
+   "project": 292,
+   "status": 342
+  }
+ },
+ "left_out": {
+  "internal": 4,
+  "named inside another": 99,
+  "no value": 65,
+  "not a person": 2,
+  "scorer cannot read the stored value": 98,
+  "several values": 4,
+  "value in the title": 106
+ },
+ "avoided": 0,
+ "used_by_questions": 0,
+ "answer_lines_dropped": 47,
+ "answer_in_text": 36,
+ "text_chars": {
+  "median": 5000,
+  "cut": 81
+ },
+ "out": "/tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/brain3/packets/test5k_descriptive_1011.packets.jsonl",
+ "keys": "/tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/brain3/packets/test5k_descriptive_1011.keys.jsonl"
+}

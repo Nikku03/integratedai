@@ -1,0 +1,69 @@
+{
+ "batches": [
+  {
+   "batch": "test5k_messy_b00",
+   "packets": 40,
+   "read": "jsonl",
+   "rows": 40,
+   "packets_answered": 40,
+   "complete": true
+  },
+  {
+   "batch": "test5k_messy_b01",
+   "packets": 40,
+   "read": "jsonl",
+   "rows": 40,
+   "packets_answered": 40,
+   "complete": true
+  },
+  {
+   "batch": "test5k_messy_b02",
+   "packets": 40,
+   "read": "jsonl",
+   "rows": 40,
+   "packets_answered": 40,
+   "complete": true
+  },
+  {
+   "batch": "test5k_messy_b03",
+   "packets": 40,
+   "read": "jsonl",
+   "rows": 40,
+   "packets_answered": 40,
+   "complete": true
+  },
+  {
+   "batch": "test5k_messy_b04",
+   "packets": 40,
+   "read": "jsonl",
+   "rows": 40,
+   "packets_answered": 40,
+   "complete": true
+  },
+  {
+   "batch": "test5k_messy_b05",
+   "packets": 40,
+   "read": "jsonl",
+   "rows": 40,
+   "packets_answered": 40,
+   "complete": true
+  },
+  {
+   "batch": "test5k_messy_b06",
+   "packets": 40,
+   "read": "jsonl",
+   "rows": 40,
+   "packets_answered": 40,
+   "complete": true
+  },
+  {
+   "batch": "test5k_messy_b07",
+   "packets": 26,
+   "read": "jsonl",
+   "rows": 26,
+   "packets_answered": 26,
+   "complete": true
+  }
+ ],
+ "complete": true
+}
