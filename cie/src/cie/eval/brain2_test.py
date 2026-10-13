@@ -64,8 +64,8 @@ from cie.eval.memory_test import _jsonl, _norm, _write_jsonl
 FAMILIES2 = ("single", "multi", "prose", "not_found", "counts", "history", "email_chat", "unanswerable")
 ANSWERABLE = tuple(f for f in FAMILIES2 if f not in ("not_found", "unanswerable"))
 NEW_FAMILIES = ("counts", "history", "email_chat")
-ARMS2 = (*H.ARMS, "v16")
-FILES2 = {**H.FILES, "v16": "factbank_v16"}
+ARMS2 = (*H.ARMS, "v16", "v17")  # v17: round 3 (docs/FACTBANK_BRAIN3_PREREGISTRATION.md), asked as v16 is
+FILES2 = {**H.FILES, "v16": "factbank_v16", "v17": "factbank_v17"}
 OWN = ("v16", "v16_seed1")  # the v16 brain's own answers, with every label asked as arm v16 (``own_labels``); the rest are other arms
 HELDOUT = "heldout"  # the kind and group of the held-out writers' questions
 # the right route for each family: single, multi, counts, history and email_chat a fact route, prose the prose route, not_found
@@ -345,18 +345,18 @@ def _ask_quotes(work: Path, name: str) -> dict[str, Any]:
     return rec
 
 
-def _ask_v16(work: Path, single: Path | None, plans: Path | None, router: str | None, name: str) -> dict[str, Any]:
-    """The v16 brain's answers (``cie.factbank.brain.ask_brain`` with ``v16=True``), recorded in W/arms.json as
-    ``brain_test.ask`` records an arm, after the same checks: both lessons given, a name no other arm's answers hold nor
-    another label names, and a v2 bank built from the folder's present documents."""
+def _ask_v16(work: Path, single: Path | None, plans: Path | None, router: str | None, name: str, arm: str = "v16") -> dict[str, Any]:
+    """The v16 brain's answers (``cie.factbank.brain.ask_brain`` with ``v16=True``), or with ``arm`` "v17" the v17 brain's
+    (``v17=True``), recorded in W/arms.json as ``brain_test.ask`` records an arm, after the same checks: both lessons given, a
+    name no other arm's answers hold nor another label names, and a v2 bank built from the folder's present documents."""
     if single is None:
-        raise ValueError("arm v16 needs the single-document lessons (--single)")
+        raise ValueError(f"arm {arm} needs the single-document lessons (--single)")
     if plans is None:
-        raise ValueError("arm v16 needs the plan lessons (--plans)")
+        raise ValueError(f"arm {arm} needs the plan lessons (--plans)")
     reg = H.registry(work)
-    if reg.get(name, {}).get("arm") not in (None, "v16"):
+    if reg.get(name, {}).get("arm") not in (None, arm):
         raise ValueError(f"{name}.jsonl holds arm {reg[name]['arm']}'s answers: choose another name")
-    label = "v16" if name == FILES2["v16"] else name
+    label = arm if name == FILES2[arm] else name
     if clash := sorted(n for n, r in reg.items() if r["label"] == label and n != name):
         raise ValueError(f"the label {label!r} already names the answers in {clash[0]}.jsonl")
     try:
@@ -364,7 +364,7 @@ def _ask_v16(work: Path, single: Path | None, plans: Path | None, router: str | 
     except ModuleNotFoundError as e:
         if e.name != "cie.factbank.brain":
             raise
-        raise SystemExit("arm v16 needs cie.factbank.brain (ask_brain), which is not there") from e
+        raise SystemExit(f"arm {arm} needs cie.factbank.brain (ask_brain), which is not there") from e
     hay = H.haystack_sha(work)
     built = H.banks(work).get(H.BANK["v15"])
     if built is None:
@@ -372,8 +372,8 @@ def _ask_v16(work: Path, single: Path | None, plans: Path | None, router: str | 
     if built.get("haystack_sha256") != hay:
         raise ValueError(f"{H.BANK['v15']}.sqlite was built from other documents than the folder's haystack holds: build it again")
     t = time.perf_counter()
-    rep = ask_brain(work, single, plans, name=name, router=router, v16=True)
-    rec = {"arm": "v16", "label": label, "file": f"{name}.jsonl", "single": str(single), "plans": str(plans), "router": router,
+    rep = ask_brain(work, single, plans, name=name, router=router, v16=True, v17=arm == "v17")
+    rec = {"arm": arm, "label": label, "file": f"{name}.jsonl", "single": str(single), "plans": str(plans), "router": router,
            "seconds": round(time.perf_counter() - t, 2), "answers": len(_jsonl(work / f"{name}.jsonl")),
            "questions_sha256": H._sha(work / "questions.jsonl"), "haystack_sha256": hay}
     H.record(work, name, rec)
@@ -399,11 +399,12 @@ def ask(work: Path, arm: str, single: Path | None = None, plans: Path | None = N
         raise ValueError(f"{name!r} is arm {name}'s label: choose another name")
     if arm != "v16" and name in OWN:
         raise ValueError(f"{name!r} labels the v16 brain's answers: choose another name")
-    reads = {"single": arm in ("v2", "v13", "v15", "v16"), "plans": arm in ("v13", "v15", "v16"), "router": arm in ("v15", "v16")}
+    reads = {"single": arm in ("v2", "v13", "v15", "v16", "v17"), "plans": arm in ("v13", "v15", "v16", "v17"),
+             "router": arm in ("v15", "v16", "v17")}
     extra = {"single_sha256": _file_sha(single) if reads["single"] else None, "plans_sha256": _file_sha(plans) if reads["plans"] else None,
              "router_sha256": _file_sha(router) if reads["router"] else None, "pythonhashseed": os.environ.get("PYTHONHASHSEED")}
-    if arm == "v16":
-        rec = _ask_v16(work, single, plans, router, name)
+    if arm in ("v16", "v17"):
+        rec = _ask_v16(work, single, plans, router, name, arm)
     elif arm == "quotes":
         rec = _ask_quotes(work, name)
     else:

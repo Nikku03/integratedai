@@ -218,6 +218,9 @@ ROUTE_UNCOVERED = "absent_doc"  # the route of that "not found" (a not_found rou
 # ranks first (0.687), rounded down
 DESCRIBED_BELOW = 0.68
 ROUTE_DESCRIBED = "described"
+# a question that asks for several documents' worth (a list, a count, keys) is not about one document
+DESCRIBED_SKIP = re.compile(r"\b(?:every|all|list|keys|ids|identifiers|numbers|how many|count|tickets|issues|prs|pull requests|pages|"
+                            r"documents|docs|accounts|deals|meetings|threads|emails|repos|repositories)\b")
 # v16, unknown names (``Brain.unknown_names``): a word written as a name, capitalised inside a sentence or in CamelCase, three
 # characters or more, that no entity of the bank holds: the question is about something the company does not have. The idea came
 # from two dev held-out quotes that named a customer the bank never mentions; it was measured on train5k first, then dev5k
@@ -994,7 +997,7 @@ class Brain:
         journal = [{"op": "start", "doc": start, "label": lab}, {"op": "absent", "doc": start, "reason": why}]
         return "\n".join(lines), journal, self.record_reads([start], [])
 
-    def described(self, question: str) -> dict[str, Any] | None:
+    def described(self, question: str, named_field: bool = False) -> dict[str, Any] | None:
         """v17: the answer about the one document a question describes without naming it, or None (the v16 routes answer).
 
         The document is the one whose passage BM25 ranks first for the question (``PassageIndex.search``, the free-text route's
@@ -1005,9 +1008,17 @@ class Brain:
         2. an empty field (``Records.absent``): "not found", as the absent route;
         3. otherwise v1's engine seeded with that document alone (``FactBank.run`` with ``seeds``) reads the answer, with the
            lessons and v16's fixes, as it reads any document's fields; None when it finds nothing.
+        A question that asks for a list, a count or keys (``DESCRIBED_SKIP``) is left to the v16 routes. A history answer that
+        is not a person's name does not answer "who" (``Records.derived`` reads "who created" as the creation date). With
+        ``named_field`` (the router said free text), only the engine's answer stands, and only when the question names the
+        field it read (``Records.relevance`` of that field at least ``MIN_ASK``: a cue word or the field's whole name).
         The result: {answer, kind (derived, absent or engine), doc, coverage, reason, evidence, journal, reads}."""
         from cie.factbank.prose import PassageIndex, coverage
+        from cie.factbank.records import MIN_ASK, WHO
 
+        ql = unquoted(question.lower())
+        if DESCRIBED_SKIP.search(ql) or LIST_RE.search(question):
+            return None
         idx = PassageIndex.of(self.bank)
         hits = idx.search(question)
         if not hits:
@@ -1019,12 +1030,14 @@ class Brain:
         if cov < self.described_below:
             return None
         lead = f"{rec.label(doc)} is the document BM25 ranks first; its text holds {cov:.3f} of the question's words by rarity"
-        d = rec.derived(question, doc)
+        d = None if named_field else rec.derived(question, doc)
+        if d is not None and WHO.search(ql) and d["kind"] not in DERIVED_PEOPLE:
+            d = None
         if d is not None:
             reason, evidence, journal, reads = self.derived_row(doc, d)
             return {"answer": d["answer"], "kind": "derived", "doc": doc, "coverage": cov, "reason": f"{lead}; {reason}",
                     "evidence": evidence, "journal": [step, *journal], "reads": reads}
-        why = rec.absent(question, doc)
+        why = None if named_field else rec.absent(question, doc)
         if why:
             evidence, journal, reads = self.absent_row(doc, why)
             return {"answer": "not found", "kind": "absent", "doc": doc, "coverage": cov, "reason": f"{lead}; {why}",
@@ -1036,6 +1049,10 @@ class Brain:
             answer, reason, lines = bank.answer_facts(question, written, seeds)
             if answer == "not found":
                 return None
+            if named_field:
+                read = {p for (e, p), w in written.items() if e in set(bank.answered) and any(v and str(v) in answer for v in w.values)}
+                if not any(rec.relevance(question, {p}).get(p, 0.0) >= MIN_ASK for p in read):
+                    return None
             head = bank.head(answer, lines)
             evidence = (head + "\n\n" + bank.evidence(written, seeds, max(0, self.budget - len(head) - 2))).strip()[:self.budget]
         finally:
@@ -1090,6 +1107,10 @@ class Brain:
                 return done(tab["answer"], "table", reason, evidence, journal, reads)
         plan = self.plan(question)
         scores = self.family_scores(question, plan)
+        if self.v17 and not start:
+            hit = self.described(question, named_field=scores["prose"] > scores["fact"])
+            if hit is not None:
+                return done(hit["answer"], ROUTE_DESCRIBED, hit["reason"], hit["evidence"], hit["journal"], hit["reads"], scores)
         if scores["prose"] > scores["fact"]:
             if self.v16:
                 answer, reason, evidence, journal = self.prose_row(question)
@@ -1101,10 +1122,6 @@ class Brain:
             if why:
                 evidence, journal, reads = self.absent_row(start, why)
                 return done("not found", "absent", why, evidence, journal, reads, scores)
-        if self.v17 and not start:
-            hit = self.described(question)
-            if hit is not None:
-                return done(hit["answer"], ROUTE_DESCRIBED, hit["reason"], hit["evidence"], hit["journal"], hit["reads"], scores)
         found = plan["answer"] != "not found"
         if found and plan["start_named"] and (not self.field_check or self.reads_asked_field(question, plan)):
             return done(plan["answer"], "plan", plan["best"].describe(self.bank.names), self.plan_evidence(question, plan), plan["journal"],
