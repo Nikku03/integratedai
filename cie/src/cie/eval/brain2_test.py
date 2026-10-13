@@ -372,7 +372,7 @@ def _ask_v16(work: Path, single: Path | None, plans: Path | None, router: str | 
     if built.get("haystack_sha256") != hay:
         raise ValueError(f"{H.BANK['v15']}.sqlite was built from other documents than the folder's haystack holds: build it again")
     t = time.perf_counter()
-    rep = ask_brain(work, single, plans, name=name, router=router, v16=True, v17=arm == "v17")
+    rep = ask_brain(work, single, plans, name=name, router=router, v16=True, **({"v17": True} if arm == "v17" else {}))
     rec = {"arm": arm, "label": label, "file": f"{name}.jsonl", "single": str(single), "plans": str(plans), "router": router,
            "seconds": round(time.perf_counter() - t, 2), "answers": len(_jsonl(work / f"{name}.jsonl")),
            "questions_sha256": H._sha(work / "questions.jsonl"), "haystack_sha256": hay}

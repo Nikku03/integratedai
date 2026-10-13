@@ -415,7 +415,9 @@ def test_a_name_cannot_take_another_arms_file_or_label_and_v16_checks_what_it_re
     with pytest.raises(ValueError, match="no record"):
         T.ask(work, "v16", single, plans)
     with pytest.raises(ValueError, match="unknown arm"):
-        T.ask(work, "v17")
+        T.ask(work, "v99")
+    with pytest.raises(ValueError, match="arm v17 needs the single"):
+        T.ask(work, "v17")  # round 3's arm, asked as v16 is
     H.build(work)
     T.ask(work, "quotes", name="mine")
     with pytest.raises(ValueError, match="holds arm quotes's answers"):
