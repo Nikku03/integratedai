@@ -220,6 +220,11 @@ DESCRIBED_BELOW = 0.68
 ROUTE_DESCRIBED = "described"
 # a question that asks for several documents' worth (a list, a count, keys) is not about one document
 WHOSE = re.compile(r"\bwhose\b")  # with ``records.WHO``: a question for a person, which v1's engine answers (described, step 4)
+# an order over several documents ("which one is due first", "the first issue Marco has due", "A vs B")
+DESCRIBED_ORDER = re.compile(r"\b(?:due|finished|done|completed|closed|resolved|merged)\s+(?:first|next|soonest|earliest)\b|"
+                             r"\b(?:first|next|earliest|soonest)\b[^?]{0,60}\bdue\b|\bwhich one\b|\bvs\.?(?=\s)")
+ASKED_HEAD = re.compile(r"\b(?:what|which)\b")  # the described route reads the field named in the words that follow (``DESCRIBED_HEAD``)
+DESCRIBED_HEAD = 5
 DESCRIBED_SKIP = re.compile(r"\b(?:every|all|list|keys|ids|identifiers|numbers|how many|count|tickets|issues|prs|pull requests|pages|"
                             r"documents|docs|accounts|deals|meetings|threads|emails|repos|repositories)\b")
 # v16, unknown names (``Brain.unknown_names``): a word written as a name, capitalised inside a sentence or in CamelCase, three
@@ -1007,27 +1012,32 @@ class Brain:
         have finds a near one that holds less. Then, with that document as the start:
         1. history or messages (``Records.derived``), as the derived route answers them about a named document;
         2. an empty field (``Records.absent``): "not found", as the absent route;
-        3. a question that asks "what" or "which" (not "when", "who" or "whose"): the field it names, read from that document.
-           The field is the one ``Records.relevance`` weighs most among the document's own fields, at least ``MIN_ASK`` (a cue
-           word, the field's whole name or one of its ``FIELD_CUES``) and ahead of the next; its values are the answer;
+        3. a question that asks "what" or "which" (not "when", "who" or "whose"): the field named in the ``DESCRIBED_HEAD``
+           words from its first "what" or "which" on, read from that document. The field is the one ``Records.relevance``
+           weighs most in those words among the document's own fields, at least ``MIN_ASK`` (a cue word, the field's whole name
+           or one of its ``FIELD_CUES``) and ahead of the next; its values are the answer. (The rest of the question describes
+           the document, and its words name fields too: "the customer's bug about…".)
         4. otherwise v1's engine seeded with that document alone (``FactBank.run`` with ``seeds``) reads the answer, with the
            lessons and v16's fixes (a "when" reads only dates, a "who" only people); None when it finds nothing.
-        It is tried only when the router says fact (``ask``). A question that asks for a list, a count or keys
-        (``DESCRIBED_SKIP``) is left to the v16 routes. A history answer that is not a person's name does not answer "who"
+        It is tried only when the router says fact (``ask``). A question that names any document (a key, a pull request
+        number, a quoted or recognised title: ``Records.named_docs``), asks for a list, a count or keys (``DESCRIBED_SKIP``) or
+        an order over several documents (``DESCRIBED_ORDER``) is left to the v16 routes. A history answer that is not a person's name does not answer "who"
         (``Records.derived`` reads "who created" as the creation date). The result: {answer, kind (derived, absent, field or
         engine), doc, coverage, reason, evidence, journal, reads}."""
         from cie.factbank.prose import PassageIndex, coverage
         from cie.factbank.records import MIN_ASK, WHEN, WHO
 
         ql = unquoted(question.lower())
-        if DESCRIBED_SKIP.search(ql) or LIST_RE.search(question):
+        if DESCRIBED_SKIP.search(ql) or DESCRIBED_ORDER.search(ql) or LIST_RE.search(question):
+            return None
+        rec = self.records()
+        if TICKET.search(question) or PR_NUMBER.search(question) or rec.named_docs(self.quote_titles(question) if self.read_messy else question):
             return None
         idx = PassageIndex.of(self.bank)
         hits = idx.search(question)
         if not hits:
             return None
         doc = idx.rows[hits[0][0] - 1].doc
-        rec = self.records()
         cov = coverage(self.prose_route().weights(question), rec.text(doc))
         step = {"op": "described", "doc": doc, "label": rec.label(doc), "coverage": round(cov, 4), "threshold": self.described_below}
         if cov < self.described_below:
@@ -1045,9 +1055,11 @@ class Brain:
             evidence, journal, reads = self.absent_row(doc, why)
             return {"answer": "not found", "kind": "absent", "doc": doc, "coverage": cov, "reason": f"{lead}; {why}",
                     "evidence": evidence, "journal": [step, *journal], "reads": reads}
-        if not (WHEN.search(ql) or WHO.search(ql) or WHOSE.search(ql)):
+        head = ASKED_HEAD.search(question.lower())
+        if head and not (WHEN.search(ql) or WHO.search(ql) or WHOSE.search(ql)):
             known = {p for p in rec.doc_facts().get(doc, {}) if not p.startswith("text_")}
-            ranked = sorted(((w, p) for p, w in rec.relevance(question, known).items() if w > 0), reverse=True)
+            asked = " ".join(question[head.start():].split()[:DESCRIBED_HEAD])
+            ranked = sorted(((w, p) for p, w in rec.relevance(asked, known).items() if w > 0), reverse=True)
             if ranked and ranked[0][0] >= MIN_ASK and (len(ranked) == 1 or ranked[1][0] < ranked[0][0]):
                 field = ranked[0][1]
                 values = [v for v in rec.values(doc, field) if v.strip()]
