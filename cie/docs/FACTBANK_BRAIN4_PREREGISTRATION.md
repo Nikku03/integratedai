@@ -53,9 +53,10 @@ another); a made-up title of new words is still caught only by the older checks 
 - the empty-field check (`Records.absent`, route absent) also runs when the router says free text, when the question names
   one document ("what's the crm deal id for the meeting X?");
 - "can someone remind me…", "does anyone know…" are not links to another document (`records.ASK_SOMEONE`);
-- a plan that starts from a person the question names is checked on the documents it reaches, as other plans are
-  (`Brain.cover_step`, `COVER_BELOW` 0.57 unchanged), without the person's name; "Aisha Patel's tool hub API sketch" is "not
-  found" when none of the documents her plan reaches is about it;
+- a plan that starts from a person the question names and reads one value is checked on the documents it reaches, as other
+  plans are (`Brain.cover_step`, `COVER_BELOW` 0.57 unchanged), without the person's name, the words of chat and "on someone's
+  plate"; "when did the xactly ai demo with samir patel get scheduled?" is "not found" when none of the documents the plan
+  reaches is about it. A count, a list or an order over the person's documents is not checked;
 - a free-text answer whose document does not write the question's own terms is "not found" (`Brain.unheld_terms`). The own
   terms: each word of a run of two or more capitalised words inside the sentence ("Argentum Health"), and each word or part
   of a hyphenated or slashed term, of letters only, that is not ordinary English (round 1's general lexicon, a word or its
@@ -82,6 +83,9 @@ quotes:
 - **Capitalised names checked as one phrase** ("NorthPoint MSA"): documents write the words apart.
 - **A lowercase person-name check** for not found: no development question needed it.
 - **Asides after the ask:** "how many tickets are P1, created after March?" would have counted all P1 tickets.
+- **Checking every plan from a named person,** counts and orders too: "which of Marcus Chen's tickets has the soonest
+  deadline?" was refused, since "soonest" and "deadline" are in none of his tickets. On round 2's and 3's sets that cost 7
+  right answers for 1 right refusal.
 
 ## The documents
 

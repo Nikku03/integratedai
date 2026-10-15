@@ -275,6 +275,9 @@ TITLE_MIN = (3, 12)  # a title quoted by ``Brain.tidy`` has at least this many w
 # updated?", ``Brain.spliced``). Each part covers at least SPLICE_SHARE of its title's words and holds a word of three letters
 # or more that is not a word of asking (``COVER_STOP``), and the two together are written nowhere in the bank
 SPLICE_SHARE = 0.4
+# v18, a plan from a person the question names is checked without the person's name, the words of chat (``records.FILLER``) and
+# "on someone's plate" (``Brain.cover_step``)
+PLATE_WORDS = frozenset(("plate", "plates"))
 # v18, free text: the question's own names and terms that the quoted document must write (``Brain.unheld_terms``): a word that
 # is not ordinary English (``GENERAL_WORDS``, a word or its stem, nor one slip of a letter from one), or part of a hyphenated or
 # slashed term, of letters only; and each word of a run of two or more capitalised words inside the sentence ("Argentum
@@ -698,10 +701,11 @@ class Brain:
         if plan is not None:
             best = plan["best"]
             named = set(best.starts) & about
-            if named and not (self.v18 and all(e.startswith("person:") for e in named)):
+            if named and not (self.v18 and best.aggregate == "single" and all(e.startswith("person:") for e in named)):
                 return None
-            # v18: a plan from a person the question names ("Aisha Patel's tool hub API sketch") is checked on the documents it
-            # reaches, without the person's name
+            # v18: a plan from a person the question names that reads one value ("when did the xactly ai demo with samir patel
+            # get scheduled?") is checked on the documents it reaches, without the person's name and the words of chat; a count,
+            # a list or an order over the person's documents ("which of Marcus Chen's tickets is due first?") is not
             people = sorted(named)
             docs = list(dict.fromkeys([*(e for e in best.starts if e not in named), *self.planner.ends(best)[:COVER_ENDS]]))
         else:
@@ -710,8 +714,11 @@ class Brain:
         if set(docs) & {e for e in about if not e.startswith("person:")}:
             return None
         if people:
+            from cie.factbank.records import FILLER
+
             names = {w for e in people for w in re.findall(r"[a-z0-9]+", self.bank.names.get(e, e.removeprefix("person:")).lower())}
-            question = " ".join(w for w in re.findall(r"[\w'-]+", question) if w.lower().removesuffix("'s") not in names)
+            question = " ".join(w for w in re.findall(r"[\w'-]+", question)
+                                if (x := w.lower().removesuffix("'s")) not in names and x not in FILLER and x not in PLATE_WORDS)
             if not docs:
                 return None
         share, total, missing = self.cover(question, docs)
