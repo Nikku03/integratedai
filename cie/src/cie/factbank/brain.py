@@ -82,8 +82,30 @@ the facts or entries it rests on, or the passages quoted from), ``reads`` (by ro
 starts with the route, the router's family scores when it ran, and the time. One ``Records`` (``min_held``) and one
 ``ProseRoute`` (its own passage index) serve every question of a brain, each built on its first use.
 
+v17 (round 3, ``Brain(..., v17=True)``) adds the described route (``Brain.described``): a question that names no document is
+answered from the document BM25 ranks first, when that document holds enough of the question's words.
+
+v18 (round 4, ``Brain(..., v18=True)``, v17 with the fixes below; off by default, so that v17 gives the same answers) changes
+four kinds of question:
+1. **A title that does not exist, written without quotes.** A title made of the start of one real title and the end of another
+   ("the confluence page GPU Allocator Operator: Terraform templates…"), that the bank writes nowhere, is "not found"
+   (``Brain.spliced``, route not_found). A quoted title was already checked (``missing``).
+2. **Counts asked the way people type** (``Records.v18``): "# of…", "num of…" and "count the pages…" ask for a count; a lead-in
+   clause that holds nothing the count reads ("for the board deck, how many…") is an aside; "by" before a person names the
+   author, creator or owner when the person fills several fields.
+3. **No answer in the haystack:**
+   - the empty-field check (route absent) runs before the free-text route too, when the question names one document;
+   - "can someone remind me…" is not a link to another document (``records.ASK_SOMEONE``);
+   - a plan that starts from a person the question names is checked on the documents it reaches (``cover_step``), so "Aisha
+     Patel's tool hub API sketch" is "not found" when none of her documents is about it;
+   - a free-text answer whose document does not write the question's own names and terms (``Brain.unheld_terms``: words that
+     are not ordinary English, parts of hyphenated terms, the words of capitalised names) is "not found".
+4. **Free text:** the quote is chosen inside the one document by ``cie.factbank.prose.quote_v18`` (each part of the question
+   gets its own sentence; the words that describe the document weigh less; a value of the asked kind counts), at v16's length;
+   whether to answer at all stays v16's decision, on v16's quote.
+
     python -m cie.factbank.brain ask --work W --single LESSONS --plans PLAN_LESSONS [--router ROUTER] [--name NAME]
-        [--no-field-check] [--v16] [--min-held SHARE] [--cover-below SHARE]
+        [--no-field-check] [--v16] [--min-held SHARE] [--cover-below SHARE] [--v17] [--v18]
 """
 
 from __future__ import annotations
@@ -248,6 +270,18 @@ CHAT_WORDS = {"r": "are", "u": "you", "ur": "your", "pls": "please", "plz": "ple
               "taht": "that", "wiht": "with", "jsut": "just", "whos": "who is", "whats": "what is", "wheres": "where is"}
 CHAT_TOKEN = re.compile(r"(?<![\w/])(w/o|w/|b/c|[a-z]+)(?![\w/])")
 TITLE_MIN = (3, 12)  # a title quoted by ``Brain.tidy`` has at least this many words and characters
+# v18 (round 4, ``Brain(..., v18=True)``), not found: a title made of the start of one real title and the end of another, written
+# without quotes ("when was the confluence page GPU Allocator Operator: Terraform templates and telemetry-capture playbook last
+# updated?", ``Brain.spliced``). Each part covers at least SPLICE_SHARE of its title's words and holds a word of three letters
+# or more that is not a word of asking (``COVER_STOP``), and the two together are written nowhere in the bank
+SPLICE_SHARE = 0.4
+# v18, free text: the question's own names and terms that the quoted document must write (``Brain.unheld_terms``): a word that
+# is not ordinary English (``GENERAL_WORDS``, a word or its stem, nor one slip of a letter from one), or part of a hyphenated or
+# slashed term, of letters only; and each word of a run of two or more capitalised words inside the sentence ("Argentum
+# Health"). A free-text answer whose document does not write one of them is about something else: "not found". Words with
+# digits ("p95", "sev2", "6wk") are left out: documents write them in too many ways ("95th percentile", "SEV-2", "6-week")
+TERM_TOKEN = re.compile(r"[A-Za-z0-9][A-Za-z0-9_'\u2019.]*(?:[-/][A-Za-z0-9_'\u2019.]+)*")
+CHAT_WORDS_V18 = {"tmrw": "tomorrow", "tmr": "tomorrow", "tho": "though", "cuz": "because", "lmk": "let me know", "wrt": "about"}
 LETTERS = "abcdefghijklmnopqrstuvwxyz"
 
 
@@ -538,7 +572,8 @@ class Brain:
 
     def __init__(self, bank_path: str | Path, single_lessons_path: str | Path, plan_lessons_path: str | Path, router: Router | None = None,
                  *, budget: int = BUDGET, field_check: bool = True, v16: bool = False, min_held: float = MIN_HELD,
-                 cover_below: float | None = COVER_BELOW, v17: bool = False, described_below: float = DESCRIBED_BELOW):
+                 cover_below: float | None = COVER_BELOW, v17: bool = False, described_below: float = DESCRIBED_BELOW,
+                 v18: bool = False):
         self.bank = BrainBank(bank_path, Lessons.load(single_lessons_path))
         self.bank.brain = True
         self.bank.answer_first = False  # the planner path prints its own answer; the engine path sets it while it runs
@@ -547,9 +582,11 @@ class Brain:
         self.lessons.brain = True
         self.planner = self.lessons.planner(self.bank)
         self.planner.brain = True
+        v17 = v17 or v18  # v18 is v17 with round 4's fixes
         v16 = v16 or v17  # v17 is v16 with the described route
         self.v16 = self.bank.v16 = self.planner.v16 = v16
         self.v17 = v17
+        self.v18 = v18
         self.described_below = described_below
         self.router = router
         self.budget = budget
@@ -575,6 +612,7 @@ class Brain:
             from cie.factbank.records import Records
 
             self._records = Records(self.bank, min_held=self.min_held)
+            self._records.v18 = self.v18
         return self._records
 
     def prose_route(self) -> ProseRoute:
@@ -583,7 +621,13 @@ class Brain:
         if self._prose_route is None:
             from cie.factbank.prose import ProseRoute
 
-            self._prose_route = ProseRoute(self.bank, budget=self.budget)
+            if self.v18:
+                from cie.factbank.records import FILLER, SYSTEM_NAME_WORDS
+
+                stop = COVER_STOP | FILLER | SYSTEM_NAME_WORDS | frozenset(CHAT_WORDS)
+                self._prose_route = ProseRoute(self.bank, budget=self.budget, v18=True, stop=stop)
+            else:
+                self._prose_route = ProseRoute(self.bank, budget=self.budget)
         return self._prose_route
 
     # ------------------------------------------------------------------ v16: fact-route abstention
@@ -650,16 +694,26 @@ class Brain:
         ``COVER_ENDS``), or v1's answer's entities (``BrainBank.answered``) and the seeds the question names (``FactBank.named``).
         ``abstained``: the share (``cover``) is below ``cover_below``."""
         about = self.planner.about(question) | ({start} if start else set())
+        people: list[str] = []
         if plan is not None:
             best = plan["best"]
-            if set(best.starts) & about:
+            named = set(best.starts) & about
+            if named and not (self.v18 and all(e.startswith("person:") for e in named)):
                 return None
-            docs = list(dict.fromkeys([*best.starts, *self.planner.ends(best)[:COVER_ENDS]]))
+            # v18: a plan from a person the question names ("Aisha Patel's tool hub API sketch") is checked on the documents it
+            # reaches, without the person's name
+            people = sorted(named)
+            docs = list(dict.fromkeys([*(e for e in best.starts if e not in named), *self.planner.ends(best)[:COVER_ENDS]]))
         else:
             named = set(self.bank.named(question))
             docs = list(dict.fromkeys([*self.bank.answered, *(e for e, _ in result.seeds if e in named)]))
         if set(docs) & {e for e in about if not e.startswith("person:")}:
             return None
+        if people:
+            names = {w for e in people for w in re.findall(r"[a-z0-9]+", self.bank.names.get(e, e.removeprefix("person:")).lower())}
+            question = " ".join(w for w in re.findall(r"[\w'-]+", question) if w.lower().removesuffix("'s") not in names)
+            if not docs:
+                return None
         share, total, missing = self.cover(question, docs)
         return {"op": "cover", "docs": docs[:JOURNAL_STEPS], "cover": round(share, 4), "weight": round(total, 2), "missing": missing,
                 "threshold": self.cover_below, "abstained": share < self.cover_below}
@@ -768,6 +822,8 @@ class Brain:
         letters swapped, before one left out or added, before one wrong; when several fit, the one the bank holds)."""
         if w in CHAT_WORDS:
             return CHAT_WORDS[w]
+        if self.v18 and w in CHAT_WORDS_V18:
+            return CHAT_WORDS_V18[w]
         if len(w) < 4 or w in general_words() or not w.isalpha() or self.bank.doc_freq(w) > 0:
             return w
         swaps, drops, adds, wrong = edits1(w)
@@ -807,6 +863,61 @@ class Brain:
                             out.add(x)
             self._title_texts = sorted(out)
         return self._title_texts
+
+    def title_parts(self) -> tuple[dict[tuple[str, ...], dict[str, int]], dict[tuple[str, ...], dict[str, int]]]:
+        """v18: the starts and the ends of the bank's document titles (squashed words, the title's own words left out), each
+        with the documents whose title it starts or ends and their titles' lengths in words."""
+        if getattr(self, "_title_parts", None) is None:
+            starts: dict[tuple[str, ...], dict[str, int]] = defaultdict(dict)
+            ends: dict[tuple[str, ...], dict[str, int]] = defaultdict(dict)
+            for e, k in self.bank.kinds.items():
+                if k != "document":
+                    continue
+                ws = tuple(squash(self.bank.names.get(e, "")).split())
+                if len(ws) < 2:
+                    continue
+                for i in range(1, len(ws)):
+                    starts[ws[:i]][e] = len(ws)
+                    ends[ws[i:]][e] = len(ws)
+            self._title_parts = (dict(starts), dict(ends))
+        return self._title_parts
+
+    def spliced(self, question: str) -> str | None:
+        """v18: a title the question writes, quoted or not, that joins the start of one real title to the end of another and
+        that the bank writes nowhere: the start covers at least ``SPLICE_SHARE`` of the words of a title it starts, the end the
+        same of a title it ends, no one title has both (that is a title with words left out: "hot-swap switchbench notes" for
+        "Hot-swap variant switchbench notes"), each part holds a word of three letters or more that is not a word of asking,
+        and the bank writes the two together nowhere (``holds_words``). None when there is none."""
+        starts, ends = self.title_parts()
+        toks = squash(question).split()
+        content = [len(t) >= 3 and t not in COVER_STOP and t not in STOP for t in toks]
+        n = len(toks)
+        for i in range(n):
+            for j in range(i + 1, n):
+                a = tuple(toks[i:j])
+                heads = {d for d, m in starts.get(a, {}).items() if len(a) >= SPLICE_SHARE * m}
+                if not heads or not any(content[i:j]):
+                    continue
+                for e in range(n, j, -1):
+                    b = tuple(toks[j:e])
+                    tails = {d for d, m in ends.get(b, {}).items() if len(b) >= SPLICE_SHARE * m}
+                    if (tails and any(content[j:e]) and not (set(starts[a]) & set(ends[b]))
+                            and not self.holds_words(" ".join(toks[i:e]))):
+                        return " ".join(toks[i:e])
+        return None
+
+    def holds_words(self, phrase: str) -> bool:
+        """v18: ``holds_text`` for a squashed phrase whose text may write "&" or "+" for some of its "and"s and "plus"es and not
+        for others ("Sanity Blitz & KV Primer - Go/No-Go and Readout"): the index finds the entities holding every word, and
+        their name or text, squashed, must hold the phrase."""
+        if self.holds_text(phrase):
+            return True
+        words = [w for w in phrase.split() if w not in ("and", "plus")]
+        if not words:
+            return True
+        query = " ".join(f'"{w}"' for w in dict.fromkeys(words))
+        rows = self.bank.con.execute("SELECT name, text FROM entities_fts WHERE entities_fts MATCH ? LIMIT 200", (query,))
+        return any(f" {phrase} " in f" {squash(n)} " or f" {phrase} " in f" {squash(t)} " for n, t in rows)
 
     def missing(self, question: str) -> str | None:
         """What the question names that the bank does not hold, or None: a ticket key in a prefix the bank uses ("ticket
@@ -1085,13 +1196,78 @@ class Brain:
         return {"answer": answer, "kind": "engine", "doc": doc, "coverage": cov, "reason": f"{lead}; {reason}", "evidence": evidence,
                 "journal": [step, *rests_on(journal, answer)], "reads": None}
 
+    def ordinary(self, w: str) -> bool:
+        """v18: an ordinary English word (``GENERAL_WORDS`` holds it or its stem), chat shorthand, a contraction, or one slip of
+        a letter from an ordinary word of four letters or more."""
+        g = general_words()
+        if w in g or stem(w) in g or w in CHAT_WORDS or w in CHAT_WORDS_V18 or "'" in w or "\u2019" in w:
+            return True
+        if len(w) >= 5 and w.isalpha():
+            return any(len(c) >= 4 and (c in g or stem(c) in g) for c in set().union(*edits1(w)))
+        return False
+
+    def own_terms(self, question: str) -> list[str]:
+        """v18: the question's own names and terms (``TERM_TOKEN``), outside quoted text: each word of a run of two or more
+        capitalised words not opening the sentence, and each part of a hyphenated or slashed term (or a word) of letters only that
+        is not ordinary (``ordinary``). Words of asking, chat, system and item nouns, and words with digits, are left out."""
+        from cie.factbank.records import FILLER, ITEM_WORDS, SYSTEM_NAME_WORDS
+
+        def skip(w: str) -> bool:
+            return len(w) < 3 or w in STOP or w in COVER_STOP or w in FILLER or w in SYSTEM_NAME_WORDS or w in ITEM_WORDS
+
+        bare = QUOTED.sub(" ", question)
+        out: list[str] = []
+        run: list[str] = []
+        for m in [*TERM_TOKEN.finditer(bare), None]:
+            w = re.sub(r"['\u2019]s$", "", m.group(0).strip("'\u2019.")) if m else ""
+            before = bare[:m.start()].rstrip() if m else ""
+            if m and w[:1].isupper() and before and before[-1] not in ".?!:\"'(" and w.lower() not in STOP:
+                run.append(w)
+                continue
+            if len(run) >= 2:
+                out += [x.lower() for r in run for x in re.split(r"[-/_]", r) if x.isalpha() and not skip(x.lower())]
+            run = []
+            if not m:
+                break
+        for m in TERM_TOKEN.finditer(bare):
+            for part in re.split(r"/", re.sub(r"['\u2019]s$", "", m.group(0).strip("'\u2019.")).lower()):
+                if skip(part):
+                    continue
+                out += [x for x in re.split(r"[-_]", part) if len(x) >= 3 and x.isalpha() and not skip(x) and not self.ordinary(x)]
+        return list(dict.fromkeys(out))
+
+    def unheld_terms(self, question: str, doc: str) -> list[str]:
+        """v18: the question's own terms (``own_terms``) that the document's title and stored text do not write: as a squashed
+        phrase, joined ("kv cache" as "kvcache") or, for one word, by its stem or without a plural "s" ("SLOs")."""
+        row = self.bank.con.execute("SELECT name, text FROM entities_fts WHERE id = ?", (doc,)).fetchone()
+        text = f" {squash(' '.join(x or '' for x in row))} " if row else " "
+        stems = self.stems_of(doc)
+        out = []
+        for t in self.own_terms(question):
+            sq = squash(t)
+            one = len(sq.split()) == 1
+            if (not sq or f" {sq} " in text or f" {sq.replace(' ', '')} " in text
+                    or (one and (stem(sq) in stems or (sq.endswith("s") and (f" {sq[:-1]} " in text or stem(sq[:-1]) in stems))))):
+                continue
+            out.append(t)
+        return out
+
     def prose_row(self, question: str) -> tuple[str, str, str, list[dict[str, Any]]]:
         """v16, route prose: ``ProseRoute.answer``'s answer ("not found" when it abstains), its reason with ``quote_cov``, the
-        passages handed to the quote as evidence, and a journal step with the document quoted from and the coverage."""
+        passages handed to the quote as evidence, and a journal step with the document quoted from and the coverage. In v18 the
+        answer is also "not found" when the document quoted from does not write one of the question's own terms
+        (``unheld_terms``)."""
         route = self.prose_route()
         p = route.answer(question)
         journal = [{"op": "prose", "doc": p["doc"], "quote_cov": round(p["quote_cov"], 4), "threshold": route.threshold,
                     "abstained": p["abstained"]}]
+        if self.v18 and not p["abstained"] and p["doc"]:
+            miss = self.unheld_terms(question, p["doc"])
+            journal[0]["unheld"] = miss
+            if miss:
+                journal[0]["abstained"] = True
+                why = f"the document quoted from, {p['doc']}, does not write {', '.join(repr(m) for m in miss[:5])} from the question"
+                return "not found", why, f"Not found: {why}. The quote would have been: {p['answer']}\n\n{p['evidence']}", journal
         return p["answer"], f"{p['reason']} (quote_cov {p['quote_cov']:.3f})", p["evidence"], journal
 
     def ask(self, question: str) -> dict[str, Any]:
@@ -1115,6 +1291,9 @@ class Brain:
         if not miss and self.v16:
             unknown = self.unknown_names(question)
             miss = f'name "{unknown[0]}"' if unknown else None
+        if not miss and self.v18:
+            sp = self.spliced(question)
+            miss = f'title "{sp}" (it joins the start of one title to the end of another)' if sp else None
         if miss:
             return done("not found", "not_found", f"the bank holds no {miss}", f"Not found: the bank holds no {miss}.", [])
         start = None
@@ -1136,6 +1315,11 @@ class Brain:
             hit = self.described(question)
             if hit is not None:
                 return done(hit["answer"], ROUTE_DESCRIBED, hit["reason"], hit["evidence"], hit["journal"], hit["reads"], scores)
+        if self.v18 and start and scores["prose"] > scores["fact"]:
+            why = self.records().absent(titled, start)  # v18: the named document leaves the asked field empty, whatever the router says
+            if why:
+                evidence, journal, reads = self.absent_row(start, why)
+                return done("not found", "absent", why, evidence, journal, reads, scores)
         if scores["prose"] > scores["fact"]:
             if self.v16:
                 answer, reason, evidence, journal = self.prose_row(question)
@@ -1148,10 +1332,14 @@ class Brain:
                 evidence, journal, reads = self.absent_row(start, why)
                 return done("not found", "absent", why, evidence, journal, reads, scores)
         found = plan["answer"] != "not found"
+        check = self.v16 and self.cover_below is not None  # a plan from a named start (below) has nothing to check, but in v18 a person
         if found and plan["start_named"] and (not self.field_check or self.reads_asked_field(question, plan)):
-            return done(plan["answer"], "plan", plan["best"].describe(self.bank.names), self.plan_evidence(question, plan), plan["journal"],
-                        self.planner.reads(plan["best"]), scores)
-        check = self.v16 and self.cover_below is not None  # a plan from a named start (above) has nothing to check
+            step = self.cover_step(question, start, plan=plan) if check and self.v18 else None
+            if step is not None and step["abstained"]:
+                reason, evidence = self.uncovered_row(step, plan["answer"], plan["best"].describe(self.bank.names), "plan")
+                return done("not found", ROUTE_UNCOVERED, reason, evidence, [*plan["journal"], step], None, scores)
+            return done(plan["answer"], "plan", plan["best"].describe(self.bank.names), self.plan_evidence(question, plan),
+                        [*plan["journal"], *([step] if step else [])], self.planner.reads(plan["best"]), scores)
         r = self.engine(question)
         if r.answer == "not found" and found:
             why = plan["best"].describe(self.bank.names) + " (the engine found nothing)"
@@ -1174,17 +1362,18 @@ def _jsonl(path: Path) -> list[dict[str, Any]]:
 
 def ask_brain(work: Path, single: Path, plans: Path, name: str | None = None, router: Router | str | Path | None = None,
               budget: int = BUDGET, field_check: bool = True, v16: bool = False, min_held: float = MIN_HELD,
-              cover_below: float | None = COVER_BELOW, v17: bool = False, described_below: float = DESCRIBED_BELOW) -> dict[str, Any]:
+              cover_below: float | None = COVER_BELOW, v17: bool = False, described_below: float = DESCRIBED_BELOW,
+              v18: bool = False) -> dict[str, Any]:
     """The brain's answers to ``work/questions.jsonl`` from ``work/factbank_v2.sqlite``, written to ``work/<name>.jsonl`` as
     rows {id, answer, route, reason, evidence, ms, reads, journal, family_scores}. ``router`` is a Router or its file. The name
     is "factbank_v15", or "factbank_v16" with ``v16``, when none is given. ``min_held``: v16's ``Records`` share (``MIN_HELD``);
     ``cover_below``: v16's fact-route abstention threshold (None: off)."""
     work = Path(work)
-    name = name or ("factbank_v17" if v17 else "factbank_v16" if v16 else "factbank_v15")
+    name = name or ("factbank_v18" if v18 else "factbank_v17" if v17 else "factbank_v16" if v16 else "factbank_v15")
     if isinstance(router, (str, Path)):
         router = Router.load(router)
     brain = Brain(work / "factbank_v2.sqlite", single, plans, router, budget=budget, field_check=field_check, v16=v16, min_held=min_held,
-                  cover_below=cover_below, v17=v17, described_below=described_below)
+                  cover_below=cover_below, v17=v17, described_below=described_below, v18=v18)
     rows = []
     for q in _jsonl(work / "questions.jsonl"):
         r = brain.ask(q["question"])
@@ -1214,11 +1403,12 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
                    help=f"v16: a fact answer chosen by the question's content whose documents hold less than this share of the "
                         f"question's rare words is 'not found' (default {COVER_BELOW}; 0 turns the check off)")
     a.add_argument("--v17", action="store_true", help="v16 with round 3's described route (Brain, v17)")
+    a.add_argument("--v18", action="store_true", help="v17 with round 4's fixes (Brain, v18)")
     a.add_argument("--described-below", type=float, default=DESCRIBED_BELOW,
                    help=f"v17: the share of the question's words by rarity BM25's first document must hold (default {DESCRIBED_BELOW})")
     args = ap.parse_args(argv)
     rep = ask_brain(args.work, args.single, args.plans, args.name, args.router, args.budget, not args.no_field_check, args.v16,
-                    args.min_held, args.cover_below, args.v17, args.described_below)
+                    args.min_held, args.cover_below, args.v17, args.described_below, args.v18)
     print(json.dumps(rep, indent=1))
     return rep
 

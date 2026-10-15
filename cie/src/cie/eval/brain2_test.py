@@ -64,8 +64,9 @@ from cie.eval.memory_test import _jsonl, _norm, _write_jsonl
 FAMILIES2 = ("single", "multi", "prose", "not_found", "counts", "history", "email_chat", "unanswerable")
 ANSWERABLE = tuple(f for f in FAMILIES2 if f not in ("not_found", "unanswerable"))
 NEW_FAMILIES = ("counts", "history", "email_chat")
-ARMS2 = (*H.ARMS, "v16", "v17")  # v17: round 3 (docs/FACTBANK_BRAIN3_PREREGISTRATION.md), asked as v16 is
-FILES2 = {**H.FILES, "v16": "factbank_v16", "v17": "factbank_v17"}
+# v17: round 3 (docs/FACTBANK_BRAIN3_PREREGISTRATION.md), v18: round 4 (docs/FACTBANK_BRAIN4_PREREGISTRATION.md), asked as v16 is
+ARMS2 = (*H.ARMS, "v16", "v17", "v18")
+FILES2 = {**H.FILES, "v16": "factbank_v16", "v17": "factbank_v17", "v18": "factbank_v18"}
 OWN = ("v16", "v16_seed1")  # the v16 brain's own answers, with every label asked as arm v16 (``own_labels``); the rest are other arms
 HELDOUT = "heldout"  # the kind and group of the held-out writers' questions
 # the right route for each family: single, multi, counts, history and email_chat a fact route, prose the prose route, not_found
@@ -347,7 +348,7 @@ def _ask_quotes(work: Path, name: str) -> dict[str, Any]:
 
 def _ask_v16(work: Path, single: Path | None, plans: Path | None, router: str | None, name: str, arm: str = "v16") -> dict[str, Any]:
     """The v16 brain's answers (``cie.factbank.brain.ask_brain`` with ``v16=True``), or with ``arm`` "v17" the v17 brain's
-    (``v17=True``), recorded in W/arms.json as ``brain_test.ask`` records an arm, after the same checks: both lessons given, a
+    (``v17=True``) and with "v18" the v18 brain's (``v18=True``), recorded in W/arms.json as ``brain_test.ask`` records an arm, after the same checks: both lessons given, a
     name no other arm's answers hold nor another label names, and a v2 bank built from the folder's present documents."""
     if single is None:
         raise ValueError(f"arm {arm} needs the single-document lessons (--single)")
@@ -372,7 +373,8 @@ def _ask_v16(work: Path, single: Path | None, plans: Path | None, router: str | 
     if built.get("haystack_sha256") != hay:
         raise ValueError(f"{H.BANK['v15']}.sqlite was built from other documents than the folder's haystack holds: build it again")
     t = time.perf_counter()
-    rep = ask_brain(work, single, plans, name=name, router=router, v16=True, **({"v17": True} if arm == "v17" else {}))
+    rep = ask_brain(work, single, plans, name=name, router=router, v16=True, **({"v17": True} if arm == "v17" else {}),
+                    **({"v18": True} if arm == "v18" else {}))
     rec = {"arm": arm, "label": label, "file": f"{name}.jsonl", "single": str(single), "plans": str(plans), "router": router,
            "seconds": round(time.perf_counter() - t, 2), "answers": len(_jsonl(work / f"{name}.jsonl")),
            "questions_sha256": H._sha(work / "questions.jsonl"), "haystack_sha256": hay}
@@ -399,11 +401,11 @@ def ask(work: Path, arm: str, single: Path | None = None, plans: Path | None = N
         raise ValueError(f"{name!r} is arm {name}'s label: choose another name")
     if arm != "v16" and name in OWN:
         raise ValueError(f"{name!r} labels the v16 brain's answers: choose another name")
-    reads = {"single": arm in ("v2", "v13", "v15", "v16", "v17"), "plans": arm in ("v13", "v15", "v16", "v17"),
-             "router": arm in ("v15", "v16", "v17")}
+    reads = {"single": arm in ("v2", "v13", "v15", "v16", "v17", "v18"), "plans": arm in ("v13", "v15", "v16", "v17", "v18"),
+             "router": arm in ("v15", "v16", "v17", "v18")}
     extra = {"single_sha256": _file_sha(single) if reads["single"] else None, "plans_sha256": _file_sha(plans) if reads["plans"] else None,
              "router_sha256": _file_sha(router) if reads["router"] else None, "pythonhashseed": os.environ.get("PYTHONHASHSEED")}
-    if arm in ("v16", "v17"):
+    if arm in ("v16", "v17", "v18"):
         rec = _ask_v16(work, single, plans, router, name, arm)
     elif arm == "quotes":
         rec = _ask_quotes(work, name)

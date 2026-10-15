@@ -41,6 +41,7 @@ items were not in the bank. The index's own BM25 statistics still count them.
 from __future__ import annotations
 
 import math
+from collections import Counter
 import re
 import sqlite3
 import time
@@ -55,6 +56,47 @@ QUOTE_PASSAGES = 60  # passages handed to quote_answer (it reads the first 20)
 BUDGET = 24_000  # characters of evidence (``brain.BUDGET``)
 ABSTAIN_BELOW = 0.47  # "not found" when quote_cov is below this (the train5k fit, 0.4718, rounded; see the module docstring)
 NOT_FOUND = "not found"
+# v18 (round 4, ``ProseRoute(..., v18=True)``): the quote chosen inside the one document (``quote_v18``). A question asks one
+# thing or several ("what was the hotfix and how much jitter will the fix allow?"); each ask is a part, from a question word
+# near the start of a clause to the clause's end, and gets its own sentence first. The words outside every part describe the
+# document, which is already chosen, and weigh DESC_WEIGHT; the words of asking and chat weigh nothing. A sentence holding a value
+# of the kind a part asks for (a date, a number, a person, a ticket key, a flag or setting), one the question does not write,
+# gains KIND_BONUS. The quote keeps v16's length (QUOTE_CAP characters) and form.
+QUOTE_CAP = 1100
+DESC_WEIGHT = 0.3
+KIND_BONUS = 0.3
+QUOTE_PRIOR = 0.15  # v16's penalty for a lower-ranked passage (``quote_answer``'s prior)
+TITLE_DOWN = True  # the document's title words weigh DESC_WEIGHT too
+WH_WORDS = r"(?:what|what's|whats|which|who|who's|whos|whom|whose|when|when's|where|why|how)"
+WH = re.compile(rf"\b{WH_WORDS}\b", re.I)
+# a clause break before an ask: "and", "&", "plus", "also" or punctuation, then a question word within two words
+PART_BREAK = re.compile(rf"(?:,?\s+(?:and|&|plus|also)\s+|[,;]\s+|\s+[-\u2013\u2014]+\s+|\s*[\u2013\u2014]\s*)(?=(?:[\w']+\s+){{0,2}}?{WH_WORDS}\b)", re.I)
+# a question word opens a part when only words of asking and chat come before it in its clause ("hey quick q, what…", "can
+# someone remind me when…"), or a verb of knowing or telling does within three words before it ("before my call can someone remind
+# me what…"); otherwise it is relative ("the incident where pods failed")
+PART_LEAD = frozenset(("so", "and", "but", "also", "then", "re", "ok", "okay", "hey", "hi", "yo"))
+KINDS = (
+    ("date", re.compile(r"^(?:when|when's)\b|^(?:what|which)\s+(?:new\s+)?(?:date|dates|day|days|time|times|slot|slots|deadline|week|month)\b|"
+                        r"^(?:by when|how soon)\b", re.I)),
+    ("number", re.compile(r"^how\s+(?:much|many|long|far|big|large|fast|often|soon|high|low)\b|^(?:what|which)(?:'s|\s+is|\s+are|\s+was)?"
+                          r"\s+(?:the\s+)?(?:\w+\s+){0,2}?(?:percent|percentage|rate|rates|threshold|thresholds|limit|limits|size|number|count|"
+                          r"multiplier|range|latency|latencies|overhead|margin|margins|budget|price|pricing|cost|ratio|split|gain|gains|turnaround|"
+                          r"duration|timeout|ttl|p95|p99|target|targets|window|discount|credits?)\b", re.I)),
+    ("person", re.compile(r"^(?:who|who's|whos|whom|whose)\b|^(?:which|what)\s+(?:person|people|engineer|owner|teammate|ae|se|csm|contact)\b", re.I)),
+    ("key", re.compile(r"^(?:which|what)(?:'s|\s+is)?\s+(?:the\s+)?(?:\w+\s+){0,2}?(?:ticket|tickets|issue|issues|pr|prs|key|keys)\b", re.I)),
+    ("code", re.compile(r"^(?:which|what)(?:'s|\s+is|\s+are)?\s+(?:the\s+)?(?:\w+\s+){0,2}?(?:flag|flags|setting|settings|env|variable|variables|"
+                        r"vars|config|command|commands|endpoint|scope|scopes|parameter|parameters|header|headers)\b", re.I)),
+)
+MONTHS = r"(?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*"
+KIND_VALUE = {
+    "date": re.compile(rf"\b\d{{4}}-\d{{2}}-\d{{2}}\b|\b\d{{1,2}}/\d{{1,2}}\b|\b{MONTHS}\.?\s+\d{{1,2}}\b|\b\d{{1,2}}\s+{MONTHS}\b|"
+                       r"\b(?:mon|tue|tues|wed|thu|thur|thurs|fri|sat|sun)(?:day)?\b|\b\d{1,2}(?::\d{2})?\s*(?:am|pm)\b|\b\d{1,2}:\d{2}\b|"
+                       r"\b(?:tomorrow|tonight|eod|end of (?:day|week|month))\b", re.I),
+    "number": re.compile(r"\d"),
+    "person": re.compile(r"\b[A-Z][a-z]+\s+[A-Z][a-z'\u2019-]+\b|@[A-Za-z][\w.-]+|^[A-Z][a-z]+(?:\s+[A-Z][a-z]+)?\s*(?:\([^)]*\))?\s*:"),
+    "key": re.compile(r"\b[A-Z][A-Z0-9]{1,9}-\d{1,7}\b|(?:#|\bPR\s*#?)\d{2,7}\b"),
+    "code": re.compile(r"`[^`]+`|\b\w+[_=.:]\w+(?:[_=.:]\w+)*\b|--[a-z][\w-]+|\b[A-Z][A-Z0-9]*_[A-Z0-9_]+\b"),
+}
 
 
 class Passage(NamedTuple):
@@ -145,13 +187,127 @@ def coverage(weights: dict[str, float], text: str) -> float:
     return sum(w for t, w in weights.items() if t in have) / (sum(weights.values()) or 1.0)
 
 
+def question_parts(question: str) -> tuple[list[str], str]:
+    """v18: the asks of a question and the words outside them (the description). The question is cut at the clause breaks before
+    a question word (``PART_BREAK``); a clause whose question word opens an ask (``PART_LEAD``, words of asking and chat, or a
+    verb of knowing or telling just before it) gives one part, from that word to the clause's end; every other word is description ("re the vault transit rewrap incident where runner pods couldn't
+    claim tokens" before "— what was the hotfix")."""
+    from cie.factbank.plans import EMBED_SKIP, EMBED_VERBS
+    from cie.factbank.records import FILLER
+
+    lead = FILLER | STOP | PART_LEAD | EMBED_VERBS | EMBED_SKIP
+    parts, desc = [], []
+    for clause in PART_BREAK.split(question):
+        m = next((m for m in WH.finditer(clause) if all(w in lead for w in re.findall(r"[a-z']+", clause[:m.start()].lower()))
+                  or set(re.findall(r"[a-z']+", clause[:m.start()].lower())[-3:]) & EMBED_VERBS), None)
+        if m:
+            parts.append(clause[m.start():].strip())
+            desc.append(clause[:m.start()])
+        else:
+            desc.append(clause)
+    return parts, " ".join(desc)
+
+
+def part_kind(part: str) -> str | None:
+    """v18: what a part asks for: "date", "number", "person", "key", "code", or None (``KINDS``)."""
+    return next((k for k, r in KINDS if r.search(part)), None)
+
+
+def quote_v18(items: list[dict[str, Any]], question: str, cap: int = QUOTE_CAP, pool: int = 20, window: int = 1,
+              stop: Iterable[str] = ()) -> tuple[str, list[dict[str, Any]]] | None:
+    """v18's quote from one document's passages (``items`` as ``quote_answer`` takes them): each part's best sentence first, then
+    the best sentences overall, each with the sentence after it, at most ``cap`` characters with the labels, in the form of
+    ``cie.retrieval.answer.quote_answer``. A sentence scores the share of a part's words it holds, each word weighted by its
+    rarity among the document's sentences (and ``DESC_WEIGHT`` for a description word), plus ``KIND_BONUS`` for a value of the
+    part's kind that the question does not write, less ``QUOTE_PRIOR`` for a lower-ranked passage. ``stop``: words that weigh
+    nothing (the words of asking and chat). None when no sentence holds a word of the question."""
+    from cie.retrieval import answer as A
+    from cie.retrieval.bm25 import query_terms
+
+    head = items[:pool]
+    stop = {t for w in stop for t in A._tokens(w)}
+    terms = [t for t in query_terms(question) if len(t) > 2 and t not in stop]
+    if not terms or not head:
+        return None
+    parts, desc = question_parts(question)
+    sents: list[list[str]] = []
+    for it in head:
+        body = re.sub(r"[ \t]+", " ", it.get("detail") or "")
+        sents.append([x.strip() for x in A._SENT_SPLIT.split(body) if len(x.strip()) >= 25])
+    toks = [[A._tokens(x) for x in ss] for ss in sents]
+    n = sum(len(ss) for ss in sents) or 1
+    df = Counter(t for ts in toks for tk in ts for t in tk)
+    idf = {t: math.log(1 + n / (1 + df[t])) for t in terms}
+    asked = [[t for t in query_terms(p) if t in idf] for p in parts] or [terms]
+    kinds = [part_kind(p) for p in parts] or [None]
+    in_parts = {t for ts in asked for t in ts}
+    titled = A._tokens(head[0].get("summary") or "") if TITLE_DOWN else set()  # the document's title describes it, as the description does
+    weight = {t: idf[t] * (1.0 if (t in in_parts or not parts) and t not in titled else DESC_WEIGHT) for t in terms}
+    q_low = question.lower()
+
+    def has_kind(x: str, kind: str | None) -> bool:
+        return kind is not None and any(m.group(0).lower() not in q_low for m in KIND_VALUE[kind].finditer(x))
+
+    def score(i: int, j: int, ts: list[str], kind: str | None, w: dict[str, float]) -> float:
+        total = sum(w[t] for t in ts) or 1.0
+        share = sum(w[t] for t in ts if t in toks[i][j]) / total
+        if share <= 0:
+            return 0.0
+        return share + (KIND_BONUS if has_kind(sents[i][j], kind) else 0.0) - QUOTE_PRIOR * i / len(head)
+
+    def label(i: int) -> str:
+        t = re.sub(r"\s+", " ", head[i].get("summary") or "").strip()
+        return t if len(t) <= 60 else t[:60].rsplit(" ", 1)[0].rstrip(" ,;:-\u2014") + "\u2026"
+
+    chosen: dict[int, set[int]] = {}
+    seen: set[str] = set()
+    used = 0
+
+    def take(i: int, j: int) -> None:
+        nonlocal used
+        for k in range(j, min(j + window + 1, len(sents[i]))):
+            x = sents[i][k]
+            key = x[:80].lower()
+            if key in seen:
+                continue
+            cost = len(x) + 5 + (0 if i in chosen else len(label(i)) + 10)
+            if used + cost > cap:
+                continue
+            seen.add(key)
+            chosen.setdefault(i, set()).add(k)
+            used += cost
+
+    cells = [(i, j) for i in range(len(sents)) for j in range(len(sents[i]))]
+    for ts, kind in zip(asked, kinds):
+        w = {t: idf[t] * (DESC_WEIGHT if t in titled else 1.0) for t in ts}
+        best = max(cells, key=lambda c: (score(c[0], c[1], ts, kind, w), -c[0], -c[1]), default=None) if ts else None
+        if best is not None and score(best[0], best[1], ts, kind, w) > 0:
+            take(*best)
+    ranked = sorted(((max(score(i, j, terms, k, weight) for k in kinds), i, j) for i, j in cells), key=lambda x: (-x[0], x[1], x[2]))
+    for sc, i, j in ranked:
+        if sc <= 0 or used >= cap * 0.95:
+            break
+        take(i, j)
+    if not chosen:
+        return None
+    out, cites = [], []
+    for m, i in enumerate(sorted(chosen), start=1):
+        cites.append(A._cite(head[i], m))
+        quote = " ... ".join(sents[i][k] for k in sorted(chosen[i]))
+        out.append(f"{label(i)}: \"{quote}\" [{m}].")
+    return " ".join(out), cites
+
+
 class ProseRoute:
     """The free-text route over one bank: ``answer`` quotes the best document's passages and abstains when the quote covers
     less than ``threshold`` of the question's words weighted by rarity. ``index`` is the bank's shared passage index
     (``PassageIndex.of``) unless one is given; it is built on the first question asked of the bank, by any route over it."""
 
-    def __init__(self, bank: FactBank, *, budget: int = BUDGET, threshold: float = ABSTAIN_BELOW, index: PassageIndex | None = None):
+    def __init__(self, bank: FactBank, *, budget: int = BUDGET, threshold: float = ABSTAIN_BELOW, index: PassageIndex | None = None,
+                 v18: bool = False, stop: Iterable[str] = ()):
         self.bank = bank
+        self.v18 = v18  # round 4's quote (``quote_v18``), with ``stop`` as its words of asking and chat
+        self.stop = frozenset(stop)
         self.budget = budget
         self.threshold = threshold
         self.index = index if index is not None else PassageIndex.of(bank)
@@ -224,6 +380,9 @@ class ProseRoute:
         if quoted is None:
             return done(NOT_FOUND, f"no sentence of {doc} holds a word of the question")
         cov = coverage(self.weights(question, exclude), quoted[0])
+        if self.v18 and cov >= self.threshold:
+            # v18 answers with its own quote; whether to answer stays v16's decision, on v16's quote
+            quoted = quote_v18(items, question, stop=self.stop) or quoted
         if cov < self.threshold:
             return done(NOT_FOUND, f"the quote from {doc} holds {cov:.3f} of the question's words weighted by rarity, below {self.threshold}",
                         quoted[0], cov)

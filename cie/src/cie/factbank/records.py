@@ -188,6 +188,22 @@ PEOPLE_ASK = re.compile(r"^\W*(?:who|whom)\b|\b(?:which|what) (?:people|persons|
                         r"creators)\b|\blist (?:everyone|everybody|all the people|the people|the (?:assignees|owners|authors|reporters|"
                         r"creators))\b|\bname (?:everyone|everybody|the people)\b|\bwho (?:is|are|was|were)\b")
 KEYS_ASK = re.compile(r"\bwhich\b|\blist\b|\bwhat are\b|\bgive\b|\bshow\b|\bname\b|\bkeys\b|\bids\b|\bidentifiers\b")
+# v18 (round 4, ``Records.v18``): counts asked the way people type. "# of jira tickets…", "num of…" and "count the pages…" (a
+# "count" before an item noun) ask for a count too; a lead-in clause, set off by a comma, a semicolon, a colon, a spaced dash or
+# brackets before the clause that asks, that holds no field value, no item or system noun, no "not", no "open" and no number,
+# is an aside ("for the board deck, how many…", "fyi prepping for a review - how many…"), whose words need not be explained
+# (``Records.asides``); and "by" before a person names the author, creator or owner when the person fills several fields
+COUNT_ASK_V18 = re.compile(r"(?:^|[\s(])#\s*of\b|\bnum(?:ber)?s?\s+of\b|\bno\.\s+of\b|\bcount\s+(?:up\s+|all\s+|the\s+|of\s+)*"
+                           r"(?:[\w-]+\s+){0,3}?(?:tickets|issues|pages|docs|documents|accounts|deals|meetings|calls|threads|emails|"
+                           r"prs|pull requests|records|items|repos)\b")
+ASIDE_SPLIT = re.compile(r"[,;:](?=\s)|\s[-\u2013\u2014]+\s|[\u2013\u2014]|[()]")
+FILLER_V18 = frozenset("both his her him he she".split())  # "in both cycle C and release R", "in his mailbox"
+BY_ROLES = ("author", "creator", "owner", "reporter", "redwood_owner")
+# v18, absent: "can someone remind me…", "does anyone know…" ask a colleague, not about a document someone else holds; the words
+# are dropped before the link check (``plans.LINK_WORDS`` holds "someone" and "somebody")
+ASK_SOMEONE = re.compile(r"\b(?:(?:can|could|would|will|does|did|do|has|is)\s+)?(?:someone|somebody|anyone|anybody)\s+"
+                         r"(?:know|knows|remind|tell|confirm|check|recall|remember)\b|"
+                         r"\b(?:can|could|would|will|does|did|do|has|is)\s+(?:someone|somebody|anyone|anybody)\b")
 NAME_WORD = re.compile(r"[^\W_]+")
 HEADER = re.compile(r"^(From|To|Cc|Date|Subject):[ \t]*(.*)$", re.I)
 # absent: "Which CRM deal is the meeting X linked to?" links the named document itself to the field asked for; "the ticket
@@ -271,6 +287,7 @@ class Records:
     def __init__(self, bank: FactBank, min_held: float = MIN_HELD):
         self.b = bank
         self.min_held = min_held
+        self.v18 = False  # round 4's count fixes (``COUNT_ASK_V18``, asides, "by" a person); set by ``Brain(..., v18=True)``
         self._doc_facts: dict[str, dict[str, list[tuple[str, str | None]]]] | None = None
         self._by_system: dict[str, list[str]] | None = None
         self._stats: dict[str, dict[str, FieldStats]] = {}
@@ -503,7 +520,7 @@ class Records:
     def intent(self, question: str) -> str | None:
         """What a count or list question asks for: "count", "people" or "keys"; None for anything else."""
         ql = question.lower()
-        if COUNT_ASK.search(ql):
+        if COUNT_ASK.search(ql) or (self.v18 and COUNT_ASK_V18.search(ql)):
             return "count"
         uq = unquoted(ql)
         if PEOPLE_ASK.search(uq):
@@ -650,6 +667,28 @@ class Records:
                 return False
         return False
 
+    def asides(self, question: str, toks: list[str], found: list[Match]) -> set[int]:
+        """v18: the positions of the question's words (``value_words``) that lie in a lead-in: a clause set off by a comma, a
+        semicolon, a colon, a spaced dash or brackets (``ASIDE_SPLIT``), before the clause that asks (``intent``), that holds no
+        field value, no item or system noun, no "not" or "open" and no number ("for the compliance report, what is the count
+        of…": a word in it may point to a field, as "report" points to the reporter, since a condition follows what it counts).
+        A clause after the ask is read as a condition ("…, created after March?"). Empty when the question has one clause."""
+        raw = ASIDE_SPLIT.split(question)
+        pieces = [value_words(x).split() for x in raw]
+        if len([x for x in pieces if x]) < 2 or sum(len(x) for x in pieces) != len(toks):
+            return set()
+        asks = next((k for k, x in enumerate(raw) if self.intent(x)), len(raw))
+        inside = {j for m in found for j in range(m.start, m.end)}
+        out: set[int] = set()
+        at = 0
+        for k, words in enumerate(pieces):
+            span = range(at, at + len(words))
+            at += len(words)
+            if k < asks and words and not any(j in inside or toks[j] in ITEM_WORDS or toks[j] in SYSTEM_NAME_WORDS or toks[j] in NEGATORS
+                                 or toks[j] == "open" or any(c.isdigit() for c in toks[j]) for j in span):
+                out |= set(span)
+        return out if len(out) < len(toks) else set()
+
     def filter(self, question: str, system: str, kind: str) -> dict[str, Any] | None:
         """``table`` for one system."""
         stats = self.stats(system)
@@ -674,6 +713,9 @@ class Records:
         attached: set[int] = set()
         for m, fields in live:
             named = self.nearest_fields(toks, point, m, [o for o, _ in live])
+            if named is None and self.v18 and m.start > 0 and toks[m.start - 1] == "by":
+                roles = {p for p in fields if p in BY_ROLES and stats[p].person}
+                named = roles or None  # "pages by Aisha Patel": the author, not a reviewer
             if named is not None:
                 fields = {p: k for p, k in fields.items() if p in named}
                 if not fields:
@@ -720,12 +762,14 @@ class Records:
         # every other word is a question or filler word, a system or item noun, or a word of (or pointing to) a matched or asked
         # field: "How many Jira tickets with priority P1 have an assignee?" also asks about the assignee, which table cannot
         targets = set(conds) | set(neg) | ({asked} if asked else set())
-        explained = FILLER | ITEM_WORDS | SYSTEM_NAME_WORDS | STOP
+        explained = FILLER | ITEM_WORDS | SYSTEM_NAME_WORDS | STOP | (FILLER_V18 if self.v18 else frozenset())
+        aside = self.asides(question, toks, found) if self.v18 else set()
         if has_open or not_at:
             explained = explained | {"open", "not", "nor"} | {w for v in CLOSED.get(system, ()) for w in value_words(v).split()}
         for p in targets:
             explained = explained | {stem(x) for x in p.split("_")} | set(p.split("_"))
-        if any(not used[i] and t not in explained and stem(t) not in explained and not point[i] & targets for i, t in enumerate(toks)):
+        if any(not used[i] and i not in aside and t not in explained and stem(t) not in explained and not point[i] & targets
+               for i, t in enumerate(toks)):
             return None  # a word that is not a condition: the question asks something more
         docs = set(self.documents(system))
         for p, ks in conds.items():
@@ -1022,6 +1066,8 @@ class Records:
         if not start or self.b.kinds.get(start) != "document":
             return None
         ql = unquoted(question.lower())
+        if self.v18:
+            ql = ASK_SOMEONE.sub(" ", ql)
         if self.follows_link(ql) or COUNT_ASK.search(question.lower()):
             return None
         if any(r.search(ql) for r in (D_DAYS, D_FIRST_COMMENT, D_LAST_COMMENT, D_FIRST_ACTIVITY, D_UPDATED)):
