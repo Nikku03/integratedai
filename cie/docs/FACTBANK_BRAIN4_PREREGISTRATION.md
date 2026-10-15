@@ -168,7 +168,31 @@ All on the messy set (`cie.eval.brain4_test.preregistered4`). Each compares v18 
 
 ## Development
 
-(To be filled from `docs/benchmarks/brain4/development/`.)
+v17 and v18 in the same process on every question (`docs/benchmarks/brain4/development/`, the script `compare.py`):
+
+| set | questions | not found | counts | unanswerable | free text | all | better / worse |
+|---|---|---|---|---|---|---|---|
+| round 3's test, messy (seen) | 517 | 0.800 → 1.000 | 0.825 → 1.000 | 0.880 → 0.946 | 0.750 → 0.830 | 0.860 → 0.900 | 25 / 1 |
+| round 3's test, tidy (seen) | 518 | 1.000 → 1.000 | 1.000 → 1.000 | 0.913 → 0.946 | 0.750 → 0.830 | 0.920 → 0.933 | 11 / 1 |
+| round 2's test, messy (seen) | 579 | 0.850 → 1.000 | 0.775 → 1.000 | 0.854 → 0.913 | 0.666 → 0.771 | 0.801 → 0.861 | 46 / 5 |
+| development (dev5k_q2) | 443 | 1.000 → 1.000 | 1.000 → 1.000 | 0.887 → 0.915 | 0.777 → 0.827 | 0.922 → 0.932 | 7 / 1 |
+| training (train5k) | 622 | – | – | – | 0.697 → 0.740 | 0.884 → 0.892 | 15 / 6 |
+| messy samples (dev 80, train 116) | 196 | 0.800 → 1.000 (5) | 1.000 → 1.000 (35) | 0.778 → 0.889 (9) | – | 0.914 → 0.924 | 2 / 0 |
+
+- **No other family changes on any set,** except one more single-document question right on round 2's set.
+- **Every answer that got worse is a free-text quote** (14 in all): v18 picked another sentence, and an answer fact moved
+  out. On the same sets 63 free-text answers got better.
+- **The 14 guard sets** (698 questions): none changes.
+- **The free-text answers are as long as v17's** (round 3's set: 1,054 characters on average both).
+- **Time:** v18 adds no index; the splice check reads the bank's titles once.
+
+**How the quote's weights were chosen.** On training's 111 free-text questions alone, the settings tried (description weight
+0.15–1.0, kind bonus 0–0.5, title words weighed down or not) were within 0.02 of each other once the description weighed less
+than 1.0 (`prose_grid_train5k.log`); training's best had title words not weighed down (0.757 against 0.740). Pooled over the
+four development sets, weighing them down was better (0.804 against 0.792), and it was kept, with 0.3 and 0.3.
+
+**Most of the development questions are seen.** Round 3's set is the one whose misses v18 was built on, so its numbers are
+optimistic; round 2's guided the free-text work too.
 
 ## Disclosures
 
