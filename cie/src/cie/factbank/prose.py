@@ -92,7 +92,7 @@ KIND_VALUE = {
     "date": re.compile(rf"\b\d{{4}}-\d{{2}}-\d{{2}}\b|\b\d{{1,2}}/\d{{1,2}}\b|\b{MONTHS}\.?\s+\d{{1,2}}\b|\b\d{{1,2}}\s+{MONTHS}\b|"
                        r"\b(?:mon|tue|tues|wed|thu|thur|thurs|fri|sat|sun)(?:day)?\b|\b\d{1,2}(?::\d{2})?\s*(?:am|pm)\b|\b\d{1,2}:\d{2}\b|"
                        r"\b(?:tomorrow|tonight|eod|end of (?:day|week|month))\b", re.I),
-    "number": re.compile(r"\d"),
+    "number": re.compile(r"\d+(?:[.,]\d+)*"),
     "person": re.compile(r"\b[A-Z][a-z]+\s+[A-Z][a-z'\u2019-]+\b|@[A-Za-z][\w.-]+|^[A-Z][a-z]+(?:\s+[A-Z][a-z]+)?\s*(?:\([^)]*\))?\s*:"),
     "key": re.compile(r"\b[A-Z][A-Z0-9]{1,9}-\d{1,7}\b|(?:#|\bPR\s*#?)\d{2,7}\b"),
     "code": re.compile(r"`[^`]+`|\b\w+[_=.:]\w+(?:[_=.:]\w+)*\b|--[a-z][\w-]+|\b[A-Z][A-Z0-9]*_[A-Z0-9_]+\b"),
@@ -190,7 +190,7 @@ def coverage(weights: dict[str, float], text: str) -> float:
 def question_parts(question: str) -> tuple[list[str], str]:
     """v18: the asks of a question and the words outside them (the description). The question is cut at the clause breaks before
     a question word (``PART_BREAK``); a clause whose question word opens an ask (``PART_LEAD``, words of asking and chat, or a
-    verb of knowing or telling just before it) gives one part, from that word to the clause's end; every other word is description ("re the vault transit rewrap incident where runner pods couldn't
+    verb of knowing or telling among the three words before it) gives one part, from that word to the clause's end; every other word is description ("re the vault transit rewrap incident where runner pods couldn't
     claim tokens" before "— what was the hotfix")."""
     from cie.factbank.plans import EMBED_SKIP, EMBED_VERBS
     from cie.factbank.records import FILLER
@@ -243,10 +243,11 @@ def quote_v18(items: list[dict[str, Any]], question: str, cap: int = QUOTE_CAP, 
     in_parts = {t for ts in asked for t in ts}
     titled = A._tokens(head[0].get("summary") or "") if TITLE_DOWN else set()  # the document's title describes it, as the description does
     weight = {t: idf[t] * (1.0 if (t in in_parts or not parts) and t not in titled else DESC_WEIGHT) for t in terms}
-    q_low = question.lower()
+
+    asked_values = {k: {m.group(0).lower() for m in r.finditer(question)} for k, r in KIND_VALUE.items()}
 
     def has_kind(x: str, kind: str | None) -> bool:
-        return kind is not None and any(m.group(0).lower() not in q_low for m in KIND_VALUE[kind].finditer(x))
+        return kind is not None and any(m.group(0).lower() not in asked_values[kind] for m in KIND_VALUE[kind].finditer(x))
 
     def score(i: int, j: int, ts: list[str], kind: str | None, w: dict[str, float]) -> float:
         total = sum(w[t] for t in ts) or 1.0

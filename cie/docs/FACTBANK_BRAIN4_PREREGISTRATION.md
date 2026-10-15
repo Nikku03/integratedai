@@ -22,8 +22,9 @@ Round 3 (`docs/FACTBANK_BRAIN3_RESULTS.md`) left four kinds of question short of
 
 On the tidy wordings, not found and counts were both 1.000: the casual wording caused the misses.
 
-**The claim:** v18's fixes raise all four families, without harming the other four, without more false "not found" and
-without longer free-text answers.
+**The claim:** v18's fixes bring not found and counts to at least 0.95 (and not below v17) and raise unanswerable and free
+text, without harming the other four families, with false "not found" on at most 0.05 of the answerable questions (and at
+most 0.01 more than v17), and without longer free-text answers.
 
 ## What v18 is
 
@@ -31,8 +32,9 @@ v18 is v17 with the fixes below (`Brain(..., v18=True)`; `cie.factbank.brain`, `
 the same answers as before.
 
 **1. Not found: a title made of two real ones** (`Brain.spliced`). A question that writes, quoted or not:
-- the start of one real document title (at least 0.4 of its words, `SPLICE_SHARE`),
-- followed at once by the end of another (at least 0.4 of its words),
+- the start of one real document title (at least 0.4 of its content words, `SPLICE_SHARE`; a content word has three letters or
+  more and is not a word of asking or a stop word, so "replace the" is not the start of "Replace the badge printer"),
+- followed at once by the end of another (at least 0.4 of its content words),
 - where no one title has both (that is a real title with words left out),
 - each part holding a word of three letters or more that is not a word of asking,
 - and the bank writes the two together nowhere,
@@ -41,12 +43,16 @@ is "not found" (route not_found). The benchmark invents titles this way (the fir
 another); a made-up title of new words is still caught only by the older checks (unknown names, quoted titles).
 
 **2. Counts asked the way people type** (`Records.v18`):
-- "# of…", "num of…", "no. of…" and "count the pages…" (a "count" before an item noun) ask for a count;
-- a lead-in clause, set off by a comma, a semicolon, a colon, a spaced dash or brackets, before the clause that asks, that
+- "# of…", "num of…", "nums of…" and "no. of…" are read as "number of" (`records.COUNT_SAYS`); "count the pages…" (a "count"
+  opening the question or a clause, or after "pls", "can you" and the like, before an item noun) asks for a count, while
+  "which tickets count as open?" still asks for keys;
+- a lead-in clause, set off by a comma, a semicolon, a colon, a dash (a hyphen with spaces around it, or an en or em dash) or
+  brackets, before the clause that asks, that
   holds no field value, no item or system noun, no "not", no "open" and no number, is an aside whose words need not be
   explained ("for the board deck, how many…", "fyi prepping for a review - how many…"); a clause after the ask is still read
   as a condition;
-- "by" before a person names the author, creator or owner when the person fills several fields ("pages by Aisha Patel");
+- "by" before a person names the author, creator, owner or reporter (`records.BY_ROLES`, which also holds redwood_owner) when
+  the person fills several fields ("pages by Aisha Patel");
 - "both", "his", "her", "him", "he", "she" are filler.
 
 **3. No answer in the haystack:**
@@ -60,20 +66,21 @@ another); a made-up title of new words is still caught only by the older checks 
 - a free-text answer whose document does not write the question's own terms is "not found" (`Brain.unheld_terms`). The own
   terms: each word of a run of two or more capitalised words inside the sentence ("Argentum Health"), and each word or part
   of a hyphenated or slashed term, of letters only, that is not ordinary English (round 1's general lexicon, a word or its
-  stem; nor one slip of a letter from one; nor chat shorthand). Words with digits are left out ("p95", "sev2", "6wk": documents
-  write them in too many ways). "tmrw", "tmr", "tho", "cuz", "lmk", "wrt" are read as chat shorthand.
+  stem; nor one slip of a letter from one; nor chat shorthand). A term counts as written when the document writes it as a word,
+  by its stem, without a plural "s", or as two or three of its words written together ("KVCache" for "KV cache"). Words with
+  digits are left out ("p95", "sev2", "6wk": documents write them in too many ways). "tmrw", "tmr", "tho", "cuz", "lmk", "wrt" are read as chat shorthand.
 
 **4. Free text: the quote** (`cie.factbank.prose.quote_v18`). The route still quotes one document, the one v16 picks, and
 still decides whether to answer as v16 does (v16's quote, `quote_cov` below 0.47 is "not found"). When it answers, v18
 quotes:
 - **the parts of the question:** the question is cut at clause breaks before a question word ("…, and how much…", "— what…");
   a question word opens a part when only words of asking and chat come before it in its clause, or a verb of knowing or
-  telling just before it ("can someone remind me what…"); the other words describe the document;
+  telling is among the three words before it ("can someone remind me what…"); the other words describe the document;
 - **each part's best sentence first,** then the best sentences overall, each with the sentence after it, as v16 did;
 - **weights:** a word's rarity among the document's sentences; the words that describe the document, and the words of the
   document's title, weigh 0.3 (`DESC_WEIGHT`); words of asking and chat weigh nothing;
 - **the asked kind:** a sentence holding a value of the kind a part asks for (a date for "when", a number for "how much",
-  a person for "who", a ticket key, a flag or setting), one the question does not write, gains 0.3 (`KIND_BONUS`);
+  a person for "who", a ticket key, a flag or setting), a whole value the question does not write, gains 0.3 (`KIND_BONUS`);
 - **the same length:** at most 1,100 characters with labels (`QUOTE_CAP`, v16's cap), in v16's form.
 
 **What was tried and dropped** (development, below):
@@ -111,7 +118,7 @@ The kinds and checks are rounds 2's and 3's, with more of the four families v18 
 | counts | counts and filtered lists, as round 2 | 60 |
 | history | as round 2 | 40 |
 | email_chat | as round 2 | 40 |
-| unanswerable | writers' questions about held-out documents, and 40 about a field the named document leaves empty | about 120 |
+| unanswerable | writers' questions about held-out documents, and 40 about a field the named document leaves empty | about 135 |
 
 **The writers and rewriters are round 2's sessions, sealed** (`docs/benchmarks/brain2/writers_test2.js`,
 `rewriters_test2.js`), as in round 3:
@@ -119,8 +126,9 @@ The kinds and checks are rounds 2's and 3's, with more of the four families v18 
 - The rewriters reword every generated question the way people type.
 - Both write straight to files and return counts. Nobody reads a question until the scores are written.
 
-The packets: 60 descriptive (seed 1021, up to 50 kept); 100 free text (seed 1022, up to 80 kept); about 100 held-out
-(`--n 100`, seed 1023).
+The packets: 60 descriptive (seed 1021, up to 50 kept); 100 free text (seed 1022, up to 80 kept); about 120-130 held-out
+(`--n 100` is a target: 1.4 × 100 = 140 documents are examined, and those that pass the checks become packets; the dry run on
+the development zone gave 119), seed 1023.
 
 **Two sets on the same 5,000 documents:** the messy set, which decides the rules, and the tidy set, reported beside it.
 
@@ -145,16 +153,17 @@ rewriter batch that is missing or incomplete is written again by a new sealed se
 
 ## Rules
 
-All on the messy set (`cie.eval.brain4_test.preregistered4`). Each compares v18 with v17, asked in the same folder:
+All on the messy set (`cie.eval.brain4_test.preregistered4`), with v17 asked in the same folder. Rules 1 and 2 set a level and
+forbid a fall; rule 6 sets a ceiling and a rise; rules 3, 4, 5, 7 and 8 compare with v17:
 
 | | rule |
 |---|---|
-| 1 | **Not found:** v18 ≥ 0.95 |
-| 2 | **Counts:** v18 ≥ 0.95 |
+| 1 | **Not found:** v18 ≥ 0.95 and ≥ v17 |
+| 2 | **Counts:** v18 ≥ 0.95 and ≥ v17 |
 | 3 | **Unanswerable:** v18 ≥ v17 + 0.03 |
 | 4 | **Free text:** v18 ≥ v17 + 0.04 |
 | 5 | **No harm:** on each of single, multi, history and email and chat, v18 ≥ v17 − 0.03 |
-| 6 | **False "not found":** v18 says it to at most 0.05 of the answerable questions |
+| 6 | **False "not found":** v18 says it to at most 0.05 of the answerable questions, and at most v17's + 0.01 |
 | 7 | **Better overall:** v18's mean over the eight families ≥ v17's + 0.02 |
 | 8 | **No longer free-text answers:** v18's mean free-text answer length ≤ 1.05 × v17's |
 | 9 | **It holds at size** (reported): for single, multi and free text each, v18 at 5,000 documents ≥ the small set − 0.05 |
@@ -162,8 +171,16 @@ All on the messy set (`cie.eval.brain4_test.preregistered4`). Each compares v18 
 **The claim is met when rules 1 to 8 are met.** Rule 9 is reported; a failure is diagnosed.
 
 **How to read differences:**
-- One question moves the 40-question not-found family by 0.025: rule 1 allows two misses.
-- One question moves the 60-question counts family by 0.017: rule 2 allows three misses.
+- One question moves the 40-question not-found family by 0.025: rule 1 allows two questions' worth of score lost.
+- One question moves the 60-question counts family by 0.017: rule 2 allows three. A filtered list scores its key F1, so a
+  partly right list counts in part.
+- One question moves single (about 140) by 0.007, multi (56) by 0.018, history and email and chat (40) by 0.025, and
+  unanswerable (about 135) by 0.007: rule 5 allows about four net losses on single and one on each of the others; rule 3 needs
+  about four net gains; rule 6's rise of 0.01 is about four questions of about 416 answerable ones.
+- **The leads are demanding.** On the sets v18 was not built on, the gains were: unanswerable +0.028 (dev5k_q2, tidy wording);
+  free text +0.050 (dev5k_q2) and +0.043 (train5k); the mean over the families +0.010 (dev5k_q2). On the messy sets it was
+  built on they were about twice as large. Rules 3, 4 and 7 can therefore fail even if v18 is as good as its unseen
+  development sets show; with about 80 free-text questions the paired standard error is about 0.03.
 - v18 minus v17 is reported per family with its 95% bootstrap interval, with the questions that got better and worse.
 
 ## Development
@@ -198,8 +215,14 @@ optimistic; round 2's guided the free-text work too.
 
 - **Round 3's test set is development data here,** and so are round 2's. Their questions guided every fix above; the fixes
   were built on round 3's misses. Round 4's documents are fresh, so its test is not affected.
-- **The splice check follows the benchmark's own way of inventing titles.** It catches a title made of two real ones; a
-  made-up title of new words is left to the older checks.
+- **The splice check follows the benchmark's own way of inventing titles** (`brain_questions.missing_titles`: the first half
+  of one title and the second half of another). It catches a title made of two real ones; a made-up title of new words is left
+  to the older checks. Ten of the test's 40 not-found questions are such titles.
+- **The quote's weights were chosen on pooled development sets that include rounds 2's and 3's test sets,** against
+  training's own best (`prose_grid_pooled.log`).
+- **The word lists were fitted to the same sealed writers and rewriters** that write the test's questions (round 2's
+  sessions): the chat shorthand, the asides, "can someone", "on someone's plate". A test written by other people could word
+  things otherwise.
 - **v18 changes nothing else in v17.** Every v17 route runs as before when a v18 fix does not apply.
 
 ## Known limits
@@ -208,3 +231,63 @@ optimistic; round 2's guided the free-text work too.
 - **No language model answers:** free text is still a quote of sentences, not a written answer.
 - **The own-terms check is a word check.** A question about something the company has, in words its document does not use,
   can be refused; a question about something it lacks, in words a near document uses, can still be answered.
+
+## The review before freezing
+
+Three reviewers read this document, the v18 code (the diff since round 3's results, `511f5a5`), the round-4 scoring and the run
+scripts; a skeptic then tried to refute each finding. They were not allowed to open any data. They ran the unit tests, `bash -n`
+and their own checks on the unit tests' tiny made-up bank.
+
+**Confirmed:**
+- with v18 off, v16 and v17 give byte-identical rows to `511f5a5` on 153 questions of the tiny bank, alone and with a v18 brain
+  asked first in the same process (as `compare.py` runs them);
+- nothing crashes on empty, punctuation-only, quoted, unicode or very long questions; the splice check is bounded;
+- "What v18 is" matches the code item by item, except for the findings below;
+- the harness wiring (arm v18, its answers file, `--v18`) is consistent.
+
+**Found and fixed** (in the code before the freeze, then the development runs above were done again):
+1. **"num of…" and "no. of…" were read as counts but never answered:** the counting step found "num" and "no" unexplained.
+   **Fixed:** they are read as "number of" (`COUNT_SAYS`), with tests.
+2. **"count" as a verb turned a list question into a number** ("which tickets with priority P1 count as open tickets?").
+   **Fixed:** "count" asks for a count only when it opens the question or a clause, or follows "pls", "can you" and the like.
+3. **The splice check refused "when do we need to replace the wifi keys?"**: "replace the" counted as half the start of
+   "Replace the badge printer". **Fixed:** the shares count content words only.
+4. **The asked-kind bonus compared single digits** with the question ("20%" was not new to a question about 2026). **Fixed:**
+   whole values are compared.
+5. **A term written joined ("KVCache") was refused against a document writing "KV cache".** **Fixed:** two or three of the
+   document's words written together count.
+6. **Rules 1, 2 and 6 did not test the claim as first written** ("raise all four families", "without more false 'not
+   found'"): they set levels only. **Fixed:** rules 1 and 2 also forbid a fall below v17, rule 6 also limits the rise to 0.01,
+   and the claim says so.
+7. **The document's wording and numbers:** the roles "by" names (the reporter too), "among the three words before", the
+   dashes, the held-out and unanswerable sizes (about 135, not 120), the quote grid's spread (0.730–0.757, within 0.03), the
+   development table's "all" column (a mean over questions, not rule 7's mean of the families: both are now shown), the
+   missing false "not found" counts, the reading of the leads (they can fail even if v18 is as good as its unseen sets show),
+   and the missing frozen table. **Fixed** in the text.
+8. **The "by a person" rule had no real test.** **Fixed:** a test bank where one person fills two role fields.
+
+**Disclosed, not changed:** the word lists were fitted to the same sealed writers and rewriters the test uses; the splice check
+follows the benchmark's own title generator; the quote's title weighting was chosen on pooled sets that include rounds 2's
+and 3's test sets.
+
+**The rehearsals:**
+- step 5 (`run_brain4_3.sh`, both sets) on a copy of round 3's rehearsal folders (241 questions): every arm answered, both sets
+  were scored, the rules were applied, the hash-seed check found no difference, and the error file stayed empty. The size rule
+  gave no result there, because that small folder holds other questions; the test's small folder holds the same ones;
+- step 1 (`run_brain4_1.sh`) on the development zone, then the question draw with the round-4 mix: 60 descriptive and 100
+  free-text packets, 119 held-out packets; 40 not-found questions (10 of each invented kind), 60 counts, 40 empty-field
+  questions, 40 history and 40 email and chat questions were all filled.
+
+## Frozen
+
+| what | value |
+|---|---|
+| code | the commit that removes the draft line from this document |
+| v18's constants | `SPLICE_SHARE` 0.4; `DESC_WEIGHT` 0.3, `KIND_BONUS` 0.3, `TITLE_DOWN` on, `QUOTE_CAP` 1,100; `CHAT_WORDS_V18`; `PLATE_WORDS`; v16's `COVER_BELOW` 0.57 and `ABSTAIN_BELOW` 0.47 and v17's `DESCRIBED_BELOW` 0.68 kept |
+| the rules' thresholds | `cie.eval.brain4_test`: 0.95, 0.95, +0.03, +0.04, −0.03, 0.05 and +0.01, +0.02, 1.05; size −0.05 |
+| v17's and v18's lessons | `docs/benchmarks/brain2/lessons/`: `single_lessons.json` (`ee8b9d053405a47f…`), `plan_lessons.json` (`4c2c8c6201be08ec…`), `router.json` (`20e9c05046406f14…`) |
+| v2's lessons | `fb50/lessons.json` (`afa4e7d9fee0a05c…`) |
+| ordinary English words | `src/cie/factbank/data/general_words.txt.gz` (`f36d409bb74a8a4b…`) |
+| zones | `zones.json.gz` (`b1afac237c309a82…`) |
+| seeds | test draw 1019, questions 1020, packets 1021 and 1022, held-out 1023, none used before; hash seed 0 (and 1 for the check) |
+| run | `docs/benchmarks/brain4/run_brain4_1.sh`, `brain2/writers_test2.js`, `run_brain4_2.sh`, `brain2/rewriters_test2.js`, `run_brain4_3.sh` (`SET=messy`, then `SET=tidy`) |

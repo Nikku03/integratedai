@@ -188,14 +188,18 @@ PEOPLE_ASK = re.compile(r"^\W*(?:who|whom)\b|\b(?:which|what) (?:people|persons|
                         r"creators)\b|\blist (?:everyone|everybody|all the people|the people|the (?:assignees|owners|authors|reporters|"
                         r"creators))\b|\bname (?:everyone|everybody|the people)\b|\bwho (?:is|are|was|were)\b")
 KEYS_ASK = re.compile(r"\bwhich\b|\blist\b|\bwhat are\b|\bgive\b|\bshow\b|\bname\b|\bkeys\b|\bids\b|\bidentifiers\b")
-# v18 (round 4, ``Records.v18``): counts asked the way people type. "# of jira tickets…", "num of…" and "count the pages…" (a
-# "count" before an item noun) ask for a count too; a lead-in clause, set off by a comma, a semicolon, a colon, a spaced dash or
+# v18 (round 4, ``Records.v18``): counts asked the way people type. "# of jira tickets…", "num of…" and "no. of…" are read as
+# "number of" (``COUNT_SAYS``), and "count the pages…" (a "count" opening the question or a clause, or after "pls", "can you"
+# and the like, before an item noun) asks for a count too; a lead-in clause, set off by a comma, a semicolon, a colon, a spaced dash or
 # brackets before the clause that asks, that holds no field value, no item or system noun, no "not", no "open" and no number,
 # is an aside ("for the board deck, how many…", "fyi prepping for a review - how many…"), whose words need not be explained
-# (``Records.asides``); and "by" before a person names the author, creator or owner when the person fills several fields
-COUNT_ASK_V18 = re.compile(r"(?:^|[\s(])#\s*of\b|\bnum(?:ber)?s?\s+of\b|\bno\.\s+of\b|\bcount\s+(?:up\s+|all\s+|the\s+|of\s+)*"
-                           r"(?:[\w-]+\s+){0,3}?(?:tickets|issues|pages|docs|documents|accounts|deals|meetings|calls|threads|emails|"
-                           r"prs|pull requests|records|items|repos)\b")
+# (``Records.asides``); and "by" before a person names the author, creator, owner or reporter (``BY_ROLES``) when the person
+# fills several fields
+COUNT_ASK_V18 = re.compile(r"(?:^\W*|[,;:(]\s*|\s[-\u2013\u2014]+\s*|\b(?:pls|please|can you|could you|can someone|just)\s+)count\s+"
+                           r"(?:up\s+|all\s+|the\s+|of\s+)*(?:[\w-]+\s+){0,3}?(?:tickets|issues|pages|docs|documents|accounts|deals|"
+                           r"meetings|calls|threads|emails|prs|pull requests|records|items|repos)\b")
+# "# of", "num of", "nums of" and "no. of" are read as "number of" before the count is read (``Records.table``)
+COUNT_SAYS = re.compile(r"(?:(?<=^)|(?<=[\s(]))#\s*of\b|\bnums?\s+of\b|\bno\.\s+of\b", re.I)
 ASIDE_SPLIT = re.compile(r"[,;:](?=\s)|\s[-\u2013\u2014]+\s|[\u2013\u2014]|[()]")
 FILLER_V18 = frozenset("both his her him he she".split())  # "in both cycle C and release R", "in his mailbox"
 BY_ROLES = ("author", "creator", "owner", "reporter", "redwood_owner")
@@ -544,6 +548,8 @@ class Records:
         """A count, a list of keys or a list of people over one system's documents that hold the field values the question
         writes, or None (see the module docstring)."""
         question = NEGATED_VERB.sub(r"\1 not", question)  # "don't have" -> "do not have"
+        if self.v18:
+            question = COUNT_SAYS.sub("number of", question)  # "# of jira tickets…" -> "number of jira tickets…"
         kind = self.intent(question)
         if kind is None:
             return None

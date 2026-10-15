@@ -90,9 +90,9 @@ four kinds of question:
 1. **A title that does not exist, written without quotes.** A title made of the start of one real title and the end of another
    ("the confluence page GPU Allocator Operator: Terraform templates…"), that the bank writes nowhere, is "not found"
    (``Brain.spliced``, route not_found). A quoted title was already checked (``missing``).
-2. **Counts asked the way people type** (``Records.v18``): "# of…", "num of…" and "count the pages…" ask for a count; a lead-in
-   clause that holds nothing the count reads ("for the board deck, how many…") is an aside; "by" before a person names the
-   author, creator or owner when the person fills several fields.
+2. **Counts asked the way people type** (``Records.v18``): "# of…", "num of…", "no. of…" and "count the pages…" ask for a
+   count; a lead-in clause that holds nothing the count reads ("for the board deck, how many…") is an aside; "by" before a
+   person names the author, creator, owner or reporter when the person fills several fields.
 3. **No answer in the haystack:**
    - the empty-field check (route absent) runs before the free-text route too, when the question names one document;
    - "can someone remind me…" is not a link to another document (``records.ASK_SOMEONE``);
@@ -272,8 +272,8 @@ CHAT_TOKEN = re.compile(r"(?<![\w/])(w/o|w/|b/c|[a-z]+)(?![\w/])")
 TITLE_MIN = (3, 12)  # a title quoted by ``Brain.tidy`` has at least this many words and characters
 # v18 (round 4, ``Brain(..., v18=True)``), not found: a title made of the start of one real title and the end of another, written
 # without quotes ("when was the confluence page GPU Allocator Operator: Terraform templates and telemetry-capture playbook last
-# updated?", ``Brain.spliced``). Each part covers at least SPLICE_SHARE of its title's words and holds a word of three letters
-# or more that is not a word of asking (``COVER_STOP``), and the two together are written nowhere in the bank
+# updated?", ``Brain.spliced``). Each part holds at least SPLICE_SHARE of its title's content words (``content_word``: three
+# letters or more, not a word of asking or a stop word), and the two together are written nowhere in the bank
 SPLICE_SHARE = 0.4
 # v18, a plan from a person the question names is checked without the person's name, the words of chat (``records.FILLER``) and
 # "on someone's plate" (``Brain.cover_step``)
@@ -289,6 +289,11 @@ LETTERS = "abcdefghijklmnopqrstuvwxyz"
 
 
 @functools.cache
+def content_word(t: str) -> bool:
+    """v18: a word of three letters or more that is not a word of asking (``COVER_STOP``) nor a stop word."""
+    return len(t) >= 3 and t not in COVER_STOP and t not in STOP
+
+
 def general_words() -> frozenset[str]:
     """Ordinary English words, lower case (``GENERAL_WORDS``)."""
     with gzip.open(GENERAL_WORDS, "rt", encoding="utf-8") as f:
@@ -873,7 +878,7 @@ class Brain:
 
     def title_parts(self) -> tuple[dict[tuple[str, ...], dict[str, int]], dict[tuple[str, ...], dict[str, int]]]:
         """v18: the starts and the ends of the bank's document titles (squashed words, the title's own words left out), each
-        with the documents whose title it starts or ends and their titles' lengths in words."""
+        with the documents whose title it starts or ends and their titles' content words (``content_word``), at least one."""
         if getattr(self, "_title_parts", None) is None:
             starts: dict[tuple[str, ...], dict[str, int]] = defaultdict(dict)
             ends: dict[tuple[str, ...], dict[str, int]] = defaultdict(dict)
@@ -883,31 +888,32 @@ class Brain:
                 ws = tuple(squash(self.bank.names.get(e, "")).split())
                 if len(ws) < 2:
                     continue
+                n = max(1, sum(map(content_word, ws)))
                 for i in range(1, len(ws)):
-                    starts[ws[:i]][e] = len(ws)
-                    ends[ws[i:]][e] = len(ws)
+                    starts[ws[:i]][e] = n
+                    ends[ws[i:]][e] = n
             self._title_parts = (dict(starts), dict(ends))
         return self._title_parts
 
     def spliced(self, question: str) -> str | None:
         """v18: a title the question writes, quoted or not, that joins the start of one real title to the end of another and
-        that the bank writes nowhere: the start covers at least ``SPLICE_SHARE`` of the words of a title it starts, the end the
-        same of a title it ends, no one title has both (that is a title with words left out: "hot-swap switchbench notes" for
+        that the bank writes nowhere: the start holds at least ``SPLICE_SHARE`` of the content words (``content_word``) of a title it
+        starts, the end the same of a title it ends ("replace the" is not the start of "Replace the badge printer"), no one title has both (that is a title with words left out: "hot-swap switchbench notes" for
         "Hot-swap variant switchbench notes"), each part holds a word of three letters or more that is not a word of asking,
         and the bank writes the two together nowhere (``holds_words``). None when there is none."""
         starts, ends = self.title_parts()
         toks = squash(question).split()
-        content = [len(t) >= 3 and t not in COVER_STOP and t not in STOP for t in toks]
+        content = [content_word(t) for t in toks]
         n = len(toks)
         for i in range(n):
             for j in range(i + 1, n):
                 a = tuple(toks[i:j])
-                heads = {d for d, m in starts.get(a, {}).items() if len(a) >= SPLICE_SHARE * m}
+                heads = {d for d, m in starts.get(a, {}).items() if sum(content[i:j]) >= SPLICE_SHARE * m}
                 if not heads or not any(content[i:j]):
                     continue
                 for e in range(n, j, -1):
                     b = tuple(toks[j:e])
-                    tails = {d for d, m in ends.get(b, {}).items() if len(b) >= SPLICE_SHARE * m}
+                    tails = {d for d, m in ends.get(b, {}).items() if sum(content[j:e]) >= SPLICE_SHARE * m}
                     if (tails and any(content[j:e]) and not (set(starts[a]) & set(ends[b]))
                             and not self.holds_words(" ".join(toks[i:e]))):
                         return " ".join(toks[i:e])
@@ -920,11 +926,17 @@ class Brain:
         if self.holds_text(phrase):
             return True
         words = [w for w in phrase.split() if w not in ("and", "plus")]
+        if len(words) == len(phrase.split()):
+            return False  # no "and" or "plus": the phrase search above is the whole answer
         if not words:
             return True
+        memo = vars(self).setdefault("_words_held", {})
+        if phrase in memo:
+            return memo[phrase]
         query = " ".join(f'"{w}"' for w in dict.fromkeys(words))
         rows = self.bank.con.execute("SELECT name, text FROM entities_fts WHERE entities_fts MATCH ? LIMIT 200", (query,))
-        return any(f" {phrase} " in f" {squash(n)} " or f" {phrase} " in f" {squash(t)} " for n, t in rows)
+        memo[phrase] = any(f" {phrase} " in f" {squash(n)} " or f" {phrase} " in f" {squash(t)} " for n, t in rows)
+        return memo[phrase]
 
     def missing(self, question: str) -> str | None:
         """What the question names that the bank does not hold, or None: a ticket key in a prefix the bank uses ("ticket
@@ -1245,16 +1257,18 @@ class Brain:
 
     def unheld_terms(self, question: str, doc: str) -> list[str]:
         """v18: the question's own terms (``own_terms``) that the document's title and stored text do not write: as a squashed
-        phrase, joined ("kv cache" as "kvcache") or, for one word, by its stem or without a plural "s" ("SLOs")."""
+        word, by its stem, without a plural "s" ("SLOs"), or as two or three of the document's words written together ("KVCache"
+        for "KV cache")."""
         row = self.bank.con.execute("SELECT name, text FROM entities_fts WHERE id = ?", (doc,)).fetchone()
         text = f" {squash(' '.join(x or '' for x in row))} " if row else " "
+        ws = text.split()
+        joined = {"".join(ws[k:k + m]) for m in (2, 3) for k in range(len(ws) - m + 1)}
         stems = self.stems_of(doc)
         out = []
         for t in self.own_terms(question):
             sq = squash(t)
-            one = len(sq.split()) == 1
-            if (not sq or f" {sq} " in text or f" {sq.replace(' ', '')} " in text
-                    or (one and (stem(sq) in stems or (sq.endswith("s") and (f" {sq[:-1]} " in text or stem(sq[:-1]) in stems))))):
+            if (not sq or f" {sq} " in text or sq in joined or stem(sq) in stems
+                    or (sq.endswith("s") and (f" {sq[:-1]} " in text or stem(sq[:-1]) in stems))):
                 continue
             out.append(t)
         return out

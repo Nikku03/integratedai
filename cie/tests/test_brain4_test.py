@@ -11,10 +11,10 @@ from cie.eval import brain_test as H
 from cie.eval.brain2_test import FAMILIES2
 
 
-def _report(v17: dict[str, float], v18: dict[str, float], fnf=0.02, size=0.0, lengths=(1000.0, 1000.0)) -> dict:
-    def arm(f):
-        return {"by_family": f, "mean_of_families": sum(f.values()) / len(f), "false_not_found": {"all": fnf}}
-    return {"scores": {"v17": arm(v17), "v18": arm(v18)}, "prose_length4": {"v17": lengths[0], "v18": lengths[1]},
+def _report(v17: dict[str, float], v18: dict[str, float], fnf=0.02, size=0.0, lengths=(1000.0, 1000.0), fnf17=None) -> dict:
+    def arm(f, x):
+        return {"by_family": f, "mean_of_families": sum(f.values()) / len(f), "false_not_found": {"all": x}}
+    return {"scores": {"v17": arm(v17, fnf if fnf17 is None else fnf17), "v18": arm(v18, fnf)}, "prose_length4": {"v17": lengths[0], "v18": lengths[1]},
             "small": {"differences": {"v18": {"big_minus_small": dict.fromkeys(("single", "multi", "prose"), size)}}}}
 
 
@@ -39,6 +39,11 @@ def test_each_rule_can_fail():
     assert _verdicts(_report(BASE, {**GOOD, "history": 0.76}))[4] is False  # another family falls by more than 0.03
     assert _verdicts(_report(BASE, {**GOOD, "history": 0.775}))[4] is True
     assert _verdicts(_report(BASE, GOOD, fnf=0.06))[5] is False
+    assert _verdicts(_report(BASE, GOOD, fnf=0.04, fnf17=0.025))[5] is False  # a rise of more than 0.01
+    assert _verdicts(_report(BASE, GOOD, fnf=0.035, fnf17=0.025))[5] is True
+    full = {**BASE, "not_found": 1.0, "counts": 1.0}
+    assert _verdicts(_report(full, {**GOOD, "not_found": 0.975, "counts": 1.0}))[0] is False  # below v17
+    assert _verdicts(_report(full, {**GOOD, "not_found": 1.0, "counts": 0.96}))[1] is False
     high = {**BASE, "not_found": 0.95, "counts": 0.95}
     weak = {**high, "unanswerable": 0.83, "prose": 0.84, "single": 0.78, "multi": 0.78}
     assert _verdicts(_report(high, weak))[6] is False  # the mean rises by less than 0.02

@@ -1,5 +1,6 @@
-"""Fit v18's quote weights on training documents only: free-text score on train5k's 111 prose questions for each
-(DESC_WEIGHT, KIND_BONUS); the abstention is v16's, unchanged."""
+"""Fit v18's quote weights: free-text score on one folder's prose questions for each (DESC_WEIGHT, KIND_BONUS, TITLE_DOWN),
+v16's abstention kept. Run on train5k (prose_grid_train5k.log); the pooled choice over four sets is grid_pooled.py
+(prose_grid_pooled.log)."""
 import json, sys, itertools
 from pathlib import Path
 from cie.factbank.brain import Brain, Router

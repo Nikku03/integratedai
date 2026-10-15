@@ -32,12 +32,13 @@ Rule = Callable[[dict[str, Any]], bool]
 NEW, OLD = "v18", "v17"
 TARGETS = ("not_found", "counts", "unanswerable", "prose")  # the families v18 changes
 # The thresholds of the rules, set before the freeze (docs/FACTBANK_BRAIN4_PREREGISTRATION.md)
-NOT_FOUND_MIN = 0.95  # rule 1: v18 on the not-found family
-COUNTS_MIN = 0.95  # rule 2: v18 on the counts family
+NOT_FOUND_MIN = 0.95  # rule 1: v18 on the not-found family, and not below v17
+COUNTS_MIN = 0.95  # rule 2: v18 on the counts family, and not below v17
 UNANSWERABLE_LEAD = 0.03  # rule 3: v18 on the unanswerable family >= v17 + this
 PROSE_LEAD = 0.04  # rule 4: v18 on free text >= v17 + this
 KEEP_MARGIN = 0.03  # rule 5: v18 on each of the other four families >= v17 - this
-FALSE_NOT_FOUND_MAX = 0.05  # rule 6
+FALSE_NOT_FOUND_MAX = 0.05  # rule 6: v18's false "not found", and at most v17's + FALSE_NOT_FOUND_RISE
+FALSE_NOT_FOUND_RISE = 0.01
 MEAN_LEAD = 0.02  # rule 7: v18's mean over the eight families >= v17's + this
 LENGTH_SHARE = 1.05  # rule 8: v18's free-text answers are on average at most this times v17's length
 SIZE_MARGIN = 0.05  # rule 9 (reported): v18 at 5,000 documents >= the small set - this, for single, multi and free text each
@@ -54,18 +55,20 @@ def preregistered4() -> dict[str, Rule]:
     the report of ``score4``: label "v18" (v18's answers) against label "v17" (v17's, asked in the same folder)."""
     others = [f for f in T2.FAMILIES2 if f not in TARGETS]
     return {
-        f"1 not found: v18 >= {NOT_FOUND_MIN} on questions naming a document the company does not have":
-            lambda r: _fam(r, "not_found", NEW) >= NOT_FOUND_MIN - EPS,
-        f"2 counts: v18 >= {COUNTS_MIN}":
-            lambda r: _fam(r, "counts", NEW) >= COUNTS_MIN - EPS,
+        f"1 not found: v18 >= {NOT_FOUND_MIN} and >= v17 on questions naming a document the company does not have":
+            lambda r: _fam(r, "not_found", NEW) >= max(NOT_FOUND_MIN, _fam(r, "not_found", OLD)) - EPS,
+        f"2 counts: v18 >= {COUNTS_MIN} and >= v17":
+            lambda r: _fam(r, "counts", NEW) >= max(COUNTS_MIN, _fam(r, "counts", OLD)) - EPS,
         f"3 no answer in the haystack: v18 >= v17 + {UNANSWERABLE_LEAD} on the unanswerable questions":
             lambda r: _fam(r, "unanswerable", NEW) >= _fam(r, "unanswerable", OLD) + UNANSWERABLE_LEAD - EPS,
         f"4 free text: v18 >= v17 + {PROSE_LEAD}":
             lambda r: _fam(r, "prose", NEW) >= _fam(r, "prose", OLD) + PROSE_LEAD - EPS,
         f"5 no harm: on each of single, multi, history and email and chat, v18 >= v17 - {KEEP_MARGIN}":
             lambda r: all(_fam(r, f, NEW) >= _fam(r, f, OLD) - KEEP_MARGIN - EPS for f in others),
-        f"6 false 'not found': v18 says not found to at most {FALSE_NOT_FOUND_MAX} of the answerable questions":
-            lambda r: r["scores"][NEW]["false_not_found"]["all"] <= FALSE_NOT_FOUND_MAX + EPS,
+        f"6 false 'not found': v18 says not found to at most {FALSE_NOT_FOUND_MAX} of the answerable questions, and at most "
+        f"v17's + {FALSE_NOT_FOUND_RISE}":
+            lambda r: r["scores"][NEW]["false_not_found"]["all"] <= min(FALSE_NOT_FOUND_MAX, r["scores"][OLD]["false_not_found"]["all"]
+                                                                     + FALSE_NOT_FOUND_RISE) + EPS,
         f"7 better overall: v18's mean over the eight families >= v17's + {MEAN_LEAD}":
             lambda r: r["scores"][NEW]["mean_of_families"] >= r["scores"][OLD]["mean_of_families"] + MEAN_LEAD - EPS,
         f"8 no longer free-text answers: v18's mean length <= {LENGTH_SHARE} x v17's":

@@ -6,6 +6,8 @@ someone remind me" is not a link; a free-text answer whose document does not wri
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from cie.factbank import bank as B
@@ -25,7 +27,11 @@ def paths(tmp_path_factory):
             [0.0, 2.0, 0.0, 0.0, 1.0], {}, {}, {}).save(path / "lessons.json")
     P.PlanLessons([W[f] for f in P.FEATURES_V4], {}, {}, {}, list(P.FEATURES_V4), rules="v9", tickets=True,
                   orders=True).save(path / "plans.json")
+    paths_dir["v18"] = str(path)
     return path
+
+
+paths_dir: dict[str, str] = {}
 
 
 def _brain(paths, **kw) -> BR.Brain:
@@ -54,7 +60,8 @@ def test_a_spliced_title_is_not_found(paths):
 def test_real_and_shortened_titles_are_not_spliced(paths):
     b = _brain(paths, v18=True)
     for q in ("When is the Linear issue Traffic Inspector prototype due?", "When is the Rotate office wifi keys issue due?",
-              "Who is on the traffic inspector issue?", "When is the Linear issue Rotate wifi keys due?"):
+              "Who is on the traffic inspector issue?", "When is the Linear issue Rotate wifi keys due?",
+              "When do we need to replace the wifi keys?", "is there a runbook on how to replace the wifi keys?"):
         assert b.spliced(b.tidy(q)) is None, q
 
 
@@ -71,8 +78,19 @@ def test_counts_asked_the_way_people_type(paths):
               "quick one - count the jira tickets with priority P1", "fyi prepping for a review - how many jira tickets have priority P1?"):
         t = rec18.table(q)
         assert t is not None and (t["kind"], t["answer"]) == ("count", "2"), q
+    for q in ("num of jira tickets with priority P1?", "No. of Jira tickets with priority P1?", "nums of jira tickets with priority P1?"):
+        t = rec18.table(q)
+        assert t is not None and (t["kind"], t["answer"]) == ("count", "2"), q
+        assert rec17.table(q) is None, q
     assert rec17.table("for the board deck, how many Jira tickets have priority P1?") is None
     assert rec17.table("# of jira tickets at priority P1?") is None
+
+
+def test_count_as_a_verb_is_not_a_count(paths):
+    rec18, rec17 = _brain(paths, v18=True).records(), _brain(paths, v17=True).records()
+    q = "which jira tickets with priority P1 count as tickets?"
+    assert rec18.intent(q) == rec17.intent(q) == "keys"
+    assert R.COUNT_ASK_V18.search("pls count the open jira tickets") and R.COUNT_ASK_V18.search("quick one - count the pages")
 
 
 def test_an_aside_must_say_nothing_table_reads(paths):
@@ -85,9 +103,18 @@ def test_an_aside_must_say_nothing_table_reads(paths):
     assert rec.table("for the q3 review, how many jira tickets have priority P1?") is None
 
 
-def test_by_a_person_names_the_author_role(paths):
-    rec = _brain(paths, v18=True).records()
-    assert R.BY_ROLES[0] == "author" and "by" in R.FILLER
+def test_by_a_person_names_the_author_role(tmp_path):
+    from test_brain_v16_routes import _doc
+
+    extra = (_doc("l9", "linear", "Audit the badge readers", {"key": "ENG-19", "status": "Todo", "priority": "P3", "project": "Lobby Refresh",
+                                                               "assignee": "Ava Chen", "creator": "Omar Singh"}, keys=["ENG-19"]), {})
+    B.build(tmp_path / "factbank_v2.sqlite", [*DOCS, extra], text_facts=True)
+    for f in ("lessons.json", "plans.json"):
+        (tmp_path / f).write_bytes((Path(paths_dir["v18"]) / f).read_bytes())
+    q = "how many linear issues by Ava Chen?"  # Ava Chen is the creator of DES-1 and ENG-12 and the assignee of ENG-19
+    assert _brain(tmp_path, v17=True).records().table(q) is None
+    t = _brain(tmp_path, v18=True).records().table(q)
+    assert t["answer"] == "2" and t["filters"] == ["creator = Ava Chen"]
 
 
 # ------------------------------------------------------------------ unanswerable
@@ -105,8 +132,7 @@ def test_someone_is_not_a_link(paths):
 def test_own_terms(paths):
     b = _brain(paths, v18=True)
     assert b.own_terms("What did the Zorblax pilot agree on the sample-and-hold probe for Argentum Health?") == \
-        ["argentum", "health", "zorblax"] or set(b.own_terms("What did the Zorblax pilot agree on the sample-and-hold probe for Argentum "
-                                                               "Health?")) == {"argentum", "health", "zorblax"}
+        ["argentum", "health", "zorblax"]
     assert b.own_terms("what p95 TTFT did we promise for the 6wk pilot, tmrw?") == ["ttft"]
     assert b.ordinary("happened") and b.ordinary("gettting") and not b.ordinary("zorblax")
 
@@ -114,6 +140,7 @@ def test_own_terms(paths):
 def test_a_free_text_answer_needs_the_questions_own_terms(paths):
     b = _brain(paths, v18=True)
     assert b.unheld_terms("How do we verify the telemetry mode on the status endpoint?", "doc:c1") == []
+    assert b.unheld_terms("How do we verify the TelemetryRunbook mode?", "doc:c1") == []  # two of its words written together
     assert b.unheld_terms("How do we verify the Zorblax telemetry mode?", "doc:c1") == ["zorblax"]
     ans, why, evidence, journal = b.prose_row("How do we verify the Zorblax telemetry mode?")
     assert ans == "not found" and "zorblax" in why and journal[0]["unheld"] == ["zorblax"] and journal[0]["abstained"]
@@ -140,6 +167,15 @@ def test_quote_v18_answers_each_part():
     q = "re the rewrap incident where pods failed to claim tokens - what was the hotfix and how much jitter will the permanent fix allow?"
     text, cites = PR.quote_v18(items, q, stop=BR.COVER_STOP)
     assert "100ms" in text and "2s jitter" in text and len(text) <= PR.QUOTE_CAP and cites
+
+
+def test_the_asked_kind_compares_whole_values():
+    def sent(x):
+        return {"id": "d:0", "kind": "passage", "summary": "Budget", "document_id": "d", "detail": x}
+    items = [sent("The budget review was finished by the finance team in the spring. "
+                  "Overall the budget grew by 20% after the spring review of the plan.")]
+    text, _ = PR.quote_v18(items, "how much did the 2026 budget grow in the review?", window=0, cap=120)
+    assert "20%" in text
 
 
 def test_v18_keeps_v16s_abstention(paths):
