@@ -1,8 +1,6 @@
 # The company brain, round 4 (v18): fixed before the test
 
-**Draft: not frozen.** The freeze is the commit that removes this line.
-
-I wrote this on 2026-10-15:
+I wrote this on 2026-10-15 and froze it on 2026-10-16:
 - **after** building v18 and checking it on development data: earlier rounds' training, development and spent test sets
   (below);
 - **before** drawing the test documents or writing a single test question.
@@ -32,11 +30,11 @@ v18 is v17 with the fixes below (`Brain(..., v18=True)`; `cie.factbank.brain`, `
 the same answers as before.
 
 **1. Not found: a title made of two real ones** (`Brain.spliced`). A question that writes, quoted or not:
-- the start of one real document title (at least 0.4 of its content words, `SPLICE_SHARE`; a content word has three letters or
-  more and is not a word of asking or a stop word, so "replace the" is not the start of "Replace the badge printer"),
-- followed at once by the end of another (at least 0.4 of its content words),
+- the start of one real document title: at least 0.4 of its words (`SPLICE_SHARE`), holding at least two of its content words
+  (one for a title of two content words or fewer; a content word has three letters or more and is not a word of asking or a
+  stop word, so "replace the" is not the start of "Replace the badge printer"),
+- followed at once by the end of another, by the same measure,
 - where no one title has both (that is a real title with words left out),
-- each part holding a word of three letters or more that is not a word of asking,
 - and the bank writes the two together nowhere,
 
 is "not found" (route not_found). The benchmark invents titles this way (the first half of one title and the second half of
@@ -185,28 +183,35 @@ forbid a fall; rule 6 sets a ceiling and a rise; rules 3, 4, 5, 7 and 8 compare 
 
 ## Development
 
-v17 and v18 in the same process on every question (`docs/benchmarks/brain4/development/`, the script `compare.py`):
+v17 and v18 in the same process on every question (`docs/benchmarks/brain4/development/`, the script `compare.py`), with the
+code frozen below. The last change (the splice check's content words, after the review) touched only the splice check; it was
+checked on every set's questions by `probe_nf.py` (`probe_splice.log`), where it fired on no answerable question and on one more
+not-found question of round 2's set, whose row was asked again.
 
-| set | questions | not found | counts | unanswerable | free text | all | better / worse |
-|---|---|---|---|---|---|---|---|
-| round 3's test, messy (seen) | 517 | 0.800 → 1.000 | 0.825 → 1.000 | 0.880 → 0.946 | 0.750 → 0.830 | 0.860 → 0.900 | 25 / 1 |
-| round 3's test, tidy (seen) | 518 | 1.000 → 1.000 | 1.000 → 1.000 | 0.913 → 0.946 | 0.750 → 0.830 | 0.920 → 0.933 | 11 / 1 |
-| round 2's test, messy (seen) | 579 | 0.850 → 1.000 | 0.775 → 1.000 | 0.854 → 0.913 | 0.666 → 0.771 | 0.801 → 0.861 | 46 / 5 |
-| development (dev5k_q2) | 443 | 1.000 → 1.000 | 1.000 → 1.000 | 0.887 → 0.915 | 0.777 → 0.827 | 0.922 → 0.932 | 7 / 1 |
-| training (train5k) | 622 | – | – | – | 0.697 → 0.740 | 0.884 → 0.892 | 15 / 6 |
-| messy samples (dev 80, train 116) | 196 | 0.800 → 1.000 (5) | 1.000 → 1.000 (35) | 0.778 → 0.889 (9) | – | 0.914 → 0.924 | 2 / 0 |
+| set | questions | not found | counts | unanswerable | free text | mean of 8 families (rule 7) | false "not found" | better / worse |
+|---|---|---|---|---|---|---|---|---|
+| round 3's test, messy (seen) | 517 | 0.800 → 1.000 | 0.825 → 1.000 | 0.880 → 0.946 | 0.750 → 0.830 | 0.859 → 0.924 | 10 → 12 of 405 | 25 / 1 |
+| round 3's test, tidy (seen) | 518 | 1.000 → 1.000 | 1.000 → 1.000 | 0.913 → 0.946 | 0.750 → 0.830 | 0.937 → 0.951 | 5 → 5 of 406 | 11 / 1 |
+| round 2's test, messy (seen) | 579 | 0.850 → 1.000 | 0.775 → 1.000 | 0.854 → 0.913 | 0.666 → 0.771 | 0.837 → 0.905 | 17 → 17 of 456 | 46 / 5 |
+| development (dev5k_q2) | 443 | 1.000 → 1.000 | 1.000 → 1.000 | 0.887 → 0.915 | 0.777 → 0.827 | 0.938 → 0.948 | 1 → 1 of 352 | 7 / 1 |
+| training (train5k) | 622 | – | – | – | 0.697 → 0.740 | – | 10 → 10 of 622 | 15 / 6 |
+| messy samples (dev 80, train 116) | 196 | 0.800 → 1.000 (5) | 1.000 → 1.000 (35) | 0.778 → 0.889 (9) | – | – | 3 → 3 of 182 | 2 / 0 |
 
 - **No other family changes on any set,** except one more single-document question right on round 2's set.
 - **Every answer that got worse is a free-text quote** (14 in all): v18 picked another sentence, and an answer fact moved
   out. On the same sets 63 free-text answers got better.
+- **False "not found":** two more on round 3's messy set, both a "single" question v17 also got wrong (an action item's due
+  date), now refused by the check of plans from a named person.
 - **The 14 guard sets** (698 questions): none changes.
-- **The free-text answers are as long as v17's** (round 3's set: 1,054 characters on average both).
-- **Time:** v18 adds no index; the splice check reads the bank's titles once.
+- **The free-text answers are as long as v17's** (round 3's set: 1,054 characters on average both; `prose_quote.log`).
+- **Time:** v18 answers in the time v17 does (the same median, question by question in the same process); the splice check
+  takes 0.2 seconds for 517 questions.
 
-**How the quote's weights were chosen.** On training's 111 free-text questions alone, the settings tried (description weight
-0.15–1.0, kind bonus 0–0.5, title words weighed down or not) were within 0.02 of each other once the description weighed less
-than 1.0 (`prose_grid_train5k.log`); training's best had title words not weighed down (0.757 against 0.740). Pooled over the
-four development sets, weighing them down was better (0.804 against 0.792), and it was kept, with 0.3 and 0.3.
+**How the quote's weights were chosen.** On training's 111 free-text questions alone (`prose_grid_train5k.log`), the settings
+tried (description weight 0.15–1.0, kind bonus 0–0.5, title words weighed down or not) were within 0.03 of each other (0.730–
+0.757) once the description weighed less than 1.0; training's best had title words not weighed down (0.757 against 0.740).
+Pooled over the four development sets (`prose_grid_pooled.log`, 361 questions), weighing them down was better (0.805 against
+0.792), and it was kept, with 0.3 and 0.3.
 
 **Most of the development questions are seen.** Round 3's set is the one whose misses v18 was built on, so its numbers are
 optimistic; round 2's guided the free-text work too.
@@ -251,7 +256,9 @@ and their own checks on the unit tests' tiny made-up bank.
 2. **"count" as a verb turned a list question into a number** ("which tickets with priority P1 count as open tickets?").
    **Fixed:** "count" asks for a count only when it opens the question or a clause, or follows "pls", "can you" and the like.
 3. **The splice check refused "when do we need to replace the wifi keys?"**: "replace the" counted as half the start of
-   "Replace the badge printer". **Fixed:** the shares count content words only.
+   "Replace the badge printer". **Fixed:** each part must also hold two of its title's content words (one for a short title).
+   A first fix, the shares over content words only, missed a made-up title on round 2's set ("cycle surge & rebalance —
+   dynamic staffing sizing for weights, KV, and activations"), whose first half held few content words; it was replaced.
 4. **The asked-kind bonus compared single digits** with the question ("20%" was not new to a question about 2026). **Fixed:**
    whole values are compared.
 5. **A term written joined ("KVCache") was refused against a document writing "KV cache".** **Fixed:** two or three of the
