@@ -52,7 +52,7 @@
 
 ## Results
 
-**The messy set** (587 questions: single 140, of them 59 descriptive; multi 56; free text 80; not found 40; counts 60;
+**The messy set** (587 questions: single 140, of them 50 descriptive; multi 56; free text 80; not found 40; counts 60;
 history 40; email and chat 40; unanswerable 131):
 
 | arm | single | multi | free text | not found | counts | history | email, chat | unanswerable | mean of 8 |
@@ -97,7 +97,7 @@ quieter machine, gave 0.87 s for v17).
 **Not found (40 of 40).** v17 answered 8 of the 10 made-up titles from a similar real document (the described route). The splice
 check now catches all 10. The other 30 (invented keys, pull request numbers and names) were already "not found".
 
-**Counts (57 of 60).** All 10 counts v17 missed are now right. The 3 still wrong were wrong for v17 too:
+**Counts (57 of 60).** v17 missed 13 counts (47 of 60); 10 of them are now right. The other 3 are still wrong:
 - two counts by the planner, one too many ("enterprise tier hubspot accounts with Arjun Patel as the solutions enginer", a
   typo; "google drive docs in the shared_drives drive area that Marisol Vega owns");
 - one filtered list ("linear issues w/ high customer impact and an estimate of 3"), answered with a field value.
@@ -109,7 +109,8 @@ check now catches all 10. The other 30 (invented keys, pull request numbers and 
 - 1 came from the check on plans from a named person.
 
 Of the 15 still answered, 12 are free-text quotes from a near document (a "cost-probe sidecar PR" quoted from another probe's
-document), and 3 are empty fields answered from another field (a CSM name, a customer impact).
+document), and 3 are empty fields: 2 CSM questions answered from another person field of the same account, and 1 customer
+impact answered from another Linear issue that a plan reached.
 
 **Free text (0.681).** Of the 80 questions, BM25 found the right document for 79. Of v18's 30 answers short of full marks:
 - 23 were answered from the right document, with the answer facts in it, but left one or more facts out (18 quotes, and 5
@@ -119,9 +120,10 @@ document), and 3 are empty fields answered from another field (a CSM name, a cus
 The 11 answers that changed:
 - **7 better:** the quote picked a sentence holding the asked value (a deletion date and an audit id; a default TTL; a date
   for "by when").
-- **2 worse, refused for a typo:** the own-terms check found "supossed" and "mixup" in no document. "supossed" is two
-  slips of a letter from "supposed", and the check allows one; "mixup" is "mix-up" written as one word.
-- **2 worse, a worse sentence:** the quote dropped a fact v16's quote had held.
+- **2 worse, refused for a typo:** the own-terms check found that the quoted document, the right one both times, did not
+  write "supossed" or "mixup". "supossed" is two slips of a letter from "supposed", and the check allows one; "mixup" is
+  "mix-up" written as one word.
+- **2 worse, a worse sentence:** v18's quote dropped a fact v17's quote (v16's quoting) had held.
 
 **Why development misled.** Development's free-text gain (+0.05 on dev5k, +0.08 to +0.10 on the seen test sets) came from
 sets whose questions shaped the quote, or from tidier wording. The test's writers write more casually and with more typos, and
