@@ -150,7 +150,7 @@ the quote's weights (picked on pooled development sets) did not carry over.
 - a question about a document the company does not have is now "not found", however it is typed;
 - counts typed casually are counted;
 - questions with no answer are refused more often;
-- nothing else got worse, apart from 2 free-text answers refused for a typo.
+- nothing got worse apart from 4 free-text answers (2 of them refused for a typo).
 
 **Its free text is not better.** The quote changes help on some questions and hurt on others; on fresh questions they come out
 even.
