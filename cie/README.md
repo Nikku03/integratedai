@@ -186,6 +186,18 @@ On 517 messy questions over 5,000 fresh documents:
 - **The claim was not met, by one question:** descriptive questions rose by 0.089 (0.789 to 0.878), against the 0.10 set
   in advance. These test questions were easier for v16 than round 2's (0.789 against 0.500), so there was less to fix.
 
+**Round 4: v18, the questions typed casually** ([`docs/FACTBANK_BRAIN4_RESULTS.md`](docs/FACTBANK_BRAIN4_RESULTS.md)).
+v18 catches a made-up title that mixes two real ones, counts questions typed casually ("# of…", "for the board deck, how
+many…"), refuses more answers that are in no document, and quotes free text part by part.
+
+On 587 messy questions over 5,000 fresh documents:
+- **Not found:** 0.800 → 1.000 (40 of 40).
+- **Counts:** 0.783 → 0.950.
+- **No answer in any document:** 0.840 → 0.885.
+- **Mean over the eight kinds:** 0.837 → 0.890. 32 answers better, 4 worse.
+- **The claim was not met because of free text:** 0.671 → 0.681, against the +0.04 set in advance. Two of the four answers
+  that got worse were refused for a typo in the question.
+
 ## Brain-wired reasoning neurons (research)
 
 `cie.neuro` wires the reasoning engine's spiking neurons like a piece of Blue Brain's cortex model (directed cliques of
