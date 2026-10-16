@@ -272,8 +272,9 @@ CHAT_TOKEN = re.compile(r"(?<![\w/])(w/o|w/|b/c|[a-z]+)(?![\w/])")
 TITLE_MIN = (3, 12)  # a title quoted by ``Brain.tidy`` has at least this many words and characters
 # v18 (round 4, ``Brain(..., v18=True)``), not found: a title made of the start of one real title and the end of another, written
 # without quotes ("when was the confluence page GPU Allocator Operator: Terraform templates and telemetry-capture playbook last
-# updated?", ``Brain.spliced``). Each part holds at least SPLICE_SHARE of its title's content words (``content_word``: three
-# letters or more, not a word of asking or a stop word), and the two together are written nowhere in the bank
+# updated?", ``Brain.spliced``). Each part holds at least SPLICE_SHARE of its title's words and two of its content words
+# (``content_word``: three letters or more, not a word of asking or a stop word; one for a title of two content words or
+# fewer), and the two together are written nowhere in the bank
 SPLICE_SHARE = 0.4
 # v18, a plan from a person the question names is checked without the person's name, the words of chat (``records.FILLER``) and
 # "on someone's plate" (``Brain.cover_step``)
@@ -876,19 +877,19 @@ class Brain:
             self._title_texts = sorted(out)
         return self._title_texts
 
-    def title_parts(self) -> tuple[dict[tuple[str, ...], dict[str, int]], dict[tuple[str, ...], dict[str, int]]]:
+    def title_parts(self) -> tuple[dict[tuple[str, ...], dict[str, tuple[int, int]]], dict[tuple[str, ...], dict[str, tuple[int, int]]]]:
         """v18: the starts and the ends of the bank's document titles (squashed words, the title's own words left out), each
-        with the documents whose title it starts or ends and their titles' content words (``content_word``), at least one."""
+        with the documents whose title it starts or ends and their titles' (words, content words: ``content_word``)."""
         if getattr(self, "_title_parts", None) is None:
-            starts: dict[tuple[str, ...], dict[str, int]] = defaultdict(dict)
-            ends: dict[tuple[str, ...], dict[str, int]] = defaultdict(dict)
+            starts: dict[tuple[str, ...], dict[str, tuple[int, int]]] = defaultdict(dict)
+            ends: dict[tuple[str, ...], dict[str, tuple[int, int]]] = defaultdict(dict)
             for e, k in self.bank.kinds.items():
                 if k != "document":
                     continue
                 ws = tuple(squash(self.bank.names.get(e, "")).split())
                 if len(ws) < 2:
                     continue
-                n = max(1, sum(map(content_word, ws)))
+                n = (len(ws), sum(map(content_word, ws)))
                 for i in range(1, len(ws)):
                     starts[ws[:i]][e] = n
                     ends[ws[i:]][e] = n
@@ -897,8 +898,9 @@ class Brain:
 
     def spliced(self, question: str) -> str | None:
         """v18: a title the question writes, quoted or not, that joins the start of one real title to the end of another and
-        that the bank writes nowhere: the start holds at least ``SPLICE_SHARE`` of the content words (``content_word``) of a title it
-        starts, the end the same of a title it ends ("replace the" is not the start of "Replace the badge printer"), no one title has both (that is a title with words left out: "hot-swap switchbench notes" for
+        that the bank writes nowhere: the start holds at least ``SPLICE_SHARE`` of the words of a title it starts, and at least two
+        of its content words (``content_word``; one for a title of two content words or fewer: "replace the" is not the start of
+        "Replace the badge printer"), the end the same of a title it ends, no one title has both (that is a title with words left out: "hot-swap switchbench notes" for
         "Hot-swap variant switchbench notes"), each part holds a word of three letters or more that is not a word of asking,
         and the bank writes the two together nowhere (``holds_words``). None when there is none."""
         starts, ends = self.title_parts()
@@ -908,12 +910,14 @@ class Brain:
         for i in range(n):
             for j in range(i + 1, n):
                 a = tuple(toks[i:j])
-                heads = {d for d, m in starts.get(a, {}).items() if sum(content[i:j]) >= SPLICE_SHARE * m}
-                if not heads or not any(content[i:j]):
+                ca = sum(content[i:j])
+                heads = {d for d, (w, c) in starts.get(a, {}).items() if len(a) >= SPLICE_SHARE * w and ca >= min(2, -(-c // 2))}
+                if not heads or not ca:
                     continue
                 for e in range(n, j, -1):
                     b = tuple(toks[j:e])
-                    tails = {d for d, m in ends.get(b, {}).items() if sum(content[j:e]) >= SPLICE_SHARE * m}
+                    cb = sum(content[j:e])
+                    tails = {d for d, (w, c) in ends.get(b, {}).items() if len(b) >= SPLICE_SHARE * w and cb >= min(2, -(-c // 2))}
                     if (tails and any(content[j:e]) and not (set(starts[a]) & set(ends[b]))
                             and not self.holds_words(" ".join(toks[i:e]))):
                         return " ".join(toks[i:e])
