@@ -1,0 +1,41 @@
+{
+ "work": "/tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/brain4/test5k",
+ "kind": "prose",
+ "n": 100,
+ "seed": 1022,
+ "documents": 5000,
+ "packets": 100,
+ "by_source": {
+  "confluence": 11,
+  "fireflies": 11,
+  "github": 11,
+  "gmail": 12,
+  "google_drive": 11,
+  "hubspot": 11,
+  "jira": 11,
+  "linear": 11,
+  "slack": 11
+ },
+ "candidates": {
+  "confluence": 37,
+  "fireflies": 90,
+  "github": 67,
+  "gmail": 1208,
+  "google_drive": 229,
+  "hubspot": 136,
+  "jira": 43,
+  "linear": 333,
+  "slack": 2792
+ },
+ "left_out": {
+  "short body": 5
+ },
+ "avoided": 60,
+ "used_by_questions": 0,
+ "text_chars": {
+  "median": 5714,
+  "cut": 48
+ },
+ "out": "/tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/brain4/packets/test5k_prose_1022.packets.jsonl",
+ "keys": "/tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/brain4/packets/test5k_prose_1022.keys.jsonl"
+}

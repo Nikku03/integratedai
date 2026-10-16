@@ -1,0 +1,46 @@
+{
+ "kept": 59,
+ "rejected": 1,
+ "reasons": {
+  "yes/no question": 1
+ },
+ "by_source": {
+  "confluence": 8,
+  "fireflies": 9,
+  "github": 9,
+  "google_drive": 9,
+  "hubspot": 9,
+  "jira": 7,
+  "linear": 8
+ },
+ "by_field": {
+  "confluence.author": 2,
+  "confluence.last_updated": 3,
+  "confluence.space": 3,
+  "fireflies.customer_company": 4,
+  "fireflies.redwood_owner": 5,
+  "github.author": 3,
+  "github.merged_at": 3,
+  "github.repo": 3,
+  "google_drive.created_at": 3,
+  "google_drive.owner": 3,
+  "google_drive.status": 3,
+  "hubspot.forecast_close_month": 2,
+  "hubspot.owner": 3,
+  "hubspot.se_assigned": 2,
+  "hubspot.stage": 2,
+  "jira.assignee": 1,
+  "jira.customer_company": 2,
+  "jira.priority": 2,
+  "jira.reporter": 1,
+  "jira.status": 1,
+  "linear.assignee": 2,
+  "linear.creator": 1,
+  "linear.due_date": 1,
+  "linear.priority": 1,
+  "linear.project": 1,
+  "linear.status": 2
+ },
+ "out": "/tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/brain4/writers/test_out/test5k_descriptive_1021.questions.jsonl",
+ "rejected_file": "/tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/brain4/writers/test_out/test5k_descriptive_1021.questions.rejected.jsonl"
+}

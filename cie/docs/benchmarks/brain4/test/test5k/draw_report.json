@@ -1,0 +1,84 @@
+{
+ "documents": 5000,
+ "targets": {
+  "confluence": 45,
+  "fireflies": 99,
+  "github": 76,
+  "gmail": 1208,
+  "google_drive": 238,
+  "hubspot": 145,
+  "jira": 51,
+  "linear": 341,
+  "slack": 2797
+ },
+ "drawn": {
+  "confluence": 45,
+  "fireflies": 99,
+  "github": 76,
+  "gmail": 1208,
+  "google_drive": 238,
+  "hubspot": 145,
+  "jira": 51,
+  "linear": 341,
+  "slack": 2797
+ },
+ "skipped": {
+  "ticket key already drawn": 2,
+  "key not a plain ticket key": 1
+ },
+ "planted": [
+  {
+   "pr": "dsid_fda4e47426864bc682d42e7be2e8695c",
+   "issue": "dsid_d8f3f99a3c2d4e4da403226d3dd22e45"
+  },
+  {
+   "pr": "dsid_94b31c7aca4c4a0284ede097e4eee182",
+   "issue": "dsid_fb0fdac22d374fcd98726a20f0ced14a"
+  },
+  {
+   "pr": "dsid_4819af1c03494d10bf8e9739039f1843",
+   "issue": "dsid_8be47e742d7c4ddaae9b7d73410df51a"
+  }
+ ],
+ "planted_candidates": 3,
+ "remaining": 41449,
+ "zone": "test",
+ "seed": 1019,
+ "zone_documents": 56641,
+ "excluded_in_zone": 15192,
+ "n": 5000,
+ "by_source": {
+  "confluence": 45,
+  "fireflies": 99,
+  "github": 76,
+  "gmail": 1208,
+  "google_drive": 238,
+  "hubspot": 145,
+  "jira": 51,
+  "linear": 341,
+  "slack": 2797
+ },
+ "excluded_haystacks": {
+  "/tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/brain/test5k/haystack.json": {
+   "in_zone": 5000
+  },
+  "/tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/brain2/test5k/haystack.json": {
+   "in_zone": 5000
+  },
+  "/tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/brain3/r2heldout/haystack.json": {
+   "in_zone": 94
+  },
+  "/tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/brain3/test5k/haystack.json": {
+   "in_zone": 5000
+  },
+  "/tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/brain4/r3heldout/haystack.json": {
+   "in_zone": 98
+  }
+ },
+ "zones_file": "/tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/brain/zones.json.gz",
+ "zones_sha256": "b1afac237c309a82818ab6c99dba291207503f0b33b414a3af5edc0a266d39fa",
+ "index": "/tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/mt5k/index.json",
+ "index_sha256": "4c78806b2f310150b44a8e1826a72b1d4c512d4a8fc7a03aa7e1f006af057547",
+ "haystack": "/tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/brain4/test5k/haystack.json",
+ "haystack_sha256": "6085db630c7d1c208770f6be10856ab389ac0b11017e0279c3667c1708cb6eb6"
+}

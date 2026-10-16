@@ -1,0 +1,45 @@
+{
+ "batches": [
+  {
+   "batch": "test5k_prose_1022_b00",
+   "packets": 20,
+   "read": "jsonl",
+   "rows": 20,
+   "packets_answered": 20,
+   "complete": true
+  },
+  {
+   "batch": "test5k_prose_1022_b01",
+   "packets": 20,
+   "read": "jsonl",
+   "rows": 20,
+   "packets_answered": 20,
+   "complete": true
+  },
+  {
+   "batch": "test5k_prose_1022_b02",
+   "packets": 20,
+   "read": "jsonl",
+   "rows": 20,
+   "packets_answered": 20,
+   "complete": true
+  },
+  {
+   "batch": "test5k_prose_1022_b03",
+   "packets": 20,
+   "read": "jsonl",
+   "rows": 20,
+   "packets_answered": 20,
+   "complete": true
+  },
+  {
+   "batch": "test5k_prose_1022_b04",
+   "packets": 20,
+   "read": "jsonl",
+   "rows": 20,
+   "packets_answered": 20,
+   "complete": true
+  }
+ ],
+ "complete": true
+}
