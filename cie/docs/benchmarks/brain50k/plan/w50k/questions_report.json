@@ -1,0 +1,572 @@
+{
+ "round4": {
+  "questions": 587,
+  "kept": 509,
+  "recounted": 55,
+  "set_aside": 78,
+  "kept_by_family": {
+   "counts": 57,
+   "email_chat": 40,
+   "history": 40,
+   "multi": 31,
+   "not_found": 37,
+   "prose": 80,
+   "single": 124,
+   "unanswerable": 100
+  },
+  "set_aside_by_family": {
+   "counts": 3,
+   "multi": 25,
+   "not_found": 3,
+   "single": 16,
+   "unanswerable": 31
+  },
+  "set_aside_reasons": {
+   "not asked": 26,
+   "anchor written in the haystack": 19,
+   "differs or not asked": 14,
+   "a haystack document holds an anchor word and half the answer facts": 9,
+   "differs": 4,
+   "differs; the list grew too long": 3,
+   "title Jaccard >= 0.5": 3
+  }
+ },
+ "complex": {
+  "candidates": {
+   "pr_assignee_load": 17,
+   "pr_parent_assignee": 0,
+   "meeting_account_owner": 7,
+   "meeting_account_stage": 7,
+   "email_account_owner": 113,
+   "creator_jira_load": 742,
+   "project_first_due": 84,
+   "compare_due_assignee": 346,
+   "assignee_open_p": 1426,
+   "owner_meetings": 537
+  },
+  "drawn": {
+   "pr_assignee_load": 16,
+   "pr_parent_assignee": 0,
+   "meeting_account_owner": 7,
+   "meeting_account_stage": 7,
+   "email_account_owner": 16,
+   "creator_jira_load": 16,
+   "project_first_due": 16,
+   "compare_due_assignee": 16,
+   "assignee_open_p": 16,
+   "owner_meetings": 16
+  },
+  "aside": {
+   "pr_assignee_load": {
+    "count out of range": 9,
+    "the name in another form": 2
+   },
+   "pr_parent_assignee": {
+    "no parent issue in the haystack": 28
+   },
+   "meeting_account_owner": {
+    "no one HubSpot account for the customer": 985
+   },
+   "meeting_account_stage": {
+    "no one HubSpot account for the customer": 985
+   },
+   "email_account_owner": {
+    "thread or account unusable": 11764
+   },
+   "creator_jira_load": {
+    "count out of range": 2676,
+    "no full-named creator": 26
+   },
+   "project_first_due": {
+    "project too small, too large or with an issue not due": 2349,
+    "tie for first due": 7,
+    "project named inside another": 71
+   },
+   "compare_due_assignee": {
+    "same due date or assignee": 44
+   },
+   "assignee_open_p": {
+    "count out of range, or every issue of the person counted": 1708,
+    "the name in another form": 251,
+    "no full-named assignee or P priority": 59
+   },
+   "owner_meetings": {
+    "count out of range": 455
+   }
+  },
+  "questions": 126
+ },
+ "questions": 635,
+ "by_family": {
+  "complex": 126,
+  "counts": 57,
+  "email_chat": 40,
+  "history": 40,
+  "multi": 31,
+  "not_found": 37,
+  "prose": 80,
+  "single": 124,
+  "unanswerable": 100
+ },
+ "tidy_sha256": "ca2388b8c00f52bbebaac08dc43a2911ff301fb232e56f86aeae1af09e42ed38",
+ "messy_sha256": "7e0d8d712ea1e8af283cab81fedf07001f73c95771f24b9032b10d21121f5365",
+ "not_reworded": 0,
+ "changed": {
+  "count1_confluence-017": {
+   "was": {
+    "value": "4"
+   },
+   "now": {
+    "value": "36"
+   }
+  },
+  "count1_fireflies-019": {
+   "was": {
+    "value": "2"
+   },
+   "now": {
+    "value": "8"
+   }
+  },
+  "count1_github-002": {
+   "was": {
+    "value": "2"
+   },
+   "now": {
+    "value": "20"
+   }
+  },
+  "count1_google_drive-013": {
+   "was": {
+    "value": "6"
+   },
+   "now": {
+    "value": "79"
+   }
+  },
+  "count1_hubspot-007": {
+   "was": {
+    "value": "2"
+   },
+   "now": {
+    "value": "25"
+   }
+  },
+  "count1_jira-002": {
+   "was": {
+    "value": "3"
+   },
+   "now": {
+    "value": "33"
+   }
+  },
+  "count1_linear-003": {
+   "was": {
+    "value": "3"
+   },
+   "now": {
+    "value": "29"
+   }
+  },
+  "count2_confluence-009": {
+   "was": {
+    "value": "6"
+   },
+   "now": {
+    "value": "31"
+   }
+  },
+  "count2_fireflies-004": {
+   "was": {
+    "value": "3"
+   },
+   "now": {
+    "value": "55"
+   }
+  },
+  "count2_google_drive-016": {
+   "was": {
+    "value": "2"
+   },
+   "now": {
+    "value": "9"
+   }
+  },
+  "count2_hubspot-008": {
+   "was": {
+    "value": "2"
+   },
+   "now": {
+    "value": "8"
+   }
+  },
+  "count2_jira-032": {
+   "was": {
+    "value": "3"
+   },
+   "now": {
+    "value": "57"
+   }
+  },
+  "count2_linear-054": {
+   "was": {
+    "value": "2"
+   },
+   "now": {
+    "value": "60"
+   }
+  },
+  "count_gmail-223": {
+   "was": {
+    "value": "2"
+   },
+   "now": {
+    "value": "20"
+   }
+  },
+  "count1_confluence-009": {
+   "was": {
+    "value": "2"
+   },
+   "now": {
+    "value": "38"
+   }
+  },
+  "count1_fireflies-015": {
+   "was": {
+    "value": "3"
+   },
+   "now": {
+    "value": "24"
+   }
+  },
+  "count1_github-001": {
+   "was": {
+    "value": "4"
+   },
+   "now": {
+    "value": "25"
+   }
+  },
+  "count1_google_drive-004": {
+   "was": {
+    "value": "2"
+   },
+   "now": {
+    "value": "12"
+   }
+  },
+  "count1_hubspot-025": {
+   "was": {
+    "value": "4"
+   },
+   "now": {
+    "value": "42"
+   }
+  },
+  "count1_jira-003": {
+   "was": {
+    "value": "5"
+   },
+   "now": {
+    "value": "106"
+   }
+  },
+  "count1_linear-029": {
+   "was": {
+    "value": "2"
+   },
+   "now": {
+    "value": "6"
+   }
+  },
+  "count2_confluence-001": {
+   "was": {
+    "value": "4"
+   },
+   "now": {
+    "value": "40"
+   }
+  },
+  "count2_fireflies-003": {
+   "was": {
+    "value": "2"
+   },
+   "now": {
+    "value": "18"
+   }
+  },
+  "count2_google_drive-048": {
+   "was": {
+    "value": "2"
+   },
+   "now": {
+    "value": "5"
+   }
+  },
+  "count2_hubspot-020": {
+   "was": {
+    "value": "5"
+   },
+   "now": {
+    "value": "28"
+   }
+  },
+  "count2_jira-022": {
+   "was": {
+    "value": "2"
+   },
+   "now": {
+    "value": "5"
+   }
+  },
+  "count2_linear-025": {
+   "was": {
+    "value": "2"
+   },
+   "now": {
+    "value": "7"
+   }
+  },
+  "count_gmail-169": {
+   "was": {
+    "value": "13"
+   },
+   "now": {
+    "value": "71"
+   }
+  },
+  "count1_confluence-007": {
+   "was": {
+    "value": "2"
+   },
+   "now": {
+    "value": "16"
+   }
+  },
+  "count1_google_drive-034": {
+   "was": {
+    "value": "6"
+   },
+   "now": {
+    "value": "51"
+   }
+  },
+  "count1_hubspot-006": {
+   "was": {
+    "value": "3"
+   },
+   "now": {
+    "value": "29"
+   }
+  },
+  "count1_jira-008": {
+   "was": {
+    "value": "2"
+   },
+   "now": {
+    "value": "42"
+   }
+  },
+  "count1_linear-011": {
+   "was": {
+    "value": "2"
+   },
+   "now": {
+    "value": "45"
+   }
+  },
+  "count2_confluence-008": {
+   "was": {
+    "value": "2"
+   },
+   "now": {
+    "value": "17"
+   }
+  },
+  "count2_fireflies-008": {
+   "was": {
+    "value": "2"
+   },
+   "now": {
+    "value": "10"
+   }
+  },
+  "count2_google_drive-020": {
+   "was": {
+    "value": "2"
+   },
+   "now": {
+    "value": "3"
+   }
+  },
+  "count2_hubspot-093": {
+   "was": {
+    "value": "2"
+   },
+   "now": {
+    "value": "4"
+   }
+  },
+  "count2_jira-021": {
+   "was": {
+    "value": "3"
+   },
+   "now": {
+    "value": "28"
+   }
+  },
+  "count2_linear-217": {
+   "was": {
+    "value": "3"
+   },
+   "now": {
+    "value": "32"
+   }
+  },
+  "count_gmail-225": {
+   "was": {
+    "value": "7"
+   },
+   "now": {
+    "value": "68"
+   }
+  },
+  "filter_list-232": {
+   "was": {
+    "ids": [
+     "DES-846217",
+     "DES-860123"
+    ],
+    "id_kind": "key"
+   },
+   "now": {
+    "ids": [
+     "DES-25641",
+     "DES-501912",
+     "DES-64712",
+     "DES-745321",
+     "DES-846217",
+     "DES-860123",
+     "DES-93102",
+     "DES-98213",
+     "PM-85321",
+     "PM-93711"
+    ],
+    "id_kind": "key"
+   }
+  },
+  "count1_confluence-006": {
+   "was": {
+    "value": "2"
+   },
+   "now": {
+    "value": "12"
+   }
+  },
+  "count1_fireflies-008": {
+   "was": {
+    "value": "3"
+   },
+   "now": {
+    "value": "11"
+   }
+  },
+  "count1_google_drive-014": {
+   "was": {
+    "value": "4"
+   },
+   "now": {
+    "value": "31"
+   }
+  },
+  "count1_jira-006": {
+   "was": {
+    "value": "15"
+   },
+   "now": {
+    "value": "152"
+   }
+  },
+  "count1_linear-016": {
+   "was": {
+    "value": "2"
+   },
+   "now": {
+    "value": "26"
+   }
+  },
+  "count2_confluence-004": {
+   "was": {
+    "value": "3"
+   },
+   "now": {
+    "value": "8"
+   }
+  },
+  "count2_fireflies-007": {
+   "was": {
+    "value": "2"
+   },
+   "now": {
+    "value": "14"
+   }
+  },
+  "count2_google_drive-060": {
+   "was": {
+    "value": "3"
+   },
+   "now": {
+    "value": "39"
+   }
+  },
+  "count2_hubspot-040": {
+   "was": {
+    "value": "2"
+   },
+   "now": {
+    "value": "13"
+   }
+  },
+  "count2_jira-006": {
+   "was": {
+    "value": "2"
+   },
+   "now": {
+    "value": "53"
+   }
+  },
+  "count2_linear-140": {
+   "was": {
+    "value": "5"
+   },
+   "now": {
+    "value": "25"
+   }
+  },
+  "count_gmail-262": {
+   "was": {
+    "value": "4"
+   },
+   "now": {
+    "value": "19"
+   }
+  },
+  "count1_linear-031": {
+   "was": {
+    "value": "5"
+   },
+   "now": {
+    "value": "23"
+   }
+  },
+  "count2_google_drive-032": {
+   "was": {
+    "value": "2"
+   },
+   "now": {
+    "value": "13"
+   }
+  }
+ }
+}

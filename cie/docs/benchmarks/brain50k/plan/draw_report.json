@@ -1,0 +1,55 @@
+{
+ "documents": 50000,
+ "base": 5000,
+ "added": 45000,
+ "targets": {
+  "confluence": 456,
+  "fireflies": 893,
+  "github": 707,
+  "gmail": 10669,
+  "google_drive": 2207,
+  "hubspot": 1319,
+  "jira": 538,
+  "linear": 3103,
+  "slack": 25108
+ },
+ "added_by_source": {
+  "confluence": 456,
+  "fireflies": 893,
+  "github": 707,
+  "gmail": 10669,
+  "google_drive": 2207,
+  "hubspot": 1319,
+  "jira": 538,
+  "linear": 3103,
+  "slack": 25108
+ },
+ "short": {},
+ "skipped": {
+  "links a ticket of the base set": 547,
+  "pull request number already drawn": 24,
+  "a ticket the base set links": 249,
+  "ticket key already drawn": 403,
+  "key not a plain ticket key": 10
+ },
+ "excluded": 91,
+ "remaining": 506867,
+ "seed": 5050,
+ "n": 50000,
+ "heldout_left_out": 91,
+ "base_haystack_sha256": "6085db630c7d1c208770f6be10856ab389ac0b11017e0279c3667c1708cb6eb6",
+ "questions_sha256": "ca2388b8c00f52bbebaac08dc43a2911ff301fb232e56f86aeae1af09e42ed38",
+ "by_source": {
+  "confluence": 501,
+  "fireflies": 992,
+  "github": 783,
+  "gmail": 11877,
+  "google_drive": 2445,
+  "hubspot": 1464,
+  "jira": 589,
+  "linear": 3444,
+  "slack": 27905
+ },
+ "index": "/tmp/claude-0/-home-user-integratedai/275b943f-979b-5741-9af5-2a07879accea/scratchpad/mt5k/index.json",
+ "haystack_sha256": "4f1f489639561388326da6ecfde79e3d83c56a11838b27a07ecaf5c40d597779"
+}

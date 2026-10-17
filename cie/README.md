@@ -198,6 +198,13 @@ On 587 messy questions over 5,000 fresh documents:
 - **The claim was not met because of free text:** 0.671 → 0.681, against the +0.04 set in advance. Two of the four answers
   that got worse were refused for a typo in the question.
 
+**Next: 50,000 documents and a language model as the reasoning engine** (planned; [`docs/FACTBANK_50K_PLAN.md`](docs/FACTBANK_50K_PLAN.md),
+notebook [`notebooks/company_brain_50k_colab.ipynb`](notebooks/company_brain_50k_colab.ipynb), A100). Round 4's questions
+are asked again among 50,000 documents (509 of 587 still have one right answer there), with 126 complex questions of two
+to four steps across systems. Three arms answer them: v18 alone; Qwen3.8-27B alone over a keyword search; and Qwen3.8-27B
+as the brain's reasoning engine (`cie.factbank.reasoner`), which reads the brain's answer and can ask it more, search,
+read records and count with exact filters before it answers. The rules were fixed before any model answered.
+
 ## Brain-wired reasoning neurons (research)
 
 `cie.neuro` wires the reasoning engine's spiking neurons like a piece of Blue Brain's cortex model (directed cliques of
