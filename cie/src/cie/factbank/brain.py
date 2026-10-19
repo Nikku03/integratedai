@@ -295,8 +295,10 @@ def content_word(t: str) -> bool:
     return len(t) >= 3 and t not in COVER_STOP and t not in STOP
 
 
+@functools.cache
 def general_words() -> frozenset[str]:
-    """Ordinary English words, lower case (``GENERAL_WORDS``)."""
+    """Ordinary English words, lower case (``GENERAL_WORDS``); read once (it was read again on every call, hundreds of
+    times for one misspelt word: the same answers, in a third less time at 50,000 documents)."""
     with gzip.open(GENERAL_WORDS, "rt", encoding="utf-8") as f:
         return frozenset(w.strip() for w in f if w.strip() and not w.startswith("#"))
 

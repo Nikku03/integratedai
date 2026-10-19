@@ -96,3 +96,90 @@ def test_a_brain_that_fails_to_load_stops_the_run(tmp_path, monkeypatch):
     assert T._BRAIN is None and "no lessons" in T._BRAIN_ERROR
     with pytest.raises(RuntimeError, match="did not load"):
         T._ask_one({"id": "q", "question": "?"})
+
+
+def test_a_row_cut_off_half_way_is_asked_again(tmp_path):
+    f = tmp_path / "factbank_v18.jsonl"
+    f.write_text('{"id": "a", "answer": "x"}\n{"id": "b", "answ')
+    assert list(T._rows(f)) == ["a"] and f.read_text() == '{"id": "a", "answer": "x"}\n'
+
+
+def test_finish_keeps_answers_past_a_limit(tmp_path):
+    _write(tmp_path / "questions.jsonl", [{"id": i} for i in "abc"])
+    _write(tmp_path / "rag.jsonl", [{"id": "c", "answer": "3"}, {"id": "a", "answer": "1"}, {"id": "a", "answer": "1b"}])
+    have = T._finish(tmp_path, "rag")
+    assert [json.loads(x)["id"] for x in (tmp_path / "rag.jsonl").read_text().splitlines()] == ["a", "c"] and have["a"]["answer"] == "1b"
+
+
+def test_settings_must_match(tmp_path):
+    import pytest
+
+    _write(tmp_path / "questions.jsonl", [{"id": "a"}])
+    s = {"model_name": "qwen3.8-27b", "effort": "medium", "thinking": True, "max_tokens": 6144}
+    T.record(tmp_path, "rag", {"arm": "rag", "file": "rag.jsonl", "seconds": 10, **s})
+    T.check_settings([tmp_path], "reasoner", {**s, "model_name": "qwen3.8-27b-fp8"})  # no rag answers yet: nothing to match
+    _write(tmp_path / "rag.jsonl", [{"id": "a", "answer": "x"}])
+    T.check_settings([tmp_path], "reasoner", s)
+    with pytest.raises(SystemExit, match="model_name"):
+        T.check_settings([tmp_path], "reasoner", {**s, "model_name": "qwen3.8-27b-fp8"})
+    with pytest.raises(SystemExit, match="effort"):
+        T.check_settings([tmp_path], "rag", {**s, "effort": "low"})
+    T.record(tmp_path, "rag", {"arm": "rag", "file": "rag.jsonl", "seconds": 5, **s}, add=True)
+    assert json.loads((tmp_path / "arms50k.json").read_text())["rag"]["seconds"] == 15  # a resumed run adds its time
+
+
+def test_rules_7_and_8_need_the_same_model(tmp_path):
+    test_score_folder_and_rules(tmp_path)
+    s = {"effort": "medium", "thinking": True, "max_tokens": 6144}
+    T.record(tmp_path, "rag", {"file": "rag.jsonl", "model_name": "qwen3.8-27b", **s})
+    T.record(tmp_path, "reasoner", {"file": "reasoner.jsonl", "model_name": "qwen3.8-27b-fp8", **s})
+    rep = T.score(tmp_path, None, None)
+    said = {k[0]: v for k, v in rep["rules"].items()}
+    assert said["7"] is None and said["8"] is None and said["2"] and "rules 7 and 8 are undecided" in rep["warnings"][0]
+    md = (tmp_path / "report50k.md").read_text()
+    assert "**Warning:**" in md and "How the model arms ran" in md
+
+
+def _die(q):  # a brain process killed (out of memory) while it answers
+    import os
+    import signal
+
+    os.kill(os.getpid(), signal.SIGKILL)
+
+
+def test_a_brain_process_that_dies_stops_the_step(tmp_path, monkeypatch):
+    import pytest
+
+    _write(tmp_path / "questions.jsonl", [{"id": i, "question": "?"} for i in "abcd"])
+    monkeypatch.setattr(T, "_load_brain", lambda *a: None)
+    monkeypatch.setattr(T, "_ask_one", _die)
+    with pytest.raises(RuntimeError, match="a brain process died"):
+        T.ask_v18(tmp_path, workers=2, log=lambda *_: None)
+
+
+def test_reasoner_rows_written_as_they_end(tmp_path):
+    from test_brain_v16_routes import DOCS
+
+    from cie.factbank import bank as BK
+    from cie.factbank import reasoner as R
+
+    BK.build(tmp_path / "factbank_v2.sqlite", DOCS, text_facts=True)
+    box = R.Toolbox(tmp_path / "factbank_v2.sqlite")
+    _write(tmp_path / "questions.jsonl", [{"id": "a", "question": "When is DES-1 due?"}, {"id": "b", "question": "Who?"}])
+    _write(tmp_path / "factbank_v18.jsonl", [{"id": "a", "answer": "2026-04-02", "route": "fact"}, {"id": "b", "answer": "x", "route": "fact"}])
+    _write(tmp_path / "reasoner.jsonl", [{"id": "b", "answer": "kept", "route": "reasoner", "steps": []}])
+
+    class Model:
+        repo = "scripted"
+
+        def __call__(self, convs):
+            return [{"text": '{"answer": "2026-04-02"}', "finish_reason": "stop", "output_tokens": 4} for _ in convs]
+
+    s = {"model_name": "m", "effort": "medium", "thinking": True, "max_tokens": 6144}
+    rep = T.ask_llm([tmp_path], "reasoner", Model(), R.LocalTools(box), settings=s, log=lambda *_: None)
+    rows = [json.loads(x) for x in (tmp_path / "reasoner.jsonl").read_text().splitlines()]
+    assert [(r["id"], r["answer"]) for r in rows] == [("a", "2026-04-02"), ("b", "kept")] and rep[str(tmp_path)]["asked"] == 1
+    reg = json.loads((tmp_path / "arms50k.json").read_text())["reasoner"]
+    assert reg["model"] == "scripted" and reg["model_name"] == "m" and reg["asked"] == 1
+    # nothing left to ask: the step ends before it loads a model (none could load here)
+    assert T.main(["ask", "--arm", "reasoner", "--work", str(tmp_path), "--model", "no-such-model"])[str(tmp_path)]["asked"] == 0

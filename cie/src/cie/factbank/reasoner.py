@@ -40,10 +40,17 @@ VALUES_ROWS = 40
 READ_CHARS = 6000
 EVIDENCE_CHARS = 2500
 SNIPPET = 160
+# What one tool result may hold, so that eight of them and the replies fit the model's window (32,768 tokens, at about
+# three characters a token): a field's value is cut at FIELD_CHARS, and a find or values result keeps the rows that fit.
+FIELD_CHARS = 300
+RESULT_CHARS = 8000
+CONV_CHARS = 60000  # a conversation this long must answer at its next turn (as after MAX_STEPS tool calls)
 MAX_STEPS = 8  # tool calls a conversation may make before it must answer
 ANSWER_CAP = 1100  # characters of a final answer, as the brain's free-text quote is capped (prose.QUOTE_CAP)
+RAW_CHARS = 1500  # characters of the model's visible reply kept with each answer, to read it again without the GPU
 RAG_PASSAGES = 12
-RAG_CHARS = 9000
+RAG_CHARS = 14000  # room for all 12 passages (about 1,000 characters each)
+MIN_ROOM = 2048  # tokens of the model's window a turn needs at least; a conversation with less left ends (the brain's answer)
 TOOLS = ("brain", "search", "read", "find", "values")
 NOT_FOUND = "not found"
 
@@ -88,7 +95,8 @@ does not have, answer "not found": never answer from a similar one.
 - Count and list with find, never by hand from search results.
 - Write the final answer the way a colleague would want it: a name, a number, a date (YYYY-MM-DD), an id or a list \
 (separated by commas) when the question asks for one; a count starts with the number. When the question asks what was \
-said, decided or planned, answer in at most three sentences with the exact figures, names and dates of the record."""
+said, decided or planned, answer in at most three sentences that keep the record's own words: copy its key phrases, \
+figures, names and dates as the record writes them."""
 
 FIRST = """Question: {question}
 
@@ -112,8 +120,10 @@ not in them, the answer is "not found": never answer from a similar one.
 - End with one line that starts with "Answer:" and gives your final answer, such as "Answer: 3" or "Answer: not found". \
 Write the answer the way a colleague would want it: a name, a number, a date \
 (YYYY-MM-DD), an id or a list (separated by commas) when the question asks for one; a count starts with the number. When \
-the question asks what was said, decided or planned, answer in at most three sentences with the exact figures, names and \
-dates of the passages."""
+the question asks what was said, decided or planned, answer in at most three sentences that keep the passages' own words: \
+copy their key phrases, figures, names and dates as the passages write them."""
+RAG_CUT = 'Your reply was cut off. Think less, and end with one line that starts with "Answer:".'
+RAG_AGAIN = 'End your reply with one line that starts with "Answer:" and gives your final answer.'
 
 
 # ------------------------------------------------------------------ tools
@@ -241,14 +251,19 @@ class Toolbox:
         if hits is None:
             hits = {d for d, info in self.docs.items() if info[1] == system}
         show = [str(s) for s in (show or [])][:6]
-        rows = []
+        rows, used = [], 0
         for dsid in sorted(hits, key=lambda d: (self.docs[d][0] or "", d))[:FIND_ROWS]:
             lab = self._label(dsid)
             fs = self.fields(dsid)
-            rows.append({**{k: lab[k] for k in ("doc", "title", "key") if k in lab}, **{s: ", ".join(fs.get(s, [])) or None for s in show}})
+            row = {**{k: _cut(lab[k]) for k in ("doc", "title", "key") if k in lab}, **{s: _cut(", ".join(fs.get(s, []))) or None for s in show}}
+            used += len(json.dumps(row, ensure_ascii=False, default=str)) + 2
+            if rows and used > RESULT_CHARS:
+                break
+            rows.append(row)
         out: dict[str, Any] = {"count": len(hits), "records": rows}
-        if len(hits) > FIND_ROWS:
-            out["note"] = f"{len(hits)} records match; the first {FIND_ROWS} are shown"
+        if len(hits) > len(rows):
+            out["note"] = f"{len(hits)} records match; the first {len(rows)} are shown" + (
+                "" if len(rows) == min(len(hits), FIND_ROWS) else ' (narrow "where" or ask for fewer "show" fields to see more)')
         return out
 
     def values(self, system: str, field: str) -> dict[str, Any]:
@@ -259,8 +274,14 @@ class Toolbox:
         if not counts:
             fs = sorted({f for (s, f, _v) in self._by_value if s == system})
             return {"error": f"no field {field!r} in {system!r}", "fields": fs[:80]}
-        return {"values": [{"value": self._shown[(system, field, v)], "records": n} for n, v in counts[:VALUES_ROWS]],
-                "distinct": len(counts)}
+        vals, used = [], 0
+        for n, v in counts[:VALUES_ROWS]:
+            x = {"value": _cut(self._shown[(system, field, v)], FIELD_CHARS // 2), "records": n}
+            used += len(json.dumps(x, ensure_ascii=False)) + 2
+            if vals and used > RESULT_CHARS:
+                break
+            vals.append(x)
+        return {"values": vals, "distinct": len(counts)}
 
     def ask_brain(self, question: str) -> dict[str, Any]:
         if self.brain is None:
@@ -291,6 +312,11 @@ class Toolbox:
         return {"error": f"no tool {tool!r}: one of {', '.join(TOOLS)}"}
 
 
+def _cut(s: Any, chars: int = FIELD_CHARS) -> Any:
+    """A field's value cut at ``chars`` characters (what is not a string is kept as it is)."""
+    return s[:chars] + " [...]" if isinstance(s, str) and len(s) > chars else s
+
+
 def brain_view(r: dict[str, Any], chars: int = EVIDENCE_CHARS) -> dict[str, Any]:
     """What the model sees of a brain row: its answer, route, reason and evidence (cut to ``chars``)."""
     ev = str(r.get("evidence") or "")
@@ -306,9 +332,10 @@ _BOX_ERROR: str | None = None
 def _make_box(bank: str, single: str | None, plans: str | None, router: str | None) -> Toolbox:
     brain = None
     if single and plans:
-        from cie.factbank.brain import Brain, Router
+        from cie.factbank.brain import Brain, Router, general_words
 
         brain = Brain(bank, single, plans, Router.load(router) if router else None, v16=True, v17=True, v18=True)
+        general_words()  # read once here: processes forked after this share it
     return Toolbox(bank, brain)
 
 
@@ -383,11 +410,12 @@ def _objects(text: str) -> list[str]:
     out, depth, start, in_str, esc = [], 0, -1, False, False
     for i, ch in enumerate(text):
         if in_str:
-            esc = (ch == "\\") and not esc
-            if ch == '"' and not esc:
-                in_str = False
-            elif ch != "\\":
+            if esc:
                 esc = False
+            elif ch == "\\":
+                esc = True
+            elif ch == '"':
+                in_str = False
             continue
         if ch == '"' and depth:
             in_str = True
@@ -402,69 +430,189 @@ def _objects(text: str) -> list[str]:
     return out
 
 
+FUNCTION = re.compile(r"<function=([\w.-]+)>(.*?)</function>", re.S)  # Qwen's own tool-call format
+PARAMETER = re.compile(r"<parameter=([\w.-]+)>\n?(.*?)\n?</parameter>", re.S)
+
+
+def _tool_call(obj: dict[str, Any]) -> dict[str, Any] | None:
+    """{"tool", "args"} from a JSON tool call: ours ({"tool", "args"}) or the usual one ({"name", "arguments"})."""
+    name = obj.get("tool") if isinstance(obj.get("tool"), str) else obj.get("name") if isinstance(obj.get("name"), str) else None
+    if name is None or (obj.get("tool") is None and not ({"arguments", "args"} & set(obj))):
+        return None
+    args = obj.get("args", obj.get("arguments"))
+    if isinstance(args, str):
+        try:
+            args = json.loads(args, strict=False)
+        except json.JSONDecodeError:
+            args = None
+    if not isinstance(args, dict):
+        args = {k: v for k, v in obj.items() if k not in ("tool", "name", "args", "arguments")}
+    return {"tool": name.strip().lower(), "args": args}
+
+
 def parse_action(text: str) -> dict[str, Any] | None:
-    """The reply's action: {"tool", "args"} or {"answer"}, from its last JSON object that names one; an "Answer:" line
-    is taken as an answer when there is no such object; None when the reply has neither."""
+    """The reply's action: {"tool", "args"} or {"answer"}, from its last JSON object that names one (raw line breaks in
+    its strings allowed); then Qwen's own <function=...> tool call; then an "Answer:" line; None when the reply has none."""
     body = visible(text)
     for blob in reversed(_objects(body)):
         try:
-            obj = json.loads(blob)
+            obj = json.loads(blob, strict=False)
         except json.JSONDecodeError:
             continue
         if isinstance(obj, dict) and "answer" in obj:
             a = obj["answer"]
-            return {"answer": ", ".join(map(str, a)) if isinstance(a, list) else str(a)}
-        if isinstance(obj, dict) and isinstance(obj.get("tool"), str):
-            args = obj.get("args") if isinstance(obj.get("args"), dict) else {k: v for k, v in obj.items() if k != "tool"}
-            return {"tool": obj["tool"].strip().lower(), "args": args}
+            if a is None:
+                return {"answer": NOT_FOUND}
+            return {"answer": ", ".join(map(str, a)) if isinstance(a, list) else one_line(str(a))}
+        if isinstance(obj, dict) and (call := _tool_call(obj)) is not None:
+            return call
+    if calls := FUNCTION.findall(body):
+        name, inner = calls[-1]
+        args: dict[str, Any] = {}
+        for k, v in PARAMETER.findall(inner):
+            try:
+                args[k] = json.loads(v, strict=False)
+            except json.JSONDecodeError:
+                args[k] = v.strip()
+        return {"tool": name.strip().lower(), "args": args}
     if (line := answer_line(body)) is not None:
         return {"answer": line}
     return None
 
 
+ANSWER_LABEL = re.compile(r"^\W*(?:final\s+)?answer\s*\**\s*:\s*\**\s*(.*)$", re.I)
+LIST_ITEM = re.compile(r"^\s*(?:[-*•]|\d+[.)])\s+")
+
+
 def answer_line(body: str) -> str | None:
-    """The answer of the reply's last "Answer:" line (markdown stars dropped), or the lines after it when it holds nothing
-    else; None when there is no such line."""
+    """The answer of the reply's last "Answer:" (or "Final answer:") line, markdown stars dropped. When the line holds
+    nothing else or ends with ":", the answer goes on below it: a list (its items) or lines up to a blank one, made one
+    line (``one_line``); lines below an answer of its own are its explanation, left out. None when there is no such line."""
     lines = (body or "").splitlines()
     for i in range(len(lines) - 1, -1, -1):
-        m = re.match(r"^\W*answer\s*\**\s*:\s*\**\s*(.*)$", lines[i], re.I)
-        if m:
-            rest = m.group(1).strip().strip("*").strip()
-            return rest or " ".join(x.strip() for x in lines[i + 1:] if x.strip())
+        m = ANSWER_LABEL.match(lines[i])
+        if not m:
+            continue
+        rest = m.group(1).strip().strip("*").strip()
+        if rest and not rest.endswith(":"):
+            return rest
+        after = [x.strip() for x in lines[i + 1:]]
+        nonblank = [x for x in after if x]
+        block: list[str] = []
+        if nonblank and LIST_ITEM.match(nonblank[0]):  # a list: its items, blank lines between them allowed
+            for x in after:
+                if x and not LIST_ITEM.match(x):
+                    break
+                if x:
+                    block.append(x)
+        else:  # the lines after the label, up to the first blank line
+            for x in after:
+                if not x and block:
+                    break
+                if x:
+                    block.append(x)
+        return one_line("\n".join([rest, *block] if rest else block)) if block else rest
     return None
 
 
-def final(answer: str) -> str:
-    """The answer as stored: one "not found" for every way of saying it, the rest capped at ``ANSWER_CAP`` characters."""
+def one_line(answer: str) -> str:
+    """An answer of several lines as one line, for the scorers read the first line for a value, a date or keys: list items
+    (bullets or numbers dropped) joined by "; ", any other lines by spaces."""
+    lines = [x.strip() for x in (answer or "").splitlines() if x.strip()]
+    if len(lines) <= 1:
+        return lines[0] if lines else ""
+    head, items = [], []
+    for x in lines:
+        if LIST_ITEM.match(x):
+            items.append(LIST_ITEM.sub("", x).strip().strip("*").strip())
+        elif items:
+            items[-1] += " " + x
+        else:
+            head.append(x)
+    return " ".join([*head, "; ".join(items)] if items else head).strip()
+
+
+# a reply that says there is no answer in other words than "not found": mapped to "not found" when it is one short
+# sentence and nothing else (so a free-text answer such as "There is no rollback plan; it moves to Q3" is kept)
+REFUSAL = re.compile(
+    r"^\W*(?:"
+    r"(?:the |these |those )?(?:passages?|records?|documents?|context|tools?|results?|search results?|data|fact bank) "
+    r"(?:do(?:es)?|did)(?: not|n[o']t) (?:contain|mention|say|include|hold|show|specify|state|list|name|give|provide|record|have)"
+    r"|(?:i )?(?:could|can|did)(?: not|not|n[o']t) find"
+    r"|(?:it is |this is |that is |it's )?not (?:mentioned|specified|stated|listed|given|provided|recorded|available|present|known)\b"
+    r"|not in the (?:passages|records|documents|data)"
+    r"|(?:the )?answer is not (?:found|known|available|given|in)"
+    r"|there (?:is|are|was|were) no\b"
+    r"|no (?:[\w-]+ ){0,4}(?:is|are|was|were|has been|have been) (?:listed|assigned|found|mentioned|recorded|specified|given|set|named|shown)\b"
+    r"|no (?:record|records|mention|information|data|match|matches|result|results|answer)\b)", re.I)
+NOTHING = re.compile(r"\W*(?:none|null|nil|nothing|nobody|no one|no-one|n/?a)\W*", re.I)
+
+
+def final(answer: str, refusals: bool = True) -> str:
+    """The answer as stored: one "not found" for every way of saying it, the rest capped at ``ANSWER_CAP`` characters.
+    ``refusals``: also a bare "none" and a one-sentence refusal in other words (``REFUSAL``); off for the brain's own answer,
+    which is stored as the brain gave it."""
     a = (answer or "").strip().strip('"').strip()
     if re.fullmatch(r"<[^<>]{0,40}>\W*|\W*", a):  # a placeholder copied from the instructions, or nothing
         return NOT_FOUND
     if re.match(r"^\W*(?:not found|none found|no such|unknown|n/?a)\b", a, re.I):
         return NOT_FOUND
+    if refusals and (NOTHING.fullmatch(a) or (len(a) <= 160 and "\n" not in a and not re.search(r"[;:]|[.!?]\s+\S", a)
+                                              and REFUSAL.match(a))):
+        return NOT_FOUND
     return a[:ANSWER_CAP]
 
 
 def _result_text(result: dict[str, Any]) -> str:
-    return "Tool result:\n" + json.dumps(result, ensure_ascii=False, default=str)
+    text = json.dumps(result, ensure_ascii=False, default=str)
+    if len(text) > RESULT_CHARS + 2000:  # find and values keep what fits; this only bounds anything else
+        text = text[: RESULT_CHARS + 2000] + " [... the rest of the result is left out]"
+    return "Tool result:\n" + text
 
 
 # ------------------------------------------------------------------ the loop
 Generate = Callable[[list[list[dict[str, str]]]], list[dict[str, Any]]]
 
 
+def _chars(conv: list[dict[str, str]]) -> int:
+    return sum(len(m["content"]) for m in conv)
+
+
 def reason(questions: list[dict[str, Any]], brain_rows: dict[str, dict[str, Any]], generate: Generate, tools: Any,
-           max_steps: int = MAX_STEPS, log: Callable[[str], None] = print) -> list[dict[str, Any]]:
+           max_steps: int = MAX_STEPS, log: Callable[[str], None] = print,
+           on_done: Callable[[dict[str, Any]], None] | None = None) -> list[dict[str, Any]]:
     """Every question's conversation, advanced in lockstep: one batched ``generate`` per step for all that are still
     open, then their tool calls in one ``tools.run``. A conversation ends with an answer, or after ``max_steps`` tool
-    calls with one more turn that must answer. Rows: {id, answer, route "reasoner", reason, steps, tokens, ms}."""
+    calls (or ``CONV_CHARS`` characters) with one more turn that must answer. One that has no answer of its own (no
+    reply it can read after two reminders, or too long for the model's window) keeps the brain's answer. ``on_done``
+    gets each row as its conversation ends. Rows: {id, answer, route "reasoner", reason, steps, tokens, ms}."""
     convs: dict[str, list[dict[str, str]]] = {}
     state: dict[str, dict[str, Any]] = {}
+    qs = {q["id"]: q for q in questions}
     for q in questions:
         b = brain_rows.get(q["id"])
         shown = json.dumps(brain_view(b), ensure_ascii=False) if b else "(no answer)"
         convs[q["id"]] = [{"role": "system", "content": SYSTEM}, {"role": "user", "content": FIRST.format(question=q["question"], brain=shown)}]
         state[q["id"]] = {"brain_answer": str((b or {}).get("answer") or NOT_FOUND), "steps": [], "calls": 0, "prompt_tokens": 0,
-                          "output_tokens": 0, "answer": None, "retries": 0, "gen_s": 0.0, "tool_s": 0.0}
+                          "output_tokens": 0, "answer": None, "retries": 0, "gen_s": 0.0, "tool_s": 0.0, "cut": 0, "must": False}
+    rows: dict[str, dict[str, Any]] = {}
+
+    def done(i: str) -> None:
+        st = state[i]
+        tools_used = [s["tool"] for s in st["steps"] if "tool" in s]
+        rows[i] = {"id": i, "answer": st["answer"], "route": "reasoner",
+                   "reason": f"{len(tools_used)} tool call(s): {', '.join(tools_used) or 'none'}", "steps": st["steps"],
+                   "prompt_tokens": st["prompt_tokens"], "output_tokens": st["output_tokens"], "cut_turns": st["cut"],
+                   "ms": round((st["gen_s"] + st["tool_s"]) * 1000, 1)}
+        if on_done is not None:
+            on_done(rows[i])
+
+    def give_up(i: str, finish: Any, text: str) -> None:
+        st = state[i]
+        st["answer"] = final(st["brain_answer"], refusals=False)  # no answer of its own: the brain's stands, as it gave it
+        st["steps"].append({"gave_up": True, "finish": finish, "answer": st["answer"], "raw": visible(text)[:500]})
+        done(i)
+
     turn = 0
     while open_ := [i for i in convs if state[i]["answer"] is None]:
         turn += 1
@@ -477,20 +625,25 @@ def reason(questions: list[dict[str, Any]], brain_rows: dict[str, dict[str, Any]
             st["gen_s"] += gen / len(open_)
             st["prompt_tokens"] += int(o.get("prompt_tokens") or 0)
             st["output_tokens"] += int(o.get("output_tokens") or 0)
-            act = parse_action(o.get("text") or "")
-            last = st["calls"] >= max_steps
+            text, finish = o.get("text") or "", o.get("finish_reason")
+            st["cut"] += finish == "length"
+            if finish == "too_long":  # no room left in the model's window for a reply
+                give_up(i, finish, text)
+                continue
+            act = parse_action(text)
+            last = st["calls"] >= max_steps or st["must"]
             if act is not None and "answer" in act:
                 st["answer"] = final(act["answer"])
-                st["steps"].append({"answer": st["answer"]})
+                st["steps"].append({"answer": st["answer"], "finish": finish, "raw": visible(text)[:RAW_CHARS]})
+                done(i)
                 continue
             if act is None or act.get("tool") not in TOOLS or last:
                 st["retries"] += 1
                 if st["retries"] > 2 or (last and st["retries"] > 1):
-                    st["answer"] = final(st["brain_answer"])  # no answer of its own: the brain's stands
-                    st["steps"].append({"gave_up": True, "finish": o.get("finish_reason"), "answer": st["answer"]})
+                    give_up(i, finish, text)
                     continue
-                convs[i].append({"role": "assistant", "content": visible(o.get("text") or "")[:2000] or "(no reply)"})
-                note = LAST if last else CUT if o.get("finish_reason") == "length" and not visible(o.get("text") or "") else AGAIN
+                convs[i].append({"role": "assistant", "content": visible(text)[:2000] or "(no reply)"})
+                note = LAST if last else CUT if finish == "length" and not visible(text) else AGAIN
                 if act is not None and act.get("tool") not in TOOLS and not last:
                     note = f"No tool {act.get('tool')!r}: use one of {', '.join(TOOLS)}. " + AGAIN
                 convs[i].append({"role": "user", "content": note})
@@ -506,23 +659,16 @@ def reason(questions: list[dict[str, Any]], brain_rows: dict[str, dict[str, Any]
                 st["tool_s"] += secs
                 text = _result_text(res)
                 st["steps"].append({"tool": tool, "args": args, "result_chars": len(text), "error": res.get("error"), "s": secs})
-                convs[i].append({"role": "user", "content": text + ("\n\n" + LAST if st["calls"] >= max_steps else "")})
+                st["must"] = st["must"] or _chars(convs[i]) + len(text) > CONV_CHARS
+                convs[i].append({"role": "user", "content": text + ("\n\n" + LAST if st["calls"] >= max_steps or st["must"] else "")})
             log(f"  turn {turn}: {len(open_)} open, {len(calls)} tool calls, generation {gen:.0f} s, tools {time.perf_counter() - t:.0f} s")
         else:
             log(f"  turn {turn}: {len(open_)} open, generation {gen:.0f} s")
-    rows = []
-    for q in questions:
-        st = state[q["id"]]
-        tools_used = [s["tool"] for s in st["steps"] if "tool" in s]
-        rows.append({"id": q["id"], "answer": st["answer"], "route": "reasoner",
-                     "reason": f"{len(tools_used)} tool call(s): {', '.join(tools_used) or 'none'}", "steps": st["steps"],
-                     "prompt_tokens": st["prompt_tokens"], "output_tokens": st["output_tokens"],
-                     "ms": round((st["gen_s"] + st["tool_s"]) * 1000, 1)})
-    return rows
+    return [rows[q] for q in qs]
 
 
-def rag_conversation(question: str, passages: list[dict[str, str]], chars: int = RAG_CHARS) -> list[dict[str, str]]:
-    """The plain-search arm's one turn: the question and the best passages, numbered, up to ``chars`` characters."""
+def rag_blocks(passages: list[dict[str, str]], chars: int = RAG_CHARS) -> list[str]:
+    """The passages the plain-search arm is shown: the best ones, numbered, up to ``chars`` characters."""
     parts, used = [], 0
     for n, p in enumerate(passages, 1):
         block = f"[{n}] ({p['source']}) {p['title']}\n{p['text']}"
@@ -530,13 +676,39 @@ def rag_conversation(question: str, passages: list[dict[str, str]], chars: int =
             break
         parts.append(block)
         used += len(block)
+    return parts
+
+
+def rag_conversation(question: str, passages: list[dict[str, str]], chars: int = RAG_CHARS) -> list[dict[str, str]]:
+    """The plain-search arm's one turn: the question and the best passages (``rag_blocks``)."""
     return [{"role": "system", "content": RAG_SYSTEM},
-            {"role": "user", "content": "Passages:\n\n" + "\n\n".join(parts) + f"\n\nQuestion: {question}"}]
+            {"role": "user", "content": "Passages:\n\n" + "\n\n".join(rag_blocks(passages, chars)) + f"\n\nQuestion: {question}"}]
 
 
-def rag_answer(text: str) -> str:
-    """The plain-search arm's answer: its last "Answer:" line, or its whole visible reply."""
+def rag_turns(convs: list[list[dict[str, str]]], generate: Generate) -> list[dict[str, Any]]:
+    """The plain-search arm's replies: one turn each, and one more for a reply with no "Answer:" line (cut off while
+    thinking, empty, or another format), as the reasoner is reminded; the second reply is kept when it has one."""
+    outs = generate(convs)
+    again = [i for i, o in enumerate(outs) if answer_line(visible(o.get("text") or "")) is None]
+    if again:
+        more = generate([[*convs[i], {"role": "assistant", "content": visible(outs[i].get("text") or "")[:2000] or "(no reply)"},
+                          {"role": "user", "content": RAG_CUT if outs[i].get("finish_reason") == "length" else RAG_AGAIN}]
+                         for i in again])
+        for i, o in zip(again, more, strict=True):
+            first = outs[i]
+            keep = o if answer_line(visible(o.get("text") or "")) is not None or not visible(first.get("text") or "") else first
+            outs[i] = {**keep, "prompt_tokens": int(first.get("prompt_tokens") or 0) + int(o.get("prompt_tokens") or 0),
+                       "output_tokens": int(first.get("output_tokens") or 0) + int(o.get("output_tokens") or 0),
+                       "retried": first.get("finish_reason")}
+    return outs
+
+
+def rag_answer(text: str, finish: str | None = None) -> str:
+    """The plain-search arm's answer: its last "Answer:" line, or its whole visible reply; a reply with nothing visible
+    (cut off while thinking, or empty) is no answer, never "not found"."""
     body = visible(text)
+    if not body:
+        return "(no reply: cut off)" if finish == "length" else "(no reply)"
     line = answer_line(body)
     return final(body if line is None else line)
 
@@ -598,20 +770,68 @@ class VLLMBackend:
         self.llm = LLM(**kw)
         self.load_seconds = round(time.time() - t, 1)
         self.repo = f"{repo}@{rev}" if rev else repo
-        self.name, self.max_tokens = name, max_tokens
+        self.name, self.max_tokens, self.max_model_len, self.log = name, max_tokens, max_model_len, log
         self.kwargs = template_kwargs(name if name in MODELS else repo, effort, thinking)
         self.thinks = bool(self.kwargs.get("enable_thinking"))
+        self.tok = self.llm.get_tokenizer()
+        self._count_failed = False
+
+    def count(self, conv: list[dict[str, str]]) -> int:
+        """The prompt's tokens, as the chat template makes it (vLLM renders it the same way); if that fails, an
+        over-estimate from its characters."""
+        try:
+            ids = self.tok.apply_chat_template(conv, tokenize=True, add_generation_prompt=True, return_dict=False, **self.kwargs)
+            return len(ids if isinstance(ids, list) else ids["input_ids"])
+        except Exception as e:  # noqa: BLE001 - never stop a run over a count
+            if not self._count_failed:
+                self._count_failed = True
+                self.log(f"  counting a prompt's tokens failed ({type(e).__name__}: {e}); estimating from characters")
+            return _chars(conv) // 2
 
     def __call__(self, convs: list[list[dict[str, str]]]) -> list[dict[str, Any]]:
+        """One reply per conversation. A conversation whose prompt leaves less than ``MIN_ROOM`` tokens of the window is
+        not sent (finish "too_long"); the others get at most the room they have, so no prompt fails the batch."""
         from vllm import SamplingParams
 
-        if self.thinks:  # the model card's settings for thinking
-            sp = SamplingParams(temperature=1.0, top_p=0.95, top_k=20, max_tokens=self.max_tokens, seed=0)
-        else:
-            sp = SamplingParams(temperature=0.0, max_tokens=self.max_tokens, seed=0)
-        outs = self.llm.chat(convs, sp, use_tqdm=False, chat_template_kwargs=self.kwargs)
-        return [{"text": o.outputs[0].text, "prompt_tokens": len(o.prompt_token_ids or []), "output_tokens": len(o.outputs[0].token_ids),
-                 "finish_reason": o.outputs[0].finish_reason} for o in outs]
+        # the model card's settings for thinking; greedy without it
+        base = dict(temperature=1.0, top_p=0.95, top_k=20, seed=0) if self.thinks else dict(temperature=0.0, seed=0)
+        outs: list[dict[str, Any] | None] = [None] * len(convs)
+        send, sps = [], []
+        for i, c in enumerate(convs):
+            n = self.count(c)
+            room = self.max_model_len - n - 16  # a few tokens of slack for the engine's own rendering
+            if room < MIN_ROOM:
+                outs[i] = {"text": "", "prompt_tokens": n, "output_tokens": 0, "finish_reason": "too_long"}
+            else:
+                send.append(i)
+                sps.append(SamplingParams(max_tokens=min(self.max_tokens, room), **base))
+        for i, o in zip(send, self._chat([convs[i] for i in send], sps), strict=True):
+            outs[i] = o
+        return outs  # type: ignore[return-value]
+
+    def _chat(self, convs: list[list[dict[str, str]]], sps: list[Any]) -> list[dict[str, Any]]:
+        if not convs:
+            return []
+        try:
+            outs = self.llm.chat(convs, sps, use_tqdm=False, chat_template_kwargs=self.kwargs)
+        except Exception as e:
+            # a prompt the engine finds too long after all fails the whole batch: find it by halves, keep the rest
+            if not re.search(r"maximum (?:model|context) length", str(e)):
+                raise
+            if len(convs) == 1:
+                return [{"text": "", "prompt_tokens": 0, "output_tokens": 0, "finish_reason": "too_long"}]
+            h = len(convs) // 2
+            return self._chat(convs[:h], sps[:h]) + self._chat(convs[h:], sps[h:])
+        res = []
+        for o in outs:
+            text = o.outputs[0].text
+            # Qwen3.8's template ends the prompt with "<think>\n", so the reply starts inside the thinking: put the opener
+            # back, so that a reply cut off while thinking reads as no reply (``visible``), never as an answer
+            if self.thinks and not text.lstrip().startswith("<think>"):
+                text = "<think>\n" + text
+            res.append({"text": text, "prompt_tokens": len(o.prompt_token_ids or []), "output_tokens": len(o.outputs[0].token_ids),
+                        "finish_reason": o.outputs[0].finish_reason})
+        return res
 
 
 class OpenAIBackend:
@@ -645,48 +865,3 @@ class OpenAIBackend:
     def __call__(self, convs: list[list[dict[str, str]]]) -> list[dict[str, Any]]:
         with ThreadPoolExecutor(self.concurrency) as ex:
             return list(ex.map(self._one, convs))
-
-
-# ------------------------------------------------------------------ arms over a work folder
-def _jsonl(path: Path) -> list[dict[str, Any]]:
-    return [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
-
-
-def ask_reasoner(work: Path, generate: Generate, tools: Any, brain_file: str = "factbank_v18", name: str = "reasoner",
-                 limit: int | None = None, max_steps: int = MAX_STEPS, log: Callable[[str], None] = print) -> dict[str, Any]:
-    """The reasoning engine's answers to ``work``/questions.jsonl, starting from the brain's answers in
-    ``work``/<brain_file>.jsonl, written to ``work``/<name>.jsonl."""
-    qs = _jsonl(work / "questions.jsonl")[: limit or None]
-    brain_rows = {r["id"]: r for r in _jsonl(work / f"{brain_file}.jsonl")}
-    if missing := [q["id"] for q in qs if q["id"] not in brain_rows]:
-        raise SystemExit(f"{len(missing)} questions have no brain answer in {brain_file}.jsonl: ask the v18 arm first")
-    t = time.time()
-    rows = reason(qs, brain_rows, generate, tools, max_steps=max_steps, log=log)
-    (work / f"{name}.jsonl").write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows))
-    return {"questions": len(rows), "written": f"{name}.jsonl", "seconds": round(time.time() - t, 1),
-            "tool_calls": sum(sum(1 for s in r["steps"] if "tool" in s) for r in rows),
-            "not_found": sum(r["answer"] == NOT_FOUND for r in rows),
-            "output_tokens": sum(r["output_tokens"] for r in rows), "prompt_tokens": sum(r["prompt_tokens"] for r in rows)}
-
-
-def ask_rag(work: Path, generate: Generate, name: str = "rag", limit: int | None = None, k: int = 60,
-            log: Callable[[str], None] = print) -> dict[str, Any]:
-    """The plain-search arm: each question with the best passages of a keyword search over the haystack's documents
-    (``brain_test.Passages``, as the quotes arm searches), answered in one turn; written to ``work``/<name>.jsonl."""
-    from cie.eval.brain_test import Passages
-
-    qs = _jsonl(work / "questions.jsonl")[: limit or None]
-    t = time.time()
-    ps = Passages(work)
-    log(f"  passages: {len(ps.rows):,} of {ps.documents:,} documents in {ps.seconds:.0f} s")
-    hits = {q["id"]: ps.search(q["question"], k)[:RAG_PASSAGES] for q in qs}
-    t2 = time.time()
-    outs = generate([rag_conversation(q["question"], hits[q["id"]]) for q in qs])
-    gen = time.time() - t2
-    rows = [{"id": q["id"], "answer": rag_answer(o.get("text") or ""), "route": "rag", "reason": f"{len(hits[q['id']])} passages",
-             "docs": list(dict.fromkeys(h["dsid"] for h in hits[q["id"]])), "prompt_tokens": o.get("prompt_tokens", 0),
-             "output_tokens": o.get("output_tokens", 0), "finish": o.get("finish_reason"), "ms": round(gen / max(1, len(qs)) * 1000, 1)}
-            for q, o in zip(qs, outs, strict=True)]
-    (work / f"{name}.jsonl").write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows))
-    return {"questions": len(rows), "written": f"{name}.jsonl", "seconds": round(time.time() - t, 1), "generation_seconds": round(gen, 1),
-            "not_found": sum(r["answer"] == NOT_FOUND for r in rows), "output_tokens": sum(r["output_tokens"] for r in rows)}

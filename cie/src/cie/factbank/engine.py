@@ -183,7 +183,9 @@ class FactBank:
         q = question.lower()
         out = []
         for alias, ents in self.aliases.items():
-            if len(alias) >= 4 and re.search(r"(?<![\w-])" + re.escape(alias) + r"(?![\w-])", q):
+            # the substring test first: the pattern can match only where the alias is in the question, and compiling one
+            # for each of 57,000 aliases at 50,000 documents took a quarter of the brain's time (the same answers)
+            if len(alias) >= 4 and alias in q and re.search(r"(?<![\w-])" + re.escape(alias) + r"(?![\w-])", q):
                 out += sorted(ents)
         return out
 

@@ -126,6 +126,48 @@ with its 95% bootstrap interval.
 **The claim "a bigger reasoning engine makes the brain better" is met if rules 2 to 8 are.** Rule 1 decides "the brain
 holds at 50,000 documents". A run with `LIMIT` is a quick look and decides nothing.
 
+## Changes on 2026-10-19, before any model answered a test question
+
+The first Colab run stopped at the v18 step (the plan lessons name v8's glossary by a path on the machine that wrote
+them). A review of the steps still to run then found ways for them to crash or to read answers wrongly. Each change below
+was made before the model arms had run on Colab, from how the code, vLLM 0.30 and Qwen3.8's chat template behave, not
+from any test answer. The rules and the scorers did not change.
+
+- **The brain, unchanged in what it answers.** v8's glossary is read from its copy in the repository
+  (`docs/benchmarks/factbank_llm/glossary.json`, the same sha256). Two speed-ups: the general word list is read once, not
+  on every call, and a name's pattern is tried only where the name is in the question. 74 of round 4's questions (every
+  8th, all eight families) asked again on round 4's bank gave round 4's answers, routes, reasons and reads exactly.
+- **The reasoner's window.** A conversation can grow past the model's 32,768 tokens, and one such prompt failed the whole
+  batch in vLLM. Now each prompt is measured first: one with less than 2,048 tokens of room ends with the brain's answer
+  (counted as `too_long`), and the others get at most the room they have. A tool result keeps what fits in about 8,000
+  characters (a field's value cut at 300; a find says how many records match and how many it shows), and a conversation
+  past 60,000 characters must answer at its next turn, as after 8 tool calls.
+- **Cut-off thinking.** Qwen3.8's template puts `<think>` in the prompt, so vLLM's text starts inside the thinking: a
+  reply cut off at the token limit would have been read as the answer (a draft inside the thinking taken as final). The
+  opener is put back, so a reply cut off while thinking reads as no reply: the reasoner is told it was cut off, and after
+  two reminders keeps the brain's answer; plain search gets one reminder, then its answer is "(no reply)", which scores 0
+  everywhere (never "not found").
+- **Reading the model's answers (both model arms alike).** A "Final answer:" line is read as an "Answer:" line; an
+  answer written on the lines below an empty "Answer:" is read, a list as one line with "; " between the items (the
+  scorers read a value, a date and keys from the first line); a JSON answer of `null`, a bare "none", and a refusal of
+  one short sentence in other words ("There is no such ticket.", "The passages do not mention it.") are "not found"; a
+  JSON answer may hold raw line breaks; Qwen's own tool-call format is read as a tool call. The brain's answer, when the
+  reasoner keeps it, is stored as the brain gave it. Each row keeps the model's visible reply, so answers can be read
+  again without the GPU.
+- **The free-text instruction** in both prompts now asks to keep the record's own words (key phrases, figures, names and
+  dates as written). The scorer counts a fact by its words and figures; v18 quotes the records, so a model answer that
+  reworded a fact ("audit logs" for "audit trails") would lose it although right.
+- **Plain search sees all 12 passages** (14,000 characters; 9,000 had cut them to 8 to 10), and a row's `docs` lists only
+  the passages it was shown.
+- **Settings and resuming.** A model arm stops before loading the model when its earlier answers, or the other model
+  arm's, were made with another model, effort or token limit (a run resumed on the other size of A100); if rag and the
+  reasoner differ anyway, rules 7 and 8 are undecided. Answers past a `LIMIT` are kept, a row cut off half way is asked
+  again, files are written whole, a dead brain process stops the step instead of hanging it, and every answer goes to
+  Drive every 5 minutes. The reasoner's conversations run as one batch per folder, each row written as it ends.
+- **Time.** The model arms take longer than first written: about 30 to 45 minutes for plain search and 2 to 3.5 hours for
+  the reasoner on an 80 GB A100 (about twice that on 40 GB), since the model thinks before every step and the GPU holds
+  only some 10 to 50 conversations at a time.
+
 ## What it will not show
 
 - **Seen questions:** round 4's questions were scored once already; the brain was not changed since, but this is a test
@@ -134,5 +176,6 @@ holds at 50,000 documents". A run with `LIMIT` is a quick look and decides nothi
   in wordings written here, so they are tidier than people's.
 - **One run of a sampled model:** thinking samples at temperature 1.0, so a rerun gives somewhat different answers.
 - **The scorer is code, not a judge:** a free-text answer is scored by the facts it holds, not by how well it reads.
-- **Speed:** at 50,000 documents the brain takes about 7 s a question on one CPU (round 4: about 1.6 s at 5,000);
-  the notebook runs it in parallel processes. The report gives the model's tokens; the notebook's log gives the times.
+- **Speed:** at 50,000 documents the brain takes about 7 s a question on one CPU (round 4: about 1.6 s at 5,000;
+  about a third less since the speed-ups of 2026-10-19); the notebook runs it in parallel processes. The report gives the
+  model's tokens; the notebook's log gives the times.
