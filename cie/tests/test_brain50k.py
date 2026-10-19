@@ -74,3 +74,25 @@ def test_score_folder_and_rules(tmp_path):
     assert verdicts["2"] and verdicts["3"] and verdicts["4"] and verdicts["5"] and verdicts["6"] and verdicts["7"] and verdicts["8"]
     md = T.to_markdown({"messy": rep, "rules": {k: True for k in T.rules()}})
     assert "| reasoner |" in md and "owner_meetings" in md and "| met |" in md
+
+
+def test_glossary_found_in_the_repository(tmp_path):
+    from cie.factbank.plans import GLOSSARY_COPY, glossary_path
+
+    gone = tmp_path / "scratch" / "glossary.json"  # where the frozen lessons name it: not on a fresh machine
+    assert glossary_path(gone) == GLOSSARY_COPY
+    here = tmp_path / "glossary.json"
+    here.write_text("[]")
+    assert glossary_path(here) == here  # a file that is there is used as named
+    other = tmp_path / "x" / "lexicon.json"
+    assert glossary_path(other) == other  # only v8's glossary is looked for elsewhere
+
+
+def test_a_brain_that_fails_to_load_stops_the_run(tmp_path, monkeypatch):
+    import pytest
+
+    monkeypatch.setattr(T, "_load_brain", lambda *a: (_ for _ in ()).throw(FileNotFoundError("no lessons")))
+    T._init_brain("bank", "s", "p", "r")
+    assert T._BRAIN is None and "no lessons" in T._BRAIN_ERROR
+    with pytest.raises(RuntimeError, match="did not load"):
+        T._ask_one({"id": "q", "question": "?"})

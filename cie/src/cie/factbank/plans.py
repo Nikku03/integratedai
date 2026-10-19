@@ -854,6 +854,29 @@ def question_words(question: str) -> set[str]:
     return {stem(w) for w in re.findall(r"[a-z]+", re.sub(r'"[^"]*"', " ", question).lower())}
 
 
+# v8's glossary, as the repository keeps it. Lessons trained in a scratch folder name it there (round 1 to 4's frozen
+# lessons do); ``glossary_path`` finds this copy when that file is gone, if it is the same file.
+GLOSSARY_COPY = Path("docs/benchmarks/factbank_llm/glossary.json")
+GLOSSARY_SHA256 = "0dd7d0bc2a7788d579be81b4093fd9c6b78bcbcc412583fecf5bd4facf01f42c"
+
+
+def glossary_path(named: str | Path) -> Path:
+    """The glossary file lessons name, or, when it is not on this machine and is v8's glossary by name, the repository's copy
+    (relative to the working directory, or to this checkout), checked byte for byte by its sha256 (FileNotFoundError when no
+    copy is found, ValueError when the copy differs)."""
+    import hashlib
+
+    p = Path(named)
+    if p.exists() or p.name != GLOSSARY_COPY.name:
+        return p
+    for c in (GLOSSARY_COPY, Path(__file__).resolve().parents[3] / GLOSSARY_COPY):
+        if c.exists():
+            if hashlib.sha256(c.read_bytes()).hexdigest() != GLOSSARY_SHA256:
+                raise ValueError(f"{c} is not v8's glossary (sha256 {GLOSSARY_SHA256[:16]}…), which {named} was")
+            return c
+    raise FileNotFoundError(f"the lessons name the glossary {named}, which is not here, and no copy of it was found at {GLOSSARY_COPY}")
+
+
 @dataclass
 class PlanLessons:
     weights: list[float]
@@ -890,7 +913,7 @@ class PlanLessons:
         if self.glossary:
             from cie.factbank.reader import Glossary
 
-            pl.glossary = Glossary.load(self.glossary)
+            pl.glossary = Glossary.load(glossary_path(self.glossary))
         pl.tickets = self.tickets
         pl.orders = self.orders
         return pl

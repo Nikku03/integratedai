@@ -300,21 +300,33 @@ def brain_view(r: dict[str, Any], chars: int = EVIDENCE_CHARS) -> dict[str, Any]
 
 # ------------------------------------------------------------------ tool processes
 _BOX: Toolbox | None = None
+_BOX_ERROR: str | None = None
 
 
-def _init_worker(bank: str, single: str | None, plans: str | None, router: str | None) -> None:
-    global _BOX
+def _make_box(bank: str, single: str | None, plans: str | None, router: str | None) -> Toolbox:
     brain = None
     if single and plans:
         from cie.factbank.brain import Brain, Router
 
         brain = Brain(bank, single, plans, Router.load(router) if router else None, v16=True, v17=True, v18=True)
-    _BOX = Toolbox(bank, brain)
+    return Toolbox(bank, brain)
+
+
+def _init_worker(bank: str, single: str | None, plans: str | None, router: str | None) -> None:
+    """A worker's toolbox; one that fails to load is kept as its error, which ``ToolPool`` raises (never answered as a tool
+    result: the model would go on without the brain)."""
+    global _BOX, _BOX_ERROR
+    try:
+        _BOX = _make_box(bank, single, plans, router)
+    except Exception as e:  # noqa: BLE001 - raised by ToolPool
+        _BOX_ERROR = f"{type(e).__name__}: {e}"
 
 
 def _run_call(call: tuple[str, dict[str, Any]]) -> tuple[dict[str, Any], float]:
+    if _BOX is None:
+        raise RuntimeError(f"the toolbox did not load in a worker: {_BOX_ERROR}")
     t = time.perf_counter()
-    out = _BOX.run(*call) if _BOX is not None else {"error": "no toolbox"}
+    out = _BOX.run(*call)
     return out, round(time.perf_counter() - t, 3)
 
 
@@ -327,6 +339,7 @@ class ToolPool:
 
         self.workers = workers or max(1, min(10, (os.cpu_count() or 2) - 2))
         init = (str(bank), str(single) if single else None, str(plans) if plans else None, str(router) if router else None)
+        _make_box(*init)  # a broken setup (a lessons file, a glossary) stops here, before any process starts
         self.pool = ProcessPoolExecutor(self.workers, mp_context=mp.get_context("fork"), initializer=_init_worker, initargs=init)
         list(self.pool.map(_run_call, [("values", {"system": "linear", "field": "status"})] * self.workers))  # load them all now
 

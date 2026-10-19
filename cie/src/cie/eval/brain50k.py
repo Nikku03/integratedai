@@ -356,16 +356,28 @@ def write_questions(work: Path, tidy: Path = BASE / "questions.jsonl", messy: Pa
 LESSONS = Path("docs/benchmarks/brain2/lessons")  # the lessons v18 was frozen with (round 4)
 FILES = {"v18": "factbank_v18", "rag": "rag", "reasoner": "reasoner"}
 _BRAIN: Any = None
+_BRAIN_ERROR: str | None = None
+
+
+def _load_brain(bank: str, single: str, plans: str, router: str) -> Any:
+    from cie.factbank.brain import Brain, Router
+
+    return Brain(bank, single, plans, Router.load(router), v16=True, v17=True, v18=True)
 
 
 def _init_brain(bank: str, single: str, plans: str, router: str) -> None:
-    global _BRAIN
-    from cie.factbank.brain import Brain, Router
-
-    _BRAIN = Brain(bank, single, plans, Router.load(router), v16=True, v17=True, v18=True)
+    """A worker's brain. A brain that fails to load is kept as its error, never raised here: a pool restarts a worker whose
+    initializer raises, again and again, so the first question raises it instead and the run stops."""
+    global _BRAIN, _BRAIN_ERROR
+    try:
+        _BRAIN = _load_brain(bank, single, plans, router)
+    except Exception as e:  # noqa: BLE001 - raised by the first question
+        _BRAIN_ERROR = f"{type(e).__name__}: {e}"
 
 
 def _ask_one(q: dict[str, Any]) -> dict[str, Any]:
+    if _BRAIN is None:
+        raise RuntimeError(f"the brain did not load in a worker: {_BRAIN_ERROR}")
     r = _BRAIN.ask(q["question"])
     return {"id": q["id"], **{k: r[k] for k in ("answer", "route", "reason", "evidence", "ms", "reads", "journal", "family_scores")}}
 
@@ -411,6 +423,7 @@ def ask_v18(work: Path, workers: int = 4, lessons: Path = LESSONS, limit: int | 
     args = (str(work / "factbank_v2.sqlite"), str(lessons / "single_lessons.json"), str(lessons / "plan_lessons.json"),
             str(lessons / "router.json"))
     if todo:
+        _load_brain(*args)  # loads in a few seconds (its indexes are built on first use): a broken setup stops here, once
         with mp.get_context("fork").Pool(workers, initializer=_init_brain, initargs=args) as pool, open(work / f"{name}.jsonl", "a") as f:
             for i, row in enumerate(pool.imap_unordered(_ask_one, todo, chunksize=1), 1):
                 f.write(json.dumps(row, ensure_ascii=False) + "\n")
