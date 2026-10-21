@@ -1,0 +1,49 @@
+{
+ "v18": {
+  "file": "factbank_v18.jsonl",
+  "lessons": "docs/benchmarks/brain2/lessons",
+  "seconds": 632.3,
+  "asked": 635,
+  "workers": 10,
+  "median_ms": 6494.0,
+  "questions_sha256": "a3ee9b75b6eaf94721b30d05e5b18b498f3d87cc67d71fc046e2fc91b4e0f4f8",
+  "pythonhashseed": "0"
+ },
+ "rag": {
+  "arm": "rag",
+  "file": "rag.jsonl",
+  "model": "Qwen/Qwen3.8-27B@1d4bf0f2ff6012fd82039f2fa52739d0dd7c60c0",
+  "model_name": "qwen3.8-27b",
+  "effort": "medium",
+  "thinking": true,
+  "max_tokens": 6144,
+  "max_model_len": 32768,
+  "seconds": 1376.3,
+  "asked": 635,
+  "output_tokens": 289815,
+  "cut": 0,
+  "retried": 0,
+  "no_reply": 0,
+  "questions_sha256": "a3ee9b75b6eaf94721b30d05e5b18b498f3d87cc67d71fc046e2fc91b4e0f4f8",
+  "pythonhashseed": "0"
+ },
+ "reasoner": {
+  "arm": "reasoner",
+  "file": "reasoner.jsonl",
+  "model": "Qwen/Qwen3.8-27B@1d4bf0f2ff6012fd82039f2fa52739d0dd7c60c0",
+  "model_name": "qwen3.8-27b",
+  "effort": "medium",
+  "thinking": true,
+  "max_tokens": 6144,
+  "max_model_len": 32768,
+  "seconds": 1556.3,
+  "asked": 635,
+  "output_tokens": 337914,
+  "tool_calls": 1424,
+  "cut_turns": 0,
+  "gave_up": 0,
+  "too_long": 0,
+  "questions_sha256": "a3ee9b75b6eaf94721b30d05e5b18b498f3d87cc67d71fc046e2fc91b4e0f4f8",
+  "pythonhashseed": "0"
+ }
+}
