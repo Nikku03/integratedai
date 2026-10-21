@@ -18,13 +18,14 @@ The questions themselves are in `docs/benchmarks/brain50k/plan/<folder>/question
 `id`, so the files join on it. The run records' `questions_sha256` match the plan's.
 
 `arms50k.json` in `w50k/` records only the last 123 plain-search answers for `rag`: that run was cut off after 512
-answers and resumed, and the resumed run rewrote the record.
+answers, before it wrote its record, and the resumed run recorded only its own 123.
 
 ## Where they come from
 
 The Colab notebook (`notebooks/company_brain_50k_colab.ipynb`) saved its results to Google Drive
-(`MyDrive/cie_brain50k/<folder>/`) as each step ran. The files here were downloaded from there, and the answer files
-gzipped. The Drive files' creation times (UTC, 2026-10-21) give the run's order; the rows themselves carry no times:
+(`MyDrive/cie_brain50k/<folder>/`) as each step ran. The files here, except the two `factbank_v18.jsonl.gz` (made
+again here, see below), were downloaded from there; the answer files and the report's JSON were gzipped. The Drive
+files' creation times (UTC, 2026-10-21) give the run's order; the rows themselves carry no times:
 
 | time | file |
 |---|---|
@@ -39,7 +40,14 @@ gzipped. The Drive files' creation times (UTC, 2026-10-21) give the run's order;
 | 19:00 | `w50k/reasoner.jsonl` |
 | 19:24 | `w50k_messy/report50k.json`, `report50k.md` |
 
-The last commit that changed code before the run, `61c794a`, is from 16:14 UTC. The model's thinking was not kept.
+The last commit that changed code, `61c794a`, is from 16:14 UTC, before Qwen3.8-27B's first answer. The run went in two
+parts: it was cut off during plain search's tidy answers and resumed, and the notebook takes the branch's latest commit
+each time it starts.
+- **The first part** (the draw, v18, plain search's messy answers and its first 512 tidy ones) ran a checkout from before
+  `61c794a`, most likely `c27b0a9`: those plain-search answers carry no settings stamp.
+- **The second part** (plain search's last 123 tidy answers, the reasoner and the report) ran `61c794a`.
+
+The model's thinking was not kept.
 
 ## v18's answers, made again
 
@@ -55,5 +63,6 @@ PYTHONHASHSEED=0 PYTHONPATH=src python -m cie.eval.brain50k ask --arm v18 --work
 - **The same documents:** the bank was built here from a draw whose document list is the same as Colab's
   `haystack.json`, in the same order (sha256 `9a344aaa…`, the plan's). The bank holds 50,000 sources and 1,162,089 facts,
   as the plan's `banks.json` says.
-- **The same answers:** every answer gives Colab's score and answer length in the report: 635 of 635 in `w50k_messy/`
-  and 635 of 635 in `w50k/`.
+- **The same answers:** every answer gives Colab's score, "not found" flag and answer length in the report: 635 of 635
+  in `w50k_messy/` and 635 of 635 in `w50k/`. The files are not byte for byte Colab's: each row also records the time it
+  took (`ms`), and Colab's files are about 220 bytes longer. The answer texts themselves could not be compared.

@@ -12,16 +12,20 @@ thinking on with effort "medium". The rules are those of `docs/FACTBANK_50K_PLAN
     and the report at 19:24.
 
   So every change came before Qwen3.8-27B's first answer. Before that, only local plumbing runs of a small model (Qwen3
-  0.6B) answered test questions: 4 a folder before the plan was written, and 6 messy ones on 2026-10-19 (21:42 to 21:51
-  UTC, after `a215da6`). As the plan says of runs with `LIMIT`, they decide nothing.
+  0.6B) answered test questions, all in the messy folder: 4 before the plan was written (2026-10-17, about 16:39 to 16:46
+  UTC), and 6 on 2026-10-19 (21:42 to 21:51 UTC, after `a215da6`; the first 4 are the same questions). In both runs only
+  v18 answered the tidy folder. As the plan says of runs with `LIMIT`, they decide nothing.
 - **The code each arm ran:**
   - Plain search's messy answers and its first 512 tidy ones were made with a checkout from before `61c794a`: they carry
     no settings stamp, and they have `a215da6`'s `passages` field. By the timeline, that checkout is most likely
     `c27b0a9`. Its answer reader and `a215da6`'s read every one of these replies the same.
   - The reasoner and the last 123 tidy plain-search answers ran on `61c794a`.
-  - Between `c27b0a9` and `61c794a` only `brain50k.py` changed (the settings stamp, the resume check, row splitting). So
-    each arm's prompt, plain search's passages and the reading of answers are the same for both.
-  - The plan's amendment header gives only 2026-10-19; two of its edits are from 2026-10-21, both before any model answer.
+  - Between `c27b0a9` and `61c794a` the only code change under `src/` is in `brain50k.py`: the settings stamp, the resume
+    check, row splitting, and the score step's settings warning and run counts. The notebook changed only in its time
+    estimate, how it saves to Drive and how it prints a step's output; the plan and the tests changed too. So each arm's
+    prompt, plain search's passages and the reading of answers are the same for both.
+  - The plan's amendment header gives only 2026-10-19; two of its edits are from 2026-10-21, both before Qwen3.8-27B's
+    first answer (and after the small model's plumbing answers of 2026-10-19).
 - **Raw results:** `docs/benchmarks/brain50k/test/` holds both model arms' answers, both folders' run records, the score
   step's report and v18's answers made again locally (see its README).
 - **All data is fictional:** the benchmark's made-up company.
@@ -43,27 +47,34 @@ engine makes the brain better; rule 1 says the brain holds at 50,000 documents.
 **What the logs show** (the model's thinking is not stored, and no arm tests the tools without the model or the model
 without the brain's answer):
 - **Complex questions:** in 80 of its 96 wins over the brain, the model made the brain's missing steps with its tools
-  (`find`, `read`, `search`, `values`). In the other 16 it needed no tool: the brain's own evidence held the answer.
+  (`find`, `read`, `search`, `values`; in one, only a narrower question back to the brain). In the other 16 it needed no
+  tool: the brain's own evidence held the answer.
 - **Keeping the brain's answer:** it kept it word for word on about 62% of the questions.
   - Where the brain was not fully right (188 questions), it raised 168.
   - Where the brain was right (447 questions), it lowered 19 (4%).
-- **Its losses:** in 17 of the 19, it changed a right brain answer. It overruled 6, and it shortened 11 right free-text
-  quotes with no tool call, against its prompt.
+- **Its losses:** all 19 were on questions the brain had right, and in each it changed the brain's answer.
+  - It overruled 6.
+  - It shortened 12 right free-text quotes (11 with no tool call). Most of them it cut to the date, name or figure the question
+    asked for, as its prompt's format rule says; the scorer wants the record's own phrase.
+  - On nf_title-038, whose casual wording can be read as naming two pages, it named two authors where "not found" was
+    right.
 
 **Why plain search does badly:**
 - In 211 of its 219 wrong answers in single, multi, counts, history, email and chat, and complex, the 12 passages did not
   hold the answer.
 - It cannot count over 50,000 documents from 12 passages (counts 0.073).
 - It cannot follow a link in one search (multi 0.323).
-- In this setup it sees only the first part of a long record, because only a record's first chunk carries its key
-  (history 0.500).
+- In this setup only a record's first chunk has its key field, so when a question names a record by its key, plain
+  search usually sees only that chunk. In all 18 comment questions it saw only the first chunk, and the comments were in
+  later ones (history 0.500).
 
 **The brain at 50,000 documents** lost a little:
 - **Rule 1's measure:** −0.019 (95% interval −0.034 to −0.005), against a bar of −0.05.
 - **Where:** single −0.073, free text −0.056 and not found −0.027.
 - **Why:** the 20 questions that got worse in those three families were traced one by one.
   - In half, a new document now ranks above the right one.
-  - The rest come from a name with more records, a company stored as a person and new field names.
+  - Nine of the other ten come from a name with more records, a company stored as a person and new field names. For one,
+    no cause was found.
   - These causes are read from the brain's steps; none was tested by taking the new documents out.
   - Six unanswerable questions also got worse, and six got better.
 
@@ -109,7 +120,10 @@ Two of the rules pass on their point estimate while their interval crosses the l
 - **Rule 3:** the free-text interval goes down to +0.067.
 - **Rule 5:** the not-found interval runs from −0.081 to +0.081.
 
-Exact ties are rounded up here (0.8125 is 0.813, 0.0625 is 0.063). The report itself rounds them to even.
+Exact ties are rounded up here (0.8125 is 0.813, 0.0625 is 0.063). The report itself rounds them to even. Each
+difference is of unrounded scores, so it can be 0.001 off the difference of the rounded scores beside it. For example,
+rule 8's 0.929 against 0.190 is +0.738 (93/126), and free text against plain search is 0.8125 − 0.7021 = +0.110, though
+0.813 − 0.702 reads as 0.111.
 
 ## Results
 
@@ -127,7 +141,7 @@ Exact ties are rounded up here (0.8125 is 0.813, 0.0625 is 0.063). The report it
 | v18 at 50,000, on the same 454 questions | 0.803 | 0.903 | 0.625 | 0.973 | 1.000 | 0.950 | 0.950 | 0.870 | | 0.884 | 0.050 |
 
 - **The 454 questions** are round 4's questions whose answers are the same at 50,000 documents. Rule 1 compares the last
-  two rows.
+  two rows. Their rounded means subtract to −0.020; unrounded, the difference is −0.01948, the −0.019 of rule 1.
 - **Counts there rest on 2 questions:** 55 of the 57 were counted again over the 50,000 documents, so they have new
   answers and are left out of rule 1.
 - **False "not found" on the 454:** 11 of their 317 answerable questions at 5,000 documents, and 16 of the same 317 at
@@ -143,7 +157,8 @@ Exact ties are rounded up here (0.8125 is 0.813, 0.0625 is 0.063). The report it
 
 Rules 2 to 8 also hold on the tidy set by their point estimates. Rule 2 has the thinnest margin there: the reasoner is
 +0.046 above v18, with interval +0.022 to +0.070, so the interval crosses the +0.03 line. (The report gives the
-reasoner's tidy mean as 0.960, an average of family means already rounded; unrounded it is 0.9595.)
+reasoner's tidy mean as 0.960, rounded from 0.9595, an average of family means already rounded; unrounded it is
+0.959497, which rounds to 0.959.)
 
 **The complex questions by kind** (messy):
 
@@ -257,14 +272,25 @@ It scored below 1 on 42 of the 635 messy questions. All 19 questions where it di
 | The question itself | 1 | 1 |
 | It trusted a wrong brain answer | 1 | 0 |
 
-In 17 of the 19 losses to v18 the reasoner changed a right brain answer: 6 by overruling it, and 11 by shortening the
-brain's right free-text quote with no tool call.
+In all 19 losses to v18 the reasoner changed a right brain answer:
+- 6 by overruling it;
+- 11 by shortening the brain's right free-text quote with no tool call, and 1 by shortening it after reading the record
+  (prose-1022-099);
+- 1 by naming two authors on a question whose casual wording can be read as naming two pages (nf_title-038, "The question
+  itself" in the table).
 
 - **Shortened quotes.**
   - In 11 of the 12 free-text losses to v18, the reasoner made no tool call. It shortened the brain's right quote, for
     example to "2025-02-22" for the fact "Usability test scheduled 2025-02-22".
-  - Its prompt asked it to keep the record's words, so this is the model not following its instruction as much as the
-    scorer.
+  - Its prompt asks for a name, number or date (YYYY-MM-DD) when the question asks for one. It asks for the record's own
+    words, in at most three sentences, only when the question asks what was said, decided or planned.
+  - Most of the 11 ask for a date, a name or a figure, and got one. Three (prose-1022-082, -090 and -091, including the
+    example above) are a bare date for a "when" question, two more (-087, -089) give the dates or the name asked for, and
+    four give the figure asked for.
+  - Only two, which ask what was said or announced (-049 and -013), reworded the record against the prompt: "about 10 to 20 minutes"
+    for "the 10 to 20 minute onboarding", and "lasts three weeks" for "for the next three weeks".
+  - So this is mostly the prompt's format rule and the scorer pulling apart, and only in part the model not following its
+    instruction.
   - Matching v18 on those 12 would give free text 0.925 and the mean of the eight 0.972.
 - **Tools that fail silently or mislead.** These cost the model calls:
   - `find` on a field that does not exist returns 0 records with no error: 75 calls, mostly HubSpot "name".
@@ -287,7 +313,9 @@ brain's right free-text quote with no tool call.
 - **Where the calls went:**
   - It trusted the brain on counts, history and email and chat: over 90% of those answers are the brain's.
   - It worked hardest on unanswerable questions: 36% of all calls. It turned 12 of v18's wrong answers there into a right
-    "not found", and 3 of v18's right "not found" answers into an answer from a similar record.
+    "not found". It turned 3 of v18's right "not found" answers into an answer: twice from a similar record
+    (heldout-1023-010 and -022), and once from another field of the named account (field_absent-046 gave its owner as the
+    CSM).
 - **The usual complex chain:**
   - find the record, by search or by a `find` on its key;
   - read its fields;
@@ -366,8 +394,8 @@ traced.)
   a model allowed to search again were not tried.
 - **The tools read the brain's own fact bank:** `find` and `values` filter its fields exactly, and those fields come
   straight from the generated records' structured fields. Real records would be messier. Even here the bank stores three
-  companies as people and files one thread under a second spelling ("SolsticeHealth"), which cost the reasoner
-  count_gmail-262.
+  companies as people, and one generated thread itself names its account "SolsticeHealth", which an exact `find` misses
+  (it cost the reasoner count_gmail-262).
 
 ## What next
 
@@ -377,6 +405,9 @@ traced.)
   - `search` should filter by system before it ranks.
 - **Free text:** pass the brain's quote on verbatim when the reasoner keeps it, or check that the facts survive a
   rewrite.
-- **The brain at size:** treat external email participants as companies, not people. Keep field names out of the
-  not-found check's topic words. Let the finder see past a near tie.
+- **The brain at size:**
+  - store an external email participant that names a company (such as "Cobalt Analytics") as a company, not a person;
+  - stop the not-found check from dropping a topic word just because some field name contains it (as "rotation" in
+    owner_rotation): drop only the words of the field the question asks for;
+  - let the finder see past a near tie.
 - **A fresh test:** new questions at 50,000 documents, and real records if any can be had.
