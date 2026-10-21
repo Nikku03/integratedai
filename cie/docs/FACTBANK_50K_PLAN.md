@@ -140,7 +140,8 @@ from any test answer. The rules and the scorers did not change.
 - **The reasoner's window.** A conversation can grow past the model's 32,768 tokens, and one such prompt failed the whole
   batch in vLLM. Now each prompt is measured first: one with less than 2,048 tokens of room ends with the brain's answer
   (counted as `too_long`), and the others get at most the room they have. A tool result keeps what fits in about 8,000
-  characters (a field's value cut at 300; a find says how many records match and how many it shows), and a conversation
+  characters (a field's value cut at 300 characters, a value the values tool lists at 150; a find says how many records match
+  and how many it shows), and a conversation
   past 60,000 characters must answer at its next turn, as after 8 tool calls.
 - **Cut-off thinking.** Qwen3.8's template puts `<think>` in the prompt, so vLLM's text starts inside the thinking: a
   reply cut off at the token limit would have been read as the answer (a draft inside the thinking taken as final). The
@@ -163,9 +164,10 @@ from any test answer. The rules and the scorers did not change.
   reworded a fact ("audit logs" for "audit trails") would lose it although right.
 - **Plain search sees all 12 passages** (14,000 characters; 9,000 had cut them to 8 to 10), and a row's `docs` lists only
   the passages it was shown.
-- **Settings and resuming.** A model arm stops before loading the model when its earlier answers, or the other model
-  arm's, were made with another model, effort or token limit (a run resumed on the other size of A100); if rag and the
-  reasoner differ anyway, rules 7 and 8 are undecided. Answers past a `LIMIT` are kept, a row cut off half way is asked
+- **Settings and resuming.** Every model answer carries the model, effort, thinking and token limit it was made with. A
+  model arm stops before loading the model when its earlier answers (of a run finished or cut off part way), or the other
+  model arm's, were made with other ones (a run resumed on the other size of A100); if they differ anyway, rules 7 and 8
+  are undecided (rules 2 to 8 when the reasoner's own answers mix settings). Answers past a `LIMIT` are kept, a row cut off half way is asked
   again, files are written whole, a dead brain process stops the step instead of hanging it, and every answer goes to
   Drive every 5 minutes. The reasoner's conversations run as one batch per folder, each row written as it ends.
 - **Time.** The model arms take longer than first written: about 30 to 45 minutes for plain search and 2 to 3.5 hours for

@@ -181,5 +181,40 @@ def test_reasoner_rows_written_as_they_end(tmp_path):
     assert [(r["id"], r["answer"]) for r in rows] == [("a", "2026-04-02"), ("b", "kept")] and rep[str(tmp_path)]["asked"] == 1
     reg = json.loads((tmp_path / "arms50k.json").read_text())["reasoner"]
     assert reg["model"] == "scripted" and reg["model_name"] == "m" and reg["asked"] == 1
+    assert rows[0]["settings"] == s and "settings" not in rows[1]  # the new answer carries its run's settings
     # nothing left to ask: the step ends before it loads a model (none could load here)
     assert T.main(["ask", "--arm", "reasoner", "--work", str(tmp_path), "--model", "no-such-model"])[str(tmp_path)]["asked"] == 0
+
+
+def test_a_run_cut_off_part_way_keeps_its_settings(tmp_path):
+    import pytest
+
+    _write(tmp_path / "questions.jsonl", [{"id": i, "question": "?"} for i in "abc"])
+    bf16 = {"model_name": "qwen3.8-27b", "effort": "medium", "thinking": True, "max_tokens": 6144}
+    # rag killed after its first answers: rows on disk (and on Drive), no record in arms50k.json
+    _write(tmp_path / "rag.jsonl", [{"id": "a", "answer": "x", "route": "rag", "settings": bf16}])
+    assert not (tmp_path / "arms50k.json").exists() and T.made_with(tmp_path, "rag") == [bf16]
+    with pytest.raises(SystemExit, match="model_name 'qwen3.8-27b' .now 'qwen3.8-27b-fp8'.*MyDrive/cie_brain50k"):
+        T.check_settings([tmp_path], "rag", {**bf16, "model_name": "qwen3.8-27b-fp8"})
+    with pytest.raises(SystemExit):
+        T.check_settings([tmp_path], "reasoner", {**bf16, "effort": "low"})  # the other arm's answers count too
+    T.check_settings([tmp_path], "rag", bf16)
+    # mixed anyway (answers copied by hand): the score step says so and leaves the rules undecided
+    _write(tmp_path / "rag.jsonl", [{"id": "a", "answer": "x", "route": "rag", "settings": bf16},
+                                    {"id": "b", "answer": "y", "route": "rag", "settings": {**bf16, "model_name": "qwen3.8-27b-fp8"}}])
+    assert len(T.made_with(tmp_path, "rag")) == 2
+
+
+def test_rows_with_a_unicode_line_separator(tmp_path):
+    f = tmp_path / "factbank_v18.jsonl"
+    f.write_text(json.dumps({"id": "a", "answer": "line one line two"}, ensure_ascii=False) + "\n")
+    assert T._rows(f)["a"]["answer"] == "line one line two"
+
+
+def test_run_counts_from_the_rows(tmp_path):
+    _write(tmp_path / "rag.jsonl", [{"id": "a", "answer": "(no reply: cut off)", "finish": "length", "retried": "length", "output_tokens": 9},
+                                    {"id": "b", "answer": "x", "finish": "stop", "retried": None, "output_tokens": 1}])
+    assert T.run_counts(tmp_path, "rag") == {"asked": 2, "output_tokens": 10, "cut": 1, "retried": 1, "no_reply": 1}
+    _write(tmp_path / "reasoner.jsonl", [{"id": "a", "output_tokens": 5, "cut_turns": 1,
+                                          "steps": [{"tool": "find"}, {"gave_up": True, "finish": "too_long"}]}])
+    assert T.run_counts(tmp_path, "reasoner") == {"asked": 1, "output_tokens": 5, "tool_calls": 1, "cut_turns": 1, "gave_up": 1, "too_long": 1}

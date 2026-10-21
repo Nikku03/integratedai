@@ -396,7 +396,7 @@ def _repair(path: Path) -> None:
 
 def _rows(path: Path) -> dict[str, dict[str, Any]]:
     _repair(path)
-    return {r["id"]: r for r in (json.loads(line) for line in path.read_text().splitlines() if line.strip())} if path.exists() else {}
+    return {r["id"]: r for r in (json.loads(line) for line in path.read_text().split("\n") if line.strip())} if path.exists() else {}
 
 
 def _write(path: Path, text: str) -> None:
@@ -409,7 +409,7 @@ def _write(path: Path, text: str) -> None:
 
 
 def _questions(work: Path, limit: int | None = None) -> list[dict[str, Any]]:
-    qs = [json.loads(line) for line in (work / "questions.jsonl").read_text().splitlines() if line.strip()]
+    qs = [json.loads(line) for line in (work / "questions.jsonl").read_text().split("\n") if line.strip()]
     return qs[: limit or None]
 
 
@@ -446,24 +446,34 @@ SETTINGS = ("model_name", "effort", "thinking", "max_tokens")
 OTHER = {"rag": "reasoner", "reasoner": "rag"}
 
 
+def made_with(work: Path, label: str) -> list[dict[str, Any]]:
+    """The settings a folder's answers of an arm were made with: those on its rows (each row carries its run's), and for
+    rows written before rows carried them, the arm's record in arms50k.json when it holds them."""
+    f = work / "arms50k.json"
+    rec = (json.loads(f.read_text()) if f.exists() else {}).get(label) or {}
+    rows = _rows(work / rec.get("file", f"{FILES.get(label, label)}.jsonl")).values()
+    got = {json.dumps({k: r["settings"].get(k) for k in SETTINGS}, sort_keys=True) for r in rows if r.get("settings")}
+    if any(not r.get("settings") for r in rows) and all(k in rec for k in SETTINGS):
+        got.add(json.dumps({k: rec[k] for k in SETTINGS}, sort_keys=True))
+    return [json.loads(x) for x in sorted(got)]
+
+
 def check_settings(works: list[Path], label: str, settings: dict[str, Any]) -> None:
-    """Stops when this run's model settings differ from those a folder's answers were made with: the same arm's (an arm
-    resumed with another model or effort) or the other model arm's (plain search must use the same model as the
-    reasoner, rules 7 and 8)."""
+    """Stops when this run's model settings differ from those a folder's answers were made with (``made_with``): the same
+    arm's (an arm resumed with another model or effort, finished or cut off part way) or the other model arm's (plain
+    search must use the same model as the reasoner, rules 7 and 8)."""
     for w in works:
-        f = w / "arms50k.json"
-        reg = json.loads(f.read_text()) if f.exists() else {}
         for lab in (label, OTHER.get(label)):
-            old = reg.get(lab) if lab else None
-            if not old or not _rows(w / old.get("file", f"{lab}.jsonl")):
-                continue
-            diff = {k: (old[k], settings.get(k)) for k in SETTINGS if k in old and old[k] != settings.get(k)}
-            if diff:
-                raise SystemExit(
-                    f"{w.name}: the {lab} answers there were made with other settings than this run's "
-                    + ", ".join(f"{k} {a!r} (now {b!r})" for k, (a, b) in diff.items())
-                    + ". Run with the same settings (MODEL, EFFORT in the notebook), or move the old answers file aside "
-                    + f"({old.get('file')}) to make them again.")
+            for old in made_with(w, lab) if lab else []:
+                diff = {k: (old.get(k), settings.get(k)) for k in SETTINGS if old.get(k) != settings.get(k)}
+                if diff:
+                    name = f"{FILES.get(lab, lab)}.jsonl"
+                    raise SystemExit(
+                        f"{w.name}: the {lab} answers there were made with other settings than this run's: "
+                        + ", ".join(f"{k} {a!r} (now {b!r})" for k, (a, b) in diff.items())
+                        + ". Run with the same settings (MODEL and EFFORT in the notebook's first cell). To make the "
+                        + f"{lab} answers again with these settings instead, delete {name} both in {w} and in the results "
+                        + f"folder on Drive (MyDrive/cie_brain50k/{w.name}/{name}), then run again.")
 
 
 def ask_v18(work: Path, workers: int = 4, lessons: Path = LESSONS, limit: int | None = None, name: str = "factbank_v18",
@@ -569,6 +579,7 @@ def ask_llm(works: list[Path], arm: str, generate: Any, tools: Any = None, name:
 
     name = name or FILES[arm]
     label = arm if name == FILES[arm] else name
+    stamp = {k: (settings or {}).get(k) for k in SETTINGS}  # on every row: a run cut off part way still says what made it
     out = {}
     cache: dict[Path, Any] = {}
     for work in works:
@@ -591,7 +602,8 @@ def ask_llm(works: list[Path], arm: str, generate: Any, tools: Any = None, name:
                         row = {"id": q["id"], "answer": R.rag_answer(text, o.get("finish_reason")), "route": "rag",
                                "docs": list(dict.fromkeys(h["dsid"] for h in hits[q["id"]][:shown])), "passages": shown,
                                "prompt_tokens": o.get("prompt_tokens", 0), "output_tokens": o.get("output_tokens", 0),
-                               "finish": o.get("finish_reason"), "retried": o.get("retried"), "raw": R.visible(text)[: R.RAW_CHARS]}
+                               "finish": o.get("finish_reason"), "retried": o.get("retried"), "raw": R.visible(text)[: R.RAW_CHARS],
+                               "settings": stamp}
                         stats["output_tokens"] += int(row["output_tokens"] or 0)
                         stats["cut"] += row["finish"] == "length"
                         stats["retried"] += row["retried"] is not None
@@ -606,6 +618,7 @@ def ask_llm(works: list[Path], arm: str, generate: Any, tools: Any = None, name:
             with open(work / f"{name}.jsonl", "a") as f:
 
                 def keep(row: dict[str, Any], f: Any = f, stats: Counter = stats) -> None:
+                    row["settings"] = stamp
                     stats["output_tokens"] += int(row["output_tokens"] or 0)
                     stats["tool_calls"] += sum(1 for s in row["steps"] if "tool" in s)
                     stats["cut_turns"] += int(row.get("cut_turns") or 0)
@@ -734,16 +747,38 @@ def score(messy: Path, tidy: Path | None = None, base5k: Path | None = BASE_MESS
         rep["tidy"] = score_folder(tidy)
     rep["rules"] = {k: _try(fn, rep) for k, fn in rules().items()}
     reg = json.loads((messy / "arms50k.json").read_text()) if (messy / "arms50k.json").exists() else {}
-    rep["runs"], rep["warnings"] = reg, []
-    a, b = reg.get("rag") or {}, reg.get("reasoner") or {}
-    if a and b and (diff := [k for k in SETTINGS if a.get(k) != b.get(k)]):
-        rep["warnings"].append("plain search and the reasoner ran with other settings (" + ", ".join(f"{k} {a.get(k)!r} and {b.get(k)!r}"
-                                                                                                   for k in diff) + "): rules 7 and 8 are undecided")
-        rep["rules"] = {k: None if k.startswith(("7 ", "8 ")) else v for k, v in rep["rules"].items()}
+    rep["runs"], rep["warnings"] = {lab: {**r, **run_counts(messy, lab)} if lab in OTHER else r for lab, r in reg.items()}, []
+    made = {lab: made_with(messy, lab) for lab in OTHER}
+    undecided: tuple[str, ...] = ()
+    if len(made["reasoner"]) > 1:
+        rep["warnings"].append(f"the reasoner's answers were made with more than one setting ({made['reasoner']}): rules 2 to 8 are undecided")
+        undecided = ("2 ", "3 ", "4 ", "5 ", "6 ", "7 ", "8 ")
+    elif len(made["rag"]) > 1 or (made["rag"] and made["reasoner"] and made["rag"] != made["reasoner"]):
+        rep["warnings"].append(f"plain search and the reasoner ran with other settings ({made['rag']} and {made['reasoner']}): "
+                               "rules 7 and 8 are undecided")
+        undecided = ("7 ", "8 ")
+    rep["rules"] = {k: None if k.startswith(undecided) and undecided else v for k, v in rep["rules"].items()}
     out = out or messy
     (out / "report50k.json").write_text(json.dumps(rep, indent=1, default=str))
     (out / "report50k.md").write_text(to_markdown(rep))
     return rep
+
+
+def run_counts(work: Path, label: str) -> dict[str, int]:
+    """A model arm's counts over every answer of the folder (a run that went on from earlier answers included): answers,
+    output tokens; rag's replies cut off, reminded and with nothing visible; the reasoner's tool calls, cut-off turns,
+    conversations that kept the brain's answer and, of them, those out of room."""
+    rows = list(_rows(work / f"{FILES.get(label, label)}.jsonl").values())
+    out = {"asked": len(rows), "output_tokens": sum(int(r.get("output_tokens") or 0) for r in rows)}
+    if label == "rag":
+        out |= {"cut": sum(r.get("finish") == "length" for r in rows), "retried": sum(r.get("retried") is not None for r in rows),
+                "no_reply": sum(str(r.get("answer") or "").startswith("(no reply") for r in rows)}
+    else:
+        steps = [r.get("steps") or [] for r in rows]
+        out |= {"tool_calls": sum(sum("tool" in s for s in st) for st in steps), "cut_turns": sum(int(r.get("cut_turns") or 0) for r in rows),
+                "gave_up": sum(any(s.get("gave_up") for s in st) for st in steps),
+                "too_long": sum(any(s.get("finish") == "too_long" for s in st) for st in steps)}
+    return out
 
 
 def _try(fn: Callable[[dict[str, Any]], bool], rep: dict[str, Any]) -> bool | None:
