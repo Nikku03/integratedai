@@ -250,6 +250,8 @@ class Toolbox:
             hits = got if hits is None else hits & got
         if hits is None:
             hits = {d for d, info in self.docs.items() if info[1] == system}
+        if isinstance(show, str):  # "key, status", as Qwen's own tool-call format writes a value
+            show = [x.strip() for x in show.split(",") if x.strip()]
         show = [str(s) for s in (show or [])][:6]
         rows, used = [], 0
         for dsid in sorted(hits, key=lambda d: (self.docs[d][0] or "", d))[:FIND_ROWS]:
@@ -435,19 +437,31 @@ PARAMETER = re.compile(r"<parameter=([\w.-]+)>\n?(.*?)\n?</parameter>", re.S)
 
 
 def _tool_call(obj: dict[str, Any]) -> dict[str, Any] | None:
-    """{"tool", "args"} from a JSON tool call: ours ({"tool", "args"}) or the usual one ({"name", "arguments"})."""
+    """{"tool", "args"} from a JSON tool call: ours ({"tool", "args"}) or the usual ones ({"name", "arguments" or
+    "parameters"})."""
     name = obj.get("tool") if isinstance(obj.get("tool"), str) else obj.get("name") if isinstance(obj.get("name"), str) else None
-    if name is None or (obj.get("tool") is None and not ({"arguments", "args"} & set(obj))):
+    if name is None or (obj.get("tool") is None and not ({"arguments", "args", "parameters"} & set(obj))):
         return None
-    args = obj.get("args", obj.get("arguments"))
+    args = obj.get("args", obj.get("arguments", obj.get("parameters")))
     if isinstance(args, str):
         try:
             args = json.loads(args, strict=False)
         except json.JSONDecodeError:
             args = None
     if not isinstance(args, dict):
-        args = {k: v for k, v in obj.items() if k not in ("tool", "name", "args", "arguments")}
+        args = {k: v for k, v in obj.items() if k not in ("tool", "name", "args", "arguments", "parameters")}
     return {"tool": name.strip().lower(), "args": args}
+
+
+def _answer(a: Any) -> dict[str, Any]:
+    """An answer object's answer as the reply's action: none is "not found", a list its items, a list over several lines
+    one line (``one_line``)."""
+    if a is None:
+        return {"answer": NOT_FOUND}
+    return {"answer": ", ".join(map(str, a)) if isinstance(a, list) else one_line(str(a))}
+
+
+ANSWER_TOOLS = ("answer", "final_answer", "final")  # an answer written as a call: {"name": "answer", "arguments": {"answer": ...}}
 
 
 def parse_action(text: str) -> dict[str, Any] | None:
@@ -460,12 +474,9 @@ def parse_action(text: str) -> dict[str, Any] | None:
         except json.JSONDecodeError:
             continue
         if isinstance(obj, dict) and "answer" in obj:
-            a = obj["answer"]
-            if a is None:
-                return {"answer": NOT_FOUND}
-            return {"answer": ", ".join(map(str, a)) if isinstance(a, list) else one_line(str(a))}
+            return _answer(obj["answer"])
         if isinstance(obj, dict) and (call := _tool_call(obj)) is not None:
-            return call
+            return _answer(call["args"]["answer"]) if call["tool"] in ANSWER_TOOLS and "answer" in call["args"] else call
     if calls := FUNCTION.findall(body):
         name, inner = calls[-1]
         args: dict[str, Any] = {}
@@ -474,9 +485,10 @@ def parse_action(text: str) -> dict[str, Any] | None:
                 args[k] = json.loads(v, strict=False)
             except json.JSONDecodeError:
                 args[k] = v.strip()
-        return {"tool": name.strip().lower(), "args": args}
+        name = name.strip().lower()
+        return _answer(args["answer"]) if name in ANSWER_TOOLS and "answer" in args else {"tool": name, "args": args}
     if (line := answer_line(body)) is not None:
-        return {"answer": line}
+        return {"answer": line, "join": True}
     return None
 
 
@@ -486,8 +498,9 @@ LIST_ITEM = re.compile(r"^\s*(?:[-*•]|\d+[.)])\s+")
 
 def answer_line(body: str) -> str | None:
     """The answer of the reply's last "Answer:" (or "Final answer:") line, markdown stars dropped. When the line holds
-    nothing else or ends with ":", the answer goes on below it: a list (its items) or lines up to a blank one, made one
-    line (``one_line``); lines below an answer of its own are its explanation, left out. None when there is no such line."""
+    nothing else or ends with ":", the answer is the lines below it, and a list there ends the answer (a note after the
+    list is left out; an item's indented lines stay with it); a list is made one line (``one_line``). Lines below an
+    answer of its own are its explanation, left out. None when there is no such line."""
     lines = (body or "").splitlines()
     for i in range(len(lines) - 1, -1, -1):
         m = ANSWER_LABEL.match(lines[i])
@@ -496,40 +509,40 @@ def answer_line(body: str) -> str | None:
         rest = m.group(1).strip().strip("*").strip()
         if rest and not rest.endswith(":"):
             return rest
-        after = [x.strip() for x in lines[i + 1:]]
-        nonblank = [x for x in after if x]
         block: list[str] = []
-        if nonblank and LIST_ITEM.match(nonblank[0]):  # a list: its items, blank lines between them allowed
-            for x in after:
-                if x and not LIST_ITEM.match(x):
-                    break
-                if x:
-                    block.append(x)
-        else:  # the lines after the label, up to the first blank line
-            for x in after:
-                if not x and block:
-                    break
-                if x:
-                    block.append(x)
+        in_list = False
+        for raw in lines[i + 1:]:
+            x = raw.strip()
+            if not x:
+                continue
+            if LIST_ITEM.match(x):
+                in_list = True
+                block.append(x)
+            elif in_list and raw[:1].isspace():
+                block[-1] += " " + x
+            elif in_list:
+                break
+            else:
+                block.append(x)
         return one_line("\n".join([rest, *block] if rest else block)) if block else rest
     return None
 
 
 def one_line(answer: str) -> str:
-    """An answer of several lines as one line, for the scorers read the first line for a value, a date or keys: list items
-    (bullets or numbers dropped) joined by "; ", any other lines by spaces."""
+    """A list written over several lines (two items or more, or items under a line that ends with ":") as one line, for
+    the scorers read the first line for a value, a date or keys: the lines before it, then its items (bullets or numbers
+    dropped) joined by "; ". Any other answer is kept as it is."""
     lines = [x.strip() for x in (answer or "").splitlines() if x.strip()]
-    if len(lines) <= 1:
-        return lines[0] if lines else ""
-    head, items = [], []
-    for x in lines:
+    first = next((n for n, x in enumerate(lines) if LIST_ITEM.match(x)), None)
+    if first is None or not (sum(bool(LIST_ITEM.match(x)) for x in lines) >= 2 or (first and lines[first - 1].endswith(":"))):
+        return (answer or "").strip()
+    head, items = lines[:first], []
+    for x in lines[first:]:
         if LIST_ITEM.match(x):
             items.append(LIST_ITEM.sub("", x).strip().strip("*").strip())
-        elif items:
-            items[-1] += " " + x
         else:
-            head.append(x)
-    return " ".join([*head, "; ".join(items)] if items else head).strip()
+            items[-1] += " " + x
+    return " ".join([*head, "; ".join(items)]).strip()
 
 
 # a reply that says there is no answer in other words than "not found": mapped to "not found" when it is one short
@@ -546,20 +559,24 @@ REFUSAL = re.compile(
     r"|no (?:[\w-]+ ){0,4}(?:is|are|was|were|has been|have been) (?:listed|assigned|found|mentioned|recorded|specified|given|set|named|shown)\b"
     r"|no (?:record|records|mention|information|data|match|matches|result|results|answer)\b)", re.I)
 NOTHING = re.compile(r"\W*(?:none|null|nil|nothing|nobody|no one|no-one|n/?a)\W*", re.I)
+# what makes a refusal more than a refusal: a second clause or sentence, or a contrast ("not stated, but it is 2028-01-24")
+MORE = re.compile(r"[;:,()\n]|[.!?]\s+\S|\b(?:but|though|although|however|except|instead|whereas)\b", re.I)
 
 
-def final(answer: str, refusals: bool = True) -> str:
+def final(answer: str, refusals: bool = True, join: bool = False) -> str:
     """The answer as stored: one "not found" for every way of saying it, the rest capped at ``ANSWER_CAP`` characters.
-    ``refusals``: also a bare "none" and a one-sentence refusal in other words (``REFUSAL``); off for the brain's own answer,
-    which is stored as the brain gave it."""
+    ``refusals``: also a bare "none" and a refusal in other words (``REFUSAL``) when it is the whole answer, one short
+    sentence and nothing more (``MORE``); off for the brain's own answer, which is stored as the brain gave it. ``join``:
+    the lines made one (an "Answer:" line's answer written below it)."""
     a = (answer or "").strip().strip('"').strip()
     if re.fullmatch(r"<[^<>]{0,40}>\W*|\W*", a):  # a placeholder copied from the instructions, or nothing
         return NOT_FOUND
     if re.match(r"^\W*(?:not found|none found|no such|unknown|n/?a)\b", a, re.I):
         return NOT_FOUND
-    if refusals and (NOTHING.fullmatch(a) or (len(a) <= 160 and "\n" not in a and not re.search(r"[;:]|[.!?]\s+\S", a)
-                                              and REFUSAL.match(a))):
+    if refusals and (NOTHING.fullmatch(a) or (len(a) <= 160 and not MORE.search(a) and REFUSAL.match(a))):
         return NOT_FOUND
+    if join:
+        a = " ".join(x.strip() for x in a.splitlines() if x.strip())
     return a[:ANSWER_CAP]
 
 
@@ -633,7 +650,7 @@ def reason(questions: list[dict[str, Any]], brain_rows: dict[str, dict[str, Any]
             act = parse_action(text)
             last = st["calls"] >= max_steps or st["must"]
             if act is not None and "answer" in act:
-                st["answer"] = final(act["answer"])
+                st["answer"] = final(act["answer"], join=act.get("join", False))
                 st["steps"].append({"answer": st["answer"], "finish": finish, "raw": visible(text)[:RAW_CHARS]})
                 done(i)
                 continue
@@ -710,7 +727,7 @@ def rag_answer(text: str, finish: str | None = None) -> str:
     if not body:
         return "(no reply: cut off)" if finish == "length" else "(no reply)"
     line = answer_line(body)
-    return final(body if line is None else line)
+    return final(body if line is None else line, join=line is not None)
 
 
 # ------------------------------------------------------------------ backends
@@ -739,7 +756,7 @@ def template_kwargs(name: str, effort: str | None, thinking: bool | None) -> dic
     from cie.eval.extract_facts import CHAT_TEMPLATE_KWARGS
 
     kw: dict[str, Any] = dict(CHAT_TEMPLATE_KWARGS) if name.startswith("llama") else {}
-    if name.startswith("qwen3.8") or "Qwen3.8" in name:
+    if "qwen3.8" in name.lower():
         on = THINKING["qwen3.8"] if thinking is None else thinking
         kw.update({"enable_thinking": on, "preserve_thinking": False})
         if on and effort:
@@ -772,9 +789,14 @@ class VLLMBackend:
         self.repo = f"{repo}@{rev}" if rev else repo
         self.name, self.max_tokens, self.max_model_len, self.log = name, max_tokens, max_model_len, log
         self.kwargs = template_kwargs(name if name in MODELS else repo, effort, thinking)
-        self.thinks = bool(self.kwargs.get("enable_thinking"))
         self.tok = self.llm.get_tokenizer()
         self._count_failed = False
+        try:  # whether the template opens the reply with "<think>" (Qwen3.8 does unless thinking is off)
+            self.thinks = self.tok.apply_chat_template([{"role": "user", "content": "x"}], tokenize=False, add_generation_prompt=True,
+                                                       **self.kwargs).rstrip().endswith("<think>")
+        except Exception:  # noqa: BLE001 - the name then says it
+            self.thinks = bool(self.kwargs.get("enable_thinking"))
+        log(f"  the reply opens inside the thinking: {self.thinks}")
 
     def count(self, conv: list[dict[str, str]]) -> int:
         """The prompt's tokens, as the chat template makes it (vLLM renders it the same way); if that fails, an
@@ -838,10 +860,16 @@ class OpenAIBackend:
     """Any OpenAI-compatible chat endpoint (Ollama, a vLLM server, OpenAI): for runs without a local GPU and for tests."""
 
     def __init__(self, model: str, base_url: str, max_tokens: int = 6144, concurrency: int = 8, api_key: str | None = None,
-                 extra: dict[str, Any] | None = None):
+                 extra: dict[str, Any] | None = None, effort: str | None = None, thinking: bool | None = None):
         self.model, self.base_url, self.max_tokens, self.concurrency = model, base_url.rstrip("/"), max_tokens, concurrency
         self.api_key = api_key or os.environ.get("REASONER_API_KEY") or os.environ.get("OPENAI_API_KEY") or "none"
-        self.extra = extra or {}
+        self.extra = dict(extra or {})
+        # Qwen3.8 behind a vLLM server: its template settings, and its reply opens inside the thinking unless the server
+        # splits the thinking off (Ollama does, and ignores the settings)
+        kw = template_kwargs(model, effort, thinking) if "qwen3.8" in model.lower() else {}
+        if kw:
+            self.extra.setdefault("chat_template_kwargs", kw)
+        self.thinks = bool(kw.get("enable_thinking"))
         self.repo = f"{model} at {self.base_url}"
 
     def _one(self, msgs: list[dict[str, str]]) -> dict[str, Any]:
@@ -855,7 +883,10 @@ class OpenAIBackend:
                                              headers={"Content-Type": "application/json", "Authorization": f"Bearer {self.api_key}"})
                 r = json.load(urllib.request.urlopen(req, timeout=1800))
                 c, u = r["choices"][0], r.get("usage") or {}
-                return {"text": c["message"].get("content") or "", "prompt_tokens": u.get("prompt_tokens", 0),
+                text, msg = c["message"].get("content") or "", c["message"]
+                if self.thinks and not (msg.get("reasoning_content") or msg.get("reasoning")) and not text.lstrip().startswith("<think>"):
+                    text = "<think>\n" + text  # as VLLMBackend: a reply cut off while thinking reads as no reply
+                return {"text": text, "prompt_tokens": u.get("prompt_tokens", 0),
                         "output_tokens": u.get("completion_tokens", 0), "finish_reason": c.get("finish_reason")}
             except Exception as e:  # noqa: BLE001 - a busy server: wait and ask again
                 err = e

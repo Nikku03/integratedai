@@ -521,7 +521,8 @@ def backend(model: str, base_url: str | None = None, **kw: Any) -> Any:
     from cie.factbank import reasoner as R
 
     if base_url:
-        return R.OpenAIBackend(model, base_url, max_tokens=kw.get("max_tokens", 6144), concurrency=kw.get("concurrency", 8))
+        return R.OpenAIBackend(model, base_url, max_tokens=kw.get("max_tokens", 6144), concurrency=kw.get("concurrency", 8),
+                               effort=kw.get("effort"), thinking=kw.get("thinking"))
     return R.VLLMBackend(model, **{k: v for k, v in kw.items() if k in ("max_model_len", "gpu_mem", "max_tokens", "max_num_seqs", "effort",
                                                                          "thinking")})
 

@@ -147,13 +147,17 @@ from any test answer. The rules and the scorers did not change.
   opener is put back, so a reply cut off while thinking reads as no reply: the reasoner is told it was cut off, and after
   two reminders keeps the brain's answer; plain search gets one reminder, then its answer is "(no reply)", which scores 0
   everywhere (never "not found").
-- **Reading the model's answers (both model arms alike).** A "Final answer:" line is read as an "Answer:" line; an
-  answer written on the lines below an empty "Answer:" is read, a list as one line with "; " between the items (the
-  scorers read a value, a date and keys from the first line); a JSON answer of `null`, a bare "none", and a refusal of
-  one short sentence in other words ("There is no such ticket.", "The passages do not mention it.") are "not found"; a
-  JSON answer may hold raw line breaks; Qwen's own tool-call format is read as a tool call. The brain's answer, when the
-  reasoner keeps it, is stored as the brain gave it. Each row keeps the model's visible reply, so answers can be read
-  again without the GPU.
+- **Reading the model's answers (both model arms alike).** A "Final answer:" line is read as an "Answer:" line; a list
+  written over several lines is stored as one line with "; " between the items (the scorers read a value, a date and
+  keys from the first line), and a list under an empty "Answer:" ends the answer (a note after it is left out); any
+  other answer is stored as before. A JSON answer of `null`, a bare "none", and a refusal in other words that is the
+  whole answer ("There is no such ticket.", "The passages do not mention it.": one short sentence, with no second clause
+  or "but") are "not found"; a hedge that gives the answer ("Not stated directly, but it is 2028-01-24") is kept as
+  written. A JSON answer may hold raw line breaks; Qwen's own tool-call format is read as a tool call, and an answer
+  written as a call to "answer" as the answer. The brain's answer, when the reasoner keeps it, is stored as the brain
+  gave it. Each row keeps the model's visible reply, so answers can be read again without the GPU. Checked on the real
+  questions of both folders and round 4's: no expected answer is changed or read as "not found", and no answer format
+  scores lower than with the reading before.
 - **The free-text instruction** in both prompts now asks to keep the record's own words (key phrases, figures, names and
   dates as written). The scorer counts a fact by its words and figures; v18 quotes the records, so a model answer that
   reworded a fact ("audit logs" for "audit trails") would lose it although right.

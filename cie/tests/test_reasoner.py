@@ -57,7 +57,7 @@ def test_parse_action():
         {"tool": "find", "args": {"system": "jira"}}
     assert R.parse_action('{"answer": ["ENG-12", "ENG-13"]}') == {"answer": "ENG-12, ENG-13"}
     assert R.parse_action('I will search. {"tool": "search", "query": "badge"}') == {"tool": "search", "args": {"query": "badge"}}
-    assert R.parse_action("Reasoning...\nAnswer: Omar Singh") == {"answer": "Omar Singh"}
+    assert R.parse_action("Reasoning...\nAnswer: Omar Singh") == {"answer": "Omar Singh", "join": True}
     assert R.parse_action("<think>\nstill thinking, cut off") is None
     assert R.parse_action('{"answer": "a {brace} inside"}') == {"answer": "a {brace} inside"}
     assert R.final("Not found in the records.") == R.NOT_FOUND and R.final("") == R.NOT_FOUND
@@ -158,6 +158,9 @@ def test_parse_action_more_forms():
         {"tool": "find", "args": {"system": "linear", "where": {"status": "Todo"}}}
     assert R.parse_action('{"answer": "He wrote \\"{x}\\" and \\"}\\" there"}') == {"answer": 'He wrote "{x}" and "}" there'}
     assert R.parse_action('{"name": "Ava Chen"}') is None  # a name is not a tool call
+    assert R.parse_action('{"name": "answer", "arguments": {"answer": "ENG-12"}}') == {"answer": "ENG-12"}  # an answer written as a call
+    assert R.parse_action("<tool_call>\n<function=answer>\n<parameter=answer>\nENG-12\n</parameter>\n</function>\n</tool_call>") == {"answer": "ENG-12"}
+    assert R.parse_action('{"name": "find", "parameters": {"system": "jira"}}') == {"tool": "find", "args": {"system": "jira"}}
 
 
 def test_answer_lines_and_lists():
@@ -168,7 +171,13 @@ def test_answer_lines_and_lists():
     assert R.answer_line("Answer: Maya Patel, Liam Ortiz\n(Sources: [2], [5])") == "Maya Patel, Liam Ortiz"
     assert R.answer_line("ENG-12 is due on 2026-03-15 per [2].\n\nFinal answer: 2026-03-15") == "2026-03-15"
     assert R.answer_line("**Final Answer:** 3") == "3"
-    assert R.answer_line("Answer:\nThe pilot starts in March.\nIt runs three weeks.\n\nNotes") == "The pilot starts in March. It runs three weeks."
+    # below a bare label: every line (stored joined, as before); a list there is read as a list, its note left out
+    assert R.rag_answer("Answer:\nThe pilot starts in March.\n\nIt runs three weeks.") == "The pilot starts in March. It runs three weeks."
+    assert R.answer_line("**Answer:**\n\nThe escalation intake template requires:\n\n- UTC timestamps, region,\n  tier (Hosted/Dedicated)\n"
+                         "- streaming yes/no\n\n(Sources: [3])") == \
+        "The escalation intake template requires: UTC timestamps, region, tier (Hosted/Dedicated); streaming yes/no"
+    assert R.one_line("3. ENG-1, ENG-2\nThose are the matching issues.") == "3. ENG-1, ENG-2\nThose are the matching issues."  # not a list
+    assert R.parse_action('{"answer": "2028-01-24\nIt was moved from 2028-01-10."}') == {"answer": "2028-01-24\nIt was moved from 2028-01-10."}
 
 
 def test_final_reads_refusals():
@@ -177,9 +186,13 @@ def test_final_reads_refusals():
               "Not specified"):
         assert R.final(a) == R.NOT_FOUND, a
     for a in ("There is no rollback plan; it moves to Q3", "No. 3 is the one: ENG-12", "Ava Chen",
-              "There is no fixed date. The team planned a pilot in March.", "Maya Patel; Liam Ortiz"):
+              "There is no fixed date. The team planned a pilot in March.", "Maya Patel; Liam Ortiz",
+              "Not stated directly, but it is 2028-01-24", "There is no exact field for it, the record gives 2028-01-24",
+              "Not mentioned in the notes (the tracker says 2028-01-24)", "No due date is listed in the meeting\nThe tracker gives 2028-01-24"):
         assert R.final(a) == a, a
     assert R.final("There is no such ticket.", refusals=False) == "There is no such ticket."
+    assert R.final("There is no ticket ENG-99999 in the records.") == R.NOT_FOUND
+    assert R.rag_answer("Answer: The passages do not state a due date directly, but the action item lists 2028-01-24.") != R.NOT_FOUND
 
 
 def test_find_keeps_what_fits(box, monkeypatch):
@@ -188,6 +201,7 @@ def test_find_keeps_what_fits(box, monkeypatch):
     assert 0 < len(r["records"]) < r["count"] and r["note"].startswith(f"{r['count']} records match; the first {len(r['records'])}")
     assert "narrow" in r["note"]
     assert R._cut("x" * 400) == "x" * R.FIELD_CHARS + " [...]"
+    assert {"key", "status"} <= set(box.find("linear", {"assignee": "Omar Singh"}, "key, status")["records"][0])  # "show" as one string
 
 
 def test_reason_out_of_room_and_long_conversations(box, monkeypatch):
