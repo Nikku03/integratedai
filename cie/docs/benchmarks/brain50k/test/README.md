@@ -11,7 +11,7 @@ The answers and records behind `docs/FACTBANK_50K_RESULTS.md`, from the Colab ru
 | `arms50k.json` | both | each arm's run record: model, settings, time, tokens, tool calls, the questions' sha256 | Colab |
 | `rag.jsonl.gz` | both | plain search's answers, one row a question: the documents its passages came from, how many passages, tokens and the model's visible reply | Colab |
 | `reasoner.jsonl.gz` | both | the reasoner's answers: each tool call (its arguments, error and result length, not the result), the model's last visible reply, tokens and the settings it was made with | Colab |
-| `factbank_v18.jsonl.gz` | `w50k_messy/` (the tidy folder's follows) | v18's answers, with its route, reason and evidence | made again here (below) |
+| `factbank_v18.jsonl.gz` | both | v18's answers, with its route, reason and evidence | made again here (below) |
 | `report50k.json.gz`, `report50k.md` | `w50k_messy/` | the score step's report on both folders: every rule, every table, and each question's score, "not found" flag and answer length for every arm | Colab |
 
 The questions themselves are in `docs/benchmarks/brain50k/plan/<folder>/questions.jsonl`. Every row has the question's
@@ -55,5 +55,5 @@ PYTHONHASHSEED=0 PYTHONPATH=src python -m cie.eval.brain50k ask --arm v18 --work
 - **The same documents:** the bank was built here from a draw whose document list is the same as Colab's
   `haystack.json`, in the same order (sha256 `9a344aaa…`, the plan's). The bank holds 50,000 sources and 1,162,089 facts,
   as the plan's `banks.json` says.
-- **The same answers:** every answer gives Colab's score and answer length in the report: 635 of 635 in `w50k_messy/`.
-  The tidy folder's re-run is still going (540 of 635 so far, all the same); its answers will be added when it ends.
+- **The same answers:** every answer gives Colab's score and answer length in the report: 635 of 635 in `w50k_messy/`
+  and 635 of 635 in `w50k/`.

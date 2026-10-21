@@ -23,7 +23,7 @@ thinking on with effort "medium". The rules are those of `docs/FACTBANK_50K_PLAN
     each arm's prompt, plain search's passages and the reading of answers are the same for both.
   - The plan's amendment header gives only 2026-10-19; two of its edits are from 2026-10-21, both before any model answer.
 - **Raw results:** `docs/benchmarks/brain50k/test/` holds both model arms' answers, both folders' run records, the score
-  step's report and v18's messy answers made again locally (see its README).
+  step's report and v18's answers made again locally (see its README).
 - **All data is fictional:** the benchmark's made-up company.
 
 ## In short
@@ -206,9 +206,8 @@ session's scratch space; the answers are in `docs/benchmarks/brain50k/test/`.
   asked all 1,270 questions again here.
   - The bank was built here from the same 50,000 documents: the draw's document list is the same as Colab's
     `haystack.json`, in the same order.
-  - Every answer gave Colab's score and answer length: 635 of 635 in the messy folder. The tidy folder's re-run is still
-    going (540 of 635 so far, all the same).
-  - The messy folder's answers are in the raw results; the tidy folder's will follow.
+  - Every answer gave Colab's score and answer length: 635 of 635 in each folder.
+  - These answers are in the raw results.
 - **The answers read the same with the final code.** Every model row keeps the model's visible reply. Read again with the
   final code, 1 answer of 2,540 differs (prose-1022-066, whose stored reply is cut at 1,500 characters), and no score.
 - **One model and one setting.**
