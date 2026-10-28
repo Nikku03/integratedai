@@ -7,3 +7,6 @@ dist/
 .ruff_cache/
 .iai/
 *.parquet
+
+# the website keeps its build-stage images in site/assets/img/build
+!site/assets/img/build/

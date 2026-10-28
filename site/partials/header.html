@@ -1,0 +1,56 @@
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header" id="top">
+  <div class="wrap site-header__inner">
+    <a class="site-header__brand" href="{{root}}index.html" aria-label="Two Squares, home"><span class="logo logo--mark" aria-hidden="true"></span></a>
+    <nav class="site-header__nav" aria-label="Primary">
+      <div class="nav-sectors" data-nav-sectors>
+        <button class="nav-sectors__toggle" type="button" aria-expanded="false" aria-controls="nav-sectors-panel">Sectors<span class="nav-sectors__chev" aria-hidden="true"></span></button>
+        <div class="nav-sectors__panel" id="nav-sectors-panel" hidden>
+          <p class="nav-sectors__head"><span class="t-label">Sectors</span><span class="nav-sectors__sub">Four rooms, four times of day.</span></p>
+          <ul class="nav-sectors__list">
+            <li style="--i:0"><a class="nav-sectors__item" href="{{root}}cafes.html" style="--accent: var(--cafe)"><span class="nav-sectors__thumb"><img src="{{root}}assets/img/sectors/cafes-thumb.webp" alt="" width="240" height="300" loading="lazy" decoding="async"></span><span class="nav-sectors__time t-label">08:00</span><span class="nav-sectors__name">Cafés</span></a></li>
+            <li style="--i:1"><a class="nav-sectors__item" href="{{root}}retail.html" style="--accent: var(--retail)"><span class="nav-sectors__thumb"><img src="{{root}}assets/img/sectors/retail-thumb.webp" alt="" width="240" height="300" loading="lazy" decoding="async"></span><span class="nav-sectors__time t-label">11:00</span><span class="nav-sectors__name">Shops</span></a></li>
+            <li style="--i:2"><a class="nav-sectors__item" href="{{root}}restaurants.html" style="--accent: var(--restaurant)"><span class="nav-sectors__thumb"><img src="{{root}}assets/img/sectors/restaurants-thumb.webp" alt="" width="240" height="300" loading="lazy" decoding="async"></span><span class="nav-sectors__time t-label">14:00</span><span class="nav-sectors__name">Restaurants</span></a></li>
+            <li style="--i:3"><a class="nav-sectors__item" href="{{root}}bars.html" style="--accent: var(--bar)"><span class="nav-sectors__thumb"><img src="{{root}}assets/img/sectors/bars-thumb.webp" alt="" width="240" height="300" loading="lazy" decoding="async"></span><span class="nav-sectors__time t-label">23:00</span><span class="nav-sectors__name">Bars</span></a></li>
+          </ul>
+          <a class="nav-sectors__all t-small" href="{{root}}work.html">All work <span class="arr" aria-hidden="true">→</span></a>
+        </div>
+      </div>
+      <a href="{{root}}work.html" data-section="work">Work</a>
+      <a href="{{root}}services.html" data-section="services">Services</a>
+      <a href="{{root}}studio.html" data-section="studio">Studio</a>
+      <a href="{{root}}contact.html" data-section="contact">Contact</a>
+      <a class="btn btn--sm" href="{{root}}contact.html">Start a project <span class="arr" aria-hidden="true">→</span></a>
+    </nav>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-overlay"><span class="nav-toggle__bars" aria-hidden="true"></span>Index</button>
+  </div>
+</header>
+<script src="{{root}}assets/js/nav.js" defer></script>
+<div class="nav-overlay" id="nav-overlay" role="dialog" aria-modal="true" aria-label="Site index" data-lenis-prevent>
+  <span class="nav-overlay__shapes" aria-hidden="true"><span class="nav-overlay__shape nav-overlay__shape--a"></span><span class="nav-overlay__shape nav-overlay__shape--b"></span></span>
+  <div class="wrap nav-overlay__top">
+    <a href="{{root}}index.html" aria-label="Two Squares, home"><span class="logo logo--mark" aria-hidden="true"></span></a>
+    <button class="nav-overlay__close" type="button">Close <i aria-hidden="true"></i></button>
+  </div>
+  <nav class="wrap nav-overlay__links" aria-label="Site index">
+    <a class="nav-overlay__link" href="{{root}}index.html"><span class="t-display-l">Home</span><small>A dining room, built as you scroll.</small></a>
+    <a class="nav-overlay__link" href="{{root}}work.html" data-section="work"><span class="t-display-l">Work</span><small>Cafés, restaurants, bars and shops.</small></a>
+    <a class="nav-overlay__link" href="{{root}}services.html" data-section="services"><span class="t-display-l">The menu</span><small>What we make, and how.</small></a>
+    <a class="nav-overlay__link" href="{{root}}studio.html" data-section="studio"><span class="t-display-l">Studio</span><small>One team, design and build.</small></a>
+    <a class="nav-overlay__link" href="{{root}}contact.html" data-section="contact"><span class="t-display-l">Contact</span><small>Tell us about the room.</small></a>
+    <div class="nav-overlay__sectors">
+      <p class="t-label nav-overlay__sectors-label" id="nav-overlay-sectors">Sectors</p>
+      <ul class="nav-overlay__sector-list" aria-labelledby="nav-overlay-sectors">
+        <li style="--i:0"><a class="nav-overlay__sector" href="{{root}}cafes.html" style="--accent: var(--cafe)"><span class="nav-overlay__thumb"><img src="{{root}}assets/img/sectors/cafes-thumb.webp" alt="" width="240" height="300" loading="lazy" decoding="async"></span><span class="nav-overlay__sector-text"><span class="t-label">08:00</span><span class="nav-overlay__sector-name">Cafés</span></span></a></li>
+        <li style="--i:1"><a class="nav-overlay__sector" href="{{root}}retail.html" style="--accent: var(--retail)"><span class="nav-overlay__thumb"><img src="{{root}}assets/img/sectors/retail-thumb.webp" alt="" width="240" height="300" loading="lazy" decoding="async"></span><span class="nav-overlay__sector-text"><span class="t-label">11:00</span><span class="nav-overlay__sector-name">Shops</span></span></a></li>
+        <li style="--i:2"><a class="nav-overlay__sector" href="{{root}}restaurants.html" style="--accent: var(--restaurant)"><span class="nav-overlay__thumb"><img src="{{root}}assets/img/sectors/restaurants-thumb.webp" alt="" width="240" height="300" loading="lazy" decoding="async"></span><span class="nav-overlay__sector-text"><span class="t-label">14:00</span><span class="nav-overlay__sector-name">Restaurants</span></span></a></li>
+        <li style="--i:3"><a class="nav-overlay__sector" href="{{root}}bars.html" style="--accent: var(--bar)"><span class="nav-overlay__thumb"><img src="{{root}}assets/img/sectors/bars-thumb.webp" alt="" width="240" height="300" loading="lazy" decoding="async"></span><span class="nav-overlay__sector-text"><span class="t-label">23:00</span><span class="nav-overlay__sector-name">Bars</span></span></a></li>
+      </ul>
+    </div>
+  </nav>
+  <div class="wrap nav-overlay__foot t-small">
+    <a href="mailto:hello@twosquares.studio">hello@twosquares.studio</a>
+    <span>+91 [00000 00000]</span>
+    <span>By appointment · [City]</span>
+  </div>
+</div>

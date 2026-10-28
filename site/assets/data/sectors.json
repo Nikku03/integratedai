@@ -1,0 +1,545 @@
+{
+  "_note": "Sector pages (cafes.html, restaurants.html, bars.html, retail.html). Rendered by tools/build_sectors.py with templates/sector.html. Strings marked 'deck' are verbatim from the copy deck (copy.json → work.filters, services.card, services.faq); *asterisks* mark the one italic accent in a headline. Projects come from projects.json by slug; the build is partials/build-<build>.html.",
+  "order": [
+    "cafes",
+    "restaurants",
+    "bars",
+    "retail"
+  ],
+  "shared": {
+    "labels": {
+      "walk": "Book a site walk",
+      "seeWork": "See the work",
+      "filmNote": "Placeholder stock footage",
+      "needsLede": "Four things we settle before anyone chooses a finish.",
+      "projectsAll": "See them on the Work index",
+      "viewProject": "View project",
+      "menuLabel": "What we’d do for you",
+      "menuSheet": "From the menu",
+      "menuAll": "See the full menu",
+      "duration": "Typically",
+      "itemCta": "Order this",
+      "quoteLabel": "In their words",
+      "readProject": "Read the project",
+      "faqLabel": "Questions",
+      "faqHeadline": "What owners ask us *first*.",
+      "faqAll": "More questions",
+      "ctaBody": "Send us the floor plan and the opening date. We’ll come back with how the room could work.",
+      "others": "Other rooms",
+      "navSub": "Four rooms, four times of day.",
+      "navAll": "All work"
+    },
+    "services": {
+      "site-visit": {
+        "name": "Site visit & feasibility",
+        "description": "Will this site work, what will it cost, and how long will it take?",
+        "includes": [
+          "A walk-round with you, at service time if the site is already trading",
+          "Measured survey and photo record",
+          "Services check: power, water, drainage, gas and a route for extraction",
+          "A capacity test: covers or seats against your target",
+          "A budget range, a programme and the red flags to raise before you sign"
+        ],
+        "duration": "1–2 weeks",
+        "prefill": {
+          "service": "feasibility",
+          "stage": "looking"
+        }
+      },
+      "test-fit": {
+        "name": "The test-fit",
+        "description": "Three ways the room could work, on a floor plan you’re considering.",
+        "includes": [
+          "Three layout options, each with a cover count",
+          "Counter, kitchen and back-of-house positions",
+          "Guest flow and service flow drawn over each option",
+          "A one-page note on what each option gives you and what it costs you"
+        ],
+        "duration": "1 week",
+        "prefill": {
+          "service": "feasibility",
+          "stage": "looking"
+        }
+      },
+      "whole-venue": {
+        "name": "The whole venue, designed & built",
+        "description": "One team from the empty shell to opening night. The house speciality.",
+        "includes": [
+          "Concept, layout and a 3D walk-through",
+          "Full drawings: joinery, lighting, finishes, FF&E",
+          "A fixed price after detail design, on one contract",
+          "Our site lead, our trades and a weekly site walk with you",
+          "Snagging, dressing, opening night, and a return visit at 90 days"
+        ],
+        "duration": "12–28 weeks, depending on size and kitchen",
+        "prefill": {
+          "service": "whole-venue"
+        }
+      },
+      "design-only": {
+        "name": "Design only",
+        "description": "The full design, drawn so any good contractor can build it.",
+        "includes": [
+          "Concept, layout and a 3D walk-through",
+          "Tender-ready drawings and specifications",
+          "Lighting design and an FF&E schedule",
+          "Help choosing and briefing a contractor",
+          "Site visits at the moments that decide how it turns out"
+        ],
+        "duration": "6–12 weeks",
+        "prefill": {
+          "service": "design-only"
+        }
+      },
+      "build-only": {
+        "name": "Build only",
+        "description": "You have drawings. We price them properly and build them on time.",
+        "includes": [
+          "A buildability review, with a note on where the drawings will cost you",
+          "An honest price and a programme, with long-lead items ordered early",
+          "Our site lead, our trades and a daily site diary",
+          "Your designer kept in the loop on every change",
+          "Snagging, handover documents and a return visit at 90 days"
+        ],
+        "duration": "6–20 weeks on site",
+        "prefill": {
+          "service": "build-only",
+          "stage": "drawings"
+        }
+      },
+      "counter": {
+        "name": "The counter or workstation",
+        "description": "The few metres that make or break the morning rush.",
+        "includes": [
+          "A workflow session with your head barista or bartender",
+          "Counter layout: order, make, pick-up, bin",
+          "Equipment positions, services and drainage drawn to your machines",
+          "Joinery made off-site and installed in days, or nights",
+          "Lighting and signage for the counter"
+        ],
+        "duration": "3–6 weeks, including 3–7 days on site",
+        "prefill": {
+          "service": "counter"
+        }
+      },
+      "refresh": {
+        "name": "A refresh",
+        "description": "New light, new seats, new life in the room you already have.",
+        "includes": [
+          "A walk-through during service to see what’s working and what isn’t",
+          "A shortlist of changes, ranked by what each one does for what it costs",
+          "Lighting, upholstery, finishes and small joinery",
+          "Works phased around trading: nights, your quiet day, or a short closure"
+        ],
+        "duration": "2–6 weeks, often without closing",
+        "prefill": {
+          "service": "refresh",
+          "stage": "trading"
+        }
+      },
+      "lighting": {
+        "name": "Lighting only",
+        "description": "Most rooms don’t need a new interior. They need new light.",
+        "includes": [
+          "A lux and colour-temperature survey, by day and by night",
+          "A lighting layout and fitting schedule",
+          "Scenes programmed for morning, service and late",
+          "Commissioning on site, and a one-page guide for your team"
+        ],
+        "duration": "2–4 weeks",
+        "prefill": {
+          "service": "lighting"
+        }
+      },
+      "signage": {
+        "name": "Signage & brand touchpoints",
+        "description": "Everything a guest reads, touches or photographs.",
+        "includes": [
+          "Shopfront and fascia signs, with the drawings for permissions",
+          "Wayfinding, menu boards and counter graphics",
+          "Menus, table numbers and uniforms, with your brand team",
+          "Fabrication and installation"
+        ],
+        "duration": "3–6 weeks",
+        "prefill": {
+          "service": "signage"
+        }
+      },
+      "rollout": {
+        "name": "Roll-out for multi-site operators",
+        "description": "One idea, many sites, each one a local.",
+        "includes": [
+          "A flagship designed and built as the prototype",
+          "A design manual and kit of parts: counters, fixtures, finishes, lighting",
+          "Site-by-site test-fits and local adaptations",
+          "Fixed rates and a supply chain for the repeat items",
+          "Our build team or yours, with our quality checks on every site"
+        ],
+        "duration": "8 weeks for the kit, then 4–8 weeks per site",
+        "prefill": {
+          "service": "rollout",
+          "stage": "multi"
+        }
+      },
+      "aftercare": {
+        "name": "Aftercare",
+        "description": "Rooms take a beating. We keep them looking like year one.",
+        "includes": [
+          "A maintenance schedule for finishes, joinery and lighting",
+          "Scheduled visits to touch up, re-oil, re-lamp and re-aim",
+          "Adjustments once service has tested the room",
+          "One number to call when something breaks"
+        ],
+        "duration": "Ongoing, by the year",
+        "prefill": {
+          "service": "aftercare",
+          "stage": "trading"
+        }
+      }
+    },
+    "faq": {
+      "cost": {
+        "q": "What will it cost?",
+        "a": "It depends on three things: the size of the space, the state of the shell, and how much is made rather than bought. We’ll tell you on the first call whether your number is realistic, including when it isn’t. After the site visit you get a range; after detail design, a fixed price on one contract. Kitchen equipment, deposits and licence fees sit outside that number, and we’ll help you plan for them."
+      },
+      "time": {
+        "q": "How long does it take?",
+        "a": "A 100–150 m² café usually takes 10–14 weeks from signed design to opening: 4–6 weeks of drawings and approvals, then 6–8 weeks on site. Restaurants and bars with full kitchens and extraction take 16–24 weeks. The build is rarely the critical path. Approvals and long-lead items are: kitchen equipment, custom lighting, stone. We order those early."
+      },
+      "licences": {
+        "q": "Do you handle licences and permits?",
+        "a": "We draw what your landlord and the authorities need — fire and exit layouts, extraction routes, signage permissions, mall fit-out submissions — and design to those conditions from day one, so nothing is ripped out later. The licences themselves (in India: food, trade, excise, fire NOC) are held in your name. We work alongside your licensing consultant, or introduce one we trust."
+      },
+      "open": {
+        "q": "Can you work while we’re open?",
+        "a": "Yes. Most refreshes happen that way. We phase the works around trading: nights, your quiet day, or a short planned closure for the noisy parts. Joinery is made off-site, so time on site is days rather than weeks. We agree dust, noise and access rules with you before anyone picks up a drill."
+      },
+      "contractors": {
+        "q": "Who manages the contractors?",
+        "a": "We do. On a design & build project every trade works for us, under one contract and one programme, with one of our site leads in charge. You get a weekly site walk and a daily diary. You don’t get calls from the electrician."
+      },
+      "designer": {
+        "q": "I already have a designer. Can you still help?",
+        "a": "Yes. We build other designers’ drawings, and we’re good at it because we draw too. We review the package, flag anything that will cost you on site, price it properly and keep your designer in the loop on every change. The design stays theirs."
+      },
+      "kitchen": {
+        "q": "Do you design the kitchen?",
+        "a": "We plan the kitchen with your chef and a specialist kitchen consultant: the layout, the pass, the services and the extraction. We build the room around it and coordinate the equipment supplier. We don’t sell equipment, so we have no reason to over-specify it."
+      },
+      "small": {
+        "q": "Is my project too small?",
+        "a": "Probably not. A counter, a lighting fix or one wall of joinery can change how a room trades. They’re on the menu as small plates, and they get the same senior team as a flagship."
+      },
+      "see": {
+        "q": "Will I know what it looks like before it’s built?",
+        "a": "Yes. You walk through it in 3D, handle every finish on a sample board, and for the pieces that matter most — the counter, a banquette, the bar top — we build a full-size section before we make the rest."
+      },
+      "city": {
+        "q": "Will you work in my city?",
+        "a": "Very likely. We work across India, and abroad with our own site lead and a local contractor under our contract. Recent projects include Lisbon and Dubai.",
+        "placeholder": true
+      }
+    }
+  },
+  "sectors": [
+    {
+      "id": "cafes",
+      "file": "cafes.html",
+      "venue": "cafe",
+      "build": "cafe",
+      "accent": "cafe",
+      "label": "Cafés",
+      "singular": "café",
+      "time": "08:00",
+      "video": "hero-cafe",
+      "ownFootage": true,
+      "navNote": "Before ten.",
+      "headline": "Cafés that earn their living *before ten*.",
+      "intro": "A café is judged at 08:15, with the queue at the door. We plan the counter first — order, make, pick-up, bin — so two baristas can do the work of three. Then the room: seats for laptops and for prams, daylight on the pastry case, power where people actually sit, and a corner table someone will claim every morning.",
+      "cta": {
+        "headline": "Opening a *café*?",
+        "button": "Talk about your café"
+      },
+      "seo": {
+        "title": "Café design & build — Two Squares",
+        "description": "Cafés, bakeries and espresso bars designed and built by Two Squares: counters planned for the morning rush, rooms that hold the afternoon."
+      },
+      "needs": {
+        "label": "What a café needs",
+        "headline": "Built for the queue at *08:15*.",
+        "points": [
+          {
+            "title": "The counter comes first",
+            "text": "Order, make, pick-up, bin, in that order along one run. Two baristas do the work of three, and the queue never crosses the pick-up.",
+            "video": "loop-icedlatte"
+          },
+          {
+            "title": "Daylight on the pastry case",
+            "text": "The case goes where the morning light lands, and warm lamps take over after lunch. Pastry sells on how it looks.",
+            "image": "cafe-b-02-timber-counter-cake"
+          },
+          {
+            "title": "Power where people sit",
+            "text": "Sockets at the bench and along the window ledge, where laptops actually land. Nobody runs a cable across the aisle.",
+            "image": "single-01-green-cafe-stools"
+          },
+          {
+            "title": "A corner table",
+            "text": "Every good café has one seat someone claims every morning. We draw it early, and we light it last.",
+            "image": "window-01-arched-window-table"
+          }
+        ]
+      },
+      "projects": {
+        "label": "Café projects",
+        "headline": "Cafés we’ve drawn *and built*.",
+        "slugs": [
+          "common-hours",
+          "tilt"
+        ]
+      },
+      "menu": {
+        "headline": "A counter, a refresh or the *whole café*.",
+        "lede": "Straight from the menu. Order one and the form arrives with your café already filled in.",
+        "items": [
+          "site-visit",
+          "whole-venue",
+          "counter",
+          "refresh"
+        ]
+      },
+      "quote": {
+        "project": "tilt",
+        "image": "cafe-b-01-window-bar-stools"
+      },
+      "faq": [
+        "time",
+        "open",
+        "small"
+      ]
+    },
+    {
+      "id": "restaurants",
+      "file": "restaurants.html",
+      "venue": "restaurant",
+      "build": "restaurant",
+      "accent": "restaurant",
+      "label": "Restaurants",
+      "singular": "restaurant",
+      "time": "14:00",
+      "video": "hero-restaurant",
+      "navNote": "Lunch at two.",
+      "headline": "Dining rooms with a *pulse*.",
+      "intro": "We walk the service before we choose a finish: host to table, table to pass, pass to wash-up. Every metre a server saves is a metre of calm in the room. Then we make it warm: acoustics you can talk over at full covers, banquettes worth waiting for, and light that flatters the food and the faces.",
+      "cta": {
+        "headline": "Opening a *restaurant*?",
+        "button": "Talk about your restaurant"
+      },
+      "seo": {
+        "title": "Restaurant design & build — Two Squares",
+        "description": "Restaurants designed and built by Two Squares: plans drawn around the service, acoustics for full covers and light that flatters food and faces."
+      },
+      "needs": {
+        "label": "What a restaurant needs",
+        "headline": "Drawn around the *service*.",
+        "points": [
+          {
+            "title": "The service path",
+            "text": "Host to table, table to pass, pass to wash-up. We walk it before we choose a finish: every metre a server saves is a metre of calm in the room.",
+            "video": "loop-plating"
+          },
+          {
+            "title": "Acoustics at full covers",
+            "text": "Absorption in the ceiling, the banquette backs and under the tables. We test it with the room full, so a table for two can still talk at nine.",
+            "image": "people-03-dinner-table-warm"
+          },
+          {
+            "title": "Banquettes worth waiting for",
+            "text": "Made in our workshop, with a seat you can stay in for three courses. They seat more covers than loose chairs, and they’re the seats people ask for.",
+            "image": "rest-b-03-teal-booths"
+          },
+          {
+            "title": "Light for food and faces",
+            "text": "Warm and low over the tables, brighter at the pass, and set on scenes that dim through the evening without anyone touching a switch.",
+            "image": "rest-c-06-table-detail"
+          }
+        ]
+      },
+      "projects": {
+        "label": "Restaurant projects",
+        "headline": "Dining rooms we’ve drawn *and built*.",
+        "slugs": [
+          "ember",
+          "otla"
+        ]
+      },
+      "menu": {
+        "headline": "A test-fit, new light or the *whole room*.",
+        "lede": "Straight from the menu. Order one and the form arrives with your restaurant already filled in.",
+        "items": [
+          "test-fit",
+          "whole-venue",
+          "lighting",
+          "aftercare"
+        ]
+      },
+      "quote": {
+        "project": "otla",
+        "image": "rest-a-04-green-door-detail"
+      },
+      "faq": [
+        "cost",
+        "kitchen",
+        "contractors"
+      ]
+    },
+    {
+      "id": "bars",
+      "file": "bars.html",
+      "venue": "bar",
+      "build": "bar",
+      "accent": "bar",
+      "label": "Bars",
+      "singular": "bar",
+      "time": "23:00",
+      "video": "hero-bar",
+      "navNote": "Built for late.",
+      "headline": "Rooms built for *late*.",
+      "intro": "Everything in a bar faces one way. We design the back-bar as the stage and the room as the audience, draw the stations with your head bartender, and put the lighting on scenes so the room changes without anyone touching a switch. Finishes are chosen for citrus, sugar and 2am.",
+      "cta": {
+        "headline": "Opening a *bar*?",
+        "button": "Talk about your bar"
+      },
+      "seo": {
+        "title": "Bar design & build — Two Squares",
+        "description": "Cocktail bars and late rooms designed and built by Two Squares: back-bars lit as the stage, stations drawn with your bartenders, finishes that last."
+      },
+      "needs": {
+        "label": "What a bar needs",
+        "headline": "Everything faces the *back-bar*.",
+        "points": [
+          {
+            "title": "The back-bar is the stage",
+            "text": "The bottles are lit as the set and the room is kept darker, so every eye goes to where the drinks are made.",
+            "image": "rest-c-05-dark-stair-bar"
+          },
+          {
+            "title": "A speed rail at every station",
+            "text": "Drawn with your head bartender: well, rail, ice, glass wash and garnish, all within reach. Two bartenders can hold 1am.",
+            "video": "loop-cocktail"
+          },
+          {
+            "title": "Lighting on scenes",
+            "text": "Early, service and late, on a timer. The room changes through the night and nobody reaches for a switch mid-shift.",
+            "image": "material-10-slatted-timber-pendants"
+          },
+          {
+            "title": "Finishes for citrus, sugar and 2am",
+            "text": "Bar tops sealed against acid, brass that takes a polish and upholstery that wipes down at close.",
+            "image": "bar-a-05-cocktail-banquette"
+          }
+        ]
+      },
+      "projects": {
+        "label": "Bar projects",
+        "headline": "Bars we’ve drawn *and built*.",
+        "slugs": [
+          "stillroom"
+        ]
+      },
+      "menu": {
+        "headline": "The station, the light or the *whole bar*.",
+        "lede": "Straight from the menu. Order one and the form arrives with your bar already filled in.",
+        "items": [
+          "whole-venue",
+          "counter",
+          "lighting",
+          "refresh"
+        ]
+      },
+      "quote": {
+        "project": "stillroom",
+        "image": "people-01-bar-counter-couple"
+      },
+      "faq": [
+        "licences",
+        "see",
+        "time"
+      ]
+    },
+    {
+      "id": "retail",
+      "file": "retail.html",
+      "venue": "shop",
+      "build": "retail",
+      "accent": "retail",
+      "label": "Shops",
+      "singular": "shop",
+      "time": "11:00",
+      "video": "hero-retail",
+      "navNote": "Doors at eleven.",
+      "headline": "Retail you walk *slower* in.",
+      "intro": "A shopfront gets about three seconds with someone walking past at 4 km/h. We design for those three seconds, then for the walk to the back wall, then for the till. Fixtures that disappear, light that renders colour truthfully, and kits of parts that travel to the next city.",
+      "cta": {
+        "headline": "Opening a *shop*?",
+        "button": "Talk about your shop"
+      },
+      "seo": {
+        "title": "Retail design & build — Two Squares",
+        "description": "Shops, flagships and roll-out formats designed and built by Two Squares: shopfronts that stop people, fixtures that disappear, colour-true light."
+      },
+      "needs": {
+        "label": "What a shop needs",
+        "headline": "Designed for the *three seconds* at the window.",
+        "points": [
+          {
+            "title": "Three seconds at the window",
+            "text": "Someone walking past at 4 km/h gives a shopfront about three seconds. We design the window for those, then the walk to the back wall, then the till.",
+            "image": "front-09-shop-pink-facade"
+          },
+          {
+            "title": "Fixtures that disappear",
+            "text": "Rails, plinths and shelves in the colours of the room, so the stock is the only thing anyone looks at.",
+            "video": "loop-racks"
+          },
+          {
+            "title": "Fitting rooms people like",
+            "text": "Room to turn round, a curtain to the floor, a hook for a bag and light that renders colour truthfully.",
+            "image": "retailA-03-fitting-corner-rattan"
+          },
+          {
+            "title": "A kit that travels",
+            "text": "Every fixture drawn as a kit of parts and made in our workshop, ready for the next store in the next city.",
+            "image": "build-01-hand-plane"
+          }
+        ]
+      },
+      "projects": {
+        "label": "Shop projects",
+        "headline": "Shops we’ve drawn *and built*.",
+        "slugs": [
+          "dhaaga"
+        ]
+      },
+      "menu": {
+        "headline": "The flagship, then the *roll-out*.",
+        "lede": "Straight from the menu. Order one and the form arrives with your shop already filled in.",
+        "items": [
+          "whole-venue",
+          "rollout",
+          "signage",
+          "lighting"
+        ]
+      },
+      "quote": {
+        "project": "dhaaga",
+        "image": "retailA-04-cutting-table-fabrics"
+      },
+      "faq": [
+        "city",
+        "see",
+        "licences"
+      ]
+    }
+  ]
+}
