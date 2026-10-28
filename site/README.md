@@ -121,6 +121,18 @@ python3 tools/build_media.py ~/Photos/our-counter.jpg rest-a-01-dining-room-banq
 To add a new photo, use a new slug, then print ready-to-paste markup (size reserved, blurred placeholder, lazy loading):
 `python3 tools/media_tag.py <slug> --reveal`. Photos should be at least 1600px on the long edge. Needs Pillow (`pip install pillow`).
 
+### From Instagram
+Download the studio's posts from Instagram (Accounts Centre → Your information and permissions → Download your
+information → Content, format JSON, media quality High), then look through them and add the ones you want:
+
+```bash
+python3 tools/import_instagram.py list ~/Downloads/instagram-….zip --out ~/ig-review   # catalog.json + contact sheets
+python3 tools/import_instagram.py add ~/Downloads/instagram-….zip 20240512-1830        # by the ids in the catalogue
+```
+Photos arrive as `ig-<post>-<n>` (use them like any other photo), videos and reels as loops `ig-<post>-v<n>`.
+The alt text starts from each caption; check it in `assets/img/photos/media.json`. A plain folder of photos and
+videos works too: each folder is one post, with an optional `caption.txt`.
+
 ### Video
 ```bash
 python3 tools/encode_video.py our-cafe.mov hero-cafe --loop --length 9            # a sector page's hero film

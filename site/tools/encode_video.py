@@ -21,7 +21,9 @@ from pathlib import Path
 SITE = Path(__file__).resolve().parents[1]
 FF = os.environ.get("FFMPEG", "ffmpeg")
 GRADE = "eq=saturation=0.9:contrast=1.03:gamma=0.98"          # the site's gentle, warm grade
-CROP45 = "crop=trunc(ih*4/5/2)*2:ih:(iw-trunc(ih*4/5/2)*2)/2:0"
+# the centre 4:5 of any clip: a landscape clip loses its sides, a portrait one (a reel) its top and bottom
+CROP45 = "crop=w='min(iw,trunc(ih*4/5/2)*2)':h='min(ih,trunc(iw*5/4/2)*2)'"
+FIT = "scale=w='if(gte(iw,ih),1280,-2)':h='if(gte(iw,ih),-2,1280)'"   # 1280 on the long edge
 
 
 def run(args: list[str]) -> None:
@@ -37,7 +39,7 @@ def encode(src: str, name: str, scrub: bool, start: float | None, length: float 
     crf264, crfvp9 = (28, 39) if scrub else (27, 37)
     base = grade if isinstance(grade, str) else (GRADE if grade else "null")
     trim = (["-ss", str(start)] if start is not None else []) + ["-i", src] + (["-t", str(length)] if length else [])
-    for suffix, chain in (("", f"{base},scale=1280:-2"), ("-sm", f"{base},{CROP45},scale=640:800")):
+    for suffix, chain in (("", f"{base},{FIT}"), ("-sm", f"{base},{CROP45},scale=640:800")):
         dst = vid / f"{name}{suffix}"
         vf = f"{chain},fps={fps},format=yuv420p"
         run(trim + ["-an", "-vf", vf, "-c:v", "libx264", "-preset", "slow", "-crf", str(crf264),
