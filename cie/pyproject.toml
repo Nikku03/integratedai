@@ -27,7 +27,7 @@ dependencies = [
     "python-multipart>=0.0.9",
     "structlog>=24",
     "rapidfuzz>=3.6",
-    "tantivy>=0.24",
+    "tantivy==0.25.0",  # pinned: its stemmer decides which sentences the brain quotes (0.27 stems "added" to "add", 0.25 to "ad")
     "reportlab>=4.0",
     "cryptography>=42",
     "python-magic>=0.4.27",

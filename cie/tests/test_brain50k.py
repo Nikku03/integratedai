@@ -5,6 +5,8 @@ from __future__ import annotations
 
 import json
 
+import pytest
+
 from cie.eval import brain50k as T
 
 
@@ -115,7 +117,7 @@ def test_settings_must_match(tmp_path):
     import pytest
 
     _write(tmp_path / "questions.jsonl", [{"id": "a"}])
-    s = {"model_name": "qwen3.8-27b", "effort": "medium", "thinking": True, "max_tokens": 6144}
+    s = {"model_name": "qwen3.8-27b", "effort": "medium", "thinking": True, "max_tokens": 6144, "seed": 0, "loop": T.LOOP, "brain": "v18"}
     T.record(tmp_path, "rag", {"arm": "rag", "file": "rag.jsonl", "seconds": 10, **s})
     T.check_settings([tmp_path], "reasoner", {**s, "model_name": "qwen3.8-27b-fp8"})  # no rag answers yet: nothing to match
     _write(tmp_path / "rag.jsonl", [{"id": "a", "answer": "x"}])
@@ -126,11 +128,19 @@ def test_settings_must_match(tmp_path):
         T.check_settings([tmp_path], "rag", {**s, "effort": "low"})
     T.record(tmp_path, "rag", {"arm": "rag", "file": "rag.jsonl", "seconds": 5, **s}, add=True)
     assert json.loads((tmp_path / "arms50k.json").read_text())["rag"]["seconds"] == 15  # a resumed run adds its time
+    # another seed is another file: it shares the model, not the seed; the same file goes on only with its own seed
+    T.check_settings([tmp_path], "reasoner.s1", {**s, "seed": 1})
+    T.check_settings([tmp_path], "agent", {**s, "seed": 2})
+    with pytest.raises(SystemExit, match="seed 0 .now 1"):
+        T.check_settings([tmp_path], "rag", {**s, "seed": 1})
+    with pytest.raises(SystemExit, match="loop 2 .now 1.*rag.jsonl"):
+        T.check_settings([tmp_path], "agent", {**s, "loop": 1})  # answers of another version of the loop are not mixed
+    assert T.arm_file("reasoner") == "reasoner" and T.arm_file("agent", 2) == "agent.s2" and T.arm_of("agent.s2") == "agent"
 
 
 def test_rules_7_and_8_need_the_same_model(tmp_path):
     test_score_folder_and_rules(tmp_path)
-    s = {"effort": "medium", "thinking": True, "max_tokens": 6144}
+    s = {"effort": "medium", "thinking": True, "max_tokens": 6144, "seed": 0, "loop": T.LOOP, "brain": "v18"}
     T.record(tmp_path, "rag", {"file": "rag.jsonl", "model_name": "qwen3.8-27b", **s})
     T.record(tmp_path, "reasoner", {"file": "reasoner.jsonl", "model_name": "qwen3.8-27b-fp8", **s})
     rep = T.score(tmp_path, None, None)
@@ -175,7 +185,7 @@ def test_reasoner_rows_written_as_they_end(tmp_path):
         def __call__(self, convs):
             return [{"text": '{"answer": "2026-04-02"}', "finish_reason": "stop", "output_tokens": 4} for _ in convs]
 
-    s = {"model_name": "m", "effort": "medium", "thinking": True, "max_tokens": 6144}
+    s = {"model_name": "m", "effort": "medium", "thinking": True, "max_tokens": 6144, "seed": 0, "loop": T.LOOP, "brain": "v18"}
     rep = T.ask_llm([tmp_path], "reasoner", Model(), R.LocalTools(box), settings=s, log=lambda *_: None)
     rows = [json.loads(x) for x in (tmp_path / "reasoner.jsonl").read_text().splitlines()]
     assert [(r["id"], r["answer"]) for r in rows] == [("a", "2026-04-02"), ("b", "kept")] and rep[str(tmp_path)]["asked"] == 1
@@ -186,11 +196,57 @@ def test_reasoner_rows_written_as_they_end(tmp_path):
     assert T.main(["ask", "--arm", "reasoner", "--work", str(tmp_path), "--model", "no-such-model"])[str(tmp_path)]["asked"] == 0
 
 
+def test_the_other_arms_and_seeds_answer_into_their_own_files(tmp_path):
+    from test_brain_v16_routes import DOCS
+
+    from cie.factbank import bank as BK
+    from cie.factbank import reasoner as R
+
+    BK.build(tmp_path / "factbank_v2.sqlite", DOCS, text_facts=True)
+    box = R.Toolbox(tmp_path / "factbank_v2.sqlite")
+    _write(tmp_path / "questions.jsonl", [{"id": "a", "question": "When is DES-1 due?", "family": "single"},
+                                          {"id": "b", "question": "How do we verify the telemetry mode?", "family": "prose"}])
+    quote = "To verify the telemetry mode, query the status endpoint on port 9100."
+    _write(tmp_path / "factbank_v18.jsonl", [{"id": "a", "answer": "2026-04-02", "route": "table"},
+                                             {"id": "b", "answer": quote, "route": "prose", "evidence": quote}])
+
+    class Model:
+        repo = "scripted"
+
+        def __call__(self, convs):
+            return [{"text": '{"answer": "Port 9100."}' if "telemetry" in c[1]["content"] else '{"answer": "2026-04-02"}',
+                     "finish_reason": "stop", "prompt_tokens": 7, "output_tokens": 4} for c in convs]
+
+    s = {"model_name": "m", "effort": "medium", "thinking": True, "max_tokens": 6144, "seed": 0, "loop": T.LOOP, "brain": "v18"}
+    quiet = {"log": lambda *_: None}
+    rep = T.ask_llm([tmp_path], "reasoner", Model(), R.LocalTools(box), settings=s, **quiet)[str(tmp_path)]
+    assert rep["asked"] == 2 and rep["not_asked"] == 1 and rep["prompt_tokens"] == 7, "the brain's table answer stands: one question asked"
+    rows = T._rows(tmp_path / "reasoner.jsonl")
+    assert rows["a"]["steps"][0]["kept"] == "table" and rows["b"]["support"] == quote and rows["b"]["support_from"] == "brain"
+    q = {"family": "prose"}
+    assert T.answer_text(q, rows["b"]) == f"Port 9100.\n{quote}" and T.answer_text(q, rows["b"], support=False) == "Port 9100."
+    assert T.answer_text({"family": "single"}, {"answer": "x", "support": "y"}) == "x", "only a free-text answer is scored with its quotes"
+    for arm in ("agent", "nobrain", "notools"):
+        (tmp_path / "factbank_v18.jsonl").rename(tmp_path / "hidden.jsonl") if arm != "notools" else None
+        T.ask_llm([tmp_path], arm, Model(), R.LocalTools(box), name=T.arm_file(arm, 1), settings={**s, "seed": 1}, **quiet)
+        (tmp_path / "hidden.jsonl").rename(tmp_path / "factbank_v18.jsonl") if arm != "notools" else None
+        got = T._rows(tmp_path / f"{arm}.s1.jsonl")
+        assert [got[i]["route"] for i in "ab"] == [arm, arm] and got["a"]["settings"]["seed"] == 1
+        # an answer given without a look at the record is sent back twice (the key it names, the date it gives); the arm
+        # with no tools has nothing to look with
+        assert got["a"]["turns"] == (1 if arm == "notools" else 3)
+    reg = json.loads((tmp_path / "arms50k.json").read_text())
+    assert set(reg) == {"reasoner", "agent.s1", "nobrain.s1", "notools.s1"} and reg["agent.s1"]["arm"] == "agent"
+    with pytest.raises(SystemExit, match="have no v18 answer"):
+        (tmp_path / "factbank_v18.jsonl").unlink()
+        T.ask_llm([tmp_path], "notools", Model(), R.LocalTools(box), name="notools.s2", settings={**s, "seed": 2}, **quiet)
+
+
 def test_a_run_cut_off_part_way_keeps_its_settings(tmp_path):
     import pytest
 
     _write(tmp_path / "questions.jsonl", [{"id": i, "question": "?"} for i in "abc"])
-    bf16 = {"model_name": "qwen3.8-27b", "effort": "medium", "thinking": True, "max_tokens": 6144}
+    bf16 = {"model_name": "qwen3.8-27b", "effort": "medium", "thinking": True, "max_tokens": 6144, "seed": 0, "loop": T.LOOP, "brain": "v18"}
     # rag killed after its first answers: rows on disk (and on Drive), no record in arms50k.json
     _write(tmp_path / "rag.jsonl", [{"id": "a", "answer": "x", "route": "rag", "settings": bf16}])
     assert not (tmp_path / "arms50k.json").exists() and T.made_with(tmp_path, "rag") == [bf16]

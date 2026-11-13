@@ -119,6 +119,15 @@ def test_text_by_id(bank, stored):
     assert stored._text_rows and not bank._text_rows
 
 
+def test_the_stemmer_the_quotes_rest_on_is_the_pinned_one():
+    """The sentences the brain quotes are chosen by the question's terms as ``tantivy`` stems them. Its stemmer changed
+    between versions (0.25 stems "added" to "ad", 0.27 to "add"), which moved one answer's coverage in the replay of the
+    50,000-document test; the version is pinned in pyproject.toml. A change here changes the brain's answers."""
+    from cie.retrieval.bm25 import query_terms
+
+    assert query_terms("added allocator latency batches") == ["ad", "alloc", "latenc", "batch"]
+
+
 def test_the_index_holds_every_documents_stored_text_cut_in_windows(bank):
     ix = PR.PassageIndex(bank).build()
     docs = sorted(e for e, k in bank.kinds.items() if k == "document")

@@ -28,7 +28,7 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
-VERSION = 1
+VERSION = 2
 PASSAGE_SIZE = (600, 1000)  # prose.PROSE_SIZE
 BATCH = 20_000
 EXAMPLES = 5
@@ -60,11 +60,16 @@ def norm(s: Any) -> str:
     return re.sub(r"\s+", " ", str(s or "")).strip().lower()
 
 
+LOOSE_DROP = re.compile(r"[\s\-_'\u2018\u2019`/]+")
+
+
 def loose(s: Any) -> str:
-    """A value as a loose match compares it: letters and digits only, lower case, accents dropped ("Solstice Health",
-    "SolsticeHealth" and "solstice-health" are one; "O'Connor" and "OConnor" too)."""
+    """A value as a loose match compares it: lower case, accents dropped, and no spaces, hyphens, underscores,
+    apostrophes or slashes ("Solstice Health", "SolsticeHealth" and "solstice-health" are one; "O'Connor" and "OConnor"
+    too), nor a closing full stop ("Acme Corp."). Other punctuation stays: "1.0" is not "10", "v1.2" is not "v12"."""
     t = unicodedata.normalize("NFKD", str(s or ""))
-    return "".join(c for c in t.casefold() if c.isalnum())
+    t = "".join(c for c in t if not unicodedata.combining(c)).casefold()
+    return LOOSE_DROP.sub("", t).rstrip(".,;:")
 
 
 ISO_DAY = re.compile(r"^(\d{4}-\d{2}-\d{2})(?:[T ]\d{2}:\d{2}.*)?$")

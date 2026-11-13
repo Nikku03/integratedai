@@ -354,23 +354,35 @@ def write_questions(work: Path, tidy: Path = BASE / "questions.jsonl", messy: Pa
 
 # ------------------------------------------------------------------ ask
 LESSONS = Path("docs/benchmarks/brain2/lessons")  # the lessons v18 was frozen with (round 4)
-FILES = {"v18": "factbank_v18", "rag": "rag", "reasoner": "reasoner"}
+FILES = {"v18": "factbank_v18", "v19": "factbank_v19", "rag": "rag", "reasoner": "reasoner", "nobrain": "nobrain", "agent": "agent", "notools": "notools"}
+MODEL_ARMS = ("rag", "reasoner", "nobrain", "agent", "notools")  # rag: plain search; the others: ``reasoner.ARMS``
+LOOP = 2  # the version of the tools and the loop the model arms run (1: the 50,000-document test's)
+
+
+def arm_file(arm: str, seed: int = 0) -> str:
+    """An arm's answers file (without ".jsonl"): the arm's name, with ".s<seed>" for a run with another seed than 0."""
+    return FILES[arm] if not seed else f"{FILES[arm]}.s{seed}"
+
+
+def arm_of(label: str) -> str:
+    """The arm a label or file name stands for ("reasoner.s2" is the reasoner)."""
+    return label.split(".s")[0]
 _BRAIN: Any = None
 _BRAIN_ERROR: str | None = None
 
 
-def _load_brain(bank: str, single: str, plans: str, router: str) -> Any:
+def _load_brain(bank: str, single: str, plans: str, router: str, v19: bool = False, fixes: tuple[str, ...] | None = None) -> Any:
     from cie.factbank.brain import Brain, Router
 
-    return Brain(bank, single, plans, Router.load(router), v16=True, v17=True, v18=True)
+    return Brain(bank, single, plans, Router.load(router), v16=True, v17=True, v18=True, v19=v19, fixes=fixes)
 
 
-def _init_brain(bank: str, single: str, plans: str, router: str) -> None:
+def _init_brain(bank: str, single: str, plans: str, router: str, v19: bool = False, fixes: tuple[str, ...] | None = None) -> None:
     """A worker's brain. A brain that fails to load is kept as its error, never raised here (``multiprocessing.Pool``
     restarts a worker whose initializer raises, again and again): the first question raises it instead and the run stops."""
     global _BRAIN, _BRAIN_ERROR
     try:
-        _BRAIN = _load_brain(bank, single, plans, router)
+        _BRAIN = _load_brain(bank, single, plans, router, v19, fixes)
     except Exception as e:  # noqa: BLE001 - raised by the first question
         _BRAIN_ERROR = f"{type(e).__name__}: {e}"
 
@@ -379,7 +391,8 @@ def _ask_one(q: dict[str, Any]) -> dict[str, Any]:
     if _BRAIN is None:
         raise RuntimeError(f"the brain did not load in a worker: {_BRAIN_ERROR}")
     r = _BRAIN.ask(q["question"])
-    return {"id": q["id"], **{k: r[k] for k in ("answer", "route", "reason", "evidence", "ms", "reads", "journal", "family_scores")}}
+    return {"id": q["id"], **{k: r[k] for k in ("answer", "route", "reason", "evidence", "ms", "reads", "journal", "family_scores",
+                                                 "candidates") if k in r}}
 
 
 def _repair(path: Path) -> None:
@@ -421,7 +434,8 @@ def _finish(work: Path, name: str) -> dict[str, dict[str, Any]]:
     return have
 
 
-ADDED = ("seconds", "asked", "output_tokens", "tool_calls", "cut_turns", "gave_up", "too_long", "cut", "retried", "no_reply")
+ADDED = ("seconds", "asked", "output_tokens", "tool_calls", "cut_turns", "gave_up", "too_long", "cut", "retried", "no_reply",
+         "prompt_tokens", "pushbacks", "not_asked")
 
 
 def record(work: Path, label: str, info: dict[str, Any], add: bool = False) -> None:
@@ -442,8 +456,9 @@ def record(work: Path, label: str, info: dict[str, Any], add: bool = False) -> N
 
 
 # what a model arm's answers depend on: an arm goes on, and rag stands beside the reasoner, only with the same ones
-SETTINGS = ("model_name", "effort", "thinking", "max_tokens")
-OTHER = {"rag": "reasoner", "reasoner": "rag"}
+SETTINGS = ("model_name", "effort", "thinking", "max_tokens", "seed", "loop", "brain")
+MODEL_SETTINGS = ("model_name", "effort", "thinking", "max_tokens", "loop", "brain")  # what every model arm of a folder must share
+OTHER = {"rag": "reasoner", "reasoner": "rag"}  # the 50,000-document plan's two model arms (its rules 7 and 8)
 
 
 def made_with(work: Path, label: str) -> list[dict[str, Any]]:
@@ -459,13 +474,17 @@ def made_with(work: Path, label: str) -> list[dict[str, Any]]:
 
 
 def check_settings(works: list[Path], label: str, settings: dict[str, Any]) -> None:
-    """Stops when this run's model settings differ from those a folder's answers were made with (``made_with``): the same
-    arm's (an arm resumed with another model or effort, finished or cut off part way) or the other model arm's (plain
-    search must use the same model as the reasoner, rules 7 and 8)."""
+    """Stops when this run's settings differ from those a folder's answers were made with (``made_with``): the same
+    file's (an arm resumed with another model, effort, seed or version of the loop, finished or cut off part way) or
+    another model arm's (every model arm of a folder uses the same model and loop, so that they can be compared; a run
+    with another seed is another file)."""
     for w in works:
-        for lab in (label, OTHER.get(label)):
-            for old in made_with(w, lab) if lab else []:
-                diff = {k: (old.get(k), settings.get(k)) for k in SETTINGS if old.get(k) != settings.get(k)}
+        f = w / "arms50k.json"
+        others = [lab for lab in (json.loads(f.read_text()) if f.exists() else {}) if lab != label and arm_of(lab) in MODEL_ARMS]
+        for lab in dict.fromkeys([label, *others, *(x for x in MODEL_ARMS if x != label and (w / f"{FILES[x]}.jsonl").exists())]):
+            keys = SETTINGS if lab == label else MODEL_SETTINGS  # another arm, or another seed of this one, shares the model's
+            for old in made_with(w, lab):
+                diff = {k: (old.get(k), settings.get(k)) for k in keys if old.get(k) != settings.get(k)}
                 if diff:
                     name = f"{FILES.get(lab, lab)}.jsonl"
                     raise SystemExit(
@@ -476,11 +495,12 @@ def check_settings(works: list[Path], label: str, settings: dict[str, Any]) -> N
                         + f"folder on Drive (MyDrive/cie_brain50k/{w.name}/{name}), then run again.")
 
 
-def ask_v18(work: Path, workers: int = 4, lessons: Path = LESSONS, limit: int | None = None, name: str = "factbank_v18",
-            log: Callable[[str], None] = print) -> dict[str, Any]:
-    """v18's answers, from ``workers`` processes with a brain each (``Brain(..., v18=True)``, round 4's lessons), appended to
-    ``work``/<name>.jsonl as they come: a run stopped half way goes on from the questions not yet answered. A process
-    that dies (out of memory) stops the step with the answers so far kept, never a wait that does not end."""
+def ask_v18(work: Path, workers: int = 4, lessons: Path = LESSONS, limit: int | None = None, name: str | None = None,
+            log: Callable[[str], None] = print, v19: bool = False, fixes: tuple[str, ...] | None = None) -> dict[str, Any]:
+    """The brain's answers, from ``workers`` processes with a brain each (``Brain(..., v18=True)``, round 4's lessons; with
+    ``v19`` the fixes made after the 50,000-document test, all or those of ``fixes``), appended to ``work``/<name>.jsonl
+    (factbank_v18 or factbank_v19) as they come: a run stopped half way goes on from the questions not yet answered. A
+    process that dies (out of memory) stops the step with the answers so far kept, never a wait that does not end."""
     import multiprocessing as mp
     import time
     from concurrent.futures import ProcessPoolExecutor, as_completed
@@ -488,13 +508,15 @@ def ask_v18(work: Path, workers: int = 4, lessons: Path = LESSONS, limit: int | 
 
     from cie.factbank.brain import general_words
 
+    label = "v19" if v19 else "v18"
+    name = name or FILES[label]
     qs = _questions(work, limit)
     done = _rows(work / f"{name}.jsonl")
     todo = [q for q in qs if q["id"] not in done]
-    log(f"  {len(qs)} questions, {len(done)} answered before, {len(todo)} to ask in {workers} processes")
+    log(f"  {len(qs)} questions, {len(done)} answered before, {len(todo)} to ask in {workers} processes ({label})")
     t = time.time()
     args = (str(work / "factbank_v2.sqlite"), str(lessons / "single_lessons.json"), str(lessons / "plan_lessons.json"),
-            str(lessons / "router.json"))
+            str(lessons / "router.json"), v19, fixes)
     if todo:
         from cie.factbank import store
 
@@ -524,8 +546,9 @@ def ask_v18(work: Path, workers: int = 4, lessons: Path = LESSONS, limit: int | 
            "median_ms": ms[len(ms) // 2] if ms else None, "mean_ms": round(sum(ms) / len(ms), 1) if ms else None,
            "routes": dict(Counter(have[q["id"]]["route"] for q in qs if q["id"] in have))}
     if todo:
-        record(work, "v18", {"file": f"{name}.jsonl", "lessons": str(lessons), **{k: rep[k] for k in ("seconds", "asked", "workers", "median_ms")}},
-               add=bool(done))
+        record(work, label if name == FILES[label] else name,
+               {"file": f"{name}.jsonl", "lessons": str(lessons), **({"fixes": sorted(fixes)} if fixes is not None else {}),
+                **{k: rep[k] for k in ("seconds", "asked", "workers", "median_ms")}}, add=bool(done))
     return rep
 
 
@@ -535,9 +558,9 @@ def backend(model: str, base_url: str | None = None, **kw: Any) -> Any:
 
     if base_url:
         return R.OpenAIBackend(model, base_url, max_tokens=kw.get("max_tokens", 6144), concurrency=kw.get("concurrency", 8),
-                               effort=kw.get("effort"), thinking=kw.get("thinking"))
+                               effort=kw.get("effort"), thinking=kw.get("thinking"), seed=kw.get("seed", 0))
     return R.VLLMBackend(model, **{k: v for k, v in kw.items() if k in ("max_model_len", "gpu_mem", "max_tokens", "max_num_seqs", "effort",
-                                                                         "thinking")})
+                                                                         "thinking", "seed")})
 
 
 def _passages(work: Path, cache: dict[Path, Any], log: Callable[[str], None]) -> Any:
@@ -583,6 +606,7 @@ def ask_llm(works: list[Path], arm: str, generate: Any, tools: Any = None, name:
     name = name or FILES[arm]
     label = arm if name == FILES[arm] else name
     stamp = {k: (settings or {}).get(k) for k in SETTINGS}  # on every row: a run cut off part way still says what made it
+    plan = None if arm == "rag" else R.ARMS[arm]
     out = {}
     cache: dict[Path, Any] = {}
     for work in works:
@@ -602,7 +626,9 @@ def ask_llm(works: list[Path], arm: str, generate: Any, tools: Any = None, name:
                 with open(work / f"{name}.jsonl", "a") as f:
                     for q, o in zip(part, outs, strict=True):
                         text, shown = o.get("text") or "", len(R.rag_blocks(hits[q["id"]]))
+                        support = R.rag_support(text, hits[q["id"]][:shown])
                         row = {"id": q["id"], "answer": R.rag_answer(text, o.get("finish_reason")), "route": "rag",
+                               **({"support": support, "support_from": "quotes"} if support else {}),
                                "docs": list(dict.fromkeys(h["dsid"] for h in hits[q["id"]][:shown])), "passages": shown,
                                "prompt_tokens": o.get("prompt_tokens", 0), "output_tokens": o.get("output_tokens", 0),
                                "finish": o.get("finish_reason"), "retried": o.get("retried"), "raw": R.visible(text)[: R.RAW_CHARS],
@@ -614,9 +640,10 @@ def ask_llm(works: list[Path], arm: str, generate: Any, tools: Any = None, name:
                         f.write(json.dumps(row, ensure_ascii=False) + "\n")
                 log(f"  {min(i + step, len(todo))} of {len(todo)} in {time.time() - t:.0f} s")
         elif todo:
-            brain_rows = _rows(work / f"{FILES['v18']}.jsonl")
-            if missing := [q["id"] for q in todo if q["id"] not in brain_rows]:
-                raise SystemExit(f"{len(missing)} questions of {work} have no v18 answer: ask v18 first")
+            brain = (settings or {}).get("brain") or "v18"
+            brain_rows = _rows(work / f"{FILES[brain]}.jsonl") if plan.brain_first else {}
+            if plan.brain_first and (missing := [q["id"] for q in todo if q["id"] not in brain_rows]):
+                raise SystemExit(f"{len(missing)} questions of {work} have no {brain} answer: ask {brain} first")
             step = chunk or len(todo)
             with open(work / f"{name}.jsonl", "a") as f:
 
@@ -627,11 +654,14 @@ def ask_llm(works: list[Path], arm: str, generate: Any, tools: Any = None, name:
                     stats["cut_turns"] += int(row.get("cut_turns") or 0)
                     stats["gave_up"] += any(s.get("gave_up") for s in row["steps"])
                     stats["too_long"] += any(s.get("finish") == "too_long" for s in row["steps"])
+                    stats["prompt_tokens"] += int(row.get("prompt_tokens") or 0)
+                    stats["pushbacks"] += sum(1 for s in row["steps"] if "pushback" in s)
+                    stats["not_asked"] += any("kept" in s for s in row["steps"])
                     f.write(json.dumps(row, ensure_ascii=False) + "\n")
                     f.flush()
 
                 for i in range(0, len(todo), step):
-                    R.reason(todo[i: i + step], brain_rows, generate, tools, log=log, on_done=keep)
+                    R.reason(todo[i: i + step], brain_rows, generate, tools, log=log, on_done=keep, arm=plan)
                     log(f"  {min(i + step, len(todo))} of {len(todo)} in {time.time() - t:.0f} s")
         have = _finish(work, name)
         out[str(work)] = {"questions": sum(q["id"] in have for q in qs), "asked": len(todo), "seconds": round(time.time() - t, 1), **stats}
@@ -649,8 +679,17 @@ def score_one(q: dict[str, Any], row: dict[str, Any]) -> float | None:
     from cie.eval import brain_test as H
     from cie.eval import complex_questions as C
 
-    row = {**row, "answer": H.plain_answer(row.get("answer"))}
+    row = {**row, "answer": answer_text(q, row, H.plain_answer)}
     return C.score(q, row) if q.get("family") == C.FAMILY else T2.score_one(q, row)
+
+
+def answer_text(q: dict[str, Any], row: dict[str, Any], plain: Callable[[Any], str] = str, support: bool = True) -> str:
+    """What is scored: the answer, and for a free-text question the quotes that go with it (``support``: sentences of
+    the record, shown under the answer). The brain's own free-text answer is such a quote already."""
+    answer = plain(row.get("answer"))
+    if support and q.get("family") == "prose" and row.get("support"):
+        return f"{answer}\n{plain(row['support'])}"
+    return answer
 
 
 def _mean(xs: Iterable[float]) -> float | None:
@@ -905,7 +944,10 @@ def main(argv: list[str] | None = None) -> Any:
     q.add_argument("--seed", type=int, default=QSEED)
     k = sub.add_parser("ask", help="one arm's answers: v18, rag or reasoner")
     k.add_argument("--work", type=Path, nargs="+", required=True)
-    k.add_argument("--arm", choices=("v18", "rag", "reasoner"), required=True)
+    k.add_argument("--arm", choices=("v18", "v19", *MODEL_ARMS), required=True)
+    k.add_argument("--fixes", default=None, help="v19: only these fixes, separated by commas (all by default; '' is v18's answers)")
+    k.add_argument("--brain", choices=("v18", "v19"), default="v18", help="the brain a model arm works on: its first answer and its tool")
+    k.add_argument("--seed", type=int, default=0, help="the model's sampling seed; a seed other than 0 answers into <arm>.s<seed>.jsonl")
     k.add_argument("--workers", type=int, default=4, help="processes for v18 and for the reasoner's tools")
     k.add_argument("--model", default="qwen3.8-27b")
     k.add_argument("--base-url", default=None, help="an OpenAI-compatible endpoint instead of vLLM on this machine")
@@ -924,13 +966,14 @@ def main(argv: list[str] | None = None) -> Any:
     s.add_argument("--base5k", type=Path, default=BASE_MESSY)
     a = ap.parse_args(argv)
     if a.cmd == "ask":
-        if a.arm == "v18":
-            rep = {str(w): ask_v18(w, a.workers, limit=a.limit) for w in a.work}
+        if a.arm in ("v18", "v19"):
+            fixes = None if a.fixes is None else tuple(x for x in a.fixes.split(",") if x)
+            rep = {str(w): ask_v18(w, a.workers, limit=a.limit, name=a.name, v19=a.arm == "v19", fixes=fixes) for w in a.work}
             print(json.dumps(rep, indent=1))
             return rep
         settings = {"model_name": a.model, "effort": a.effort, "thinking": not a.no_thinking, "max_tokens": a.max_tokens,
-                    "max_model_len": a.max_model_len}
-        name = a.name or FILES[a.arm]
+                    "max_model_len": a.max_model_len, "seed": a.seed, "loop": LOOP, "brain": a.brain}
+        name = a.name or arm_file(a.arm, a.seed)
         if not any(left(a.work, a.arm, name, a.limit).values()):  # nothing to ask: no model is loaded
             rep = {str(w): {"questions": len(_questions(w, a.limit)), "asked": 0} for w in a.work}
             for w in a.work:
@@ -940,16 +983,17 @@ def main(argv: list[str] | None = None) -> Any:
             return rep
         check_settings(a.work, a.arm if name == FILES[a.arm] else name, settings)  # before minutes of loading the model
         tools = None
-        if a.arm == "reasoner":
+        if a.arm != "rag":
+            from cie.factbank import reasoner as R
             from cie.factbank import store
-            from cie.factbank.reasoner import ToolPool
 
             store.ensure(a.work[0] / "factbank_v2.sqlite", log=print)
-            tools = ToolPool(a.work[0] / "factbank_v2.sqlite", LESSONS / "single_lessons.json", LESSONS / "plan_lessons.json",
-                             LESSONS / "router.json", workers=a.workers)  # forked before the model is loaded
+            lessons = (LESSONS / "single_lessons.json", LESSONS / "plan_lessons.json", LESSONS / "router.json") \
+                if "brain" in R.ARMS[a.arm].tools else (None, None, None)  # an arm without the brain tool loads no brain
+            tools = R.ToolPool(a.work[0] / "factbank_v2.sqlite", *lessons, workers=a.workers, v19=a.brain == "v19")  # forked before the model
         gen = backend(a.model, a.base_url, max_model_len=a.max_model_len, gpu_mem=a.gpu_mem, max_tokens=a.max_tokens,
-                      max_num_seqs=a.max_num_seqs, effort=a.effort, thinking=False if a.no_thinking else None)
-        rep = ask_llm(a.work, a.arm, gen, tools, a.name, a.chunk, a.limit, settings)
+                      max_num_seqs=a.max_num_seqs, effort=a.effort, thinking=False if a.no_thinking else None, seed=a.seed)
+        rep = ask_llm(a.work, a.arm, gen, tools, name, a.chunk, a.limit, settings)
         print(json.dumps(rep, indent=1))
         return rep
     if a.cmd == "score":
