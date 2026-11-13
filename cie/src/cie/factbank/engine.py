@@ -173,6 +173,17 @@ class FactBank:
             if not r[0].endswith("_of") and r[0] not in MULTI}
         self._keys: dict[str, str | None] = {}
         self._df: dict[str, int] = {}
+        self.revision = self._revision()
+
+    def _revision(self) -> int:
+        from cie.factbank import store
+
+        return store.revision(self.con)
+
+    def stale(self) -> bool:
+        """Whether the bank's file was changed (``bank.sync``) since this object read its names, kinds and aliases. A
+        stale bank still answers, from what it read then: open it again to see the documents as they are now."""
+        return self._revision() != self.revision
 
     # ------------------------------------------------------------------ lookup
     def facts_of(self, entity: str) -> list[sqlite3.Row]:

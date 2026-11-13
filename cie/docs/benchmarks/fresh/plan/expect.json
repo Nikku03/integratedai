@@ -1,0 +1,17 @@
+{
+ "hashes": {
+  "dsids_sha256": "284c05ac804aa90b6ea74a470d38375a3845e3440d9481de57e185d789abd7b5",
+  "questions_sha256_gen": "0a3f01cf9e292d9e7d012081c9e3821f0752ded832c14078495996a800402b73",
+  "questions_sha256_bench": "c869799fdfb50e24e78c59f06c0cbad76b8ac9eaac375c97f96869c15a955168",
+  "questions_sha256_sub": "f3f454d30d48851ad76f467bb4603010e15c10349a1111f7037c8481c6d5a000",
+  "questions_sha256_bench_sub": "1748894fbb8f964acc26b6a31b2408fefe318e9f6ee84edfa46e181d276f369a"
+ },
+ "counts": {
+  "gold": 684,
+  "documents": 50000,
+  "w": 402,
+  "w_bench": 463,
+  "w_sub": 100,
+  "w_bench_sub": 100
+ }
+}

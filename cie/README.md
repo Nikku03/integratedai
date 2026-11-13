@@ -198,12 +198,25 @@ On 587 messy questions over 5,000 fresh documents:
 - **The claim was not met because of free text:** 0.671 → 0.681, against the +0.04 set in advance. Two of the four answers
   that got worse were refused for a typo in the question.
 
-**Next: 50,000 documents and a language model as the reasoning engine** (planned; [`docs/FACTBANK_50K_PLAN.md`](docs/FACTBANK_50K_PLAN.md),
-notebook [`notebooks/company_brain_50k_colab.ipynb`](notebooks/company_brain_50k_colab.ipynb), A100). Round 4's questions
-are asked again among 50,000 documents (509 of 587 still have one right answer there), with 126 complex questions of two
-to four steps across systems. Three arms answer them: v18 alone; Qwen3.8-27B alone over a keyword search; and Qwen3.8-27B
-as the brain's reasoning engine (`cie.factbank.reasoner`), which reads the brain's answer and can ask it more, search,
-read records and count with exact filters before it answers. The rules were fixed before any model answered.
+**50,000 documents and a language model as the reasoning engine** ([`docs/FACTBANK_50K_RESULTS.md`](docs/FACTBANK_50K_RESULTS.md),
+plan [`docs/FACTBANK_50K_PLAN.md`](docs/FACTBANK_50K_PLAN.md)). Round 4's questions were asked again among 50,000 documents,
+with 126 complex questions of two to four steps across systems. Qwen3.8-27B as the brain's reasoning engine
+(`cie.factbank.reasoner`) reads the brain's answer and can ask it more, search, read records and count with exact filters.
+All eight rules set in advance were met:
+- **Complex questions:** 0.929, against 0.167 for the brain alone and 0.190 for the same model over a keyword search.
+- **Mean over the eight kinds:** 0.958, against 0.878 and 0.668.
+- **Against the brain alone:** better on 168 questions, worse on 19.
+
+**After that test: eleven fixes, and a test on questions nobody has seen** ([`docs/FACTBANK_FIXES.md`](docs/FACTBANK_FIXES.md)).
+A review of the run's stored answers found what to fix; each fix is listed with how it was checked.
+- **Checked without a GPU:** the brain answers three to five times faster with the same 1,270 answers; the bank is built
+  in batches and updated without a rebuild (500 documents changed in 12 seconds, the result equal to a fresh build row
+  for row); all 512,000 documents of the company build into one bank in 0.4 GB of memory; the company's field lists can
+  be read from the documents with no loss on the development questions.
+- **Needs the GPU run:** the model's new tools, the check on its final answer, the brain's v19 on new questions, and the
+  judge for free text. The plan is [`docs/FACTBANK_FRESH_PLAN.md`](docs/FACTBANK_FRESH_PLAN.md): 463 of the benchmark's own
+  questions and 402 generated ones on documents no earlier test used, with rules fixed before any arm answered. Notebook:
+  [`notebooks/company_brain_fresh_colab.ipynb`](notebooks/company_brain_fresh_colab.ipynb) (A100).
 
 ## Brain-wired reasoning neurons (research)
 

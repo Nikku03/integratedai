@@ -294,3 +294,46 @@ the brain asked the 635 development questions in casual wording.
   - the fields that name companies and the systems of record: a company's name and a person's look alike, and the
     values do not tell which system is the source of truth;
   - the weights the brain learned from this company's questions.
+
+## 9. A judge for free text, and a test on questions nobody has seen
+
+**What was wrong:**
+- Free text was scored by the words of the expected facts that an answer holds. That follows wording and length, not
+  correctness (section "What the review found").
+- The benchmark's own 500 questions, written by its authors with reference answers, had never been asked.
+- Every fix above was made after reading the answers to the old questions. A score on them proves little.
+
+**What changed:**
+- **A judge** (`cie.eval.judge`): the loaded model, in a separate conversation, is shown the question, the reference
+  answer, its facts and an answer. It says which facts the answer states and whether the answer is right.
+  - A verdict it cannot give in the asked form is asked for once more, then left out and counted as "not judged". It
+    is never counted as wrong.
+  - `judge sample` writes answers to a sheet for a person to label, without the judge's verdicts. `judge agreement`
+    compares the two (agreement and Cohen's kappa). Until a person has labelled a sample, the judge's numbers are
+    unproven.
+- **The fresh test** (`cie.eval.fresh_test`, `docs/FACTBANK_FRESH_PLAN.md`): 463 of the benchmark's own questions and
+  newly generated ones, on 50,000 documents of which only the questions' own documents were in the earlier haystack.
+  Its rules were written before any arm answered.
+
+**Checked here, without a GPU:**
+- The harness was run end to end on the earlier bank with the 37 benchmark questions that are left out of the test
+  and a scripted stand-in for the model: every arm, three seeds, the samples, the judge, the report and the rules.
+  What the stand-in says is nonsense; the run shows that every step reads what the step before wrote.
+- Unit tests cover the judge's reading of a verdict, the sample, the copying of rows to the sample, the bench score
+  and each rule (`tests/test_judge.py`, `tests/test_fresh_test.py`).
+
+**Not checked:** everything that needs the model. The notebook `notebooks/company_brain_fresh_colab.ipynb` runs it.
+
+## What is and is not verified
+
+| fix | verified here | needs the GPU run |
+|---|---|---|
+| 1. speed | 1,270 of 1,270 answers identical, 3 to 5 times faster | |
+| 2. tools | the first run's 1,424 calls run again: 234 of 419 failures now succeed, the rest say why | whether the model then answers better |
+| 3. checks on the final answer | simulated on stored answers; unit tests | the effect on real conversations |
+| 4. free-text quotes | unit tests | the effect on scores |
+| 5. arms, seeds | harness tried with a stand-in | the numbers |
+| 6. brain v19 | development questions: 6 better, 1 worse | the fresh questions |
+| 7. batch build, update without rebuild | row-for-row equality at 50,000 documents; the full company built | |
+| 8. profile | default reproduces the bank; derived profile loses nothing on development questions | a second company |
+| 9. judge, fresh test | harness tried with a stand-in | the judge against a person's labels; the test itself |

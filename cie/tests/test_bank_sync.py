@@ -169,3 +169,30 @@ def test_sync_options(tmp_path):
     assert B.doc_hash(sd, raw, True) != B.doc_hash(sd, raw, False) and B.doc_hash(sd, raw) == B.doc_hash(sd, dict(raw))
     other = SourceDoc(**{**sd.__dict__, "title": sd.title + "!"})
     assert B.doc_hash(other, raw) != B.doc_hash(sd, raw)
+
+
+def test_an_open_bank_knows_it_went_stale(tmp_path):
+    from cie.factbank.engine import FactBank
+
+    pool = company(21, 10)
+    docs = [pool[k] for k in sorted(pool)]
+    path = tmp_path / "bank.sqlite"
+    B.build(path, docs[:8], text_facts=True)
+    fb = FactBank(path)
+    key = docs[0][0].meta["key"]
+    before = fb.ask(f"What is the status of {key}?").answer
+    assert not fb.stale() and before == docs[0][0].meta["status"]
+    sd = docs[0][0]
+    other = next(s for s in STATUS if s != sd.meta["status"])
+    changed = SourceDoc(**{**sd.__dict__, "meta": {**sd.meta, "status": other}})
+    rep = B.sync(path, [(changed, docs[0][1]), *docs[1:]], text_facts=True)
+    assert (rep["changed"], rep["added"], rep["same"]) == (1, 2, 7)
+    assert fb.stale(), "the file changed under it"
+    again = FactBank(path)
+    assert not again.stale() and again.ask(f"What is the status of {key}?").answer == other
+    assert "doc:d009" in again.names and "doc:d009" not in fb.names, "a document added by the update: the stale bank does not know it"
+    fresh = tmp_path / "fresh.sqlite"
+    B.build(fresh, [(changed, docs[0][1]), *docs[1:]], text_facts=True)
+    for d in (docs[9], docs[3]):
+        q = f"What is the status of {d[0].meta['key']}?"
+        assert again.ask(q).answer == FactBank(fresh).ask(q).answer, "the updated bank answers as the bank built from scratch"

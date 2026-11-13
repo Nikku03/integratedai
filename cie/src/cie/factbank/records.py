@@ -284,6 +284,55 @@ class FieldStats:
     holders: int
 
 
+class DocFacts:
+    """``{doc: {parameter: [(value, value_entity)]}}`` over a bank's documents, read when asked for.
+
+    It was one dictionary of every document's fields, filled on a process's first question: 1.3 GB at 50,000
+    documents, in every process, and more than this machine has at 512,000. Now:
+    - a document asked for by itself is read by itself (an indexed lookup), and the last ``KEPT`` are kept;
+    - once more than ``BULK`` documents of one system have been asked for, something is going through the system (a
+      count, a filter, a field's statistics): the whole system is read once and kept.
+    What a document's dictionary holds, and its order, is what the one dictionary held."""
+
+    KEPT = 4096
+    BULK = 256
+    SQL = ("SELECT parameter, value, value_entity FROM facts WHERE entity = ? AND parameter NOT LIKE 'text\\_%' ESCAPE '\\' "
+           "ORDER BY rowid")
+
+    def __init__(self, records: Records):
+        self.r = records
+        self._one: dict[str, dict[str, list[tuple[str, str | None]]] | None] = {}
+        self._systems: dict[str, dict[str, dict[str, list[tuple[str, str | None]]]]] = {}
+        self._asked: Counter = Counter()
+
+    def _read(self, doc: str) -> dict[str, list[tuple[str, str | None]]] | None:
+        out: dict[str, list[tuple[str, str | None]]] = {}
+        for p, v, ve in self.r.b.con.execute(self.SQL, (doc,)):
+            out.setdefault(p, []).append((v, ve))
+        return out or None
+
+    def get(self, doc: str, default: Any = None) -> Any:
+        if not doc.startswith("doc:"):
+            return default
+        system = self.r.system_of(doc)
+        whole = self._systems.get(system)
+        if whole is not None:
+            return whole.get(doc, default)
+        if doc in self._one:
+            got = self._one[doc]
+            return default if got is None else got
+        self._asked[system] += 1
+        if self._asked[system] > self.BULK:
+            whole = self._systems[system] = {d: fs for d in self.r.documents(system) if (fs := self._one.get(d) or self._read(d))}
+            for d in [d for d in self._one if self.r.system_of(d) == system]:
+                del self._one[d]
+            return whole.get(doc, default)
+        if len(self._one) >= self.KEPT:
+            self._one.pop(next(iter(self._one)))
+        got = self._one[doc] = self._read(doc)
+        return default if got is None else got
+
+
 class Records:
     """Counts, filters, history, email and chat over one bank (a ``FactBank``, normally the brain's ``BrainBank``). ``min_held``
     is the share of a system's documents that must hold a field for ``absent`` to call it missing on one of them."""
@@ -292,7 +341,7 @@ class Records:
         self.b = bank
         self.min_held = min_held
         self.v18 = False  # round 4's count fixes (``COUNT_ASK_V18``, asides, "by" a person); set by ``Brain(..., v18=True)``
-        self._doc_facts: dict[str, dict[str, list[tuple[str, str | None]]]] | None = None
+        self._doc_facts: DocFacts | None = None
         self._by_system: dict[str, list[str]] | None = None
         self._stats: dict[str, dict[str, FieldStats]] = {}
         self._held: dict[str, Counter] = {}
@@ -302,15 +351,13 @@ class Records:
         self._askable: dict[str, set[str]] = {}
         self._field_values: dict[tuple[str, str], set[str]] = {}
 
-    # ------------------------------------------------------------------ the bank, read once
-    def doc_facts(self) -> dict[str, dict[str, list[tuple[str, str | None]]]]:
-        """Every document's fields: {doc: {parameter: [(value, value_entity)]}}, in the bank's order, without sentence facts."""
+    # ------------------------------------------------------------------ the bank, read as it is asked for
+    def doc_facts(self) -> DocFacts:
+        """Every document's fields: {doc: {parameter: [(value, value_entity)]}}, in the bank's order, without sentence
+        facts. Read from the bank a document at a time, or a system at a time when many of its documents are asked for
+        (``DocFacts``)."""
         if self._doc_facts is None:
-            out: dict[str, dict[str, list[tuple[str, str | None]]]] = defaultdict(lambda: defaultdict(list))
-            for e, p, v, ve in self.b.con.execute("SELECT entity, parameter, value, value_entity FROM facts WHERE entity LIKE 'doc:%' "
-                                                  "AND parameter NOT LIKE 'text\\_%' ESCAPE '\\' ORDER BY rowid"):
-                out[e][p].append((v, ve))
-            self._doc_facts = {e: dict(fs) for e, fs in out.items()}
+            self._doc_facts = DocFacts(self)
         return self._doc_facts
 
     def system_of(self, doc: str) -> str:
