@@ -200,6 +200,15 @@ class PassageIndex:
                 return None
             seen, page = len(hits), page * 4
 
+    def top_rows(self, question: str, k: int) -> list[int]:
+        """The rowids of the ``k`` best passages (``search``'s first ``k`` hits)."""
+        match = self._query(question)
+        if match is None:
+            return []
+        con = self.build()._con
+        return [r for (r,) in con.execute(f"SELECT rowid FROM {self.table} WHERE {self.table} MATCH ? ORDER BY {self._rank}, rowid LIMIT ?",
+                                          (match, k))]
+
     def doc_hits(self, question: str, doc: str) -> list[int]:
         """The rowids of one document's passages that hold a question word, best first (``search``'s hits of that document,
         in its order: a passage's BM25 score does not depend on what else is asked for)."""

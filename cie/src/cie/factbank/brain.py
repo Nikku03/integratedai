@@ -119,7 +119,7 @@ import re
 import time
 import unicodedata
 from collections import Counter, defaultdict
-from collections.abc import Iterator
+from collections.abc import Iterable, Iterator
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -212,6 +212,9 @@ DERIVED_PEOPLE = frozenset(("first_commenter", "latest_commenter", "email_sender
 # documents a fact answer rests on need not hold: closed-class English words (prepositions, conjunctions, auxiliaries and modals,
 # determiners and quantifiers, pronouns, a few adverbs), the words of asking for a count or a person, and the planner's words of
 # knowing or telling, of listing, of order, of linking and of questions
+# v19: words of chat the not-found check does not weigh, beyond the records' filler words and the chat shorthand
+COVER_CHAT = frozenset("actually basically honestly literally really just quick quickly kinda sorta maybe please thanks thx btw fyi "
+                       "asap ok okay yeah yep hmm um uh lol tbh imo afaik remind reminder wondering curious".split())
 CLOSED_WORDS = frozenset("""
 about above across after against along among around as at before behind below beneath beside besides between beyond by despite
 down during except for from in inside into like near of off on onto out outside over past per since than through throughout till
@@ -230,6 +233,17 @@ COVER_STOP = frozenset(CLOSED_WORDS | EMBED_VERBS | EMBED_SKIP | MANY_WORDS | OR
 # on dev the v15 families exceed that bound by one question (3/125, all three wrong answers before); see the module docstring
 # for what it catches and what it costs
 COVER_BELOW = 0.57
+# v19 (after the 50,000-document test, docs/FACTBANK_FIXES.md): the fixes a ``Brain(..., v19=True)`` turns on, each by name
+# so that its effect can be measured alone (``Brain.fixes``):
+# - "cover": the not-found check weighs only the words that say what the question is about (``cover_weights``);
+# - "orgs": a "person" whose name the records write as a company's is not a person (``BrainBank.not_people``);
+# - "names": a name written in lower case that the bank holds nowhere is an unknown name (``unknown_names``);
+# - "candidates": the row lists the other documents or answers that come close (``described``, ``plan``).
+V19_FIXES = frozenset(("cover", "orgs", "names", "candidates"))
+COVER_FIT_ENTITIES = 14_254  # the entities of the bank COVER_MIN_WEIGHT was set on: the bar grows with the bank's size
+CANDIDATE_PASSAGES = 40  # passages whose documents are looked at for a rival of the described route's document
+CANDIDATE_WITHIN = 0.03  # a rival holds the question's words within this of the chosen document's share, or more
+CANDIDATES = 4
 COVER_MIN_WEIGHT = 10.0  # a question whose rare words weigh no more than this (about two rare words) has nothing to check
 COVER_ENDS = 50  # the plan's end entities read for the check, at most
 ROUTE_UNCOVERED = "absent_doc"  # the route of that "not found" (a not_found route, ``cie.eval.brain2_test.route_class``)
@@ -290,6 +304,12 @@ LETTERS = "abcdefghijklmnopqrstuvwxyz"
 
 
 @functools.cache
+def _loose(s: str) -> str:
+    from cie.factbank.store import loose
+
+    return loose(s)
+
+
 def content_word(t: str) -> bool:
     """v18: a word of three letters or more that is not a word of asking (``COVER_STOP``) nor a stop word."""
     return len(t) >= 3 and t not in COVER_STOP and t not in STOP
@@ -425,7 +445,23 @@ class BrainBank(TrainedBank):
             shared = {f for f, es in firsts.items() if len(es) >= 2}
             self._not_people = {e for e, n in people.items() if len(n.split()) >= 2 and n.lower().split()[0] not in shared
                                 and not held[e] & PERSON_FIELDS and len(docs[e]) < PERSON_DOCS}
+            if getattr(self, "org_names", False):
+                # v19: a name the records write as a company's (the value of a company field) and never as the holder of a
+                # field that only people hold is a company, however many documents name it and whatever its first word.
+                # At 50,000 documents 499 of the bank's 22,846 "people" are such names ("AWS Marketplace", "Lumina Labs").
+                orgs = self.org_values()
+                self._not_people |= {e for e, n in people.items() if not held[e] & PERSON_FIELDS and _loose(n) in orgs}
         return self._not_people
+
+    def org_values(self) -> set[str]:
+        """v19: the names the records write in a company field (``cie.ingest.sources.ORG_FIELDS``), compared loosely."""
+        if getattr(self, "_org_values", None) is None:
+            from cie.ingest.sources import ORG_FIELDS
+
+            marks = ",".join("?" * len(ORG_FIELDS))
+            self._org_values = {_loose(v) for (v,) in self.con.execute(f"SELECT DISTINCT value FROM facts WHERE parameter IN ({marks})",
+                                                                        ORG_FIELDS)} - {""}
+        return self._org_values
 
     def value_fits(self, value: str, value_entity: str | None, kind: str | None) -> bool:
         """v16: whether a value is of the kind a question word asks for: a date (written as an ISO date) or a person (a person
@@ -584,7 +620,7 @@ class Brain:
     def __init__(self, bank_path: str | Path, single_lessons_path: str | Path, plan_lessons_path: str | Path, router: Router | None = None,
                  *, budget: int = BUDGET, field_check: bool = True, v16: bool = False, min_held: float = MIN_HELD,
                  cover_below: float | None = COVER_BELOW, v17: bool = False, described_below: float = DESCRIBED_BELOW,
-                 v18: bool = False):
+                 v18: bool = False, v19: bool = False, fixes: Iterable[str] | None = None):
         self.bank = BrainBank(bank_path, Lessons.load(single_lessons_path))
         self.bank.brain = True
         self.bank.answer_first = False  # the planner path prints its own answer; the engine path sets it while it runs
@@ -593,11 +629,17 @@ class Brain:
         self.lessons.brain = True
         self.planner = self.lessons.planner(self.bank)
         self.planner.brain = True
+        v18 = v18 or v19  # v19 is v18 with the fixes made after the 50,000-document test
         v17 = v17 or v18  # v18 is v17 with round 4's fixes
         v16 = v16 or v17  # v17 is v16 with the described route
         self.v16 = self.bank.v16 = self.planner.v16 = v16
         self.v17 = v17
         self.v18 = v18
+        self.v19 = v19
+        self.fixes = frozenset(V19_FIXES if fixes is None else fixes) if v19 else frozenset()
+        if unknown := self.fixes - V19_FIXES:
+            raise ValueError(f"unknown fixes {sorted(unknown)}: {sorted(V19_FIXES)}")
+        self.bank.org_names = "orgs" in self.fixes
         self.described_below = described_below
         self.router = router
         self.budget = budget
@@ -648,7 +690,16 @@ class Brain:
             self._entity_count = self.bank.con.execute("SELECT count(*) FROM entities_fts").fetchone()[0]
         return self._entity_count
 
-    def cover_weights(self, question: str) -> dict[str, float]:
+    def chat_stop(self) -> frozenset[str]:
+        """v19: the words of asking and chat that the not-found check does not weigh: the records' filler words and chat
+        shorthand, with what the shorthand stands for."""
+        if getattr(self, "_chat_stop", None) is None:
+            from cie.factbank.records import FILLER
+
+            self._chat_stop = frozenset(FILLER | set(CHAT_WORDS) | {w for v in CHAT_WORDS.values() for w in v.split()} | COVER_CHAT)
+        return self._chat_stop
+
+    def cover_weights(self, question: str, fields: Iterable[str] = ()) -> dict[str, float]:
         """v16: the question's words that the documents a fact answer rests on should hold, stem -> weight. Words as
         ``ProseRoute.weights`` takes them (``[a-z0-9]+``, two characters or more, not ``engine.STOP``, ``engine.stem``), each
         weighted by its rarity in the bank (IDF over the bank's entities, the larger for two forms of one stem), without: the words
@@ -657,12 +708,24 @@ class Brain:
         ql = question.lower()
         inside = {t for m in QUOTED.finditer(ql) for t in re.findall(r"[a-z0-9]+", m.group(0))}
         outside = set(re.findall(r"[a-z0-9]+", QUOTED.sub(" ", ql)))
-        asked = {stem(x) for p, w in self.bank.wanted(question).items() if w > 0 for x in p.split("_") if x}
+        fixed = "cover" in self.fixes
+        if fixed:
+            # v19: only the fields the question asks for by a cue or by their whole name give their words up. Before, a
+            # field that shared one word with the question did (``FactBank.wanted`` weighs it), and with 1,851 field
+            # names at 50,000 documents the words that say what the question is about went too ("rotation" for
+            # owner_rotation, "caches" for caching_batching_interest).
+            asked = {stem(x) for p, w in self.bank.wanted(question).items() if w >= 1.0 - 1e-9 for x in p.split("_") if x}
+            asked |= {stem(x) for p in fields for x in p.removesuffix("_of").split("_") if x}
+            chat = self.chat_stop()
+        else:
+            asked = {stem(x) for p, w in self.bank.wanted(question).items() if w > 0 for x in p.split("_") if x}
         n = self.entity_count()
         out: dict[str, float] = {}
         for t in sorted(set(re.findall(r"[a-z0-9]+", ql))):
             if len(t) < 2 or t in STOP or t in COVER_STOP or t.isdigit() or (t in inside and t not in outside):
                 continue
+            if fixed and (t in chat or (len(t) < 3 and t.isalpha())):
+                continue  # v19: words of chat ("hey", "actually") and two-letter shorthand ("co", "wk") say nothing to check
             s = stem(t)
             if s in asked or any(s.startswith(c) for c in CUES):
                 continue
@@ -682,13 +745,22 @@ class Brain:
             self._stems[doc] = {stem(w) for w in re.findall(r"[a-z0-9]+", text)}
         return self._stems[doc]
 
-    def cover(self, question: str, entities: list[str]) -> tuple[float, float, list[str]]:
+    def cover_min_weight(self) -> float:
+        """The weight a question's rare words must pass to be checked. ``COVER_MIN_WEIGHT`` (about two rare words) was set
+        on a bank of ``COVER_FIT_ENTITIES`` entities; a word's rarity grows with the bank, so with v19 the bar does too
+        (at 114,341 entities one word held by four entities passed the old bar alone)."""
+        if "cover" not in self.fixes:
+            return COVER_MIN_WEIGHT
+        return COVER_MIN_WEIGHT * max(1.0, math.log(1 + self.entity_count()) / math.log(1 + COVER_FIT_ENTITIES))
+
+    def cover(self, question: str, entities: list[str], fields: Iterable[str] = ()) -> tuple[float, float, list[str]]:
         """v16: the share of the question's rare words (``cover_weights``), by weight, that the stored text of the entities a fact
         answer rests on holds, with the words' total weight and the words missing. The share is 1.0 when the words weigh no more
-        than ``COVER_MIN_WEIGHT``: such a question says too little beyond what it names to check."""
-        weights = self.cover_weights(question)
+        than ``cover_min_weight``: such a question says too little beyond what it names to check. ``fields``: the fields
+        the answer reads (v19: their words are not weighed)."""
+        weights = self.cover_weights(question, fields)
         total = sum(weights.values())
-        if total <= COVER_MIN_WEIGHT:
+        if total <= self.cover_min_weight():
             return 1.0, total, []
         have: set[str] = set()
         for e in entities:
@@ -706,8 +778,10 @@ class Brain:
         ``abstained``: the share (``cover``) is below ``cover_below``."""
         about = self.planner.about(question) | ({start} if start else set())
         people: list[str] = []
+        read: tuple[str, ...] = ()
         if plan is not None:
             best = plan["best"]
+            read = (*best.path, *([] if best.field == "label" else [best.field]))  # v19: what the plan follows and reads
             named = set(best.starts) & about
             if named and not (self.v18 and best.aggregate == "single" and all(e.startswith("person:") for e in named)):
                 return None
@@ -729,7 +803,7 @@ class Brain:
                                 if (x := w.lower().removesuffix("'s")) not in names and x not in FILLER and x not in PLATE_WORDS)
             if not docs:
                 return None
-        share, total, missing = self.cover(question, docs)
+        share, total, missing = self.cover(question, docs, read)
         return {"op": "cover", "docs": docs[:JOURNAL_STEPS], "cover": round(share, 4), "weight": round(total, 2), "missing": missing,
                 "threshold": self.cover_below, "abstained": share < self.cover_below}
 
@@ -978,6 +1052,11 @@ class Brain:
             camel = CAMEL.search(w) is not None
             if (camel or w[0].isupper() and not opens and w.lower() not in general_words()) and self.bank.doc_freq(w.lower()) == 0:
                 out.append(w)
+            elif ("names" in self.fixes and w.islower() and w.isalpha() and len(w) >= 5 and not self.ordinary(w)
+                  and self.bank.doc_freq(w) == 0):
+                # v19: casual wording writes names in lower case ("authored by mikko rodriguez"): a word that is not ordinary
+                # English, not chat and not one slip from an ordinary word, and that no entity of the bank holds
+                out.append(w)
         return list(dict.fromkeys(out))
 
     # ------------------------------------------------------------------ planning and routing
@@ -1178,6 +1257,9 @@ class Brain:
         step = {"op": "described", "doc": doc, "label": rec.label(doc), "coverage": round(cov, 4), "threshold": self.described_below}
         if cov < self.described_below:
             return None
+        rivals = self.rivals(question, doc, cov) if "candidates" in self.fixes else []
+        if rivals:
+            step["rivals"] = [r["doc"] for r in rivals]
         lead = f"{rec.label(doc)} is the document BM25 ranks first; its text holds {cov:.3f} of the question's words by rarity"
         d = rec.derived(question, doc)
         if d is not None and WHO.search(ql) and d["kind"] not in DERIVED_PEOPLE:
@@ -1185,12 +1267,12 @@ class Brain:
         if d is not None:
             reason, evidence, journal, reads = self.derived_row(doc, d)
             return {"answer": d["answer"], "kind": "derived", "doc": doc, "coverage": cov, "reason": f"{lead}; {reason}",
-                    "evidence": evidence, "journal": [step, *journal], "reads": reads}
+                    "evidence": evidence, "journal": [step, *journal], "reads": reads, "candidates": rivals}
         why = rec.absent(question, doc)
         if why:
             evidence, journal, reads = self.absent_row(doc, why)
             return {"answer": "not found", "kind": "absent", "doc": doc, "coverage": cov, "reason": f"{lead}; {why}",
-                    "evidence": evidence, "journal": [step, *journal], "reads": reads}
+                    "evidence": evidence, "journal": [step, *journal], "reads": reads, "candidates": rivals}
         head = ASKED_HEAD.search(question.lower())
         if head and not (WHEN.search(ql) or WHO.search(ql) or WHOSE.search(ql)):
             known = {p for p in rec.doc_facts().get(doc, {}) if not p.startswith("text_")}
@@ -1206,7 +1288,7 @@ class Brain:
                     journal = [step, {"op": "field", "doc": doc, "field": field, "weight": round(ranked[0][0], 3), "values": values}]
                     return {"answer": answer, "kind": "field", "doc": doc, "coverage": cov,
                             "reason": f"{lead}; the question asks for its {field.replace('_', ' ')}", "evidence": evidence,
-                            "journal": journal, "reads": self.record_reads([doc], values)}
+                            "journal": journal, "reads": self.record_reads([doc], values), "candidates": rivals}
         bank = self.bank
         bank.answer_first = True
         try:
@@ -1219,7 +1301,40 @@ class Brain:
         finally:
             bank.answer_first = False
         return {"answer": answer, "kind": "engine", "doc": doc, "coverage": cov, "reason": f"{lead}; {reason}", "evidence": evidence,
-                "journal": [step, *rests_on(journal, answer)], "reads": None}
+                "journal": [step, *rests_on(journal, answer)], "reads": None, "candidates": rivals}
+
+    def rivals(self, question: str, doc: str, cov: float | None = None) -> list[dict[str, Any]]:
+        """v19: the documents that hold about as much of the question as the one chosen: among the documents of the
+        ``CANDIDATE_PASSAGES`` best passages, those whose text holds the question's words (by rarity) within
+        ``CANDIDATE_WITHIN`` of the chosen document's share, or more; the best ``CANDIDATES``. A look-alike of the right
+        record can rank first (10 of the 20 answers that got worse at 50,000 documents), and its coverage does not tell it
+        from the right one (ranking by it instead wins 3 questions and loses 2), so the choice is not changed: the row
+        says which other records to check."""
+        from cie.factbank.prose import PassageIndex, coverage
+
+        idx, rec = PassageIndex.of(self.bank), self.records()
+        weights = self.prose_route().weights(question)
+        if cov is None:
+            cov = coverage(weights, rec.text(doc))
+        docs = list(dict.fromkeys(idx.rows[r - 1].doc for r in idx.top_rows(question, CANDIDATE_PASSAGES)))
+        out = []
+        for d in docs:
+            if d != doc and (c := coverage(weights, rec.text(d))) >= cov - CANDIDATE_WITHIN:
+                out.append({"doc": d, "label": rec.label(d), "title": (self.bank.names.get(d) or "")[:120], "coverage": round(c, 4)})
+        return sorted(out, key=lambda x: -x["coverage"])[:CANDIDATES]
+
+    def plan_rivals(self, plan: dict[str, Any], within: float = 0.15) -> list[dict[str, Any]]:
+        """v19: the other answers the planner weighed about as high as its best: the plans within ``within`` of the best
+        plan's score that give another answer, one a different answer; the best ``CANDIDATES``."""
+        top = plan.get("top") or []
+        if not top:
+            return []
+        best, seen, out = float(top[0][0]), {str(plan["answer"])}, []
+        for score, p, answer in top[1:]:
+            if float(score) >= best - within and str(answer) not in seen:
+                seen.add(str(answer))
+                out.append({"answer": str(answer)[:160], "plan": p.describe(self.bank.names)[:200], "score": round(float(score), 3)})
+        return out[:CANDIDATES]
 
     def ordinary(self, w: str) -> bool:
         """v18: an ordinary English word (``GENERAL_WORDS`` holds it or its stem), chat shorthand, a contraction, or one slip of
@@ -1307,10 +1422,13 @@ class Brain:
         t = time.perf_counter()
 
         def done(answer: str, route: str, reason: str, evidence: str, journal: list, reads: Any = None,
-                 scores: dict[str, float] | None = None) -> dict[str, Any]:
+                 scores: dict[str, float] | None = None, candidates: list | None = None) -> dict[str, Any]:
             head = {"op": "route", "route": route, "reason": reason, **({"family_scores": scores} if scores else {})}
-            return {"answer": answer, "route": route, "reason": reason, "evidence": evidence[:self.budget], "reads": reads or [],
-                    "journal": [head, *journal], "family_scores": scores or {}, "ms": round((time.perf_counter() - t) * 1000, 2)}
+            row = {"answer": answer, "route": route, "reason": reason, "evidence": evidence[:self.budget], "reads": reads or [],
+                   "journal": [head, *journal], "family_scores": scores or {}, "ms": round((time.perf_counter() - t) * 1000, 2)}
+            if "candidates" in self.fixes:
+                row["candidates"] = candidates or []  # v19: the other records or answers that come close
+            return row
 
         if self.v16 and self.read_messy:
             question = self.tidy(question)
@@ -1341,7 +1459,8 @@ class Brain:
         if self.v17 and not start and scores["prose"] <= scores["fact"]:
             hit = self.described(question)
             if hit is not None:
-                return done(hit["answer"], ROUTE_DESCRIBED, hit["reason"], hit["evidence"], hit["journal"], hit["reads"], scores)
+                return done(hit["answer"], ROUTE_DESCRIBED, hit["reason"], hit["evidence"], hit["journal"], hit["reads"], scores,
+                            hit.get("candidates"))
         if self.v18 and start and scores["prose"] > scores["fact"]:
             why = self.records().absent(titled, start)  # v18: the named document leaves the asked field empty, whatever the router says
             if why:
@@ -1350,7 +1469,9 @@ class Brain:
         if scores["prose"] > scores["fact"]:
             if self.v16:
                 answer, reason, evidence, journal = self.prose_row(question)
-                return done(answer, "prose", reason, evidence, journal, None, scores)
+                doc = journal[0].get("doc") if journal else None
+                return done(answer, "prose", reason, evidence, journal, None, scores,
+                            self.rivals(question, doc) if doc and "candidates" in self.fixes else None)
             answer, reason, evidence = self.prose(question)
             return done(answer, "prose", reason, evidence, [], None, scores)
         if start:
@@ -1366,7 +1487,8 @@ class Brain:
                 reason, evidence = self.uncovered_row(step, plan["answer"], plan["best"].describe(self.bank.names), "plan")
                 return done("not found", ROUTE_UNCOVERED, reason, evidence, [*plan["journal"], step], None, scores)
             return done(plan["answer"], "plan", plan["best"].describe(self.bank.names), self.plan_evidence(question, plan),
-                        [*plan["journal"], *([step] if step else [])], self.planner.reads(plan["best"]), scores)
+                        [*plan["journal"], *([step] if step else [])], self.planner.reads(plan["best"]), scores,
+                        self.plan_rivals(plan) if "candidates" in self.fixes else None)
         r = self.engine(question)
         if r.answer == "not found" and found:
             why = plan["best"].describe(self.bank.names) + " (the engine found nothing)"
@@ -1375,7 +1497,7 @@ class Brain:
                 reason, evidence = self.uncovered_row(step, plan["answer"], why, "plan")
                 return done("not found", ROUTE_UNCOVERED, reason, evidence, [*plan["journal"], step], None, scores)
             return done(plan["answer"], "plan", why, self.plan_evidence(question, plan), [*plan["journal"], *([step] if step else [])],
-                        self.planner.reads(plan["best"]), scores)
+                        self.planner.reads(plan["best"]), scores, self.plan_rivals(plan) if "candidates" in self.fixes else None)
         step = self.cover_step(question, start, result=r) if check and r.answer != "not found" else None
         if step is not None and step["abstained"]:
             reason, evidence = self.uncovered_row(step, r.answer, r.reason, "fact")
