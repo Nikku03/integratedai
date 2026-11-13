@@ -178,6 +178,12 @@ class FactBank:
     def facts_of(self, entity: str) -> list[sqlite3.Row]:
         return self.con.execute("SELECT * FROM facts WHERE entity = ? ORDER BY id", (entity,)).fetchall()
 
+    def lean_facts(self, entity: str) -> list[sqlite3.Row]:
+        """An entity's facts in the same order as ``facts_of``, with only what reasoning reads: (id, parameter, value,
+        value_entity, confidence, source). A person can have thousands of facts, each with a long claim and context."""
+        return self.con.execute("SELECT id, parameter, value, value_entity, confidence, source FROM facts WHERE entity = ? ORDER BY id",
+                                (entity,)).fetchall()
+
     def named(self, question: str) -> list[str]:
         """Entities the question names by an alias: an identifier or a person's full name."""
         q = question.lower()
@@ -241,16 +247,19 @@ class FactBank:
             one: dict[tuple[str, str, str], float] = defaultdict(float)
             why: dict[tuple[str, str, str], list[str]] = defaultdict(list)
             target: dict[tuple[str, str, str], str | None] = {}
+            authority = self.authority
             for e in frontier:
-                for f in self.facts_of(e):
-                    key = (e, f["parameter"], f["value"])
-                    if (e, f["parameter"]) in written:
+                rel = relevance[e]
+                for fid, p, v, ve, conf, src in self.lean_facts(e):
+                    if (e, p) in written:
                         continue
-                    vote = relevance[e] * CONF_W.get(f["confidence"], 0.3) * AUTH_W.get(self.authority.get(f["source"], ""), 0.8)
+                    key = (e, p, v)
+                    vote = rel * CONF_W.get(conf, 0.3) * AUTH_W.get(authority.get(src, ""), 0.8)
                     votes[key] += vote
-                    one[key] = max(one[key], vote)
-                    why[key].append(f["id"])
-                    target[key] = f["value_entity"]
+                    if vote > one[key]:
+                        one[key] = vote
+                    why[key].append(fid)
+                    target[key] = ve
             by_param: dict[tuple[str, str], list[tuple[str, float]]] = defaultdict(list)
             for (e, p, v), w in votes.items():
                 by_param[(e, p)].append((v, w))
@@ -308,12 +317,36 @@ class FactBank:
         w = written.get((entity, "pr_number"))
         if w:
             return "#" + w.values[0]
-        for f in self.facts_of(entity):
+        for f in self.lean_facts(entity):
             if f["parameter"] == "key":
                 return f["value"]
             if f["parameter"] == "pr_number":
                 return "#" + f["value"]
         return self.names.get(entity, entity)
+
+    def text_row(self, entity: str) -> tuple[str, str] | None:
+        """An entity's stored name and text (``entities_fts``), or None. Through the bank's ``text_rows`` table when it has
+        one (``cie.factbank.store``); without it the full-text table is read row by row, as before."""
+        if getattr(self, "_text_rows", None) is None:
+            self._text_rows = self.con.execute("SELECT 1 FROM sqlite_master WHERE name = 'text_rows'").fetchone() is not None \
+                and self.con.execute("SELECT 1 FROM text_rows LIMIT 1").fetchone() is not None
+        if self._text_rows:
+            row = self.con.execute("SELECT f.name, f.text FROM text_rows t JOIN entities_fts f ON f.rowid = t.rid WHERE t.id = ?",
+                                   (entity,)).fetchone()
+        else:
+            row = self.con.execute("SELECT name, text FROM entities_fts WHERE id = ?", (entity,)).fetchone()
+        return None if row is None else (row[0], row[1])
+
+    def text_of(self, entity: str) -> str | None:
+        row = self.text_row(entity)
+        return None if row is None else row[1]
+
+    def parameters(self) -> set[str]:
+        """Every parameter of the bank's facts, read once (a scan of every fact; it used to run for each question). A set
+        built as before, so it is gone through in the same order; never changed."""
+        if getattr(self, "_parameters", None) is None:
+            self._parameters = {r[0] for r in self.con.execute("SELECT DISTINCT parameter FROM facts")}
+        return self._parameters
 
     def wanted(self, question: str) -> dict[str, float]:
         """Parameters the question asks for, with weights: its cue words, and field names sharing its words."""
@@ -324,8 +357,7 @@ class FactBank:
                 if w.startswith(cue):
                     for i, p in enumerate(params):
                         out[p] += 2.0 - 0.1 * i
-        params = {r[0] for r in self.con.execute("SELECT DISTINCT parameter FROM facts")}
-        for p in params:
+        for p in self.parameters():
             toks = {stem(x) for x in p.split("_") if x}
             hit = len(toks & qw)
             if hit and not p.endswith("_of"):
@@ -450,9 +482,9 @@ class FactBank:
         for e, _ in seeds:
             if self.kinds.get(e) != "document" or used >= budget:
                 continue
-            row = self.con.execute("SELECT text FROM entities_fts WHERE id = ?", (e,)).fetchone()
+            row = self.text_row(e)
             if row:
-                text = row[0][: max(0, min(6000, budget - used - 50))]
+                text = row[1][: max(0, min(6000, budget - used - 50))]
                 parts.append(f"[text] {self.names.get(e, e)}\n{text}")
                 used += len(text) + 60
         return "\n\n".join(parts)
@@ -492,8 +524,8 @@ class FactBank:
         total = sum(terms.values()) or 1.0
         found: list[tuple[float, int, int, dict[str, Any]]] = []
         for rank, e in enumerate(docs):
-            row = self.con.execute("SELECT text FROM entities_fts WHERE id = ?", (e,)).fetchone()
-            for i, text in enumerate(windows(row[0] if row else "", *size)):
+            row = self.text_row(e)
+            for i, text in enumerate(windows(row[1] if row else "", *size)):
                 have = {stem(t) for t in re.findall(r"[a-z0-9]+", text.lower())}
                 score = sum(w for t, w in terms.items() if t in have) / total
                 found.append((-score, rank, i, {"doc": e, "title": self.names.get(e, e), "text": text, "score": round(score, 4)}))

@@ -40,8 +40,15 @@ ZEBRA = "How does the zebra crossing policy handle the badge printer?"
 
 @pytest.fixture
 def bank(tmp_path):
-    B.build(tmp_path / "factbank_v2.sqlite", DOCS, text_facts=True)
+    # without the bank's derived tables: the passage index is cut and indexed in memory, as before the store
+    B.build(tmp_path / "factbank_v2.sqlite", DOCS, text_facts=True, derived=False)
     return FactBank(tmp_path / "factbank_v2.sqlite")
+
+
+@pytest.fixture
+def stored(tmp_path):
+    B.build(tmp_path / "stored.sqlite", DOCS, text_facts=True)
+    return FactBank(tmp_path / "stored.sqlite")
 
 
 @pytest.fixture
@@ -75,6 +82,41 @@ def test_one_index_per_bank(bank, tmp_path):
     assert small is not a.index and small.size == (300, 600) and PR.PassageIndex.of(bank, (300, 600)) is small, "one per size"
     own = PR.PassageIndex(bank)
     assert own is not a.index and PR.ProseRoute(bank, index=own).index is own, "a private index, or one given, is used as it is"
+
+
+def test_a_stored_index_is_the_in_memory_one(bank, stored):
+    """A bank built with its derived tables reads the passage index from its file: the same passages, rowids, ranking and
+    quotes as the index cut in memory, with nothing built by the process."""
+    mem, disk = PR.PassageIndex(bank).build(), PR.PassageIndex.of(stored)
+    assert isinstance(disk, PR.StoredPassages) and disk.built and disk.build() is disk and disk._con is stored.con
+    assert not isinstance(PR.PassageIndex.of(bank), PR.StoredPassages), "a bank file without the tables is cut in memory"
+    assert PR.ProseRoute(stored).index is disk
+    assert len(disk.rows) == len(mem.rows) and [disk.rows[i] for i in range(len(mem.rows))] == mem.rows
+    assert disk.rows == mem.rows and sorted(disk.by_doc) == sorted(mem.by_doc) and len(disk.by_doc) == len(mem.by_doc)
+    assert all(disk.by_doc[d] == mem.by_doc[d] for d in mem.by_doc) and "doc:nope" not in disk.by_doc
+    with pytest.raises(IndexError):
+        disk.rows[len(mem.rows)]
+    for q in (PORT, ZEBRA, "Which runbook?", "What is in the lobby kiosk audit?", "Zygomorphic quasars?", "Is it?"):
+        for ex in ([], ["doc:d5"], ["doc:d5", "doc:d3"], ["doc:nope"]):
+            assert disk.search(q, ex) == mem.search(q, ex)
+            assert disk.top(q, ex) == mem.top(q, ex) == (mem.search(q, ex)[0][0] if mem.search(q, ex) else None)
+            assert disk.best_document(q, ex) == mem.best_document(q, ex)
+            assert disk.top(q, ex, page=1) == mem.top(q, ex, page=1), "a page of one hit goes on to the next page"
+        for d in mem.by_doc:
+            assert disk.doc_hits(q, d) == mem.doc_hits(q, d) == [r for r, _ in mem.search(q) if mem.rows[r - 1].doc == d]
+    a, b = PR.ProseRoute(bank).answer(PORT), PR.ProseRoute(stored).answer(PORT)
+    assert a == b and a["doc"] == "doc:d5"
+    assert PR.PassageIndex.of(stored, (300, 600)).__class__ is PR.PassageIndex, "another size is cut in memory"
+
+
+def test_text_by_id(bank, stored):
+    """``FactBank.text_row`` reads an entity's stored name and text: through ``text_rows`` when the bank has it."""
+    for b in (bank, stored):
+        for e in b.kinds:
+            assert b.text_row(e) == tuple(b.con.execute("SELECT name, text FROM entities_fts WHERE id = ?", (e,)).fetchone())
+            assert b.text_of(e) == b.text_row(e)[1]
+        assert b.text_row("doc:nope") is None and b.text_of("doc:nope") is None
+    assert stored._text_rows and not bank._text_rows
 
 
 def test_the_index_holds_every_documents_stored_text_cut_in_windows(bank):

@@ -283,7 +283,10 @@ def test_records_and_the_passage_index_are_built_once(v16, monkeypatch):
     assert isinstance(route, PR.ProseRoute) and route.bank is v16.bank and route.budget == v16.budget and route.index.built
     v16.ask(PROSE.replace("verify", "check"))
     v16.ask(COUNT)
-    assert len(builds) == 1 and v16.prose_route() is route and v16.records() is rec, "one index and one Records per brain"
+    assert v16.prose_route() is route and v16.records() is rec, "one index and one Records per brain"
+    # the bank file stores its passage index (cie.factbank.store), so no process builds one; a bank file without it has
+    # the index cut in memory once (tests/test_brain_prose.py)
+    assert isinstance(route.index, PR.StoredPassages) and builds == []
 
 
 def test_v15_builds_nothing_new(v15):

@@ -55,11 +55,18 @@ class TrainedBank(FactBank):
         return self.system.get(self.source_doc(e)[4:], "")
 
     def label_of(self, e: str) -> str:
-        return self.label(e, {})
+        """An entity's label (``label`` with nothing written), kept: reading it goes through every fact of the entity, and a
+        plan asks for the same labels hundreds of times."""
+        labels = vars(self).setdefault("_labels", {})
+        if e not in labels:
+            if len(labels) > 500_000:
+                labels.clear()
+            labels[e] = self.label(e, {})
+        return labels[e]
 
     def relations(self, person: str) -> dict[str, list[str]]:
         out: dict[str, list[str]] = defaultdict(list)
-        for f in self.facts_of(person):
+        for f in self.lean_facts(person):
             if f["parameter"].endswith("_of") and f["value_entity"]:
                 out[f["parameter"]].append(f["value_entity"])
         return dict(out)
@@ -212,7 +219,7 @@ class TrainedBank(FactBank):
             reason, window = f"due between {lo} and {hi}", []
         out, lines = [], []
         for e in dict.fromkeys(docs):
-            facts = {f["parameter"]: f["value"] for f in self.facts_of(e)}
+            facts = {f["parameter"]: f["value"] for f in self.lean_facts(e)}
             if system and self.system_of_entity(e) != system:
                 continue
             if status and str(facts.get("status", facts.get("state", ""))).lower() not in {s.lower() for s in status}:

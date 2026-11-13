@@ -107,26 +107,30 @@ class Passage(NamedTuple):
 
 
 class PassageIndex:
-    """The bank's document text cut into passages (``size``, ``engine.windows``) in an in-memory FTS5 table, built on first use
-    (``build``). Passage ``rowid`` r is ``rows[r - 1]``; ``by_doc`` gives a document's rowids in document order.
-    ``PassageIndex.of(bank)`` is the bank's shared index (what ``ProseRoute`` uses); ``PassageIndex(bank)`` a private one."""
+    """The bank's document text cut into passages (``size``, ``engine.windows``) in an FTS5 table. ``PassageIndex.of(bank)``
+    is the bank's shared index (what ``ProseRoute`` uses): the one stored in the bank's file when it has one
+    (``StoredPassages``, nothing to build or load), else this class, which builds the table in memory on first use
+    (``build``), as does a private ``PassageIndex(bank)``. Passage ``rowid`` r is ``rows[r - 1]``; ``by_doc`` gives a
+    document's rowids in document order (one run of rowids: the passages are numbered document by document)."""
+
+    table = "p"
 
     def __init__(self, bank: FactBank, size: tuple[int, int] = PROSE_SIZE):
         self.bank = bank
         self.size = size
-        self.rows: list[Passage] = []
-        self.by_doc: dict[str, list[int]] = {}
+        self.rows: Any = []
+        self.by_doc: Any = {}
         self.seconds = 0.0
         self._con: sqlite3.Connection | None = None
 
     @classmethod
     def of(cls, bank: FactBank, size: tuple[int, int] = PROSE_SIZE) -> PassageIndex:
         """The one index of ``bank`` for ``size``, kept on the bank object (``_prose_indexes``), so that every ``ProseRoute``
-        over a bank shares it and it is built once per bank (about 110 MB and 2-3 seconds for a 5,000-document bank); it
-        goes when the bank does."""
+        over a bank shares it; it goes when the bank does. A bank file that stores its passages for this size is read from
+        disk; any other is cut and indexed in memory once (about 110 MB and 2-3 seconds for a 5,000-document bank)."""
         shared = vars(bank).setdefault("_prose_indexes", {})
         if size not in shared:
-            shared[size] = cls(bank, size)
+            shared[size] = StoredPassages(bank, size) if cls is PassageIndex and StoredPassages.held(bank, size) else cls(bank, size)
         return shared[size]
 
     @property
@@ -154,31 +158,188 @@ class PassageIndex:
         self.seconds = round(time.perf_counter() - t, 2)
         return self
 
-    def search(self, question: str, exclude: Iterable[str] = ()) -> list[tuple[int, float]]:
-        """Every passage holding any of the question's content words (plain search's terms, an OR query), as (rowid, BM25
-        score, higher better), best first; passages of the documents in ``exclude`` are left out."""
+    def _query(self, question: str) -> str | None:
         from cie.retrieval.lexical import _terms
 
         terms = list(dict.fromkeys(_terms(question)))
-        if not terms:
+        return " OR ".join(f'"{t}"' for t in terms) if terms else None
+
+    @property
+    def _rank(self) -> str:
+        return f"bm25({self.table}, {TITLE_WEIGHT}, 1.0)"
+
+    def search(self, question: str, exclude: Iterable[str] = ()) -> list[tuple[int, float]]:
+        """Every passage holding any of the question's content words (plain search's terms, an OR query), as (rowid, BM25
+        score, higher better), best first; passages of the documents in ``exclude`` are left out."""
+        match = self._query(question)
+        if match is None:
             return []
         con = self.build()._con
-        rank = f"bm25(p, {TITLE_WEIGHT}, 1.0)"
-        hits = con.execute(f"SELECT rowid, {rank} FROM p WHERE p MATCH ? ORDER BY {rank}, rowid", (" OR ".join(f'"{t}"' for t in terms),))
+        hits = con.execute(f"SELECT rowid, {self._rank} FROM {self.table} WHERE {self.table} MATCH ? ORDER BY {self._rank}, rowid", (match,))
         skip = set(exclude)
+        if not skip:
+            return [(r, -s) for r, s in hits]
         return [(r, -s) for r, s in hits if self.rows[r - 1].doc not in skip]
+
+    def top(self, question: str, exclude: Iterable[str] = (), page: int = 32) -> int | None:
+        """The rowid of the best passage outside ``exclude`` (``search``'s first hit), or None; read a page at a time, so a
+        question whose words match most of the bank does not list every passage."""
+        match = self._query(question)
+        if match is None:
+            return None
+        con = self.build()._con
+        skip = set(exclude)
+        seen = 0
+        while True:
+            hits = con.execute(f"SELECT rowid FROM {self.table} WHERE {self.table} MATCH ? ORDER BY {self._rank}, rowid LIMIT ?",
+                               (match, page)).fetchall()
+            for (r,) in hits[seen:]:
+                if not skip or self.rows[r - 1].doc not in skip:
+                    return r
+            if len(hits) < page:
+                return None
+            seen, page = len(hits), page * 4
+
+    def doc_hits(self, question: str, doc: str) -> list[int]:
+        """The rowids of one document's passages that hold a question word, best first (``search``'s hits of that document,
+        in its order: a passage's BM25 score does not depend on what else is asked for)."""
+        match = self._query(question)
+        own = self.by_doc[doc] if match is not None and doc in self.by_doc else []
+        if not own:
+            return []
+        con = self.build()._con
+        return [r for (r,) in con.execute(f"SELECT rowid FROM {self.table} WHERE {self.table} MATCH ? AND rowid BETWEEN ? AND ? "
+                                          f"ORDER BY {self._rank}, rowid", (match, own[0], own[-1]))]
 
     def best_document(self, question: str, exclude: Iterable[str] = (), limit: int = QUOTE_PASSAGES) -> tuple[str | None, list[Passage]]:
         """The document of the best passage and the passages to quote from: that document's matching passages in BM25 order,
         then its other passages in document order, at most ``limit``. (None, []) when no passage holds a question word."""
-        hits = self.search(question, exclude)
-        if not hits:
+        best = self.top(question, exclude)
+        if best is None:
             return None, []
-        doc = self.rows[hits[0][0] - 1].doc
-        order = [r for r, _ in hits if self.rows[r - 1].doc == doc]
+        doc = self.rows[best - 1].doc
+        order = self.doc_hits(question, doc)
         seen = set(order)
         order += [r for r in self.by_doc[doc] if r not in seen]
         return doc, [self.rows[r - 1] for r in order[:limit]]
+
+
+class _StoredRows:
+    """``rows[r - 1]`` of a stored index: the passage, with its text cut again from its document."""
+
+    def __init__(self, ix: StoredPassages):
+        self.ix = ix
+
+    def __getitem__(self, i: int) -> Passage:
+        return self.ix.passage(i + 1)
+
+    def __len__(self) -> int:
+        return self.ix.count
+
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, list) and len(self) == len(other) and all(self[i] == other[i] for i in range(len(other)))
+
+    __hash__ = None  # type: ignore[assignment]
+
+
+class _StoredByDoc:
+    """``by_doc[doc]`` of a stored index: the document's passage rowids in document order."""
+
+    def __init__(self, ix: StoredPassages):
+        self.ix = ix
+
+    def __contains__(self, doc: object) -> bool:
+        return self.ix.span(str(doc)) is not None
+
+    def __getitem__(self, doc: str) -> list[int]:
+        span = self.ix.span(doc)
+        if span is None:
+            raise KeyError(doc)
+        return list(range(span[0], span[0] + span[1]))
+
+    def get(self, doc: str, default: Any = None) -> Any:
+        return self[doc] if doc in self else default
+
+    def __iter__(self):
+        return (r[0] for r in self.ix.bank.con.execute("SELECT doc FROM passage_docs ORDER BY doc"))
+
+    def __len__(self) -> int:
+        return self.ix.bank.con.execute("SELECT count(*) FROM passage_docs").fetchone()[0]
+
+    def values(self):
+        return (self[d] for d in self)
+
+
+class StoredPassages(PassageIndex):
+    """The passage index stored in the bank's file (``cie.factbank.store.build_passages``): the same passages, rowids and
+    ranking as the in-memory index, with nothing built or loaded by the process. Only the index is stored; a passage's
+    text is cut again from its document (``engine.windows``) when it is read."""
+
+    table = "passages_fts"
+    KEPT = 64  # documents whose cut text is kept
+
+    def __init__(self, bank: FactBank, size: tuple[int, int] = PROSE_SIZE):
+        super().__init__(bank, size)
+        self._con = bank.con
+        self.rows, self.by_doc = _StoredRows(self), _StoredByDoc(self)
+        self._cut: dict[str, list[str]] = {}
+        self._spans: dict[str, tuple[int, int] | None] = {}
+        self._count: int | None = None
+
+    @staticmethod
+    def held(bank: FactBank, size: tuple[int, int]) -> bool:
+        from cie.factbank import store
+
+        return store.has(bank.con, "passages_fts") and (store.meta(bank.con).get("passages") or {}).get("size") == list(size)
+
+    @property
+    def count(self) -> int:
+        if self._count is None:
+            self._count = int((self.bank.con.execute("SELECT max(first + n - 1) FROM passage_docs").fetchone()[0]) or 0)
+        return self._count
+
+    def span(self, doc: str) -> tuple[int, int] | None:
+        """A document's first passage rowid and how many passages it has."""
+        if doc not in self._spans:
+            if len(self._spans) > 4096:
+                self._spans.clear()
+            row = self.bank.con.execute("SELECT first, n FROM passage_docs WHERE doc = ?", (doc,)).fetchone()
+            self._spans[doc] = None if row is None else (row[0], row[1])
+        return self._spans[doc]
+
+    def passage(self, r: int) -> Passage:
+        row = self.bank.con.execute("SELECT doc, first, n FROM passage_docs WHERE first <= ? ORDER BY first DESC LIMIT 1", (r,)).fetchone()
+        if row is None or r < 1 or r >= row[1] + row[2]:
+            raise IndexError(r)
+        doc, i = row[0], r - row[1]
+        if doc not in self._cut:
+            if len(self._cut) >= self.KEPT:
+                self._cut.pop(next(iter(self._cut)))
+            self._cut[doc] = windows(self.bank.text_of(doc) or "", *self.size)
+        return Passage(doc, i, self.bank.names.get(doc) or "", self._cut[doc][i])
+
+    def search(self, question: str, exclude: Iterable[str] = ()) -> list[tuple[int, float]]:
+        hits = super().search(question)
+        spans = [s for d in set(exclude) if (s := self.span(d)) is not None]
+        if not spans:
+            return hits
+        return [(r, s) for r, s in hits if not any(a <= r < a + n for a, n in spans)]
+
+    def top(self, question: str, exclude: Iterable[str] = (), page: int = 32) -> int | None:
+        match = self._query(question)
+        if match is None:
+            return None
+        spans = [s for d in set(exclude) if (s := self.span(d)) is not None]
+        seen = 0
+        while True:
+            hits = self._con.execute(f"SELECT rowid FROM {self.table} WHERE {self.table} MATCH ? ORDER BY {self._rank}, rowid LIMIT ?",
+                                     (match, page)).fetchall()
+            for (r,) in hits[seen:]:
+                if not any(a <= r < a + n for a, n in spans):
+                    return r
+            if len(hits) < page:
+                return None
+            seen, page = len(hits), page * 4
 
 
 def coverage(weights: dict[str, float], text: str) -> float:

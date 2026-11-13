@@ -496,6 +496,9 @@ def ask_v18(work: Path, workers: int = 4, lessons: Path = LESSONS, limit: int | 
     args = (str(work / "factbank_v2.sqlite"), str(lessons / "single_lessons.json"), str(lessons / "plan_lessons.json"),
             str(lessons / "router.json"))
     if todo:
+        from cie.factbank import store
+
+        store.ensure(work / "factbank_v2.sqlite", log=log)  # a bank built before the store gains its tables here, once
         _load_brain(*args)  # loads in a few seconds (its indexes are built on first use): a broken setup stops here, once
         general_words()  # read once here: the processes forked below share it
         ex = ProcessPoolExecutor(workers, mp_context=mp.get_context("fork"), initializer=_init_brain, initargs=args)
@@ -938,8 +941,10 @@ def main(argv: list[str] | None = None) -> Any:
         check_settings(a.work, a.arm if name == FILES[a.arm] else name, settings)  # before minutes of loading the model
         tools = None
         if a.arm == "reasoner":
+            from cie.factbank import store
             from cie.factbank.reasoner import ToolPool
 
+            store.ensure(a.work[0] / "factbank_v2.sqlite", log=print)
             tools = ToolPool(a.work[0] / "factbank_v2.sqlite", LESSONS / "single_lessons.json", LESSONS / "plan_lessons.json",
                              LESSONS / "router.json", workers=a.workers)  # forked before the model is loaded
         gen = backend(a.model, a.base_url, max_model_len=a.max_model_len, gpu_mem=a.gpu_mem, max_tokens=a.max_tokens,

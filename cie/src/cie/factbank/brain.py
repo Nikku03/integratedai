@@ -677,7 +677,7 @@ class Brain:
         if doc not in self._stems:
             if len(self._stems) >= NAMED_MEMO:
                 self._stems = {}
-            row = self.bank.con.execute("SELECT name, text FROM entities_fts WHERE id = ?", (doc,)).fetchone()
+            row = self.bank.text_row(doc)
             text = " ".join(x or "" for x in row).lower() if row else ""
             self._stems[doc] = {stem(w) for w in re.findall(r"[a-z0-9]+", text)}
         return self._stems[doc]
@@ -1170,10 +1170,10 @@ class Brain:
         if TICKET.search(question) or PR_NUMBER.search(question) or rec.named_docs(self.quote_titles(question) if self.read_messy else question):
             return None
         idx = PassageIndex.of(self.bank)
-        hits = idx.search(question)
-        if not hits:
+        best = idx.top(question)
+        if best is None:
             return None
-        doc = idx.rows[hits[0][0] - 1].doc
+        doc = idx.rows[best - 1].doc
         cov = coverage(self.prose_route().weights(question), rec.text(doc))
         step = {"op": "described", "doc": doc, "label": rec.label(doc), "coverage": round(cov, 4), "threshold": self.described_below}
         if cov < self.described_below:
@@ -1265,7 +1265,7 @@ class Brain:
         """v18: the question's own terms (``own_terms``) that the document's title and stored text do not write: as a squashed
         word, by its stem, without a plural "s" ("SLOs"), or as two or three of the document's words written together ("KVCache"
         for "KV cache")."""
-        row = self.bank.con.execute("SELECT name, text FROM entities_fts WHERE id = ?", (doc,)).fetchone()
+        row = self.bank.text_row(doc)
         text = f" {squash(' '.join(x or '' for x in row))} " if row else " "
         ws = text.split()
         joined = {"".join(ws[k:k + m]) for m in (2, 3) for k in range(len(ws) - m + 1)}

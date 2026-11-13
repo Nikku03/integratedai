@@ -423,8 +423,7 @@ class Records:
         return self._titles
 
     def text(self, doc: str) -> str:
-        row = self.b.con.execute("SELECT text FROM entities_fts WHERE id = ?", (doc,)).fetchone()
-        return row[0] if row else ""
+        return self.b.text_of(doc) or ""
 
     def units(self, doc: str) -> list[str]:
         """The document's stored text after its title, source and field lines, cut into units: lines without a leading "- ", and

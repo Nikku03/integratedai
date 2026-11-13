@@ -230,9 +230,10 @@ def resolve(b: Built) -> None:
         del b.entities[e]
 
 
-def build(path: str | Path, docs: Iterable[tuple[Any, dict[str, Any]]], text_facts: bool = False) -> dict[str, Any]:
+def build(path: str | Path, docs: Iterable[tuple[Any, dict[str, Any]]], text_facts: bool = False, derived: bool = True) -> dict[str, Any]:
     """Write a bank from (SourceDoc, raw record) pairs. Returns counts and the checker's report. ``text_facts`` also
-    turns the dates and identifiers in the documents' sentences into facts (confidence "inferred")."""
+    turns the dates and identifiers in the documents' sentences into facts (confidence "inferred"). ``derived``: the
+    bank's derived tables are built too (``cie.factbank.store``: text by id, the passage index, the field table)."""
     path = Path(path)
     if path.exists():
         path.unlink()
@@ -253,7 +254,12 @@ def build(path: str | Path, docs: Iterable[tuple[Any, dict[str, Any]]], text_fac
     con.commit()
     rep = check(con)
     con.close()
-    return {"sources": len(b.sources), "entities": len(b.entities), "facts": len(b.facts), "bytes": path.stat().st_size, "check": rep}
+    out = {"sources": len(b.sources), "entities": len(b.entities), "facts": len(b.facts), "check": rep}
+    if derived:
+        from cie.factbank import store
+
+        out["store"] = store.ensure(path)  # what every process then reads from the file instead of building its own
+    return {**out, "bytes": path.stat().st_size}
 
 
 def check(con: sqlite3.Connection, stale_days: int = 90) -> dict[str, Any]:

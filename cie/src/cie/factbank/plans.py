@@ -99,6 +99,7 @@ LINK_PHRASES = re.compile(r"\bowner of\b|\bperson who\b|\bthe one that\b|\bthat 
                           r"\bwent to\b|\bworked on in\b")
 
 NOT_LINKS = {"from_document"}
+CACHE_ENTITIES = 200_000  # entities (or paths) the planner keeps between questions before it reads the bank afresh
 FEATURES = ["bias", "start_named", "start_rank", "two_starts", "path_len", "path_overlap", "path_assoc", "field_overlap", "field_assoc",
             "kind_fits", "kind_conflicts", "combine_assoc", "label_field", "answer_in_question", "fanout"]
 # v4 (after the first test, docs/FACTBANK_MULTI_RESULTS.md): the clue rule split by whether the question offers a choice, the
@@ -163,6 +164,11 @@ class Planner:
         self.brain = brain  # v15: question words over the learned kind, no count for several things, no one-word person aliases
         self._person_aliases: dict[str, list[str]] | None = None
         self._facts: dict[str, list] = {}
+        # what the planner reads of an entity, kept between plans (a question tries hundreds, mostly over the same
+        # entities): its links, its fields' values, and where a path leads; the bank does not change while it answers
+        self._links: dict[str, dict[str, list[str]]] = {}
+        self._values: dict[str, dict[str, list[str]]] = {}
+        self._followed: dict[tuple[tuple[str, ...], tuple[str, ...]], list[str]] = {}
         self._expanded: dict[frozenset, dict[str, float]] = {}
 
     def enrich(self, ws: set[str], plain: set[str], floor: float | None = None, type_floor: float = 0.1) -> dict[str, float]:
@@ -228,17 +234,33 @@ class Planner:
 
     def facts(self, e: str) -> list:
         if e not in self._facts:
-            self._facts[e] = self.b.facts_of(e)
+            self._facts[e] = self.b.lean_facts(e)  # the planner reads a fact's parameter, value and value_entity only
         return self._facts[e]
 
+    def forget(self, above: int = CACHE_ENTITIES) -> None:
+        """Drop what was kept of the bank's entities once it holds more than ``above`` of them: a long run's memory stays
+        bounded, and the answers do not change (everything is read again from the bank)."""
+        if len(self._facts) > above or len(self._followed) > above:
+            self._facts.clear()
+            self._links.clear()
+            self._values.clear()
+            self._followed.clear()
+
     def links(self, e: str) -> dict[str, list[str]]:
-        out: dict[str, list[str]] = defaultdict(list)
-        for f in self.facts(e):
-            if f["value_entity"] and f["parameter"] not in NOT_LINKS and f["value_entity"] in self.b.kinds:
-                out[f["parameter"]].append(f["value_entity"])
+        """An entity's links by relation, in the bank's order. Read only: the same object is returned every time."""
+        out = self._links.get(e)
+        if out is None:
+            out = {}
+            for f in self.facts(e):
+                if f["value_entity"] and f["parameter"] not in NOT_LINKS and f["value_entity"] in self.b.kinds:
+                    out.setdefault(f["parameter"], []).append(f["value_entity"])
+            self._links[e] = out
         return out
 
     def follow(self, starts: tuple[str, ...], path: tuple[str, ...], journal: list | None = None) -> list[str]:
+        key = (tuple(starts), tuple(path))
+        if journal is None and key in self._followed:
+            return list(self._followed[key])
         frontier = list(dict.fromkeys(starts))
         for hop, rel in enumerate(path, 1):
             nxt = []
@@ -247,12 +269,19 @@ class Planner:
             frontier = list(dict.fromkeys(nxt))
             if journal is not None:
                 journal.append({"op": "hop", "hop": hop, "relation": rel, "reached": frontier[:50]})
-        return frontier
+        self._followed[key] = frontier
+        return list(frontier)
 
     def field_values(self, e: str, field: str) -> list[str]:
         if field == "label":
             return [self.b.label_of(e)]
-        return list(dict.fromkeys(f["value"] for f in self.facts(e) if f["parameter"] == field))
+        by = self._values.get(e)
+        if by is None:
+            by = {}
+            for f in self.facts(e):
+                by.setdefault(f["parameter"], {})[f["value"]] = None  # distinct values, in the bank's order
+            by = self._values[e] = {k: list(v) for k, v in by.items()}
+        return list(by.get(field, ()))
 
     def execute(self, plan: Plan, journal: list | None = None) -> str | None:
         ents = self.follow(plan.starts, plan.path, journal)
@@ -1054,6 +1083,7 @@ def answer(bank, lessons: PlanLessons, question: str, planner: Planner | None = 
     With ``form`` (v10: cie.factbank.reader.Former), the small model's form helps where the bank's own lessons are not sure: its
     kind of answer is used only when the lessons are not sure of one, and its field only when its kind is the one used."""
     pl = planner or lessons.planner(bank)
+    pl.forget()
     ra, aa, ka = lessons.assocs()
     cands = pl.candidates(question)
     if lessons.rules == "v9":  # v9: only plans that pass the checks
