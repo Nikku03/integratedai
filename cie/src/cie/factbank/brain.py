@@ -151,6 +151,7 @@ from cie.factbank.plans import (
     unquoted,
 )
 from cie.factbank.plans import answer as plan_answer
+from cie.factbank.profile import PERSON_FIELDS  # noqa: F401 - the name the brain's code and tests know it by
 from cie.factbank.trained import TrainedBank
 
 if TYPE_CHECKING:
@@ -194,8 +195,6 @@ WHAT_CAUSED = re.compile(r"\bwhat (?:caused|causes|led to)\b|\b(?:root )?cause\b
 # v16 (round 2's fault fixes, ``Brain(..., v16=True)``)
 # fault 2: the fields whose holders are people, learned once on the train5k bank (fields with 20 or more holders, 90% or more
 # of them with a first name two or more people share) and used on every bank, so that a 50-document bank needs no statistics
-PERSON_FIELDS = frozenset(("redwood_owner", "se_assigned", "assignee", "creator", "author", "customer_attendees", "reporter",
-                           "csm_assigned", "redwood_attendees", "reviewers", "collaborators", "owner", "participants"))
 PERSON_DOCS = 3  # a "person" named in this many documents is taken to be one
 # fault 3: a value of the kind a question word asks for: a date written as an ISO date (a time may follow)
 ISO_PREFIX = re.compile(r"^\d{4}-\d{2}-\d{2}")
@@ -443,24 +442,34 @@ class BrainBank(TrainedBank):
                 if len(t) >= 2:
                     firsts[t[0]].add(e)
             shared = {f for f, es in firsts.items() if len(es) >= 2}
+            certain = self.profile().person_fields  # ``PERSON_FIELDS``, unless the bank was built with another profile
+            certain = PERSON_FIELDS if set(certain) == PERSON_FIELDS else frozenset(certain)
             self._not_people = {e for e, n in people.items() if len(n.split()) >= 2 and n.lower().split()[0] not in shared
-                                and not held[e] & PERSON_FIELDS and len(docs[e]) < PERSON_DOCS}
+                                and not held[e] & certain and len(docs[e]) < PERSON_DOCS}
             if getattr(self, "org_names", False):
                 # v19: a name the records write as a company's (the value of a company field) and never as the holder of a
                 # field that only people hold is a company, however many documents name it and whatever its first word.
                 # At 50,000 documents 499 of the bank's 22,846 "people" are such names ("AWS Marketplace", "Lumina Labs").
                 orgs = self.org_values()
-                self._not_people |= {e for e, n in people.items() if not held[e] & PERSON_FIELDS and _loose(n) in orgs}
+                self._not_people |= {e for e, n in people.items() if not held[e] & certain and _loose(n) in orgs}
         return self._not_people
 
-    def org_values(self) -> set[str]:
-        """v19: the names the records write in a company field (``cie.ingest.sources.ORG_FIELDS``), compared loosely."""
-        if getattr(self, "_org_values", None) is None:
-            from cie.ingest.sources import ORG_FIELDS
+    def profile(self) -> Any:
+        """What the bank was told about its company's fields (``cie.factbank.profile``): the profile it was built with."""
+        if getattr(self, "_profile", None) is None:
+            from cie.factbank.profile import Profile
 
-            marks = ",".join("?" * len(ORG_FIELDS))
+            self._profile = Profile.of_bank(self.con)
+        return self._profile
+
+    def org_values(self) -> set[str]:
+        """v19: the names the records write in a company field (the profile's ``org_fields``, by default
+        ``cie.ingest.sources.ORG_FIELDS``), compared loosely."""
+        if getattr(self, "_org_values", None) is None:
+            fields = tuple(self.profile().org_fields)
+            marks = ",".join("?" * len(fields))
             self._org_values = {_loose(v) for (v,) in self.con.execute(f"SELECT DISTINCT value FROM facts WHERE parameter IN ({marks})",
-                                                                        ORG_FIELDS)} - {""}
+                                                                        fields)} - {""}
         return self._org_values
 
     def value_fits(self, value: str, value_entity: str | None, kind: str | None) -> bool:

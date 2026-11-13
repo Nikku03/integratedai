@@ -118,23 +118,21 @@ def _is_date_field(k: str) -> bool:
     return k.endswith(("_at", "_date", "_ts")) or k in ("created", "updated", "date", "due", "deadline", "forecast_close_month")
 
 
-def add_document(b: Built, sd, raw: dict[str, Any], text_facts: bool = False) -> None:
-    """The source, entities, aliases and facts of one document (a ``cie.ingest.sources.SourceDoc`` and its raw record)."""
-    from cie.ingest.sources import (
-        ARTEFACT_FIELDS,
-        PEOPLE_FIELDS,
-        REF_FIELDS,
-        as_list,
-        person_name,
-        reference_keys,
-    )
+def add_document(b: Built, sd, raw: dict[str, Any], text_facts: bool = False, profile: Any = None) -> None:
+    """The source, entities, aliases and facts of one document (a ``cie.ingest.sources.SourceDoc`` and its raw record).
+    ``profile`` (``cie.factbank.profile.Profile``) says which fields name people, cite records and hold dates; the
+    default is the lists the code holds."""
+    from cie.factbank.profile import Profile
+    from cie.ingest.sources import ARTEFACT_FIELDS, as_list, person_name, reference_keys
+
+    prof = profile or Profile.default()
 
     dsid = sd.dsid or sd.rel
     doc = f"doc:{dsid}"
     when = (sd.updated or sd.created)
     when_s = when.date().isoformat() if when else ""
     system = sd.source
-    b.sources.append((dsid, sd.title, system, "primary" if system in PRIMARY_SYSTEMS else "secondary", when_s, sd.rel))
+    b.sources.append((dsid, sd.title, system, "primary" if prof.primary(system) else "secondary", when_s, sd.rel))
     b.entities[doc] = (doc, "document", sd.title, dsid)
     for k in sd.keys:
         b.aliases.add((k.lower(), doc))
@@ -155,7 +153,7 @@ def add_document(b: Built, sd, raw: dict[str, Any], text_facts: bool = False) ->
         return fid
 
     for k, v in sd.meta.items():
-        if k in ARTEFACT_FIELDS or k in SKIP_FIELDS or v in (None, "", []):
+        if k in ARTEFACT_FIELDS or prof.skips(k) or v in (None, "", []):
             continue
         for item in as_list(v)[:40]:
             if isinstance(item, (dict, list)):
@@ -164,16 +162,16 @@ def add_document(b: Built, sd, raw: dict[str, Any], text_facts: bool = False) ->
             if not s:
                 continue
             target = None
-            person = person_name(s) if k in PEOPLE_FIELDS else None
+            person = person_name(s) if prof.names_people(k) else None
             if person:
                 s, target = person, person_key(person)
                 b.entities.setdefault(target, (target, "person", person, ""))
                 b.aliases.add((person.lower(), target))
-            elif k in REF_FIELDS:
+            elif prof.cites(k):
                 keys = reference_keys(k, s)
                 if keys:
                     target = "key:" + keys[0].lower()
-            elif _is_date_field(k) and _iso(s):
+            elif prof.is_date(k) and _iso(s):
                 s = _iso(s) or s
             fid = add(doc, k, s, f"{sd.title} — {k.replace('_', ' ')}: {s}", f"field {k}", value_entity=target)
             meta_text.append(f"{k.replace('_', ' ')}: {s}")
@@ -233,10 +231,13 @@ def sentence_values(body: str) -> list[tuple[str, str, str]]:
     return out[:MAX_TEXT_FACTS]
 
 
-def doc_hash(sd, raw: dict[str, Any], text_facts: bool = False) -> str:
-    """A hash of everything ``add_document`` reads of a document: ``sync`` reads a document again only when it changes."""
+def doc_hash(sd, raw: dict[str, Any], text_facts: bool = False, profile: Any = None) -> str:
+    """A hash of everything ``add_document`` reads of a document: ``sync`` reads a document again only when it changes
+    (or when the profile it is read with does)."""
     body = [BUILDER, bool(text_facts), sd.dsid or sd.rel, sd.source, sd.rel, sd.title, sd.fields, sd.meta, sd.keys, sd.project,
             sd.created, sd.updated, raw]
+    if profile is not None and profile.source != "default":
+        body.append(profile.to_json())
     return hashlib.sha256(json.dumps(body, sort_keys=True, ensure_ascii=False, default=str).encode()).hexdigest()
 
 
@@ -257,7 +258,7 @@ def _is(prefix: str, column: str) -> str:
 
 
 def build(path: str | Path, docs: Iterable[tuple[Any, dict[str, Any]]], text_facts: bool = False, derived: bool = True,
-          batch: int = BATCH_DOCS) -> dict[str, Any]:
+          batch: int = BATCH_DOCS, profile: Any = None) -> dict[str, Any]:
     """Write a bank from (SourceDoc, raw record) pairs. Returns counts and the checker's report. ``text_facts`` also
     turns the dates and identifiers in the documents' sentences into facts (confidence "inferred"). ``derived``: the
     bank's derived tables are built too (``cie.factbank.store``: text by id, the passage index, the field table).
@@ -265,7 +266,10 @@ def build(path: str | Path, docs: Iterable[tuple[Any, dict[str, Any]]], text_fac
     The documents are read and written ``batch`` at a time, so memory does not grow with their number (it held every
     fact of the bank at once: about 1.2 million at 50,000 documents). The rows and their order are what the build in one
     piece wrote. One rule is now fixed: an identifier several documents carry points to the one with the smallest id
-    (it was whichever the set's order gave; no reference of the 50,000-document bank goes through such an identifier)."""
+    (it was whichever the set's order gave; no reference of the 50,000-document bank goes through such an identifier).
+
+    ``profile``: what the builder is told about this company's fields (``cie.factbank.profile``). It is kept in the
+    bank's file, and ``sync`` and the brain read it from there."""
     path = Path(path)
     if path.exists():
         path.unlink()
@@ -276,13 +280,13 @@ def build(path: str | Path, docs: Iterable[tuple[Any, dict[str, Any]]], text_fac
     for chunk in _batches(docs, batch):
         b = Built()
         for sd, raw in chunk:
-            add_document(b, sd, raw, text_facts)
+            add_document(b, sd, raw, text_facts, profile)
         con.executemany("INSERT INTO sources VALUES (?,?,?,?,?,?)", b.sources)
         con.executemany("INSERT OR IGNORE INTO entities VALUES (?,?,?,?)", list(b.entities.values()))  # a person: first mention
         con.executemany("INSERT INTO entities_fts VALUES (?,?,?)", [(e, n, t) for e, (n, t) in b.texts.items()])
         con.executemany("INSERT INTO alias_stage VALUES (?,?)", list(b.aliases))
         con.executemany("INSERT INTO facts VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)", [f.row() for f in b.facts])
-        con.executemany("INSERT INTO source_hashes VALUES (?,?)", [(sd.dsid or sd.rel, doc_hash(sd, raw, text_facts)) for sd, raw in chunk])
+        con.executemany("INSERT INTO source_hashes VALUES (?,?)", [(sd.dsid or sd.rel, doc_hash(sd, raw, text_facts, profile)) for sd, raw in chunk])
         n_sources += len(b.sources)
         con.commit()
     con.execute("INSERT OR IGNORE INTO aliases SELECT DISTINCT alias, entity FROM alias_stage ORDER BY alias, entity")
@@ -297,6 +301,11 @@ def build(path: str | Path, docs: Iterable[tuple[Any, dict[str, Any]]], text_fac
     con.execute("DROP TABLE alias_doc")
     # a person or an identifier is found by its name
     con.execute("INSERT INTO entities_fts SELECT id, name, name FROM entities WHERE kind IN ('person', 'identifier') ORDER BY rowid")
+    if profile is not None and profile.source != "default":
+        from cie.factbank import store
+
+        con.executescript(store.SCHEMA)
+        con.execute("INSERT OR REPLACE INTO store_meta VALUES ('profile', ?)", (json.dumps(profile.to_json()),))
     con.commit()
     rep = check(con)
     out = {"sources": n_sources, "entities": con.execute("SELECT count(*) FROM entities").fetchone()[0],
@@ -372,13 +381,13 @@ def _remove(con: sqlite3.Connection, dsid: str, touched: set[str], keys: dict[st
 
 
 def _add(con: sqlite3.Connection, docs: list[tuple[Any, dict[str, Any]]], text_facts: bool, touched: set[str],
-         keys: dict[str, set[str]]) -> None:
+         keys: dict[str, set[str]], profile: Any = None) -> None:
     """Put documents in: what ``build`` writes for them, except the people and identifiers they name (``_tidy``)."""
     from cie.factbank import store
 
     b = Built()
     for sd, raw in docs:
-        add_document(b, sd, raw, text_facts)
+        add_document(b, sd, raw, text_facts, profile)
     con.executemany("INSERT INTO sources VALUES (?,?,?,?,?,?)", b.sources)
     own = [row for e, row in b.entities.items() if not e.startswith(("person:", "key:"))]
     con.executemany("INSERT INTO entities VALUES (?,?,?,?)", own)
@@ -386,7 +395,8 @@ def _add(con: sqlite3.Connection, docs: list[tuple[Any, dict[str, Any]]], text_f
         _set_text(con, e, name, text)
     con.executemany("INSERT OR IGNORE INTO aliases VALUES (?,?)", sorted((a, e) for a, e in b.aliases if not e.startswith("person:")))
     con.executemany("INSERT INTO facts VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)", [f.row() for f in b.facts])
-    con.executemany("INSERT OR REPLACE INTO source_hashes VALUES (?,?)", [(sd.dsid or sd.rel, doc_hash(sd, raw, text_facts)) for sd, raw in docs])
+    con.executemany("INSERT OR REPLACE INTO source_hashes VALUES (?,?)",
+                    [(sd.dsid or sd.rel, doc_hash(sd, raw, text_facts, profile)) for sd, raw in docs])
     touched.update(e for e in b.entities if e.startswith(("person:", "key:")))
     for a, e in b.aliases:
         if e.startswith("doc:"):
@@ -446,17 +456,21 @@ def _tidy(con: sqlite3.Connection, touched: set[str]) -> None:
 
 
 def apply(con: sqlite3.Connection, add: Iterable[tuple[Any, dict[str, Any]]] = (), remove: Iterable[str] = (),
-          text_facts: bool = False) -> dict[str, int]:
+          text_facts: bool = False, profile: Any = None) -> dict[str, int]:
     """One change to an open bank: the documents of ``remove`` (ids) taken out and those of ``add`` put in. A document to
-    replace is in both. The caller commits. The bank's derived tables are kept in step (``cie.factbank.store``)."""
+    replace is in both. The caller commits. The bank's derived tables are kept in step (``cie.factbank.store``). The
+    documents are read with ``profile``, by default the one the bank was built with."""
     from cie.factbank import store
+    from cie.factbank.profile import Profile
+
+    profile = profile or Profile.of_bank(con)
 
     touched: set[str] = set()
     keys: dict[str, set[str]] = {}
     removed = sum(_remove(con, d, touched, keys) for d in remove)
     add = list(add)
     if add:
-        _add(con, add, text_facts, touched, keys)
+        _add(con, add, text_facts, touched, keys, profile)
     _settle(con, keys, touched)
     _tidy(con, touched)
     store.after_change(con)
@@ -479,11 +493,13 @@ def sync(path: str | Path, docs: Iterable[tuple[Any, dict[str, Any]]], text_fact
     Each batch is one transaction. A process that has the bank open reads the new rows at once, but keeps what it had
     already read (names, kinds): ``store.revision`` tells it the bank changed."""
     from cie.factbank import store
+    from cie.factbank.profile import Profile
 
     path = Path(path)
     store.ensure(path)
     con = sqlite3.connect(path)
     con.executescript(SYNC_SCHEMA)
+    profile = Profile.of_bank(con)  # a document is read as the bank's other documents were
     known = dict(con.execute("SELECT id, hash FROM source_hashes"))
     held = {r[0] for r in con.execute("SELECT id FROM sources")}
     rep = {"added": 0, "changed": 0, "removed": 0, "same": 0, "adopted": 0}
@@ -493,7 +509,7 @@ def sync(path: str | Path, docs: Iterable[tuple[Any, dict[str, Any]]], text_fact
 
     def flush() -> None:
         if todo or gone:
-            apply(con, todo, gone, text_facts)
+            apply(con, todo, gone, text_facts, profile)
             con.commit()
             if log:
                 log(f"  bank sync: {rep['added']:,} added, {rep['changed']:,} changed, {rep['removed']:,} removed")
@@ -505,7 +521,7 @@ def sync(path: str | Path, docs: Iterable[tuple[Any, dict[str, Any]]], text_fact
         if dsid in seen:
             raise ValueError(f"document {dsid} is given twice")
         seen.add(dsid)
-        h = doc_hash(sd, raw, text_facts)
+        h = doc_hash(sd, raw, text_facts, profile)
         if dsid in held:
             if known.get(dsid) == h:
                 rep["same"] += 1

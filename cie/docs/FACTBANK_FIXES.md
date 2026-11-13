@@ -125,13 +125,13 @@ a measurement, since a guard changes the conversation that follows):
 
 | guard | would speak on | of them wrong | of them right |
 |---|---|---|---|
-| similar | 16 answers | 4 | 12 |
+| similar | 17 answers | 4 | 13 |
 | grounded | 5 | 1 | 4 |
 | absence, named | 0 | | |
 
 - A sixth guard was tried and dropped: it showed a count that differed from the brain's beside it. It would have
   spoken 32 times, each time on a right answer.
-- The guards speak rarely. Whether "similar" helps (4 wrong answers to win, 12 right ones to keep) can only be
+- The guards speak rarely. Whether "similar" helps (4 wrong answers to win, 13 right ones to keep) can only be
   measured with the model.
 
 ## 4. Free text: a short answer and the record's own sentences
@@ -164,3 +164,133 @@ Every arm is the same model and loop; they differ only in what the model may use
 - A run takes a seed (`--seed`); a seed other than 0 answers into its own file.
 - Every answer carries the model, effort, seed and the version of the loop it was made with. Answers of another
   version are never mixed in.
+
+## 6. The brain's own fixes (v19)
+
+v19 is v18 with four fixes, each with a name and each switchable (`Brain(v19=True, fixes=...)`). It is off by default:
+with no fix on, every answer is v18's (a test compares them).
+
+**What was wrong** (from the answers that got worse between 5,000 and 50,000 documents, and the review):
+- The "not found" check weighed chat words ("hey", "actually") and dropped the words of any field name, asked for or
+  not. Its bar for "too little to check" was set at 14,000 entities and did not move with the bank.
+- 499 of the bank's 22,846 "people" are companies ("AWS Marketplace", "Lumina Labs"): an email's external participants
+  list holds both. The planner started from them as if they were people.
+- A name typed in lower case ("authored by mikko rodriguez") was not seen as a name.
+- When a look-alike record ranked first, the answer said nothing of the others that fit as well.
+
+| fix | what it does | development questions, casual wording: better / worse |
+|---|---|---|
+| `cover` | the check weighs the words the question is about: not chat, not the field it asks for; the bar grows with the bank | 4 / 0 |
+| `orgs` | a name that the records write in a company field, and never as an assignee, author or attendee, is not a person | 2 / 1 |
+| `names` | a lower-case word that is not ordinary English, not a typo of it, and that the bank holds nowhere, is an unknown name | 0 / 0 |
+| `candidates` | the row lists the other records that hold as much of the question (`candidates`); the answer is not changed | 0 / 0 |
+| all four | | 6 / 1 |
+
+Mean of the eight families, brain alone, on the 635 development questions:
+
+| wording | v18 | v19 |
+|---|---|---|
+| casual | 0.878 | 0.885 |
+| tidy | 0.914 | 0.916 |
+
+- **The one answer that got worse** was right by luck. v18 answered "not found" because it had started from "Acme
+  Retail" as a person and found nothing; v19 does not make that mistake, reaches the free-text route, and quotes a
+  document that holds half the question's words. The question has no answer in the documents.
+- **`names` changed no answer.** The list of ordinary words holds common first names and surnames, so "mikko" and
+  "rodriguez" count as ordinary. The fix only catches names outside that list. It is kept because it cost nothing
+  here; it is unproven.
+- **`candidates` costs time:** the median question takes 0.82 s (0.63 s for v18). About 150 of 635 rows list
+  candidates. The model reads them as `also_close`.
+
+**Measured and not adopted:**
+- *Choose the record that holds more of the question* (rank the finder's candidates by coverage): wins 3 and loses 2
+  on described records, wins 3 and loses 5 on free text. Coverage does not tell a look-alike from the right record.
+- *Withhold fewer free-text quotes:* the 6 quotes wrongly withheld have coverage 0.35 to 0.49; the 29 rightly
+  withheld have 0.23 to 0.56. No bar separates them.
+
+**Not solved by v19:** the complex questions (0.17 without the model) and free text (0.63) are where the model is
+needed. These numbers are on development questions; the fresh test measures v19 on questions it has not seen.
+
+## 7. A bank that is built in batches and updated without a rebuild
+
+**What was wrong:**
+- `build` held every fact of the bank in memory at once, and the checker read them all again (1.7 GB at 50,000
+  documents). The memory grew with the company.
+- Any change to the documents meant building the whole bank again (about 3 minutes at 50,000 documents).
+
+**What changed** (`cie.factbank.bank`, `cie.factbank.store`):
+- `build` reads and writes the documents 2,000 at a time. The checker is a set of queries and holds nothing.
+- `sync` brings a bank up to date with the documents as they are now. It adds new documents, replaces changed ones
+  (by a hash of their content) and removes those that are gone. The derived tables (text by id, passage index, field
+  table, schema) are changed with it, a document at a time.
+- A count of changes (`store.revision`) tells a process that keeps part of the bank in memory that the bank changed.
+- One rule had to be fixed to make this possible: an identifier that several documents carry points to the document
+  with the smallest id. Before, it pointed to whichever came last in an unordered set. No reference of the
+  50,000-document bank goes through such an identifier (checked: 0 of 54,047).
+
+**Checks at 50,000 documents:**
+
+| check | result |
+|---|---|
+| The batch-wise build against the bank the old build wrote | every row of every table the same, in the same order (1,162,089 facts) |
+| Peak memory of the build | 1.7 GB before; 0.4 GB now, and it no longer grows with the documents |
+| 500 documents taken out | 6 s |
+| The same 500 put back | 7 s; every table then holds the same rows as the bank built from scratch |
+| 500 documents changed in place, then changed back | 12 s each way; again the same rows as the bank built from scratch |
+| The checker after the changes | passes; the derived tables need no repair |
+
+- A test makes random additions, changes and removals to a small company and compares the bank with a fresh build
+  after each step (`tests/test_bank_sync.py`).
+- **One difference remains:** after an update the rows are the same but their order in the tables is not (new rows come
+  last). Two passages that match a question equally can then come in another order. A full build restores the order.
+
+## 8. What the code knows about the company: the profile
+
+**What was wrong:** the builder and the brain knew this company from lists in the code: 19 fields that name people (two
+with the company's own name in them), 19 that cite other records, a rule on field names for dates, the systems of
+record, the fields that name companies.
+
+**What changed** (`cie.factbank.profile`):
+- A `Profile` holds those lists. The default profile is exactly what the code held: a bank built with it is the same
+  bank, row for row (a test compares them).
+- A profile is a JSON file. Another company's fields are written there, not in the code.
+- `derive` reads a profile from the documents themselves:
+  - a field holds dates when 90% of its values are dates;
+  - it cites records when half its values hold an identifier by its form (a ticket key, a pull request's address) or
+    are an identifier another record carries;
+  - it names people when its name-shaped values are names that another field of people also holds. People turn up
+    in several roles; a company's web domain or a team's name does not.
+- The bank keeps the profile it was built with. `sync` and the brain read it from the bank.
+
+**How much the documents tell by themselves** (the profile read from the 50,000 documents against the lists written by
+hand, counted in field values):
+
+| | fields found | share of the written lists' values | missed |
+|---|---|---|---|
+| dates | 48 | 99% | one field of months ("2026-04"), which is not a day |
+| people | 16 of 19 | 42% | Slack's `participants` (163,000 values, 83% of them handles like "deploy-bot", not names), `stakeholders` |
+| references | 11 of 19 | 24% | fields that cite by a web address, a file name or a thread id |
+
+- The references it misses cite documents outside the 50,000 (the haystack is a tenth of the company), by forms only
+  the hand-written reader knows. Nothing in the values gives them away.
+- It also found fields the lists lack: 8 that cite pull requests and issues, 2 date fields the name rule misses.
+
+**What that costs in answers:** the bank was built again with the derived profile (80,135 entities for 114,341) and
+the brain asked the 635 development questions in casual wording.
+
+| | written lists | read from the documents |
+|---|---|---|
+| mean of the eight families | 0.878 | 0.878 |
+| questions that changed | | 1 better, 1 worse |
+
+**What this does and does not show:**
+- The field lists are not what holds the brain to this company: reading them from the data loses nothing on these
+  questions.
+- The questions come from generators that know this company's fields too, and few of them follow a web link from
+  one document to another. A second company is the real test, and there is none here.
+- **Still written by hand,** and not in the profile:
+  - the words of a question that point to a field ("who owns" for `owner`), about 1,000 words;
+  - the reader of each system's export (which field is the title, which identifiers a record carries);
+  - the fields that name companies and the systems of record: a company's name and a person's look alike, and the
+    values do not tell which system is the source of truth;
+  - the weights the brain learned from this company's questions.

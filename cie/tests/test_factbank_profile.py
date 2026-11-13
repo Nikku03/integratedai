@@ -1,0 +1,101 @@
+"""The company profile (``cie.factbank.profile``): the default is the lists the code held, a profile can be read from
+the documents, and a bank keeps the profile it was built with."""
+
+from __future__ import annotations
+
+import sqlite3
+from datetime import UTC, datetime
+
+import pytest
+from test_bank_sync import company, rows
+
+from cie.factbank import bank as B
+from cie.factbank import brain as BR
+from cie.factbank import profile as P
+from cie.ingest import sources as S
+from cie.ingest.sources import SourceDoc
+
+WHEN = datetime(2026, 3, 1, tzinfo=UTC)
+STAFF = ["Maya Chen", "Omar Singh", "Priya Nair", "Liam Chen", "Ava Chen"]
+
+
+def _doc(i: int) -> tuple[SourceDoc, dict]:
+    """A ticket of another company: its fields have other names than the ones the code lists."""
+    meta = {"ticket": f"OPS-{100 + i}", "handler": STAFF[i % 5], "raised_by": STAFF[(i + 2) % 5], "watchers": [STAFF[(i + 1) % 5], "ops-bot"],
+            "vendor_domain": f"north{i % 3}.example", "squad": ["Payments Platform", "Core Infra"][i % 2], "opened_on": f"2026-02-{1 + i % 27:02d}",
+            "sprint": f"2026-W{10 + i % 3}", "blocked_by": f"OPS-{100 + (i + 1) % 30}", "state": ["Open", "Done"][i % 2]}
+    return SourceDoc(dsid=f"t{i:02d}", source="tracker", rel=f"tracker/t{i:02d}.json", title=f"Ticket {i}", fields=[("body", "Some text.")],
+                     meta=meta, updated=WHEN, keys=[f"OPS-{100 + i}"]), {}
+
+
+DOCS = [_doc(i) for i in range(30)]
+
+
+def test_the_default_profile_is_what_the_code_held(tmp_path):
+    d = P.Profile.default()
+    assert set(d.people_fields) == set(S.PEOPLE_FIELDS) and set(d.ref_fields) == set(S.REF_FIELDS) and d.org_fields == tuple(S.ORG_FIELDS)
+    assert set(d.person_fields) == BR.PERSON_FIELDS and set(d.primary_systems) == B.PRIMARY_SYSTEMS and set(d.skip_fields) == B.SKIP_FIELDS
+    assert d.date_fields is None and d.is_date("merged_at") and d.is_date("due") and not d.is_date("status"), "dates by the field's name"
+    assert d.names_people("assignee") and d.cites("linked_issues") and d.skips("dsid") and d.primary("jira") and not d.primary("slack")
+    docs = list(company(2, 25).values())
+    a, b = tmp_path / "a.sqlite", tmp_path / "b.sqlite"
+    B.build(a, docs, text_facts=True)
+    B.build(b, docs, text_facts=True, profile=d)
+    assert rows(a, True) == rows(b, True), "a bank built with the default profile is the bank built without one"
+    assert P.Profile.of_bank(sqlite3.connect(a)) == d, "and a bank that keeps no profile was built with the default"
+
+
+def test_a_profile_is_a_file(tmp_path):
+    d = P.Profile.default()
+    d.save(tmp_path / "p.json")
+    assert P.Profile.load(tmp_path / "p.json") == d
+    mine = P.Profile.from_json({"people_fields": ["handler"], "date_fields": ["opened_on"], "source": "ours"})
+    assert mine.people_fields == ("handler",) and mine.names_people("handler") and not mine.names_people("assignee")
+    assert mine.is_date("opened_on") and not mine.is_date("merged_at") and mine.ref_fields == d.ref_fields, "what is not given is the default"
+    with pytest.raises(ValueError, match="no \\['peoples'\\]"):
+        P.Profile.from_json({"peoples": []})
+
+
+def test_a_profile_read_from_the_documents():
+    prof, sv = P.derive(DOCS)
+    f = sv["fields"]
+    assert set(prof.people_fields) == {"handler", "raised_by", "watchers"}, "fields whose values are names that other such fields hold"
+    assert f["squad"]["people"] == 30 and f["squad"]["known"] == 0, "shaped like names, but nobody by that name anywhere else"
+    assert f["watchers"]["people"] == 30 and f["watchers"]["values"] == 60, "half its values are not names: it still names people"
+    assert set(prof.person_fields) == {"handler", "raised_by"}, "a holder of these is a person for certain"
+    assert prof.date_fields == ("opened_on",) and f["sprint"]["dates"] == 0, "a week is not a day"
+    assert prof.ref_fields == ("blocked_by",) and f["ticket"]["own"] == 30 and f["ticket"].get("keys", 0) == 0, "its own key is not a citation"
+    assert prof.source == "derived" and prof.org_fields == P.Profile.default().org_fields, "what the values do not tell is kept"
+    few, _ = P.derive(DOCS[:5], base=P.Profile.from_json({"people_fields": ["handler"]}))
+    assert few.people_fields == ("handler",) and few.ref_fields == () and few.date_fields == (), \
+        "too few values to tell: a field is left as the profile it starts from has it"
+    ag = P.agreement(P.Profile.default(), prof, sv)
+    assert ag["people"]["fields_both"] == 0 and set(ag["people"]["only_derived"]) == {"handler", "raised_by", "watchers"}
+    assert P.compare(prof, prof) == {} and set(P.compare(P.Profile.default(), prof)) >= {"people_fields", "ref_fields", "date_fields"}
+    assert P.form_keys("see OPS-12 and https://github.com/acme/api/pull/77") == ["OPS-12", "pr:api#77"]
+
+
+def test_a_bank_keeps_the_profile_it_was_built_with(tmp_path):
+    prof, _ = P.derive(DOCS)
+    plain, mine = tmp_path / "plain.sqlite", tmp_path / "mine.sqlite"
+    B.build(plain, DOCS[:20])
+    B.build(mine, DOCS[:20], profile=prof)
+    con = sqlite3.connect(mine)
+    assert P.Profile.of_bank(con) == prof
+    people = {r[0] for r in con.execute("SELECT name FROM entities WHERE kind = 'person'")}
+    assert people == set(STAFF), "the people its own fields name"
+    assert not sqlite3.connect(plain).execute("SELECT 1 FROM entities WHERE kind = 'person'").fetchone(), "the code's lists know none of them"
+    cited = con.execute("SELECT value_entity FROM facts WHERE entity = 'doc:t00' AND parameter = 'blocked_by'").fetchone()
+    assert cited == ("doc:t01",), "a citation by a field the code does not list"
+    con.close()
+    rep = B.sync(mine, DOCS, text_facts=False)
+    assert (rep["added"], rep["same"]) == (10, 20), "the profile is part of a document's hash: the same profile, nothing read again"
+    con = sqlite3.connect(mine)
+    assert con.execute("SELECT value_entity FROM facts WHERE entity = 'doc:t25' AND parameter = 'handler'").fetchone() == \
+        (f"person:{STAFF[0].lower()}",), "a document added later is read with the bank's profile"
+    fresh = tmp_path / "fresh.sqlite"
+    B.build(fresh, DOCS, profile=prof)
+    got, want = rows(mine), rows(fresh)
+    assert all(got[t] == want[t] for t in want), "and the bank is the one a fresh build with that profile gives"
+    b = BR.BrainBank(mine)
+    assert b.profile() == prof and b.profile().person_fields == ("handler", "raised_by")
