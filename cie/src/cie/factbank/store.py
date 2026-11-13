@@ -15,6 +15,10 @@ building its own copy in memory (docs/FACTBANK_FIXES.md):
 
 ``ensure(path)`` adds what a bank file lacks (a bank built before this module gains the tables; the facts are not
 touched), and ``bank.build`` calls it. Everything here can be dropped and built again from the bank's own tables.
+
+When documents are added to a bank or taken out (``bank.sync``), these tables are changed with it, a document at a time
+(``remove_doc``, ``add_docs``, ``after_change``), and ``revision`` counts the changes: a process that keeps part of the
+bank in memory sees from it that the bank changed.
 """
 
 from __future__ import annotations
@@ -175,9 +179,7 @@ def build_fields(con: sqlite3.Connection) -> dict[str, int]:
     rows: list[tuple] = []
 
     def add(doc: str, sys_: str, field: str, value: Any, target: str | None = None) -> None:
-        value = str(value).strip()
-        ref = None if not target else "person" if target.startswith("person:") else "record"
-        rows.append((doc, sys_, field, value, norm(value), loose(value), day_of(value), number_of(value), ref))
+        rows.append(field_row(doc, sys_, field, value, target))
         if len(rows) >= BATCH:
             con.executemany("INSERT INTO doc_fields VALUES (?,?,?,?,?,?,?,?,?)", rows)
             rows.clear()
@@ -190,23 +192,124 @@ def build_fields(con: sqlite3.Connection) -> dict[str, int]:
            f"AND parameter NOT IN ({marks}) AND parameter NOT LIKE 'text\\_%' ESCAPE '\\' AND rowid > ? ORDER BY rowid LIMIT ?")
     for _, src, p, v, target in _pages(con, sql, 0, 0, args=NOT_FIELDS):
         if src in system and v not in (None, ""):
-            add(src, system[src], p, v, target)
+            add(src, system[src], p, v, target)  # the same rows as ``is_field`` keeps
     if rows:
         con.executemany("INSERT INTO doc_fields VALUES (?,?,?,?,?,?,?,?,?)", rows)
     con.executescript(FIELD_INDEXES)
-    stats = con.execute(
-        "SELECT system, field, count(*), count(DISTINCT doc), count(DISTINCT norm), sum(day IS NOT NULL), sum(num IS NOT NULL), "
-        "sum(ref = 'person'), sum(ref = 'record'), sum(length(value) > 80) FROM doc_fields GROUP BY system, field").fetchall()
-    out = []
-    for sys_, field, n, docs, distinct, days, nums, people, refs, long_ in stats:
-        top = con.execute("SELECT min(value), count(*) c FROM doc_fields WHERE system = ? AND field = ? GROUP BY norm "
-                          "ORDER BY c DESC, norm LIMIT ?", (sys_, field, EXAMPLES)).fetchall()
-        kind = field_kind(field, n, days or 0, nums or 0, people or 0, refs or 0, long_ or 0)
-        out.append((sys_, field, kind, docs, distinct, json.dumps([str(v)[:60] for v, _ in top], ensure_ascii=False)))
+    out = schema_rows(con)
     con.executemany("INSERT INTO schema_fields VALUES (?,?,?,?,?,?)", out)
     info = {"rows": con.execute("SELECT count(*) FROM doc_fields").fetchone()[0], "fields": len(out)}
     _set(con, "fields", info)
     return info
+
+
+def field_row(doc: str, sys_: str, field: str, value: Any, target: str | None = None) -> tuple:
+    """One row of ``doc_fields``: the value as written and in the forms it is compared in."""
+    value = str(value).strip()
+    ref = None if not target else "person" if target.startswith("person:") else "record"
+    return (doc, sys_, field, value, norm(value), loose(value), day_of(value), number_of(value), ref)
+
+
+def is_field(parameter: str, value: Any) -> bool:
+    """Whether a document's fact is one of its fields (not a value read from its text, nor what cites it)."""
+    return parameter not in NOT_FIELDS and not parameter.startswith("text_") and value not in (None, "")
+
+
+def schema_rows(con: sqlite3.Connection, system: str | None = None, field: str | None = None) -> list[tuple]:
+    """The rows of ``schema_fields``, read from ``doc_fields``: of every system and field, or of one."""
+    where, args = ("WHERE system = ? AND field = ? ", (system, field)) if system is not None else ("", ())
+    stats = con.execute(
+        "SELECT system, field, count(*), count(DISTINCT doc), count(DISTINCT norm), sum(day IS NOT NULL), sum(num IS NOT NULL), "
+        f"sum(ref = 'person'), sum(ref = 'record'), sum(length(value) > 80) FROM doc_fields {where}GROUP BY system, field", args).fetchall()
+    out = []
+    for sys_, fld, n, docs, distinct, days, nums, people, refs, long_ in stats:
+        top = con.execute("SELECT min(value), count(*) c FROM doc_fields WHERE system = ? AND field = ? GROUP BY norm "
+                          "ORDER BY c DESC, norm LIMIT ?", (sys_, fld, EXAMPLES)).fetchall()
+        kind = field_kind(fld, n, days or 0, nums or 0, people or 0, refs or 0, long_ or 0)
+        out.append((sys_, fld, kind, docs, distinct, json.dumps([str(v)[:60] for v, _ in top], ensure_ascii=False)))
+    return out
+
+
+# ------------------------------------------------------------------ kept in step with a bank that changes (bank.sync)
+def revision(con: sqlite3.Connection) -> int:
+    """How many times the bank was changed since it was built."""
+    return int(meta(con).get("revision") or 0)
+
+
+def _dirty(con: sqlite3.Connection, pairs: list[tuple[str, str]]) -> None:
+    con.execute("CREATE TEMP TABLE IF NOT EXISTS dirty_fields (system TEXT, field TEXT, PRIMARY KEY (system, field)) WITHOUT ROWID")
+    con.executemany("INSERT OR IGNORE INTO dirty_fields VALUES (?,?)", pairs)
+
+
+def _passage_size(con: sqlite3.Connection) -> tuple[int, int] | None:
+    size = (meta(con).get("passages") or {}).get("size")
+    return (int(size[0]), int(size[1])) if size and has(con, "passages_fts") else None
+
+
+def remove_doc(con: sqlite3.Connection, dsid: str) -> None:
+    """Take a document's passages and field rows out. Called while the bank still holds the document: a contentless
+    index forgets a passage only when it is given the passage's text again."""
+    from cie.factbank.engine import windows
+
+    doc = f"doc:{dsid}"
+    size = _passage_size(con)
+    span = con.execute("SELECT first, n FROM passage_docs WHERE doc = ?", (doc,)).fetchone() if size else None
+    if span:
+        name, text = con.execute("SELECT e.name, f.text FROM entities e JOIN text_rows t ON t.id = e.id JOIN entities_fts f "
+                                 "ON f.rowid = t.rid WHERE e.id = ?", (doc,)).fetchone()
+        cut = windows(text or "", *size)
+        if len(cut) != span[1]:
+            raise ValueError(f"the passage index does not match the text of {doc}: drop the bank's derived tables and run store.ensure")
+        con.executemany("INSERT INTO passages_fts(passages_fts, rowid, title, body) VALUES ('delete', ?, ?, ?)",
+                        [(span[0] + i, name or "", body) for i, body in enumerate(cut)])
+        con.execute("DELETE FROM passage_docs WHERE doc = ?", (doc,))
+    if has(con, "doc_fields"):
+        _dirty(con, con.execute("SELECT DISTINCT system, field FROM doc_fields WHERE doc = ?", (dsid,)).fetchall())
+        con.execute("DELETE FROM doc_fields WHERE doc = ?", (dsid,))
+
+
+def add_docs(con: sqlite3.Connection, built: Any) -> None:
+    """The passages and field rows of documents just written to the bank (a ``bank.Built``). New passages are numbered
+    after the last one."""
+    from cie.factbank.engine import windows
+
+    size = _passage_size(con)
+    if size:
+        nxt = int(con.execute("SELECT max(first + n) FROM passage_docs").fetchone()[0] or 1)
+        for e, (name, text) in built.texts.items():
+            cut = windows(text or "", *size) if e.startswith("doc:") else []
+            if cut:
+                con.executemany("INSERT INTO passages_fts(rowid, title, body) VALUES (?, ?, ?)",
+                                [(nxt + i, name or "", body) for i, body in enumerate(cut)])
+                con.execute("INSERT INTO passage_docs VALUES (?, ?, ?)", (e, nxt, len(cut)))
+                nxt += len(cut)
+    if has(con, "doc_fields"):
+        system = {src[0]: src[2] for src in built.sources}
+        rows = [field_row(src[0], src[2], "title", src[1]) for src in built.sources if src[1]]
+        rows += [field_row(f.source, system[f.source], f.parameter, f.value, f.value_entity) for f in built.facts
+                 if f.entity == f"doc:{f.source}" and f.source in system and is_field(f.parameter, f.value)]
+        con.executemany("INSERT INTO doc_fields VALUES (?,?,?,?,?,?,?,?,?)", rows)
+        _dirty(con, sorted({(r[1], r[2]) for r in rows}))
+
+
+def after_change(con: sqlite3.Connection) -> None:
+    """After documents were added or removed: the schema of the fields that changed is read again, and the counts and
+    the revision are written."""
+    if not has(con, "store_meta"):
+        return
+    if has(con, "schema_fields") and con.execute("SELECT 1 FROM sqlite_temp_master WHERE name = 'dirty_fields'").fetchone():
+        for sys_, fld in con.execute("SELECT system, field FROM dirty_fields").fetchall():
+            con.execute("DELETE FROM schema_fields WHERE system = ? AND field = ?", (sys_, fld))
+            con.executemany("INSERT INTO schema_fields VALUES (?,?,?,?,?,?)", schema_rows(con, sys_, fld))
+        con.execute("DELETE FROM dirty_fields")
+        _set(con, "fields", {"rows": con.execute("SELECT count(*) FROM doc_fields").fetchone()[0],
+                             "fields": con.execute("SELECT count(*) FROM schema_fields").fetchone()[0]})
+    m = meta(con)
+    _set(con, "facts", con.execute("SELECT count(*) FROM facts").fetchone()[0])
+    _set(con, "text_rows", con.execute("SELECT count(*) FROM text_rows").fetchone()[0])
+    if (size := _passage_size(con)):
+        _set(con, "passages", {"size": list(size), "passages": int(con.execute("SELECT sum(n) FROM passage_docs").fetchone()[0] or 0)})
+    _set(con, "revision", int(m.get("revision") or 0) + 1)
 
 
 def ensure(path: str | Path, log: Callable[[str], None] | None = None, passages: bool = True, fields: bool = True) -> dict[str, Any]:

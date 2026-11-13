@@ -100,7 +100,7 @@ def build(work: Path, name: str = "factbank", text_facts: bool = False) -> dict[
     from cie.factbank import bank
 
     t = time.perf_counter()
-    rep = bank.build(work / f"{name}.sqlite", list(_docs(work)), text_facts=text_facts)
+    rep = bank.build(work / f"{name}.sqlite", _docs(work), text_facts=text_facts)  # read a batch at a time
     rep["seconds"] = round(time.perf_counter() - t, 2)
     (work / f"{name}_build.json").write_text(json.dumps(rep, indent=1))
     return rep

@@ -25,15 +25,22 @@ documents:
   Unlike the cell bank, two facts that disagree about the same entity and parameter are **not rejected**: company
   records do disagree. They are listed, and the engine settles them by weighted votes.
 
+* **Building and updating:**
+  - ``build`` writes a bank a batch of documents at a time, so its memory does not grow with the company's size.
+  - ``sync`` brings a bank up to date with the documents as they are now: it adds the new ones, replaces the changed
+    ones (by a hash of their content) and removes those that are gone, without building the bank again. The result
+    holds the same rows as a bank built from scratch from the same documents in id order.
+
 Plain files and SQLite, no vectors, no graph database, no GPU: "keep it boring".
 """
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 import sqlite3
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable, Iterator
 from dataclasses import dataclass, field
 from datetime import date, datetime
 from pathlib import Path
@@ -46,6 +53,8 @@ PRIMARY_SYSTEMS = {"linear", "jira", "github", "hubspot"}
 SKIP_FIELDS = {"dsid", "summary", "source", "commits", "files_changed", "merge_commit_sha", "head_branch", "base_branch",
                "orientation", "path"}
 MAX_VALUE = 300
+BUILDER = 1  # what add_document makes of a document; part of a document's content hash, so a change here re-reads it
+BATCH_DOCS = 2_000
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS sources (id TEXT PRIMARY KEY, title TEXT, system TEXT, authority TEXT, date TEXT, path TEXT);
@@ -55,6 +64,12 @@ CREATE TABLE IF NOT EXISTS aliases (alias TEXT, entity TEXT, PRIMARY KEY (alias,
 CREATE TABLE IF NOT EXISTS facts (id TEXT PRIMARY KEY, entity TEXT, parameter TEXT, value TEXT, value_entity TEXT, claim TEXT,
   source TEXT, source_detail TEXT, context TEXT, confidence TEXT, caveats TEXT, dependencies TEXT, last_verified TEXT);
 CREATE INDEX IF NOT EXISTS facts_entity ON facts(entity);
+"""
+# what an update needs to find a document's rows without reading the whole bank
+SYNC_SCHEMA = """
+CREATE INDEX IF NOT EXISTS facts_source ON facts(source);
+CREATE INDEX IF NOT EXISTS aliases_entity ON aliases(entity);
+CREATE TABLE IF NOT EXISTS source_hashes (id TEXT PRIMARY KEY, hash TEXT) WITHOUT ROWID;
 """
 
 
@@ -218,43 +233,75 @@ def sentence_values(body: str) -> list[tuple[str, str, str]]:
     return out[:MAX_TEXT_FACTS]
 
 
-def resolve(b: Built) -> None:
-    """Point identifier entities at the documents that carry them, when those are in the bank."""
-    alias_doc = {a: e for a, e in b.aliases if e.startswith("doc:")}
-    for f in b.facts:
-        if f.value_entity and f.value_entity.startswith("key:") and f.value_entity[4:] in alias_doc:
-            f.value_entity = alias_doc[f.value_entity[4:]]
-        if f.entity.startswith("key:") and f.entity[4:] in alias_doc:
-            f.entity = alias_doc[f.entity[4:]]
-    for e in [e for e in b.entities if e.startswith("key:") and e[4:] in alias_doc]:
-        del b.entities[e]
+def doc_hash(sd, raw: dict[str, Any], text_facts: bool = False) -> str:
+    """A hash of everything ``add_document`` reads of a document: ``sync`` reads a document again only when it changes."""
+    body = [BUILDER, bool(text_facts), sd.dsid or sd.rel, sd.source, sd.rel, sd.title, sd.fields, sd.meta, sd.keys, sd.project,
+            sd.created, sd.updated, raw]
+    return hashlib.sha256(json.dumps(body, sort_keys=True, ensure_ascii=False, default=str).encode()).hexdigest()
 
 
-def build(path: str | Path, docs: Iterable[tuple[Any, dict[str, Any]]], text_facts: bool = False, derived: bool = True) -> dict[str, Any]:
+def _batches(docs: Iterable[Any], size: int) -> Iterator[list[Any]]:
+    chunk: list[Any] = []
+    for d in docs:
+        chunk.append(d)
+        if len(chunk) >= size:
+            yield chunk
+            chunk = []
+    if chunk:
+        yield chunk
+
+
+def _is(prefix: str, column: str) -> str:
+    """SQL: ``column`` starts with ``prefix`` (which ends with ":"), as a range the column's index can serve."""
+    return f"{column} >= '{prefix}' AND {column} < '{prefix[:-1]};'"
+
+
+def build(path: str | Path, docs: Iterable[tuple[Any, dict[str, Any]]], text_facts: bool = False, derived: bool = True,
+          batch: int = BATCH_DOCS) -> dict[str, Any]:
     """Write a bank from (SourceDoc, raw record) pairs. Returns counts and the checker's report. ``text_facts`` also
     turns the dates and identifiers in the documents' sentences into facts (confidence "inferred"). ``derived``: the
-    bank's derived tables are built too (``cie.factbank.store``: text by id, the passage index, the field table)."""
+    bank's derived tables are built too (``cie.factbank.store``: text by id, the passage index, the field table).
+
+    The documents are read and written ``batch`` at a time, so memory does not grow with their number (it held every
+    fact of the bank at once: about 1.2 million at 50,000 documents). The rows and their order are what the build in one
+    piece wrote. One rule is now fixed: an identifier several documents carry points to the one with the smallest id
+    (it was whichever the set's order gave; no reference of the 50,000-document bank goes through such an identifier)."""
     path = Path(path)
     if path.exists():
         path.unlink()
-    b = Built()
-    for sd, raw in docs:
-        add_document(b, sd, raw, text_facts)
-    resolve(b)
-    for e, (_, _kind, name, _src) in b.entities.items():
-        if e not in b.texts:
-            b.texts[e] = (name, name)
     con = sqlite3.connect(path)
-    con.executescript(SCHEMA)
-    con.executemany("INSERT INTO sources VALUES (?,?,?,?,?,?)", b.sources)
-    con.executemany("INSERT INTO entities VALUES (?,?,?,?)", list(b.entities.values()))
-    con.executemany("INSERT INTO entities_fts VALUES (?,?,?)", [(e, n, t) for e, (n, t) in b.texts.items()])
-    con.executemany("INSERT OR IGNORE INTO aliases VALUES (?,?)", sorted(b.aliases))
-    con.executemany("INSERT INTO facts VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)", [f.row() for f in b.facts])
+    con.executescript(SCHEMA + SYNC_SCHEMA)
+    con.execute("CREATE TEMP TABLE alias_stage (alias TEXT, entity TEXT)")
+    n_sources = 0
+    for chunk in _batches(docs, batch):
+        b = Built()
+        for sd, raw in chunk:
+            add_document(b, sd, raw, text_facts)
+        con.executemany("INSERT INTO sources VALUES (?,?,?,?,?,?)", b.sources)
+        con.executemany("INSERT OR IGNORE INTO entities VALUES (?,?,?,?)", list(b.entities.values()))  # a person: first mention
+        con.executemany("INSERT INTO entities_fts VALUES (?,?,?)", [(e, n, t) for e, (n, t) in b.texts.items()])
+        con.executemany("INSERT INTO alias_stage VALUES (?,?)", list(b.aliases))
+        con.executemany("INSERT INTO facts VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)", [f.row() for f in b.facts])
+        con.executemany("INSERT INTO source_hashes VALUES (?,?)", [(sd.dsid or sd.rel, doc_hash(sd, raw, text_facts)) for sd, raw in chunk])
+        n_sources += len(b.sources)
+        con.commit()
+    con.execute("INSERT OR IGNORE INTO aliases SELECT DISTINCT alias, entity FROM alias_stage ORDER BY alias, entity")
+    con.execute("DROP TABLE alias_stage")
+    # identifiers point at the documents that carry them, when those are in the bank
+    con.execute(f"CREATE TEMP TABLE alias_doc AS SELECT alias, min(entity) AS doc FROM aliases WHERE {_is('doc:', 'entity')} GROUP BY alias")
+    con.execute("CREATE INDEX temp.alias_doc_alias ON alias_doc(alias)")
+    for col in ("value_entity", "entity"):
+        con.execute(f"UPDATE facts SET {col} = (SELECT doc FROM alias_doc WHERE alias = substr(facts.{col}, 5)) "
+                    f"WHERE {_is('key:', col)} AND substr({col}, 5) IN (SELECT alias FROM alias_doc)")
+    con.execute(f"DELETE FROM entities WHERE {_is('key:', 'id')} AND substr(id, 5) IN (SELECT alias FROM alias_doc)")
+    con.execute("DROP TABLE alias_doc")
+    # a person or an identifier is found by its name
+    con.execute("INSERT INTO entities_fts SELECT id, name, name FROM entities WHERE kind IN ('person', 'identifier') ORDER BY rowid")
     con.commit()
     rep = check(con)
+    out = {"sources": n_sources, "entities": con.execute("SELECT count(*) FROM entities").fetchone()[0],
+           "facts": con.execute("SELECT count(*) FROM facts").fetchone()[0], "check": rep}
     con.close()
-    out = {"sources": len(b.sources), "entities": len(b.entities), "facts": len(b.facts), "check": rep}
     if derived:
         from cie.factbank import store
 
@@ -262,37 +309,257 @@ def build(path: str | Path, docs: Iterable[tuple[Any, dict[str, Any]]], text_fac
     return {**out, "bytes": path.stat().st_size}
 
 
+# ------------------------------------------------------------------ updating a bank without building it again
+def _fact_order(fid: str) -> tuple[str, int]:
+    """A fact's place in a build that reads the documents in id order: its source's id, then its number in the source."""
+    src, _, n = fid.rpartition("#")
+    return src, int(n) if n.isdigit() else 0
+
+
+def _mentions(con: sqlite3.Connection, entity: str) -> list[tuple[str, str, str]]:
+    """What names a person or an identifier: the facts its own (inverse) facts rest on, as (id, field, value), in the
+    order a build in id order reads them."""
+    ids = [json.loads(d or "[]")[:1] for (d,) in con.execute("SELECT dependencies FROM facts WHERE entity = ?", (entity,))]
+    ids = sorted({i[0] for i in ids if i}, key=_fact_order)
+    out = []
+    for i in range(0, len(ids), 400):
+        part = ids[i:i + 400]
+        got = {r[0]: r for r in con.execute(f"SELECT id, parameter, value FROM facts WHERE id IN ({','.join('?' * len(part))})", part)}
+        out += [got[x] for x in part if x in got]
+    return out
+
+
+def _drop_entity(con: sqlite3.Connection, entity: str) -> None:
+    rid = con.execute("SELECT rid FROM text_rows WHERE id = ?", (entity,)).fetchone()
+    if rid:
+        con.execute("DELETE FROM entities_fts WHERE rowid = ?", rid)
+        con.execute("DELETE FROM text_rows WHERE id = ?", (entity,))
+    con.execute("DELETE FROM aliases WHERE entity = ?", (entity,))
+    con.execute("DELETE FROM entities WHERE id = ?", (entity,))
+
+
+def _set_text(con: sqlite3.Connection, entity: str, name: str, text: str) -> None:
+    """The entity's row of the full-text table, written or replaced, and where it is (``text_rows``)."""
+    rid = con.execute("SELECT rid FROM text_rows WHERE id = ?", (entity,)).fetchone()
+    if rid:
+        con.execute("DELETE FROM entities_fts WHERE rowid = ?", rid)
+    cur = con.execute("INSERT INTO entities_fts VALUES (?,?,?)", (entity, name, text))
+    con.execute("INSERT OR REPLACE INTO text_rows VALUES (?,?)", (entity, cur.lastrowid))
+
+
+def _remove(con: sqlite3.Connection, dsid: str, touched: set[str], keys: dict[str, set[str]]) -> bool:
+    """Take one document out: its source, its entities (itself and its action items), their text, aliases and facts.
+    ``touched`` gains the people and identifiers it named; ``keys`` the identifiers it was cited by, with the document,
+    so that what cited it is pointed elsewhere (``_settle``)."""
+    from cie.factbank import store
+
+    if con.execute("SELECT 1 FROM sources WHERE id = ?", (dsid,)).fetchone() is None:
+        return False
+    doc = f"doc:{dsid}"
+    for (a,) in con.execute("SELECT alias FROM aliases WHERE entity = ?", (doc,)).fetchall():
+        keys.setdefault(a, set()).add(doc)
+    for e, v in con.execute("SELECT entity, value_entity FROM facts WHERE source = ?", (dsid,)):
+        touched.update(x for x in (e, v) if x and x.startswith(("person:", "key:")))
+    store.remove_doc(con, dsid)
+    con.execute("DELETE FROM facts WHERE source = ?", (dsid,))
+    acts = [r[0] for r in con.execute("SELECT id FROM entities WHERE id >= ? AND id < ? AND source = ?",
+                                      (f"action:{dsid}:", f"action:{dsid};", dsid))]
+    for e in (doc, *acts):
+        _drop_entity(con, e)
+    con.execute("DELETE FROM sources WHERE id = ?", (dsid,))
+    con.execute("DELETE FROM source_hashes WHERE id = ?", (dsid,))
+    return True
+
+
+def _add(con: sqlite3.Connection, docs: list[tuple[Any, dict[str, Any]]], text_facts: bool, touched: set[str],
+         keys: dict[str, set[str]]) -> None:
+    """Put documents in: what ``build`` writes for them, except the people and identifiers they name (``_tidy``)."""
+    from cie.factbank import store
+
+    b = Built()
+    for sd, raw in docs:
+        add_document(b, sd, raw, text_facts)
+    con.executemany("INSERT INTO sources VALUES (?,?,?,?,?,?)", b.sources)
+    own = [row for e, row in b.entities.items() if not e.startswith(("person:", "key:"))]
+    con.executemany("INSERT INTO entities VALUES (?,?,?,?)", own)
+    for e, (name, text) in b.texts.items():
+        _set_text(con, e, name, text)
+    con.executemany("INSERT OR IGNORE INTO aliases VALUES (?,?)", sorted((a, e) for a, e in b.aliases if not e.startswith("person:")))
+    con.executemany("INSERT INTO facts VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)", [f.row() for f in b.facts])
+    con.executemany("INSERT OR REPLACE INTO source_hashes VALUES (?,?)", [(sd.dsid or sd.rel, doc_hash(sd, raw, text_facts)) for sd, raw in docs])
+    touched.update(e for e in b.entities if e.startswith(("person:", "key:")))
+    for a, e in b.aliases:
+        if e.startswith("doc:"):
+            keys.setdefault(a, set())
+    for e in b.entities:
+        if e.startswith("key:"):
+            keys.setdefault(e[4:], set())
+    store.add_docs(con, b)
+
+
+def _settle(con: sqlite3.Connection, keys: dict[str, set[str]], touched: set[str]) -> None:
+    """Point what cites an identifier at the right entity: the document with the smallest id that carries it, or the
+    identifier's own entity when no document does. ``keys``: the identifiers to look at, each with the documents that
+    carried it and are gone."""
+    from cie.ingest.sources import reference_keys
+
+    for k in sorted(keys):
+        holders = [r[0] for r in con.execute(f"SELECT entity FROM aliases WHERE alias = ? AND {_is('doc:', 'entity')} ORDER BY entity", (k,))]
+        want = holders[0] if holders else f"key:{k}"
+        touched.add(f"key:{k}")
+        for e in sorted({f"key:{k}", *holders, *keys[k]} - {want}):
+            cited = con.execute("SELECT id, dependencies FROM facts WHERE entity = ? AND parameter = 'referenced_by'", (e,)).fetchall()
+            for fid, deps in cited:
+                first = json.loads(deps or "[]")[:1]
+                row = con.execute("SELECT parameter, value FROM facts WHERE id = ?", (first[0],)).fetchone() if first else None
+                ks = reference_keys(row[0], row[1]) if row else []
+                if ks and ks[0].lower() == k:
+                    con.execute("UPDATE facts SET entity = ? WHERE id = ?", (want, fid))
+                    con.execute("UPDATE facts SET value_entity = ? WHERE id = ?", (want, first[0]))
+
+
+def _tidy(con: sqlite3.Connection, touched: set[str]) -> None:
+    """A person or an identifier is in the bank while something names it. Its name is its first mention's, a person's
+    aliases every way it is written; one nothing names any more is taken out."""
+    from cie.ingest.sources import reference_keys
+
+    for e in sorted(touched):
+        mentions = _mentions(con, e)
+        person = e.startswith("person:")
+        names = [v for _, _, v in mentions] if person else [ks[0] for _, p, v in mentions if (ks := reference_keys(p, v))]
+        if not names:
+            _drop_entity(con, e)
+            continue
+        name = names[0]
+        row = con.execute("SELECT name FROM entities WHERE id = ?", (e,)).fetchone()
+        if row is None:
+            con.execute("INSERT INTO entities VALUES (?,?,?,?)", (e, "person" if person else "identifier", name, ""))
+            _set_text(con, e, name, name)
+        elif row[0] != name:
+            con.execute("UPDATE entities SET name = ? WHERE id = ?", (name, e))
+            _set_text(con, e, name, name)
+        if person:
+            want = {n.lower() for n in names}
+            have = {r[0] for r in con.execute("SELECT alias FROM aliases WHERE entity = ?", (e,))}
+            con.executemany("DELETE FROM aliases WHERE alias = ? AND entity = ?", [(a, e) for a in have - want])
+            con.executemany("INSERT OR IGNORE INTO aliases VALUES (?,?)", [(a, e) for a in sorted(want - have)])
+
+
+def apply(con: sqlite3.Connection, add: Iterable[tuple[Any, dict[str, Any]]] = (), remove: Iterable[str] = (),
+          text_facts: bool = False) -> dict[str, int]:
+    """One change to an open bank: the documents of ``remove`` (ids) taken out and those of ``add`` put in. A document to
+    replace is in both. The caller commits. The bank's derived tables are kept in step (``cie.factbank.store``)."""
+    from cie.factbank import store
+
+    touched: set[str] = set()
+    keys: dict[str, set[str]] = {}
+    removed = sum(_remove(con, d, touched, keys) for d in remove)
+    add = list(add)
+    if add:
+        _add(con, add, text_facts, touched, keys)
+    _settle(con, keys, touched)
+    _tidy(con, touched)
+    store.after_change(con)
+    return {"added": len(add), "removed": removed}
+
+
+def sync(path: str | Path, docs: Iterable[tuple[Any, dict[str, Any]]], text_facts: bool = False, remove_missing: bool = True,
+         adopt: bool = False, batch: int = 500, log: Callable[[str], None] | None = None) -> dict[str, Any]:
+    """Bring a bank up to date with ``docs``, the company's documents as they are now, without building it again.
+
+    - A document the bank does not hold is added; one whose content changed (``doc_hash``) is replaced; one that is the
+      same is not read further.
+    - ``remove_missing``: a document the bank holds that ``docs`` no longer has is taken out. Pass False when ``docs`` is
+      only what changed.
+    - ``adopt``: a document the bank holds without a hash (a bank built before hashes were kept) is taken as unchanged
+      and its hash recorded; otherwise it is replaced.
+
+    The result holds the same rows as ``build`` gives for the same documents read in id order; the rows' order in the
+    tables differs (new rows come last), which can change the order of two passages that match a question equally.
+    Each batch is one transaction. A process that has the bank open reads the new rows at once, but keeps what it had
+    already read (names, kinds): ``store.revision`` tells it the bank changed."""
+    from cie.factbank import store
+
+    path = Path(path)
+    store.ensure(path)
+    con = sqlite3.connect(path)
+    con.executescript(SYNC_SCHEMA)
+    known = dict(con.execute("SELECT id, hash FROM source_hashes"))
+    held = {r[0] for r in con.execute("SELECT id FROM sources")}
+    rep = {"added": 0, "changed": 0, "removed": 0, "same": 0, "adopted": 0}
+    seen: set[str] = set()
+    todo: list[tuple[Any, dict[str, Any]]] = []
+    gone: list[str] = []
+
+    def flush() -> None:
+        if todo or gone:
+            apply(con, todo, gone, text_facts)
+            con.commit()
+            if log:
+                log(f"  bank sync: {rep['added']:,} added, {rep['changed']:,} changed, {rep['removed']:,} removed")
+            todo.clear()
+            gone.clear()
+
+    for sd, raw in docs:
+        dsid = sd.dsid or sd.rel
+        if dsid in seen:
+            raise ValueError(f"document {dsid} is given twice")
+        seen.add(dsid)
+        h = doc_hash(sd, raw, text_facts)
+        if dsid in held:
+            if known.get(dsid) == h:
+                rep["same"] += 1
+                continue
+            if adopt and dsid not in known:
+                con.execute("INSERT INTO source_hashes VALUES (?,?)", (dsid, h))
+                rep["adopted"] += 1
+                continue
+            gone.append(dsid)
+            rep["changed"] += 1
+        else:
+            rep["added"] += 1
+        todo.append((sd, raw))
+        if len(todo) + len(gone) >= batch:
+            flush()
+    flush()
+    if remove_missing:
+        for part in _batches(sorted(held - seen), batch):
+            gone.extend(part)
+            rep["removed"] += len(part)
+            flush()
+    con.commit()
+    out = {**rep, "sources": con.execute("SELECT count(*) FROM sources").fetchone()[0],
+           "facts": con.execute("SELECT count(*) FROM facts").fetchone()[0], "revision": store.revision(con)}
+    con.close()
+    return out
+
+
 def check(con: sqlite3.Connection, stale_days: int = 90) -> dict[str, Any]:
     """The cell bank's invariants, for company facts. Errors make the bank unusable; contradictions and staleness are
-    reported."""
+    reported. Every rule is a query, so the check holds no fact in memory (it read them all: 1.5 GB at 50,000 documents)."""
     errors: list[str] = []
-    sources = {r[0] for r in con.execute("SELECT id FROM sources")}
-    ids = set()
-    rows = con.execute("SELECT id, entity, parameter, value, claim, source, source_detail, context, confidence, caveats, dependencies, "
-                       "last_verified FROM facts").fetchall()
-    for r in rows:
-        fact = dict(zip(("id", "entity", "parameter", "value", "claim", "source", "source_detail", "context", "confidence", "caveats",
-                         "dependencies", "last_verified"), r, strict=True))
-        missing = [k for k in REQUIRED if fact.get(k) in (None,)]
-        if missing:
-            errors.append(f"{fact['id']}: missing {missing}")
-        if fact["source"] not in sources:
-            errors.append(f"{fact['id']}: source {fact['source']} does not resolve")
-        if fact["confidence"] not in CONFIDENCE:
-            errors.append(f"{fact['id']}: confidence {fact['confidence']!r}")
-        ids.add(fact["id"])
-    for fid, deps in con.execute("SELECT id, dependencies FROM facts"):
-        for d in json.loads(deps or "[]"):
-            if d not in ids:
-                errors.append(f"{fid}: dependency {d} does not exist")
-    dates = [r[0] for r in con.execute("SELECT last_verified FROM facts WHERE last_verified != ''")]
-    newest = max(dates) if dates else ""
+    cols = [k for k in REQUIRED if k != "caveats"] + ["caveats"]
+    missing = " OR ".join(f"{k} IS NULL" for k in cols)
+    for row in con.execute(f"SELECT {', '.join(cols)} FROM facts WHERE {missing} LIMIT 50"):
+        fact = dict(zip(cols, row, strict=True))
+        errors.append(f"{fact['id']}: missing {[k for k in REQUIRED if fact.get(k) is None]}")
+    for fid, src in con.execute("SELECT id, source FROM facts WHERE source NOT IN (SELECT id FROM sources) LIMIT 50"):
+        errors.append(f"{fid}: source {src} does not resolve")
+    marks = ",".join("?" * len(CONFIDENCE))
+    for fid, conf in con.execute(f"SELECT id, confidence FROM facts WHERE confidence NOT IN ({marks}) LIMIT 50", CONFIDENCE):
+        errors.append(f"{fid}: confidence {conf!r}")
+    for fid, dep in con.execute("SELECT f.id, j.value FROM facts f, json_each(f.dependencies) j WHERE f.dependencies NOT IN ('[]', '') "
+                                "AND NOT EXISTS (SELECT 1 FROM facts d WHERE d.id = j.value) LIMIT 50"):
+        errors.append(f"{fid}: dependency {dep} does not exist")
+    n = con.execute("SELECT count(*) FROM facts").fetchone()[0]
+    newest = con.execute("SELECT max(last_verified) FROM facts WHERE last_verified != ''").fetchone()[0] or ""
     stale = 0
     if newest:
-        ref = date.fromisoformat(newest)
-        stale = sum(1 for d in dates if (ref - date.fromisoformat(d)).days > stale_days)
+        date.fromisoformat(newest)
+        stale = con.execute("SELECT count(*) FROM facts WHERE last_verified != '' AND julianday(?) - julianday(last_verified) > ?",
+                            (newest, stale_days)).fetchone()[0]
     contradictions = contradictions_of(con)
-    return {"ok": not errors, "errors": errors[:50], "facts": len(rows), "stale": stale, "contradictions": len(contradictions),
+    return {"ok": not errors, "errors": errors[:50], "facts": n, "stale": stale, "contradictions": len(contradictions),
             "contradiction_examples": contradictions[:5]}
 
 
