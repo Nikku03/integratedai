@@ -7,7 +7,7 @@ stored answers then found eleven things to fix. This document lists each fix, wh
 - **What needs the model is not measured yet:** the changes to the model's loop can only be measured on a GPU. They are
   built, unit-tested and simulated on the stored answers. The Colab notebook of the next test measures them.
 - **The 635 questions of the first test are now development questions.** The fixes were made after reading their
-  answers. The next test needs questions nobody has looked at (`docs/FACTBANK_FRESH_PLAN.md`).
+  answers. The next test needs questions the brain has never answered (`docs/FACTBANK_FRESH_PLAN.md`).
 
 ## What the review found
 
@@ -315,12 +315,13 @@ the brain asked the 635 development questions in casual wording.
     values do not tell which system is the source of truth;
   - the weights the brain learned from this company's questions.
 
-## 9. A judge for free text, and a test on questions nobody has seen
+## 9. A judge for free text, and a test on questions the brain has never answered
 
 **What was wrong:**
 - Free text was scored by the words of the expected facts that an answer holds. That follows wording and length, not
   correctness (section "What the review found").
-- The benchmark's own 500 questions, written by its authors with reference answers, had never been asked.
+- The benchmark's own 500 questions, written by its authors with reference answers, had never been asked of the brain
+  (the platform's search was measured on them in September).
 - Every fix above was made after reading the answers to the old questions. A score on them proves little.
 
 **What changed:**
@@ -332,7 +333,7 @@ the brain asked the 635 development questions in casual wording.
     compares the two (agreement and Cohen's kappa). Until a person has labelled a sample, the judge's numbers are
     unproven.
 - **The fresh test** (`cie.eval.fresh_test`, `docs/FACTBANK_FRESH_PLAN.md`): 463 of the benchmark's own questions and
-  newly generated ones, on 50,000 documents of which only the questions' own documents were in the earlier haystack.
+  newly generated ones, on 50,000 documents without the last test's (3,152 of them were in earlier, smaller tests).
   Its rules were written before any arm answered.
 
 **Checked here, without a GPU:**

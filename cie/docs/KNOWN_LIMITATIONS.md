@@ -147,8 +147,9 @@ Stated plainly so nobody mistakes a scaffold for a finished capability.
 
 ## EnterpriseRAG-Bench (out-of-sample company corpus)
 * Measured locally on a 5,000-document haystack (every gold document plus a
-  stratified sample of the 512k), so recall numbers are optimistic relative to
-  the full corpus; the Colab notebook runs the full corpus on a GPU.
+  stratified sample of the 512k), so recall numbers are optimistic. On the whole
+  company (2026-09-24, `docs/benchmarks/enterprise_full/`) document recall@10 falls
+  from 0.857 to 0.524, and for questions worded unlike their document from 0.688 to 0.16.
 * Correctness and completeness need the benchmark's LLM judge. `cie.eval.grade_answers`
   runs it (the notebook's Part 1c, through Claude: it needs an `ANTHROPIC_API_KEY`),
   scoring against the original gold answers (`--no-correction`), but no graded run is

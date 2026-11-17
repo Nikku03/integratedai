@@ -207,7 +207,7 @@ All eight rules set in advance were met:
 - **Mean over the eight kinds:** 0.958, against 0.878 and 0.668.
 - **Against the brain alone:** better on 168 questions, worse on 19.
 
-**After that test: eleven fixes, and a test on questions nobody has seen** ([`docs/FACTBANK_FIXES.md`](docs/FACTBANK_FIXES.md)).
+**After that test: eleven fixes, and a test on questions the brain has never answered** ([`docs/FACTBANK_FIXES.md`](docs/FACTBANK_FIXES.md)).
 A review of the run's stored answers found what to fix; each fix is listed with how it was checked.
 - **Checked without a GPU:** the brain answers three to five times faster with the same 1,270 answers; the bank is built
   in batches and updated without a rebuild (500 documents changed in 12 seconds, the result equal to a fresh build row
@@ -215,7 +215,7 @@ A review of the run's stored answers found what to fix; each fix is listed with 
   be read from the documents with no loss on the development questions.
 - **Needs the GPU run:** the model's new tools, the check on its final answer, the brain's v19 on new questions, and the
   judge for free text. The plan is [`docs/FACTBANK_FRESH_PLAN.md`](docs/FACTBANK_FRESH_PLAN.md): 463 of the benchmark's own
-  questions and 402 generated ones on documents no earlier test used, with rules fixed before any arm answered. Notebook:
+  questions and 402 generated ones on documents the last test did not use, with rules fixed before any arm answered. Notebook:
   [`notebooks/company_brain_fresh_colab.ipynb`](notebooks/company_brain_fresh_colab.ipynb) (A100).
 
 ## Brain-wired reasoning neurons (research)

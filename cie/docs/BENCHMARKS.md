@@ -126,6 +126,29 @@ Unsupported factual claims in strict mode: 0 by construction (every sentence of 
 
 [EnterpriseRAG-Bench](https://github.com/onyx-dot-app/EnterpriseRAG-Bench) simulates a company with about 512k documents from nine systems (Slack, Gmail, Linear, Google Drive, HubSpot, Fireflies, GitHub, Jira, Confluence) and 500 questions in ten categories with gold document ids and gold answers. It was not used to build CIE, but it is no longer fully out of sample: failures it exposed led to general fixes (fusion biases, filtered vector search, the weight of typed records in vector search), each also checked on the synthetic contract set. The table below is the chunks-only baseline, loaded through `cie.eval.bench_enterprise --memory chunks` (chunked sections and one document record per document); the full memory bank follows. Questions run through the full retrieval pipeline in strict extractive mode; the returned document set is the distinct documents of the evidence packet in rank order (at most 10), empty when the answer is insufficient evidence. Document recall, MRR and extra documents are computed here exactly as the benchmark defines them (without the judge's 'valid' relabelling, so extra-document counts are upper bounds); correctness and completeness need the benchmark's LLM judge, for which the answers files are written.
 
+### EnterpriseRAG-Bench through CIE: the whole company (511,958 documents, full memory bank, 2026-09-24)
+
+Run on Colab with a GPU (`--memory full`, embeddings `BAAI/bge-small-en-v1.5` through sentence-transformers). Files and
+checks: `docs/benchmarks/enterprise_full/`.
+
+Load: 511,958 documents → 3,218,249 sections and 2,425,509 memory records; 164,302 people and companies, 13,306
+projects; 29,803 near-duplicate document pairs, 8,745 conflicting facts; 8,629 s (4,078 s embedding).
+
+| arm | doc recall@10 | recall@5 | MRR | hit@1 | hit@10 | all gold found | abstained on info-not-found | false abstentions | p50 / p95 ms |
+|---|---|---|---|---|---|---|---|---|---|
+| hybrid+graph(REM) | 0.524 | 0.468 | 0.44 | 0.372 | 0.581 | 0.481 | 0.05 | 0.017 | 3366.9 / 11918.0 |
+| vector-only | 0.523 | 0.468 | 0.444 | 0.377 | 0.589 | 0.472 | 0 | 0.006 | 228.9 / 497.1 |
+| lexical-only | 0.266 | 0.252 | 0.253 | 0.215 | 0.319 | 0.234 | 0.3 | 0.077 | 2482.2 / 10773.5 |
+
+By category, hybrid+graph(REM), recall@10: basic 0.686, semantic 0.16, intra_document_reasoning 0.725,
+project_related 0.436, constrained 0.7, conflicting_info 0.725, completeness 0.314, miscellaneous 0.9.
+
+* **Against 5,000 documents:** recall@10 0.857 → 0.524; semantic questions (worded unlike their document) 0.688 → 0.16.
+* **Links and keywords add nothing at this size:** vector-only matches hybrid+graph (0.523 against 0.524) at a fifteenth
+  of the time.
+* **Not found:** the search declines 1 of the 20 questions whose answer is in no document.
+* Document measures only; no answer was judged.
+
 ### EnterpriseRAG-Bench through CIE (haystack 5,000 of 511,958 documents, 500 questions, embeddings=fastembed)
 
 Load: 5,000 documents → 31,927 sections, 5,000 document records, 0 entity links; 551.3 s (459.9 s embedding, 80.3 texts/s).
@@ -154,7 +177,7 @@ By category (hybrid+graph(REM)):
 
 ### Reading
 
-* **Haystack.** 5,000 of 511,958 documents (every gold document plus a stratified sample); a smaller haystack has fewer distractors, so these numbers are optimistic relative to the full corpus until the full run is done.
+* **Haystack.** 5,000 of 511,958 documents (every gold document plus a stratified sample); a smaller haystack has fewer distractors, so these numbers are optimistic. On the whole company (the run below) document recall@10 falls from 0.857 to 0.524.
 * **hybrid+graph(REM).** Document recall@10 0.857, MRR 0.738, first document right 66% of the time, 8.379 extra documents per question on average; abstained on 5% of the questions whose answer is not in the corpus and wrongly abstained on 3% of the answerable ones; p50 469.8 ms.
 
 * **Weakest categories:** completeness (recall@10 0.571, n=20); semantic (recall@10 0.688, n=125); project_related (recall@10 0.82, n=40).

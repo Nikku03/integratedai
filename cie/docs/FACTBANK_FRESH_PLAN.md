@@ -23,7 +23,7 @@ This test answers those points:
 | baseline: one keyword search | a second baseline: the same model with search and read tools, free to search as often as the main arm |
 | one run of the model | three seeds of the main arm on a fixed sample |
 | no ablations | the model without the brain, and without the tools, on the same sample |
-| documents the fixes were developed on | documents no earlier test used |
+| documents the fixes were developed on | 50,000 documents without the last test's; 3,152 of them were in earlier, smaller tests (below) |
 
 ## The documents
 
@@ -32,6 +32,15 @@ This test answers those points:
 - the **684** documents that the benchmark's own questions rest on;
 - **49,316** more, every system in its share of what is left, drawn with seed 6060;
 - **no document of the earlier test's haystack**, except 28 of the 684 (a question's own documents cannot be left out).
+
+**Documents seen before** (counted 2026-11-17 against every haystack the repository records, and the platform's
+5,000-document set):
+- All **684** of the questions' own documents were in two earlier 5,000-document sets: the platform's search
+  experiments of September (tenant `erbfull-5000`) and part B of the fact bank's first 5,000-document test. A
+  question's own documents cannot be left out.
+- **2,468** of the other 49,316 were in the haystacks of the brain's rounds 1 to 3 and of the fact bank's first
+  5,000-document test. The draw left out only the last test's haystack.
+- In all, 3,152 of the 50,000 (6.3%) were in some earlier haystack. The other 46,848 were in none.
 
 The draw is `python -m cie.eval.fresh_test draw`. Its fingerprint is in `docs/benchmarks/fresh/plan/expect.json`, and
 the notebook stops if its own draw differs.
@@ -54,6 +63,11 @@ the notebook stops if its own draw differs.
 | miscellaneous | 19 | other |
 | high_level | 10 | a summary across many documents |
 
+- **Used before, by the platform's search, not by the brain.** In September all 500 were asked of the platform's
+  search pipeline (`cie.eval.bench_enterprise`), on its 5,000-document set and on the whole company: which documents
+  it finds, not answers judged. Its answer files are in `docs/benchmarks/` and `docs/benchmarks/enterprise_full/`. No
+  fact-bank or brain arm has answered them, and none of the brain's rules came from them. The fact bank's first
+  5,000-document test asked 26 questions of the benchmark's other file (`extra_questions.jsonl`), not these.
 - **37 questions are left out and never counted.** Every document they rest on was in the earlier haystack, so they
   could be asked there. They were used to try this harness end to end with a scripted stand-in for the model.
 - The benchmark's 100 extra metadata questions are not used: an early version of this project was developed on them.
@@ -163,8 +177,9 @@ Each is met or not met by the numbers of the report. Rules 1 to 7 read seed 0 on
   were run once here with `LIMIT = 3` and a scripted stand-in for the model (it searches once and answers with the
   first title it sees; as a judge it calls long answers right). The brain answered the first 3 questions of each of
   the four folders. The answers, the report and the log were deleted without being read. They decide nothing.
-- **Not looked at:** apart from that, no arm, with or without a model, has answered any of the 463 bench questions or
-  any generated question of this test.
+- **Not looked at:** apart from that, no arm of the brain or the fact bank, with or without a model, has answered any of
+  the 463 bench questions or any generated question of this test. The platform's search answered the 463 in
+  September (above).
 - **The brain was not changed after the old answers were last read.** v19's rules are those of commit `b8a61a1`. Later
   commits changed how the brain reads the bank (a profile, fields read on demand) and how much it keeps in memory,
   not what it answers: v18's 1,270 stored answers are reproduced exactly with the final code
@@ -186,6 +201,10 @@ All made before any arm answered a question of this test.
 - **2026-11-17:** the harness now applies the two "undecided" conditions above. Before, it decided rules 4 to 6 from
   the judge's verdicts without waiting for the check against people, and never marked a rule undecided by the seeds'
   spread. An independent review of the code found both. The rules themselves did not change.
+
+- **2026-11-17:** two claims corrected after checking the platform's full memory bank on Google Drive: the benchmark's
+  questions had been asked of the platform's search in September, and 3,152 of the 50,000 documents were in earlier
+  haystacks (both above). The draw, the questions and the rules did not change.
 
 ## Files
 

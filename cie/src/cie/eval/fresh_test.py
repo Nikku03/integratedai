@@ -1,11 +1,11 @@
-"""The fresh test of the company brain (docs/FACTBANK_FRESH_PLAN.md): questions nobody has looked at, on documents no
-earlier test used.
+"""The fresh test of the company brain (docs/FACTBANK_FRESH_PLAN.md): questions the brain has never answered, on
+documents the last test did not use.
 
 The 635 questions of the 50,000-document test are development data now: the brain's v19 and the model's new loop were
 made after reading their answers. This test has two question sets on one new haystack:
 
 - **bench:** the benchmark's own questions (EnterpriseRAG-Bench ``questions.jsonl``: written by its authors, with a
-  reference answer, the facts a right answer states and the documents it rests on). They were never used here. A
+  reference answer, the facts a right answer states and the documents it rests on). No brain arm has answered them. A
   free-text answer has no exact check, so a model judges it (``cie.eval.judge``), and people label a sample of the
   judge's verdicts.
 - **gen:** generated questions with checkable answers, drawn with new seeds from the new documents by the generators of
