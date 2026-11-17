@@ -244,6 +244,21 @@ needed. These numbers are on development questions; the fresh test measures v19 
 - **One difference remains:** after an update the rows are the same but their order in the tables is not (new rows come
   last). Two passages that match a question equally can then come in another order. A full build restores the order.
 
+**An independent review of this code found five bugs and one hazard, now fixed,** each with a test that failed
+before its fix:
+
+| bug | what went wrong | fix |
+|---|---|---|
+| a citation longer than 300 characters | values are stored cut to 300 characters; an update read the cited key again from the cut copy, and lost it | the key is read from the citation's own record, which holds it whole |
+| the same fields in another order | the change check ignored field order, but the builder reads fields in order (which spelling of a name comes first) | the check keeps the order |
+| a custom profile without its own name | it was taken for the default and not saved, so an update read documents with the default lists | a profile is compared by its lists, not its name |
+| an update on a bank built without its derived tables | it failed, or left stale search rows behind | the update builds the missing tables first |
+| sentence facts (the hazard) | an update not told the bank was built with them dropped them | the bank records it, and the update follows |
+| the field reader's bulk mode | documents of no known system (added after the bank was opened) were lost after 256 lookups | they are read one at a time |
+
+The review also ran 750 random sequences of updates against fresh builds; apart from these cases, every one
+matched.
+
 ## 8. What the code knows about the company: the profile
 
 **What was wrong:** the builder and the brain knew this company from lists in the code: 19 fields that name people (two
@@ -261,6 +276,11 @@ record, the fields that name companies.
   - it names people when its name-shaped values are names that another field of people also holds. People turn up
     in several roles; a company's web domain or a team's name does not.
 - The bank keeps the profile it was built with. `sync` and the brain read it from the bank.
+- Two bugs the review found in `derive`, now fixed:
+  - an identifier of digits that other records carry (an account number) read as a date (epoch seconds): references
+    are now told before dates;
+  - a field the documents did not hold at all was dropped from the lists, so documents added later that hold it lost
+    their people and references: such a field now keeps the default's lists, and a date by its name.
 
 **How much the documents tell by themselves** (the profile read from the 50,000 documents against the lists written by
 hand, counted in field values):
@@ -268,7 +288,7 @@ hand, counted in field values):
 | | fields found | share of the written lists' values | missed |
 |---|---|---|---|
 | dates | 48 | 99% | one field of months ("2026-04"), which is not a day |
-| people | 16 of 19 | 42% | Slack's `participants` (163,000 values, 83% of them handles like "deploy-bot", not names), `stakeholders` |
+| people | 16 of the 18 the documents hold | 42% | Slack's `participants` (163,000 values, 83% of them handles like "deploy-bot", not names), `stakeholders` |
 | references | 11 of 19 | 24% | fields that cite by a web address, a file name or a thread id |
 
 - The references it misses cite documents outside the 50,000 (the haystack is a tenth of the company), by forms only
@@ -322,7 +342,49 @@ the brain asked the 635 development questions in casual wording.
 - Unit tests cover the judge's reading of a verdict, the sample, the copying of rows to the sample, the bench score
   and each rule (`tests/test_judge.py`, `tests/test_fresh_test.py`).
 
+- An independent review of the harness found four bugs, now fixed with tests:
+  - rules 4 to 6 were decided from the judge's verdicts before the judge was checked against people, against the
+    plan; they now wait for an agreement of 0.85;
+  - a rule decided by less than the spread between seeds was not marked undecided when the seeds disagree, against
+    the plan; it now is (the plan says how this is worked out);
+  - a sample kept a verdict the judge had failed to give over the full folder's good one, and judged it again;
+  - the run stopped when a folder had no sample.
+  - Also: a benchmark question the documents cannot answer, with no reference text, was not judged at all; it now is,
+    against "not found".
+
 **Not checked:** everything that needs the model. The notebook `notebooks/company_brain_fresh_colab.ipynb` runs it.
+
+## 10. A brain process's memory, and the whole company
+
+**What was wrong:**
+- A brain process kept everything it read for later questions, bounded only at 200,000 entities. A person can hold
+  thousands of facts, so one process grew past 1 GB at 50,000 documents and kept growing.
+- On its first count or filter, the record table loaded every field of every document of the bank (1.3 GB a process
+  at 50,000 documents).
+
+**What changed:**
+- The planner keeps at most 600,000 facts between questions and drops the ones it read longest ago first.
+- The record table reads a document's fields when they are asked for, and a whole system once many of its documents
+  are; it keeps at most a million field values of whole systems.
+- A bank object can tell that its file was updated under it (`FactBank.stale`).
+
+**Checks at 50,000 documents:**
+
+| | before | after |
+|---|---|---|
+| The 1,270 old questions | | every answer identical |
+| One process, the same 120 questions | 163 s; 1.21 GB at the end, still growing | 165 s; 1.07 GB at most |
+
+**The whole company (512,000 documents) does not fit the brain yet:**
+- The bank builds (section 7) and the brain loads it in 40 s, in 1.3 GB.
+- One complex question then took 148 s, and the process reached 7.9 GB. Three parts of the brain grow with the
+  company:
+  - the index of every title's beginnings and ends, used to catch made-up titles (1.2 GB);
+  - the planner's candidate plans (1.4 GB);
+  - the first version's lookup engine, which the brain runs for evidence: it spreads from a person to every record
+    that names them and writes each fact it meets (3 GB, for one question).
+- Each of these decides what the brain answers. Bounding them changes answers, so it is a change to the brain, to be
+  measured by a test of its own, not a memory fix. It has not been made.
 
 ## What is and is not verified
 
@@ -336,4 +398,5 @@ the brain asked the 635 development questions in casual wording.
 | 6. brain v19 | development questions: 6 better, 1 worse | the fresh questions |
 | 7. batch build, update without rebuild | row-for-row equality at 50,000 documents; the full company built | |
 | 8. profile | default reproduces the bank; derived profile loses nothing on development questions | a second company |
-| 9. judge, fresh test | harness tried with a stand-in | the judge against a person's labels; the test itself |
+| 9. judge, fresh test | harness tried with a stand-in; four bugs an independent review found, fixed with tests | the judge against a person's labels; the test itself |
+| 10. memory | the same 1,270 answers; a process stays under 1.1 GB at 50,000 documents | the whole company needs a change to the brain itself |

@@ -140,6 +140,13 @@ Each is met or not met by the numbers of the report. Rules 1 to 7 read seed 0 on
 - Rule 8 failing: differences smaller than the spread between seeds are noise, and rules decided by less than that
   spread are reported as undecided.
 
+**How "undecided" is worked out** (`fresh_test.decide`):
+- Rules 4 to 6 are undecided until the judge agrees with a person on at least 0.85 of the labelled answers.
+- When rule 8 fails, a rule is undecided if its distance from its line is less than the spread of the three seeds.
+  The spread is taken from the same question set: the generated sample for rules 1, 2, 3 and 7, the bench sample for
+  rules 4, 5 and 6.
+- The report says why each undecided rule is undecided.
+
 ## Reported without a rule
 
 - `v19` against v18's development numbers: by family, and how often `v19` reaches the gold documents of the bench
@@ -159,8 +166,9 @@ Each is met or not met by the numbers of the report. Rules 1 to 7 read seed 0 on
 - **Not looked at:** apart from that, no arm, with or without a model, has answered any of the 463 bench questions or
   any generated question of this test.
 - **The brain was not changed after the old answers were last read.** v19's rules are those of commit `b8a61a1`. Later
-  commits changed how the brain reads the bank (a profile, fields read on demand), not what it answers: v18's 1,270
-  stored answers are reproduced exactly with the final code (`docs/FACTBANK_FIXES.md`, section 1).
+  commits changed how the brain reads the bank (a profile, fields read on demand) and how much it keeps in memory,
+  not what it answers: v18's 1,270 stored answers are reproduced exactly with the final code
+  (`docs/FACTBANK_FIXES.md`, sections 1 and 10).
 - **Not changed after this plan:** the brain, the tools, the loop, the judge's instructions, the scorer, the rules.
   A bug found during the run is fixed only if the fix cannot change a right answer into a wrong one or the reverse;
   otherwise the run is reported as it is, with the bug.
@@ -170,6 +178,14 @@ Each is met or not met by the numbers of the report. Rules 1 to 7 read seed 0 on
 About four times the model answers of the earlier test: the notebook expects 8 to 14 hours on an A100 80 GB. It saves
 to Google Drive every few minutes and goes on from where it stopped. `RUN_EXTRA = False` skips the samples (rule 8
 then stays open).
+
+## Changes to this plan
+
+All made before any arm answered a question of this test.
+
+- **2026-11-17:** the harness now applies the two "undecided" conditions above. Before, it decided rules 4 to 6 from
+  the judge's verdicts without waiting for the check against people, and never marked a rule undecided by the seeds'
+  spread. An independent review of the code found both. The rules themselves did not change.
 
 ## Files
 

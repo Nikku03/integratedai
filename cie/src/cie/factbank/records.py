@@ -296,6 +296,7 @@ class DocFacts:
 
     KEPT = 4096
     BULK = 256
+    HELD = 1_000_000  # field values of whole systems kept at most; past it the system read longest ago is dropped
     SQL = ("SELECT parameter, value, value_entity FROM facts WHERE entity = ? AND parameter NOT LIKE 'text\\_%' ESCAPE '\\' "
            "ORDER BY rowid")
 
@@ -303,6 +304,7 @@ class DocFacts:
         self.r = records
         self._one: dict[str, dict[str, list[tuple[str, str | None]]] | None] = {}
         self._systems: dict[str, dict[str, dict[str, list[tuple[str, str | None]]]]] = {}
+        self._sizes: dict[str, int] = {}  # field values of each system kept whole
         self._asked: Counter = Counter()
 
     def _read(self, doc: str) -> dict[str, list[tuple[str, str | None]]] | None:
@@ -322,8 +324,14 @@ class DocFacts:
             got = self._one[doc]
             return default if got is None else got
         self._asked[system] += 1
-        if self._asked[system] > self.BULK:
-            whole = self._systems[system] = {d: fs for d in self.r.documents(system) if (fs := self._one.get(d) or self._read(d))}
+        if system and self._asked[system] > self.BULK:  # documents of no known system are read one by one
+            whole = {d: fs for d in self.r.documents(system) if (fs := self._one.get(d) or self._read(d))}
+            size = sum(len(vs) for fs in whole.values() for vs in fs.values())
+            while self._systems and sum(self._sizes.values()) + size > self.HELD:
+                old = next(iter(self._systems))  # the system read longest ago
+                del self._systems[old], self._sizes[old]
+                self._asked[old] = 0
+            self._systems[system], self._sizes[system] = whole, size
             for d in [d for d in self._one if self.r.system_of(d) == system]:
                 del self._one[d]
             return whole.get(doc, default)

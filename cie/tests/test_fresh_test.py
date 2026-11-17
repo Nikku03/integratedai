@@ -144,5 +144,53 @@ def test_the_report_says_what_is_not_run_yet(tmp_path):
     assert rep["rules"] == dict.fromkeys(F.rules(), None), "no model arm has answered: no rule is decided"
     assert rep["gen"]["arms"]["v19"]["by_family"]["complex"] == 1.0 and rep["bench"]["arms"]["v19"]["judged"] == 0
     text = (work / "report_fresh.md").read_text()
-    assert text.count("not run yet") == 8 and "Not labelled yet" in text and "| v19 |" in text
+    assert text.count("undecided: an arm it needs has not answered") == 8 and "Not labelled yet" in text and "| v19 |" in text
+    assert rep["undecided"] == dict.fromkeys(F.rules(), "an arm it needs has not answered")
     assert json.loads((work / "report_fresh.json").read_text())["rules"] == rep["rules"]
+
+
+def test_rules_wait_on_the_judges_check_and_the_seeds():
+    good = _report({"v19": (0.90, 0.2), "reasoner": (0.92, 0.85, 0.02), "agent": (0.80, 0.5)},
+                   {"v19": (0.3,), "reasoner": (0.70, 0.75), "agent": (0.65,), "rag": (0.60,)},
+                   {"reasoner": 0.92, "reasoner.s1": 0.91, "reasoner.s2": 0.93}, {"reasoner": 0.70, "reasoner.s1": 0.66, "reasoner.s2": 0.72})
+    met, why = F.decide(good, None)
+    assert {k for k, v in met.items() if v is None} == set(F.JUDGED_RULES) and "not been checked" in why["4 natural questions"]
+    assert all(met[k] for k in met if k not in F.JUDGED_RULES)
+    met, why = F.decide(good, {"answers": 60, "agree": 0.80})
+    assert {k for k, v in met.items() if v is None} == set(F.JUDGED_RULES) and "0.80" in why["5 beats plain search"]
+    met, why = F.decide(good, {"answers": 60, "agree": 0.90})
+    assert all(met.values()) and why == {}
+    # three seeds 0.10 apart on the generated questions: rule 8 fails, and every rule closer to its line than that waits
+    noisy = {**good, "gen_sub": {**good["gen_sub"], "arms": {**good["gen_sub"]["arms"], "reasoner.s2": {**good["gen_sub"]["arms"]["reasoner"],
+                                                                                                           "mean_of_families": 0.82}}}}
+    met, why = F.decide(noisy, {"answers": 60, "agree": 0.90})
+    assert met["8 seeds agree"] is False and F.spreads(noisy) == {"gen": 0.1, "bench": 0.06}
+    assert met["1 no harm"] is None and "less than the seeds' spread (0.100)" in why["1 no harm"], "decided by 0.03"
+    assert met["3 the bank helps"] is None and met["2 complex"] is None and met["7 false not found"] is None
+    assert met["4 natural questions"] is None and met["5 beats plain search"] is None and met["6 says when it does not know"] is None, \
+        "bench: each decided by 0.05, against a spread of 0.06"
+    clear = {**noisy, "bench": {"arms": {**noisy["bench"]["arms"], "agent": {"correct": 0.60, "correct_by_kind": {}}}}}
+    met, why = F.decide(clear, {"answers": 60, "agree": 0.90})
+    assert met["4 natural questions"] is True and "4 natural questions" not in why, "decided by 0.10, more than the spread: it stands"
+
+
+def test_a_sample_takes_the_full_folders_verdict_over_a_failed_one(tmp_path):
+    (tmp_path / "src").mkdir()
+    qs = _bench(tmp_path / "src", 6)
+    work = tmp_path / "w_bench"
+    _folder(work, qs)
+    _folder(F.sub_dir(work), qs[:3])
+    _answers(work, "judge_reasoner", [{"id": q["id"], "arm": "reasoner", "correct": True, "completeness": 1.0, "failed": False} for q in qs])
+    _answers(F.sub_dir(work), "judge_reasoner", [{"id": qs[0]["id"], "arm": "reasoner", "correct": None, "completeness": None, "failed": True},
+                                                {"id": qs[1]["id"], "arm": "reasoner", "correct": False, "completeness": 0.0, "failed": False}])
+    F.fill_sample(work)
+    got = K._rows(F.sub_dir(work) / "judge_reasoner.jsonl")
+    assert got[qs[0]["id"]]["correct"] is True and got[qs[1]["id"]]["correct"] is False and got[qs[2]["id"]]["correct"] is True
+
+
+def test_run_goes_on_without_a_sample_folder(tmp_path):
+    work = tmp_path / "w"
+    _folder(work, [])
+    said = []
+    out = F.run([work], generate=None, tools=None, settings={}, core=(), log=said.append)
+    assert out == {} and any("no sample folder for w" in m for m in said)

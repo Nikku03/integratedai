@@ -212,9 +212,10 @@ def items_of(questions: list[dict[str, Any]], answers: dict[str, dict[str, Any]]
     out = []
     for q in questions:
         e, row = q.get("expected") or {}, answers.get(q["id"])
-        if row is None or not (e.get("gold") or e.get("facts") or e.get("not_found")):
+        none = e.get("not_found") or e.get("unanswerable")  # the generated questions' word for it, and the benchmark's
+        if row is None or not (e.get("gold") or e.get("facts") or none):
             continue
-        gold = e.get("gold") or ("The records do not hold the answer: not found." if e.get("not_found") else "")
+        gold = e.get("gold") or ("The records do not hold the answer: not found." if none else "")
         answer = text(q, row) if text else "\n".join(str(x) for x in (row.get("answer"), row.get("support")) if x)
         out.append({"id": q["id"], "arm": arm, "question": q["question"], "gold": gold, "facts": list(e.get("facts") or []),
                     "answer": re.sub(r"\n{3,}", "\n\n", answer)})

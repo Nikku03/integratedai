@@ -100,6 +100,8 @@ LINK_PHRASES = re.compile(r"\bowner of\b|\bperson who\b|\bthe one that\b|\bthat 
 
 NOT_LINKS = {"from_document"}
 CACHE_ENTITIES = 200_000  # entities (or paths) the planner keeps between questions before it reads the bank afresh
+# ... and facts: a person can hold thousands, and 200,000 entities' facts held 1 GB and more at 50,000 documents
+CACHE_FACTS = 600_000  # with the oldest dropped first: as fast as no bound on 120 questions (165 s, 163 s), 1.07 GB at most against 1.21 GB and growing
 FEATURES = ["bias", "start_named", "start_rank", "two_starts", "path_len", "path_overlap", "path_assoc", "field_overlap", "field_assoc",
             "kind_fits", "kind_conflicts", "combine_assoc", "label_field", "answer_in_question", "fanout"]
 # v4 (after the first test, docs/FACTBANK_MULTI_RESULTS.md): the clue rule split by whether the question offers a choice, the
@@ -164,6 +166,7 @@ class Planner:
         self.brain = brain  # v15: question words over the learned kind, no count for several things, no one-word person aliases
         self._person_aliases: dict[str, list[str]] | None = None
         self._facts: dict[str, list] = {}
+        self._held_facts = 0  # facts in ``_facts``
         # what the planner reads of an entity, kept between plans (a question tries hundreds, mostly over the same
         # entities): its links, its fields' values, and where a path leads; the bank does not change while it answers
         self._links: dict[str, dict[str, list[str]]] = {}
@@ -235,16 +238,28 @@ class Planner:
     def facts(self, e: str) -> list:
         if e not in self._facts:
             self._facts[e] = self.b.lean_facts(e)  # the planner reads a fact's parameter, value and value_entity only
+            self._held_facts += len(self._facts[e])
         return self._facts[e]
 
-    def forget(self, above: int = CACHE_ENTITIES) -> None:
-        """Drop what was kept of the bank's entities once it holds more than ``above`` of them: a long run's memory stays
-        bounded, and the answers do not change (everything is read again from the bank)."""
+    def forget(self, above: int = CACHE_ENTITIES, facts: int = CACHE_FACTS) -> None:
+        """Keep what was read of the bank's entities bounded: past ``above`` entities or paths, everything is dropped;
+        past ``facts`` facts, the entities read longest ago are dropped until half of ``facts`` is left (with what was
+        worked out from them). The answers do not change: what is dropped is read again from the bank. Called between
+        questions: within one, what was read is kept."""
         if len(self._facts) > above or len(self._followed) > above:
             self._facts.clear()
             self._links.clear()
             self._values.clear()
             self._followed.clear()
+            self._held_facts = 0
+        elif self._held_facts > facts:
+            for e in list(self._facts):
+                if self._held_facts <= facts // 2:
+                    break
+                self._held_facts -= len(self._facts.pop(e))
+                self._links.pop(e, None)
+                self._values.pop(e, None)
+            self._followed.clear()  # a path's end rests on the links of the entities along it
 
     def links(self, e: str) -> dict[str, list[str]]:
         """An entity's links by relation, in the bank's order. Read only: the same object is returned every time."""

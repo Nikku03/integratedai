@@ -59,20 +59,50 @@ def test_a_profile_is_a_file(tmp_path):
 def test_a_profile_read_from_the_documents():
     prof, sv = P.derive(DOCS)
     f = sv["fields"]
-    assert set(prof.people_fields) == {"handler", "raised_by", "watchers"}, "fields whose values are names that other such fields hold"
+    seen = set(prof.seen_fields)
+    assert seen == set(DOCS[0][0].meta), "the fields the documents hold"
+    assert set(prof.people_fields) & seen == {"handler", "raised_by", "watchers"}, "fields whose values are names that other such fields hold"
     assert f["squad"]["people"] == 30 and f["squad"]["known"] == 0, "shaped like names, but nobody by that name anywhere else"
     assert f["watchers"]["people"] == 30 and f["watchers"]["values"] == 60, "half its values are not names: it still names people"
-    assert set(prof.person_fields) == {"handler", "raised_by"}, "a holder of these is a person for certain"
-    assert prof.date_fields == ("opened_on",) and f["sprint"]["dates"] == 0, "a week is not a day"
-    assert prof.ref_fields == ("blocked_by",) and f["ticket"]["own"] == 30 and f["ticket"].get("keys", 0) == 0, "its own key is not a citation"
+    assert set(prof.person_fields) & seen == {"handler", "raised_by"}, "a holder of these is a person for certain"
+    assert set(prof.date_fields) & seen == {"opened_on"} and f["sprint"]["dates"] == 0, "a week is not a day"
+    assert set(prof.ref_fields) & seen == {"blocked_by"} and f["ticket"]["own"] == 30 and f["ticket"].get("keys", 0) == 0, \
+        "its own key is not a citation"
     assert prof.source == "derived" and prof.org_fields == P.Profile.default().org_fields, "what the values do not tell is kept"
+    # a field the documents do not hold keeps the base's lists, and a date is still told by its name: documents added
+    # later can hold it
+    assert prof.names_people("assignee") and prof.cites("linked_issues") and prof.is_date("merged_at") and not prof.is_date("state")
     few, _ = P.derive(DOCS[:5], base=P.Profile.from_json({"people_fields": ["handler"]}))
-    assert few.people_fields == ("handler",) and few.ref_fields == () and few.date_fields == (), \
+    assert few.people_fields == ("handler",) and not {"blocked_by", "opened_on"} & set(few.ref_fields + few.date_fields), \
         "too few values to tell: a field is left as the profile it starts from has it"
     ag = P.agreement(P.Profile.default(), prof, sv)
-    assert ag["people"]["fields_both"] == 0 and set(ag["people"]["only_derived"]) == {"handler", "raised_by", "watchers"}
+    assert ag["people"]["fields_both"] == 0 and set(ag["people"]["only_derived"]) == {"handler", "raised_by", "watchers"}, \
+        "compared on the fields the documents hold"
     assert P.compare(prof, prof) == {} and set(P.compare(P.Profile.default(), prof)) >= {"people_fields", "ref_fields", "date_fields"}
     assert P.form_keys("see OPS-12 and https://github.com/acme/api/pull/77") == ["OPS-12", "pr:api#77"]
+
+
+def test_digits_that_other_records_carry_are_identifiers_not_dates():
+    # each ticket names another one's account number, which that ticket carries as its own identifier
+    docs = [(SourceDoc(**{**sd.__dict__, "meta": {**sd.meta, "account_no": f"{1_700_000_000 + (i + 1) % 30}", "phone": f"{5_551_230_000 + i}"},
+                          "keys": [*sd.keys, f"id:{1_700_000_000 + i}"]}), raw) for i, (sd, raw) in enumerate(DOCS)]
+    prof, sv = P.derive(docs)
+    assert sv["fields"]["account_no"]["carried"] == 30 and prof.cites("account_no") and not prof.is_date("account_no")
+    assert prof.is_date("phone"), "a known limit: ten digits that no record carries read as epoch seconds"
+
+
+def test_a_custom_profile_is_kept_whatever_its_name(tmp_path):
+    named_default = P.Profile.from_json({"people_fields": ["handler", "raised_by", "watchers"]})
+    assert named_default.source == "default" and not named_default.is_default() and P.Profile.default().is_default()
+    assert P.Profile.from_json({**P.Profile.default().to_json(), "source": "mine"}).is_default()
+    path = tmp_path / "bank.sqlite"
+    B.build(path, DOCS[:20], profile=named_default)
+    assert P.Profile.of_bank(sqlite3.connect(path)) == named_default
+    rep = B.sync(path, DOCS)
+    assert (rep["added"], rep["same"]) == (10, 20), "the profile kept in the bank reads the new documents"
+    con = sqlite3.connect(path)
+    assert con.execute("SELECT value_entity FROM facts WHERE entity = 'doc:t25' AND parameter = 'handler'").fetchone() == \
+        (f"person:{STAFF[0].lower()}",)
 
 
 def test_a_bank_keeps_the_profile_it_was_built_with(tmp_path):
@@ -98,4 +128,4 @@ def test_a_bank_keeps_the_profile_it_was_built_with(tmp_path):
     got, want = rows(mine), rows(fresh)
     assert all(got[t] == want[t] for t in want), "and the bank is the one a fresh build with that profile gives"
     b = BR.BrainBank(mine)
-    assert b.profile() == prof and b.profile().person_fields == ("handler", "raised_by")
+    assert b.profile() == prof and {"handler", "raised_by"} <= set(b.profile().person_fields) and "watchers" not in b.profile().person_fields

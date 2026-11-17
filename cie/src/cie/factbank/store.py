@@ -316,33 +316,39 @@ def ensure(path: str | Path, log: Callable[[str], None] | None = None, passages:
     """Add to a bank file the derived tables it lacks (or that another version of this module made). Returns what it
     built, with the seconds each took; nothing when the file was complete."""
     con = sqlite3.connect(str(path))
-    built: dict[str, Any] = {}
     try:
-        if not (has(con, "facts") and has(con, "entities_fts")):
-            return built  # not a bank file (yet): whoever opens it next says so
-        con.executescript(SCHEMA)
-        m = meta(con)
-        fresh = m.get("version") == VERSION and m.get("facts") == con.execute("SELECT count(*) FROM facts").fetchone()[0]
-        t = time.perf_counter()
-        if not fresh or not m.get("text_rows"):
-            built["text_rows"] = build_text_rows(con)
-            _set(con, "text_rows", built["text_rows"])
-            built["text_rows_s"] = round(time.perf_counter() - t, 1)
-        t = time.perf_counter()
-        if passages and (not fresh or (m.get("passages") or {}).get("size") != list(PASSAGE_SIZE) or not has(con, "passages_fts")):
-            built["passages"] = build_passages(con)
-            built["passages_s"] = round(time.perf_counter() - t, 1)
-        t = time.perf_counter()
-        if fields and (not fresh or not m.get("fields") or not has(con, "doc_fields")):
-            built["fields"] = build_fields(con)
-            built["fields_s"] = round(time.perf_counter() - t, 1)
-        if built:
-            _set(con, "version", VERSION)
-            _set(con, "facts", con.execute("SELECT count(*) FROM facts").fetchone()[0])
-            con.commit()
-            if log:
-                log(f"  bank store: built {', '.join(k for k in built if not k.endswith('_s'))} in "
-                    f"{sum(v for k, v in built.items() if k.endswith('_s')):.0f} s")
+        return ensure_con(con, log, passages, fields)
     finally:
         con.close()
+
+
+def ensure_con(con: sqlite3.Connection, log: Callable[[str], None] | None = None, passages: bool = True,
+               fields: bool = True) -> dict[str, Any]:
+    """``ensure`` on an open connection; what it builds is committed."""
+    built: dict[str, Any] = {}
+    if not (has(con, "facts") and has(con, "entities_fts")):
+        return built  # not a bank file (yet): whoever opens it next says so
+    con.executescript(SCHEMA)
+    m = meta(con)
+    fresh = m.get("version") == VERSION and m.get("facts") == con.execute("SELECT count(*) FROM facts").fetchone()[0]
+    t = time.perf_counter()
+    if not fresh or "text_rows" not in m:
+        built["text_rows"] = build_text_rows(con)
+        _set(con, "text_rows", built["text_rows"])
+        built["text_rows_s"] = round(time.perf_counter() - t, 1)
+    t = time.perf_counter()
+    if passages and (not fresh or (m.get("passages") or {}).get("size") != list(PASSAGE_SIZE) or not has(con, "passages_fts")):
+        built["passages"] = build_passages(con)
+        built["passages_s"] = round(time.perf_counter() - t, 1)
+    t = time.perf_counter()
+    if fields and (not fresh or not m.get("fields") or not has(con, "doc_fields")):
+        built["fields"] = build_fields(con)
+        built["fields_s"] = round(time.perf_counter() - t, 1)
+    if built:
+        _set(con, "version", VERSION)
+        _set(con, "facts", con.execute("SELECT count(*) FROM facts").fetchone()[0])
+        con.commit()
+        if log:
+            log(f"  bank store: built {', '.join(k for k in built if not k.endswith('_s'))} in "
+                f"{sum(v for k, v in built.items() if k.endswith('_s')):.0f} s")
     return built

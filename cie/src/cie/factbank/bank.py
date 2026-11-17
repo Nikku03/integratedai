@@ -53,7 +53,7 @@ PRIMARY_SYSTEMS = {"linear", "jira", "github", "hubspot"}
 SKIP_FIELDS = {"dsid", "summary", "source", "commits", "files_changed", "merge_commit_sha", "head_branch", "base_branch",
                "orientation", "path"}
 MAX_VALUE = 300
-BUILDER = 1  # what add_document makes of a document; part of a document's content hash, so a change here re-reads it
+BUILDER = 2  # what add_document makes of a document, and the hash's form: a change here re-reads every document
 BATCH_DOCS = 2_000
 
 SCHEMA = """
@@ -236,9 +236,10 @@ def doc_hash(sd, raw: dict[str, Any], text_facts: bool = False, profile: Any = N
     (or when the profile it is read with does)."""
     body = [BUILDER, bool(text_facts), sd.dsid or sd.rel, sd.source, sd.rel, sd.title, sd.fields, sd.meta, sd.keys, sd.project,
             sd.created, sd.updated, raw]
-    if profile is not None and profile.source != "default":
+    if profile is not None and not profile.is_default():
         body.append(profile.to_json())
-    return hashlib.sha256(json.dumps(body, sort_keys=True, ensure_ascii=False, default=str).encode()).hexdigest()
+    # the fields' order is kept: the builder reads them in that order (the facts' numbers, a person's first-written name)
+    return hashlib.sha256(json.dumps(body, ensure_ascii=False, default=str).encode()).hexdigest()
 
 
 def _batches(docs: Iterable[Any], size: int) -> Iterator[list[Any]]:
@@ -301,10 +302,11 @@ def build(path: str | Path, docs: Iterable[tuple[Any, dict[str, Any]]], text_fac
     con.execute("DROP TABLE alias_doc")
     # a person or an identifier is found by its name
     con.execute("INSERT INTO entities_fts SELECT id, name, name FROM entities WHERE kind IN ('person', 'identifier') ORDER BY rowid")
-    if profile is not None and profile.source != "default":
-        from cie.factbank import store
-
-        con.executescript(store.SCHEMA)
+    # what the documents were read with, for ``sync`` and the brain: the profile (when it is not the default) and
+    # whether sentence facts were made
+    con.execute("CREATE TABLE IF NOT EXISTS store_meta (key TEXT PRIMARY KEY, value TEXT) WITHOUT ROWID")
+    con.execute("INSERT OR REPLACE INTO store_meta VALUES ('text_facts', ?)", (json.dumps(bool(text_facts)),))
+    if profile is not None and not profile.is_default():
         con.execute("INSERT OR REPLACE INTO store_meta VALUES ('profile', ?)", (json.dumps(profile.to_json()),))
     con.commit()
     rep = check(con)
@@ -325,16 +327,29 @@ def _fact_order(fid: str) -> tuple[str, int]:
     return src, int(n) if n.isdigit() else 0
 
 
-def _mentions(con: sqlite3.Connection, entity: str) -> list[tuple[str, str, str]]:
-    """What names a person or an identifier: the facts its own (inverse) facts rest on, as (id, field, value), in the
-    order a build in id order reads them."""
-    ids = [json.loads(d or "[]")[:1] for (d,) in con.execute("SELECT dependencies FROM facts WHERE entity = ?", (entity,))]
-    ids = sorted({i[0] for i in ids if i}, key=_fact_order)
+CITED = " is referenced by "  # how an identifier's inverse fact's claim begins after the identifier as written
+
+
+def cited_key(claim: str) -> str:
+    """The identifier, as written, that a ``referenced_by`` fact's claim names. It is read from the claim, not from the
+    citing value again: the value is stored cut to ``MAX_VALUE`` characters, which can cut the identifier off."""
+    return claim.split(CITED, 1)[0]
+
+
+def _mentions(con: sqlite3.Connection, entity: str) -> list[tuple[str, str, str, str]]:
+    """What names a person or an identifier: the facts its own (inverse) facts rest on, as (id, field, value, the inverse
+    fact's claim), in the order a build in id order reads them."""
+    deps: dict[str, str] = {}
+    for d, claim in con.execute("SELECT dependencies, claim FROM facts WHERE entity = ?", (entity,)):
+        first = json.loads(d or "[]")[:1]
+        if first:
+            deps.setdefault(first[0], claim)
+    ids = sorted(deps, key=_fact_order)
     out = []
     for i in range(0, len(ids), 400):
         part = ids[i:i + 400]
         got = {r[0]: r for r in con.execute(f"SELECT id, parameter, value FROM facts WHERE id IN ({','.join('?' * len(part))})", part)}
-        out += [got[x] for x in part if x in got]
+        out += [(*got[x], deps[x]) for x in part if x in got]
     return out
 
 
@@ -411,19 +426,15 @@ def _settle(con: sqlite3.Connection, keys: dict[str, set[str]], touched: set[str
     """Point what cites an identifier at the right entity: the document with the smallest id that carries it, or the
     identifier's own entity when no document does. ``keys``: the identifiers to look at, each with the documents that
     carried it and are gone."""
-    from cie.ingest.sources import reference_keys
-
     for k in sorted(keys):
         holders = [r[0] for r in con.execute(f"SELECT entity FROM aliases WHERE alias = ? AND {_is('doc:', 'entity')} ORDER BY entity", (k,))]
         want = holders[0] if holders else f"key:{k}"
         touched.add(f"key:{k}")
         for e in sorted({f"key:{k}", *holders, *keys[k]} - {want}):
-            cited = con.execute("SELECT id, dependencies FROM facts WHERE entity = ? AND parameter = 'referenced_by'", (e,)).fetchall()
-            for fid, deps in cited:
+            cited = con.execute("SELECT id, dependencies, claim FROM facts WHERE entity = ? AND parameter = 'referenced_by'", (e,)).fetchall()
+            for fid, deps, claim in cited:
                 first = json.loads(deps or "[]")[:1]
-                row = con.execute("SELECT parameter, value FROM facts WHERE id = ?", (first[0],)).fetchone() if first else None
-                ks = reference_keys(row[0], row[1]) if row else []
-                if ks and ks[0].lower() == k:
+                if first and cited_key(claim).lower() == k:
                     con.execute("UPDATE facts SET entity = ? WHERE id = ?", (want, fid))
                     con.execute("UPDATE facts SET value_entity = ? WHERE id = ?", (want, first[0]))
 
@@ -431,12 +442,10 @@ def _settle(con: sqlite3.Connection, keys: dict[str, set[str]], touched: set[str
 def _tidy(con: sqlite3.Connection, touched: set[str]) -> None:
     """A person or an identifier is in the bank while something names it. Its name is its first mention's, a person's
     aliases every way it is written; one nothing names any more is taken out."""
-    from cie.ingest.sources import reference_keys
-
     for e in sorted(touched):
         mentions = _mentions(con, e)
         person = e.startswith("person:")
-        names = [v for _, _, v in mentions] if person else [ks[0] for _, p, v in mentions if (ks := reference_keys(p, v))]
+        names = [v for _, _, v, _ in mentions] if person else [cited_key(claim) for *_, claim in mentions]
         if not names:
             _drop_entity(con, e)
             continue
@@ -463,6 +472,7 @@ def apply(con: sqlite3.Connection, add: Iterable[tuple[Any, dict[str, Any]]] = (
     from cie.factbank import store
     from cie.factbank.profile import Profile
 
+    store.ensure_con(con)  # a bank built without its derived tables gets them first: they are changed with the documents
     profile = profile or Profile.of_bank(con)
 
     touched: set[str] = set()
@@ -477,7 +487,7 @@ def apply(con: sqlite3.Connection, add: Iterable[tuple[Any, dict[str, Any]]] = (
     return {"added": len(add), "removed": removed}
 
 
-def sync(path: str | Path, docs: Iterable[tuple[Any, dict[str, Any]]], text_facts: bool = False, remove_missing: bool = True,
+def sync(path: str | Path, docs: Iterable[tuple[Any, dict[str, Any]]], text_facts: bool | None = None, remove_missing: bool = True,
          adopt: bool = False, batch: int = 500, log: Callable[[str], None] | None = None) -> dict[str, Any]:
     """Bring a bank up to date with ``docs``, the company's documents as they are now, without building it again.
 
@@ -500,6 +510,8 @@ def sync(path: str | Path, docs: Iterable[tuple[Any, dict[str, Any]]], text_fact
     con = sqlite3.connect(path)
     con.executescript(SYNC_SCHEMA)
     profile = Profile.of_bank(con)  # a document is read as the bank's other documents were
+    if text_facts is None:
+        text_facts = bool(store.meta(con).get("text_facts", False))
     known = dict(con.execute("SELECT id, hash FROM source_hashes"))
     held = {r[0] for r in con.execute("SELECT id FROM sources")}
     rep = {"added": 0, "changed": 0, "removed": 0, "same": 0, "adopted": 0}

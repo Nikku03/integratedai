@@ -216,7 +216,7 @@ def names(pairs: Iterable[tuple[str, int]]) -> list[str]:
 def fill_sample(work: Path, labels: Iterable[str] = (BRAIN, *names(CORE))) -> dict[str, int]:
     """The sample folder's answers (and the judge's verdicts) of the arms asked on every question, copied from
     ``work``: the sample's questions are ``work``'s, so its rows are not asked or judged twice. Rows already there are
-    kept."""
+    kept, except a verdict the judge could not give when the full folder has one."""
     sub = sub_dir(work)
     ids = [q["id"] for q in K._questions(sub)]
     out = {}
@@ -224,7 +224,7 @@ def fill_sample(work: Path, labels: Iterable[str] = (BRAIN, *names(CORE))) -> di
     for lab in [*labels, *(judge_file(x)[:-len(".jsonl")] for x in labels)]:
         src, dst = work / f"{K.FILES.get(lab, lab)}.jsonl", sub / f"{K.FILES.get(lab, lab)}.jsonl"
         have, full = K._rows(dst), K._rows(src)
-        rows = [have.get(i) or full.get(i) for i in ids]
+        rows = [(have.get(i) if have.get(i) and not have[i].get("failed") else None) or full.get(i) or have.get(i) for i in ids]
         if any(r is not None for r in rows):
             K._write(dst, "".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows if r is not None))
         out[lab] = sum(r is not None for r in rows)
@@ -237,10 +237,14 @@ def run(works: list[Path], generate: Any, tools: Any, settings: dict[str, Any], 
     the seed is set on the backend before each run (it is a sampling setting, not part of the loaded model). A run
     already complete is not asked again."""
     out = {}
-    for stage, pairs, folders in (("core", core, works), ("extra", extra, [sub_dir(w) for w in works])):
-        if stage == "extra" and list(extra):
+    for stage, pairs, folders in (("core", core, works), ("extra", extra, [])):
+        if stage == "extra":
+            folders = [sub_dir(w) for w in works if (sub_dir(w) / "questions.jsonl").exists()]
+            if missing := [w.name for w in works if not (sub_dir(w) / "questions.jsonl").exists()]:
+                log(f"no sample folder for {', '.join(missing)}: its seeds and ablations are not asked")
             for w in works:
-                log(f"sample of {w.name}: {fill_sample(w)}")
+                if (sub_dir(w) / "questions.jsonl").exists() and list(extra):
+                    log(f"sample of {w.name}: {fill_sample(w)}")
         for arm, seed in pairs:
             name, st = K.arm_file(arm, seed), {**settings, "seed": seed}
             if not any(K.left(folders, arm, name, limit).values()):
@@ -385,6 +389,79 @@ def rules() -> dict[str, tuple[str, Callable[[dict[str, Any]], bool]]]:
     }
 
 
+AGREEMENT = 0.85  # the judge's agreement with people below which rules 4 to 6 are not decided by it
+JUDGED_RULES = ("4 natural questions", "5 beats plain search", "6 says when it does not know")
+
+
+def margins() -> dict[str, tuple[str, Callable[[dict[str, Any]], float]]]:
+    """How far each of rules 1 to 7 is from its line (met when 0 or more), and the set its numbers come from ("gen" or
+    "bench"): a rule decided by less than the seeds' spread on that set is undecided when rule 8 fails."""
+    def mean(rep: dict[str, Any], part: str, arm: str, key: Callable[[dict[str, Any]], Any]) -> float:
+        return _avg(seeds_of(rep[part]["arms"], arm, key))  # type: ignore[return-value]
+
+    def g(r: dict[str, Any], arm: str) -> float:
+        return mean(r, "gen", arm, lambda a: a["mean_of_families"])
+
+    def f(r: dict[str, Any], arm: str, fam: str) -> float:
+        return mean(r, "gen", arm, lambda a: a["by_family"].get(fam))
+
+    def b(r: dict[str, Any], arm: str) -> float:
+        return mean(r, "bench", arm, lambda a: a["correct"])
+
+    def no_harm(r: dict[str, Any]) -> float:
+        fams = [x for x in r["gen"]["families"] if x != "complex"]
+        return min([g(r, "reasoner") - g(r, BRAIN) + 0.01, *(f(r, "reasoner", x) - f(r, BRAIN, x) + 0.03 for x in fams)])
+
+    return {
+        "1 no harm": ("gen", no_harm),
+        "2 complex": ("gen", lambda r: f(r, "reasoner", "complex") - 0.80),
+        "3 the bank helps": ("gen", lambda r: g(r, "reasoner") - g(r, "agent") - 0.05),
+        "4 natural questions": ("bench", lambda r: b(r, "reasoner") - b(r, "agent")),
+        "5 beats plain search": ("bench", lambda r: b(r, "reasoner") - b(r, "rag") - 0.05),
+        "6 says when it does not know": ("bench", lambda r: mean(r, "bench", "reasoner", lambda a: a["correct_by_kind"].get("info_not_found")) - 0.70),
+        "7 false not found": ("gen", lambda r: 0.05 - mean(r, "gen", "reasoner", lambda a: a["false_not_found"])),
+    }
+
+
+def spreads(rep: dict[str, Any]) -> dict[str, float | None]:
+    """The spread of the three seeds of the model on the brain on the samples: generated mean, bench judged right."""
+    out: dict[str, float | None] = {}
+    for part, sub, key in (("gen", "gen_sub", "mean_of_families"), ("bench", "bench_sub", "correct")):
+        xs = seeds_of(rep.get(sub, {}).get("arms", {}), "reasoner", lambda a, key=key: a[key])
+        out[part] = round(max(xs) - min(xs), 4) if len(xs) >= 3 else None
+    return out
+
+
+def decide(rep: dict[str, Any], agreement: dict[str, Any] | None) -> tuple[dict[str, bool | None], dict[str, str]]:
+    """The rules as the plan decides them: each met or not by its numbers; then rules 4 to 6 undecided until the
+    judge agrees with people on ``AGREEMENT`` of their labels; then, when rule 8 fails, every rule decided by less than
+    the seeds' spread undecided. Returns the rules and why each undecided one is."""
+    met: dict[str, bool | None] = {}
+    why: dict[str, str] = {}
+    for name, (_what, fn) in rules().items():
+        try:
+            met[name] = bool(fn(rep))
+        except (KeyError, TypeError, ValueError, ZeroDivisionError):
+            met[name], why[name] = None, "an arm it needs has not answered"
+    agree = (agreement or {}).get("agree")
+    for name in JUDGED_RULES:
+        if met.get(name) is not None and (agree is None or agree < AGREEMENT):
+            met[name] = None
+            why[name] = (f"the judge agrees with people on {agree:.2f} of their labels, below {AGREEMENT}" if agree is not None
+                         else "the judge has not been checked against people's labels yet")
+    if met.get("8 seeds agree") is False:
+        spread = spreads(rep)
+        for name, (part, fn) in margins().items():
+            try:
+                m = fn(rep)
+            except (KeyError, TypeError, ValueError, ZeroDivisionError):
+                continue
+            if met.get(name) is not None and spread[part] is not None and abs(m) < spread[part]:
+                met[name] = None
+                why[name] = f"decided by {abs(m):.3f}, less than the seeds' spread ({spread[part]:.3f})"
+    return met, why
+
+
 def labels_of(work: Path) -> list[str]:
     """The arms that answered in a folder: the brain alone and every run of the model's arms that left a file."""
     return [lab for lab in dict.fromkeys(("v18", BRAIN, *names(CORE), *names(EXTRA))) if (work / f"{K.FILES.get(lab, lab)}.jsonl").exists()]
@@ -398,12 +475,8 @@ def score(work: Path, bench: Path | None = None, agreement: dict[str, Any] | Non
         if (sub / "questions.jsonl").exists():
             fill_sample(full)
             rep[key] = score_gen(sub, labels_of(sub)) if key == "gen_sub" else score_bench(sub, labels_of(sub))
-    rep["rules"] = {}
-    for name, (_what, fn) in rules().items():
-        try:
-            rep["rules"][name] = bool(fn(rep))
-        except (KeyError, TypeError, ValueError, ZeroDivisionError):
-            rep["rules"][name] = None  # an arm it needs has not answered yet
+    rep["rules"], rep["undecided"] = decide(rep, agreement)
+    rep["spreads"] = spreads(rep)
     rep["judge_agreement"] = agreement
     (work / "report_fresh.json").write_text(json.dumps(rep))
     (work / "report_fresh.md").write_text(to_markdown(rep))
@@ -437,7 +510,8 @@ def to_markdown(rep: dict[str, Any]) -> str:
     out = ["# The fresh test: results", "", "## Rules", "", "| rule | what it says | met |", "|---|---|---|"]
     for name, (what, _fn) in rules().items():
         met = rep["rules"].get(name)
-        out.append(f"| {name} | {what} | {'not run yet' if met is None else 'yes' if met else 'NO'} |")
+        why = rep.get("undecided", {}).get(name, "not run yet")
+        out.append(f"| {name} | {what} | {f'undecided: {why}' if met is None else 'yes' if met else 'NO'} |")
     out += ["", f"## Generated questions ({g['questions']}), by exact check", "", *_gen_table(g)]
     out += ["", f"## The benchmark's own questions ({b['questions']}), by the judge", "", *_bench_table(b)]
     out += ["", "## Cost on the benchmark's questions", "", "| arm | prompt tokens a question | output tokens a question | ms a question |", "|---|---|---|---|"]

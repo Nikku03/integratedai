@@ -50,6 +50,9 @@ class Profile:
     primary_systems: tuple[str, ...]  # systems of record: their facts outweigh what other systems say of the same thing
     skip_fields: tuple[str, ...]  # fields that are not facts (the export's own bookkeeping)
     source: str = "default"
+    # the fields a derived profile read from the documents; a field outside them (one the documents it was read from
+    # did not hold) is a date by its name, as in the default profile. None: every field is told by the lists above
+    seen_fields: tuple[str, ...] | None = None
 
     @staticmethod
     def default() -> Profile:
@@ -61,16 +64,22 @@ class Profile:
                        tuple(sorted(PRIMARY_SYSTEMS)), tuple(sorted(SKIP_FIELDS)))
 
     def is_date(self, field: str) -> bool:
-        if self.date_fields is None:
+        if self.date_fields is None or (field not in self._dates and self._seen is not None and field not in self._seen):
             from cie.factbank.bank import _is_date_field
 
             return _is_date_field(field)
         return field in self._dates
 
+    def is_default(self) -> bool:
+        """Whether this profile holds the default lists, whatever its ``source`` says: a bank built with it is the bank
+        built without one."""
+        return replace(self, source="default") == Profile.default()
+
     def __post_init__(self) -> None:
         for name in ("people", "ref", "skip"):
             object.__setattr__(self, f"_{name}", frozenset(getattr(self, f"{name}_fields")))
         object.__setattr__(self, "_dates", frozenset(self.date_fields or ()))
+        object.__setattr__(self, "_seen", None if self.seen_fields is None else frozenset(self.seen_fields))
         object.__setattr__(self, "_primary", frozenset(self.primary_systems))
 
     def names_people(self, field: str) -> bool:
@@ -159,7 +168,10 @@ def survey(docs: Iterable[tuple[Any, dict[str, Any]]]) -> dict[str, Any]:
                     c["people"] += 1
                     names.setdefault(k, Counter())[person_key(person)] += 1
                 day = _iso(text) if len(text) <= DATE_CHARS else None
-                c["dates"] += day is not None and (day in text or text.isdigit())  # "2026-W10" reads as a day but is a week
+                # "2026-W10" reads as a day but is a week; digits alone are epoch seconds (Slack's timestamps). A
+                # number of 9 to 11 digits that is neither (a phone number) reads as a date too: nothing in the value
+                # tells them apart. An identifier other records carry is told first (``derive``)
+                c["dates"] += day is not None and (day in text or text.isdigit())
                 c["keys"] += bool(keys)
                 if len(text) <= 80:
                     held.setdefault(k, Counter())[low] += 1
@@ -177,13 +189,16 @@ def survey(docs: Iterable[tuple[Any, dict[str, Any]]]) -> dict[str, Any]:
 def derive(docs: Iterable[tuple[Any, dict[str, Any]]], base: Profile | None = None) -> tuple[Profile, dict[str, Any]]:
     """A profile read from the documents, and the survey it was read from.
 
-    - A field holds dates when ``DATE_SHARE`` of its values are dates.
-    - It cites records when ``REF_SHARE`` of its values hold an identifier by its form, or are one another record carries.
+    - A field cites records when ``REF_SHARE`` of its values hold an identifier by its form, or are one another record
+      carries. This is asked first: an identifier of digits can read as a date.
+    - It holds dates when ``DATE_SHARE`` of its values are dates.
     - It names people when ``NAMED_SHARE`` of its values are shaped like names and ``KNOWN_SHARE`` of those names are
       held by another field that surely names people (people turn up in several roles; a company's domain or a team's
       name does not). Its holders are people for certain when ``CERTAIN_SHARE`` of its values are shaped like names.
     - A field with fewer than ``MIN_VALUES`` values is kept as ``base`` has it (the default profile). So are the fields
-      that name companies, the fields to skip and the systems of record: the values do not tell them."""
+      that name companies, the fields to skip and the systems of record: the values do not tell them. A field the
+      documents do not hold at all (``seen_fields`` lists those they hold) keeps the base's lists, and is a date by its
+      name: documents added later can hold it."""
     base = base or Profile.default()
     sv = survey(docs)
     people, dates, refs, certain = set(), set(), set(), set()
@@ -198,26 +213,33 @@ def derive(docs: Iterable[tuple[Any, dict[str, Any]]], base: Profile | None = No
             elif base.is_date(k):
                 dates.add(k)
             continue
-        if c.get("dates", 0) >= DATE_SHARE * n:
-            dates.add(k)
-        elif max(c.get("keys", 0), c.get("carried", 0)) >= REF_SHARE * n:
+        if max(c.get("keys", 0), c.get("carried", 0)) >= REF_SHARE * n:
             refs.add(k)
+        elif c.get("dates", 0) >= DATE_SHARE * n:
+            dates.add(k)
         elif c.get("people", 0) >= NAMED_SHARE * n and c.get("known", 0) >= KNOWN_SHARE * c["people"] and k not in base.org_fields:
             people.add(k)
             if c["people"] >= CERTAIN_SHARE * n:
                 certain.add(k)
+    seen = set(sv["fields"])
+    people |= set(base.people_fields) - seen
+    refs |= set(base.ref_fields) - seen
+    certain |= set(base.person_fields) - seen
+    if base.date_fields is not None:
+        dates |= set(base.date_fields) - seen
     prof = replace(base, people_fields=tuple(sorted(people)), ref_fields=tuple(sorted(refs)), date_fields=tuple(sorted(dates)),
-                   person_fields=tuple(sorted(certain)), source="derived")
+                   person_fields=tuple(sorted(certain)), source="derived", seen_fields=tuple(sorted(seen)))
     return prof, sv
 
 
 def agreement(base: Profile, derived: Profile, sv: dict[str, Any]) -> dict[str, dict[str, Any]]:
-    """How far a derived profile agrees with a written one, counted in field values (a field with many values weighs
-    more): for people, references and dates, the values of the fields both hold, only the written one and only the
-    derived one, with the fields."""
-    n = {k: c.get("values", 0) for k, c in sv["fields"].items()}
+    """How far a derived profile agrees with a written one on the fields the documents hold, counted in field values (a
+    field with many values weighs more): for people, references and dates, the values of the fields both hold, only the
+    written one and only the derived one, with the fields."""
+    n = {k: c.get("values", 0) for k, c in sv["fields"].items() if c.get("values", 0)}  # the fields the documents hold
     out = {}
-    lists = {"people": (set(base.people_fields), set(derived.people_fields)), "references": (set(base.ref_fields), set(derived.ref_fields)),
+    lists = {"people": (set(base.people_fields) & set(n), set(derived.people_fields) & set(n)),
+             "references": (set(base.ref_fields) & set(n), set(derived.ref_fields) & set(n)),
              "dates": ({k for k in n if base.is_date(k)}, {k for k in n if derived.is_date(k)})}
     for name, (x, y) in lists.items():
         both, only_x, only_y = x & y, x - y, y - x

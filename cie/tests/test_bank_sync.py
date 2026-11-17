@@ -196,3 +196,75 @@ def test_an_open_bank_knows_it_went_stale(tmp_path):
     for d in (docs[9], docs[3]):
         q = f"What is the status of {d[0].meta['key']}?"
         assert again.ask(q).answer == FactBank(fresh).ask(q).answer, "the updated bank answers as the bank built from scratch"
+
+
+# ------------------------------------------------------------------ cases a review found (each failed before its fix)
+def _doc(dsid: str, meta: dict, keys: list[str] | None = None, body: str = "Some text about the rollout.") -> tuple[SourceDoc, dict]:
+    return SourceDoc(dsid=dsid, source="linear", rel=f"x/{dsid}.json", title=f"Ticket {dsid}", fields=[("body", body)], meta=meta,
+                     updated=WHEN, keys=keys or []), {}
+
+
+def _same_as_fresh(path, docs, tmp_path, **kw):
+    fresh = tmp_path / "fresh_check.sqlite"
+    B.build(fresh, [docs[k] for k in sorted(docs)], **kw)
+    got, want = rows(path), rows(fresh)
+    return [t for t in want if got[t] != want[t]]
+
+
+def test_a_citation_longer_than_a_stored_value_is_followed(tmp_path):
+    a = _doc("d001", {"key": "ENG-101"}, ["ENG-101"])
+    note = ("Blocked by the allocator rollout and the quota migration, which both wait on the billing export; " * 3) + "see ENG-101 for the plan"
+    cite = _doc("d004", {"key": "ENG-104", "parent_issue": note}, ["ENG-104"])
+    assert len(note) > B.MAX_VALUE and "ENG-101" not in note[:B.MAX_VALUE], "the stored value is cut before the key"
+    for start, end in (({"d001": a}, {"d001": a, "d004": cite}), ({"d001": a, "d004": cite}, {"d004": cite})):
+        path = tmp_path / "bank.sqlite"
+        B.build(path, list(start.values()))
+        B.sync(path, [end[k] for k in sorted(end)])
+        assert _same_as_fresh(path, end, tmp_path) == []
+
+
+def test_fields_in_another_order_are_another_document(tmp_path):
+    m1 = _doc("d005", {"assignee": "Omar Singh", "creator": "OMAR SINGH", "status": "Open"})
+    m2 = _doc("d005", {"status": "Open", "creator": "OMAR SINGH", "assignee": "Omar Singh"})
+    assert B.doc_hash(*m1) != B.doc_hash(*m2), "the builder reads the fields in their order: a person's first-written name, the facts' numbers"
+    path = tmp_path / "bank.sqlite"
+    B.build(path, [m1])
+    assert B.sync(path, [m2])["changed"] == 1 and _same_as_fresh(path, {"d005": m2}, tmp_path) == []
+
+
+def test_an_update_on_a_bank_built_without_its_derived_tables(tmp_path):
+    pool = company(31, 8)
+    docs = [pool[k] for k in sorted(pool)]
+    path = tmp_path / "bank.sqlite"
+    B.build(path, docs[:6], text_facts=True, derived=False)
+    con = sqlite3.connect(path)
+    B.apply(con, add=docs[6:], text_facts=True)
+    con.commit()
+    con.close()
+    assert _same_as_fresh(path, {sd.dsid: (sd, raw) for sd, raw in docs}, tmp_path, text_facts=True) == []
+    assert store.ensure(path) == {}
+
+
+def test_sync_reads_documents_as_the_bank_was_built(tmp_path):
+    pool = company(33, 8)
+    docs = [pool[k] for k in sorted(pool)]
+    path = tmp_path / "bank.sqlite"
+    B.build(path, docs[:6], text_facts=True)
+    rep = B.sync(path, docs)
+    assert (rep["added"], rep["same"]) == (2, 6), "with sentence facts, as it was built: the six it holds are the same"
+    assert _same_as_fresh(path, {sd.dsid: (sd, raw) for sd, raw in docs}, tmp_path, text_facts=True) == []
+
+
+def test_documents_an_open_bank_does_not_know_are_read_one_by_one(tmp_path):
+    from cie.factbank.engine import FactBank
+    from cie.factbank.records import DocFacts, Records
+
+    first = [_doc(f"a{i:03d}", {"key": f"ENG-{100 + i}", "status": "Open"}, [f"ENG-{100 + i}"]) for i in range(3)]
+    more = [_doc(f"n{i:03d}", {"key": f"OPS-{100 + i}", "status": "Done"}, [f"OPS-{100 + i}"]) for i in range(DocFacts.BULK + 20)]
+    path = tmp_path / "bank.sqlite"
+    B.build(path, first)
+    fb = FactBank(path)  # opened before the update: it knows no system for the new documents
+    B.sync(path, first + more)
+    rec = Records(fb)
+    got = [rec.doc_facts().get(f"doc:{sd.dsid}", {}) for sd, _ in more]
+    assert all(g.get("status") == [("Done", None)] for g in got) and rec.doc_facts().get("doc:n000", {}).get("key") == [("OPS-100", None)]
